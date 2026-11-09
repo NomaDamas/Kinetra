@@ -7,7 +7,7 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 ENGINE_PORT="${ENGINE_PORT:-8000}"
 UVICORN="$ROOT/packages/engine/.venv/bin/uvicorn"
 if [ ! -x "$UVICORN" ]; then
-  echo "engine venv missing: create it with: cd $ROOT/packages/engine && uv venv && uv pip install -e . -e ../core" >&2
+  echo "engine venv missing: from $ROOT run: uv venv packages/engine/.venv && uv pip install --python packages/engine/.venv/bin/python -e . -e packages/engine" >&2
   exit 1
 fi
 if [ ! -d "$ROOT/apps/web/node_modules" ]; then (cd "$ROOT/apps/web" && pnpm install); fi
@@ -19,4 +19,5 @@ pids+=($!)
 (cd "$ROOT/apps/web" && exec pnpm dev) &
 pids+=($!)
 echo "engine: http://localhost:$ENGINE_PORT/health   web: http://localhost:5173  (Live tab = real MuJoCo)"
-wait -n
+# bash 3.2 (macOS default) has no `wait -n`: exit when either process dies.
+while kill -0 "${pids[0]}" 2>/dev/null && kill -0 "${pids[1]}" 2>/dev/null; do sleep 1; done
