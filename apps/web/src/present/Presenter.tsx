@@ -206,8 +206,17 @@ export function Presenter() {
     if (audio.current) audio.current.currentTime = c.base
   }, [])
 
+  // Film start: a white calibration flash is shown, and the clock starts on the exact frame it disappears,
+  // so the recorder can locate t=0 in the video (detect the last white frame) instead of guessing.
+  const [flash, setFlash] = useState(false)
   useEffect(() => {
-    window.__filmStart = start
+    window.__filmStart = () => {
+      setFlash(true)
+      window.setTimeout(() => {
+        setFlash(false)
+        requestAnimationFrame(() => requestAnimationFrame(start))
+      }, 600)
+    }
   }, [start])
 
   // main loop
@@ -274,6 +283,7 @@ export function Presenter() {
       {showSlide && <div className="pres-slide" key={sc.id}><Slide s={sc} /></div>}
       <span className="pill recorded pres-tag">{tl.tag}</span>
       {line && <div className="pres-sub">{line.text}</div>}
+      {flash && <div style={{ position: 'fixed', inset: 0, background: '#fff', zIndex: 999 }} />}
       <div className="pres-bar" style={{ width: `${(t / tl.total) * 100}%` }} />
       <div className="pres-hud">
         {sc.title} · {t.toFixed(1)}/{tl.total.toFixed(0)}s · {playing ? 'playing' : 'paused'} · space play/pause · ←/→ scene · R restart

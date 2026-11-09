@@ -15,17 +15,21 @@ fs = Wd * Ht
 frames = [raw[i:i + fs] for i in range(0, len(raw) - fs + 1, fs)]
 
 
+ROWS = int(Ht * 0.74)  # ignore the subtitle bar (bottom) so caption changes are not mistaken for UI changes
+N = Wd * ROWS
+
+
 def diff(a, b):
-    return sum(abs(x - y) for x, y in zip(a, b)) / fs
+    return sum(abs(x - y) for x, y in zip(a[:N], b[:N])) / N
 
 
 res = []
 for a in tl["actions"]:
     t = a["t"]
-    i0 = max(0, int((t - 0.6) * FPS)); ref = frames[i0]
+    i0 = max(0, int((t - 0.2) * FPS)); ref = frames[i0]
     onset = None
     for i in range(i0 + 1, min(len(frames), int((t + 2.5) * FPS))):
-        if diff(ref, frames[i]) > 1.5:
+        if diff(ref, frames[i]) > 1.0:
             onset = i / FPS; break
     res.append(dict(type=a["type"], line=a["line"], planned=t, onset=onset, offset_ms=None if onset is None else round((onset - t) * 1000)))
 fd = OUT / f"frames_{lang}"; fd.mkdir(exist_ok=True)

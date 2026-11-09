@@ -38,3 +38,17 @@ Film mode (`?film=1`) uses a wall clock instead of audio and hides the HUD.
 | Differentiation | verbatim lines. | "Zoo?" → different layer (CAD); we make no comparison claim. |
 | Business | Hypothesis. | "Who pays?" → unvalidated; interviews are the next step. |
 | Roadmap / Ask | Real data, templates, first users. | "Traction?" → none yet. |
+
+## Sync verification (measured with tools/film/verify_sync.py on the final mp4s)
+Method: the recorder shows a white calibration flash; t=0 is the first frame after it (detected in the raw video at 50 fps). The final mp4 is
+frame-differenced at 20 fps (subtitle bar masked); the first on-screen change after (planned time - 0.2 s) is compared with the planned action time.
+Resolution is therefore +-50 ms. Details: out/film/sync_report.<lang>.json (not in git).
+
+| cut | actions | detected | offsets (ms) | outside +-300 ms | not detected | audio vs video |
+|---|---|---|---|---|---|---|
+| KO | 17 | 15 | -109 .. +303 | 1 (+303, humanoid scenario chip: bundle fetch after click) | 2 (a variant tick and a scroll: change below pixel threshold, so NOT verified) | 221.894 s / 221.900 s |
+| EN | 17 | 15 | -193 .. +526 | 1 (+526, humanoid scroll to assumptions; the following slider tick at +26 ms is in sync) | 2 (same two types: NOT verified) | 223.607 s / 223.633 s |
+
+"Not detected" means unverified, not in sync. Frames viewed (KO): slides at 30 s, slider at 300 N (66 s), 3D replay mid-flip (86 s), humanoid weak-evidence (118 s),
+humanoid replay (126 s), Autoresearch tab (150 s), replay end state (92 s). Hangul subtitles are burned in by the presenter (HTML overlay), plus a soft .srt track in the mp4.
+Caveats: smooth scroll and the 3D replay take a few hundred ms to show; narration is offline macOS `say` (Yuna / Samantha); "Apply fix" restarts the replay itself, so no separate play action is scripted.

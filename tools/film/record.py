@@ -32,6 +32,7 @@ def main(lang):
     for f in vdir.glob("*.webm") if vdir.exists() else []:
         f.unlink()
     with sync_playwright() as p:
+        # Playwright launch() starts its OWN Chrome with a fresh temp profile; never attach to or kill the user's Chrome.
         b = p.chromium.launch(channel="chrome", headless=False, args=["--use-gl=angle", "--use-angle=metal", "--ignore-gpu-blocklist", "--autoplay-policy=no-user-gesture-required"])
         t_ctx = time.time()
         ctx = b.new_context(viewport={"width": W, "height": H}, record_video_dir=str(vdir), record_video_size={"width": W, "height": H})

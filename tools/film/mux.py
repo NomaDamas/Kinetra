@@ -18,7 +18,17 @@ def st(s):
 lang = (sys.argv[1:] or ["ko"])[0]
 tl = json.loads((PUB / f"timeline.{lang}.json").read_text())
 sl = json.loads((OUT / f"sync_log.{lang}.json").read_text())
-off = sl["video_t0"]
+# t=0 = first frame after the white calibration flash (last white frame + 1/fps), detected in the raw webm
+import subprocess as _sp
+_w = sorted((OUT / f"video_{lang}").glob("*.webm"), key=lambda p: p.stat().st_mtime)[-1]
+_FPS = 50
+_raw = _sp.check_output(["ffmpeg", "-v", "error", "-i", str(_w), "-vf", f"fps={_FPS},scale=32:18,format=gray", "-f", "rawvideo", "-"])
+_n = 32 * 18
+_lum = [sum(_raw[i:i + _n]) / _n for i in range(0, len(_raw) - _n + 1, _n)]
+_white = [i for i, v in enumerate(_lum) if v > 240]
+assert _white, "calibration flash not found"
+off = (_white[-1] + 1) / _FPS
+print("calibration: white frames", _white[0], "-", _white[-1], "t0 =", off)
 webm = sorted((OUT / f"video_{lang}").glob("*.webm"), key=lambda p: p.stat().st_mtime)[-1]
 srt = OUT / f"kinetra-demo.{lang}.srt"
 srt.write_text("".join(f"{i+1}\n{st(l['start'])} --> {st(l['end'])}\n{l['text']}\n\n" for i, l in enumerate(tl["lines"])))
