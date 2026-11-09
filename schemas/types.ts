@@ -288,3 +288,175 @@ export interface Verdict {
   /** Path/URL of the best-run Trajectory JSON. */
   trajectory_ref: string | null;
 }
+
+export interface DesignAlternative {
+  id: string;
+  label: string;
+  changes: Record<string, number>;
+  status: VerdictStatus;
+  p_success: number;
+  ci: [unknown, unknown];
+  n: number;
+  mass_kg: number;
+  mass_added_kg: number;
+  cost_usd: number | null;
+  unpriced_lines: number;
+  recommended: boolean;
+  note: string;
+}
+
+export interface DesignCadRef {
+  stl: string;
+  step: string | null;
+}
+
+export interface DesignCheck {
+  method: string;
+  stress_MPa: number;
+  allow_MPa: number;
+  ok: boolean;
+  label: string;
+}
+
+export interface DesignChoice {
+  name: string;
+  vendor: string;
+  specs: Record<string, number | string | null>;
+  mass_kg: number | null;
+  /** Only when a cited price exists. */
+  unit_cost_usd: number | null;
+  source: string;
+  /** True iff the spec figures were read in the cited source. */
+  verified: boolean;
+}
+
+export interface DesignClosedLoopIter {
+  iteration: number;
+  /** Mass assumption used for this re-run. */
+  mass_kg: number;
+  status: VerdictStatus;
+  p_success: number;
+  ci: [unknown, unknown];
+  n: number;
+  note: string;
+  n_evals: number;
+  wall_seconds: number;
+  assumption_overrides: Record<string, number>;
+}
+
+export interface DesignComponent {
+  id: string;
+  role: string;
+  quantity: number;
+  /** null when no catalog entry meets every requirement. */
+  choice: DesignChoice | null;
+  meets: DesignMeet[];
+  /** True iff a catalog choice exists and every meets[] row is ok. */
+  ok: boolean;
+  alternatives: DesignRejected[];
+  custom: boolean;
+  needs_sourcing: boolean;
+  mass_kg_each: number | null;
+  /** catalog | cad | estimate | none */
+  mass_source: string;
+  note: string;
+  cad: DesignCadRef | null;
+}
+
+export interface DesignCustomPart {
+  id: string;
+  name: string;
+  params: Record<string, number>;
+  material: string;
+  mass_kg: number;
+  quantity: number;
+  cad_stl: string | null;
+  /** null when no STEP-capable CAD kernel was available. */
+  cad_step: string | null;
+  load_case: Record<string, number>;
+  check: DesignCheck;
+  extra_checks: DesignCheck[];
+  note: string;
+}
+
+export interface DesignMeet {
+  requirement_id: string;
+  required: number;
+  provided: number;
+  unit: string;
+  /** (provided - required) / required */
+  margin: number;
+  ok: boolean;
+}
+
+export interface DesignNextTest {
+  name: string;
+  purpose: string;
+  cost: number | null;
+  source: string;
+}
+
+export interface DesignRejected {
+  name: string;
+  why_rejected: string;
+}
+
+export interface DesignReproducibility {
+  seed: number;
+  engine: string;
+  mujoco: string;
+  generated_at: string;
+  budget: Record<string, number>;
+  base_spec_hash: string | null;
+}
+
+/** A number read from a real rollout / Monte-Carlo of the base variant, with a stated margin. */
+export interface DesignRequirement {
+  id: string;
+  label: string;
+  /** Measured on the base variant's rollout (or computed from measured quantities). */
+  value: number;
+  unit: string;
+  /** Which rollout / formula produced `value`. */
+  derived_from: string;
+  margin_factor: number;
+  /** value x margin_factor */
+  required: number;
+  source: "simulation" | "catalog" | "default" | "estimate" | "unverified";
+}
+
+export interface DesignRisk {
+  text: string;
+  severity: "low" | "med" | "high";
+  physical_test: string;
+  /** The unmodelled effect or low-confidence assumption this risk comes from. */
+  tied_to: string;
+}
+
+export interface DesignTotals {
+  mass_added_kg: number;
+  /** Part of mass_added_kg that is an unsourced placeholder estimate. */
+  mass_estimated_kg: number;
+  /** Sum of CITED unit costs only; null if none. */
+  cost_priced_usd: number | null;
+  unpriced_lines: number;
+}
+
+export interface DesignBrief {
+  schema_version: string;
+  scenario_id: string;
+  template: string;
+  /** Control value of the FEASIBLE_FOUND variant the design is derived from. */
+  base_variant: number;
+  headline: string;
+  requirements: DesignRequirement[];
+  components: DesignComponent[];
+  custom_parts: DesignCustomPart[];
+  closed_loop: DesignClosedLoopIter[];
+  alternatives: DesignAlternative[];
+  risks: DesignRisk[];
+  next_tests: DesignNextTest[];
+  totals: DesignTotals;
+  labels: string[];
+  reproducibility: DesignReproducibility;
+}

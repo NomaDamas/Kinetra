@@ -91,7 +91,7 @@ function ProjectCard({ p }: { p: ProjectRec }) {
       </div>
 
       <div className="pcard-design">
-        <div className="stat-l">Design{p.design?.origin === 'fixture' && <span className="pill bad tiny" title="Sample from apps/web/fixtures, not engine output">DEV FIXTURE</span>}</div>
+        <div className="stat-l">Design</div>
         {snap ? (
           <div className="row small">
             <span className="mono">{snap.massAddedKg !== null ? `+${fmt(snap.massAddedKg, 4)} kg` : 'mass n/a'}</span>

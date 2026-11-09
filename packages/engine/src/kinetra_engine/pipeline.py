@@ -371,7 +371,9 @@ def headline(v: Verdict, control_label: str = "", control_value: float | None = 
         c = next(c for c in v.necessary_checks if not c.passed)
         return head + f"IMPOSSIBLE within assumptions — {c.name} needs {c.measured:g} {c.unit}, at most {c.limit:g} {c.unit} available"
     if v.status == VerdictStatus.NOT_FOUND_IN_BUDGET:
-        return head + f"NOT FOUND in {v.cost_estimate.sim_cost.n_evals if v.cost_estimate else '?'} evaluations (weak evidence, not proof)"
+        m = re.search(r"found in (\d+) search evaluations", v.summary)   # same number as the summary: search evals, total over all seed attempts
+        n = m.group(1) if m else (v.cost_estimate.sim_cost.n_evals if v.cost_estimate else "?")
+        return head + f"NOT FOUND in {n} search evaluations (weak evidence, not proof)"
     return head + "MODEL INVALID — no verdict"
 
 
@@ -435,7 +437,7 @@ def make_verdict(tpl: Any, spec: SpecSheet, core: Core, seed: int, budget: Budge
         sens = _screen_sensitivities(tpl, spec, tight.name)
         b = d.get("binding") or dict(name=tight.name, margin=tmargin, unit=tight.unit)
         binding = BindingConstraint(name=str(b["name"]), margin=float(b["margin"]), unit=str(b.get("unit", "")), sensitivities=sens)
-        summary = (f"Not found: no solution was found in {core.search.n_evals} evaluations, and no necessary condition was violated. This is weak evidence only, "
+        summary = (f"Not found: no solution was found in {core.search.n_evals} search evaluations (total over all independent seed attempts), and no necessary condition was violated. This is weak evidence only, "
                    f"not proof; a larger search or a different control strategy might still succeed{_search_failure_text(core)}. [{fclass}]")
 
     spec_hash = mclib.spec_hash(spec)

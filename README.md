@@ -16,15 +16,19 @@ The full argument, with sourced figures (and their caveats), personas, what we d
 
 ## Screenshots
 
-Real captures (1440x900) of the app on the recorded bundles. Design and Report tabs are not shown yet: they need the real `design.json`.
+Real captures (1440x900) of the production build on the committed bundles and design files (no fixtures).
 
 | Home | Dashboard |
 |---|---|
 | ![Home](apps/web/screenshots/home.png) | ![Dashboard](apps/web/screenshots/projects.png) |
 
-| Project overview | Simulate (recorded + live) |
+| Project overview (roadster, 5000 N) | Simulate: recorded replay (a LIVE mode switch sits beside it) |
 |---|---|
 | ![Overview](apps/web/screenshots/project-overview.png) | ![Simulate](apps/web/screenshots/project-simulate.png) |
+
+| Design: requirements → parts → CAD → closed loop | Report: design brief + downloads |
+|---|---|
+| ![Design](apps/web/screenshots/project-design.png) | ![Report](apps/web/screenshots/project-report.png) |
 
 | Evidence | Lab |
 |---|---|
@@ -92,18 +96,19 @@ All numbers were produced by the code in this repo. Spikes are in [`spikes/`](sp
 
 Verified in this repo: `POST /simulate` on the roadster at 5 kN is deterministic (identical trajectory hash on repeat) and runs ~29,000 steps/s (4.5 s of sim in ~39 ms); at 1 kN the same endpoint reports the failed checks (`flip_final`, `flip_td`, `impact_vz`, …). Humanoid live mode is a batch rollout that is then paced (not incremental stepping), and live search is roadster-only.
 
-**Roadster (1,300 kg, 8 cold-gas thrusters, ramp launch, 360° flip + upright landing)**
+**Roadster (1,300 kg, 10 cold-gas nozzles, ramp launch, 360° flip + upright landing)**
 
 | Source | Result |
 |---|---|
 | Spike (`spikes/roadster/REPORT.md`) | 5 kN: flip found in 3.4 s / 3,072 rollouts; 16 extra seeds all succeeded. 300 N proven infeasible (needs 3.34 s to rotate, ≤ 2.43 s flight). 2–3 kN: `NOT_FOUND` (weak). |
-| Engine bundle | 300 N `INFEASIBLE`; 1–2 kN `NOT_FOUND`; 3 / 4 / 5 / 6 kN `FEASIBLE_FOUND` with `p_success` 3.6 / 46.6 / 13.4 / 58.4 % (n = 500). |
+| Engine bundle (current) | 300 N `INFEASIBLE`; 1–3 kN `NOT_FOUND` (weak); 3.5 / 4 / 5 / 6 kN `FEASIBLE_FOUND` with `p_success` 21.2 / 43.0 / 76.6 / 83.4 % (n = 500). Optimizer fix for failing variants: 5 kN (smallest tested value with verified `p_success` ≥ 50 %). |
+| Design stage (5 kN base) | +81.2 kg of designed hardware (31.5 kg of it placeholder estimates); closed loop re-run: `p_success` 76.6 % → **54.8 %** [50.4, 59.1] after adding it. Alternatives: 10 × 6 kN recommended (61.6 %). |
 
 Limits we know about:
-- `p_success` is **not monotone** in thrust (5 kN < 4 kN): search noise with a small budget; we did not tune it away.
-- The spike's 83–85 % robustness figure was measured with the ±10 % thrust perturbation silently not applied (it wrote to `actuator_gear[:,0]`, which is 0 for these motors). The engine applies it. With thrust noise off the engine reproduces ~91 % at 5 kN; with it on, ~13 %. The shipped bundle uses thrust-noise-on.
-- The shipped "fix" (3 kN) has only 3.6 % verified success: a verified *witness*, not a robust design. The UI marks such results *fragile under uncertainty*.
-- Standing-start jump: not found (weak evidence only). Cold-gas Isp, tank and structure limits are unverified defaults.
+- **The current bundle does not sample per-nozzle thrust error** (`thrust_spread` = 0, `thrust_error` = 0; the spike's effective disturbance set: mass ±5 %, COM offset). With ±10 % per-nozzle thrust noise the engine measured ~13 % at 5 kN instead of ~77 %. The spike's original 83–85 % figure had that noise silently not applied (it wrote to `actuator_gear[:,0]`, which is 0 for these motors).
+- The hackathon-era bundle (thrust noise on) showed `p_success` 3.6 / 46.6 / 13.4 / 58.4 % at 3 / 4 / 5 / 6 kN; it cannot be reproduced under current code, and its recorded witnesses no longer pass.
+- Per-nozzle thrust of the real hardware is unknown; no catalogued cold-gas thruster comes close (largest read: 8.9 N vs 6,553 N required), so nozzles, valves and regulator are *needs sourcing*.
+- Standing-start jump: not found (weak evidence only). Cold-gas Isp (70 s), tank and structure limits are unverified defaults.
 
 **Unitree G1 humanoid jump (Menagerie model, 10 parameters, no RL)**
 
@@ -114,6 +119,8 @@ Limits we know about:
 | 0.60× / 1.00× | `FEASIBLE_FOUND` | 5.0 % / 13.5 % (n = 200) |
 
 Limits: the hero target is **0.15 m**, not 0.3 m (at 0.3 m the controller reached 0–3 % on all 3 probe seeds). Success is low under the sampled mass/friction/torque/COM/landing-force uncertainty; we did not shrink the disturbances. The 9× body-weight landing-force limit is an unverified default. Contact is MuJoCo's default soft contact, uncalibrated; only the sagittal plane was exercised.
+
+Design stage (1.0× base): knee needs 180.7 N·m with margin; the strongest catalogued actuator (CubeMars AKE90-8) peaks at 170 N·m, so the knee is *needs sourcing*; hip and ankle lines are met by verified CubeMars parts. Adding the designed hardware (+12 kg, on top of G1 link masses that already include motors, so this overstates the effect) gives `NOT_FOUND_IN_BUDGET` (weak), and the loop stops there.
 
 **Autoresearch** ([`docs/autoresearch.md`](docs/autoresearch.md)): propose → fixed-budget experiment → one metric → keep/discard → append-only hash-chained ledger; physical-assumption changes are gated behind human approval.
 - Attitude control (toy 10 kg single-axis article): open-loop schedule 5.5 % [3.1, 9.6] vs PD/hybrid feedback 100 % [98.1, 100] on 200 held-out samples. PD and hybrid are indistinguishable on this metric.

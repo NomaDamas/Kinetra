@@ -37,15 +37,14 @@ function DesignBody({ bundle, ctx }: { bundle: DesignBundle; ctx: ProjectCtx }) 
   const notBase = b.base_variant !== null && Math.abs(b.base_variant - ctx.variant.value) > 1e-9
   return (
     <div className="stack">
-      {bundle.origin === 'fixture' && (
-        <div className="banner warn"><b>DEV FIXTURE</b> · this design is a sample from <code>apps/web/fixtures/design</code>, shown only because <code>design.json</code> is missing from the bundle. Numbers are illustrative, not engine output.</div>
-      )}
       <section className="answer info">
         <div className="eyebrow">Design summary</div>
         <p className="answer-line">{b.headline || 'Design brief'}</p>
         <div className="answer-meta">
           <span className="pill muted-pill mono">derived from {ctx.scenario.control.label} = {b.base_variant !== null ? trim(b.base_variant) : '?'} {ctx.scenario.control.unit}</span>
           {snap.massAddedKg !== null && <span className="pill muted-pill mono">+{fmt(snap.massAddedKg, 4)} kg added</span>}
+          {b.totals.mass_estimated_kg !== null && b.totals.mass_estimated_kg > 0 && <span className="pill warn mono" title="Part of the added mass that is a flagged placeholder, not a sourced or CAD figure">{fmt(b.totals.mass_estimated_kg, 4)} kg of it is a placeholder estimate</span>}
+          {b.totals.unpriced_lines > 0 && <span className="pill muted-pill mono">{b.totals.unpriced_lines} unpriced lines · cost not summed</span>}
           <span className="pill ok">{snap.ok} ok</span>
           {snap.custom > 0 && <span className="pill recorded">{snap.custom} custom</span>}
           {snap.sourcing > 0 && <span className="pill warn">{snap.sourcing} need sourcing</span>}
@@ -109,7 +108,7 @@ function Components({ b }: { b: DesignBrief }) {
 }
 
 function ComponentCard({ c, b }: { c: DComponent; b: DesignBrief }) {
-  const st = componentState(c, b)
+  const st = componentState(c)
   const chip = STATE_CHIP[st]
   const ch = c.choice
   const reqLabel = (id: string) => b.requirements.find((r) => r.id === id)?.label ?? id
@@ -118,7 +117,7 @@ function ComponentCard({ c, b }: { c: DComponent; b: DesignBrief }) {
       <header>
         <div>
           <div className="eyebrow">{c.role.replace(/_/g, ' ')} · ×{c.quantity}</div>
-          <h3>{ch ? ch.name : c.custom ? 'No catalog part' : c.id}</h3>
+          <h3>{ch ? ch.name : (c.custom && b.custom_parts.find((p) => p.id === c.id)?.name) || c.id.replace(/_/g, ' ')}</h3>
           {ch?.vendor && <div className="small muted">{ch.vendor}</div>}
         </div>
         <span className={`pill ${chip.cls}`} title={chip.tip}>{chip.label}</span>
@@ -132,23 +131,29 @@ function ComponentCard({ c, b }: { c: DComponent; b: DesignBrief }) {
                 <td className="small">{reqLabel(m.requirement_id)}</td>
                 <td className="mono nowrap">{fmt(m.required, 4)} {m.unit}</td>
                 <td className="mono nowrap">{fmt(m.provided, 4)} {m.unit}</td>
-                <td className={`mono ${m.ok ? 'pos' : 'neg'}`}>{m.margin >= 0 ? '+' : ''}{(m.margin * 100).toFixed(0)}%</td>
+                <td className={`mono ${m.ok ? 'pos' : 'neg'}`}>{m.margin > 9.99 ? '> +999%' : `${m.margin >= 0 ? '+' : ''}${(m.margin * 100).toFixed(0)}%`}</td>
                 <td className={m.ok ? 'pos' : 'neg'} aria-label={m.ok ? 'ok' : 'fails'}>{m.ok ? '✓' : '✕'}</td>
               </tr>
             ))}
           </tbody>
         </table>
       )}
+      {c.note && <p className="small ccard-note">{c.note}</p>}
       <div className="ccard-foot small">
+        {!ch && (
+          <span className={`mono ${c.mass_source === 'estimate' ? 'warn-t' : ''}`} title={`mass source: ${c.mass_source}`}>
+            {c.mass_kg_each !== null ? `${fmt(c.mass_kg_each, 4)} kg each (${c.mass_source})` : 'mass not added'}
+          </span>
+        )}
         {ch && (
           <>
-            <span className="mono">{ch.mass_kg !== null ? `${ch.mass_kg} kg each` : 'mass n/a'}</span>
+            <span className="mono">{ch.mass_kg !== null ? `${ch.mass_kg} kg each (catalog)` : 'mass n/a'}</span>
             <span className="mono">{ch.unit_cost_usd !== null ? `$${ch.unit_cost_usd.toLocaleString('en-US')} each` : 'unpriced'}</span>
             <span className={`pill ${ch.verified ? 'ok' : 'warn'}`} title={ch.verified ? 'Spec checked against the source' : 'Not checked against the source: verify before ordering'}>{ch.verified ? 'verified' : 'unverified'}</span>
             {isUrl(ch.source) ? <a href={ch.source} target="_blank" rel="noreferrer">source ↗</a> : <span className="src llm">{ch.source || 'no source'}</span>}
           </>
         )}
-        {c.cad && <span className="pill recorded">CAD: {c.cad}</span>}
+        {c.cad && <span className="pill recorded">CAD: {c.cad.stl.replace(/^cad\//, '')}</span>}
       </div>
       {Object.keys(ch?.specs ?? {}).length > 0 && (
         <div className="kv mono small">{Object.entries(ch!.specs).map(([k, v]) => <div key={k}><span>{k}</span><b>{String(v)}</b></div>)}</div>
@@ -166,7 +171,7 @@ function ComponentCard({ c, b }: { c: DComponent; b: DesignBrief }) {
 function CustomParts({ b, bundle }: { b: DesignBrief; bundle: DesignBundle }) {
   const [sel, setSel] = useState(0)
   const p = b.custom_parts[Math.min(sel, b.custom_parts.length - 1)]
-  const flagged = b.components.filter((c) => componentState(c, b) === 'sourcing')
+  const flagged = b.components.filter((c) => componentState(c) === 'sourcing')
   return (
     <Panel id="custom-parts" title="3 · Custom parts & CAD" kr="맞춤 부품" right={<span className="pill warn">simplified model, needs FEA</span>}>
       {b.custom_parts.length === 0 ? (
@@ -180,7 +185,7 @@ function CustomParts({ b, bundle }: { b: DesignBrief; bundle: DesignBundle }) {
               <li key={x.id}>
                 <button role="tab" aria-selected={i === sel} className={i === sel ? 'on' : ''} onClick={() => setSel(i)}>
                   <b>{x.name}</b>
-                  <span className="small muted">{x.material} · {x.mass_kg !== null ? `${x.mass_kg} kg` : 'mass n/a'}</span>
+                  <span className="small muted">{x.material} · ×{x.quantity} · {x.mass_kg !== null ? `${fmt(x.mass_kg, 3)} kg each` : 'mass n/a'}</span>
                   {x.check && <span className={`pill ${x.check.ok ? 'ok' : 'bad'}`}>{x.check.ok ? 'check ok' : 'check fails'}</span>}
                 </button>
               </li>
@@ -192,16 +197,18 @@ function CustomParts({ b, bundle }: { b: DesignBrief; bundle: DesignBundle }) {
               <div className="kv mono small">
                 {Object.entries(p.params).map(([k, v]) => <div key={k}><span>{k}</span><b>{String(v)}</b></div>)}
               </div>
-              {p.load_case && (
-                <p className="small">Load case: <b className="mono">{p.load_case.force_N !== null ? fmt(p.load_case.force_N, 4) : '?'} N</b>, safety factor <b className="mono">{p.load_case.safety_factor ?? '?'}</b></p>
+              {p.load_case && (p.load_case.force_N !== null || p.load_case.safety_factor !== null) && (
+                <p className="small">Load case: {p.load_case.force_N !== null && <b className="mono">{fmt(p.load_case.force_N, 4)} N</b>}{p.load_case.force_N !== null && p.load_case.safety_factor !== null && ', '}{p.load_case.safety_factor !== null && <>safety factor <b className="mono">{p.load_case.safety_factor}</b></>}</p>
               )}
-              {p.check ? (
-                <div className={`callout ${p.check.ok ? '' : 'bad'}`}>
-                  <b>{p.check.method}</b>
-                  <div className="mono">{p.check.stress_MPa !== null ? `${fmt(p.check.stress_MPa, 4)} MPa` : '?'} vs allowable {p.check.allow_MPa !== null ? `${fmt(p.check.allow_MPa, 4)} MPa` : '?'} → {p.check.ok ? 'OK' : 'FAILS'}</div>
-                  <div className="small warn-t">⚠ {p.check.label}</div>
+              {[...(p.check ? [p.check] : []), ...p.extra_checks].map((ck, i) => (
+                <div key={i} className={`callout ${ck.ok ? '' : 'bad'}`}>
+                  <b className="small">{ck.method}</b>
+                  <div className="mono">{ck.stress_MPa !== null ? `${fmt(ck.stress_MPa, 4)} MPa` : '?'} vs allowable {ck.allow_MPa !== null ? `${fmt(ck.allow_MPa, 4)} MPa` : '?'} → {ck.ok ? 'OK' : 'FAILS'}</div>
+                  <div className="small warn-t">⚠ {ck.label}</div>
                 </div>
-              ) : <p className="small muted">No structural check attached.</p>}
+              ))}
+              {!p.check && p.extra_checks.length === 0 && <p className="small muted">No structural check attached.</p>}
+              {p.note && <p className="small muted">{p.note}</p>}
               <div className="row">
                 {p.cad_stl && <a className="btn" href={assetUrl(bundle, p.cad_stl)} download>↓ STL</a>}
                 {p.cad_step ? <a className="btn" href={assetUrl(bundle, p.cad_step)} download>↓ STEP</a> : <span className="muted small">STEP not generated (no CAD kernel on the build machine)</span>}
@@ -233,8 +240,8 @@ function ClosedLoop({ b }: { b: DesignBrief }) {
                       <td className="mono">{s.iteration}</td>
                       <td className="mono nowrap">{fmt(s.mass_kg, 5)} kg</td>
                       <td><span className={`pill ${s.status === 'FEASIBLE_FOUND' ? 'ok' : s.status === 'INFEASIBLE_NECESSARY_CONDITION' ? 'bad' : 'weak'}`}>{s.status === 'FEASIBLE_FOUND' ? 'FEASIBLE' : s.status === 'INFEASIBLE_NECESSARY_CONDITION' ? 'IMPOSSIBLE' : 'NOT FOUND'}</span></td>
-                      <td className="mono nowrap">{pct(s.p_success)}<div className="small muted">[{pct(s.ci[0])}, {pct(s.ci[1])}] n={s.n}</div></td>
-                      <td className="small muted">{s.note}</td>
+                      <td className="mono nowrap">{s.n > 0 ? <>{pct(s.p_success)}<div className="small muted">[{pct(s.ci[0])}, {pct(s.ci[1])}] n={s.n}</div></> : <span className="muted" title="No witness was found, so there was nothing to sample">not sampled</span>}</td>
+                      <td className="small muted loop-note">{s.note}{s.n_evals !== null && <div className="mono">{s.n_evals.toLocaleString('en-US')} evals{s.wall_seconds !== null ? ` · ${fmt(s.wall_seconds, 4)} s` : ''}</div>}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -264,9 +271,9 @@ function Alternatives({ b, ctx }: { b: DesignBrief; ctx: ProjectCtx }) {
                     <td><b>{a.label}</b> {a.recommended && <span className="pill ok tiny">RECOMMENDED</span>}</td>
                     <td className="mono small">{Object.entries(a.changes).map(([k, v]) => `${k} = ${typeof v === 'number' ? trim(v) : v}`).join(', ') || '—'}</td>
                     <td><span className={`pill ${tone}`}>{shortStatus({ status: a.status as VerdictStatus }).label}</span></td>
-                    <td className="mono">{a.p_success !== null ? pct(a.p_success) : '—'}</td>
-                    <td className="mono nowrap">{a.mass_kg !== null ? `${fmt(a.mass_kg, 5)} kg` : '—'}</td>
-                    <td className="mono">{a.cost_usd !== null ? `$${a.cost_usd.toLocaleString('en-US')}` : 'unpriced'}</td>
+                    <td className="mono nowrap">{a.n ? <>{a.p_success !== null ? pct(a.p_success) : '—'}{a.ci && <div className="small muted">[{pct(a.ci[0])}, {pct(a.ci[1])}] n={a.n}</div>}</> : <span className="muted" title="No witness was found, so there was nothing to sample">not sampled</span>}</td>
+                    <td className="mono nowrap">{a.mass_kg !== null ? `${fmt(a.mass_kg, 5)} kg` : '—'}{a.mass_added_kg !== null && <div className="small muted">+{fmt(a.mass_added_kg, 4)} kg hardware</div>}</td>
+                    <td className="mono">{a.cost_usd !== null ? `$${a.cost_usd.toLocaleString('en-US')}` : `unpriced${a.unpriced_lines ? ` (${a.unpriced_lines} lines)` : ''}`}</td>
                     <td className="small muted">{a.note}</td>
                   </tr>
                 )
@@ -289,7 +296,7 @@ function RisksTests({ b }: { b: DesignBrief }) {
             {b.risks.map((r, i) => (
               <li key={i}>
                 <span className={`pill ${r.severity === 'high' ? 'bad' : r.severity === 'medium' || r.severity === 'med' ? 'warn' : 'muted-pill'}`}>{r.severity.toUpperCase()}</span>
-                <div>{r.text}{r.physical_test && <div className="small muted">Physical test: {r.physical_test}</div>}</div>
+                <div>{r.text}{r.tied_to && <div className="small muted">Tied to: {r.tied_to}</div>}{r.physical_test && <div className="small muted">Physical test: {r.physical_test}</div>}</div>
               </li>
             ))}
           </ul>

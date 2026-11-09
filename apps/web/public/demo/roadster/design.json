@@ -1,0 +1,527 @@
+{
+ "schema_version": "0.1.0",
+ "scenario_id": "roadster",
+ "template": "rocket_car",
+ "base_variant": 5000.0,
+ "headline": "Max thrust per nozzle 5000 N: +81.2 kg of designed hardware (1/7 lines met by catalog parts, 2 custom part types, 4 needing sourcing); p_success 77% -> 55% after adding the designed hardware.",
+ "requirements": [
+  {
+   "id": "nozzle_peak_thrust",
+   "label": "Peak thrust per nozzle",
+   "value": 5242.55,
+   "unit": "N",
+   "derived_from": "max over all 10 nozzles and time steps of throttle x thrust_force_max, witness schedule (traj_5000.json), nominal rollout",
+   "margin_factor": 1.25,
+   "required": 6553.1875,
+   "source": "simulation"
+  },
+  {
+   "id": "bracket_load",
+   "label": "Nozzle bracket design load (peak thrust, margin applied; part adds safety factor 2.0 on yield)",
+   "value": 5242.55,
+   "unit": "N",
+   "derived_from": "peak per-nozzle thrust of the witness schedule (traj_5000.json), nominal rollout",
+   "margin_factor": 1.25,
+   "required": 6553.1875,
+   "source": "simulation"
+  },
+  {
+   "id": "nozzle_peak_flow",
+   "label": "Peak propellant mass flow per nozzle",
+   "value": 7.637018903353484,
+   "unit": "kg/s",
+   "derived_from": "peak thrust / (Isp x g0) with Isp = 70 s (assumption, unverified); witness schedule (traj_5000.json), nominal rollout",
+   "margin_factor": 1.25,
+   "required": 9.546273629191855,
+   "source": "simulation"
+  },
+  {
+   "id": "total_impulse",
+   "label": "Total impulse of the maneuver",
+   "value": 16285.533999999998,
+   "unit": "N*s",
+   "derived_from": "sum over nozzles and time of force x dt, witness schedule (traj_5000.json), nominal rollout",
+   "margin_factor": 1.2,
+   "required": 19542.640799999997,
+   "source": "simulation"
+  },
+  {
+   "id": "propellant_mass",
+   "label": "Propellant mass for the maneuver",
+   "value": 23.723747224004704,
+   "unit": "kg",
+   "derived_from": "total impulse / (Isp x g0), Isp = 70 s (assumption, unverified); witness schedule (traj_5000.json), nominal rollout",
+   "margin_factor": 1.2,
+   "required": 28.468496668805646,
+   "source": "simulation"
+  },
+  {
+   "id": "tank_volume",
+   "label": "Tank water volume at 300 bar fill (usable down to 10 bar)",
+   "value": 80.18022371207441,
+   "unit": "L",
+   "derived_from": "N2 stored isothermally 300->10 bar at 20 C: max(ideal gas 71.18 L, van der Waals 80.18 L) for the propellant above; van der Waals N2 constants a=1.370 L^2*bar/mol^2, b=0.0387 L/mol (textbook, not verified against a cited page); ideal-gas value also computed, the larger required tank volume is used. Storage pressure and minimum supply pressure are defaults",
+   "margin_factor": 1.2,
+   "required": 96.21626845448928,
+   "source": "estimate"
+  },
+  {
+   "id": "tank_working_pressure",
+   "label": "Tank working pressure",
+   "value": 300.0,
+   "unit": "bar",
+   "derived_from": "design default (a rated 300 bar Type-4 cylinder class); not derived from the simulation",
+   "margin_factor": 1.0,
+   "required": 300.0,
+   "source": "default"
+  },
+  {
+   "id": "landing_load_factor",
+   "label": "Peak landing contact load (x vehicle weight)",
+   "value": 40.6286785772135,
+   "unit": "g",
+   "derived_from": "peak contact normal force in the 0.3 s after first touchdown (517961 N, MuJoCo contact solver) / (vehicle mass 1300 kg x g); witness schedule (traj_5000.json), nominal rollout. CAVEAT: the model is a rigid body with no suspension compliance, so this contact load depends on the solver's contact stiffness and is a crude upper-end figure, not a validated landing load",
+   "margin_factor": 1.25,
+   "required": 50.78584822151687,
+   "source": "simulation"
+  }
+ ],
+ "components": [
+  {
+   "id": "nozzle",
+   "role": "thruster",
+   "quantity": 10,
+   "choice": null,
+   "meets": [],
+   "ok": false,
+   "alternatives": [
+    {
+     "name": "2 lbf cold gas thruster 48003040",
+     "why_rejected": "would need 10 units (> 8) to reach the additive requirement"
+    },
+    {
+     "name": "Cold gas thruster 058-118 (0.8 lbf)",
+     "why_rejected": "would need 10 units (> 8) to reach the additive requirement"
+    },
+    {
+     "name": "Low power cold gas thruster V1E10703-01 (5 N)",
+     "why_rejected": "would need 10 units (> 8) to reach the additive requirement"
+    }
+   ],
+   "custom": false,
+   "needs_sourcing": true,
+   "mass_kg_each": 2.0,
+   "mass_source": "estimate",
+   "note": "No cataloged cold-gas thruster reaches 6553 N (largest read: 8.9 N). A nozzle in this thrust class has to be custom-designed or sourced from a propulsion supplier. Mass 2 kg per nozzle is a flagged placeholder estimate, not a sourced figure.",
+   "cad": null
+  },
+  {
+   "id": "valve",
+   "role": "valve",
+   "quantity": 10,
+   "choice": null,
+   "meets": [],
+   "ok": false,
+   "alternatives": [
+    {
+     "name": "ICS solenoid valve SV13-20-C (2-way poppet, NC)",
+     "why_rejected": "gas_mass_flow_kg_s not published in the cited source, cannot show it meets nozzle_peak_flow"
+    }
+   ],
+   "custom": false,
+   "needs_sourcing": true,
+   "mass_kg_each": 1.0,
+   "mass_source": "estimate",
+   "note": "Needs a gas valve passing 9.55 kg/s of N2 per nozzle; the one cataloged valve (Danfoss SV13-20-C) is rated in L/min of hydraulic oil only, so it cannot be shown to meet this. Mass 1 kg per valve is a flagged placeholder estimate.",
+   "cad": null
+  },
+  {
+   "id": "tank",
+   "role": "propellant_tank",
+   "quantity": 11,
+   "choice": {
+    "name": "Type 4 composite cylinder 9.0 L, 300 bar",
+    "vendor": "CTS (Composite Technical Systems)",
+    "specs": {
+     "volume_L": 9.0,
+     "working_pressure_bar": 300.0,
+     "diameter_mm": 186.0,
+     "length_mm": 545.0
+    },
+    "mass_kg": 3.9,
+    "unit_cost_usd": null,
+    "source": "https://www.ctscyl.com/wp-content/uploads/2025/04/Data-sheet-9.0-lt-Industry-Rev.-6.pdf",
+    "verified": true
+   },
+   "meets": [
+    {
+     "requirement_id": "tank_volume",
+     "required": 96.21626845448928,
+     "provided": 99.0,
+     "unit": "L",
+     "margin": 0.02893202563584594,
+     "ok": true
+    },
+    {
+     "requirement_id": "tank_working_pressure",
+     "required": 300.0,
+     "provided": 300.0,
+     "unit": "bar",
+     "margin": 0.0,
+     "ok": true
+    }
+   ],
+   "ok": true,
+   "alternatives": [
+    {
+     "name": "Type 4 composite cylinder 3.0 L, 300 bar",
+     "why_rejected": "would need 33 units (> 12) to reach the additive requirement"
+    },
+    {
+     "name": "HDRX-400 Type IV composite cylinder 40 L, 300 bar",
+     "why_rejected": "meets every requirement but heavier: 3 x 18 kg = 54 kg vs 11 x 3.9 kg = 42.9 kg for the choice"
+    }
+   ],
+   "custom": false,
+   "needs_sourcing": false,
+   "mass_kg_each": 3.9,
+   "mass_source": "catalog",
+   "note": "Selected: lightest catalog entry meeting every requirement. Tank volume is additive: several cylinders are manifolded.",
+   "cad": null
+  },
+  {
+   "id": "regulator",
+   "role": "regulator",
+   "quantity": 1,
+   "choice": null,
+   "meets": [],
+   "ok": false,
+   "alternatives": [],
+   "custom": false,
+   "needs_sourcing": true,
+   "mass_kg_each": 1.5,
+   "mass_source": "estimate",
+   "note": "No regulator with a read datasheet is in the catalog. Mass 1.5 kg is a flagged placeholder estimate.",
+   "cad": null
+  },
+  {
+   "id": "nozzle_bracket",
+   "role": "custom_part",
+   "quantity": 10,
+   "choice": null,
+   "meets": [],
+   "ok": false,
+   "alternatives": [],
+   "custom": true,
+   "needs_sourcing": false,
+   "mass_kg_each": 0.41089400529989867,
+   "mass_source": "cad",
+   "note": "Parametric part: 6061-T6 plate sized by a hand calculation (simplified model, needs FEA).",
+   "cad": {
+    "stl": "cad/nozzle_bracket.stl",
+    "step": "cad/nozzle_bracket.step"
+   }
+  },
+  {
+   "id": "tank_cradle",
+   "role": "custom_part",
+   "quantity": 22,
+   "choice": null,
+   "meets": [],
+   "ok": false,
+   "alternatives": [],
+   "custom": true,
+   "needs_sourcing": false,
+   "mass_kg_each": 0.12169146468893771,
+   "mass_source": "cad",
+   "note": "Parametric part: 6061-T6 plate sized by a hand calculation (simplified model, needs FEA).",
+   "cad": {
+    "stl": "cad/tank_cradle.stl",
+    "step": "cad/tank_cradle.step"
+   }
+  },
+  {
+   "id": "propellant",
+   "role": "propellant",
+   "quantity": 1,
+   "choice": null,
+   "meets": [],
+   "ok": false,
+   "alternatives": [],
+   "custom": false,
+   "needs_sourcing": true,
+   "mass_kg_each": null,
+   "mass_source": "none",
+   "note": "Commodity nitrogen, 28.5 kg = simulated need 23.7 kg x margin 1.2; no cited price. Its mass is NOT added by the closed loop: the vehicle_mass assumption already includes the gas.",
+   "cad": null
+  }
+ ],
+ "custom_parts": [
+  {
+   "id": "nozzle_bracket",
+   "name": "Nozzle mount bracket",
+   "params": {
+    "width_mm": 80.0,
+    "height_mm": 60.0,
+    "depth_mm": 70.0,
+    "bolt_d_mm": 9.0,
+    "n_bolts": 4.0,
+    "plate_t_mm": 15.0
+   },
+   "material": "6061-T6",
+   "mass_kg": 0.41089400529989867,
+   "quantity": 10,
+   "cad_stl": "cad/nozzle_bracket.stl",
+   "cad_step": "cad/nozzle_bracket.step",
+   "load_case": {
+    "force_N": 6553.2,
+    "safety_factor": 2.0
+   },
+   "check": {
+    "method": "cantilever bending of the thrust plate, hand calc: sigma = 6 F H / (W t^2) vs yield/SF",
+    "stress_MPa": 131.064,
+    "allow_MPa": 138.0,
+    "ok": true,
+    "label": "simplified model, needs FEA"
+   },
+   "extra_checks": [
+    {
+     "method": "bolt-hole bearing on the plate, hand calc: F / (n d t) vs yield/SF",
+     "stress_MPa": 12.136,
+     "allow_MPa": 138.0,
+     "ok": true,
+     "label": "simplified model, needs FEA"
+    }
+   ],
+   "note": "Gussets, bolt preload, fatigue and the nozzle's own mounting flange are not modelled."
+  },
+  {
+   "id": "tank_cradle",
+   "name": "Tank cradle saddle (2 per tank)",
+   "params": {
+    "width_mm": 100.0,
+    "length_mm": 226.0,
+    "plate_t_mm": 5.0,
+    "tank_radius_mm": 93.0
+   },
+   "material": "6061-T6",
+   "mass_kg": 0.12169146468893771,
+   "quantity": 22,
+   "cad_stl": "cad/tank_cradle.stl",
+   "cad_step": "cad/tank_cradle.step",
+   "load_case": {
+    "force_N": 971.2,
+    "safety_factor": 2.0,
+    "decel_g": 50.786
+   },
+   "check": {
+    "method": "saddle plate as a simply supported beam, point load at mid span, hand calc",
+    "stress_MPa": 131.691,
+    "allow_MPa": 138.0,
+    "ok": true,
+    "label": "simplified model, needs FEA"
+   },
+   "extra_checks": [],
+   "note": "Strap tension, bolt shear and cradle-to-frame load path are not modelled; load = measured peak landing deceleration x tank mass."
+  }
+ ],
+ "closed_loop": [
+  {
+   "iteration": 0,
+   "mass_kg": 1300.0,
+   "status": "FEASIBLE_FOUND",
+   "p_success": 0.766,
+   "ci": [
+    0.7269485494684876,
+    0.8009953014059666
+   ],
+   "n": 500,
+   "note": "before design (the recorded run this design is derived from)",
+   "n_evals": 51449,
+   "wall_seconds": 112.2,
+   "assumption_overrides": {
+    "thruster_force_max": 5000.0
+   }
+  },
+  {
+   "iteration": 1,
+   "mass_kg": 1381.1861522761556,
+   "status": "FEASIBLE_FOUND",
+   "p_success": 0.548,
+   "ci": [
+    0.50417540112498,
+    0.591092662190711
+   ],
+   "n": 500,
+   "note": "vehicle mass assumption (incl. wheels, occupant, gas): base 1300 kg + designed hardware 81.19 kg; cache_hit=True; redesign from this witness would weigh 85.48 kg (0.31 % of vehicle mass change) | converged after 1 iteration(s): re-derived design changes mass by 0.31 % < 1 %",
+   "n_evals": 49317,
+   "wall_seconds": 228.531,
+   "assumption_overrides": {
+    "thruster_force_max": 5000.0,
+    "vehicle_mass": 1381.1861522761556
+   }
+  }
+ ],
+ "alternatives": [
+  {
+   "id": "A",
+   "label": "10 x 4 kN nozzles",
+   "changes": {
+    "thruster_force_max": 4000.0
+   },
+   "status": "FEASIBLE_FOUND",
+   "p_success": 0.414,
+   "ci": [
+    0.37164260890980144,
+    0.45766877764958563
+   ],
+   "n": 500,
+   "mass_kg": 1384.9367713786205,
+   "mass_added_kg": 84.93677137862045,
+   "cost_usd": null,
+   "unpriced_lines": 7,
+   "recommended": false,
+   "note": "recorded variant without hardware mass: p_success 43%; with designed hardware (84.9 kg added) re-run: FEASIBLE_FOUND, p_success 41.4%"
+  },
+  {
+   "id": "B",
+   "label": "10 x 5 kN nozzles",
+   "changes": {
+    "thruster_force_max": 5000.0
+   },
+   "status": "FEASIBLE_FOUND",
+   "p_success": 0.548,
+   "ci": [
+    0.50417540112498,
+    0.591092662190711
+   ],
+   "n": 500,
+   "mass_kg": 1381.1861522761556,
+   "mass_added_kg": 81.18615227615562,
+   "cost_usd": null,
+   "unpriced_lines": 7,
+   "recommended": false,
+   "note": "recorded variant without hardware mass: p_success 77%; with designed hardware (81.2 kg added) re-run: FEASIBLE_FOUND, p_success 54.8%"
+  },
+  {
+   "id": "C",
+   "label": "10 x 6 kN nozzles",
+   "changes": {
+    "thruster_force_max": 6000.0
+   },
+   "status": "FEASIBLE_FOUND",
+   "p_success": 0.616,
+   "ci": [
+    0.5726388276307122,
+    0.6575923253822078
+   ],
+   "n": 500,
+   "mass_kg": 1386.2057137512938,
+   "mass_added_kg": 86.20571375129384,
+   "cost_usd": null,
+   "unpriced_lines": 7,
+   "recommended": true,
+   "note": "recorded variant without hardware mass: p_success 83%; with designed hardware (86.2 kg added) re-run: FEASIBLE_FOUND, p_success 61.6%; recommended: highest p_success, then lowest added mass"
+  }
+ ],
+ "risks": [
+  {
+   "text": "Per-nozzle thrust of the real hardware is unknown; the whole design scales with this swept assumption.",
+   "severity": "high",
+   "physical_test": "Static thrust-stand test of one candidate nozzle + valve at the working pressure.",
+   "tied_to": "thruster_force_max (no official figure)"
+  },
+  {
+   "text": "Blow-down cooling and pressure droop are not modelled: thrust and Isp fall as the tank empties and the gas cools.",
+   "severity": "high",
+   "physical_test": "Instrumented full-tank blow-down test measuring thrust vs time.",
+   "tied_to": "Thermal/blow-down effects not modelled; constant-Isp thrust"
+  },
+  {
+   "text": "Isp (70 s) is an unverified assumption and sets the propellant and tank size.",
+   "severity": "med",
+   "physical_test": "Measure Isp (thrust / mass flow) on the thrust stand.",
+   "tied_to": "isp (unverified)"
+  },
+  {
+   "text": "The landing contact load comes from a rigid-body contact model without suspension compliance (tens of g); bracket and cradle strength were checked only with hand calculations.",
+   "severity": "high",
+   "physical_test": "FEA of brackets/cradle + drop test of the suspension and mounts at the measured peak contact load.",
+   "tied_to": "Structural strength not analysed (no FEA)"
+  },
+  {
+   "text": "Aerodynamic pitching moments in flight are not simulated.",
+   "severity": "med",
+   "physical_test": "Wind-tunnel or coast-down test with a scale model / instrumented run.",
+   "tied_to": "Aerodynamics not simulated"
+  },
+  {
+   "text": "Real sensing/latency/valve response is not modelled; the controller is open-loop timing windows.",
+   "severity": "med",
+   "physical_test": "Hardware-in-the-loop test of the valve timing and IMU latency.",
+   "tied_to": "Perfect state feedback assumed"
+  },
+  {
+   "text": "Placeholder masses (nozzles, valves, regulator) are not sourced; the closed loop uses them.",
+   "severity": "med",
+   "physical_test": "Weigh candidate parts and re-run the loop with measured masses.",
+   "tied_to": "placeholder masses flagged estimate"
+  }
+ ],
+ "next_tests": [
+  {
+   "name": "Static nozzle thrust-stand test",
+   "purpose": "Confirm per-nozzle thrust, mass flow and Isp at working pressure",
+   "cost": null,
+   "source": "static_fire_test: no sourced per-test cost"
+  },
+  {
+   "name": "Tank blow-down test",
+   "purpose": "Measure pressure/temperature/thrust decay vs time for the chosen cylinder set",
+   "cost": null,
+   "source": ""
+  },
+  {
+   "name": "Bracket and cradle FEA + proof load",
+   "purpose": "Replace the hand-calc checks with a load test at the measured landing load",
+   "cost": null,
+   "source": ""
+  },
+  {
+   "name": "Suspension drop test",
+   "purpose": "Validate the simulated touchdown contact load",
+   "cost": null,
+   "source": "drop_test_rig_run: no sourced per-test cost"
+  }
+ ],
+ "totals": {
+  "mass_added_kg": 81.18615227615562,
+  "mass_estimated_kg": 31.5,
+  "cost_priced_usd": null,
+  "unpriced_lines": 7
+ },
+ "labels": [
+  "simplified model, needs precise validation",
+  "Aerodynamics not simulated (simplified drag/momentum model only) — simplified model, needs precise validation.",
+  "Thermal effects not modeled — simplified model, needs precise validation.",
+  "Structural strength not analyzed (no FEA) — simplified model, needs precise validation.",
+  "Propulsion modeled as ideal constant-Isp thrust — simplified model, needs precise validation.",
+  "Perfect state feedback assumed; real sensing/latency not modeled — simplified model, needs precise validation.",
+  "simplified model, needs FEA",
+  "The template's BOM says nozzle/tank mass is nominally inside the 1300 kg vehicle_mass; the closed loop conservatively adds the designed hardware ON TOP of it (upper bound on the mass effect). Nozzle count (10) is fixed by the template, so alternatives vary thrust per nozzle.",
+  "Aerodynamics not simulated; thermal/blow-down not modelled; ideal constant-Isp thrust (see verdict labels).",
+  "Closed-loop re-runs use the recorded bundle's search/Monte-Carlo budget and seed; each re-run is one seeded sample (finite-budget search noise applies)."
+ ],
+ "reproducibility": {
+  "seed": 20260001,
+  "engine": "kinetra_engine 0.1.0",
+  "mujoco": "4.0.0",
+  "generated_at": "2026-11-09T13:40:02+00:00",
+  "budget": {
+   "cma_evals": 15000.0,
+   "mc_samples": 500.0,
+   "max_seconds": 400.0
+  },
+  "base_spec_hash": "20f264bac9975b4a3d88dfecfe12b6053dd87631fa7abd9240e5f2ebf2c12987"
+ }
+}

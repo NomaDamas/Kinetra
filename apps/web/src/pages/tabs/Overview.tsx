@@ -20,7 +20,7 @@ export function OverviewTab({ ctx }: { ctx: ProjectCtx }) {
   const f = v.feasibility
   const sampled = f.n_samples > 0
   const bc = v.binding_constraint
-  const needsAttention = brief ? brief.components.filter((c) => ['fail', 'sourcing'].includes(componentState(c, brief))) : []
+  const needsAttention = brief ? brief.components.filter((c) => ['fail', 'sourcing'].includes(componentState(c))) : []
 
   return (
     <div className="stack">
@@ -49,9 +49,9 @@ export function OverviewTab({ ctx }: { ctx: ProjectCtx }) {
           tone={bc && bc.margin < 0 ? 'bad' : undefined}
         />
         <Stat
-          label={`Mass added by the design${design.status === 'ok' && design.data.origin === 'fixture' ? ' · DEV FIXTURE' : ''}`}
+          label="Mass added by the design"
           value={snap?.massAddedKg != null ? `${fmt(snap.massAddedKg, 4)} kg` : '—'}
-          sub={brief ? (snap?.lastLoop ? `closed loop: p_success ${pct(snap.lastLoop.p_success)} after ${snap.loopIterations} iterations` : 'no closed-loop run') : design.status === 'loading' ? 'loading design…' : 'no design stage yet'}
+          sub={brief ? (snap?.lastLoop ? `closed loop: ${snap.lastLoop.n > 0 ? `p_success ${pct(snap.lastLoop.p_success)}` : 'no witness found'} after ${snap.loopIterations} iterations` : 'no closed-loop run') : design.status === 'loading' ? 'loading design…' : 'no design stage yet'}
         />
         <Stat
           label="Components"
@@ -95,7 +95,7 @@ export function OverviewTab({ ctx }: { ctx: ProjectCtx }) {
           <Panel title="Needs attention before you build" kr="주의" right={<a className="small" href={ctx.hrefTo('design')}>Open Design →</a>}>
             <ul className="plain">
               {needsAttention.map((c) => (
-                <li key={c.id}><b>{c.role.replace(/_/g, ' ')}</b> <span className="muted">· {c.id}</span>: {componentState(c, brief) === 'fail' ? 'chosen part misses a requirement' : 'no catalog part and no custom design yet: needs sourcing'}</li>
+                <li key={c.id}><b>{c.role.replace(/_/g, ' ')}</b> <span className="muted">· {c.id}</span>: {componentState(c) === 'fail' ? 'chosen part misses a requirement' : 'no catalog part and no custom design yet: needs sourcing'}</li>
               ))}
             </ul>
           </Panel>

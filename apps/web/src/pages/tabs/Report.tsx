@@ -45,7 +45,6 @@ export function ReportTab({ ctx }: { ctx: ProjectCtx }) {
     )
   return (
     <div className="stack">
-      {bundle.origin === 'fixture' && <div className="banner warn"><b>DEV FIXTURE</b> · sample files from <code>apps/web/fixtures/design</code>, not engine output.</div>}
       <Downloads bundle={bundle} />
       <Panel title="Design brief" kr="설계 브리프" right={<span className="pill muted-pill mono">export/design-brief.md</span>}>
         {md.status === 'loading' && <Loading what="design-brief.md" />}

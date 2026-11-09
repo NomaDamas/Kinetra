@@ -24,10 +24,10 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(ROOT / "packages" / "core" / "src"))
 
-from physlab_core.schemas import MODELS, SCHEMA_VERSION  # noqa: E402
+from physlab_core.schemas import EXTRA_MODELS, MODELS, SCHEMA_VERSION  # noqa: E402
 
 OUT = ROOT / "schemas"
-ROOT_NAMES = {"spec_sheet": "SpecSheet", "trajectory": "Trajectory", "verdict": "Verdict"}
+ROOT_NAMES = {"spec_sheet": "SpecSheet", "trajectory": "Trajectory", "verdict": "Verdict", "design_brief": "DesignBrief"}
 
 
 # ----------------------------- JSON Schema -> TS ----------------------------- #
@@ -124,7 +124,7 @@ def _decl(name: str, d: dict) -> str:
 def main() -> None:
     OUT.mkdir(exist_ok=True)
     ser: dict[str, dict] = {}
-    for key, model in MODELS.items():
+    for key, model in {**MODELS, **EXTRA_MODELS}.items():
         val = model.model_json_schema(mode="validation")
         val["$schema"] = "https://json-schema.org/draft/2020-12/schema"
         (OUT / f"{key}.schema.json").write_text(json.dumps(val, indent=2, ensure_ascii=False) + "\n")

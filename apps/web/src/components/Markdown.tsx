@@ -4,7 +4,7 @@ import { Fragment, type ReactNode } from 'react'
 
 function inline(text: string, keyBase: string): ReactNode[] {
   const out: ReactNode[] = []
-  const re = /(\*\*[^*]+\*\*|`[^`]+`|\[[^\]]+\]\([^)]+\)|\*[^*\s][^*]*\*)/g
+  const re = /(\*\*[^*]+\*\*|`[^`]+`|\[[^\]]+\]\([^)]+\)|\*[^*\s][^*]*\*|(?<![A-Za-z0-9_])_[^_\s].*?_(?![A-Za-z0-9_]))/g
   let last = 0
   let m: RegExpExecArray | null
   let i = 0

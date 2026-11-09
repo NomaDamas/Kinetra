@@ -80,7 +80,7 @@ None of these is a bad product; they answer different questions. Descriptions ar
 - **Two verified templates only** (rocket car, humanoid jump). A drone catalog exists but the template is not shipped.
 - **Not judged:** CFD/aero, thermal, FEA, sensing/latency, combustion, safety/regulatory ([`judgment-spec.md`](judgment-spec.md) §C). Custom-part checks are hand calculations labelled "needs FEA".
 - **A brief does not replace testing.** It decides *which* physical test to run first and with which parts.
-- **Fragile results exist and are shown:** the shipped roadster "fix" at 3 kN verifies at only 3.6 % success (n = 500); `p_success` is not monotone in thrust (5 kN 13.4 % < 4 kN 46.6 %), which we did not tune away.
+- **Fragile results exist and are shown:** after adding its own designed hardware (+81 kg), the roadster's 5 kN design drops from 76.6 % to 54.8 % success (n = 500); the current roadster bundle does not sample per-nozzle thrust error, and with ±10 % thrust noise the 5 kN figure was ~13 %. The humanoid design loses its witness once its actuators' mass is added (`NOT_FOUND_IN_BUDGET`, weak).
 
 ## 7. How we would prove it next
 
@@ -115,7 +115,7 @@ Success criterion decided in advance: at least 3 of 5 describe a specific, recen
 
 We lost. There was no judge feedback in this repo, so what follows is our own reading. `[INFERENCE]` throughout.
 
-- **We showed a simulation, not a decision a customer pays for.** The demo was a slider and a 3D replay of a car flipping. Interesting, but the question a buyer asks is "what do I do on Monday?" and the product ended at a verdict.
+- **We showed a simulation, not a decision a customer pays for.** The demo was a slider and a 3D replay of a car flipping. Interesting, but the question a buyer asks is "what do I do on Monday?" and the product ended at a verdict. (Numbers in this section are from the hackathon-era bundle.)
 - **The best-looking number was weak.** The shipped roadster "fix" was a verified witness with `p_success` 3.6 % (95 % interval shown). We labelled it fragile, which is honest, but a judge sees "the fix works 3.6 % of the time". A verdict without a way forward reads as a failure.
 - **Non-monotone results looked like a bug.** `p_success` 5 kN (13.4 %) < 4 kN (46.6 %) is search noise at a small budget. We disclosed it instead of tuning it away; the cost is that it is unexplained on screen.
 - **Two templates is a demo, not coverage.** We never said clearly who is allowed to type an idea and what happens when theirs does not match a template.

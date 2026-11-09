@@ -1,0 +1,904 @@
+{
+  "$defs": {
+    "DesignAlternative": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "label": {
+          "title": "Label",
+          "type": "string"
+        },
+        "changes": {
+          "additionalProperties": {
+            "type": "number"
+          },
+          "title": "Changes",
+          "type": "object"
+        },
+        "status": {
+          "$ref": "#/$defs/VerdictStatus"
+        },
+        "p_success": {
+          "maximum": 1,
+          "minimum": 0,
+          "title": "P Success",
+          "type": "number"
+        },
+        "ci": {
+          "maxItems": 2,
+          "minItems": 2,
+          "prefixItems": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            }
+          ],
+          "title": "Ci",
+          "type": "array"
+        },
+        "n": {
+          "minimum": 0,
+          "title": "N",
+          "type": "integer"
+        },
+        "mass_kg": {
+          "exclusiveMinimum": 0,
+          "title": "Mass Kg",
+          "type": "number"
+        },
+        "mass_added_kg": {
+          "minimum": 0,
+          "title": "Mass Added Kg",
+          "type": "number"
+        },
+        "cost_usd": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Cost Usd"
+        },
+        "unpriced_lines": {
+          "minimum": 0,
+          "title": "Unpriced Lines",
+          "type": "integer"
+        },
+        "recommended": {
+          "default": false,
+          "title": "Recommended",
+          "type": "boolean"
+        },
+        "note": {
+          "default": "",
+          "title": "Note",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "label",
+        "changes",
+        "status",
+        "p_success",
+        "ci",
+        "n",
+        "mass_kg",
+        "mass_added_kg",
+        "unpriced_lines"
+      ],
+      "title": "DesignAlternative",
+      "type": "object"
+    },
+    "DesignCadRef": {
+      "additionalProperties": false,
+      "properties": {
+        "stl": {
+          "title": "Stl",
+          "type": "string"
+        },
+        "step": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Step"
+        }
+      },
+      "required": [
+        "stl"
+      ],
+      "title": "DesignCadRef",
+      "type": "object"
+    },
+    "DesignCheck": {
+      "additionalProperties": false,
+      "properties": {
+        "method": {
+          "title": "Method",
+          "type": "string"
+        },
+        "stress_MPa": {
+          "title": "Stress Mpa",
+          "type": "number"
+        },
+        "allow_MPa": {
+          "title": "Allow Mpa",
+          "type": "number"
+        },
+        "ok": {
+          "title": "Ok",
+          "type": "boolean"
+        },
+        "label": {
+          "default": "simplified model, needs FEA",
+          "title": "Label",
+          "type": "string"
+        }
+      },
+      "required": [
+        "method",
+        "stress_MPa",
+        "allow_MPa",
+        "ok"
+      ],
+      "title": "DesignCheck",
+      "type": "object"
+    },
+    "DesignChoice": {
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "vendor": {
+          "default": "",
+          "title": "Vendor",
+          "type": "string"
+        },
+        "specs": {
+          "additionalProperties": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "title": "Specs",
+          "type": "object"
+        },
+        "mass_kg": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Mass Kg"
+        },
+        "unit_cost_usd": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Only when a cited price exists.",
+          "title": "Unit Cost Usd"
+        },
+        "source": {
+          "default": "",
+          "title": "Source",
+          "type": "string"
+        },
+        "verified": {
+          "description": "True iff the spec figures were read in the cited source.",
+          "title": "Verified",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "name",
+        "verified"
+      ],
+      "title": "DesignChoice",
+      "type": "object"
+    },
+    "DesignClosedLoopIter": {
+      "additionalProperties": false,
+      "properties": {
+        "iteration": {
+          "minimum": 0,
+          "title": "Iteration",
+          "type": "integer"
+        },
+        "mass_kg": {
+          "description": "Mass assumption used for this re-run.",
+          "exclusiveMinimum": 0,
+          "title": "Mass Kg",
+          "type": "number"
+        },
+        "status": {
+          "$ref": "#/$defs/VerdictStatus"
+        },
+        "p_success": {
+          "maximum": 1,
+          "minimum": 0,
+          "title": "P Success",
+          "type": "number"
+        },
+        "ci": {
+          "maxItems": 2,
+          "minItems": 2,
+          "prefixItems": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            }
+          ],
+          "title": "Ci",
+          "type": "array"
+        },
+        "n": {
+          "minimum": 0,
+          "title": "N",
+          "type": "integer"
+        },
+        "note": {
+          "default": "",
+          "title": "Note",
+          "type": "string"
+        },
+        "n_evals": {
+          "default": 0,
+          "minimum": 0,
+          "title": "N Evals",
+          "type": "integer"
+        },
+        "wall_seconds": {
+          "default": 0.0,
+          "minimum": 0,
+          "title": "Wall Seconds",
+          "type": "number"
+        },
+        "assumption_overrides": {
+          "additionalProperties": {
+            "type": "number"
+          },
+          "title": "Assumption Overrides",
+          "type": "object"
+        }
+      },
+      "required": [
+        "iteration",
+        "mass_kg",
+        "status",
+        "p_success",
+        "ci",
+        "n"
+      ],
+      "title": "DesignClosedLoopIter",
+      "type": "object"
+    },
+    "DesignComponent": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "role": {
+          "title": "Role",
+          "type": "string"
+        },
+        "quantity": {
+          "minimum": 1,
+          "title": "Quantity",
+          "type": "integer"
+        },
+        "choice": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/DesignChoice"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "null when no catalog entry meets every requirement."
+        },
+        "meets": {
+          "items": {
+            "$ref": "#/$defs/DesignMeet"
+          },
+          "title": "Meets",
+          "type": "array"
+        },
+        "ok": {
+          "description": "True iff a catalog choice exists and every meets[] row is ok.",
+          "title": "Ok",
+          "type": "boolean"
+        },
+        "alternatives": {
+          "items": {
+            "$ref": "#/$defs/DesignRejected"
+          },
+          "title": "Alternatives",
+          "type": "array"
+        },
+        "custom": {
+          "default": false,
+          "title": "Custom",
+          "type": "boolean"
+        },
+        "needs_sourcing": {
+          "default": false,
+          "title": "Needs Sourcing",
+          "type": "boolean"
+        },
+        "mass_kg_each": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Mass Kg Each"
+        },
+        "mass_source": {
+          "default": "",
+          "description": "catalog | cad | estimate | none",
+          "title": "Mass Source",
+          "type": "string"
+        },
+        "note": {
+          "default": "",
+          "title": "Note",
+          "type": "string"
+        },
+        "cad": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/DesignCadRef"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "id",
+        "role",
+        "quantity",
+        "ok"
+      ],
+      "title": "DesignComponent",
+      "type": "object"
+    },
+    "DesignCustomPart": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "params": {
+          "additionalProperties": {
+            "type": "number"
+          },
+          "title": "Params",
+          "type": "object"
+        },
+        "material": {
+          "title": "Material",
+          "type": "string"
+        },
+        "mass_kg": {
+          "minimum": 0,
+          "title": "Mass Kg",
+          "type": "number"
+        },
+        "quantity": {
+          "default": 1,
+          "minimum": 1,
+          "title": "Quantity",
+          "type": "integer"
+        },
+        "cad_stl": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Cad Stl"
+        },
+        "cad_step": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "null when no STEP-capable CAD kernel was available.",
+          "title": "Cad Step"
+        },
+        "load_case": {
+          "additionalProperties": {
+            "type": "number"
+          },
+          "title": "Load Case",
+          "type": "object"
+        },
+        "check": {
+          "$ref": "#/$defs/DesignCheck"
+        },
+        "extra_checks": {
+          "items": {
+            "$ref": "#/$defs/DesignCheck"
+          },
+          "title": "Extra Checks",
+          "type": "array"
+        },
+        "note": {
+          "default": "",
+          "title": "Note",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "params",
+        "material",
+        "mass_kg",
+        "load_case",
+        "check"
+      ],
+      "title": "DesignCustomPart",
+      "type": "object"
+    },
+    "DesignMeet": {
+      "additionalProperties": false,
+      "properties": {
+        "requirement_id": {
+          "title": "Requirement Id",
+          "type": "string"
+        },
+        "required": {
+          "title": "Required",
+          "type": "number"
+        },
+        "provided": {
+          "title": "Provided",
+          "type": "number"
+        },
+        "unit": {
+          "default": "",
+          "title": "Unit",
+          "type": "string"
+        },
+        "margin": {
+          "description": "(provided - required) / required",
+          "title": "Margin",
+          "type": "number"
+        },
+        "ok": {
+          "title": "Ok",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "requirement_id",
+        "required",
+        "provided",
+        "margin",
+        "ok"
+      ],
+      "title": "DesignMeet",
+      "type": "object"
+    },
+    "DesignNextTest": {
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "purpose": {
+          "title": "Purpose",
+          "type": "string"
+        },
+        "cost": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Cost"
+        },
+        "source": {
+          "default": "",
+          "title": "Source",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "purpose"
+      ],
+      "title": "DesignNextTest",
+      "type": "object"
+    },
+    "DesignRejected": {
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "why_rejected": {
+          "title": "Why Rejected",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "why_rejected"
+      ],
+      "title": "DesignRejected",
+      "type": "object"
+    },
+    "DesignReproducibility": {
+      "additionalProperties": false,
+      "properties": {
+        "seed": {
+          "title": "Seed",
+          "type": "integer"
+        },
+        "engine": {
+          "title": "Engine",
+          "type": "string"
+        },
+        "mujoco": {
+          "title": "Mujoco",
+          "type": "string"
+        },
+        "generated_at": {
+          "title": "Generated At",
+          "type": "string"
+        },
+        "budget": {
+          "additionalProperties": {
+            "type": "number"
+          },
+          "title": "Budget",
+          "type": "object"
+        },
+        "base_spec_hash": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Base Spec Hash"
+        }
+      },
+      "required": [
+        "seed",
+        "engine",
+        "mujoco",
+        "generated_at"
+      ],
+      "title": "DesignReproducibility",
+      "type": "object"
+    },
+    "DesignRequirement": {
+      "additionalProperties": false,
+      "description": "A number read from a real rollout / Monte-Carlo of the base variant, with a stated margin.",
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "label": {
+          "title": "Label",
+          "type": "string"
+        },
+        "value": {
+          "description": "Measured on the base variant's rollout (or computed from measured quantities).",
+          "title": "Value",
+          "type": "number"
+        },
+        "unit": {
+          "default": "",
+          "title": "Unit",
+          "type": "string"
+        },
+        "derived_from": {
+          "description": "Which rollout / formula produced `value`.",
+          "title": "Derived From",
+          "type": "string"
+        },
+        "margin_factor": {
+          "minimum": 1.0,
+          "title": "Margin Factor",
+          "type": "number"
+        },
+        "required": {
+          "description": "value x margin_factor",
+          "title": "Required",
+          "type": "number"
+        },
+        "source": {
+          "default": "simulation",
+          "enum": [
+            "simulation",
+            "catalog",
+            "default",
+            "estimate",
+            "unverified"
+          ],
+          "title": "Source",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "label",
+        "value",
+        "derived_from",
+        "margin_factor",
+        "required"
+      ],
+      "title": "DesignRequirement",
+      "type": "object"
+    },
+    "DesignRisk": {
+      "additionalProperties": false,
+      "properties": {
+        "text": {
+          "title": "Text",
+          "type": "string"
+        },
+        "severity": {
+          "enum": [
+            "low",
+            "med",
+            "high"
+          ],
+          "title": "Severity",
+          "type": "string"
+        },
+        "physical_test": {
+          "title": "Physical Test",
+          "type": "string"
+        },
+        "tied_to": {
+          "default": "",
+          "description": "The unmodelled effect or low-confidence assumption this risk comes from.",
+          "title": "Tied To",
+          "type": "string"
+        }
+      },
+      "required": [
+        "text",
+        "severity",
+        "physical_test"
+      ],
+      "title": "DesignRisk",
+      "type": "object"
+    },
+    "DesignTotals": {
+      "additionalProperties": false,
+      "properties": {
+        "mass_added_kg": {
+          "minimum": 0,
+          "title": "Mass Added Kg",
+          "type": "number"
+        },
+        "mass_estimated_kg": {
+          "description": "Part of mass_added_kg that is an unsourced placeholder estimate.",
+          "minimum": 0,
+          "title": "Mass Estimated Kg",
+          "type": "number"
+        },
+        "cost_priced_usd": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Sum of CITED unit costs only; null if none.",
+          "title": "Cost Priced Usd"
+        },
+        "unpriced_lines": {
+          "minimum": 0,
+          "title": "Unpriced Lines",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "mass_added_kg",
+        "mass_estimated_kg",
+        "unpriced_lines"
+      ],
+      "title": "DesignTotals",
+      "type": "object"
+    },
+    "VerdictStatus": {
+      "enum": [
+        "FEASIBLE_FOUND",
+        "INFEASIBLE_NECESSARY_CONDITION",
+        "NOT_FOUND_IN_BUDGET",
+        "MODEL_INVALID"
+      ],
+      "title": "VerdictStatus",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "default": "0.1.0",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "scenario_id": {
+      "title": "Scenario Id",
+      "type": "string"
+    },
+    "template": {
+      "title": "Template",
+      "type": "string"
+    },
+    "base_variant": {
+      "description": "Control value of the FEASIBLE_FOUND variant the design is derived from.",
+      "title": "Base Variant",
+      "type": "number"
+    },
+    "headline": {
+      "title": "Headline",
+      "type": "string"
+    },
+    "requirements": {
+      "items": {
+        "$ref": "#/$defs/DesignRequirement"
+      },
+      "title": "Requirements",
+      "type": "array"
+    },
+    "components": {
+      "items": {
+        "$ref": "#/$defs/DesignComponent"
+      },
+      "title": "Components",
+      "type": "array"
+    },
+    "custom_parts": {
+      "items": {
+        "$ref": "#/$defs/DesignCustomPart"
+      },
+      "title": "Custom Parts",
+      "type": "array"
+    },
+    "closed_loop": {
+      "items": {
+        "$ref": "#/$defs/DesignClosedLoopIter"
+      },
+      "title": "Closed Loop",
+      "type": "array"
+    },
+    "alternatives": {
+      "items": {
+        "$ref": "#/$defs/DesignAlternative"
+      },
+      "title": "Alternatives",
+      "type": "array"
+    },
+    "risks": {
+      "items": {
+        "$ref": "#/$defs/DesignRisk"
+      },
+      "title": "Risks",
+      "type": "array"
+    },
+    "next_tests": {
+      "items": {
+        "$ref": "#/$defs/DesignNextTest"
+      },
+      "title": "Next Tests",
+      "type": "array"
+    },
+    "totals": {
+      "$ref": "#/$defs/DesignTotals"
+    },
+    "labels": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Labels",
+      "type": "array"
+    },
+    "reproducibility": {
+      "$ref": "#/$defs/DesignReproducibility"
+    }
+  },
+  "required": [
+    "scenario_id",
+    "template",
+    "base_variant",
+    "headline",
+    "requirements",
+    "components",
+    "closed_loop",
+    "totals",
+    "reproducibility"
+  ],
+  "title": "DesignBrief",
+  "type": "object",
+  "$schema": "https://json-schema.org/draft/2020-12/schema"
+}

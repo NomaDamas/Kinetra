@@ -37,3 +37,12 @@ def catalog_meta(template: str) -> dict[str, Any]:
 @lru_cache(maxsize=None)
 def costs() -> dict[str, Any]:
     return json.loads((_DIR / "costs.json").read_text())
+
+
+@lru_cache(maxsize=None)
+def components(template: str) -> dict[str, Any]:
+    """Design-stage component catalog (``components_<template>.json``): ``categories`` -> list of entries, plus ``materials``."""
+    p = _DIR / f"components_{template}.json"
+    if not p.exists():
+        return {"template": template, "catalog_version": None, "kind": "component_catalog", "categories": {}, "materials": {}}
+    return json.loads(p.read_text())

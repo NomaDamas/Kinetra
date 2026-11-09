@@ -4,6 +4,7 @@
 
 POST /run       {idea, overrides?, template_id?, seed?, max_evals?, max_seconds?, mc_samples?, fix?}  -> run the pipeline live
 GET  /scenarios                                                                                      -> prebuilt demo index
+POST /design    {idea?, scenario?, template_id?, overrides?, seed?, max_evals?, max_seconds?, mc_samples?, closed_loop_iters?}  -> DesignBrief (small budget, no CAD files)
 POST /simulate  {template, params|variant, overrides, seed, rescale_throttle?, ...}  -> ONE real MuJoCo rollout (unpaced), result + Trajectory
 WS   /ws/sim    start|stop|restart messages -> real MuJoCo stepping streamed as frames (+ live CMA-ES search); see docs/live-mode.md
 """
@@ -66,6 +67,47 @@ def run(req: RunRequest) -> dict:
     d = r.to_dict()
     d["headline"] = pipeline.headline(r.verdict)
     return d
+
+
+class DesignRequest(BaseModel):
+    scenario: str | None = None            # demo scenario id ('roadster', 'humanoid'): supplies idea + template + the base control value
+    idea: str | None = None
+    template_id: str | None = None
+    overrides: dict[str, float] = Field(default_factory=dict)
+    seed: int | None = None
+    max_evals: int = Field(default=3000, ge=100, le=100000)
+    max_seconds: float = Field(default=60.0, gt=0, le=600)
+    mc_samples: int = Field(default=100, ge=10, le=2000)
+    closed_loop_iters: int = Field(default=1, ge=1, le=3)
+
+
+@app.post("/design")
+def design(req: DesignRequest) -> dict:
+    """Re-run the design stage for a scenario (or free idea) with overrides at a small budget. 422 if the base run finds no witness."""
+    from .design import service
+    idea, tid, seed = req.idea, req.template_id, req.seed
+    if req.scenario:
+        p = DEMO / req.scenario / "scenario.json"
+        if not p.exists():
+            raise HTTPException(404, f"unknown scenario {req.scenario!r}")
+        sc = json.loads(p.read_text())
+        idea, tid = idea or sc["idea"], tid or sc["template"]
+        seed = seed if seed is not None else sc.get("build", {}).get("seed")
+    if not idea:
+        raise HTTPException(400, "need idea or scenario")
+    try:
+        tid = tid or pipeline.route_idea(idea)["template_id"]
+    except pipeline.UnsupportedIdea as e:
+        raise HTTPException(422, str(e))
+    if tid not in service.TEMPLATES:
+        raise HTTPException(400, f"no design stage for template {tid!r}")
+    try:
+        return service.design_for(idea, tid, dict(req.overrides), seed, Budget(max_evals=req.max_evals, max_seconds=req.max_seconds, mc_samples=req.mc_samples),
+                                  scenario_id=req.scenario or "live", max_iter=req.closed_loop_iters)
+    except service.NoWitness as e:
+        raise HTTPException(422, str(e))
+    except (KeyError, ValueError) as e:
+        raise HTTPException(400, str(e))
 
 
 # --------------------------------------------------------------------------- live simulation

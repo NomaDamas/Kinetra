@@ -1,0 +1,58 @@
+{
+  "template": "rocket_car",
+  "catalog_version": "2026-11-09",
+  "kind": "component_catalog",
+  "note": "Purchasable / datasheet components for the cold-gas rocket-car design stage. verified=true: every figure in 'specs' and mass_kg was read in the cited page/PDF by the catalog author on checked_on. null = not published in the source read. unit_cost_usd is null everywhere: no cited price was found. NOT live web research.",
+  "categories": {
+    "thruster": [
+      {"id": "vacco_48003040", "name": "2 lbf cold gas thruster 48003040", "vendor": "VACCO Industries",
+       "specs": {"thrust_N": 8.896, "inlet_pressure_bar": 17.93, "mass_flow_kg_s": 0.01211, "operating_cycles": 150000},
+       "mass_kg": 0.3765, "unit_cost_usd": null,
+       "source_url": "https://www.vacco.com/images/uploads/pdfs/cold_gas_thrusters.pdf", "verified": true, "checked_on": "2026-11-09",
+       "notes": "Datasheet: 2.0 lbf at 260 psia GN2, 0.0267 lbm/s, 0.83 lbm (converted to SI by the catalog author). Flown on the Space Shuttle MMU."},
+      {"id": "moog_058-118", "name": "Cold gas thruster 058-118 (0.8 lbf)", "vendor": "Moog",
+       "specs": {"thrust_N": 3.6, "inlet_pressure_bar": 15.7},
+       "mass_kg": 0.023, "unit_cost_usd": null,
+       "source_url": "https://www.moog.com/content/dam/moog/literature/sdg/space/propulsion/moog-coldgasthrusters-datasheet.pdf", "verified": true, "checked_on": "2026-11-09",
+       "notes": "Datasheet column 'Model No. 058-118': 3.6 N at 15.7 bar GN2, 23 g. Flown on SAFER."},
+      {"id": "vacco_v1e10703-01", "name": "Low power cold gas thruster V1E10703-01 (5 N)", "vendor": "VACCO Industries",
+       "specs": {"thrust_N": 5.0, "inlet_pressure_bar": 206.8},
+       "mass_kg": null, "unit_cost_usd": null,
+       "source_url": "https://www.vacco.com/images/uploads/pdfs/cold_gas_thrusters.pdf", "verified": true, "checked_on": "2026-11-09",
+       "notes": "Datasheet: 5.0 N at 3000 psia (converted). Mass not published in the page read."}
+    ],
+    "valve": [
+      {"id": "danfoss_sv13-20-c", "name": "ICS solenoid valve SV13-20-C (2-way poppet, NC)", "vendor": "Danfoss",
+       "specs": {"rated_pressure_bar": 350, "rated_flow_lpm_hydraulic_oil": 230, "gas_mass_flow_kg_s": null},
+       "mass_kg": 0.12, "unit_cost_usd": null,
+       "source_url": "https://assets.danfoss.com/documents/latest/367996/BC479700724724en-000101.pdf", "verified": true, "checked_on": "2026-11-09",
+       "notes": "Hydraulic-oil flow rating only (21.8 cSt oil, 49 C); no gas/N2 flow or Cv in the datasheet read, so it cannot be compared with a gas mass-flow requirement."}
+    ],
+    "tank": [
+      {"id": "cts_9l_300bar", "name": "Type 4 composite cylinder 9.0 L, 300 bar", "vendor": "CTS (Composite Technical Systems)",
+       "specs": {"volume_L": 9.0, "working_pressure_bar": 300, "diameter_mm": 186, "length_mm": 545},
+       "mass_kg": 3.90, "unit_cost_usd": null,
+       "source_url": "https://www.ctscyl.com/wp-content/uploads/2025/04/Data-sheet-9.0-lt-Industry-Rev.-6.pdf", "verified": true, "checked_on": "2026-11-09",
+       "notes": "Bare cylinder, aluminium boss, 3.90 +-0.24 kg; PET liner, carbon fibre + epoxy; nitrogen approved (UN 1066); test 450 bar."},
+      {"id": "cts_3l_300bar", "name": "Type 4 composite cylinder 3.0 L, 300 bar", "vendor": "CTS (Composite Technical Systems)",
+       "specs": {"volume_L": 3.0, "working_pressure_bar": 300, "diameter_mm": 120, "length_mm": 445},
+       "mass_kg": 1.53, "unit_cost_usd": null,
+       "source_url": "https://www.ctscyl.com/wp-content/uploads/2025/04/Data-sheet-3.0-lt-Industry-Rev.-5.pdf", "verified": true, "checked_on": "2026-11-09",
+       "notes": "Bare cylinder, aluminium boss, 1.53 +-0.09 kg. Diameter 120 +-2 mm read from the drawing text."},
+      {"id": "meyer_hdrx-400", "name": "HDRX-400 Type IV composite cylinder 40 L, 300 bar", "vendor": "MEYER",
+       "specs": {"volume_L": 40.0, "working_pressure_bar": 300, "diameter_mm": 229, "length_mm": 1406},
+       "mass_kg": 18.0, "unit_cost_usd": null,
+       "source_url": "https://meyer.cd/copv/hdrx-400", "verified": true, "checked_on": "2026-11-09",
+       "notes": "Catalog rating SF 3.0, burst 900 bar. The same page lists R&D configurations at lower safety factor (e.g. 450 bar, not certified)."}
+    ],
+    "regulator": []
+  },
+  "category_notes": {
+    "regulator": "No regulator with a read spec page: the VACCO 48003040 datasheet only names 'a VACCO Regulator/Relief Valve'. Left empty on purpose (never invent a part)."
+  },
+  "materials": {
+    "6061-T6": {"density_kg_m3": 2700, "yield_MPa": 276, "shear_MPa": 207, "E_GPa": 68.9,
+                "source_url": "https://www.glemco.com/capabilities/material-expertise/aluminum-6061-t6/", "verified": true, "checked_on": "2026-11-09",
+                "note": "AA typical values as listed by Glemco (2.7 g/cc, tensile yield 276 MPa, shear strength 207 MPa, E 68.9 GPa)."}
+  }
+}

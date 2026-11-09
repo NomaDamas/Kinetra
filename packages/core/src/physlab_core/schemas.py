@@ -410,6 +410,231 @@ class Verdict(_Base):
         return self
 
 
+# --------------------------------------------------------------------------- #
+# DesignBrief (design stage, docs/design-stage.md)
+# --------------------------------------------------------------------------- #
+
+DESIGN_SCHEMA_VERSION = "0.1.0"
+NEEDS_FEA_LABEL = "simplified model, needs FEA"
+
+
+class DesignRequirement(_Base):
+    """A number read from a real rollout / Monte-Carlo of the base variant, with a stated margin."""
+
+    id: str
+    label: str
+    value: float = Field(description="Measured on the base variant's rollout (or computed from measured quantities).")
+    unit: str = ""
+    derived_from: str = Field(description="Which rollout / formula produced `value`.")
+    margin_factor: float = Field(ge=1.0)
+    required: float = Field(description="value x margin_factor")
+    source: Literal["simulation", "catalog", "default", "estimate", "unverified"] = "simulation"
+
+    @model_validator(mode="after")
+    def _required(self):
+        if abs(self.required - self.value * self.margin_factor) > 1e-6 * max(1.0, abs(self.required)):
+            raise ValueError(f"requirement {self.id}: required must equal value * margin_factor")
+        return self
+
+
+class DesignMeet(_Base):
+    requirement_id: str
+    required: float
+    provided: float
+    unit: str = ""
+    margin: float = Field(description="(provided - required) / required")
+    ok: bool
+
+    @model_validator(mode="after")
+    def _ok(self):
+        if self.ok != (self.provided >= self.required):
+            raise ValueError(f"meets[{self.requirement_id}]: ok must equal provided >= required")
+        return self
+
+
+class DesignChoice(_Base):
+    name: str
+    vendor: str = ""
+    specs: dict[str, Optional[Union[float, str]]] = Field(default_factory=dict)
+    mass_kg: Optional[float] = Field(default=None, ge=0)
+    unit_cost_usd: Optional[float] = Field(default=None, ge=0, description="Only when a cited price exists.")
+    source: str = ""
+    verified: bool = Field(description="True iff the spec figures were read in the cited source.")
+
+
+class DesignRejected(_Base):
+    name: str
+    why_rejected: str
+
+
+class DesignCadRef(_Base):
+    stl: str
+    step: Optional[str] = None
+
+
+class DesignComponent(_Base):
+    id: str
+    role: str
+    quantity: int = Field(ge=1)
+    choice: Optional[DesignChoice] = Field(default=None, description="null when no catalog entry meets every requirement.")
+    meets: list[DesignMeet] = Field(default_factory=list)
+    ok: bool = Field(description="True iff a catalog choice exists and every meets[] row is ok.")
+    alternatives: list[DesignRejected] = Field(default_factory=list)
+    custom: bool = False
+    needs_sourcing: bool = False
+    mass_kg_each: Optional[float] = Field(default=None, ge=0)
+    mass_source: str = Field(default="", description="catalog | cad | estimate | none")
+    note: str = ""
+    cad: Optional[DesignCadRef] = None
+
+    @model_validator(mode="after")
+    def _ok(self):
+        want = self.choice is not None and all(m.ok for m in self.meets)
+        if self.ok != want:
+            raise ValueError(f"component {self.id}: ok must be (choice present and all meets ok)")
+        if self.choice is None and not (self.custom or self.needs_sourcing):
+            raise ValueError(f"component {self.id}: no catalog choice requires custom=true or needs_sourcing=true")
+        return self
+
+
+class DesignCheck(_Base):
+    method: str
+    stress_MPa: float
+    allow_MPa: float
+    ok: bool
+    label: str = NEEDS_FEA_LABEL
+
+    @model_validator(mode="after")
+    def _check(self):
+        if "needs FEA" not in self.label:
+            raise ValueError("structural checks must carry the 'simplified model, needs FEA' label")
+        if self.ok != (self.stress_MPa <= self.allow_MPa):
+            raise ValueError("check.ok must equal stress <= allow")
+        return self
+
+
+class DesignCustomPart(_Base):
+    id: str
+    name: str
+    params: dict[str, float]
+    material: str
+    mass_kg: float = Field(ge=0)
+    quantity: int = Field(default=1, ge=1)
+    cad_stl: Optional[str] = None
+    cad_step: Optional[str] = Field(default=None, description="null when no STEP-capable CAD kernel was available.")
+    load_case: dict[str, float]
+    check: DesignCheck
+    extra_checks: list[DesignCheck] = Field(default_factory=list)
+    note: str = ""
+
+
+class DesignClosedLoopIter(_Base):
+    iteration: int = Field(ge=0)
+    mass_kg: float = Field(gt=0, description="Mass assumption used for this re-run.")
+    status: VerdictStatus
+    p_success: float = Field(ge=0, le=1)
+    ci: tuple[float, float]
+    n: int = Field(ge=0)
+    note: str = ""
+    n_evals: int = Field(default=0, ge=0)
+    wall_seconds: float = Field(default=0.0, ge=0)
+    assumption_overrides: dict[str, float] = Field(default_factory=dict)
+
+
+class DesignAlternative(_Base):
+    id: str
+    label: str
+    changes: dict[str, float]
+    status: VerdictStatus
+    p_success: float = Field(ge=0, le=1)
+    ci: tuple[float, float]
+    n: int = Field(ge=0)
+    mass_kg: float = Field(gt=0)
+    mass_added_kg: float = Field(ge=0)
+    cost_usd: Optional[float] = Field(default=None, ge=0)
+    unpriced_lines: int = Field(ge=0)
+    recommended: bool = False
+    note: str = ""
+
+
+class DesignRisk(_Base):
+    text: str
+    severity: Literal["low", "med", "high"]
+    physical_test: str
+    tied_to: str = Field(default="", description="The unmodelled effect or low-confidence assumption this risk comes from.")
+
+
+class DesignNextTest(_Base):
+    name: str
+    purpose: str
+    cost: Optional[float] = Field(default=None, ge=0)
+    source: str = ""
+
+
+class DesignTotals(_Base):
+    mass_added_kg: float = Field(ge=0)
+    mass_estimated_kg: float = Field(ge=0, description="Part of mass_added_kg that is an unsourced placeholder estimate.")
+    cost_priced_usd: Optional[float] = Field(default=None, ge=0, description="Sum of CITED unit costs only; null if none.")
+    unpriced_lines: int = Field(ge=0)
+
+
+class DesignReproducibility(_Base):
+    seed: int
+    engine: str
+    mujoco: str
+    generated_at: str
+    budget: dict[str, float] = Field(default_factory=dict)
+    base_spec_hash: Optional[str] = None
+
+
+class DesignBrief(_Base):
+    schema_version: str = DESIGN_SCHEMA_VERSION
+    scenario_id: str
+    template: str
+    base_variant: float = Field(description="Control value of the FEASIBLE_FOUND variant the design is derived from.")
+    headline: str
+    requirements: list[DesignRequirement]
+    components: list[DesignComponent]
+    custom_parts: list[DesignCustomPart] = Field(default_factory=list)
+    closed_loop: list[DesignClosedLoopIter]
+    alternatives: list[DesignAlternative] = Field(default_factory=list)
+    risks: list[DesignRisk] = Field(default_factory=list)
+    next_tests: list[DesignNextTest] = Field(default_factory=list)
+    totals: DesignTotals
+    labels: list[str] = Field(default_factory=list)
+    reproducibility: DesignReproducibility
+
+    @model_validator(mode="after")
+    def _consistent(self):
+        rids = [r.id for r in self.requirements]
+        if len(set(rids)) != len(rids):
+            raise ValueError("duplicate requirement ids")
+        for c in self.components:
+            for m in c.meets:
+                if m.requirement_id not in rids:
+                    raise ValueError(f"component {c.id}: meets unknown requirement {m.requirement_id!r}")
+        part_ids = {p.id for p in self.custom_parts}
+        if len(part_ids) != len(self.custom_parts):
+            raise ValueError("duplicate custom part ids")
+        for c in self.components:
+            if c.custom and c.cad is None and c.id not in part_ids and not c.needs_sourcing:
+                raise ValueError(f"component {c.id}: custom component must have CAD / a custom part, or be flagged needs_sourcing")
+        its = [i.iteration for i in self.closed_loop]
+        if its != list(range(len(its))) or not its:
+            raise ValueError("closed_loop iterations must be 0..n-1 in order")
+        if sum(a.recommended for a in self.alternatives) > 1:
+            raise ValueError("at most one alternative may be recommended")
+        unpriced = sum(1 for c in self.components if c.choice is None or c.choice.unit_cost_usd is None)
+        if self.totals.unpriced_lines != unpriced:
+            raise ValueError(f"totals.unpriced_lines must count components without a cited unit cost ({unpriced})")
+        priced = [c for c in self.components if c.choice is not None and c.choice.unit_cost_usd is not None]
+        if (self.totals.cost_priced_usd is None) != (not priced):
+            raise ValueError("totals.cost_priced_usd must be null iff no component has a cited unit cost")
+        return self
+
+
+EXTRA_MODELS: dict[str, type[BaseModel]] = {"design_brief": DesignBrief}
+
 MODELS: dict[str, type[BaseModel]] = {
     "spec_sheet": SpecSheet,
     "trajectory": Trajectory,
@@ -424,4 +649,7 @@ __all__ = [
     "VerdictStatus", "Feasibility", "NecessaryCheck", "Sensitivity", "BindingConstraint",
     "ParamChange", "SuggestedFix", "BomItem", "SimCost", "PhysicalEquivalentEstimate",
     "CostEstimate", "ReviewItem", "HumanReview", "Reproducibility",
+    "EXTRA_MODELS", "DesignBrief", "DesignRequirement", "DesignMeet", "DesignChoice", "DesignRejected", "DesignCadRef", "DesignComponent",
+    "DesignCheck", "DesignCustomPart", "DesignClosedLoopIter", "DesignAlternative", "DesignRisk", "DesignNextTest", "DesignTotals",
+    "DesignReproducibility", "DESIGN_SCHEMA_VERSION", "NEEDS_FEA_LABEL",
 ]

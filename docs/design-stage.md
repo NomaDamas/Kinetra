@@ -69,3 +69,17 @@ Rules
   `custom: true` and must appear in `custom_parts` or be flagged `"needs sourcing"`; never invent a vendor part.
 - `closed_loop` iterations are real re-runs of the pipeline (search + MC) with updated mass assumptions.
 - Costs: only cited unit costs are summed; unpriced lines are counted, not treated as zero.
+
+## Implemented schema (authoritative: `schemas/design_brief.schema.json`, `schemas/types.ts` -> `DesignBrief`)
+
+Additions to the sketch above, all validated by `physlab_core.schemas.DesignBrief`:
+- `components[]`: `choice` is **null** when no catalog entry meets every requirement (then `needs_sourcing` or `custom` is true); `ok` = choice present and all `meets[].ok`;
+  `mass_kg_each` + `mass_source` (`catalog` | `cad` | `estimate` | `simulation` | `none`); `cad: {stl, step|null}`; `alternatives[]` = `{name, why_rejected}`.
+  Additive requirements (tank volume) are met by `quantity` units of one entry.
+- `custom_parts[]`: `quantity`, `check` + `extra_checks[]` (each `{method, stress_MPa, allow_MPa, ok, label}`; label must contain "needs FEA"), `note`; `cad_step` is null if no STEP kernel.
+- `closed_loop[]`: also `n_evals`, `wall_seconds`, `assumption_overrides` (the exact overrides of the real pipeline re-run); iteration 0 is the recorded bundle run, the last row's `note` ends with the stop reason.
+- `alternatives[]`: `{id,label,changes,status,p_success,ci,n,mass_kg,mass_added_kg,cost_usd,unpriced_lines,recommended,note}`; each = recorded variant's own witness -> designed hardware mass added -> one real pipeline re-run.
+- `totals`: `mass_estimated_kg` (part of `mass_added_kg` that is an unsourced placeholder), `cost_priced_usd` null unless a cited price exists, `unpriced_lines` counts components without a cited unit cost.
+- `risks[].tied_to`, `reproducibility.budget/base_spec_hash`.
+- Catalogs: `packages/engine/src/kinetra_engine/catalog/components_<template>.json` (source URL, `verified`, `checked_on`; `unit_cost_usd` is null everywhere: no cited prices).
+- Live: `POST /design {scenario|idea, overrides, max_evals, mc_samples, closed_loop_iters}` returns a DesignBrief (small budget, no CAD files, `alternatives: []`); 422 if the base run has no FEASIBLE_FOUND witness.

@@ -111,7 +111,7 @@ export function Home({ index }: { index: DemoIndex | null }) {
                     <span className="muted small">at {trim(hero.value)} {s.control.unit}{evalsOf(hero.verdict) ? ` · ${evalsOf(hero.verdict)!.toLocaleString('en-US')} evals` : ''}</span>
                   </div>
                   {snap && (
-                    <div className="small">{p.design?.origin === 'fixture' && <span className="pill bad tiny">DEV FIXTURE</span>} Design: <b className="mono">+{snap.massAddedKg !== null ? fmt(snap.massAddedKg, 4) : '?'} kg</b> · {snap.ok}/{snap.total} components meet requirements · {snap.custom} custom · {snap.sourcing} need sourcing</div>
+                    <div className="small">Design: <b className="mono">+{snap.massAddedKg !== null ? fmt(snap.massAddedKg, 4) : '?'} kg</b> · {snap.ok}/{snap.total} components meet requirements · {snap.custom} custom · {snap.sourcing} need sourcing</div>
                   )}
                   <a className="btn" href={projectHref(p.id)}>Open the project →</a>
                 </article>
