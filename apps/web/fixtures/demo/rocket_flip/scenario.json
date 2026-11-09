@@ -1,0 +1,590 @@
+{
+ "id": "rocket_flip",
+ "idea": "A 1300 kg roadster does a 360-degree flip with rocket thrusters and lands upright.",
+ "template": "rocket_car",
+ "agent_steps": [
+  {
+   "id": "research",
+   "label": "Research assumptions",
+   "tool": "catalog.lookup",
+   "status": "done",
+   "wall_seconds": 0.02,
+   "summary": "[FIXTURE] FIXTURE catalog read",
+   "detail": null
+  },
+  {
+   "id": "assumptions",
+   "label": "Assumptions panel",
+   "tool": "spec.build",
+   "status": "done",
+   "wall_seconds": 0.01,
+   "summary": "[FIXTURE] 3 assumptions drafted",
+   "detail": null
+  },
+  {
+   "id": "build_model",
+   "label": "Build MuJoCo model",
+   "tool": "template.rocket_car",
+   "status": "done",
+   "wall_seconds": 0.4,
+   "summary": "[FIXTURE] Model compiled",
+   "detail": null
+  },
+  {
+   "id": "necessary_screen",
+   "label": "Necessary-condition screen",
+   "tool": "screen.analytic",
+   "status": "done",
+   "wall_seconds": 0.01,
+   "summary": "[FIXTURE] angular impulse / propellant",
+   "detail": null
+  },
+  {
+   "id": "search",
+   "label": "CMA-ES search",
+   "tool": "cma.search",
+   "status": "done",
+   "wall_seconds": 3.35,
+   "summary": "[FIXTURE] found at 3072 evals (5 kN)",
+   "detail": null
+  },
+  {
+   "id": "monte_carlo",
+   "label": "Monte-Carlo verdict",
+   "tool": "mc.wilson",
+   "status": "done",
+   "wall_seconds": 0.7,
+   "summary": "[FIXTURE] p=0.848 (500)",
+   "detail": null
+  },
+  {
+   "id": "robustify",
+   "label": "Robustify",
+   "tool": "cma.robust",
+   "status": "done",
+   "wall_seconds": 25.7,
+   "summary": "[FIXTURE] train success 0.958",
+   "detail": null
+  },
+  {
+   "id": "bom",
+   "label": "Bill of materials",
+   "tool": "bom.build",
+   "status": "done",
+   "wall_seconds": 0.01,
+   "summary": "[FIXTURE] 1 line",
+   "detail": null
+  }
+ ],
+ "spec": {
+  "schema_version": "0.1.0",
+  "idea": "A 1300 kg roadster does a 360-degree flip with rocket thrusters and lands upright.",
+  "template_id": "rocket_car",
+  "tier": 1,
+  "assumptions": [
+   {
+    "key": "vehicle_mass",
+    "label": "Vehicle mass",
+    "value": 1300,
+    "unit": "kg",
+    "distribution": {
+     "kind": "normal",
+     "mean": 1300,
+     "std": 65,
+     "clip_low": null,
+     "clip_high": null
+    },
+    "source": "llm_estimate",
+    "confidence": "low",
+    "editable": true
+   },
+   {
+    "key": "fmax_N",
+    "label": "Max thrust per thruster",
+    "value": 5000,
+    "unit": "N",
+    "distribution": {
+     "kind": "uniform",
+     "low": 4500,
+     "high": 5500
+    },
+    "source": "llm_estimate",
+    "confidence": "low",
+    "editable": true
+   },
+   {
+    "key": "ramp_angle",
+    "label": "Launch ramp angle",
+    "value": 25,
+    "unit": "deg",
+    "distribution": {
+     "kind": "fixed"
+    },
+    "source": "user",
+    "confidence": "high",
+    "editable": true
+   }
+  ],
+  "parts": [],
+  "param_bounds": [],
+  "success_criteria": [
+   {
+    "name": "full_rotation",
+    "metric": "rotation_deg",
+    "comparator": ">=",
+    "threshold": 360,
+    "unit": "deg",
+    "description": "full flip"
+   }
+  ]
+ },
+ "control": {
+  "key": "fmax_N",
+  "label": "Max thrust per thruster",
+  "unit": "N",
+  "values": [
+   300,
+   2000,
+   3000,
+   5000
+  ],
+  "default_index": 1,
+  "hint": "Sweep the thruster force; each value is a separate seeded run."
+ },
+ "variants": [
+  {
+   "value": 300,
+   "verdict": {
+    "schema_version": "0.1.0",
+    "status": "INFEASIBLE_NECESSARY_CONDITION",
+    "summary": "At 300 N the rotation cannot finish within the flight time bound (analytic, strong).",
+    "feasibility": {
+     "p_success": 0.0,
+     "ci_low": 0.0,
+     "ci_high": 0.0,
+     "n_samples": 0,
+     "ci_method": "wilson_95"
+    },
+    "necessary_checks": [
+     {
+      "name": "angular_impulse_time",
+      "passed": false,
+      "measured": 3.34,
+      "limit": 2.43,
+      "unit": "s",
+      "note": "min time to rotate 360 deg exceeds flight-time upper bound"
+     },
+     {
+      "name": "propellant",
+      "passed": true,
+      "measured": 3.79,
+      "limit": 25.0,
+      "unit": "kg",
+      "note": ""
+     }
+    ],
+    "binding_constraint": {
+     "name": "angular_impulse_time",
+     "margin": -0.91,
+     "unit": "s",
+     "sensitivities": [
+      {
+       "assumption_key": "fmax_N",
+       "effect": 0.31,
+       "rank": 1,
+       "method": "one_at_a_time"
+      },
+      {
+       "assumption_key": "vehicle_mass",
+       "effect": -0.12,
+       "rank": 2,
+       "method": "one_at_a_time"
+      }
+     ]
+    },
+    "best_params": {},
+    "suggested_fix": {
+     "changes": [
+      {
+       "param": "fmax_N",
+       "from_value": 300,
+       "to_value": 5000,
+       "unit": "N"
+      }
+     ],
+     "rationale": "Smallest control value in the sweep whose Monte-Carlo p_success exceeds 0.5 (5000 N: p=0.848).",
+     "verified": true,
+     "verified_p_success": 0.848
+    },
+    "bom": [],
+    "cost_estimate": null,
+    "model_labels": [
+     "simplified rigid-body model, needs precise validation",
+     "no aerodynamics / plume / structure"
+    ],
+    "human_review": {
+     "required": true,
+     "items": [
+      {
+       "assumption_key": "fmax_N",
+       "reason": "Thruster force is an LLM-estimated catalog value (unverified).",
+       "severity": "warn"
+      },
+      {
+       "assumption_key": "vehicle_mass",
+       "reason": "Vehicle mass assumed from a spec-sheet class, not measured.",
+       "severity": "info"
+      }
+     ]
+    },
+    "reproducibility": {
+     "seed": 1,
+     "versions": {
+      "mujoco": "4.0.0",
+      "cma": "4.5.0"
+     },
+     "search_budget": {
+      "cma_evals": 5712
+     },
+     "spec_hash": null
+    },
+    "trajectory_ref": "traj_300.json"
+   },
+   "trajectory": "traj_300.json",
+   "headline": "[FIXTURE] fmax 300 N: necessary condition violated"
+  },
+  {
+   "value": 2000,
+   "verdict": {
+    "schema_version": "0.1.0",
+    "status": "NOT_FOUND_IN_BUDGET",
+    "summary": "Not found in 33504 evals at 2000 N: weak evidence only, not proof of impossibility.",
+    "feasibility": {
+     "p_success": 0.0,
+     "ci_low": 0.0,
+     "ci_high": 0.037,
+     "n_samples": 100,
+     "ci_method": "wilson_95"
+    },
+    "necessary_checks": [
+     {
+      "name": "angular_impulse_time",
+      "passed": true,
+      "measured": 1.4,
+      "limit": 4.3,
+      "unit": "s",
+      "note": ""
+     },
+     {
+      "name": "propellant",
+      "passed": true,
+      "measured": 1.76,
+      "limit": 25.0,
+      "unit": "kg",
+      "note": ""
+     }
+    ],
+    "binding_constraint": {
+     "name": "impact_vz",
+     "margin": -3.0,
+     "unit": "m/s",
+     "sensitivities": [
+      {
+       "assumption_key": "fmax_N",
+       "effect": 0.31,
+       "rank": 1,
+       "method": "one_at_a_time"
+      },
+      {
+       "assumption_key": "vehicle_mass",
+       "effect": -0.12,
+       "rank": 2,
+       "method": "one_at_a_time"
+      }
+     ]
+    },
+    "best_params": {},
+    "suggested_fix": {
+     "changes": [
+      {
+       "param": "fmax_N",
+       "from_value": 3000,
+       "to_value": 5000,
+       "unit": "N"
+      }
+     ],
+     "rationale": "Smallest control value in the sweep whose Monte-Carlo p_success exceeds 0.5 (5000 N: p=0.848).",
+     "verified": true,
+     "verified_p_success": 0.848
+    },
+    "bom": [],
+    "cost_estimate": null,
+    "model_labels": [
+     "simplified rigid-body model, needs precise validation",
+     "no aerodynamics / plume / structure"
+    ],
+    "human_review": {
+     "required": true,
+     "items": [
+      {
+       "assumption_key": "fmax_N",
+       "reason": "Thruster force is an LLM-estimated catalog value (unverified).",
+       "severity": "warn"
+      },
+      {
+       "assumption_key": "vehicle_mass",
+       "reason": "Vehicle mass assumed from a spec-sheet class, not measured.",
+       "severity": "info"
+      }
+     ]
+    },
+    "reproducibility": {
+     "seed": 1,
+     "versions": {
+      "mujoco": "4.0.0",
+      "cma": "4.5.0"
+     },
+     "search_budget": {
+      "cma_evals": 33504,
+      "mc_samples": 100
+     },
+     "spec_hash": null
+    },
+    "trajectory_ref": "traj_2000.json"
+   },
+   "trajectory": "traj_2000.json",
+   "headline": "[FIXTURE] fmax 2000 N: not found in budget"
+  },
+  {
+   "value": 3000,
+   "verdict": {
+    "schema_version": "0.1.0",
+    "status": "NOT_FOUND_IN_BUDGET",
+    "summary": "Not found in 33504 evals at 3000 N: weak evidence only, not proof of impossibility.",
+    "feasibility": {
+     "p_success": 0.0,
+     "ci_low": 0.0,
+     "ci_high": 0.037,
+     "n_samples": 100,
+     "ci_method": "wilson_95"
+    },
+    "necessary_checks": [
+     {
+      "name": "angular_impulse_time",
+      "passed": true,
+      "measured": 1.4,
+      "limit": 4.3,
+      "unit": "s",
+      "note": ""
+     },
+     {
+      "name": "propellant",
+      "passed": true,
+      "measured": 1.76,
+      "limit": 25.0,
+      "unit": "kg",
+      "note": ""
+     }
+    ],
+    "binding_constraint": {
+     "name": "impact_vz",
+     "margin": -3.0,
+     "unit": "m/s",
+     "sensitivities": [
+      {
+       "assumption_key": "fmax_N",
+       "effect": 0.31,
+       "rank": 1,
+       "method": "one_at_a_time"
+      },
+      {
+       "assumption_key": "vehicle_mass",
+       "effect": -0.12,
+       "rank": 2,
+       "method": "one_at_a_time"
+      }
+     ]
+    },
+    "best_params": {},
+    "suggested_fix": {
+     "changes": [
+      {
+       "param": "fmax_N",
+       "from_value": 3000,
+       "to_value": 5000,
+       "unit": "N"
+      }
+     ],
+     "rationale": "Smallest control value in the sweep whose Monte-Carlo p_success exceeds 0.5 (5000 N: p=0.848).",
+     "verified": true,
+     "verified_p_success": 0.848
+    },
+    "bom": [],
+    "cost_estimate": null,
+    "model_labels": [
+     "simplified rigid-body model, needs precise validation",
+     "no aerodynamics / plume / structure"
+    ],
+    "human_review": {
+     "required": true,
+     "items": [
+      {
+       "assumption_key": "fmax_N",
+       "reason": "Thruster force is an LLM-estimated catalog value (unverified).",
+       "severity": "warn"
+      },
+      {
+       "assumption_key": "vehicle_mass",
+       "reason": "Vehicle mass assumed from a spec-sheet class, not measured.",
+       "severity": "info"
+      }
+     ]
+    },
+    "reproducibility": {
+     "seed": 1,
+     "versions": {
+      "mujoco": "4.0.0",
+      "cma": "4.5.0"
+     },
+     "search_budget": {
+      "cma_evals": 33504,
+      "mc_samples": 100
+     },
+     "spec_hash": null
+    },
+    "trajectory_ref": "traj_3000.json"
+   },
+   "trajectory": "traj_3000.json",
+   "headline": "[FIXTURE] fmax 3000 N: not found in budget"
+  },
+  {
+   "value": 5000,
+   "verdict": {
+    "schema_version": "0.1.0",
+    "status": "FEASIBLE_FOUND",
+    "summary": "A 360-degree flip with controlled landing was found; Monte-Carlo p_success 0.848 (n=500).",
+    "feasibility": {
+     "p_success": 0.848,
+     "ci_low": 0.8139,
+     "ci_high": 0.8768,
+     "n_samples": 500,
+     "ci_method": "wilson_95"
+    },
+    "necessary_checks": [
+     {
+      "name": "angular_impulse_time",
+      "passed": true,
+      "measured": 1.01,
+      "limit": 4.51,
+      "unit": "s",
+      "note": ""
+     },
+     {
+      "name": "propellant",
+      "passed": true,
+      "measured": 1.76,
+      "limit": 25.0,
+      "unit": "kg",
+      "note": ""
+     }
+    ],
+    "binding_constraint": {
+     "name": "impact_vz",
+     "margin": 0.55,
+     "unit": "m/s",
+     "sensitivities": [
+      {
+       "assumption_key": "fmax_N",
+       "effect": 0.31,
+       "rank": 1,
+       "method": "one_at_a_time"
+      },
+      {
+       "assumption_key": "vehicle_mass",
+       "effect": -0.12,
+       "rank": 2,
+       "method": "one_at_a_time"
+      }
+     ]
+    },
+    "best_params": {
+     "pitch_fwd_outer_t_start_s": 1.193,
+     "pitch_fwd_outer_duration_s": 0.679,
+     "pitch_fwd_outer_throttle": 0.431,
+     "pitch_back_outer_t_start_s": 0.008,
+     "pitch_back_outer_duration_s": 0.592,
+     "pitch_back_outer_throttle": 0.702,
+     "lift_main_t_start_s": 0.065,
+     "lift_main_duration_s": 0.784,
+     "lift_main_throttle": 0.016,
+     "pitch_fwd_inner_t_start_s": 0.612,
+     "pitch_fwd_inner_duration_s": 0.03,
+     "pitch_fwd_inner_throttle": 0.334,
+     "lift_landing_t_start_s": 1.674,
+     "lift_landing_duration_s": 0.489,
+     "lift_landing_throttle": 0.988
+    },
+    "suggested_fix": null,
+    "bom": [
+     {
+      "name": "Cold-gas thruster 5 kN class (x10)",
+      "role": "thruster",
+      "quantity": 10,
+      "mass_kg": 12.0,
+      "unit_cost_usd": null,
+      "source": "llm_estimate"
+     }
+    ],
+    "cost_estimate": {
+     "sim_cost": {
+      "n_evals": 33504,
+      "wall_seconds": 40.1
+     },
+     "physical_equivalent_estimate": {
+      "is_estimate": true,
+      "low_usd": 150000,
+      "high_usd": 600000,
+      "basis": "FIXTURE placeholder range for a rocket-assisted vehicle prototype",
+      "sources": [
+       "llm_estimate"
+      ]
+     }
+    },
+    "model_labels": [
+     "simplified rigid-body model, needs precise validation",
+     "no aerodynamics / plume / structure"
+    ],
+    "human_review": {
+     "required": true,
+     "items": [
+      {
+       "assumption_key": "fmax_N",
+       "reason": "Thruster force is an LLM-estimated catalog value (unverified).",
+       "severity": "warn"
+      },
+      {
+       "assumption_key": "vehicle_mass",
+       "reason": "Vehicle mass assumed from a spec-sheet class, not measured.",
+       "severity": "info"
+      }
+     ]
+    },
+    "reproducibility": {
+     "seed": 1,
+     "versions": {
+      "mujoco": "4.0.0",
+      "cma": "4.5.0"
+     },
+     "search_budget": {
+      "cma_evals": 3072,
+      "mc_samples": 500
+     },
+     "spec_hash": null
+    },
+    "trajectory_ref": "traj_5000.json"
+   },
+   "trajectory": "traj_5000.json",
+   "headline": "[FIXTURE] fmax 5000 N: feasible, p=0.848"
+  }
+ ]
+}

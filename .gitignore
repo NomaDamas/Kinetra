@@ -11,3 +11,6 @@ spikes/**/vendor/
 MUJOCO_LOG.TXT
 packages/engine/.venv/
 apps/web/dist/
+packages/engine/.cache/
+apps/web/node_modules/
+.pytest_cache/

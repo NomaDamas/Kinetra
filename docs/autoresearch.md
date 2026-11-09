@@ -80,3 +80,10 @@ A calibrated `Assumption` replaces the prior only after approval (gate B); a par
 3. Wire `calibration.json` into `SpecSheet.assumptions` behind review gate B; add a Verdict field recording which assumptions were calibrated and by which ledger id.
 4. Raise MC and add sequential stopping so keep/discard uses CI separation, not point estimates; add multi-axis attitude and a drone template.
 5. Persist the ledger (and its hash head) with the Verdict's `Reproducibility` block.
+
+## 8. Engine library and demo bundle (`packages/engine`)
+The spike was ported into `kinetra_engine.autoresearch` (`ledger.py` hash chain + gate + `run_loop`, `proposers.py` rule proposer and an LLM proposer that needs `KINETRA_LLM_PROPOSER=1` plus a key and has never been run, `article.py` presets, `attitude*.py`, `calib.py`, `excitation.py`, `calibration_loop.py`, `integration.py`). `/article` is an additional forbidden patch path. Set `KINETRA_AR_WORKERS=0` for serial in-process evaluation (results do not depend on worker count).
+
+Article presets: `toy10` (10 kg, 6 N thrusters, arm 0.5 m, I_y 0.908) and `roadster` (rigid 1300 kg box, 5000 N thrusters at +-2.1 m, I_y 2085.4 kg m^2 from the Roadster spike; **not** the Roadster template, no wheels/ramp/aero, not a real-vehicle validation). Controller gains act on a normalised command, so the controller structure and bounds needed no retuning at Roadster scale; the COM-offset disturbance was scaled by body length (x4.2) and fuel is normalised by thruster size inside the tie-break. See the bundle's `ledger.json -> roadster_scale` for the measured numbers.
+
+`packages/engine/scripts/build_autoresearch_bundle.py` re-runs everything (seeded, ~3-4 min) and writes `apps/web/public/demo/autoresearch/{ledger,calibration,integration,excitation}.json`. `scripts/build_index.py` should reference them as `index.json -> autoresearch.{attitude_ledger,calibration,integration,excitation}` = `autoresearch/<name>.json`.
