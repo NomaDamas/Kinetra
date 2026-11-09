@@ -22,8 +22,9 @@ import { Bom } from './components/Bom'
 import { FixCallout } from './components/Fix'
 import { Replay } from './components/Replay'
 import { VerdictCard } from './components/VerdictCard'
+import { LivePanel } from './live/LivePanel'
 
-type Tab = 'lab' | 'autoresearch'
+type Tab = 'lab' | 'autoresearch' | 'live'
 
 export default function App() {
   const [index, setIndex] = useState<DemoIndex | null>(null)
@@ -46,6 +47,8 @@ export default function App() {
   const [rerunning, setRerunning] = useState(false)
   const [ar, setAr] = useState<ArData | null>(null)
   const [swap, setSwap] = useState(0)
+  // the Live tab stays mounted (hidden) once opened so a running stream / its socket survive tab switches
+  const [liveOpened, setLiveOpened] = useState(false)
   const resultsRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -204,6 +207,16 @@ export default function App() {
         <nav className="tabs">
           <button className={tab === 'lab' ? 'on' : ''} onClick={() => setTab('lab')}>Feasibility lab</button>
           <button className={tab === 'autoresearch' ? 'on' : ''} onClick={() => setTab('autoresearch')}>Autoresearch</button>
+          <button
+            className={tab === 'live' ? 'on' : ''}
+            onClick={() => {
+              setLiveOpened(true)
+              setTab('live')
+            }}
+            data-testid="tab-live"
+          >
+            <span className="live-dot" /> Live
+          </button>
         </nav>
         <div className="top-r">
           {IS_FIXTURE && <span className="pill bad" title="Dev fixtures from spike outputs: NOT real engine bundles">DEV FIXTURES</span>}
@@ -211,7 +224,13 @@ export default function App() {
         </div>
       </header>
 
-      {tab === 'autoresearch' ? (
+      {liveOpened && (
+        <main className="main" hidden={tab !== 'live'}>
+          <LivePanel index={index} onEngineUp={setEngineUp} />
+        </main>
+      )}
+
+      {tab === 'live' ? null : tab === 'autoresearch' ? (
         <main className="main"><Autoresearch data={ar} /></main>
       ) : (
         <main className="main">
@@ -313,7 +332,10 @@ export default function App() {
               <section className="panel" id="replay">
                 <header className="panel-h">
                   <h2>3D replay <span className="kr">재생</span></h2>
-                  <span className="pill muted-pill">actor: Three.js · replays MuJoCo trajectory, no physics here</span>
+                  <span className="row">
+                    <span className="pill recorded">recorded run · replays stored MuJoCo trajectory</span>
+                    <span className="pill muted-pill">actor: Three.js · no physics here</span>
+                  </span>
                 </header>
                 <Replay
                   traj={traj}

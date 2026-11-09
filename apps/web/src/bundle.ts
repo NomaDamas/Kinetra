@@ -65,6 +65,8 @@ export const IS_FIXTURE = useFixtures
 /** Default path is /demo (written by engine bundle scripts). ?fixtures=1 loads dev fixtures (vite dev only). */
 export const DEMO_BASE = useFixtures ? '/fixtures/demo' : '/demo'
 export const ENGINE_API = 'http://localhost:8000'
+/** Live simulation WebSocket of the local engine (protocol: src/live/types.ts). */
+export const ENGINE_WS = ENGINE_API.replace(/^http/, 'ws') + '/ws/sim'
 
 async function getJson<T>(url: string): Promise<T> {
   const r = await fetch(url, { cache: 'no-cache' })

@@ -40,6 +40,27 @@ response shaped like `scenario.json`; `variants[].trajectory` may be an inline T
 says so honestly. Editing non-control assumptions only changes results when that engine is reachable; the slider on the control
 assumption snaps across the precomputed variants.
 
+## Live mode
+
+The **Live** tab drives the local Python engine (FastAPI, MuJoCo) over `ws://localhost:8000/ws/sim`: it really steps MuJoCo, streams frames,
+and every parameter change triggers a genuine fresh simulation (debounced 250 ms; "Run live", "Stop", "Restart" buttons too). Nothing is
+simulated in the browser and nothing is faked: if `GET http://localhost:8000/health` fails (polled every 3 s) the tab stays visible but all run buttons
+are disabled and the start command is shown:
+
+```bash
+cd packages/engine && .venv/bin/uvicorn kinetra_engine.api:app --port 8000     # or: scripts/dev.sh
+```
+
+- **What runs:** the stored witness schedule of a recorded variant (dropdown) is *re-simulated* under your new parameters; it is not re-optimised.
+  Start values are the recorded scenario's assumptions, overridden by the sliders. "Run live search" (roadster only) runs a real CMA-ES search on the engine,
+  shows progress + the best-so-far rollout, then streams the best schedule.
+- **Streaming:** on the `start` message a `Trajectory` with `n_frames_max` frames is preallocated and mutated in place as `frames` arrive
+  (`LiveHandle { filled, active, seriesMax }` in `src/live/types.ts`, optional `live` prop on `Scene`/`Replay`). When `result` arrives the arrays are
+  trimmed to the real frame count and the same view becomes an ordinary replay of the run that was just simulated.
+- A single live nominal rollout is **not** the Monte-Carlo `p_success` of the recorded pipeline; the result card shows both, labelled.
+- Protocol and code: `src/live/` (`useLiveSim.ts` WebSocket client, `useEngineHealth.ts`, `LivePanel.tsx`, `Chart.tsx`, `config.ts`).
+  WebSocket drops mid-run show an error callout (frames received so far are kept as-is); the next run reconnects.
+
 ## Deploy (Cloudflare Pages / Workers static assets)
 
 ```bash

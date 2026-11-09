@@ -5,6 +5,7 @@ import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import { Grid, OrbitControls, useGLTF } from '@react-three/drei'
 import * as THREE from 'three'
 import type { Geom, Trajectory } from '../types'
+import type { LiveHandle } from '../live/types'
 
 export interface Clock {
   t: number
@@ -164,10 +165,13 @@ interface Props {
   clock: { current: Clock }
   follow: boolean
   trail: boolean
+  /** Streaming state of a live run: `traj` is then preallocated and mutated in place (see live/useLiveSim.ts). */
+  live?: LiveHandle
 }
 
-function frameIdx(traj: Trajectory, t: number) {
-  const n = traj.pos.length
+function frameIdx(traj: Trajectory, t: number, live?: LiveHandle) {
+  // while streaming only the first `live.filled` frames are valid
+  const n = live ? Math.max(1, Math.min(live.filled, traj.pos.length)) : traj.pos.length
   const f = Math.min(Math.max(t / traj.dt, 0), n - 1)
   const i0 = Math.floor(f)
   return { i0, i1: Math.min(i0 + 1, n - 1), a: f - i0, f }
@@ -193,7 +197,7 @@ function mainBodyIndex(traj: Trajectory) {
   return i < 0 ? 0 : i
 }
 
-function World({ traj, clock, follow, trail }: Props) {
+function World({ traj, clock, follow, trail, live }: Props) {
   const groups = useRef<(THREE.Group | null)[]>([])
   const flames = useRef<(THREE.Mesh | null)[]>([])
   const markers = useRef<(THREE.Mesh | null)[]>([])
@@ -205,11 +209,11 @@ function World({ traj, clock, follow, trail }: Props) {
   )
 
   const flameInfo = useMemo(() => {
-    const out: { bodyIdx: number; values: number[]; max: number }[] = []
+    const out: { bodyIdx: number; name: string; values: number[]; max: number }[] = []
     traj.bodies.forEach((b, i) => {
       if (!b.name.startsWith('thr_')) return
       const s = traj.series.find((x) => x.name === `thrust_${b.name.slice(4)}`)
-      if (s) out.push({ bodyIdx: i, values: s.values, max: Math.max(1e-9, ...s.values) })
+      if (s) out.push({ bodyIdx: i, name: s.name, values: s.values, max: Math.max(1e-9, ...s.values) })
     })
     return out
   }, [traj])
@@ -228,7 +232,13 @@ function World({ traj, clock, follow, trail }: Props) {
     g.setDrawRange(0, 1)
     return g
   }, [traj, main])
-  const ghostGeom = useMemo(() => trailGeom.clone(), [trailGeom])
+  // the ghost path shares the trail's position attribute (live runs mutate it in place)
+  const ghostGeom = useMemo(() => {
+    const g = new THREE.BufferGeometry()
+    g.setAttribute('position', trailGeom.getAttribute('position'))
+    return g
+  }, [trailGeom])
+  const trailFilled = useRef<{ geom: THREE.BufferGeometry | null; n: number; rev: number }>({ geom: null, n: 0, rev: -1 })
   const trailObj = useMemo(
     () => new THREE.Line(trailGeom, new THREE.LineBasicMaterial({ color: '#4fd1c5' })),
     [trailGeom],
@@ -237,7 +247,7 @@ function World({ traj, clock, follow, trail }: Props) {
     () => new THREE.Line(ghostGeom, new THREE.LineBasicMaterial({ color: '#4fd1c5', transparent: true, opacity: 0.18 })),
     [ghostGeom],
   )
-  ghostGeom.setDrawRange(0, traj.pos.length)
+  if (!live) ghostGeom.setDrawRange(0, traj.pos.length)
 
   const controls = useThree((s) => s.controls) as unknown as { target: THREE.Vector3; update: () => void } | null
   const camera = useThree((s) => s.camera)
@@ -256,7 +266,34 @@ function World({ traj, clock, follow, trail }: Props) {
 
   useFrame(() => {
     const t = clock.current.t
-    const { i0, i1, a, f } = frameIdx(traj, t)
+    if (live) {
+      // the bounding sphere is computed from the preallocated (first-frame) positions: never frustum-cull a growing trail
+      trailObj.frustumCulled = false
+      ghostObj.frustumCulled = false
+      // refresh the trail attribute for newly filled frames (or rebuild it after an in-place overwrite)
+      const nf = Math.min(live.filled, traj.pos.length)
+      const st = trailFilled.current
+      const rev = live.rev ?? 0
+      if (st.rev !== rev || st.geom !== trailGeom) {
+        st.rev = rev
+        st.geom = trailGeom
+        st.n = 0
+      }
+      if (nf !== st.n) {
+        const attr = trailGeom.getAttribute('position') as THREE.BufferAttribute
+        const arr = attr.array as Float32Array
+        for (let i = Math.min(st.n, nf); i < nf; i++) {
+          const p = traj.pos[i][main]
+          arr[3 * i] = p[0]
+          arr[3 * i + 1] = p[1]
+          arr[3 * i + 2] = p[2]
+        }
+        st.n = nf
+        attr.needsUpdate = true
+      }
+      ghostGeom.setDrawRange(0, nf)
+    }
+    const { i0, i1, a, f } = frameIdx(traj, t, live)
     const P0 = traj.pos[i0]
     const P1 = traj.pos[i1]
     const Q0 = traj.quat[i0]
@@ -279,7 +316,16 @@ function World({ traj, clock, follow, trail }: Props) {
       const v = fi.values[i0] ?? 0
       m.visible = v > 1e-6
       if (m.visible) {
-        const s = v / fi.max
+        let norm = fi.max
+        if (live) {
+          const sm = live.seriesMax?.[fi.name]
+          if (sm !== undefined && sm > 0) norm = sm
+          else {
+            fi.max = Math.max(fi.max, v)
+            norm = fi.max
+          }
+        }
+        const s = v / norm
         const flick = 0.92 + 0.08 * Math.sin(t * 90 + k * 1.7)
         m.scale.set(0.6 + 0.6 * s, 1, 0.6 + 0.6 * s).setZ(0.6 + 0.6 * s)
         m.scale.y = (0.6 + 2.6 * s) * flick * Math.max(0.6, scale / 4)
@@ -290,7 +336,7 @@ function World({ traj, clock, follow, trail }: Props) {
       const m = markers.current[k]
       if (m) m.visible = t >= ev.t
     })
-    trailGeom.setDrawRange(0, trail ? Math.min(Math.floor(f) + 2, traj.pos.length) : 0)
+    trailGeom.setDrawRange(0, trail ? Math.min(Math.floor(f) + 2, live ? Math.max(live.filled, 1) : traj.pos.length) : 0)
     ghostObj.visible = trail
 
     if (follow && controls) {

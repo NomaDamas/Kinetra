@@ -38,7 +38,11 @@ Open the web app ([Run it](#run-it)). Three things to try:
 2. **Unitree G1 humanoid jump** — slide the motor-torque scale. 0.10× and 0.15× are *proven impossible* (static hold needs 15.7 N·m vs 13 available; takeoff energy needs 48.3 J vs 27.0 J available). Real G1 meshes replay.
 3. **Autoresearch tab** — an experiment ledger (hash-chained, keep/discard/gated), attitude-control search, and simulator calibration with identifiability.
 
-**The demo plays recorded, seeded runs** (labelled *recorded run, seeded & reproducible* in the UI). The engine can run the same pipeline locally; see [`apps/web/README.md`](apps/web/README.md).
+**Two modes, clearly labelled in the UI.**
+- **RECORDED** (default, no backend): replays committed, seeded runs (*recorded run, seeded & reproducible*). The slider snaps to precomputed variants.
+- **LIVE** (needs the local engine, `scripts/dev.sh`): the **Live tab** runs a *real MuJoCo simulation on your machine* and streams frames to the 3D view over a WebSocket. Change thruster force or mass and a fresh rollout runs; "Run live search" shows CMA-ES finding a flip in real time (roadster). If the engine is not reachable the Live tab is disabled and shows the start command. Protocol: [`docs/live-mode.md`](docs/live-mode.md).
+
+Verified in this repo: `POST /simulate` on the roadster at 5 kN is deterministic (identical trajectory hash on repeat) and runs ~29,000 steps/s (4.5 s of sim in ~39 ms); at 1 kN the same endpoint reports the failed checks (`flip_final`, `flip_td`, `impact_vz`, …). 10 live-API tests pass. Humanoid live mode is a batch rollout that is then paced (not incremental stepping), and live search is roadster-only.
 
 ## Measured results (and their limits)
 
@@ -97,7 +101,7 @@ uv venv packages/engine/.venv && uv pip install --python packages/engine/.venv/b
 packages/engine/.venv/bin/python packages/engine/scripts/build_rocket_bundle.py     # ~10–25 min cold, seconds cached
 packages/engine/.venv/bin/python packages/engine/scripts/build_humanoid_bundle.py   # needs MuJoCo Menagerie, see below
 packages/engine/.venv/bin/python packages/engine/scripts/build_autoresearch_bundle.py   # ~3 min
-cd packages/engine && .venv/bin/uvicorn kinetra_engine.api:app --port 8000          # optional local API
+cd packages/engine && .venv/bin/uvicorn kinetra_engine.api:app --port 8000          # live engine API (or: scripts/dev.sh = engine + web together)
 
 # Tests
 packages/engine/.venv/bin/python -m pytest packages/engine/tests -q
