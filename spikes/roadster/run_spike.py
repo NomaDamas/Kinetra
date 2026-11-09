@@ -283,10 +283,10 @@ def main():
         report["cases"].append(res)
         bests[name] = (sim, b)
         c = res.get("cma")
-        if "best_candidate_failed_checks" in res:
-            print(f"      best candidate fails: {res['best_candidate_failed_checks']} {res['best_candidate_metrics']}")
         print(f"  {name:26s} screen={res['screen']['verdict']:12s} -> {res['verdict'][:60]}"
               + (f" | evals={c['evals']} wall={c['wall_s']}s best_cost={c['best_cost']:.3f}" if c else ""))
+        if "best_candidate_failed_checks" in res:
+            print(f"      best candidate fails: {res['best_candidate_failed_checks']} {res['best_candidate_metrics']}")
 
     # ---- hero case: first FEASIBLE ramp case with highest fmax
     hero = None
