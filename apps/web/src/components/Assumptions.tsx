@@ -2,6 +2,7 @@ import { useState } from 'react'
 import type { Control, Variant } from '../bundle'
 import type { Assumption, Verdict } from '../types'
 import { describeDist, isUrl, sourceTone, trim } from '../util'
+import { VariantPicker } from './VariantPicker'
 
 interface Props {
   assumptions: Assumption[]
@@ -27,7 +28,6 @@ export function Assumptions(p: Props) {
   const nUnapproved = p.assumptions.filter((a) => !p.approved[a.key]).length
   const [draft, setDraft] = useState<Record<string, string>>({})
   const edited = Object.keys(p.edits).length > 0
-  const val = p.control.values
 
   return (
     <section className="panel" id="assumptions">
@@ -38,39 +38,7 @@ export function Assumptions(p: Props) {
         </span>
       </header>
 
-      <div className="control">
-        <div className="control-h">
-          <div>
-            <div className="eyebrow">control assumption</div>
-            <h3>{p.control.label}</h3>
-          </div>
-          <div className="control-v mono">
-            {trim(p.variants[p.variantIdx].value)} <span>{p.control.unit}</span>
-          </div>
-        </div>
-        <input
-          className="slider"
-          type="range"
-          min={0}
-          max={val.length - 1}
-          step={1}
-          value={p.variantIdx}
-          onChange={(e) => p.onVariant(Number(e.target.value))}
-          aria-label={p.control.label}
-        />
-        <div className="ticks">
-          {val.map((v, i) => (
-            <button key={i} className={`tick ${i === p.variantIdx ? 'on' : ''} ${p.variants[i]?.verdict.status === 'FEASIBLE_FOUND' ? 'okk' : 'nok'}`} onClick={() => p.onVariant(i)}>
-              <i />
-              <span className="mono">{trim(v)}</span>
-            </button>
-          ))}
-        </div>
-        <p className="muted small">
-          {p.control.hint} <b>The slider snaps to {val.length} precomputed runs</b>: values between ticks are not simulated, so
-          there is nothing to show for them. Each tick is a real, seeded MuJoCo run. Green = feasible found, red = not.
-        </p>
-      </div>
+      <VariantPicker control={p.control} variants={p.variants} index={p.variantIdx} onChange={p.onVariant} />
 
       <div className="tablewrap">
         <table className="tbl">
@@ -97,7 +65,7 @@ export function Assumptions(p: Props) {
                   </td>
                   <td className="mono nowrap">
                     {isCtl ? (
-                      <span title="Edit via the slider above (snaps to precomputed runs)">{trim(p.variants[p.variantIdx].value)} {a.unit} ↑</span>
+                      <span title="Edit via the slider above (snaps to precomputed runs)">{trim(p.variants[p.variantIdx]?.value ?? a.value)} {a.unit} ↑</span>
                     ) : a.editable ? (
                       <span className="edit">
                         <input

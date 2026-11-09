@@ -28,24 +28,12 @@ function Gauge({ v }: { v: Verdict }) {
   )
 }
 
-export function VerdictCard({ verdict: v, assumptions }: { verdict: Verdict; assumptions: Assumption[] }) {
+/** Answer-first block: the two-part claim (existence + reliability) and the status banner. */
+export function VerdictAnswer({ verdict: v }: { verdict: Verdict }) {
   const m = statusMeta(v)
   const failed = v.necessary_checks.filter((c) => !c.passed)
-  const label = (k: string) => assumptions.find((a) => a.key === k)?.label ?? k
-  const bc = v.binding_constraint
-  const sens = bc ? [...bc.sensitivities].sort((a, b) => a.rank - b.rank) : []
-  const maxEff = Math.max(1e-12, ...sens.map((s) => Math.abs(s.effect)))
-  const sb = v.reproducibility.search_budget
-  const ce = v.cost_estimate
-  const pe = ce?.physical_equivalent_estimate
-
   return (
-    <section className="panel verdict" id="verdict">
-      <header className="panel-h">
-        <h2>Verdict <span className="kr">판정</span></h2>
-        <span className="pill muted-pill mono">{m.strength}</span>
-      </header>
-
+    <>
       <div className="facts">
         <div className="fact">
           <div className="eyebrow">1 · existence on the nominal model</div>
@@ -69,9 +57,7 @@ export function VerdictCard({ verdict: v, assumptions }: { verdict: Verdict; ass
               ? `p_success ${(v.feasibility.p_success * 100).toFixed(1)}%  CI [${(v.feasibility.ci_low * 100).toFixed(1)}, ${(v.feasibility.ci_high * 100).toFixed(1)}]%`
               : 'not sampled'}
           </b>
-          {v.feasibility.n_samples > 0 && v.feasibility.p_success < 0.5 && (
-            <span className="pill warn fragile">FRAGILE UNDER UNCERTAINTY</span>
-          )}
+          {v.feasibility.n_samples > 0 && v.feasibility.p_success < 0.5 && <span className="pill warn fragile">FRAGILE UNDER UNCERTAINTY</span>}
           <span className="muted small">Share of Monte-Carlo assumption draws (n={v.feasibility.n_samples}) in which the same design still succeeds.</span>
         </div>
       </div>
@@ -92,49 +78,70 @@ export function VerdictCard({ verdict: v, assumptions }: { verdict: Verdict; ass
           </p>
         )}
       </div>
+    </>
+  )
+}
 
-      <div className="grid2">
-        <div>
-          <h4>Feasibility</h4>
-          <Gauge v={v} />
-          {Object.keys(v.best_params).length > 0 && (
-            <details className="bp">
-              <summary>Witness parameters ({Object.keys(v.best_params).length})</summary>
-              <div className="kv mono small">
-                {Object.entries(v.best_params).map(([k, x]) => (
-                  <div key={k}><span>{k}</span><b>{fmt(x, 4)}</b></div>
-                ))}
-              </div>
-            </details>
-          )}
-        </div>
-        <div>
-          <h4>Binding constraint {bc && <span className="muted small">· what limits you most</span>}</h4>
-          {bc ? (
-            <>
-              <div className="mono bc">
-                {bc.name}: margin <b className={bc.margin < 0 ? 'neg' : 'pos'}>{bc.margin >= 0 ? '+' : ''}{fmt(bc.margin)} {bc.unit}</b>
-              </div>
-              <div className="bars">
-                {sens.map((s) => (
-                  <div className="bar-row" key={s.assumption_key}>
-                    <span className="bar-l" title={s.assumption_key}>{label(s.assumption_key)}</span>
-                    <span className="bar-track">
-                      <i className={s.effect >= 0 ? 'pos' : 'neg'} style={{ width: `${(Math.abs(s.effect) / maxEff) * 100}%` }} />
-                    </span>
-                    <span className="mono small bar-v">{s.effect >= 0 ? '+' : ''}{fmt(s.effect, 2)}</span>
-                  </div>
-                ))}
-              </div>
-              {sens.length > 0 && <div className="muted small">sensitivity ({sens[0].method}); signed effect on p_success or margin</div>}
-            </>
-          ) : (
-            <div className="muted">No binding constraint reported.</div>
-          )}
-        </div>
+/** p_success gauge + witness parameters. */
+export function FeasibilityGauge({ verdict: v }: { verdict: Verdict }) {
+  return (
+    <div>
+      <Gauge v={v} />
+      {Object.keys(v.best_params).length > 0 && (
+        <details className="bp">
+          <summary>Witness parameters ({Object.keys(v.best_params).length})</summary>
+          <div className="kv mono small">
+            {Object.entries(v.best_params).map(([k, x]) => (
+              <div key={k}><span>{k}</span><b>{fmt(x, 4)}</b></div>
+            ))}
+          </div>
+        </details>
+      )}
+    </div>
+  )
+}
+
+/** What limits you most: binding constraint + sensitivity bars. */
+export function BindingPanel({ verdict: v, assumptions }: { verdict: Verdict; assumptions: Assumption[] }) {
+  const label = (k: string) => assumptions.find((a) => a.key === k)?.label ?? k
+  const bc = v.binding_constraint
+  const sens = bc ? [...bc.sensitivities].sort((a, b) => a.rank - b.rank) : []
+  const maxEff = Math.max(1e-12, ...sens.map((s) => Math.abs(s.effect)))
+  if (!bc) return <div className="muted">No binding constraint reported.</div>
+  return (
+    <div>
+      <div className="mono bc">
+        {bc.name}: margin <b className={bc.margin < 0 ? 'neg' : 'pos'}>{bc.margin >= 0 ? '+' : ''}{fmt(bc.margin)} {bc.unit}</b>
       </div>
+      <div className="bars">
+        {sens.map((s) => (
+          <div className="bar-row" key={s.assumption_key}>
+            <span className="bar-l" title={s.assumption_key}>{label(s.assumption_key)}</span>
+            <span className="bar-track">
+              <i className={s.effect >= 0 ? 'pos' : 'neg'} style={{ width: `${(Math.abs(s.effect) / maxEff) * 100}%` }} />
+            </span>
+            <span className="mono small bar-v">{s.effect >= 0 ? '+' : ''}{fmt(s.effect, 2)}</span>
+          </div>
+        ))}
+      </div>
+      {sens.length > 0 && <div className="muted small">sensitivity ({sens[0].method}); signed effect on p_success or margin</div>}
+    </div>
+  )
+}
 
-      <h4>Necessary-condition checks</h4>
+/** Evidence tab: necessary checks, review items, model labels, reproducibility, cost. */
+export function VerdictDetails({ verdict: v }: { verdict: Verdict }) {
+  const sb = v.reproducibility.search_budget
+  const ce = v.cost_estimate
+  const pe = ce?.physical_equivalent_estimate
+  return (
+    <section className="panel verdict" id="verdict">
+      <header className="panel-h">
+        <h2>Verdict details <span className="kr">판정 근거</span></h2>
+        <span className="pill muted-pill mono">{statusMeta(v).strength}</span>
+      </header>
+
+      <h4 className="first">Necessary-condition checks</h4>
       {v.necessary_checks.length === 0 ? (
         <div className="muted small">none</div>
       ) : (

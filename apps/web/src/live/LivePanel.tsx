@@ -4,7 +4,7 @@ import { Replay } from '../components/Replay'
 import { statusMeta } from '../util'
 import { XYChart } from './Chart'
 import { ENGINE_START_ALT, ENGINE_START_CMD, SPEEDS, STORED_SCHEDULE_NOTE, TEMPLATES, type ParamDef, type TemplateCfg } from './config'
-import type { LiveDisplayItem, LiveStartReq } from './types'
+import type { LiveDisplayItem, LiveStartReq, LiveTemplate } from './types'
 import { useEngineHealth } from './useEngineHealth'
 import { useLiveSim, type Phase } from './useLiveSim'
 
@@ -12,6 +12,8 @@ interface Props {
   index: DemoIndex | null
   /** Reports engine reachability (from the 3 s /health poll) so the header pill stays in sync. */
   onEngineUp?: (up: boolean) => void
+  /** Lock the panel to one template (project workspace); hides the template switch. Omit for the free-form Lab sandbox. */
+  lockTemplate?: LiveTemplate
 }
 
 const DEBOUNCE_MS = 250
@@ -64,10 +66,10 @@ function copy(text: string) {
   void navigator.clipboard?.writeText(text)
 }
 
-export function LivePanel({ index, onEngineUp }: Props) {
+export function LivePanel({ index, onEngineUp, lockTemplate }: Props) {
   const { health, checked } = useEngineHealth(onEngineUp)
   const sim = useLiveSim()
-  const [tplIdx, setTplIdx] = useState(0)
+  const [tplIdx, setTplIdx] = useState(() => Math.max(0, TEMPLATES.findIndex((t) => t.template === lockTemplate)))
   const cfg = TEMPLATES[tplIdx]
   const [scenarios, setScenarios] = useState<Record<string, ScenarioState>>({})
   const [edits, setEdits] = useState<Record<string, Record<string, number>>>({})
@@ -223,14 +225,20 @@ export function LivePanel({ index, onEngineUp }: Props) {
         )}
 
         <div className="row live-tpl">
-          <span className="muted small">Template</span>
-          <div className="seg" role="group" aria-label="Live template">
-            {TEMPLATES.map((t, i) => (
-              <button key={t.template} className={i === tplIdx ? 'on' : ''} onClick={() => pickTemplate(i)} disabled={active && i !== tplIdx}>
-                {t.title}
-              </button>
-            ))}
-          </div>
+          {lockTemplate ? (
+            <span className="muted small">Template: <b>{cfg.title}</b></span>
+          ) : (
+            <>
+              <span className="muted small">Template</span>
+              <div className="seg" role="group" aria-label="Live template">
+                {TEMPLATES.map((t, i) => (
+                  <button key={t.template} className={i === tplIdx ? 'on' : ''} onClick={() => pickTemplate(i)} disabled={active && i !== tplIdx}>
+                    {t.title}
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
           {scState?.status === 'failed' && <span className="pill warn">recorded scenario unavailable: {scState.error}</span>}
           {!index && <span className="muted small">loading recorded bundle…</span>}
           {index && !meta && <span className="pill warn">no recorded scenario for {cfg.template}: using built-in defaults</span>}

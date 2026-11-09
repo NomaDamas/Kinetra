@@ -20,20 +20,37 @@ const LANG = q.get('lang') === 'en' ? 'en' : 'ko'
 
 const num = (s: string) => parseFloat(s.replace(/[^0-9.\-]/g, ''))
 
-/** Drive the real app UI through its own DOM; returns false if the target is not there (yet). */
+// The presenter drives the real app through its hash routes (#/p/<id>/<tab>, #/lab/...), then through its DOM.
+let SCENARIOS: { id: string; title: string }[] = []
+fetch('/demo/index.json').then((r) => r.json()).then((j: { scenarios: { id: string; title: string }[] }) => { SCENARIOS = j.scenarios }).catch(() => {})
+const currentProject = () => /^#\/p\/([^/?]+)/.exec(location.hash)?.[1] ?? null
+const TAB_OF_TARGET: Record<string, string> = { run: 'evidence', assumptions: 'assumptions', fix: 'simulate', replay: 'simulate', verdict: 'evidence', bom: 'evidence' }
+/** Make sure the project tab that holds `target` is open; true if it already was. */
+function ensureTab(target: string): boolean {
+  const tab = TAB_OF_TARGET[target]
+  const id = currentProject()
+  if (!tab || !id) return true
+  if (!location.hash.startsWith(`#/p/${id}/${tab}`)) {
+    location.hash = `#/p/${id}/${tab}`
+    return false
+  }
+  return true
+}
+
+/** Drive the real app UI; returns false if the target is not there (yet) so the caller retries. */
 function perform(a: Action): boolean {
   const $$ = <T extends Element>(s: string) => Array.from(document.querySelectorAll<T>(s))
   switch (a.type) {
     case 'select_scenario': {
-      const b = $$<HTMLButtonElement>('button.chip.scenario').find((x) => x.textContent?.includes(String(a.title)))
-      if (!b || b.disabled) return false
-      b.click()
+      const sc = SCENARIOS.find((x) => x.title === String(a.title))
+      if (!sc) return false
+      location.hash = `#/p/${sc.id}/overview`
       return true
     }
     case 'tab': {
-      const b = $$<HTMLButtonElement>('.tabs button').find((x) => x.textContent?.toLowerCase().includes(String(a.tab)))
-      if (!b) return false
-      b.click()
+      if (String(a.tab).toLowerCase().includes('autoresearch')) location.hash = '#/lab/autoresearch'
+      else if (String(a.tab).toLowerCase().includes('live')) location.hash = '#/lab/live'
+      else location.hash = '#/projects'
       window.scrollTo({ top: 0 })
       return true
     }
@@ -42,6 +59,7 @@ function perform(a: Action): boolean {
       if (t === 'top') window.scrollTo({ top: 0, behavior: 'smooth' })
       else if (t === 'bottom') window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' })
       else {
+        if (!ensureTab(t)) return false
         const el = document.getElementById(t)
         if (!el) return false
         el.scrollIntoView({ behavior: 'smooth', block: 'start' })
@@ -49,18 +67,21 @@ function perform(a: Action): boolean {
       return true
     }
     case 'open_assumptions': {
+      if (!ensureTab('assumptions')) return false
       const el = document.getElementById('assumptions')
       if (!el) return false
       el.scrollIntoView({ behavior: 'smooth', block: 'start' })
       return true
     }
     case 'set_variant': {
+      if (!ensureTab('assumptions')) return false
       const tk = $$<HTMLButtonElement>('button.tick').find((x) => Math.abs(num(x.textContent ?? '') - Number(a.value)) < 1e-9)
       if (!tk) return false
       tk.click()
       return true
     }
     case 'apply_fix': {
+      if (!ensureTab('fix')) return false
       const b = $$<HTMLButtonElement>('button.btn.primary').find((x) => x.textContent?.includes('Apply fix'))
       if (!b || b.disabled) return false
       b.click()

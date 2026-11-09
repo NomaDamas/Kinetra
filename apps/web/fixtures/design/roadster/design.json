@@ -1,0 +1,250 @@
+{
+ "schema_version": "0.1.0",
+ "scenario_id": "roadster",
+ "template": "rocket_car",
+ "base_variant": 5000,
+ "headline": "DEV FIXTURE: sample design brief; numbers are illustrative and NOT engine output.",
+ "requirements": [
+  {
+   "id": "nozzle_peak_thrust",
+   "label": "Peak thrust per nozzle",
+   "value": 5000,
+   "unit": "N",
+   "derived_from": "max over witness schedule (traj_5000.json)",
+   "margin_factor": 1.25,
+   "required": 6250,
+   "source": "simulation"
+  },
+  {
+   "id": "propellant_mass",
+   "label": "Propellant mass",
+   "value": 38,
+   "unit": "kg",
+   "derived_from": "integral of thrust / (Isp g0) over the witness schedule",
+   "margin_factor": 1.15,
+   "required": 43.7,
+   "source": "simulation"
+  },
+  {
+   "id": "landing_peak_force",
+   "label": "Landing peak force",
+   "value": 41000,
+   "unit": "N",
+   "derived_from": "MC max over 500 draws",
+   "margin_factor": 1.5,
+   "required": 61500,
+   "source": "simulation"
+  }
+ ],
+ "components": [
+  {
+   "id": "nozzle",
+   "role": "thruster",
+   "quantity": 10,
+   "choice": {
+    "name": "Sample cold-gas valve 7 kN",
+    "vendor": "SampleVendor",
+    "specs": {
+     "thrust_N": 7000
+    },
+    "mass_kg": 1.2,
+    "unit_cost_usd": null,
+    "source": "https://example.com/sample",
+    "verified": false
+   },
+   "meets": [
+    {
+     "requirement_id": "nozzle_peak_thrust",
+     "required": 6250,
+     "provided": 7000,
+     "unit": "N",
+     "margin": 0.12,
+     "ok": true
+    }
+   ],
+   "alternatives": [
+    {
+     "name": "Sample valve 6 kN",
+     "why_rejected": "6 kN < 6.25 kN required"
+    }
+   ],
+   "custom": false,
+   "cad": null
+  },
+  {
+   "id": "tank",
+   "role": "propellant_tank",
+   "quantity": 1,
+   "choice": {
+    "name": "Sample COPV 60 L",
+    "vendor": "SampleVendor",
+    "specs": {
+     "capacity_kg": 40
+    },
+    "mass_kg": 22,
+    "unit_cost_usd": null,
+    "source": "estimate",
+    "verified": false
+   },
+   "meets": [
+    {
+     "requirement_id": "propellant_mass",
+     "required": 43.7,
+     "provided": 40,
+     "unit": "kg",
+     "margin": -0.08,
+     "ok": false
+    }
+   ],
+   "alternatives": [],
+   "custom": false,
+   "cad": null
+  },
+  {
+   "id": "nozzle_bracket",
+   "role": "mount",
+   "quantity": 10,
+   "choice": null,
+   "meets": [],
+   "alternatives": [],
+   "custom": true,
+   "cad": "nozzle_bracket"
+  },
+  {
+   "id": "suspension",
+   "role": "landing_gear",
+   "quantity": 4,
+   "choice": null,
+   "meets": [],
+   "alternatives": [
+    {
+     "name": "none in catalog",
+     "why_rejected": "no entry rated for 61.5 kN"
+    }
+   ],
+   "custom": true,
+   "cad": null
+  }
+ ],
+ "custom_parts": [
+  {
+   "id": "nozzle_bracket",
+   "name": "Nozzle mount bracket",
+   "params": {
+    "plate_t_mm": 6,
+    "width_mm": 80,
+    "height_mm": 50
+   },
+   "material": "6061-T6",
+   "mass_kg": 0.31,
+   "cad_stl": "cad/nozzle_bracket.stl",
+   "cad_step": null,
+   "load_case": {
+    "force_N": 6250,
+    "safety_factor": 2.0
+   },
+   "check": {
+    "method": "cantilever bending, hand calc",
+    "stress_MPa": 118,
+    "allow_MPa": 138,
+    "ok": true,
+    "label": "simplified model, needs FEA"
+   }
+  }
+ ],
+ "closed_loop": [
+  {
+   "iteration": 0,
+   "mass_kg": 1300,
+   "status": "FEASIBLE_FOUND",
+   "p_success": 0.13,
+   "ci": [
+    0.11,
+    0.17
+   ],
+   "n": 500,
+   "note": "before design"
+  },
+  {
+   "iteration": 1,
+   "mass_kg": 1342,
+   "status": "FEASIBLE_FOUND",
+   "p_success": 0.09,
+   "ci": [
+    0.07,
+    0.12
+   ],
+   "n": 500,
+   "note": "+ tank, nozzles, brackets"
+  },
+  {
+   "iteration": 2,
+   "mass_kg": 1344,
+   "status": "FEASIBLE_FOUND",
+   "p_success": 0.09,
+   "ci": [
+    0.07,
+    0.12
+   ],
+   "n": 500,
+   "note": "converged"
+  }
+ ],
+ "alternatives": [
+  {
+   "id": "A",
+   "label": "10 x 5 kN nozzles",
+   "changes": {
+    "thruster_force_max": 5000
+   },
+   "status": "FEASIBLE_FOUND",
+   "p_success": 0.13,
+   "mass_kg": 1342,
+   "cost_usd": null,
+   "recommended": false,
+   "note": "baseline"
+  },
+  {
+   "id": "B",
+   "label": "10 x 6 kN nozzles",
+   "changes": {
+    "thruster_force_max": 6000
+   },
+   "status": "FEASIBLE_FOUND",
+   "p_success": 0.58,
+   "mass_kg": 1350,
+   "cost_usd": null,
+   "recommended": true,
+   "note": "higher thrust, more margin"
+  }
+ ],
+ "risks": [
+  {
+   "text": "Landing loads not structurally checked",
+   "severity": "high",
+   "physical_test": "drop test of the suspension"
+  }
+ ],
+ "next_tests": [
+  {
+   "name": "Static nozzle thrust stand test",
+   "purpose": "confirm per-nozzle thrust",
+   "cost": null,
+   "source": ""
+  }
+ ],
+ "totals": {
+  "mass_added_kg": 42.0,
+  "cost_priced_usd": null,
+  "unpriced_lines": 4
+ },
+ "labels": [
+  "simplified model, needs precise validation"
+ ],
+ "reproducibility": {
+  "seed": 1,
+  "engine": "kinetra_engine 0.1.0",
+  "mujoco": "4.0.0",
+  "generated_at": "2026-01-01T00:00:00Z"
+ }
+}

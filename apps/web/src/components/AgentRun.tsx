@@ -4,18 +4,24 @@ import type { AgentStep } from '../bundle'
 interface Props {
   steps: AgentStep[]
   /** key changes => restart the animation */
-  runKey: number
-  onDone: () => void
+  runKey?: number
+  onDone?: () => void
+  /** false: show the whole log at once (Evidence tab). true: animate step by step (cosmetic delays; wall_seconds shown are the recorded ones). */
+  animate?: boolean
 }
 
 /** Plays back a RECORDED pipeline log. Delays are cosmetic; the wall_seconds shown are the real recorded ones. */
-export function AgentRun({ steps, runKey, onDone }: Props) {
-  const [shown, setShown] = useState(0)
+export function AgentRun({ steps, runKey = 0, onDone, animate = true }: Props) {
+  const [shown, setShown] = useState(animate ? 0 : steps.length)
   const [open, setOpen] = useState<string | null>(null)
   const done = useRef(onDone)
   done.current = onDone
 
   useEffect(() => {
+    if (!animate) {
+      setShown(steps.length)
+      return
+    }
     setShown(0)
     setOpen(null)
     let i = 0
@@ -24,11 +30,11 @@ export function AgentRun({ steps, runKey, onDone }: Props) {
       i++
       setShown(i)
       if (i < steps.length) timer = window.setTimeout(tick, 380 + Math.min(900, steps[i - 1].wall_seconds * 18))
-      else done.current()
+      else done.current?.()
     }
     timer = window.setTimeout(tick, 250)
     return () => window.clearTimeout(timer)
-  }, [runKey, steps])
+  }, [runKey, steps, animate])
 
   const total = steps.reduce((a, s) => a + s.wall_seconds, 0)
   return (
@@ -69,7 +75,7 @@ export function AgentRun({ steps, runKey, onDone }: Props) {
       </ol>
       <p className="muted small">
         {steps.length} tool calls, {total.toFixed(1)} s total recorded wall time. Numbers come from simulation tools, not from a language model.
-        {' '}Replaying the log is animated for readability only.
+        {animate && ' Replaying the log is animated for readability only.'}
       </p>
     </section>
   )

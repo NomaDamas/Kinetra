@@ -84,3 +84,24 @@ export function sourceTone(s: string): 'url' | 'llm' | 'user' | 'other' {
   if (s === 'user') return 'user'
   return 'other'
 }
+
+/** Short status label for cards/badges (the long title stays in statusMeta). */
+export function shortStatus(v: { status: VerdictStatus }): { label: string; tone: StatusMeta['tone']; strength: string } {
+  switch (v.status) {
+    case 'FEASIBLE_FOUND':
+      return { label: 'FEASIBLE', tone: 'ok', strength: 'strong existence evidence' }
+    case 'INFEASIBLE_NECESSARY_CONDITION':
+      return { label: 'IMPOSSIBLE UNDER ASSUMPTIONS', tone: 'bad', strength: 'strong: a necessary condition fails' }
+    case 'NOT_FOUND_IN_BUDGET':
+      return { label: 'NOT FOUND IN BUDGET', tone: 'weak', strength: 'weak evidence, not a proof' }
+    default:
+      return { label: 'MODEL INVALID', tone: 'invalid', strength: 'no verdict' }
+  }
+}
+
+export const pct = (x: number, d = 1) => `${(x * 100).toFixed(d)}%`
+
+/** Human title of a template id. */
+export function templateTitle(t: string): string {
+  return t === 'rocket_car' ? 'Rocket car' : t === 'humanoid_jump' ? 'Humanoid jump' : t
+}

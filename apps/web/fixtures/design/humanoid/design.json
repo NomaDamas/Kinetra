@@ -1,0 +1,107 @@
+{
+ "schema_version": "0.1.0",
+ "scenario_id": "humanoid",
+ "template": "humanoid_jump",
+ "base_variant": 1.0,
+ "headline": "DEV FIXTURE: sample design brief; numbers are illustrative and NOT engine output.",
+ "requirements": [
+  {
+   "id": "knee_torque",
+   "label": "Peak knee torque",
+   "value": 120,
+   "unit": "N*m",
+   "derived_from": "max over witness rollout",
+   "margin_factor": 1.2,
+   "required": 144,
+   "source": "simulation"
+  }
+ ],
+ "components": [
+  {
+   "id": "knee_actuator",
+   "role": "actuator",
+   "quantity": 2,
+   "choice": {
+    "name": "Sample actuator 150 N*m",
+    "vendor": "SampleVendor",
+    "specs": {
+     "torque_Nm": 150
+    },
+    "mass_kg": 2.0,
+    "unit_cost_usd": null,
+    "source": "https://example.com/sample",
+    "verified": false
+   },
+   "meets": [
+    {
+     "requirement_id": "knee_torque",
+     "required": 144,
+     "provided": 150,
+     "unit": "N*m",
+     "margin": 0.04,
+     "ok": true
+    }
+   ],
+   "alternatives": [],
+   "custom": false,
+   "cad": null
+  }
+ ],
+ "custom_parts": [],
+ "closed_loop": [
+  {
+   "iteration": 0,
+   "mass_kg": 33.34,
+   "status": "FEASIBLE_FOUND",
+   "p_success": 0.135,
+   "ci": [
+    0.094,
+    0.189
+   ],
+   "n": 200,
+   "note": "before design"
+  },
+  {
+   "iteration": 1,
+   "mass_kg": 37.34,
+   "status": "FEASIBLE_FOUND",
+   "p_success": 0.1,
+   "ci": [
+    0.07,
+    0.15
+   ],
+   "n": 200,
+   "note": "+ actuators"
+  }
+ ],
+ "alternatives": [],
+ "risks": [
+  {
+   "text": "Landing impact not structurally checked",
+   "severity": "high",
+   "physical_test": "drop test of the leg assembly"
+  }
+ ],
+ "next_tests": [
+  {
+   "name": "Static knee actuator torque test",
+   "purpose": "confirm peak torque at the knee joint",
+   "cost": null,
+   "source": ""
+  }
+ ],
+ "totals": {
+  "mass_added_kg": 4.0,
+  "cost_priced_usd": null,
+  "unpriced_lines": 1
+ },
+ "labels": [
+  "simplified model, needs precise validation"
+ ],
+ "reproducibility": {
+  "seed": 1,
+  "engine": "kinetra_engine 0.1.0",
+  "mujoco": "4.0.0",
+  "generated_at": "2026-01-01T00:00:00Z"
+ }
+}
