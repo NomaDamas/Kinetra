@@ -325,7 +325,7 @@ export default function App() {
                 />
               </section>
 
-              <FixCallout variant={variant} control={scenario.control} fixedIdx={fixedIdx} onApply={applyFix} compare={compare} onCompare={setCompare} />
+              <FixCallout variant={variant} fixedValue={fixedIdx !== null ? scenario.variants[fixedIdx].value : undefined} control={scenario.control} fixedIdx={fixedIdx} onApply={applyFix} compare={compare} onCompare={setCompare} />
 
               <div key={`v${swap}`} className="swap-in">
                 <VerdictCard verdict={variant.verdict} assumptions={scenario.spec.assumptions} />

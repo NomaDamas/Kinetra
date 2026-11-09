@@ -2,7 +2,7 @@
  "lang": "ko",
  "voice": "Yuna",
  "rate": 185,
- "total": 179.137,
+ "total": 221.894,
  "audio": "/present/narration.ko.m4a",
  "tag": "기록된 실행, 시드 고정 · 재현 가능",
  "scenes": [
@@ -45,13 +45,22 @@
    "start": 38.613946
   },
   {
+   "id": "demo_humanoid",
+   "title": "Demo 2: humanoid jump",
+   "slide": {
+    "kind": "app",
+    "tab": "lab"
+   },
+   "start": 94.646939
+  },
+  {
    "id": "autoresearch",
    "title": "Autoresearch",
    "slide": {
     "kind": "app",
     "tab": "autoresearch"
    },
-   "start": 94.646939
+   "start": 137.403606
   },
   {
    "id": "asymmetry",
@@ -59,7 +68,7 @@
    "slide": {
     "kind": "asymmetry"
    },
-   "start": 131.80240400000002
+   "start": 174.559071
   },
   {
    "id": "diff",
@@ -67,7 +76,7 @@
    "slide": {
     "kind": "diff"
    },
-   "start": 145.13156500000002
+   "start": 187.888232
   },
   {
    "id": "business",
@@ -75,7 +84,7 @@
    "slide": {
     "kind": "business"
    },
-   "start": 156.436395
+   "start": 199.19306199999997
   },
   {
    "id": "roadmap",
@@ -83,7 +92,7 @@
    "slide": {
     "kind": "roadmap"
    },
-   "start": 164.284377
+   "start": 207.04104399999997
   },
   {
    "id": "ask",
@@ -91,7 +100,7 @@
    "slide": {
     "kind": "ask"
    },
-   "start": 171.236894
+   "start": 213.99356099999997
   }
  ],
  "lines": [
@@ -168,76 +177,108 @@
    "end": 93.647
   },
   {
+   "id": "demo_humanoid.0",
+   "scene": "demo_humanoid",
+   "text": "두 번째 데모는 휴머노이드 점프와 착지입니다. 같은 기록된, 시드가 고정된 재현 가능한 실행입니다.",
+   "start": 94.647,
+   "dur": 6.406,
+   "end": 101.053
+  },
+  {
+   "id": "demo_humanoid.1",
+   "scene": "demo_humanoid",
+   "text": "모터 토크 배율을 0.1배로 낮추면, static_torque_saturation 검사에서 필요한 값 15.7이 가용 한도 13.9를 넘습니다. 필요조건 위반이라 가정 하에서 강한 불가능입니다.",
+   "start": 101.503,
+   "dur": 11.818,
+   "end": 113.321
+  },
+  {
+   "id": "demo_humanoid.2",
+   "scene": "demo_humanoid",
+   "text": "0.25배에서는 22550번 평가했지만 점프를 찾지 못했습니다. 약한 증거이고 불가능의 증명이 아닙니다.",
+   "start": 113.771,
+   "dur": 8.033,
+   "end": 121.804
+  },
+  {
+   "id": "demo_humanoid.3",
+   "scene": "demo_humanoid",
+   "text": "1배에서는 해를 찾았습니다. 하지만 가정 표본 200개 중 13.5퍼센트에서만 성공하고, 신뢰구간은 9.4에서 18.9퍼센트입니다. 재생해 보겠습니다. 단순화된 모델이라 정밀 검증이 필요합니다.",
+   "start": 122.254,
+   "dur": 14.15,
+   "end": 136.404
+  },
+  {
    "id": "autoresearch.0",
    "scene": "autoresearch",
    "text": "이제 오토리서치입니다. 여기 데이터는 합성 데이터이고, 실물 검증은 하지 않았습니다. 이 점을 분명히 말씀드립니다.",
-   "start": 94.647,
+   "start": 137.404,
    "dur": 7.395,
-   "end": 102.042
+   "end": 144.798
   },
   {
    "id": "autoresearch.1",
    "scene": "autoresearch",
    "text": "자세 제어에서 기본 개루프 스케줄은 200개 교란 표본 중 5.5퍼센트만 성공했습니다. 피드백 제어를 추가한 설정은 100퍼센트입니다. 장난감 10킬로그램 시험체이고 실제 차량에 대한 주장이 아닙니다.",
-   "start": 102.492,
+   "start": 145.248,
    "dur": 13.111,
-   "end": 115.602
+   "end": 158.359
   },
   {
    "id": "autoresearch.2",
    "scene": "autoresearch",
    "text": "보정 실험 추천은 식별 가능한 매개변수를 9개 중 5개에서 9개로 늘렸습니다. 판정에 반영하면 스케줄 제어기의 성공률이 1퍼센트에서 66.5퍼센트로 움직입니다. 단, 모델 클래스가 같은 자기일관 테스트입니다.",
-   "start": 116.052,
+   "start": 158.809,
    "dur": 14.75,
-   "end": 130.802
+   "end": 173.559
   },
   {
    "id": "asymmetry.0",
    "scene": "asymmetry",
    "text": "판정은 비대칭입니다. 해를 찾으면 가정 안에서 강한 증거입니다. 필요조건이 깨지면 강한 불가능입니다. 예산 안에서 못 찾은 것은 약한 증거일 뿐이고, 절대 증명이라 말하지 않습니다.",
-   "start": 131.802,
+   "start": 174.559,
    "dur": 12.329,
-   "end": 144.132
+   "end": 186.888
   },
   {
    "id": "diff.0",
    "scene": "diff",
    "text": "Drift builds the sim. We kill ideas not worth simulating.",
-   "start": 145.132,
+   "start": 187.888,
    "dur": 3.923,
-   "end": 149.054
+   "end": 191.811
   },
   {
    "id": "diff.1",
    "scene": "diff",
    "text": "Luminary speeds up experts' simulations. We give everyone their first physical experiment.",
-   "start": 149.504,
+   "start": 192.261,
    "dur": 5.932,
-   "end": 155.436
+   "end": 198.193
   },
   {
    "id": "business.0",
    "scene": "business",
    "text": "사업 모델은 가설이고 검증되지 않았습니다. 지불 의사는 확인하지 못했고, 고객이나 매출도 아직 없습니다.",
-   "start": 156.436,
+   "start": 199.193,
    "dur": 6.848,
-   "end": 163.284
+   "end": 206.041
   },
   {
    "id": "roadmap.0",
    "scene": "roadmap",
    "text": "다음 단계는 실물 데이터로 보정을 검증하는 것, 더 많은 템플릿, 그리고 사용자 인터뷰입니다.",
-   "start": 164.284,
+   "start": 207.041,
    "dur": 5.953,
-   "end": 170.237
+   "end": 212.994
   },
   {
    "id": "ask.0",
    "scene": "ask",
    "text": "저희가 원하는 것은 이 가설을 검증할 첫 사용자와 실물 시험 데이터를 가진 파트너입니다. 감사합니다.",
-   "start": 171.237,
+   "start": 213.994,
    "dur": 6.4,
-   "end": 177.637
+   "end": 220.394
   }
  ],
  "actions": [
@@ -304,10 +345,58 @@
    "scene": "demo_roadster"
   },
   {
+   "at": 2.5,
+   "type": "select_scenario",
+   "title": "Humanoid jump",
+   "t": 97.147,
+   "line": "demo_humanoid.0",
+   "scene": "demo_humanoid"
+  },
+  {
+   "at": 0.5,
+   "type": "scroll",
+   "target": "assumptions",
+   "t": 102.003,
+   "line": "demo_humanoid.1",
+   "scene": "demo_humanoid"
+  },
+  {
+   "at": 1.0,
+   "type": "set_variant",
+   "value": 0.1,
+   "t": 102.503,
+   "line": "demo_humanoid.1",
+   "scene": "demo_humanoid"
+  },
+  {
+   "at": 0.5,
+   "type": "set_variant",
+   "value": 0.25,
+   "t": 114.271,
+   "line": "demo_humanoid.2",
+   "scene": "demo_humanoid"
+  },
+  {
+   "at": 0.5,
+   "type": "set_variant",
+   "value": 1.0,
+   "t": 122.754,
+   "line": "demo_humanoid.3",
+   "scene": "demo_humanoid"
+  },
+  {
+   "at": 1.5,
+   "type": "scroll",
+   "target": "replay",
+   "t": 123.754,
+   "line": "demo_humanoid.3",
+   "scene": "demo_humanoid"
+  },
+  {
    "at": 0.3,
    "type": "tab",
    "tab": "autoresearch",
-   "t": 94.947,
+   "t": 137.704,
    "line": "autoresearch.0",
    "scene": "autoresearch"
   },
@@ -315,7 +404,7 @@
    "at": 0.5,
    "type": "scroll",
    "target": "top",
-   "t": 102.992,
+   "t": 145.748,
    "line": "autoresearch.1",
    "scene": "autoresearch"
   },
@@ -323,7 +412,7 @@
    "at": 0.5,
    "type": "scroll",
    "target": "bottom",
-   "t": 116.552,
+   "t": 159.309,
    "line": "autoresearch.2",
    "scene": "autoresearch"
   }

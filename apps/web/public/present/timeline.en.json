@@ -2,7 +2,7 @@
  "lang": "en",
  "voice": "Samantha",
  "rate": 175,
- "total": 179.041,
+ "total": 223.607,
  "audio": "/present/narration.en.m4a",
  "tag": "recorded run, seeded & reproducible",
  "scenes": [
@@ -45,13 +45,22 @@
    "start": 39.407323999999996
   },
   {
+   "id": "demo_humanoid",
+   "title": "Demo 2: humanoid jump",
+   "slide": {
+    "kind": "app",
+    "tab": "lab"
+   },
+   "start": 96.25242599999999
+  },
+  {
    "id": "autoresearch",
    "title": "Autoresearch",
    "slide": {
     "kind": "app",
     "tab": "autoresearch"
    },
-   "start": 96.25242599999999
+   "start": 140.81789099999997
   },
   {
    "id": "asymmetry",
@@ -59,7 +68,7 @@
    "slide": {
     "kind": "asymmetry"
    },
-   "start": 132.584535
+   "start": 177.14999999999998
   },
   {
    "id": "diff",
@@ -67,7 +76,7 @@
    "slide": {
     "kind": "diff"
    },
-   "start": 145.593515
+   "start": 190.15897999999999
   },
   {
    "id": "business",
@@ -75,7 +84,7 @@
    "slide": {
     "kind": "business"
    },
-   "start": 155.689729
+   "start": 200.255194
   },
   {
    "id": "roadmap",
@@ -83,7 +92,7 @@
    "slide": {
     "kind": "roadmap"
    },
-   "start": 164.457257
+   "start": 209.022722
   },
   {
    "id": "ask",
@@ -91,7 +100,7 @@
    "slide": {
     "kind": "ask"
    },
-   "start": 171.489865
+   "start": 216.05533
   }
  ],
  "lines": [
@@ -168,76 +177,108 @@
    "end": 95.252
   },
   {
+   "id": "demo_humanoid.0",
+   "scene": "demo_humanoid",
+   "text": "Demo two is a humanoid jump and landing. Same recorded, seeded, reproducible run.",
+   "start": 96.252,
+   "dur": 5.522,
+   "end": 101.774
+  },
+  {
+   "id": "demo_humanoid.1",
+   "scene": "demo_humanoid",
+   "text": "Lower the motor torque scale to 0.1 times: the static_torque_saturation check needs 15.7 against a limit of 13.9. A necessary condition is violated, so strong impossibility under the assumptions.",
+   "start": 102.224,
+   "dur": 13.669,
+   "end": 115.893
+  },
+  {
+   "id": "demo_humanoid.2",
+   "scene": "demo_humanoid",
+   "text": "At 0.25 times, 22550 evaluations found no jump. Weak evidence, not proof of impossibility.",
+   "start": 116.343,
+   "dur": 8.935,
+   "end": 125.278
+  },
+  {
+   "id": "demo_humanoid.3",
+   "scene": "demo_humanoid",
+   "text": "At 1 times a solution is found, but it works in only 13.5 percent of 200 sampled assumption sets, interval 9.4 to 18.9 percent. Replaying it. Simplified model, needs precise validation.",
+   "start": 125.728,
+   "dur": 14.09,
+   "end": 139.818
+  },
+  {
    "id": "autoresearch.0",
    "scene": "autoresearch",
    "text": "Now autoresearch. The data here is synthetic and sim-to-real is not validated. We say this up front.",
-   "start": 96.252,
+   "start": 140.818,
    "dur": 5.974,
-   "end": 102.227
+   "end": 146.792
   },
   {
    "id": "autoresearch.1",
    "scene": "autoresearch",
    "text": "For attitude control, the baseline open-loop schedule succeeds in 5.5 percent of 200 disturbed samples. With feedback it is 100 percent. It is a toy 10 kilogram article, not a claim about a real vehicle.",
-   "start": 102.677,
+   "start": 147.242,
    "dur": 13.341,
-   "end": 116.018
+   "end": 160.583
   },
   {
    "id": "autoresearch.2",
    "scene": "autoresearch",
    "text": "The calibration experiment recommendation raises identifiable parameters from 5 to 9 of 9. In the verdict, the schedule controller moves from 1 to 66.5 percent. This is a self-consistent test where the model class matches the generator.",
-   "start": 116.468,
+   "start": 161.033,
    "dur": 15.117,
-   "end": 131.585
+   "end": 176.15
   },
   {
    "id": "asymmetry.0",
    "scene": "asymmetry",
    "text": "Verdicts are asymmetric. Found is strong evidence within the assumptions. A violated necessary condition is a strong impossibility. Not found within budget is weak evidence only, and we never call it proof.",
-   "start": 132.585,
+   "start": 177.15,
    "dur": 12.009,
-   "end": 144.594
+   "end": 189.159
   },
   {
    "id": "diff.0",
    "scene": "diff",
    "text": "Drift builds the sim. We kill ideas not worth simulating.",
-   "start": 145.594,
+   "start": 190.159,
    "dur": 3.406,
-   "end": 148.999
+   "end": 193.565
   },
   {
    "id": "diff.1",
    "scene": "diff",
    "text": "Luminary speeds up experts' simulations. We give everyone their first physical experiment.",
-   "start": 149.449,
+   "start": 194.015,
    "dur": 5.24,
-   "end": 154.69
+   "end": 199.255
   },
   {
    "id": "business.0",
    "scene": "business",
    "text": "The business model is a hypothesis and is unvalidated. We have not confirmed willingness to pay, and we have no customers or revenue yet.",
-   "start": 155.69,
+   "start": 200.255,
    "dur": 7.768,
-   "end": 163.457
+   "end": 208.023
   },
   {
    "id": "roadmap.0",
    "scene": "roadmap",
    "text": "Next: validate calibration against real data, add more templates, and run user interviews.",
-   "start": 164.457,
+   "start": 209.023,
    "dur": 6.033,
-   "end": 170.49
+   "end": 215.055
   },
   {
    "id": "ask.0",
    "scene": "ask",
    "text": "What we need: first users to test this hypothesis, and partners with real test data. Thank you.",
-   "start": 171.49,
+   "start": 216.055,
    "dur": 6.051,
-   "end": 177.541
+   "end": 222.107
   }
  ],
  "actions": [
@@ -304,10 +345,58 @@
    "scene": "demo_roadster"
   },
   {
+   "at": 2.5,
+   "type": "select_scenario",
+   "title": "Humanoid jump",
+   "t": 98.752,
+   "line": "demo_humanoid.0",
+   "scene": "demo_humanoid"
+  },
+  {
+   "at": 0.5,
+   "type": "scroll",
+   "target": "assumptions",
+   "t": 102.724,
+   "line": "demo_humanoid.1",
+   "scene": "demo_humanoid"
+  },
+  {
+   "at": 1.0,
+   "type": "set_variant",
+   "value": 0.1,
+   "t": 103.224,
+   "line": "demo_humanoid.1",
+   "scene": "demo_humanoid"
+  },
+  {
+   "at": 0.5,
+   "type": "set_variant",
+   "value": 0.25,
+   "t": 116.843,
+   "line": "demo_humanoid.2",
+   "scene": "demo_humanoid"
+  },
+  {
+   "at": 0.5,
+   "type": "set_variant",
+   "value": 1.0,
+   "t": 126.228,
+   "line": "demo_humanoid.3",
+   "scene": "demo_humanoid"
+  },
+  {
+   "at": 1.5,
+   "type": "scroll",
+   "target": "replay",
+   "t": 127.228,
+   "line": "demo_humanoid.3",
+   "scene": "demo_humanoid"
+  },
+  {
    "at": 0.3,
    "type": "tab",
    "tab": "autoresearch",
-   "t": 96.552,
+   "t": 141.118,
    "line": "autoresearch.0",
    "scene": "autoresearch"
   },
@@ -315,7 +404,7 @@
    "at": 0.5,
    "type": "scroll",
    "target": "top",
-   "t": 103.177,
+   "t": 147.742,
    "line": "autoresearch.1",
    "scene": "autoresearch"
   },
@@ -323,7 +412,7 @@
    "at": 0.5,
    "type": "scroll",
    "target": "bottom",
-   "t": 116.968,
+   "t": 161.533,
    "line": "autoresearch.2",
    "scene": "autoresearch"
   }

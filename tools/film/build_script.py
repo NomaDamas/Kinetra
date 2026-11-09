@@ -119,21 +119,32 @@ def main():
     # humanoid
     if H:
         hv = H["variants"]
-        feas = [v for v in hv if v["verdict"]["status"] == "FEASIBLE_FOUND"]
-        bad = [v for v in hv if v["verdict"]["status"] != "FEASIBLE_FOUND"]
-        ko = ["두 번째 데모는 휴머노이드 점프와 착지입니다. 같은 기록된 재현 가능한 실행입니다."]
-        en = ["Demo two is a humanoid jump and landing. Same recorded, reproducible run."]
+        hc = H["control"]
+        hu = hc["unit"].split(" ")[0] if hc["unit"].startswith("x") else hc["unit"]
+        def failed_check(v):
+            return next((c for c in v["verdict"]["necessary_checks"] if not c["passed"]), None)
+        imp_h = next((v for v in hv if v["verdict"]["status"] == "INFEASIBLE_NECESSARY_CONDITION"), None)
+        nf_h = next((v for v in hv if v["verdict"]["status"] == "NOT_FOUND_IN_BUDGET"), None)
+        ok_h = [v for v in hv if v["verdict"]["status"] == "FEASIBLE_FOUND"]
+        top_h = ok_h[-1] if ok_h else None
+        ko = ["두 번째 데모는 휴머노이드 점프와 착지입니다. 같은 기록된, 시드가 고정된 재현 가능한 실행입니다."]
+        en = ["Demo two is a humanoid jump and landing. Same recorded, seeded, reproducible run."]
         acts = {0: [dict(at=2.5, type="select_scenario", title=scen[hid]["title"])]}
-        if bad:
-            b = bad[0]
-            ko.append(f"{R and H['control']['label']} {fmtn(b['value'])} {H['control']['unit']}에서는 {b['headline'].split(': ',1)[-1][:90]}. 이 문장은 번들에서 읽은 그대로입니다.")
-            en.append(f"At {H['control']['label']} {fmtn(b['value'])} {H['control']['unit']}: {b['headline'].split(': ',1)[-1][:120]}. This sentence is read from the bundle.")
-            acts[1] = [dict(at=0.5, type="set_variant", value=b["value"])]
-        if feas:
-            f0 = feas[-1]
-            ko.append(f"{fmtn(f0['value'])} {H['control']['unit']}에서는 해를 찾았습니다. 재생해 보겠습니다. 단순화된 모델입니다.")
-            en.append(f"At {fmtn(f0['value'])} {H['control']['unit']} a solution is found. Replaying it. Simplified model.")
-            acts[len(ko) - 1] = [dict(at=0.5, type="set_variant", value=f0["value"]), dict(at=1.5, type="play")]
+        if imp_h and failed_check(imp_h):
+            c = failed_check(imp_h)
+            ko.append(f"모터 토크 배율을 {fmtn(imp_h['value'])}배로 낮추면, {c['name']} 검사에서 필요한 값 {c['measured']:.1f}이 가용 한도 {c['limit']:.1f}를 넘습니다. 필요조건 위반이라 가정 하에서 강한 불가능입니다.")
+            en.append(f"Lower the motor torque scale to {fmtn(imp_h['value'])} times: the {c['name']} check needs {c['measured']:.1f} against a limit of {c['limit']:.1f}. A necessary condition is violated, so strong impossibility under the assumptions.")
+            acts[1] = [dict(at=0.5, type="scroll", target="assumptions"), dict(at=1.0, type="set_variant", value=imp_h["value"])]
+        if nf_h:
+            ne = int(re.search(r"([\d,]+) evaluations", nf_h["headline"]).group(1).replace(",", ""))
+            ko.append(f"{fmtn(nf_h['value'])}배에서는 {ne}번 평가했지만 점프를 찾지 못했습니다. 약한 증거이고 불가능의 증명이 아닙니다.")
+            en.append(f"At {fmtn(nf_h['value'])} times, {ne} evaluations found no jump. Weak evidence, not proof of impossibility.")
+            acts[len(ko) - 1] = [dict(at=0.5, type="set_variant", value=nf_h["value"])]
+        if top_h:
+            fp2 = top_h["verdict"]["feasibility"]
+            ko.append(f"{fmtn(top_h['value'])}배에서는 해를 찾았습니다. 하지만 가정 표본 {fp2['n_samples']}개 중 {pct(fp2['p_success'])}퍼센트에서만 성공하고, 신뢰구간은 {pct(fp2['ci_low'])}에서 {pct(fp2['ci_high'])}퍼센트입니다. 재생해 보겠습니다. 단순화된 모델이라 정밀 검증이 필요합니다.")
+            en.append(f"At {fmtn(top_h['value'])} times a solution is found, but it works in only {pct(fp2['p_success'])} percent of {fp2['n_samples']} sampled assumption sets, interval {pct(fp2['ci_low'])} to {pct(fp2['ci_high'])} percent. Replaying it. Simplified model, needs precise validation.")
+            acts[len(ko) - 1] = [dict(at=0.5, type="set_variant", value=top_h["value"]), dict(at=1.5, type="scroll", target="replay")]
         sc("demo_humanoid", "Demo 2: humanoid jump", dict(kind="app", tab="lab"), ko, en, acts)
     sc("autoresearch", "Autoresearch", dict(kind="app", tab="autoresearch"),
        ["이제 오토리서치입니다. 여기 데이터는 합성 데이터이고, 실물 검증은 하지 않았습니다. 이 점을 분명히 말씀드립니다.",
