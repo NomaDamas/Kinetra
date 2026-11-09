@@ -113,7 +113,7 @@ def main():
         A[k] = [dict(at=0.3, type="set_variant", value=V[imp]["value"])]
         k += 1
     A[k] = [dict(at=0.2, type="scroll", target="fix"), dict(at=4.0, type="apply_fix")]
-    A[k + 1] = [dict(at=0.4, type="scroll", target="verdict"), dict(at=0.4, type="play")]
+    A[k + 1] = [dict(at=0.4, type="scroll", target="replay")]
     for i, a in A.items():
         s[-1]["narration"][i]["actions"] = a
     # humanoid

@@ -143,11 +143,7 @@
       {
        "at": 0.4,
        "type": "scroll",
-       "target": "verdict"
-      },
-      {
-       "at": 0.4,
-       "type": "play"
+       "target": "replay"
       }
      ]
     }

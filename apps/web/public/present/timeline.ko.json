@@ -298,14 +298,7 @@
   {
    "at": 0.4,
    "type": "scroll",
-   "target": "verdict",
-   "t": 81.186,
-   "line": "demo_roadster.5",
-   "scene": "demo_roadster"
-  },
-  {
-   "at": 0.4,
-   "type": "play",
+   "target": "replay",
    "t": 81.186,
    "line": "demo_roadster.5",
    "scene": "demo_roadster"
