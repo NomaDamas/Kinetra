@@ -82,6 +82,15 @@ HI = np.array([0.2, 2.5, 0.4, 1.5, 0.2, 2.5, 0.2, 2.5, 1.2, 0.6])
 T_SETTLE = 0.3
 T_AIR_BLEND = 0.15
 FRAME_STRIDE = 9           # 9 * 2 ms = 18 ms -> 55.6 Hz frames in exported trajectories
+RESTART_EVALS = 800        # CMA-ES evaluations per restart before restarting from a new random start
+FAILURE_CODES = ("MODEL_INVALID", "ACTUATOR_SATURATION", "CONTACT_LOSS", "STRUCTURAL_UNMODELED", "TIPPING",
+                 "SEARCH_BUDGET_EXHAUSTED")
+ROBUST_K = 10              # assumption scenarios per candidate in the robustification stage
+ROBUST_EVALS = 6000        # rollouts (not candidates) spent on robustification
+FIX_TORQUE_VALUES = [0.2, 0.35, 0.5, 0.65, 0.8, 1.0]
+MAX_DRIFT_M = 0.30          # 'straight up': COM horizontal drift between start and touchdown (default, editable via spec)
+DRIFT_SOFT_M = 0.12
+MU_DESIGN = 0.5            # design preference: required friction coefficient at takeoff/landing stays below this
 DESIGN_MARGIN = 0.10       # search aims for target*(1+margin) so that Monte-Carlo derating still passes (default)
 GRF_SOFT_FRAC = 0.80       # soft GRF penalty starts at 80 % of the limit
 SAT_FLAG = 0.98            # judgment-spec H4: |tau|/forcerange >= 0.98 counts as saturated
@@ -186,6 +195,9 @@ class Sim:
         prev_target = P_stand.copy()
         t_liftoff = t_touch = None
         com_lift = vz_lift = None
+        vh_lift = 0.0
+        com_xy0 = d.subtree_com[1][:2].copy()
+        drift_land = None
         com_apex = -1e9
         max_demand = np.zeros(12)
         max_force = np.zeros(12)
@@ -208,6 +220,7 @@ class Sim:
         for i in range(n):
             t = d.time
             fz = 0.0
+            fw = np.zeros(3)   # net world-frame foot contact force
             foot_c = other_c = False
             for ci in range(d.ncon):
                 c = d.contact[ci]
@@ -219,11 +232,12 @@ class Sim:
                     if og in self.foot_geoms:
                         foot_c = True
                         fz += f6[0]
-                        if f6[0] > 20.0:
-                            mu_req = max(mu_req, math.hypot(f6[1], f6[2]) / f6[0])
+                        fw += c.frame.reshape(3, 3).T @ f6[:3]
                     else:
                         other_c = True
             bad_contact |= other_c
+            if fz > 0.3 * W:   # H9: net traction demand |F_xy| / F_z while the feet carry real load
+                mu_req = max(mu_req, math.hypot(fw[0], fw[1]) / fw[2] if fw[2] > 0 else 0.0)
             com = d.subtree_com[1]
             if t_liftoff is not None and foot_c:   # GRF counted from the FIRST contact after liftoff
                 grf_peak_land = max(grf_peak_land, fz)
@@ -242,6 +256,7 @@ class Sim:
                     blend_from = prev_target.copy()
                     t_liftoff, com_lift = t, com[2]
                     vz_lift = self._com_vz()
+                    vh_lift = float(np.hypot(*d.subtree_linvel[1][:2]))
                     if record:
                         ev.append(("liftoff", t, d.xpos[self.pelvis].copy(), 0.0))
                 elif t - t_phase > Tp + 0.6:
@@ -265,6 +280,7 @@ class Sim:
                 else:
                     if t - t_phase > 0.03:
                         phase, t_touch, t_phase = "land", t, t
+                        drift_land = float(np.linalg.norm(d.subtree_com[1][:2] - com_xy0))
                     tgt = prev_target
             if phase == "land":
                 tgt = P_land
@@ -311,6 +327,8 @@ class Sim:
         else:
             r["ballistic_height"] = r["com_apex_rise"] = r["foot_clearance"] = 0.0
         r["landed"] = t_touch is not None
+        r["drift_m"] = float(drift_land) if drift_land is not None else 0.0
+        r["v_horizontal_liftoff"] = float(vh_lift)
         if t_touch is not None:
             r["t_touch"] = float(t_touch)
         up = float(d.xmat[self.torso].reshape(3, 3)[2, 2])
@@ -382,20 +400,6 @@ class Sim:
 
 
 # --------------------------------------------------------------------------------------------- assumptions
-def _dist_sample(a: Assumption, rng: np.random.Generator) -> float:
-    d = a.distribution
-    if d.kind == "uniform":
-        return float(rng.uniform(d.low, d.high))
-    if d.kind == "normal":
-        x = float(rng.normal(d.mean, d.std))
-        if d.clip_low is not None:
-            x = max(x, d.clip_low)
-        if d.clip_high is not None:
-            x = min(x, d.clip_high)
-        return x
-    return float(a.value)
-
-
 def _favorable(a: Assumption) -> float:
     """5th/95th percentile in the direction that helps feasibility (judgment-spec rule R3)."""
     sgn = ASSUMPTION_DIRECTION.get(a.key, 0)
@@ -425,17 +429,19 @@ def _cfg(v: dict[str, float]) -> tuple:
 
 def _succeeded(r: dict, target: float, grf_limit_bw: float) -> bool:
     return bool(r["liftoff"] and r["stable_landing"] and r["ballistic_height"] >= target
-                and r["grf_peak_land_bw"] <= grf_limit_bw and r["finite"])
+                and r["grf_peak_land_bw"] <= grf_limit_bw and r["drift_m"] <= MAX_DRIFT_M and r["finite"])
 
 
 def failure_code(r: dict, target: float, grf_limit_bw: float, mu: float) -> str | None:
     """One primary taxonomy code per failed rollout (docs/judgment-spec.md section A, priority order)."""
     if not r["finite"]:
         return "MODEL_INVALID"
+    if _succeeded(r, target, grf_limit_bw):
+        return None
     if not r["liftoff"] or r["ballistic_height"] < target:
         return "ACTUATOR_SATURATION" if r["binding_sat_frac"] > 0.05 or r["torque_applied_ratio_max"] >= SAT_FLAG \
             else "SEARCH_BUDGET_EXHAUSTED"
-    if r["mu_req"] > mu:
+    if r["mu_req"] >= 0.98 * mu:   # friction cone saturated (slipping) at takeoff/landing and the jump still failed
         return "CONTACT_LOSS"
     if r["landed"] and r["grf_peak_land_bw"] > grf_limit_bw:
         return "STRUCTURAL_UNMODELED"
@@ -460,14 +466,21 @@ def cost_fn(r: dict, target: float, grf_limit_bw: float, margin: float = DESIGN_
         c += 20.0 * ((g - soft) / grf_limit_bw) ** 2
     if g > grf_limit_bw:
         c += 1.0 + (g - grf_limit_bw) / grf_limit_bw
-    if r["mu_req"] > 0.95 * 0.6:  # keep clear of friction-limited takeoffs
-        pass
+    dr = r["drift_m"]
+    if dr > DRIFT_SOFT_M:
+        c += 30.0 * (dr - DRIFT_SOFT_M) ** 2 + (1.0 if dr > MAX_DRIFT_M else 0.0)
+    if r["mu_req"] > MU_DESIGN:     # keep traction demand clear of the low end of the friction range (design preference)
+        c += 10.0 * (r["mu_req"] - MU_DESIGN) ** 2
     c += 0.01 * g
     return float(c)
 
 
 # --------------------------------------------------------------------------------------------- process pool
 _SIM: Sim | None = None
+
+
+def _nominal_ok(cfg, p, target, limit) -> bool:
+    return bool(_task((cfg, np.asarray(p).tolist(), target, limit, "search"))[1]["ok"])
 
 
 def _worker_sim() -> Sim:
@@ -529,18 +542,15 @@ def _pmap(tasks):
 
 
 # --------------------------------------------------------------------------------------------- template
-def _wilson(k: int, n: int, z=1.96):
-    if n == 0:
-        return 0.0, 0.0, 0.0
-    p = k / n
-    den = 1 + z * z / n
-    c = (p + z * z / (2 * n)) / den
-    h = z * math.sqrt(p * (1 - p) / n + z * z / (4 * n * n)) / den
-    return p, max(0.0, c - h), min(1.0, c + h)
-
-
 class HumanoidJump:
     id = TEMPLATE_ID
+    necessary_classes = {"static_torque_saturation": "ACTUATOR_SATURATION", "takeoff_energy": "ENERGY_BUDGET",
+                         "landing_deceleration": "ACTUATOR_SATURATION"}
+    model_labels = ["simplified model, needs precise validation",
+                    "Structural strength not analyzed (no FEA) - simplified model, needs precise validation",
+                    "Perfect state feedback assumed; real sensing/latency not modeled - simplified model, needs precise validation",
+                    "Landing GRF limit is an unverified default, not a hardware figure"]
+    success_phrase = "a stable jump of the target height with a landing below the assumed peak-GRF limit"
 
     # ---- spec
     def default_spec(self, idea: str, overrides: dict[str, float] | None = None) -> SpecSheet:
@@ -592,6 +602,8 @@ class HumanoidJump:
                              unit="m", description="Ballistic height vz^2/(2g) of the whole-body COM at liftoff"),
             SuccessCriterion(name="stable_landing", metric="stable_landing", comparator=Comparator.ge, threshold=1.0,
                              description="Lands on both feet, torso upright (z-axis >= 0.8), pelvis >= 0.35 m, no non-foot ground contact"),
+            SuccessCriterion(name="horizontal_drift", metric="drift_m", comparator=Comparator.le, threshold=MAX_DRIFT_M, unit="m",
+                             description="Horizontal COM travel between start and touchdown ('straight up'); default"),
             SuccessCriterion(name="landing_grf", metric="landing_grf_bw", comparator=Comparator.le, threshold=lim, unit="BW",
                              description="Peak vertical ground-reaction force from first touchdown contact, in body weights"),
         ]
@@ -619,7 +631,7 @@ class HumanoidJump:
         target = v["target_height"]
         checks = []
         for label, vals in (("favorable", v), ("nominal", nominal)):
-            s = _worker_sim() if False else Sim()
+            s = Sim()
             s.configure(*_cfg(vals))
             fam = self._crouch_family(s)
             W = s.mass * G
@@ -633,8 +645,6 @@ class HumanoidJump:
             z = np.array([f["com_z"] for f in fam])
             work = 0.0
             stroke = 0.0
-            for i in range(len(fam) - 1, 0, -1):    # deepest -> standing; stop at first non-holdable pose
-                pass
             hold_ok = 0
             for i, f in enumerate(fam):
                 if f["max_ratio"] >= 1.0:
@@ -690,109 +700,205 @@ class HumanoidJump:
 
     # ---- search
     def search(self, spec: SpecSheet, seed: int, budget: Budget) -> SearchResult:
+        """CMA-ES (popsize 20) with restarts; cost includes the landing-GRF penalty (soft from 80 % of the limit, hard
+        above it).  The returned witness is the cheapest candidate that meets ALL success criteria on the nominal
+        model (not merely the lowest-cost one).  Per-restart budget without a success: RESTART_EVALS."""
         import cma
         v = _values(spec)
         cfg = _cfg(v)
         target, limit = v["target_height"], v["landing_grf_limit_bw"]
-        scale = HI - LO
         names = [b.name for b in spec.param_bounds]
         assert names == PNAMES, "humanoid_jump param_bounds must keep the template parameterization"
         lo = np.array([b.low for b in spec.param_bounds])
         hi = np.array([b.high for b in spec.param_bounds])
-        x0 = np.array([((b.init if b.init is not None else (b.low + b.high) / 2) - b.low) / (b.high - b.low)
-                       for b in spec.param_bounds])
-        es = cma.CMAEvolutionStrategy(x0, 0.3, dict(seed=int(seed) % (2 ** 31 - 1), popsize=20, bounds=[0, 1], verbose=-9))
+        x_init = np.array([((b.init if b.init is not None else (b.low + b.high) / 2) - b.low) / (b.high - b.low)
+                           for b in spec.param_bounds])
         t0 = time.perf_counter()
         n = 0
-        best = (1e18, None, None)
-        best_ok = (1e18, None, None)   # lowest-cost candidate that actually meets every success criterion
+        best = (1e18, None)
+        best_ok = (1e18, None)   # lowest-cost candidate that actually meets every success criterion
         first_success = None
-        stale = 0
-        while n < budget.max_evals and not es.stop():
-            xs = es.ask()
-            ps = [lo + np.asarray(x) * (hi - lo) for x in xs]
-            res = _pmap([(cfg, p.tolist(), target, limit, "search") for p in ps])
-            cs = [r[0] for r in res]
-            es.tell(xs, cs)
-            n += len(xs)
-            i = int(np.argmin(cs))
-            improved = cs[i] < best[0] - 1e-6
-            if cs[i] < best[0]:
-                best = (cs[i], ps[i], res[i][1])
-            for j, r in enumerate(res):
-                if r[1]["ok"] and r[0] < best_ok[0]:
-                    best_ok = (r[0], ps[j], r[1])
-            if first_success is None and best_ok[1] is not None:
-                first_success = n
-            stale = 0 if improved else stale + 1
-            if first_success is not None and stale >= 12:
+        restarts = 0
+        timed_out = False
+        while n < budget.max_evals and not timed_out:
+            rs = np.random.default_rng(int(seed) % (2 ** 32) + 7919 * restarts)
+            x0 = x_init if restarts == 0 else rs.uniform(0.2, 0.8, len(x_init))
+            es = cma.CMAEvolutionStrategy(x0, 0.3 if restarts == 0 else 0.35,
+                                          dict(seed=(int(seed) + 104729 * restarts) % (2 ** 31 - 1), popsize=20,
+                                               bounds=[0, 1], verbose=-9))
+            n_run = 0
+            stale = 0
+            run_best = 1e18
+            while n < budget.max_evals and not es.stop():
+                xs = es.ask()
+                ps = [lo + np.asarray(x) * (hi - lo) for x in xs]
+                res = _pmap([(cfg, p.tolist(), target, limit, "search") for p in ps])
+                cs = [r[0] for r in res]
+                es.tell(xs, cs)
+                n += len(xs)
+                n_run += len(xs)
+                i = int(np.argmin(cs))
+                improved = cs[i] < run_best - 1e-6
+                run_best = min(run_best, cs[i])
+                if cs[i] < best[0]:
+                    best = (cs[i], ps[i])
+                for j, r in enumerate(res):
+                    if r[1]["ok"] and r[0] < best_ok[0]:
+                        best_ok = (r[0], ps[j])
+                if first_success is None and best_ok[1] is not None:
+                    first_success = n
+                stale = 0 if improved else stale + 1
+                if best_ok[1] is not None and stale >= 12:
+                    break
+                if best_ok[1] is None and n_run >= RESTART_EVALS:
+                    break
+                if time.perf_counter() - t0 > budget.max_seconds:
+                    timed_out = True
+                    break
+            if best_ok[1] is not None:
                 break
-            if time.perf_counter() - t0 > budget.max_seconds:
-                break
-        wall = time.perf_counter() - t0
+            restarts += 1
         if best_ok[1] is not None:
             best = best_ok
-        p = best[1]
+        wall = time.perf_counter() - t0
+        p = np.clip(best[1], lo, hi)
         s = Sim()
         s.configure(*cfg)
-        r = s.rollout(np.clip(p, lo, hi))
+        r = s.rollout(p)
         found = _succeeded(r, target, limit)
-        detail = dict(metrics={k: r[k] for k in ("ballistic_height", "com_apex_rise", "grf_peak_land_bw", "grf_peak_land_N",
-                                                 "stable_landing", "torso_up", "mu_req", "torque_applied_ratio_max",
-                                                 "binding_joint", "binding_sat_frac", "foot_clearance")},
-                      evals_to_first_success=first_success, popsize=20, cma_restarts=0, design_margin=DESIGN_MARGIN,
+        fails = [] if found else [n_ for n_, bad in (
+            ("jump_height", r["ballistic_height"] < target), ("stable_landing", not r["stable_landing"]),
+            ("horizontal_drift", r["drift_m"] > MAX_DRIFT_M),
+            ("landing_grf", r["grf_peak_land_bw"] > limit)) if bad]
+        bm = {k: r[k] for k in ("ballistic_height", "com_apex_rise", "grf_peak_land_bw", "grf_peak_land_N", "stable_landing",
+                                "torso_up", "mu_req", "torque_applied_ratio_max", "binding_joint", "binding_sat_frac",
+                                "foot_clearance", "drift_m", "v_horizontal_liftoff")}
+        detail = dict(metrics=bm, best_metrics=bm, failed_checks=fails, restarts=restarts, stopped_by="time" if timed_out else
+                      ("budget" if n >= budget.max_evals else "converged"),
+                      evals_to_first_success=first_success, popsize=20, cma_restarts=restarts, design_margin=DESIGN_MARGIN,
                       failure_class=None if found else failure_code(r, target, limit, s.mu) or "SEARCH_BUDGET_EXHAUSTED",
-                      truncated_by_time=bool(wall > budget.max_seconds))
+                      truncated_by_time=bool(timed_out))
+        if not found:
+            detail["binding"] = dict(
+                name=f"jump_height (binding joint: {r['binding_joint']}, saturated {100 * r['binding_sat_frac']:.0f}% of push-off)",
+                margin=float(r["ballistic_height"] - target), unit="m")
         return SearchResult(found=found, best_params=dict(zip(PNAMES, map(float, p))), n_evals=n, wall_seconds=wall,
                             best_cost=float(best[0]), detail=detail)
 
+    def judge_nominal(self, spec: SpecSheet, params: dict[str, float]) -> bool:
+        """Does ``params`` satisfy every success criterion on the nominal model?"""
+        v = _values(spec)
+        return _nominal_ok(_cfg(v), [params[k] for k in PNAMES], v["target_height"], v["landing_grf_limit_bw"])
+
+    def model_info(self, spec: SpecSheet) -> dict[str, Any]:
+        s = Sim()
+        m = s.m
+        return dict(model_id="unitree_g1_29dof", model_hash=model_hash()[:16], mujoco_version=mujoco.__version__,
+                    n_bodies=int(m.nbody - 1), n_actuators=int(m.nu), n_params=len(PNAMES), timestep_s=float(m.opt.timestep),
+                    total_mass_kg=round(s.mass, 2), source=MENAGERIE_URL)
+
+    def fix_control(self, spec: SpecSheet) -> dict[str, Any]:
+        """The user-facing control the fix search sweeps (also the web slider): payload to remove is NOT swept upward;
+        the fix for a too-heavy payload is a LARGER torque scale (actuator upgrade), so that is the swept control."""
+        return dict(key="torque_scale", label="Motor torque scale", unit="x G1 forcerange", values=FIX_TORQUE_VALUES,
+                    hint="Multiplier on the Menagerie G1 forceranges (knee 139, hip 88-139, ankle 50 N*m).")
+
+    def robustify(self, spec: SpecSheet, params: dict[str, float], seed: int, budget: Budget, ):
+        """Second CMA-ES stage on ROBUST_K perturbed models; returns (params, info) for pipeline.run."""
+        lo = np.array([b.low for b in spec.param_bounds])
+        hi = np.array([b.high for b in spec.param_bounds])
+        t0 = time.perf_counter()
+        p, n, info = self._robustify(spec, np.array([params[k] for k in PNAMES]), seed, lo, hi, budget, t0)
+        p = np.clip(p, lo, hi)
+        return dict(zip(PNAMES, map(float, p))), dict(info, evals=int(n), train_samples=ROBUST_K)
+
+    def _robustify(self, spec: SpecSheet, p0, seed: int, lo, hi, budget: Budget, t0: float):
+        """Re-optimize the nominal witness against ROBUST_K fixed scenarios drawn from the assumption distributions
+        (seed-derived, different from the Monte-Carlo draws).  fitness = mean scenario cost + 2 * failing fraction.
+        The nominal witness must keep meeting every criterion on the nominal model, else the original is returned."""
+        import cma
+        from .. import mc as mclib
+        v = _values(spec)
+        cfg0, target, limit = _cfg(v), v["target_height"], v["landing_grf_limit_bw"]
+        samples = mclib.sample_assumptions(spec, ROBUST_K, mclib.derive_seed(seed, "robustify"))
+        scen = []
+        for i in range(ROBUST_K):
+            vals = {k: float(x[i]) for k, x in samples.items()}
+            scen.append((_cfg(vals), vals["target_height"], vals["landing_grf_limit_bw"]))
+
+        def fitness(ps):
+            tasks = [(c, p.tolist(), tg, lm, "search") for p in ps for (c, tg, lm) in scen]
+            out = _pmap(tasks)
+            fits, oks = [], []
+            for i in range(len(ps)):
+                blk = out[i * ROBUST_K:(i + 1) * ROBUST_K]
+                fr = np.mean([0.0 if r[1]["ok"] else 1.0 for r in blk])
+                fits.append(float(np.mean([r[0] for r in blk]) + 2.0 * fr))
+                oks.append(1.0 - float(fr))
+            return fits, oks
+
+        x0 = (np.asarray(p0) - lo) / (hi - lo)
+        es = cma.CMAEvolutionStrategy(x0, 0.08, dict(seed=(int(seed) + 15485863) % (2 ** 31 - 1), popsize=16,
+                                                     bounds=[0, 1], verbose=-9))
+        base_fit, base_ok = fitness([np.asarray(p0)])
+        best = (base_fit[0], np.asarray(p0, float), base_ok[0])
+        n = ROBUST_K
+        while n < ROBUST_EVALS and not es.stop() and time.perf_counter() - t0 < budget.max_seconds:
+            xs = es.ask()
+            ps = [lo + np.asarray(x) * (hi - lo) for x in xs]
+            fits, oks = fitness(ps)
+            es.tell(xs, fits)
+            n += len(xs) * ROBUST_K
+            # accept only candidates that still succeed on the nominal model
+            order = np.argsort(fits)
+            for j in order[:3]:
+                if fits[j] < best[0] and _nominal_ok(cfg0, ps[j], target, limit):
+                    best = (fits[j], ps[j], oks[j])
+                    break
+        return best[1], n, dict(train_scenarios=ROBUST_K, train_success_frac_before=round(base_ok[0], 3),
+                                train_success_frac_after=round(best[2], 3))
+
     # ---- Monte-Carlo
     def monte_carlo(self, spec: SpecSheet, params: dict[str, float], seed: int, n: int) -> McResult:
-        rng = np.random.default_rng(int(seed) % (2 ** 32))
+        """Re-judge the FOUND controller on n joint draws of mass / torque scale / friction / payload / GRF limit /
+        COM offset (shared sampler kinetra_engine.mc, deterministic per (spec, seed, n))."""
+        from .. import mc as mclib
         p = [params[k] for k in PNAMES]
         nominal = _values(spec)
-        samples = []
-        tasks = []
-        sampled_keys = [a for a in spec.assumptions]
-        for _ in range(n):
-            vals = dict(nominal)
-            for a in sampled_keys:
-                vals[a.key] = _dist_sample(a, rng)
-            samples.append(vals)
-            tasks.append((_cfg(vals), p, vals["target_height"], vals["landing_grf_limit_bw"], "mc"))
-        out = _pmap(tasks)
-        counts: dict[str, int] = {}
-        ok = 0
-        m_h, m_g, margins = [], [], []
-        for vals, (r, code) in zip(samples, out):
-            target, lim = vals["target_height"], vals["landing_grf_limit_bw"]
-            if code is None:
-                ok += 1
-            else:
-                counts[code] = counts.get(code, 0) + 1
-            mh = (r["ballistic_height"] - target) / target
-            mg = (lim - r["grf_peak_land_bw"]) / lim if r["landed"] else -1.0
-            m_h.append(mh)
-            m_g.append(mg)
-            margins.append(min(mh, mg, 1.0 if r["stable_landing"] else -1.0))
-        margins = np.array(margins)
-        sens = []
-        for a in spec.assumptions:
-            if a.distribution.kind == "fixed":
-                continue
-            x = np.array([s[a.key] for s in samples])
-            sd = x.std()
-            if sd < 1e-12:
-                continue
-            slope = float(np.polyfit((x - x.mean()) / sd, margins, 1)[0])
-            sens.append(dict(assumption_key=a.key, effect=slope, method="regression_margin_per_std"))
-        sens.sort(key=lambda d: -abs(d["effect"]))
-        mh, mg = float(np.mean(m_h)), float(np.mean(m_g))
+        store: dict[str, Any] = {}
+
+        def evaluate(samples):
+            m_ = len(next(iter(samples.values())))
+            tasks = []
+            for i in range(m_):
+                vals = {k: float(samples[k][i]) for k in samples if not k.startswith("_")}
+                tasks.append((_cfg(vals), p, vals["target_height"], vals["landing_grf_limit_bw"], "mc"))
+            out = _pmap(tasks)
+            ok = np.zeros(m_, bool)
+            failed = {c: np.zeros(m_, bool) for c in FAILURE_CODES}
+            mh = np.zeros(m_)
+            mg = np.zeros(m_)
+            for i, (r, code) in enumerate(out):
+                if code is None:
+                    ok[i] = True
+                else:
+                    failed[code][i] = True
+                tgt, lim = tasks[i][2], tasks[i][3]
+                mh[i] = (r["ballistic_height"] - tgt) / tgt
+                mg[i] = (lim - r["grf_peak_land_bw"]) / lim if r["landed"] else -1.0
+            if "first" not in store:
+                store.update(first=True, mh=mh, mg=mg)
+            return ok, failed
+
+        res = mclib.run_mc(evaluate, spec, n, seed, taxonomy={}, oat=True, n_oat=48)
+        mh, mg = float(store["mh"].mean()), float(store["mg"].mean())
         if mh <= mg:
             binding = dict(name="jump_height", margin=float(mh * nominal["target_height"]), unit="m")
         else:
             binding = dict(name="landing_grf", margin=float(mg * nominal["landing_grf_limit_bw"]), unit="BW")
-        return McResult(n=n, n_success=ok, failure_counts=counts, sensitivities=sens, binding=binding)
+        binding["failed_checks"] = res.binding.get("failed_checks", {}) if res.binding else {}
+        res.binding = binding
+        return res
 
     # ---- rollout / trajectory export
     def rollout(self, spec: SpecSheet, params: dict[str, float], seed: int) -> Trajectory:

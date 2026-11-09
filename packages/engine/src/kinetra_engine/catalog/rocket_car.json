@@ -1,0 +1,78 @@
+{
+  "template": "rocket_car",
+  "catalog_version": "2026-11-09",
+  "kind": "curated_offline_catalog",
+  "note": "Hand-curated entries with source URLs. NOT live web research. verified=true means the figure was read in the cited page by the catalog author on checked_on; it does not make the source primary or the number a design fact.",
+  "entries": {
+    "vehicle_mass_target": {
+      "label": "Vehicle weight target (2nd-gen Tesla Roadster, Top Gear walkaround as cited by Wikipedia)",
+      "value": 1700, "unit": "kg", "bound": "upper_target",
+      "source_url": "https://en.wikipedia.org/wiki/Tesla_Roadster_(second_generation)",
+      "verified": true, "checked_on": "2026-11-09",
+      "note": "A target 'under 1,700 kg', not a measured production mass. The model default mass is a simplification and differs from this."
+    },
+    "wheelbase": {
+      "label": "Wheelbase",
+      "value": 2.825, "unit": "m",
+      "source_url": "https://en.wikipedia.org/wiki/Tesla_Roadster_(second_generation)",
+      "verified": true, "checked_on": "2026-11-09",
+      "note": "Stated as 2,825 mm in the cited page."
+    },
+    "thruster_count_rocket_variant": {
+      "label": "Cold-gas nozzles on the 'Rocket' variant",
+      "value": 10, "unit": "",
+      "source_url": "https://en.wikipedia.org/wiki/Tesla_Roadster_(second_generation)",
+      "verified": true, "checked_on": "2026-11-09",
+      "note": "Four rear nozzles (Thrust variant) plus six more at front and sides."
+    },
+    "tank_volume_thrust_variant": {
+      "label": "Nitrogen COPV volume (Thrust variant)",
+      "value": 200, "unit": "L",
+      "source_url": "https://en.wikipedia.org/wiki/Tesla_Roadster_(second_generation)",
+      "verified": true, "checked_on": "2026-11-09",
+      "note": "Rocket variant total 600 L per the same page."
+    },
+    "tank_pressure": {
+      "label": "Working pressure of the COPV",
+      "value": 690, "unit": "bar",
+      "source_url": "https://en.wikipedia.org/wiki/Tesla_Roadster_(second_generation)",
+      "verified": true, "checked_on": "2026-11-09",
+      "note": "'about 10,000 psi (690 bar)'."
+    },
+    "single_use_burn_time": {
+      "label": "Stated duration of one full tank (Thrust variant)",
+      "value": 5, "unit": "s",
+      "source_url": "https://en.wikipedia.org/wiki/Tesla_Roadster_(second_generation)",
+      "verified": true, "checked_on": "2026-11-09",
+      "note": "'about five seconds' for a 0-60 mph run; says nothing about per-nozzle thrust."
+    },
+    "isp_cold_gas_n2": {
+      "label": "Specific impulse of cold-gas nitrogen",
+      "value": 70, "unit": "s", "range": [60, 75],
+      "source_url": "https://en.wikipedia.org/wiki/Cold_gas_thruster",
+      "verified": false, "checked_on": "2026-11-09",
+      "note": "Range from docs/judgment-spec.md R4 (marked unverified there). The cited page defines Isp for cold gas but the N2 figure was not confirmed by the catalog author."
+    },
+    "nozzle_thrust_per_unit": {
+      "label": "Per-nozzle thrust of the Tesla/SpaceX system",
+      "value": null, "unit": "N",
+      "source_url": null,
+      "verified": false, "checked_on": "2026-11-09",
+      "note": "No official figure known. The sweep over thruster_force_max exists because of this gap."
+    },
+    "reference_cold_gas_nozzle_thrust": {
+      "label": "Reference scale: NASA MMU cold-gas nozzle",
+      "value": 6.2, "unit": "N",
+      "source_url": "https://en.wikipedia.org/wiki/Cold_gas_thruster",
+      "verified": true, "checked_on": "2026-11-09",
+      "note": "24 N2 nozzles at 1.4 lbf each; shows how far a car-scale nozzle is from flown cold-gas hardware. Reference only, not used in the model."
+    },
+    "model_vehicle_mass": {
+      "label": "Model default vehicle mass",
+      "value": 1300, "unit": "kg",
+      "source_url": null,
+      "verified": false, "checked_on": "2026-11-09",
+      "note": "Model default carried over from the roadster spike (spikes/roadster/REPORT.md); not sourced."
+    }
+  }
+}

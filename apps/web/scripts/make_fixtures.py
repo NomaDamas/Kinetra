@@ -313,7 +313,12 @@ def main():
         meta, spec, vs = fn()
         scs.append(meta)
         specs.append((meta["id"], spec, vs))
-    build_autoresearch()
+    real_ar = ROOT / "apps/web/public/demo/autoresearch"
+    if (real_ar / "ledger.json").exists():  # prefer the engine's real autoresearch bundle when present
+        import shutil
+        shutil.copytree(real_ar, OUT / "autoresearch", dirs_exist_ok=True)
+    else:
+        build_autoresearch()
     json.dump({"scenarios": scs, "autoresearch": {"attitude_ledger": "autoresearch/ledger.json", "calibration": "autoresearch/calibration.json",
                                                    "integration": "autoresearch/integration.json", "excitation": "autoresearch/excitation.json"}},
               open(OUT / "index.json", "w"), indent=1)

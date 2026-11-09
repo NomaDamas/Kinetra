@@ -25,7 +25,7 @@ export function statusMeta(v: Verdict): StatusMeta {
         tone: 'ok',
         title: 'FEASIBLE: FOUND',
         kr: '가능: 해를 찾음',
-        strength: 'STRONG',
+        strength: 'EXISTENCE: STRONG',
         explain: 'A concrete witness (parameter set) was found and re-simulated under Monte-Carlo within the stated assumptions.',
       }
     case 'INFEASIBLE_NECESSARY_CONDITION':
@@ -33,7 +33,7 @@ export function statusMeta(v: Verdict): StatusMeta {
         tone: 'bad',
         title: 'PROVEN IMPOSSIBLE UNDER ASSUMPTIONS',
         kr: '가정 하에서 불가능 증명',
-        strength: 'STRONG',
+        strength: 'IMPOSSIBILITY: STRONG',
         explain: 'A necessary condition is violated. No search was needed: the idea fails a physical bound given the assumptions below.',
       }
     case 'NOT_FOUND_IN_BUDGET':

@@ -46,6 +46,36 @@ export function VerdictCard({ verdict: v, assumptions }: { verdict: Verdict; ass
         <span className="pill muted-pill mono">{m.strength}</span>
       </header>
 
+      <div className="facts">
+        <div className="fact">
+          <div className="eyebrow">1 · existence on the nominal model</div>
+          <b className={`fact-v ${m.tone}`}>
+            {v.status === 'FEASIBLE_FOUND'
+              ? 'Witness found (strong existence evidence)'
+              : v.status === 'INFEASIBLE_NECESSARY_CONDITION'
+                ? 'Necessary condition violated (strong impossibility)'
+                : v.status === 'NOT_FOUND_IN_BUDGET'
+                  ? 'No witness found (weak, not proof)'
+                  : 'No verdict (model invalid)'}
+          </b>
+          <span className="muted small">
+            {v.status === 'FEASIBLE_FOUND' ? 'One parameter set works when every assumption sits at its nominal value. It says nothing about how often.' : 'Judged on the nominal model and the stated assumptions.'}
+          </span>
+        </div>
+        <div className="fact">
+          <div className="eyebrow">2 · reliability under uncertainty</div>
+          <b className="fact-v mono">
+            {v.feasibility.n_samples > 0
+              ? `p_success ${(v.feasibility.p_success * 100).toFixed(1)}%  CI [${(v.feasibility.ci_low * 100).toFixed(1)}, ${(v.feasibility.ci_high * 100).toFixed(1)}]%`
+              : 'not sampled'}
+          </b>
+          {v.feasibility.n_samples > 0 && v.feasibility.p_success < 0.5 && (
+            <span className="pill warn fragile">FRAGILE UNDER UNCERTAINTY</span>
+          )}
+          <span className="muted small">Share of Monte-Carlo assumption draws (n={v.feasibility.n_samples}) in which the same design still succeeds.</span>
+        </div>
+      </div>
+
       <div className={`status ${m.tone}`}>
         <div className="status-t">{m.title}</div>
         <div className="status-kr">{m.kr}</div>
@@ -145,7 +175,7 @@ export function VerdictCard({ verdict: v, assumptions }: { verdict: Verdict; ass
       <div className="chips">
         {v.model_labels.length === 0 && <span className="muted small">none</span>}
         {v.model_labels.map((l) => (
-          <span className="chip label" key={l}>⚠ simplified model · {l}</span>
+          <span className="chip label" key={l}>⚠ {l}</span>
         ))}
       </div>
 

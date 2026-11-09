@@ -29,8 +29,8 @@ export interface LedgerFile {
   entries: LedgerEntry[]
   excitation_entries?: LedgerEntry[]
   calibration_entries?: LedgerEntry[]
-  excitation_entries_chain_verified?: boolean
-  calibration_entries_chain_verified?: boolean
+  excitation_chain_verified?: boolean
+  calibration_chain_verified?: boolean
   confirmation?: Record<string, unknown>[]
   family_seeds?: Record<string, unknown>
   counts?: Record<string, number>
@@ -313,7 +313,7 @@ function IdentStrip({ id, truth, label }: { id: Ident; truth?: number; label: st
       <rect x={X(-1)} y={5} width={X(1) - X(-1)} height={12} fill="#1b2a3a" />
       <rect x={X(-2)} y={5} width={X(2) - X(-2)} height={12} fill="#14202c" opacity={0.7} />
       <line x1={X(0)} x2={X(0)} y1={2} y2={20} stroke="#3a5069" />
-      <rect x={X(lo)} y={7} width={Math.max(2, X(hi) - X(lo))} height={8} fill={c} opacity={0.85} />
+      <rect x={X(lo)} y={7} width={Math.max(4, X(hi) - X(lo))} height={10} fill={c} />
       {truth !== undefined && <path d={`M${X(z(truth))},3 l4,8 l-4,8 l-4,-8 z`} fill="#fff" />}
     </svg>
   )
@@ -523,8 +523,8 @@ export function Autoresearch({ data }: { data: ArData | null }) {
   const L = data.ledger
   const groups: { id: typeof which; label: string; entries: LedgerEntry[]; lower: boolean; verified?: boolean }[] = []
   if (L?.entries?.length) groups.push({ id: 'attitude', label: 'Attitude control', entries: L.entries, lower: false, verified: L.chain_verified })
-  if (L?.excitation_entries?.length) groups.push({ id: 'excitation', label: 'Excitation design', entries: L.excitation_entries, lower: false, verified: L.excitation_entries_chain_verified ?? L.chain_verified })
-  if (L?.calibration_entries?.length) groups.push({ id: 'calibration', label: 'Calibration fit', entries: L.calibration_entries, lower: true, verified: L.calibration_entries_chain_verified ?? L.chain_verified })
+  if (L?.excitation_entries?.length) groups.push({ id: 'excitation', label: 'Excitation design', entries: L.excitation_entries, lower: false, verified: L.excitation_chain_verified ?? L.chain_verified })
+  if (L?.calibration_entries?.length) groups.push({ id: 'calibration', label: 'Calibration fit', entries: L.calibration_entries, lower: true, verified: L.calibration_chain_verified ?? L.chain_verified })
   const g = groups.find((x) => x.id === which) ?? groups[0]
   return (
     <div className="ar">

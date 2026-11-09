@@ -1,0 +1,23 @@
+{
+  "catalog_version": "2026-11-09",
+  "note": "Real-world cost anchors from docs/judgment-spec.md section D. Only status=sourced entries with a unit price may enter a physical_equivalent_estimate; the rocket_car/humanoid mappings below are deliberately unpriced where no sourced per-test figure exists.",
+  "items": {
+    "wind_tunnel_subsonic_hour": {"unit_usd_low": 1000, "unit_usd_high": 1000, "unit": "hour", "status": "sourced",
+      "source_url": "https://www.grc.nasa.gov/WWW/k-12/WindTunnel/WTExpKids/tsld032.htm", "note": "NASA Ames 80x120 ft, educational slide; facility hourly rate only."},
+    "board_respin": {"unit_usd_low": 30000, "unit_usd_high": 80000, "unit": "spin", "status": "sourced_vendor_claim",
+      "source_url": "https://octavosystems.com/the-real-cost-of-a-board-spin", "note": "Embedded board spin; does not apply to vehicle/robot mechanics."},
+    "static_fire_test": {"unit_usd_low": null, "unit_usd_high": null, "unit": "test", "status": "unverified",
+      "source_url": null, "note": "No primary per-test source found."},
+    "drop_test_rig_run": {"unit_usd_low": null, "unit_usd_high": null, "unit": "run", "status": "unverified",
+      "source_url": null, "note": "No source found."}
+  },
+  "template_equivalents": {
+    "rocket_car": [
+      {"item": "static_fire_test", "name": "thruster static-fire tests", "conditions_per_test": 25},
+      {"item": "drop_test_rig_run", "name": "landing drop-test runs", "conditions_per_test": 25}
+    ],
+    "humanoid_jump": [
+      {"item": "drop_test_rig_run", "name": "jump/landing hardware trials", "conditions_per_test": 25}
+    ]
+  }
+}
