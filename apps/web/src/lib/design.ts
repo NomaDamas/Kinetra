@@ -66,7 +66,8 @@ export interface DCustomPart {
   cad_stl: string | null
   cad_step: string | null
   quantity: number
-  load_case: { force_N: number | null; safety_factor: number | null } | null
+  /** Free-form per part (force_N, torque_Nm, decel_g, safety_factor, ...). */
+  load_case: Record<string, number | string> | null
   check: DCheck | null
   extra_checks: DCheck[]
   note: string
@@ -212,7 +213,7 @@ export function normalizeDesign(raw: any): DesignBrief {
       cad_stl: p.cad_stl ?? null,
       cad_step: p.cad_step ?? null,
       quantity: Number(p.quantity ?? 1),
-      load_case: p.load_case ? { force_N: numOrNull(p.load_case.force_N), safety_factor: numOrNull(p.load_case.safety_factor) } : null,
+      load_case: p.load_case && typeof p.load_case === 'object' ? (p.load_case as Record<string, number | string>) : null,
       check: p.check ? normCheck(p.check) : null,
       extra_checks: arr<any>(p.extra_checks).map(normCheck),
       note: String(p.note ?? ''),

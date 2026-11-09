@@ -338,3 +338,6 @@ button.vs-cell { cursor: pointer; } button.vs-cell:hover { border-color: var(--a
 }
 .step-body, .step-sum, .step-top { min-width: 0; overflow-wrap: anywhere; } .steps, .step { min-width: 0; }
 .stack > * { min-width: 0; }
+.grid2 > *, .ar > * , .ar .grid2 > * { min-width: 0; }
+.ar { min-width: 0; }
+@media (max-width: 860px) { .grid2, .grid2.top { grid-template-columns: minmax(0, 1fr); } }

@@ -30,6 +30,10 @@ Real captures (1440x900) of the production build on the committed bundles and de
 |---|---|
 | ![Design](apps/web/screenshots/project-design.png) | ![Report](apps/web/screenshots/project-report.png) |
 
+| Design: custom parts with 3D CAD preview and hand-calc checks | Design: closed loop (mass fed back, verdict re-run) |
+|---|---|
+| ![Parts](apps/web/screenshots/project-design-parts.png) | ![Closed loop](apps/web/screenshots/project-design-loop.png) |
+
 | Evidence | Lab |
 |---|---|
 | ![Evidence](apps/web/screenshots/project-evidence.png) | ![Lab](apps/web/screenshots/lab.png) |

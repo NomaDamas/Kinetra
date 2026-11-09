@@ -197,8 +197,10 @@ function CustomParts({ b, bundle }: { b: DesignBrief; bundle: DesignBundle }) {
               <div className="kv mono small">
                 {Object.entries(p.params).map(([k, v]) => <div key={k}><span>{k}</span><b>{String(v)}</b></div>)}
               </div>
-              {p.load_case && (p.load_case.force_N !== null || p.load_case.safety_factor !== null) && (
-                <p className="small">Load case: {p.load_case.force_N !== null && <b className="mono">{fmt(p.load_case.force_N, 4)} N</b>}{p.load_case.force_N !== null && p.load_case.safety_factor !== null && ', '}{p.load_case.safety_factor !== null && <>safety factor <b className="mono">{p.load_case.safety_factor}</b></>}</p>
+              {p.load_case && Object.keys(p.load_case).length > 0 && (
+                <p className="small">Load case: {Object.entries(p.load_case).map(([k, v], i) => (
+                  <span key={k}>{i > 0 && ', '}{k.replace(/_/g, ' ').replace(/\s(N|Nm|g)$/, '').trim()} <b className="mono">{typeof v === 'number' ? fmt(v, 4) : v}{k.endsWith('_N') ? ' N' : k.endsWith('_Nm') ? ' N·m' : k.endsWith('_g') ? ' g' : ''}</b></span>
+                ))}</p>
               )}
               {[...(p.check ? [p.check] : []), ...p.extra_checks].map((ck, i) => (
                 <div key={i} className={`callout ${ck.ok ? '' : 'bad'}`}>
