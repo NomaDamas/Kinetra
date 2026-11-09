@@ -76,7 +76,7 @@ def test_rollout_deterministic_and_judged(sim):
 
 def test_grf_is_a_real_constraint():
     spec = hj.TEMPLATE.default_spec("x")
-    r = dict(liftoff=True, stable_landing=True, ballistic_height=0.5, grf_peak_land_bw=10.0, finite=True)
+    r = dict(liftoff=True, stable_landing=True, ballistic_height=0.5, grf_peak_land_bw=10.0, finite=True, drift_m=0.1)
     assert hj._succeeded(r, 0.3, 12.0)
     assert not hj._succeeded(r, 0.3, 9.0)      # same rollout, tighter GRF limit -> fails
     assert any(c.name == "landing_grf" for c in spec.success_criteria)

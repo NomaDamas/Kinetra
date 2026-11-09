@@ -2,7 +2,7 @@
 
     packages/engine/.venv/bin/python packages/engine/scripts/build_humanoid_bundle.py [--quick] [--no-cache] [--assets]
 
-Control = motor torque scale (multiplier on the Menagerie G1 forceranges). Measured story at a 0.30 m ballistic jump target:
+Control = motor torque scale (multiplier on the Menagerie G1 forceranges). Measured story at a 0.15 m ballistic jump target:
 too little torque -> a necessary condition (takeoff energy) is violated (strong impossible); a bit more -> CMA-ES finds
 nothing in budget (weak, 'not found'); enough -> a stable jump is found and Monte-Carlo gives a real p_success.
 Core runs are cached in packages/engine/.cache/ (gitignored). G1 GLBs are written to apps/web/public/assets/g1/ with
@@ -28,13 +28,13 @@ from kinetra_engine.base import Budget  # noqa: E402
 
 OUT = REPO / "apps/web/public/demo/humanoid"
 ASSETS = REPO / "apps/web/public/assets/g1"
-IDEA = "A Unitree G1 humanoid robot jumps 0.30 m straight up and lands on its feet without falling"
-TARGET = 0.30
-VALUES = [0.2, 0.35, 0.5, 0.65, 0.8, 1.0]
+IDEA = "A Unitree G1 humanoid robot jumps 0.15 m straight up and lands on its feet without falling"
+TARGET = 0.15
+VALUES = [0.1, 0.15, 0.25, 0.4, 0.6, 1.0]
 HERO = 1.0
 SEED = 20260002
 QUICK = "--quick" in sys.argv
-BUDGET = Budget(max_evals=1500 if QUICK else 4000, max_seconds=90.0 if QUICK else 150.0, mc_samples=100 if QUICK else 300)
+BUDGET = Budget(max_evals=1500 if QUICK else 3000, max_seconds=60.0 if QUICK else 100.0, mc_samples=100 if QUICK else 200)
 
 
 def _write(path: Path, obj) -> int:
@@ -95,7 +95,7 @@ def main() -> None:
     spec = SpecSheet.model_validate(runs[HERO].spec.model_dump(mode="json"))
     scenario = dict(
         id="humanoid", idea=IDEA, template="humanoid_jump",
-        title="Humanoid jump", tagline="Can a Unitree G1 jump 0.30 m and land without falling? Turn the motor torque down and watch the verdict change.",
+        title="Humanoid jump", tagline="Can a Unitree G1 jump 0.15 m and land without falling? Turn the motor torque down and watch the verdict change.",
         tier=1, hero=False,
         agent_steps=steps, spec=spec.model_dump(mode="json"),
         control=dict(key="torque_scale", label="Motor torque scale", unit="x G1 forcerange", values=VALUES, default_index=default_index,

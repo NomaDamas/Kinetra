@@ -86,7 +86,7 @@ RESTART_EVALS = 800        # CMA-ES evaluations per restart before restarting fr
 FAILURE_CODES = ("MODEL_INVALID", "ACTUATOR_SATURATION", "CONTACT_LOSS", "STRUCTURAL_UNMODELED", "TIPPING",
                  "SEARCH_BUDGET_EXHAUSTED")
 ROBUST_K = 10              # assumption scenarios per candidate in the robustification stage
-ROBUST_EVALS = 6000        # rollouts (not candidates) spent on robustification
+ROBUST_EVALS = 3500        # rollouts (not candidates) spent on robustification
 FIX_TORQUE_VALUES = [0.2, 0.35, 0.5, 0.65, 0.8, 1.0]
 MAX_DRIFT_M = 0.30          # 'straight up': COM horizontal drift between start and touchdown (default, editable via spec)
 DRIFT_SOFT_M = 0.12

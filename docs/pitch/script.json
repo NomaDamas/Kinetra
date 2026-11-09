@@ -1,0 +1,284 @@
+{
+ "meta": {
+  "tag_ko": "기록된 실행, 시드 고정 · 재현 가능",
+  "tag_en": "recorded run, seeded & reproducible",
+  "humanoid_included": false,
+  "bundle": {
+   "roadster": "roadster",
+   "humanoid": null,
+   "control_unit": "N"
+  }
+ },
+ "scenes": [
+  {
+   "id": "problem",
+   "title": "Problem",
+   "slide": {
+    "kind": "problem",
+    "wt": [
+     "1,000",
+     "2,000"
+    ],
+    "spin": [
+     "30",
+     "80"
+    ],
+    "sources": [
+     "NASA Glenn education slide 'Types of Wind Tunnels' (facility hourly rate, old, excludes model build/staff)",
+     "Octavo Systems 'The Real Cost of a Board Spin' (vendor claim, SiP vendor with commercial interest)",
+     "Rocket hot-fire cost per test: no primary source found, NO NUMBER SHOWN"
+    ]
+   },
+   "narration": [
+    {
+     "id": "problem.0",
+     "ko": "물리 실험은 비쌉니다. NASA 교육 자료는 풍동 시간당 비용을 약 1,000달러에서 2,000달러로 추정합니다. 시설 사용료만이고, 모델 제작과 인건비는 빠져 있습니다.",
+     "en": "Physical experiments are expensive. A NASA education slide estimates wind tunnel time at about $1,000 to $2,000 per hour. That is the facility rate only, without model build or staff.",
+     "actions": []
+    },
+    {
+     "id": "problem.1",
+     "ko": "하드웨어 시제품 재제작은 벤더 블로그 기준 30천에서 80천 달러입니다. 이쪽은 벤더 주장이라 참고용입니다. 로켓 연소 시험 비용은 믿을 만한 출처를 못 찾아서 숫자를 쓰지 않았습니다.",
+     "en": "A hardware respin is $30k to $80k by one vendor blog, so treat it as a vendor claim. For rocket hot fire we found no primary source, so we show no number.",
+     "actions": []
+    }
+   ]
+  },
+  {
+   "id": "insight",
+   "title": "Insight",
+   "slide": {
+    "kind": "insight"
+   },
+   "narration": [
+    {
+     "id": "insight.0",
+     "ko": "아이디어를 만들기 전에 걸러내는 것이 핵심입니다. 판정은 MuJoCo가 하고, 화면의 3D는 저장된 궤적을 재생하는 배우일 뿐입니다. 모든 숫자는 시뮬레이션 도구에서 나오고 언어 모델에서 나오지 않습니다.",
+     "en": "The point is to screen bad ideas before anyone builds them. MuJoCo is the judge. Three.js is only the actor replaying a stored trajectory. Every number comes from simulation tools, never from a language model.",
+     "actions": []
+    }
+   ]
+  },
+  {
+   "id": "demo_roadster",
+   "title": "Demo 1: roadster flip",
+   "slide": {
+    "kind": "app",
+    "tab": "lab"
+   },
+   "narration": [
+    {
+     "id": "demo_roadster.0",
+     "ko": "첫 번째 데모입니다. 이것은 기록된, 시드가 고정된 재현 가능한 실행입니다. 실시간 계산이 아닙니다. 로켓 추력기로 공중 회전을 하는 로드스터를 고릅니다.",
+     "en": "Demo one. This is a recorded, seeded, reproducible run, not live compute. We pick the roadster that flips on rocket thrusters.",
+     "actions": [
+      {
+       "at": 3.0,
+       "type": "select_scenario",
+       "title": "Rocket roadster flip"
+      }
+     ]
+    },
+    {
+     "id": "demo_roadster.1",
+     "ko": "에이전트는 도구 11개를 순서대로 호출했습니다. 이 로그는 기록된 것입니다.",
+     "en": "The agent called 11 tools in order. This log is recorded.",
+     "actions": [
+      {
+       "at": 0.3,
+       "type": "scroll",
+       "target": "run"
+      }
+     ]
+    },
+    {
+     "id": "demo_roadster.2",
+     "ko": "추력기 하나당 1000 뉴턴으로 설정하면, 149883번 평가해도 해를 찾지 못했습니다. 이것은 약한 증거이고, 불가능의 증명이 아닙니다.",
+     "en": "At 1000 newtons per nozzle, the search did not find a solution in 149883 evaluations. That is weak evidence, not proof of impossibility.",
+     "actions": [
+      {
+       "at": 0.3,
+       "type": "open_assumptions"
+      },
+      {
+       "at": 0.8,
+       "type": "set_variant",
+       "value": 1000.0
+      }
+     ]
+    },
+    {
+     "id": "demo_roadster.3",
+     "ko": "더 낮은 300 뉴턴에서는 필요한 회전 시간 3.2초가 가용 시간 2.54초를 넘습니다. 이건 필요조건 위반이라 가정 하에서 강한 불가능입니다.",
+     "en": "At a lower 300 newtons, the flip needs 3.2 seconds but only 2.54 seconds are available. A necessary condition is violated: strong impossibility under the assumptions.",
+     "actions": [
+      {
+       "at": 0.3,
+       "type": "set_variant",
+       "value": 300.0
+      }
+     ]
+    },
+    {
+     "id": "demo_roadster.4",
+     "ko": "옵티마이저의 수정안은 1000에서 3000 뉴턴으로 올리는 것입니다. 수정안을 적용하겠습니다.",
+     "en": "The optimizer's fix raises thrust from 1000 to 3000 newtons. Applying the fix.",
+     "actions": [
+      {
+       "at": 0.2,
+       "type": "scroll",
+       "target": "fix"
+      },
+      {
+       "at": 4.0,
+       "type": "apply_fix"
+      }
+     ]
+    },
+    {
+     "id": "demo_roadster.5",
+     "ko": "해를 찾았습니다. 하지만 가정 표본 500개 중 3.6퍼센트에서만 성공하고, 신뢰구간은 2.3에서 5.6퍼센트입니다. 취약한 해이고, 단순화된 모델이라 정밀 검증이 필요합니다.",
+     "en": "A solution is found, but it works in only 3.6 percent of 500 sampled assumption sets, with a 95 percent interval of 2.3 to 5.6. It is fragile, and the model is simplified and needs precise validation.",
+     "actions": [
+      {
+       "at": 0.4,
+       "type": "scroll",
+       "target": "verdict"
+      },
+      {
+       "at": 0.4,
+       "type": "play"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "autoresearch",
+   "title": "Autoresearch",
+   "slide": {
+    "kind": "app",
+    "tab": "autoresearch"
+   },
+   "narration": [
+    {
+     "id": "autoresearch.0",
+     "ko": "이제 오토리서치입니다. 여기 데이터는 합성 데이터이고, 실물 검증은 하지 않았습니다. 이 점을 분명히 말씀드립니다.",
+     "en": "Now autoresearch. The data here is synthetic and sim-to-real is not validated. We say this up front.",
+     "actions": [
+      {
+       "at": 0.3,
+       "type": "tab",
+       "tab": "autoresearch"
+      }
+     ]
+    },
+    {
+     "id": "autoresearch.1",
+     "ko": "자세 제어에서 기본 개루프 스케줄은 200개 교란 표본 중 5.5퍼센트만 성공했습니다. 피드백 제어를 추가한 설정은 100퍼센트입니다. 장난감 10킬로그램 시험체이고 실제 차량에 대한 주장이 아닙니다.",
+     "en": "For attitude control, the baseline open-loop schedule succeeds in 5.5 percent of 200 disturbed samples. With feedback it is 100 percent. It is a toy 10 kilogram article, not a claim about a real vehicle.",
+     "actions": [
+      {
+       "at": 0.5,
+       "type": "scroll",
+       "target": "top"
+      }
+     ]
+    },
+    {
+     "id": "autoresearch.2",
+     "ko": "보정 실험 추천은 식별 가능한 매개변수를 9개 중 5개에서 9개로 늘렸습니다. 판정에 반영하면 스케줄 제어기의 성공률이 1퍼센트에서 66.5퍼센트로 움직입니다. 단, 모델 클래스가 같은 자기일관 테스트입니다.",
+     "en": "The calibration experiment recommendation raises identifiable parameters from 5 to 9 of 9. In the verdict, the schedule controller moves from 1 to 66.5 percent. This is a self-consistent test where the model class matches the generator.",
+     "actions": [
+      {
+       "at": 0.5,
+       "type": "scroll",
+       "target": "bottom"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "asymmetry",
+   "title": "Verdict asymmetry",
+   "slide": {
+    "kind": "asymmetry"
+   },
+   "narration": [
+    {
+     "id": "asymmetry.0",
+     "ko": "판정은 비대칭입니다. 해를 찾으면 가정 안에서 강한 증거입니다. 필요조건이 깨지면 강한 불가능입니다. 예산 안에서 못 찾은 것은 약한 증거일 뿐이고, 절대 증명이라 말하지 않습니다.",
+     "en": "Verdicts are asymmetric. Found is strong evidence within the assumptions. A violated necessary condition is a strong impossibility. Not found within budget is weak evidence only, and we never call it proof.",
+     "actions": []
+    }
+   ]
+  },
+  {
+   "id": "diff",
+   "title": "Differentiation",
+   "slide": {
+    "kind": "diff"
+   },
+   "narration": [
+    {
+     "id": "diff.0",
+     "ko": "Drift builds the sim. We kill ideas not worth simulating.",
+     "en": "Drift builds the sim. We kill ideas not worth simulating.",
+     "actions": []
+    },
+    {
+     "id": "diff.1",
+     "ko": "Luminary speeds up experts' simulations. We give everyone their first physical experiment.",
+     "en": "Luminary speeds up experts' simulations. We give everyone their first physical experiment.",
+     "actions": []
+    }
+   ]
+  },
+  {
+   "id": "business",
+   "title": "Business model (UNVALIDATED)",
+   "slide": {
+    "kind": "business"
+   },
+   "narration": [
+    {
+     "id": "business.0",
+     "ko": "사업 모델은 가설이고 검증되지 않았습니다. 지불 의사는 확인하지 못했고, 고객이나 매출도 아직 없습니다.",
+     "en": "The business model is a hypothesis and is unvalidated. We have not confirmed willingness to pay, and we have no customers or revenue yet.",
+     "actions": []
+    }
+   ]
+  },
+  {
+   "id": "roadmap",
+   "title": "Roadmap",
+   "slide": {
+    "kind": "roadmap"
+   },
+   "narration": [
+    {
+     "id": "roadmap.0",
+     "ko": "다음 단계는 실물 데이터로 보정을 검증하는 것, 더 많은 템플릿, 그리고 사용자 인터뷰입니다.",
+     "en": "Next: validate calibration against real data, add more templates, and run user interviews.",
+     "actions": []
+    }
+   ]
+  },
+  {
+   "id": "ask",
+   "title": "Ask",
+   "slide": {
+    "kind": "ask"
+   },
+   "narration": [
+    {
+     "id": "ask.0",
+     "ko": "저희가 원하는 것은 이 가설을 검증할 첫 사용자와 실물 시험 데이터를 가진 파트너입니다. 감사합니다.",
+     "en": "What we need: first users to test this hypothesis, and partners with real test data. Thank you.",
+     "actions": []
+    }
+   ]
+  }
+ ]
+}

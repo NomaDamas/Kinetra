@@ -40,6 +40,7 @@ CACHE_DIR = Path(os.environ.get("KINETRA_CACHE", Path(__file__).resolve().parent
 CPU_USD_PER_CORE_HOUR = 0.05   # default, unverified (judgment-spec E); editable
 
 P_ROBUST = 0.9                 # below this the nominal optimum is robustified
+P_FIX = 0.5                    # a suggested fix must be a MC-verified variant with p_success >= this
 
 
 class UnsupportedIdea(ValueError):
@@ -135,9 +136,9 @@ def _code_version(tpl: Any) -> str:
     return h.hexdigest()[:16]
 
 
-def _cache_path(tpl: Any, spec: SpecSheet, seed: int, budget: Budget, robust: bool, search_seeds: int = 3) -> Path:
+def _cache_path(tpl: Any, spec: SpecSheet, seed: int, budget: Budget, robust: bool, search_seeds: int = 3, warm: dict[str, float] | None = None) -> Path:
     key = mclib.canonical_json(dict(v=_code_version(tpl), t=tpl.id, spec=spec.model_dump(mode="json"), seed=seed,
-                                    b=[budget.max_evals, budget.max_seconds, budget.mc_samples], r=robust, ss=search_seeds))
+                                    b=[budget.max_evals, budget.max_seconds, budget.mc_samples], r=robust, ss=search_seeds, w=warm))
     return CACHE_DIR / f"core_{tpl.id}_{hashlib.sha256(key.encode()).hexdigest()[:20]}.pkl"
 
 
@@ -160,8 +161,8 @@ def _tightest_check(checks: list[NecessaryCheck]) -> tuple[NecessaryCheck, float
     return best
 
 
-def _core(tpl: Any, spec: SpecSheet, seed: int, budget: Budget, robust: bool, use_cache: bool, search_seeds: int = 3) -> tuple[Core, bool]:
-    path = _cache_path(tpl, spec, seed, budget, robust, search_seeds)
+def _core(tpl: Any, spec: SpecSheet, seed: int, budget: Budget, robust: bool, use_cache: bool, search_seeds: int = 3, warm: dict[str, float] | None = None) -> tuple[Core, bool]:
+    path = _cache_path(tpl, spec, seed, budget, robust, search_seeds, warm)
     if use_cache and path.exists():
         try:
             return pickle.loads(path.read_bytes()), True
@@ -213,6 +214,23 @@ def _core(tpl: Any, spec: SpecSheet, seed: int, budget: Budget, robust: bool, us
 
     res = steps.run("search", "CMA-ES search", "cma-es + mujoco.rollout (parallel)", f_search)
     params, found = dict(res.best_params), bool(res.found)
+
+    if warm is not None and not sanity:
+        def f_warm():
+            ok = bool(tpl.judge_nominal(spec, warm))
+            if not ok:
+                return "Warm-start schedule from a neighbouring variant does not satisfy the success criteria on this variant's nominal model; ignored.", dict(used=False, nominal_ok=False), None
+            mw = tpl.monte_carlo(spec, warm, S("mc"), budget.mc_samples)
+            if not found:
+                return (f"Warm-start schedule from a neighbouring variant IS a nominal witness here (MC {mw.n_success}/{mw.n}); adopted since own search found none.",
+                        dict(used=True, nominal_ok=True, mc_success=mw.n_success, n=mw.n, replaced_search_result=False), (warm, True))
+            mo = tpl.monte_carlo(spec, params, S("mc"), budget.mc_samples)
+            use = mw.n_success > mo.n_success
+            return (f"Warm-start schedule from a neighbouring variant is a nominal witness (MC {mw.n_success}/{mw.n}) vs own search result {mo.n_success}/{mo.n}; "
+                    + ("adopted." if use else "own result kept."), dict(used=use, nominal_ok=True, mc_success=mw.n_success, own_mc_success=mo.n_success, n=mw.n), (warm, True) if use else None)
+        wr = steps.run("warm_start", "Warm start from neighbouring variant", "judge + Monte-Carlo comparison", f_warm)
+        if wr is not None:
+            params, found = dict(wr[0]), True
 
     mc_nom: McResult | None = None
     mc_fin: McResult | None = None
@@ -438,6 +456,22 @@ def make_verdict(tpl: Any, spec: SpecSheet, core: Core, seed: int, budget: Budge
     return v, fclass
 
 
+def build_fix(key: str, unit: str, cur: float, candidates: list[dict[str, Any]], threshold: float = P_FIX) -> SuggestedFix | None:
+    """Smallest swept control value (ascending ``candidates`` of {value, found, p_success, n, n_evals}) whose Monte-Carlo-verified
+    p_success >= ``threshold``. Produced by the sweep, never by an LLM; ``verified`` is true only because p_success was computed."""
+    tested = sorted(float(c["value"]) for c in candidates)
+    for c in sorted(candidates, key=lambda c: c["value"]):
+        if c["value"] > cur and c.get("found") and c.get("p_success") is not None and c["p_success"] >= threshold:
+            p = float(c["p_success"])
+            return SuggestedFix(
+                changes=[ParamChange(param=key, from_value=float(cur), to_value=float(c["value"]), unit=unit)],
+                rationale=(f"Optimizer sweep of {key} over {tested} {unit} (ascending): the smallest tested value whose Monte-Carlo-verified p_success is >= {threshold:g} "
+                           f"is {c['value']:g} {unit} (p_success {_fmt_p(p)}%, n={c.get('n', '?')}, {c.get('n_evals', '?')} evaluations): {cur:g} -> {c['value']:g} {unit}. "
+                           "Found by search; not unique; the grid is coarse, so the true minimum may lie between tested values."),
+                verified=True, verified_p_success=p)
+    return None
+
+
 # --------------------------------------------------------------------------- the run
 @dataclass
 class PipelineRun:
@@ -465,7 +499,7 @@ class PipelineRun:
 
 def run(idea: str, template_id: str | None = None, overrides: dict[str, float] | None = None, seed: int | None = None,
         budget: Budget | None = None, *, fix: bool = True, fix_values: list[float] | None = None, robust: bool = True,
-        use_cache: bool = False, search_seeds: int = 3, router: Callable[[str], str] | None = None) -> PipelineRun:
+        use_cache: bool = False, search_seeds: int = 3, warm_params: dict[str, float] | None = None, router: Callable[[str], str] | None = None) -> PipelineRun:
     """Execute the pipeline. ``seed=None`` derives it from the default spec (judgment-spec R6)."""
     budget = budget or Budget()
     steps = Steps()
@@ -503,7 +537,7 @@ def run(idea: str, template_id: str | None = None, overrides: dict[str, float] |
         return "MuJoCo model compiled" + (f": {info}" if info else "") + ".", info, info
     steps.run("build_model", "Build MuJoCo model", "mujoco.MjModel.from_xml", f_model)
 
-    core, hit = _core(tpl, spec, seed, budget, robust, use_cache, search_seeds)
+    core, hit = _core(tpl, spec, seed, budget, robust, use_cache, search_seeds, warm_params)
     steps.add(_Steps(core.steps))
 
     # ---- fix search
@@ -517,35 +551,34 @@ def run(idea: str, template_id: str | None = None, overrides: dict[str, float] |
         ctrl = tpl.fix_control(spec) if hasattr(tpl, "fix_control") else None
         if not fix or ctrl is None:
             return "Skipped — " + ("disabled." if not fix else "template has no user-facing fix control."), dict(skipped=True), None
-        if status_now_found:
+        if status_now_found and core.mc is not None and core.mc.n_success / max(core.mc.n, 1) >= P_FIX:
             return "Skipped — a feasible configuration was already found; no fix needed.", dict(skipped=True), None
         key = ctrl["key"]
         cur = next(a.value for a in spec.assumptions if a.key == key)
         vals = sorted(v for v in (fix_values or ctrl["values"]) if v > cur)
         base_over = dict(overrides or {})
+        prev = warm_params
+        prev_v = cur
         for v in vals:
             sub_spec = tpl.default_spec(idea, {**base_over, key: v})
-            c2, hit2 = _core(tpl, sub_spec, seed, budget, robust, use_cache, search_seeds)
+            w = tpl.rescale_params(prev, prev_v, v) if (prev is not None and hasattr(tpl, "rescale_params")) else None
+            c2, hit2 = _core(tpl, sub_spec, seed, budget, robust, use_cache, search_seeds, w)
             ok = bool(c2.found and c2.mc is not None and all(c.passed for c in c2.screen))
             p = c2.mc.n_success / c2.mc.n if (ok and c2.mc and c2.mc.n) else None
+            if ok:
+                prev, prev_v = c2.params, v
             extra_evals += c2.n_evals
             extra_wall += c2.wall_seconds
-            fix_cands.append(dict(value=v, found=ok, p_success=p, n_evals=c2.n_evals, wall_seconds=round(c2.wall_seconds, 3), cache_hit=hit2,
-                                  screen_failed=[c.name for c in c2.screen if not c.passed]))
-            if ok and p is not None:
-                fix_obj = SuggestedFix(
-                    changes=[ParamChange(param=key, from_value=float(cur), to_value=float(v), unit=ctrl["unit"])],
-                    rationale=(f"Optimizer sweep of {key} over {[float(x) for x in vals]} {ctrl['unit']} (tested ascending) found the smallest tested value with a "
-                               f"verified feasible variant: {cur:g} -> {v:g} {ctrl['unit']}; Monte-Carlo p_success {_fmt_p(p)}% (n={c2.mc.n}, {c2.n_evals} evaluations)."
-                               + (" Fragile: it works in fewer than half of the sampled assumption sets." if p < 0.5 else "")
-                               + " Found by search; not unique; the grid is coarse, so the true minimum may lie between tested values."),
-                    verified=True, verified_p_success=float(p))
+            fix_cands.append(dict(value=v, found=ok, p_success=p, n=(c2.mc.n if ok and c2.mc else 0), n_evals=c2.n_evals,
+                                  wall_seconds=round(c2.wall_seconds, 3), cache_hit=hit2, screen_failed=[c.name for c in c2.screen if not c.passed]))
+            if p is not None and p >= P_FIX:
                 break
+        fix_obj = build_fix(key, ctrl["unit"], float(cur), fix_cands)
         if fix_obj is None:
-            return (f"No tested {key} value in {[float(x) for x in vals]} {ctrl['unit']} gave a verified feasible variant (weak: only these values and this budget were tried).",
-                    dict(candidates=fix_cands), None)
-        return (f"Smallest feasible tested {key}: {fix_obj.changes[0].to_value:g} {ctrl['unit']} (p_success {_fmt_p(fix_obj.verified_p_success or 0)}%, "
-                f"verified by Monte-Carlo after {len(fix_cands)} sweep variant(s)).", dict(candidates=fix_cands), None)
+            return (f"No tested {key} value in {[float(c['value']) for c in fix_cands]} {ctrl['unit']} gave a verified variant with p_success >= {P_FIX:g} "
+                    "(weak: only these values and this budget were tried).", dict(candidates=fix_cands, threshold=P_FIX), None)
+        return (f"Smallest tested {key} with MC-verified p_success >= {P_FIX:g}: {fix_obj.changes[0].to_value:g} {ctrl['unit']} "
+                f"(p_success {_fmt_p(fix_obj.verified_p_success or 0)}%, after {len(fix_cands)} sweep variant(s)).", dict(candidates=fix_cands, threshold=P_FIX), None)
     steps.run("fix_search", "Optimizer-found fix (control sweep)", "sweep + cma-es + Monte-Carlo verification", f_fix)
 
     def f_bom():

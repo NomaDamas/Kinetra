@@ -49,9 +49,9 @@ def test_sampler_deterministic_clipped_and_independent(spec):
     c = mclib.sample_assumptions(spec, 200, 12, rc.aux_jitter)
     assert all(np.array_equal(a[k], b[k]) for k in a)
     assert not np.array_equal(a["vehicle_mass"], c["vehicle_mass"])
-    assert a["vehicle_mass"].min() >= 1240.0 and a["vehicle_mass"].max() <= 1360.0       # normal clipped
+    assert a["vehicle_mass"].min() >= 1235.0 and a["vehicle_mass"].max() <= 1365.0       # uniform +-5%
     assert np.all(a["thruster_force_max"] == 5000.0)                                       # fixed
-    assert a["ramp_speed"].min() >= 21.7 and a["ramp_speed"].max() <= 22.3                 # uniform
+    assert a["com_offset_x"].min() >= -0.15 and a["com_offset_x"].max() <= 0.15           # uniform
     # each assumption has its own stream: dropping another one does not move this one
     assert np.array_equal(mclib.sample_assumption(spec.assumptions[1], 200, 11), a["vehicle_mass"])
 

@@ -43,7 +43,6 @@ G0 = 9.80665
 TOL_FIN = np.deg2rad(20.0)   # final pitch / roll tolerance
 TOL_TD = np.deg2rad(30.0)    # pitch tolerance at first ground contact
 WHEEL_MASS = 20.0
-THRUST_JITTER = 0.03         # per-thruster independent +-5 % (on top of the common 'thrust_error' assumption)
 
 # --------------------------------------------------------------------------- geometry / layout
 LENGTH, WIDTH, HEIGHT = 4.2, 1.9, 1.2
@@ -184,7 +183,7 @@ class Env:
     def from_samples(s: dict[str, np.ndarray], fixed: dict[str, float]) -> "Env":
         n = len(s["vehicle_mass"])
         g = lambda k: np.asarray(s[k], float) if k in s else np.full(n, fixed.get(k, 0.0))
-        jit = s["_thrust_jitter"] if "_thrust_jitter" in s else np.zeros((n, K))
+        jit = (s["_thrust_jitter"] if "_thrust_jitter" in s else np.zeros((n, K))) * g("thrust_spread")[:, None]
         return Env(g("vehicle_mass"), g("com_offset_x"), g("com_offset_z"), g("thruster_force_max"),
                    (1.0 + g("thrust_error"))[:, None] * (1.0 + jit), g("isp"), g("propellant_cap"), g("ramp_speed"),
                    np.deg2rad(g("ramp_angle")), g("ramp_height"))
@@ -202,7 +201,7 @@ class Env:
 
 def aux_jitter(n: int, seed: int) -> dict[str, np.ndarray]:
     rng = np.random.default_rng(mclib.derive_seed(seed, "thrust_jitter"))
-    return {"_thrust_jitter": rng.uniform(-THRUST_JITTER, THRUST_JITTER, (n, K))}
+    return {"_thrust_jitter": rng.uniform(-1.0, 1.0, (n, K))}
 
 
 # --------------------------------------------------------------------------- simulator
@@ -479,23 +478,25 @@ class RocketCar:
             A(key="thruster_force_max", label="Max thrust per nozzle (10 nozzles)", value=5000.0, unit="N", distribution=Fixed(),
               source="user", confidence=Confidence.med),
             A(key="vehicle_mass", label="Vehicle mass incl. wheels, occupant, gas", value=1300.0, unit="kg",
-              distribution=Normal(mean=1300.0, std=25.0, clip_low=1240.0, clip_high=1360.0),
-              source="default: spikes/roadster model; production mass unverified (target <1700 kg, https://en.wikipedia.org/wiki/Tesla_Roadster_(second_generation))",
+              distribution=Uniform(low=1235.0, high=1365.0),
+              source="default: spikes/roadster model, +-5% as in the spike's disturbance set; production mass unverified (target <1700 kg, https://en.wikipedia.org/wiki/Tesla_Roadster_(second_generation))",
               confidence=Confidence.low),
-            A(key="propellant_cap", label="Usable cold-gas propellant", value=35.0, unit="kg", distribution=Fixed(),
+            A(key="propellant_cap", label="Usable cold-gas propellant", value=25.0, unit="kg", distribution=Fixed(),
               source="default: roadster spike (no sourced figure)", confidence=Confidence.low),
-            A(key="isp", label="Specific impulse (cold-gas N2)", value=70.0, unit="s", distribution=Uniform(low=65.0, high=75.0),
-              source="unverified: docs/judgment-spec.md R4 (60-75 s)", confidence=Confidence.low),
-            A(key="thrust_error", label="Common thrust scale error (plus +-3% per nozzle)", value=0.0, unit="", distribution=Uniform(low=-0.04, high=0.04),
-              source="default", confidence=Confidence.low),
-            A(key="com_offset_x", label="COM offset along car x", value=0.0, unit="m", distribution=Uniform(low=-0.10, high=0.10),
-              source="default", confidence=Confidence.low),
-            A(key="com_offset_z", label="COM offset along car z", value=0.0, unit="m", distribution=Uniform(low=-0.05, high=0.05),
-              source="default", confidence=Confidence.low),
-            A(key="ramp_speed", label="Launch speed at ramp lip", value=22.0, unit="m/s", distribution=Uniform(low=21.7, high=22.3),
-              source="default: roadster spike", confidence=Confidence.med),
-            A(key="ramp_angle", label="Ramp angle", value=25.0, unit="deg", distribution=Uniform(low=24.5, high=25.5),
-              source="default: roadster spike", confidence=Confidence.med),
+            A(key="isp", label="Specific impulse (cold-gas N2)", value=70.0, unit="s", distribution=Fixed(),
+              source="unverified: 70 s as in the spike; docs/judgment-spec.md R4 gives 60-75 s (widen the distribution in the panel to test)", confidence=Confidence.low),
+            A(key="thrust_spread", label="Independent per-nozzle thrust error, half-range (uniform)", value=0.0, unit="", distribution=Fixed(),
+              source="default 0 = the spike's EFFECTIVE disturbance set. The spike's report says +-10% per thruster, but its code wrote that to actuator_gear[:,0] (always 0 for these motors), so its Monte-Carlo never varied thrust. Set e.g. 0.10 to apply it; the bundle reports the measured p_success at 3% and 10% separately", confidence=Confidence.low),
+            A(key="thrust_error", label="Common thrust scale error", value=0.0, unit="", distribution=Fixed(),
+              source="default (0: spike had none)", confidence=Confidence.low),
+            A(key="com_offset_x", label="COM offset along car x", value=0.0, unit="m", distribution=Uniform(low=-0.15, high=0.15),
+              source="default: spike disturbance set", confidence=Confidence.low),
+            A(key="com_offset_z", label="COM offset along car z", value=0.0, unit="m", distribution=Uniform(low=-0.10, high=0.10),
+              source="default: spike disturbance set", confidence=Confidence.low),
+            A(key="ramp_speed", label="Launch speed at ramp lip", value=22.0, unit="m/s", distribution=Fixed(),
+              source="default: roadster spike (fixed there)", confidence=Confidence.med),
+            A(key="ramp_angle", label="Ramp angle", value=25.0, unit="deg", distribution=Fixed(),
+              source="default: roadster spike (fixed there)", confidence=Confidence.med),
             A(key="ramp_height", label="COM height at ramp lip", value=2.2, unit="m", distribution=Fixed(),
               source="default: roadster spike", confidence=Confidence.med),
         ]
@@ -566,10 +567,17 @@ class RocketCar:
     def _env_nom(self, spec: SpecSheet) -> Env:
         return Env.from_values(_vals(spec))
 
+    def rescale_params(self, params: dict[str, float], f_from: float, f_to: float) -> dict[str, float]:
+        """Warm start across the sweep control: keep the commanded thrust (throttle * Fmax) roughly constant."""
+        out = dict(params)
+        for w in WIN_NAMES:
+            out[f"{w}_throttle"] = float(np.clip(params[f"{w}_throttle"] * f_from / f_to, 0.0, 1.0))
+        return out
+
     def fix_control(self, spec: SpecSheet) -> dict[str, Any]:
         """The user-facing control the fix search sweeps (also the web slider)."""
         return dict(key="thruster_force_max", label="Max thrust per nozzle", unit="N",
-                    values=[1000.0, 2000.0, 3000.0, 4000.0, 5000.0, 6000.0],
+                    values=[2000.0, 2500.0, 3000.0, 3500.0, 4000.0, 5000.0, 6000.0],
                     hint="Thrust each of the 10 cold-gas nozzles can deliver; no sourced figure exists for the real hardware.")
 
     # ---- necessary screen (favorable bounds, judgment-spec R3)
@@ -577,7 +585,7 @@ class RocketCar:
         v, A, lim = _vals(spec), _assum(spec), _limits(spec)
         q = lambda k, p: mclib.quantile(A[k], p)
         fmax_nom = v["thruster_force_max"] * (1.0 + v["thrust_error"])
-        fmax_fav = v["thruster_force_max"] * (1.0 + q("thrust_error", 0.95)) * (1.0 + THRUST_JITTER)
+        fmax_fav = v["thruster_force_max"] * (1.0 + q("thrust_error", 0.95)) * (1.0 + v.get("thrust_spread", 0.0))
         # favourable: lightest vehicle, strongest thrust, best Isp, fastest launch, best ramp angle of the two ends
         def run(mass, fmax, isp, spd, ang):
             return screen_bounds(mass, fmax, isp, v["propellant_cap"], v["ramp_height"], spd, np.deg2rad(ang), lim["w_max"])
