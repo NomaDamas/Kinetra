@@ -9,3 +9,5 @@ out/
 .DS_Store
 spikes/**/vendor/
 MUJOCO_LOG.TXT
+packages/engine/.venv/
+apps/web/dist/
