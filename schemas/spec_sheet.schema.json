@@ -1,0 +1,390 @@
+{
+  "$defs": {
+    "Assumption": {
+      "additionalProperties": false,
+      "description": "One physical assumption shown in the human-review panel.\n\n``value`` is the nominal (used by the deterministic search); ``distribution``\nis what Monte-Carlo samples from.",
+      "properties": {
+        "key": {
+          "description": "Stable machine key, e.g. 'vehicle_mass'. Referenced by Verdict sensitivities.",
+          "title": "Key",
+          "type": "string"
+        },
+        "label": {
+          "description": "Human-readable name shown in the panel.",
+          "title": "Label",
+          "type": "string"
+        },
+        "value": {
+          "title": "Value",
+          "type": "number"
+        },
+        "unit": {
+          "description": "SI unit string, '' if dimensionless.",
+          "title": "Unit",
+          "type": "string"
+        },
+        "distribution": {
+          "discriminator": {
+            "mapping": {
+              "fixed": "#/$defs/Fixed",
+              "normal": "#/$defs/Normal",
+              "uniform": "#/$defs/Uniform"
+            },
+            "propertyName": "kind"
+          },
+          "oneOf": [
+            {
+              "$ref": "#/$defs/Fixed"
+            },
+            {
+              "$ref": "#/$defs/Uniform"
+            },
+            {
+              "$ref": "#/$defs/Normal"
+            }
+          ],
+          "title": "Distribution"
+        },
+        "source": {
+          "description": "URL, citation, 'llm_estimate' or 'user'.",
+          "title": "Source",
+          "type": "string"
+        },
+        "confidence": {
+          "$ref": "#/$defs/Confidence"
+        },
+        "editable": {
+          "default": true,
+          "title": "Editable",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "key",
+        "label",
+        "value",
+        "unit",
+        "source",
+        "confidence"
+      ],
+      "title": "Assumption",
+      "type": "object"
+    },
+    "Comparator": {
+      "enum": [
+        ">=",
+        "<=",
+        ">",
+        "<"
+      ],
+      "title": "Comparator",
+      "type": "string"
+    },
+    "Confidence": {
+      "enum": [
+        "low",
+        "med",
+        "high"
+      ],
+      "title": "Confidence",
+      "type": "string"
+    },
+    "Fixed": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "fixed",
+          "default": "fixed",
+          "title": "Kind",
+          "type": "string"
+        }
+      },
+      "title": "Fixed",
+      "type": "object"
+    },
+    "Normal": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "normal",
+          "default": "normal",
+          "title": "Kind",
+          "type": "string"
+        },
+        "mean": {
+          "title": "Mean",
+          "type": "number"
+        },
+        "std": {
+          "minimum": 0,
+          "title": "Std",
+          "type": "number"
+        },
+        "clip_low": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Clip Low"
+        },
+        "clip_high": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Clip High"
+        }
+      },
+      "required": [
+        "mean",
+        "std"
+      ],
+      "title": "Normal",
+      "type": "object"
+    },
+    "ParamBound": {
+      "additionalProperties": false,
+      "description": "Search variable of the optimizer (CMA-ES operates on these).",
+      "properties": {
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "low": {
+          "title": "Low",
+          "type": "number"
+        },
+        "high": {
+          "title": "High",
+          "type": "number"
+        },
+        "unit": {
+          "default": "",
+          "title": "Unit",
+          "type": "string"
+        },
+        "init": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "CMA-ES starting point; defaults to midpoint.",
+          "title": "Init"
+        },
+        "description": {
+          "default": "",
+          "title": "Description",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "low",
+        "high"
+      ],
+      "title": "ParamBound",
+      "type": "object"
+    },
+    "Part": {
+      "additionalProperties": false,
+      "description": "A candidate real-world component (feeds BOM).",
+      "properties": {
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "role": {
+          "description": "e.g. 'thruster', 'battery', 'chassis'.",
+          "title": "Role",
+          "type": "string"
+        },
+        "mass_kg": {
+          "minimum": 0,
+          "title": "Mass Kg",
+          "type": "number"
+        },
+        "cost_usd": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Cost Usd"
+        },
+        "source": {
+          "description": "URL, citation, 'llm_estimate' or 'user'.",
+          "title": "Source",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "role",
+        "mass_kg",
+        "source"
+      ],
+      "title": "Part",
+      "type": "object"
+    },
+    "SuccessCriterion": {
+      "additionalProperties": false,
+      "description": "A measurable condition on a simulated rollout, e.g. rotation_deg >= 360.",
+      "properties": {
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "metric": {
+          "description": "Name of a rollout metric produced by the template, e.g. 'rotation_deg'.",
+          "title": "Metric",
+          "type": "string"
+        },
+        "comparator": {
+          "$ref": "#/$defs/Comparator"
+        },
+        "threshold": {
+          "title": "Threshold",
+          "type": "number"
+        },
+        "unit": {
+          "default": "",
+          "title": "Unit",
+          "type": "string"
+        },
+        "description": {
+          "default": "",
+          "title": "Description",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "metric",
+        "comparator",
+        "threshold"
+      ],
+      "title": "SuccessCriterion",
+      "type": "object"
+    },
+    "TemplateId": {
+      "enum": [
+        "rocket_car",
+        "humanoid_jump",
+        "drone",
+        "custom"
+      ],
+      "title": "TemplateId",
+      "type": "string"
+    },
+    "Tier": {
+      "enum": [
+        1,
+        2
+      ],
+      "title": "Tier",
+      "type": "integer"
+    },
+    "Uniform": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "uniform",
+          "default": "uniform",
+          "title": "Kind",
+          "type": "string"
+        },
+        "low": {
+          "title": "Low",
+          "type": "number"
+        },
+        "high": {
+          "title": "High",
+          "type": "number"
+        }
+      },
+      "required": [
+        "low",
+        "high"
+      ],
+      "title": "Uniform",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "default": "0.1.0",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "idea": {
+      "description": "The user's one-sentence idea, verbatim.",
+      "title": "Idea",
+      "type": "string"
+    },
+    "template_id": {
+      "$ref": "#/$defs/TemplateId"
+    },
+    "tier": {
+      "$ref": "#/$defs/Tier"
+    },
+    "assumptions": {
+      "items": {
+        "$ref": "#/$defs/Assumption"
+      },
+      "title": "Assumptions",
+      "type": "array"
+    },
+    "parts": {
+      "items": {
+        "$ref": "#/$defs/Part"
+      },
+      "title": "Parts",
+      "type": "array"
+    },
+    "param_bounds": {
+      "items": {
+        "$ref": "#/$defs/ParamBound"
+      },
+      "title": "Param Bounds",
+      "type": "array"
+    },
+    "success_criteria": {
+      "items": {
+        "$ref": "#/$defs/SuccessCriterion"
+      },
+      "title": "Success Criteria",
+      "type": "array"
+    }
+  },
+  "required": [
+    "idea",
+    "template_id",
+    "tier",
+    "assumptions",
+    "success_criteria"
+  ],
+  "title": "SpecSheet",
+  "type": "object",
+  "$schema": "https://json-schema.org/draft/2020-12/schema"
+}

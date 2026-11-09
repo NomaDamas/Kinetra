@@ -1,0 +1,11 @@
+node_modules/
+.venv/
+__pycache__/
+dist/
+.wrangler/
+*.egg-info/
+spikes/**/.venv/
+out/
+.DS_Store
+spikes/**/vendor/
+MUJOCO_LOG.TXT
