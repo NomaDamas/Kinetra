@@ -4,7 +4,7 @@ Source of truth: `packages/core/src/physlab_core/schemas.py` (Pydantic v2).
 Generated: `schemas/*.schema.json`, `schemas/types.ts` (`uv run python packages/core/scripts/export_schemas.py`).
 Examples below are validated by `packages/core/scripts/validate_examples.py`.
 
-**All numbers in the examples are ILLUSTRATIVE** (Roadster rocket-thruster aerial flip). They are not simulation output.
+**All numbers in the examples are ILLUSTRATIVE** (Roadster rocket-thruster aerial maneuver; the shipped template now asks for a full roll AND pitch rotation). They are not simulation output.
 
 Conventions: SI units; MuJoCo world frame (+Z up); quaternions `[w, x, y, z]` (Three.js wants `[x, y, z, w]` — reorder in the viewer);
 `pos[frame][body]` / `quat[frame][body]` index bodies in the order of `bodies`.

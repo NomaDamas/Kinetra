@@ -59,7 +59,8 @@ export interface DesignSnapshot {
   total: number
   customParts: number
   unpriced: number
-  loopIterations: number
+  /** Real re-runs with designed mass (row 0 is the recorded pre-design run). */
+  loopReruns: number
   lastLoop: DesignBrief['closed_loop'][number] | null
 }
 export function designSnapshot(d: DesignBrief): DesignSnapshot {
@@ -73,7 +74,7 @@ export function designSnapshot(d: DesignBrief): DesignSnapshot {
     total: d.components.length,
     customParts: d.custom_parts.length,
     unpriced: d.totals.unpriced_lines,
-    loopIterations: d.closed_loop.length,
+    loopReruns: d.closed_loop.filter(r => r.iteration > 0).length,
     lastLoop: d.closed_loop.length ? d.closed_loop[d.closed_loop.length - 1] : null,
   }
 }

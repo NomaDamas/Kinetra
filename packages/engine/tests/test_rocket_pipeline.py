@@ -14,7 +14,7 @@ from kinetra_engine.catalog import lookup
 from kinetra_engine.templates import get as get_template
 from kinetra_engine.templates import rocket_car as rc
 
-IDEA = "Tesla Roadster rocket-thruster aerial flip"
+IDEA = "Tesla Roadster rocket-thruster aerial roll and pitch rotation"
 SMALL = Budget(max_evals=1500, max_seconds=30.0, mc_samples=24)
 
 
@@ -61,7 +61,7 @@ def test_spec_validates_and_overrides(tpl):
     s = tpl.default_spec(IDEA, {"thruster_force_max": 2000.0})
     SpecSheet.model_validate(s.model_dump(mode="json"))
     assert {a.key: a.value for a in s.assumptions}["thruster_force_max"] == 2000.0
-    assert len(s.param_bounds) == 15
+    assert len(s.param_bounds) == 21
     with pytest.raises(ValueError):
         tpl.default_spec(IDEA, {"nope": 1.0})
 
@@ -122,7 +122,7 @@ def test_not_found_wording_is_weak():
 
 
 def test_feasible_found_pipeline_and_determinism():
-    kw = dict(overrides={"thruster_force_max": 5000.0}, seed=20260001, budget=Budget(max_evals=12000, max_seconds=60.0, mc_samples=40), fix=False, robust=False)
+    kw = dict(overrides={"thruster_force_max": 10000.0}, seed=20260001, budget=Budget(max_evals=20000, max_seconds=60.0, mc_samples=40), fix=False, robust=False)
     r1 = pipeline.run(IDEA, "rocket_car", **kw)
     r2 = pipeline.run(IDEA, "rocket_car", **kw)
     assert r1.verdict.status == VerdictStatus.FEASIBLE_FOUND, r1.verdict.summary
@@ -145,13 +145,16 @@ def test_feasible_found_pipeline_and_determinism():
     names = [b.name for b in t.bodies]
     assert names[0] == "chassis" and "thr_nose_dn" in names
     assert {s.name for s in t.series} >= {"thrust_nose_dn", "pitch_deg"}
-    assert abs(min(s for s in next(x for x in t.series if x.name == "pitch_deg").values)) > 300     # the witness really flips
+    pitch = next(x for x in t.series if x.name == "pitch_deg").values
+    roll = next(x for x in t.series if x.name == "roll_deg").values
+    assert max(abs(v) for v in pitch) >= 340 and max(abs(v) for v in roll) >= 340     # the witness really turns a full pitch AND a full roll
+    assert "thr_side_fl_up" in names and "thrust_side_fl_up" in {s.name for s in t.series} and len(t.bodies) == 1 + 4 + rc.K
     assert t.dt == pytest.approx(0.02) and t.n_frames <= 60 * 4.6 + 1
     assert any(e.kind == "landing" for e in t.events)
 
 
 def test_search_deterministic(tpl, spec):
-    s2 = tpl.default_spec(IDEA, {"thruster_force_max": 5000.0})
+    s2 = tpl.default_spec(IDEA, {"thruster_force_max": 10000.0})
     a = tpl.search(s2, 3, Budget(max_evals=300, max_seconds=30.0))
     b = tpl.search(s2, 3, Budget(max_evals=300, max_seconds=30.0))
     assert a.best_params == b.best_params and a.n_evals == b.n_evals
@@ -160,3 +163,41 @@ def test_search_deterministic(tpl, spec):
 def test_necessary_screen_monotone(tpl):
     ok = lambda f: all(c.passed for c in tpl.necessary_screen(tpl.default_spec(IDEA, {"thruster_force_max": f})))
     assert not ok(300.0) and ok(3000.0) and ok(5000.0)
+
+
+def test_criteria_require_both_rotations(tpl):
+    names = {c.name for c in tpl.default_spec(IDEA).success_criteria}
+    assert {"full_pitch_turn", "full_roll_turn", "upright_at_touchdown", "upright_settle", "touchdown_roll_rate"} <= names
+    sim = tpl._sim(tpl.default_spec(IDEA))
+    env = tpl._env_nom(tpl.default_spec(IDEA))
+    m, _, _ = sim.evaluate_nominal(np.zeros((1, rc.NPARAM)), env)          # no burn at all: no rotation, so neither turn criterion holds
+    assert not m["success"][0] and not m["ok"]["pitch_turn"][0] and not m["ok"]["roll_turn"][0]
+    assert abs(m["pitch_turn"][0]) < 0.5 and abs(m["roll_turn"][0]) < 0.5
+
+
+def test_roll_screen_proves_tiny_roll_authority_infeasible(tpl):
+    spec = tpl.default_spec(IDEA, {"thruster_force_max": 5000.0})
+    assert all(c.passed for c in tpl.necessary_screen(spec))
+    lv = dict(rc._levers(1235.0))
+    lv["tau_x"] = lv["tau_x"] * 0.003                                        # keep every pitch lever, shrink only the roll lever arm
+    t_roll = rc._axis_time(lv, "x", 5000.0, {+1: float(rc.TURN_MIN), -1: float(rc.TURN_MIN)}, 3.0)["t_min"]
+    t_pitch = rc._axis_time(lv, "y", 5000.0, {+1: float(rc.TURN_MIN), -1: float(rc.TURN_MIN)}, 3.0)["t_min"]
+    t_ub = rc.screen_bounds(1235.0, 5000.0, 70.0, 60.0, 2.2, 22.0 * 1.05, np.deg2rad(25.0), 3.0, 3.0)["T_ub"]
+    assert t_roll > t_ub > t_pitch                                          # only the roll check would fail
+    # and with all nozzles tiny the real screen fails on the roll check by name
+    weak = tpl.necessary_screen(tpl.default_spec(IDEA, {"thruster_force_max": 150.0}))
+    assert not next(c for c in weak if c.name == "roll_time_vs_air_time").passed
+
+
+def test_rollout_matches_judge_rotation_metrics(tpl):
+    spec = tpl.default_spec(IDEA, {"thruster_force_max": 10000.0})
+    r = tpl.search(spec, mclib.derive_seed(20260001, "search"), Budget(max_evals=20000, max_seconds=120.0))
+    assert r.found
+    sim, env = tpl._sim(spec), tpl._env_nom(spec)
+    m, _, _ = sim.evaluate_nominal(rc.params_to_x(r.best_params)[None], env)
+    t = tpl.rollout(spec, r.best_params, 1)
+    ser = {s.name: s.values for s in t.series}
+    itd = int(m["itd"][0])
+    f = itd // 5
+    assert abs(ser["pitch_deg"][f]) == pytest.approx(abs(np.degrees(m["pitch_turn"][0])), abs=8.0)
+    assert abs(ser["roll_deg"][f]) == pytest.approx(abs(np.degrees(m["roll_turn"][0])), abs=8.0)

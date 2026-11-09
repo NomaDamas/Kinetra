@@ -1,10 +1,10 @@
 line,role,quantity,item,vendor,mass_kg_each,mass_source,unit_cost_usd,status,verified_specs,source
-nozzle,thruster,10,(needs sourcing),,2,estimate,,needs sourcing,,
-valve,valve,10,(needs sourcing),,1,estimate,,needs sourcing,,
-tank,propellant_tank,11,"Type 4 composite cylinder 9.0 L, 300 bar",CTS (Composite Technical Systems),3.9,catalog,,"catalog, meets all requirements",true,https://www.ctscyl.com/wp-content/uploads/2025/04/Data-sheet-9.0-lt-Industry-Rev.-6.pdf
+nozzle,thruster,18,(needs sourcing),,2,estimate,,needs sourcing,,
+valve,valve,18,(needs sourcing),,1,estimate,,needs sourcing,,
+tank,propellant_tank,6,"HDRX-400 Type IV composite cylinder 40 L, 300 bar",MEYER,18,catalog,,"catalog, meets all requirements",true,https://meyer.cd/copv/hdrx-400
 regulator,regulator,1,(needs sourcing),,1.5,estimate,,needs sourcing,,
-nozzle_bracket,custom_part,10,Nozzle mount bracket,custom (CAD in export),0.4109,cad,,"custom part (6061-T6), simplified model, needs FEA",,
-tank_cradle,custom_part,22,Tank cradle saddle (2 per tank),custom (CAD in export),0.1217,cad,,"custom part (6061-T6), simplified model, needs FEA",,
+nozzle_bracket,custom_part,18,Nozzle mount bracket,custom (CAD in export),0.5068,cad,,"custom part (6061-T6), simplified model, needs FEA",,
+tank_cradle,custom_part,12,Tank cradle saddle (2 per tank),custom (CAD in export),0.2128,cad,,"custom part (6061-T6), simplified model, needs FEA",,
 propellant,propellant,1,(needs sourcing),,,none,,needs sourcing,,
 
-TOTAL,,,,,81.19,of which unsourced estimate: 31.5 kg,,7 unpriced lines (not counted as zero),,
+TOTAL,,,,,175.2,of which unsourced estimate: 55.5 kg,,7 unpriced lines (not counted as zero),,

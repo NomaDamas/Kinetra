@@ -21,7 +21,7 @@ FILL_BAR = 300.0         # default storage pressure = rating of every cataloged 
 MIN_BAR = 10.0           # default minimum usable supply pressure (blow-down end), flagged 'default'
 TEMP_K = 293.15
 M_NOZZLE = dict(margin=1.25)
-N_NOZZLES = 10
+N_NOZZLES = 18
 
 
 @dataclass
@@ -69,7 +69,7 @@ def rocket_requirements(spec, params: dict[str, float], seed: int, witness_ref: 
     wr = f"witness schedule ({witness_ref}), nominal rollout"
     mf_p = 1.2
     reqs = [
-        _r("nozzle_peak_thrust", "Peak thrust per nozzle", peak_thrust, "N", f"max over all 10 nozzles and time steps of throttle x thrust_force_max, {wr}", 1.25),
+        _r("nozzle_peak_thrust", "Peak thrust per nozzle", peak_thrust, "N", f"max over all {N_NOZZLES} nozzles (10 pitch/lift + 8 roll) and time steps of throttle x thrust_force_max, {wr}", 1.25),
         _r("bracket_load", "Nozzle bracket design load (peak thrust, margin applied; part adds safety factor 2.0 on yield)", peak_thrust, "N",
            f"peak per-nozzle thrust of the {wr}", 1.25),
         _r("nozzle_peak_flow", "Peak propellant mass flow per nozzle", flow_peak, "kg/s",

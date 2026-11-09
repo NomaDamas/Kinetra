@@ -121,7 +121,7 @@ export const WHY: WhyContent = {
       id: 'founder',
       who: 'Hardware founder at concept stage',
       decision: 'Do I spend the first prototype budget on this spec, or change the spec first?',
-      input: 'The product claim in one sentence ("a car that flips 360 degrees on thrusters") plus the parts I am considering.',
+      input: 'The product claim in one sentence ("a car that rolls and pitches a full 360 degrees on thrusters") plus the parts I am considering.',
       output: 'A verdict, the constraint that binds first, sized components and the cheapest physical test that would confirm it.',
     },
     {

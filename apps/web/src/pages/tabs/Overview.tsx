@@ -51,7 +51,7 @@ export function OverviewTab({ ctx }: { ctx: ProjectCtx }) {
         <Stat
           label="Mass added by the design"
           value={snap?.massAddedKg != null ? `${fmt(snap.massAddedKg, 4)} kg` : '—'}
-          sub={brief ? (snap?.lastLoop ? `closed loop: ${snap.lastLoop.n > 0 ? `p_success ${pct(snap.lastLoop.p_success)}` : 'no witness found'} after ${snap.loopIterations} iterations` : 'no closed-loop run') : design.status === 'loading' ? 'loading design…' : 'no design stage yet'}
+          sub={brief ? (snap?.lastLoop ? `closed loop: ${snap.lastLoop.n > 0 ? `p_success ${pct(snap.lastLoop.p_success)}` : 'no witness found (weak)'} after ${snap.loopReruns} re-run${snap.loopReruns === 1 ? '' : 's'} with the designed mass` : 'no closed-loop run') : design.status === 'loading' ? 'loading design…' : 'no design stage yet'}
         />
         <Stat
           label="Components"

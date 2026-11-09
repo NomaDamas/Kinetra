@@ -34,9 +34,9 @@ export const TEMPLATES: TemplateCfg[] = [
     scenarioTemplate: 'rocket_car',
     title: 'Roadster (rocket_car)',
     controlKey: 'thruster_force_max',
-    searchNote: 'CMA-ES over the 15-parameter thruster schedule',
+    searchNote: 'CMA-ES over the 21-parameter thruster schedule (pitch, lift and roll burn windows)',
     params: [
-      { key: 'thruster_force_max', label: 'Max thrust per nozzle', unit: 'N', min: 300, max: 8000, step: 50, fallback: 5000, testId: 'live-fmax-slider' },
+      { key: 'thruster_force_max', label: 'Max thrust per nozzle', unit: 'N', min: 300, max: 12000, step: 100, fallback: 8000, testId: 'live-fmax-slider' },
       { key: 'vehicle_mass', label: 'Vehicle mass', unit: 'kg', min: 1000, max: 1700, step: 10, fallback: 1300 },
       {
         key: 'thrust_spread',

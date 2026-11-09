@@ -7,7 +7,7 @@ compiled for exactly those assumption values, and ``mujoco.mj_step`` is executed
                  wall clock (``speed`` x real time, 0 = as fast as possible). The exact same stepping code serves ``/simulate``.
 * humanoid_jump - *batch*: the template's rollout is one monolithic controller loop, so the whole rollout is computed first
                  (``compute_ms`` is reported) and the frames are then paced out. The start message says ``compute: "batch"``.
-* search (rocket_car) - a short real CMA-ES search over the 15 burn-window parameters; every generation evaluates a population
+* search (rocket_car) - a short real CMA-ES search over the 21 burn-window parameters (pitch, lift and roll windows); every generation evaluates a population
                  with ``mujoco.rollout`` (thread pool); progress and best-so-far rollouts are streamed; then the best
                  schedule is replayed with the incremental stepper.
 
@@ -36,7 +36,7 @@ from .templates import available, get as get_template
 
 PROTOCOL = 1
 DEMO = Path(__file__).resolve().parents[4] / "apps/web/public/demo"
-IDEA = {"rocket_car": "Live simulation: roadster rocket flip", "humanoid_jump": "Live simulation: humanoid jump"}
+IDEA = {"rocket_car": "Live simulation: roadster rocket roll + pitch rotation", "humanoid_jump": "Live simulation: humanoid jump"}
 SEARCH_TEMPLATES = ["rocket_car"]
 
 # Shared native resources (mujoco.rollout pool, the humanoid Sim singleton) are used by one thread at a time.
@@ -192,7 +192,7 @@ class _Run:
 class RocketRun(_Run):
     template_id = "rocket_car"
     STRIDE = 5
-    CHARTS = [("pitch_deg", "Pitch (flip progress)", "deg"), ("thrust_total_N", "Total thrust", "N"),
+    CHARTS = [("roll_deg", "Roll rotation (progress to 360)", "deg"), ("pitch_deg", "Pitch rotation (progress to 360)", "deg"), ("thrust_total_N", "Total thrust", "N"),
               ("height_m", "Height", "m"), ("speed_mps", "Speed", "m/s"), ("fuel_kg", "Propellant used", "kg")]
 
     def __init__(self, res: Resolved, params: dict[str, float]):
@@ -206,7 +206,7 @@ class RocketRun(_Run):
         s.update(rc.aux_jitter(1, self.seed))
         self.env = rc.Env.from_samples(s, vals)
         self.names = [t[0] for t in rc.THRUSTERS]
-        self.series_names = [f"thrust_{n}" for n in self.names] + ["pitch_deg", "height_m", "speed_mps", "fuel_kg", "thrust_total_N"]
+        self.series_names = [f"thrust_{n}" for n in self.names] + ["pitch_deg", "roll_deg", "height_m", "speed_mps", "fuel_kg", "thrust_total_N"]
         self.n_frames = (rc.NSTEP + self.STRIDE - 1) // self.STRIDE
         self.pos: list = []
         self.quat: list = []
@@ -231,7 +231,7 @@ class RocketRun(_Run):
     def header(self) -> dict:
         rc = self.rc
         units = {n: "N" for n in self.series_names if n.startswith("thrust_")}
-        units.update(pitch_deg="deg", height_m="m", speed_mps="m/s", fuel_kg="kg")
+        units.update(pitch_deg="deg", roll_deg="deg", height_m="m", speed_mps="m/s", fuel_kg="kg")
         full = (self.env.fmax[0] * self.env.tscale[0]).tolist()
         smax = {f"thrust_{n}": round(float(full[i]), 3) for i, n in enumerate(self.names)}
         smax["thrust_total_N"] = round(float(sum(full)), 3)
@@ -260,7 +260,7 @@ class RocketRun(_Run):
         f6 = np.zeros(6)
         isp = float(env.isp[0])
         fscale = env.fmax[0] * env.tscale[0]
-        impulse, theta_prev, theta_u = 0.0, None, 0.0
+        impulse, pit_u, rol_u = 0.0, 0.0, 0.0           # body-frame rate integrals = rotation progress (same definition as the judge)
         touchdown, peak_force = None, 0.0
         t_step = 0.0                                  # time inside mj_step only
         busy = 0.0                                    # wall time spent computing (excludes pacing sleeps while the generator is suspended)
@@ -275,15 +275,8 @@ class RocketRun(_Run):
                     p.append([_r(c, 4) for c in d.site_xpos[s_]])
                     mujoco.mju_mat2Quat(qs, d.site_xmat[s_])
                     q.append([_r(c, 5) for c in qs])
-                R = d.xmat[bid[0]].reshape(3, 3)
-                th = float(np.arctan2(-R[2, 0], R[0, 0]))
-                if theta_prev is None:
-                    theta_u = th
-                else:
-                    theta_u += (th - theta_prev + np.pi) % (2 * np.pi) - np.pi
-                theta_prev = th
                 tn = [_r(thr[k, i] * fscale[i], 2) for i in range(rc.K)]
-                vals = tn + [_r(np.degrees(theta_u), 3), _r(d.qpos[2], 4), _r(np.linalg.norm(d.qvel[:3]), 4), _r(impulse / (isp * rc.G0), 4),
+                vals = tn + [_r(np.degrees(pit_u), 3), _r(np.degrees(rol_u), 3), _r(d.qpos[2], 4), _r(np.linalg.norm(d.qvel[:3]), 4), _r(impulse / (isp * rc.G0), 4),
                              _r(sum(tn), 2)]
                 chunk_pos.append(p)
                 chunk_quat.append(q)
@@ -293,6 +286,8 @@ class RocketRun(_Run):
             d.ctrl[:] = thr[k]
             t0 = time.perf_counter()
             mujoco.mj_step(mdl, d)
+            rol_u += float(d.qvel[3]) * rc.DT
+            pit_u += float(d.qvel[4]) * rc.DT
             mujoco.mj_getState(mdl, d, buf, mujoco.mjtState.mjSTATE_FULLPHYSICS)
             t_step += time.perf_counter() - t0
             st[k] = buf
@@ -341,7 +336,7 @@ class RocketRun(_Run):
             ev.append(ContactEvent(t=_r(min(ts[0, i] + du[0, i], rc.T_SIM), 3), kind="thrust", body=f"thr_{tname}", note=f"{rc.WIN_NAMES[i]} cutoff", magnitude=0.0))
         if touchdown is not None:
             ev.append(ContactEvent(t=_r(touchdown["t"], 3), kind="landing", body="chassis", pos=[_r(c, 4) for c in touchdown["pos"]], magnitude=_r(peak_force, 1),
-                                   note=f"first touchdown; peak contact normal force {peak_force:.0f} N in 0.3 s (pitch {np.degrees(m['th_td'][0]):.0f} deg, vz {m['vz_td'][0]:.2f} m/s)"))
+                                   note=f"first touchdown; peak contact normal force {peak_force:.0f} N in 0.3 s (pitch turned {np.degrees(m['pitch_turn'][0]):.0f} deg, roll turned {np.degrees(m['roll_turn'][0]):.0f} deg, vz {m['vz_td'][0]:.2f} m/s)"))
         if not success:
             ev.append(ContactEvent(t=_r(touchdown["t"] if touchdown else rc.T_SIM, 3), kind="failure", body="chassis",
                                    pos=[_r(c, 4) for c in d.xpos[1]], note="live run FAILED: " + ", ".join(failed)))
@@ -349,17 +344,18 @@ class RocketRun(_Run):
         self._events = ev
         lim = self.sim
         cap = float(env.fuel_cap[0])
-        td_err = float(np.degrees(m["err_td"][0]))
-        fin_err = float(np.degrees(m["err_fin"][0]))
+        ptd, rtd = np.degrees(m["pitch_turn"][0]), np.degrees(m["roll_turn"][0])
+        d_ = lambda a: float(np.degrees(a))
         display = [
-            _display("rotation_deg", "Pitch rotation at end", _r(abs(np.degrees(m["th_end"][0])), 1), "deg", ok["flip_final"] and ok["flip_td"], "within 20 deg of 360 (30 deg at touchdown)"),
-            _display("final_pitch_error_deg", "Final pitch error to a full turn", _r(fin_err, 1), "deg", ok["flip_final"], "<= 20"),
-            _display("touchdown_pitch_error_deg", "Touchdown pitch error to a full turn", _r(td_err, 1), "deg", ok["flip_td"], "<= 30"),
+            _display("pitch_turn_deg", "Pitch rotation (body-rate integral to touchdown)", _r(abs(ptd), 1), "deg", ok["pitch_turn"], ">= 340 (a full turn minus the 20 deg tolerance)"),
+            _display("roll_turn_deg", "Roll rotation (body-rate integral to touchdown)", _r(abs(rtd), 1), "deg", ok["roll_turn"], ">= 340 (a full turn minus the 20 deg tolerance)"),
+            _display("touchdown_upright_error_deg", "Touchdown roll / pitch error to a whole turn (worse of the two)", _r(d_(m["err_td"][0]), 1), "deg", ok["upright_td"], "<= 30"),
+            _display("final_upright_error_deg", "Final roll / pitch error to a whole turn (worse of the two)", _r(d_(m["err_fin"][0]), 1), "deg", ok["upright_final"], "<= 20"),
             _display("touchdown_vz", "Touchdown vertical speed", _r(m["vz_td"][0], 3), "m/s", ok["impact_vz"], f"<= {lim.vz_max:g}"),
             _display("touchdown_pitch_rate", "Touchdown pitch rate", _r(m["w_td"][0], 3), "rad/s", ok["impact_w"], f"<= {lim.w_max:g}"),
+            _display("touchdown_roll_rate", "Touchdown roll rate", _r(m["wr_td"][0], 3), "rad/s", ok["impact_wr"], f"<= {lim.wr_max:g}"),
             _display("fuel_kg", "Propellant used", _r(m["fuel"][0], 3), "kg", ok["fuel"], f"<= {cap:g}"),
             _display("post_contact_impulse_kNs", "Thrust impulse after touchdown", _r(m["post_imp"][0], 4), "kN*s", ok["no_post_thrust"], "< 0.05"),
-            _display("final_roll_deg", "Final roll", _r(np.degrees(m["roll_end"][0]), 2), "deg", ok["roll"], "<= 20"),
             _display("final_height_m", "Final ride height", _r(m["z_end"][0], 3), "m", ok["ride_height"], "0.5 .. 0.8"),
             _display("peak_contact_force_N", "Peak contact normal force (0.3 s after touchdown)", _r(peak_force, 1), "N", None),
         ]
@@ -371,7 +367,7 @@ class RocketRun(_Run):
                       frames=len(self.pos), compute="incremental (mj_step + mj_getState timed per step; compute_ms includes frame export and contact bookkeeping)"),
             mujoco_version=mujoco.__version__, seed=self.seed, params=self.params, overrides=self.res.overrides,
             events=[e.model_dump(mode="json") for e in ev], n_frames=len(self.pos), trajectory_sha256=_hash_frames(self.pos, self.quat, self.series),
-            metrics={k: _r(float(m[k][0]), 5) for k in ("th_td", "th_end", "vz_td", "w_td", "fuel", "post_imp", "roll_end", "z_end", "cost")})
+            metrics={k: _r(float(m[k][0]), 5) for k in ("pitch_turn", "roll_turn", "phi_td", "pit_td", "phi_end", "pit_end", "vz_td", "w_td", "wr_td", "fuel", "post_imp", "z_end", "cost")})
 
     def result(self) -> dict:
         assert self._result is not None, "run not finished"
@@ -380,7 +376,7 @@ class RocketRun(_Run):
     def trajectory(self) -> Trajectory:
         rc = self.rc
         info = self.res.tpl.model_info(self.spec)
-        ser = [TimeSeries(name=n, unit=("N" if n.startswith("thrust_") else dict(pitch_deg="deg", height_m="m", speed_mps="m/s", fuel_kg="kg")[n]), values=self.series[n])
+        ser = [TimeSeries(name=n, unit=("N" if n.startswith("thrust_") else dict(pitch_deg="deg", roll_deg="deg", height_m="m", speed_mps="m/s", fuel_kg="kg")[n]), values=self.series[n])
                for n in self.series_names]
         meta = TrajectoryMeta(seed=self.seed, mujoco_version=mujoco.__version__, template_id=self.res.spec.template_id, params=self.params,
                               note=f"LIVE run (incremental mj_step); success={self._result['success'] if self._result else None}; simplified model, needs precise validation")
@@ -522,7 +518,10 @@ def search_iter(res: Resolved) -> Iterator[dict]:
     rng = np.random.default_rng(seed)
     t0 = time.perf_counter()
     best: dict[str, Any] = dict(cost=np.inf, x=None, success=False)
-    pop, restart, gens, stopped = 48, 0, 0, "time"
+    pop, restart, gens, stopped = 64, 0, 0, "time"
+    with ENGINE_LOCK:
+        seed_x, seed_cost, seed_ok = rc.seeded_start(sim, env)
+    best = dict(cost=seed_cost, x=seed_x.copy(), success=seed_ok)
     last_prev_cost = None
     while not best["success"]:
         if sim.evals >= opts.max_evals:
@@ -530,8 +529,8 @@ def search_iter(res: Resolved) -> Iterator[dict]:
             break
         if time.perf_counter() - t0 >= opts.max_seconds:
             break
-        x0 = rng.uniform(0.2, 0.6, rc.NPARAM)
-        es = cma.CMAEvolutionStrategy(x0, 0.3, dict(bounds=[0, 1], popsize=pop, seed=int(rng.integers(1 << 30)), verbose=-9, tolfun=1e-9, tolx=1e-9))
+        x0, sigma0, pop = rc.start_point(restart, rng, seed_x)
+        es = cma.CMAEvolutionStrategy(x0, sigma0, dict(bounds=[0, 1], popsize=pop, seed=int(rng.integers(1 << 30)), verbose=-9, tolfun=1e-9, tolx=1e-9))
         g = 0
         while not es.stop() and g < 150 and sim.evals < opts.max_evals:
             if time.perf_counter() - t0 >= opts.max_seconds:
@@ -558,7 +557,6 @@ def search_iter(res: Resolved) -> Iterator[dict]:
             if best["success"]:
                 break
         restart += 1
-        pop = min(pop * 2, 384)
     if best["x"] is None:
         raise LiveError("search ran out of time before evaluating a single generation; raise search.max_seconds")
     params = rc.x_to_params(best["x"])

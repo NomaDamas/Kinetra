@@ -24,12 +24,12 @@ from kinetra_engine.base import Budget  # noqa: E402
 from kinetra_engine.templates import get as get_template  # noqa: E402
 
 OUT = REPO / "apps/web/public/demo/roadster"
-IDEA = "Tesla Roadster does a rocket-thruster aerial flip off a ramp: a full 360-degree pitch flip and an upright landing"
-VALUES = [300.0, 1000.0, 2000.0, 2500.0, 3000.0, 3500.0, 4000.0, 5000.0, 6000.0]
+IDEA = "Tesla Roadster does a rocket-thruster aerial maneuver off a ramp: a full 360-degree roll AND a full 360-degree pitch rotation, landing upright on its wheels"
+VALUES = [300.0, 2000.0, 4000.0, 5000.0, 6000.0, 8000.0, 10000.0]
 TPL = get_template('rocket_car')
 SEED = 20260001
 QUICK = "--quick" in sys.argv
-BUDGET = Budget(max_evals=4000 if QUICK else 15000, max_seconds=400.0, mc_samples=100 if QUICK else 500)
+BUDGET = Budget(max_evals=4000 if QUICK else 25000, max_seconds=400.0, mc_samples=100 if QUICK else 500)
 
 
 def _write(path: Path, obj) -> int:
@@ -101,7 +101,7 @@ def main() -> None:
     # ---- agent steps: full pipeline log of the hero (feasible) run; its fix_search step is replaced by the real fix search
     # of the lowest-thrust variant that is NOT feasible, so the log shows the whole fail -> fix path.
     feas = [v for v in VALUES if feasible(runs[v])]
-    hero_v = 5000.0 if 5000.0 in feas else feas[-1]
+    hero_v = 8000.0 if 8000.0 in feas else feas[-1]
     steps = [dict(s) for s in runs[hero_v].agent_steps]
     fx0 = next((fixes[v] for v in VALUES if not feasible(runs[v]) and fixes[v]), None)
     fs_txt = ("; ".join(f"{c['value']:g} N: " + ("not found" if not c["found"] else f"p={c['p_success']:.2f}") for c in cands))
@@ -118,10 +118,10 @@ def main() -> None:
     spec = SpecSheet.model_validate(runs[hero_v].spec.model_dump(mode="json"))
     scenario = dict(
         id="roadster", idea=IDEA, template="rocket_car",
-        title="Rocket roadster flip", tagline="Can a 1.3 t car flip 360 deg on cold-gas thrusters and land upright?", tier=1, hero=True,
+        title="Rocket roadster roll + pitch", tagline="Can a 1.3 t car roll AND pitch a full 360 deg off a ramp on cold-gas thrusters and land upright?", tier=1, hero=True,
         agent_steps=steps, spec=spec.model_dump(mode="json"),
         control=dict(key="thruster_force_max", label="Max thrust per nozzle", unit="N", values=VALUES, default_index=default_index,
-                     hint="Thrust each of the 10 cold-gas nozzles can deliver. No official figure exists for the real hardware, so this is the swept unknown; "
+                     hint="Thrust each of the 18 cold-gas nozzles (10 pitch/lift + 8 roll) can deliver. No official figure exists for the real hardware, so this is the swept unknown; "
                           "each value is a separate seeded run (seed %d)." % SEED),
         variants=variants,
         build=dict(seed=SEED, budget=dict(cma_evals=BUDGET.max_evals, mc_samples=BUDGET.mc_samples, max_seconds=BUDGET.max_seconds), quick=QUICK,

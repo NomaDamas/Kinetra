@@ -15,7 +15,7 @@ DEMO = REPO / "apps/web/public/demo"
 
 # fallbacks for scenario dirs that carry no metadata of their own
 META = {
-    "roadster": dict(title="Rocket roadster flip", tagline="Can a 1.3 t car flip 360 deg on cold-gas thrusters and land upright?", tier=1, hero=True),
+    "roadster": dict(title="Rocket roadster roll + pitch", tagline="Can a 1.3 t car roll AND pitch a full 360 deg off a ramp on cold-gas thrusters and land upright?", tier=1, hero=True),
     "g1_jump": dict(title="Humanoid jump", tagline="How high can a Unitree G1 jump and land?", tier=1, hero=False),
 }
 ORDER = ["roadster", "g1_jump"]

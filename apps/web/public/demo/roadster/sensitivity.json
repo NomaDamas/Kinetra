@@ -1,0 +1,130 @@
+{
+ "note": "same witness + MC seed as the bundle; only per-nozzle thrust noise differs",
+ "n": 500,
+ "rows": [
+  {
+   "thruster_force_max": 8000.0,
+   "thrust_spread": 0.0,
+   "n": 500,
+   "n_success": 76,
+   "p_success": 0.152,
+   "ci_low": 0.12319239267380164,
+   "ci_high": 0.18611414828743875,
+   "failed_checks": {
+    "pitch_turn": 109,
+    "roll_turn": 131,
+    "upright_td": 166,
+    "upright_final": 218,
+    "impact_vz": 225,
+    "ride_height": 257,
+    "settled": 155,
+    "no_post_thrust": 70
+   }
+  },
+  {
+   "thruster_force_max": 8000.0,
+   "thrust_spread": 0.03,
+   "n": 500,
+   "n_success": 21,
+   "p_success": 0.042,
+   "ci_low": 0.027632310108451703,
+   "ci_high": 0.06335158575433016,
+   "failed_checks": {
+    "pitch_turn": 286,
+    "roll_turn": 198,
+    "upright_td": 396,
+    "upright_final": 356,
+    "impact_vz": 325,
+    "impact_w": 90,
+    "impact_wr": 77,
+    "ride_height": 330,
+    "settled": 184,
+    "no_post_thrust": 222
+   }
+  },
+  {
+   "thruster_force_max": 8000.0,
+   "thrust_spread": 0.1,
+   "n": 500,
+   "n_success": 4,
+   "p_success": 0.008,
+   "ci_low": 0.00311531518006224,
+   "ci_high": 0.020387035834105168,
+   "failed_checks": {
+    "pitch_turn": 423,
+    "roll_turn": 224,
+    "upright_td": 434,
+    "upright_final": 373,
+    "impact_vz": 437,
+    "impact_w": 288,
+    "impact_wr": 313,
+    "ride_height": 340,
+    "settled": 197,
+    "no_post_thrust": 387,
+    "fuel": 1
+   }
+  },
+  {
+   "thruster_force_max": 10000.0,
+   "thrust_spread": 0.0,
+   "n": 500,
+   "n_success": 63,
+   "p_success": 0.126,
+   "ci_low": 0.09973528894537706,
+   "ci_high": 0.15796771771986404,
+   "failed_checks": {
+    "pitch_turn": 110,
+    "roll_turn": 131,
+    "upright_td": 168,
+    "upright_final": 244,
+    "impact_vz": 229,
+    "ride_height": 286,
+    "settled": 169,
+    "no_post_thrust": 60
+   }
+  },
+  {
+   "thruster_force_max": 10000.0,
+   "thrust_spread": 0.03,
+   "n": 500,
+   "n_success": 20,
+   "p_success": 0.04,
+   "ci_low": 0.026040797389777257,
+   "ci_high": 0.060973595834850805,
+   "failed_checks": {
+    "pitch_turn": 286,
+    "roll_turn": 198,
+    "upright_td": 397,
+    "upright_final": 358,
+    "impact_vz": 330,
+    "impact_w": 91,
+    "impact_wr": 76,
+    "ride_height": 331,
+    "settled": 178,
+    "no_post_thrust": 217
+   }
+  },
+  {
+   "thruster_force_max": 10000.0,
+   "thrust_spread": 0.1,
+   "n": 500,
+   "n_success": 5,
+   "p_success": 0.01,
+   "ci_low": 0.004278753896590496,
+   "ci_high": 0.023193099755730702,
+   "failed_checks": {
+    "pitch_turn": 423,
+    "roll_turn": 224,
+    "upright_td": 433,
+    "upright_final": 378,
+    "impact_vz": 439,
+    "impact_w": 288,
+    "impact_wr": 314,
+    "ride_height": 333,
+    "settled": 194,
+    "no_post_thrust": 384,
+    "fuel": 1
+   }
+  }
+ ]
+}

@@ -58,7 +58,7 @@ export function NewIdea({ index, compact }: Props) {
           id="idea-input"
           value={text}
           onChange={(e) => setText(e.target.value)}
-          placeholder="e.g. A 1.3-tonne roadster flips 360° on rocket thrusters and lands on its wheels"
+          placeholder="e.g. A 1.3-tonne roadster rolls and pitches a full 360° off a ramp on rocket thrusters and lands on its wheels"
           rows={compact ? 2 : 3}
           onKeyDown={(e) => {
             if (e.key === 'Enter' && !e.shiftKey) {

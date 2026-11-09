@@ -42,11 +42,11 @@ def log(msg: str) -> None:
 CONFIGS = {
     "roadster": dict(
         template="rocket_car", design=RK.design, mass_key="vehicle_mass", control_key="thruster_force_max", control_label="Max thrust per nozzle", unit="N",
-        alt_values=[4000.0, 5000.0, 6000.0], risks=B.ROCKET_RISKS, tests=B.ROCKET_TESTS,
-        alt_label=lambda v: f"10 x {v / 1000:g} kN nozzles",
+        alt_values=[6000.0, 8000.0, 10000.0], risks=B.ROCKET_RISKS, tests=B.ROCKET_TESTS,
+        alt_label=lambda v: f"18 x {v / 1000:g} kN nozzles",
         mass_note="vehicle mass assumption (incl. wheels, occupant, gas)",
         mass_caveat=("The template's BOM says nozzle/tank mass is nominally inside the 1300 kg vehicle_mass; the closed loop conservatively adds the designed "
-                     "hardware ON TOP of it (upper bound on the mass effect). Nozzle count (10) is fixed by the template, so alternatives vary thrust per nozzle."),
+                     "hardware ON TOP of it (upper bound on the mass effect). Nozzle count (18) is fixed by the template, so alternatives vary thrust per nozzle."),
         extra_labels=["Aerodynamics not simulated; thermal/blow-down not modelled; ideal constant-Isp thrust (see verdict labels)."]),
     "humanoid": dict(
         template="humanoid_jump", design=HD.design, mass_key="robot_mass", control_key="torque_scale", control_label="Motor torque scale", unit="x G1 forcerange",

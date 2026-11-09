@@ -1,8 +1,8 @@
-"""Template ``rocket_car``: a car-sized rigid body with cold-gas thrusters attempting a ramp-launch pitch flip.
+"""Template ``rocket_car``: a car-sized rigid body with cold-gas thrusters attempting a ramp-launch full roll + full pitch rotation.
 
 Ported from spikes/roadster (roadster.py + run_spike.py) and refactored to the Template contract.
-Judge = MuJoCo (``mujoco.rollout`` thread pool). Search = CMA-ES (IPOP-style restarts) over 15 burn-window
-parameters. Necessary-condition screen = analytic bounds evaluated at the *favorable* end of the assumptions.
+Judge = MuJoCo (``mujoco.rollout`` thread pool). Search = CMA-ES (IPOP-style restarts) over 21 burn-window
+parameters (5 pitch/lift windows + 2 roll windows). Necessary-condition screen = analytic bounds evaluated at the *favorable* end of the assumptions.
 Monte-Carlo and robustification draw from the SpecSheet's assumption distributions (``kinetra_engine.mc``).
 
 Differences from the spike worth knowing:
@@ -40,8 +40,9 @@ from ..base import Budget, McResult, SearchResult
 
 TEMPLATE_ID = "rocket_car"
 G0 = 9.80665
-TOL_FIN = np.deg2rad(20.0)   # final pitch / roll tolerance
-TOL_TD = np.deg2rad(30.0)    # pitch tolerance at first ground contact
+TOL_FIN = np.deg2rad(20.0)   # final pitch / roll tolerance (upright after the maneuver)
+TOL_TD = np.deg2rad(30.0)    # pitch / roll tolerance at first ground contact
+TURN_MIN = np.deg2rad(340.0)  # a "full" rotation: |integral of the body-frame rate| >= 340 deg (360 deg minus the 20 deg tolerance)
 WHEEL_MASS = 20.0
 
 # --------------------------------------------------------------------------- geometry / layout
@@ -59,11 +60,22 @@ THRUSTERS = [
     ("belly_rr", 2, -1.0, -0.6, -0.5, UP),
     ("mid_dn", 3, 1.00, 0.0, 0.3, DN),    # inner fwd-pitch couple (1 m lever)
     ("mid_up", 3, -1.00, 0.0, 0.3, UP),
+    # side nozzles: roll couples with a 0.95 m lateral lever arm (the car's half width). +roll = torque about +x = left side up.
+    # Each couple is two up/down pairs (fore and aft, close to mid-car so they add almost no pitch torque) with equal and opposite
+    # vertical forces: no net lift and, fired together, no pitch torque.
+    ("side_fl_up", 4, 0.70, 0.95, 0.1, UP),   # roll_pos couple
+    ("side_fr_dn", 4, 0.70, -0.95, 0.1, DN),
+    ("side_rl_up", 4, -0.70, 0.95, 0.1, UP),
+    ("side_rr_dn", 4, -0.70, -0.95, 0.1, DN),
+    ("side_fl_dn", 5, 0.40, 0.95, 0.1, DN),   # roll_neg couple (torque about -x)
+    ("side_fr_up", 5, 0.40, -0.95, 0.1, UP),
+    ("side_rl_dn", 5, -0.40, 0.95, 0.1, DN),
+    ("side_rr_up", 5, -0.40, -0.95, 0.1, UP),
 ]
 K = len(THRUSTERS)
-GROUP_NAMES = ["pitch_fwd_outer", "pitch_back_outer", "lift_quad", "pitch_fwd_inner"]
-WIN_GROUP = [0, 1, 2, 3, 2]
-WIN_NAMES = ["pitch_fwd_outer", "pitch_back_outer", "lift_main", "pitch_fwd_inner", "lift_landing"]
+GROUP_NAMES = ["pitch_fwd_outer", "pitch_back_outer", "lift_quad", "pitch_fwd_inner", "roll_pos", "roll_neg"]
+WIN_GROUP = [0, 1, 2, 3, 2, 4, 5]
+WIN_NAMES = ["pitch_fwd_outer", "pitch_back_outer", "lift_main", "pitch_fwd_inner", "lift_landing", "roll_pos", "roll_neg"]
 NWIN = len(WIN_GROUP)
 NPARAM = NWIN * 3
 GROUP_OF = np.array([t[1] for t in THRUSTERS])
@@ -88,13 +100,13 @@ MODEL_LABELS = [
 
 # fine-grained failed checks -> docs/judgment-spec.md section A taxonomy
 TAXONOMY = {
-    "landed": "TIPPING", "flip_final": "TIPPING", "flip_td": "TIPPING", "roll": "TIPPING",
+    "landed": "TIPPING", "pitch_turn": "TIPPING", "roll_turn": "TIPPING", "upright_td": "TIPPING", "upright_final": "TIPPING",
     "ride_height": "TIPPING", "settled": "TIPPING", "no_post_thrust": "TIPPING",
-    "impact_vz": "STRUCTURAL_UNMODELED", "impact_w": "STRUCTURAL_UNMODELED", "fuel": "ENERGY_BUDGET",
+    "impact_vz": "STRUCTURAL_UNMODELED", "impact_w": "STRUCTURAL_UNMODELED", "impact_wr": "STRUCTURAL_UNMODELED", "fuel": "ENERGY_BUDGET",
 }
-CHECK_UNITS = {"impact_vz": ("impact_speed", "m/s"), "impact_w": ("touchdown_pitch_rate", "rad/s"),
-               "fuel": ("propellant", "kg"), "flip_final": ("final_pitch_error", "deg"),
-               "flip_td": ("touchdown_pitch_error", "deg")}
+CHECK_UNITS = {"impact_vz": ("impact_speed", "m/s"), "impact_w": ("touchdown_pitch_rate", "rad/s"), "impact_wr": ("touchdown_roll_rate", "rad/s"),
+               "fuel": ("propellant", "kg"), "pitch_turn": ("pitch_rotation", "deg"), "roll_turn": ("roll_rotation", "deg"),
+               "upright_final": ("final_upright_error", "deg"), "upright_td": ("touchdown_upright_error", "deg")}
 
 
 # --------------------------------------------------------------------------- MJCF
@@ -207,7 +219,7 @@ def aux_jitter(n: int, seed: int) -> dict[str, np.ndarray]:
 # --------------------------------------------------------------------------- simulator
 class Sim:
     def __init__(self, limits: dict[str, float]):
-        self.vz_max, self.w_max = limits["vz_max"], limits["w_max"]
+        self.vz_max, self.w_max, self.wr_max = limits["vz_max"], limits["w_max"], limits["wr_max"]
         self.evals = 0
         self.t_rollout = 0.0
         self.nq, self.nv = _BASE.nq, _BASE.nv
@@ -294,12 +306,16 @@ class Sim:
         landed = td_mask.any(1)
         itd = np.where(landed, td_mask.argmax(1), T - 1)
         idx = np.arange(n)
-        th_td, th_end = theta[idx, itd], theta[:, -1]
-        vz_td, w_td = -qv[idx, itd, 2], np.abs(qv[idx, itd, 4])
-        two_pi = 2 * np.pi
-        flip_err = lambda th: np.minimum(np.abs(th - two_pi), np.abs(th + two_pi))
-        err_td, err_fin = flip_err(th_td), flip_err(th_end)
-        roll_end = np.abs(np.arcsin(np.clip(R21[:, -1], -1, 1)))
+        vz_td, w_td, wr_td = -qv[idx, itd, 2], np.abs(qv[idx, itd, 4]), np.abs(qv[idx, itd, 3])
+        # full-rotation metrics: integral of the BODY-frame angular velocity (free-joint qvel[3:6] is body-frame) from launch to first touchdown
+        cum = np.cumsum(qv[..., 3:5], axis=1) * DT                      # (n,T,2): roll (about body x), pitch (about body y)
+        roll_turn, pitch_turn = cum[idx, itd, 0], cum[idx, itd, 1]
+        # final / touchdown attitude as wrapped ZYX Euler roll and pitch (a whole number of turns is "upright")
+        phi = np.arctan2(R21, R22)
+        pit = np.arcsin(np.clip(-R20, -1, 1))
+        phi_td, pit_td, phi_end, pit_end = phi[idx, itd], pit[idx, itd], phi[:, -1], pit[:, -1]
+        err_td = np.maximum(np.abs(phi_td), np.abs(pit_td))
+        err_fin = np.maximum(np.abs(phi_end), np.abs(pit_end))
         z_end, vz_end = pos[:, -1, 2], np.abs(qv[:, -1, 2])
         thrust_N = thr * (env.fmax[:, None] * 1.0)[:, None, :] * env.tscale[:, None, :]    # (n,T,K) actual force
         after = (np.arange(T)[None, :] >= itd[:, None]) & landed[:, None]
@@ -307,32 +323,44 @@ class Sim:
         impulse = thrust_N.sum((1, 2)) * DT
         fuel = impulse / (env.isp * G0)
         ok = dict(
-            landed=landed, flip_final=err_fin <= TOL_FIN, flip_td=err_td <= TOL_TD,
-            impact_vz=vz_td <= self.vz_max, impact_w=w_td <= self.w_max, roll=roll_end <= TOL_FIN,
+            landed=landed, pitch_turn=np.abs(pitch_turn) >= TURN_MIN, roll_turn=np.abs(roll_turn) >= TURN_MIN,
+            upright_td=err_td <= TOL_TD, upright_final=err_fin <= TOL_FIN,
+            impact_vz=vz_td <= self.vz_max, impact_w=w_td <= self.w_max, impact_wr=wr_td <= self.wr_max,
             ride_height=(z_end > 0.5) & (z_end < 0.8), settled=vz_end < 1.0, no_post_thrust=post_imp < 0.05,
             fuel=fuel <= env.fuel_cap,
         )
         success = np.ones(n, bool)
         for v in ok.values():
             success &= v
-        cost = (err_td / TOL_TD + err_fin / TOL_FIN
+        # search guidance: distance of each rotation integral to one full turn (smooth, monotone while turning); the wrapped upright errors
+        # are down-weighted until both turns are complete, otherwise "do not rotate" (wrapped error 0) is a trap for the optimizer
+        turn_err = lambda a: np.abs(np.abs(a) - 2 * np.pi) / TOL_TD
+        both = ok["pitch_turn"] & ok["roll_turn"]
+        w_up = np.where(both, 1.0, 0.25)
+        cost = (turn_err(pitch_turn) + turn_err(roll_turn)
+                + w_up * ((np.abs(phi_td) + np.abs(pit_td)) / TOL_TD + (np.abs(phi_end) + np.abs(pit_end)) / TOL_FIN)
                 + 8 * np.maximum(0, vz_td - self.vz_max) / self.vz_max
                 + 4 * np.maximum(0, w_td - self.w_max) / self.w_max
-                + 2 * np.maximum(0, roll_end - TOL_FIN) / TOL_FIN
+                + 4 * np.maximum(0, wr_td - self.wr_max) / self.wr_max
                 + 2 * np.maximum(0, post_imp)
                 + 2 * np.maximum(0, fuel / env.fuel_cap - 1)
                 + 3.0 * (~landed) + 1.0 * (~ok["ride_height"]) + 0.02 * fuel / env.fuel_cap)
+        cost = np.where(np.isfinite(cost), cost, 1e3)      # a diverged rollout (NaN state) is simply the worst candidate
         # signed slack per judged margin (units) and the limits used for normalisation
+        turn_deg = np.rad2deg(TURN_MIN)
         margins = dict(
             impact_vz=(self.vz_max - vz_td, np.full(n, self.vz_max)),
             impact_w=(self.w_max - w_td, np.full(n, self.w_max)),
+            impact_wr=(self.wr_max - wr_td, np.full(n, self.wr_max)),
             fuel=(env.fuel_cap - fuel, env.fuel_cap),
-            flip_final=(np.rad2deg(TOL_FIN - err_fin), np.full(n, np.rad2deg(TOL_FIN))),
-            flip_td=(np.rad2deg(TOL_TD - err_td), np.full(n, np.rad2deg(TOL_TD))),
+            pitch_turn=(np.rad2deg(np.abs(pitch_turn) - TURN_MIN), np.full(n, turn_deg)),
+            roll_turn=(np.rad2deg(np.abs(roll_turn) - TURN_MIN), np.full(n, turn_deg)),
+            upright_final=(np.rad2deg(TOL_FIN - err_fin), np.full(n, np.rad2deg(TOL_FIN))),
+            upright_td=(np.rad2deg(TOL_TD - err_td), np.full(n, np.rad2deg(TOL_TD))),
         )
-        return dict(success=success, cost=cost, ok=ok, th_td=th_td, th_end=th_end, vz_td=vz_td, w_td=w_td, fuel=fuel,
-                    post_imp=post_imp, itd=itd, theta=theta, err_td=err_td, err_fin=err_fin, margins=margins,
-                    landed=landed, roll_end=roll_end, z_end=z_end)
+        return dict(success=success, cost=cost, ok=ok, pitch_turn=pitch_turn, roll_turn=roll_turn, phi_td=phi_td, pit_td=pit_td,
+                    phi_end=phi_end, pit_end=pit_end, vz_td=vz_td, w_td=w_td, wr_td=wr_td, fuel=fuel,
+                    post_imp=post_imp, itd=itd, err_td=err_td, err_fin=err_fin, margins=margins, landed=landed, z_end=z_end)
 
     def evaluate_nominal(self, X, env: Env):
         """All candidates on ONE (nominal) model."""
@@ -364,7 +392,7 @@ def _bangbang_time(dth, a_up, a_dn, w_f):
 
 
 def _levers(mass: float) -> dict[str, Any]:
-    """Pitch inertia about the COM and per-thruster y-torque / z-direction at unit force (CRB at identity pose)."""
+    """Pitch / roll inertia about the COM and per-thruster y- / x-torque and z-direction at unit force (CRB at identity pose)."""
     mdl = Sim.model(mass, 0.0, 0.0, 1.0, np.ones(K))
     d = mujoco.MjData(mdl)
     d.qpos[:7] = [0, 0, 1, 1, 0, 0, 0]
@@ -372,21 +400,41 @@ def _levers(mass: float) -> dict[str, Any]:
     M = np.zeros((mdl.nv, mdl.nv))
     mujoco.mj_fullM(mdl, d, M)
     com = d.subtree_com[1]
-    tau_y, fz = [], []
+    tau_y, tau_x, fz = [], [], []
     for i in range(K):
         sid = mujoco.mj_name2id(mdl, mujoco.mjtObj.mjOBJ_SITE, THRUSTERS[i][0])
         r = d.site_xpos[sid] - com
         f = d.site_xmat[sid].reshape(3, 3)[:, 2]
         tau_y.append(r[2] * f[0] - r[0] * f[2])
+        tau_x.append(r[1] * f[2] - r[2] * f[1])
         fz.append(f[2])
-    return dict(mass=float(M[0, 0]), Iyy=float(M[4, 4]), tau_y=np.array(tau_y), fz=np.array(fz))
+    return dict(mass=float(M[0, 0]), Iyy=float(M[4, 4]), Ixx=float(M[3, 3]), tau_y=np.array(tau_y), tau_x=np.array(tau_x), fz=np.array(fz))
 
 
-def screen_bounds(mass, fmax_eff, isp, cap, ramp_h, speed, angle, w_max) -> dict[str, float]:
-    """Analytic, conservative (relaxed) bounds. Returns flip-time and propellant numbers (see spike REPORT)."""
+def _axis_time(lv: dict[str, Any], axis: str, fmax_eff: float, dths: dict[int, float], w_max: float) -> dict[str, Any]:
+    """Fastest bang-bang rotation about one body axis using EVERY nozzle individually (a relaxation of the group windows)."""
+    I = lv["Iyy"] if axis == "y" else lv["Ixx"]
+    tau = lv["tau_y" if axis == "y" else "tau_x"] * fmax_eff
+    best = None
+    for s, dth in dths.items():
+        a_up = float(np.maximum(0, s * tau).sum() / I)
+        a_dn = float(np.maximum(0, -s * tau).sum() / I)
+        t_min = _bangbang_time(dth, a_up, a_dn, w_max)
+        if best is None or t_min < best["t_min"]:
+            best = dict(direction=s, t_min=float(min(t_min, 1e6)), dth=float(dth))
+    r_max = float(np.max(np.abs(lv["tau_y" if axis == "y" else "tau_x"])))
+    return dict(I=I, r_max=r_max, **best)
+
+
+def screen_bounds(mass, fmax_eff, isp, cap, ramp_h, speed, angle, w_max, wr_max=None) -> dict[str, float]:
+    """Analytic, conservative (relaxed) bounds. Returns pitch- and roll-rotation times, the flight-time upper bound and a propellant bound.
+
+    Pitch must rotate the integral of the pitch rate through >= 340 deg AND land within the touchdown tolerance of upright (start pitch = -ramp angle);
+    roll must rotate >= 340 deg (start roll 0). Each axis is bounded alone with all of its nozzles used individually, which only relaxes the bound.
+    """
+    wr_max = w_max if wr_max is None else wr_max
     lv = _levers(mass)
-    I, m = lv["Iyy"], lv["mass"]
-    tau = lv["tau_y"] * fmax_eff
+    m = lv["mass"]
     Fup = float(np.maximum(0, lv["fz"]).sum() * fmax_eff)
     th0 = -angle
     I_tot = cap * isp * G0
@@ -398,22 +446,79 @@ def screen_bounds(mass, fmax_eff, isp, cap, ramp_h, speed, angle, w_max) -> dict
     z = ramp_h + vz0 * tt - 0.5 * G0 * tt**2 + gain
     below = np.where(z < h_land)[0]
     T_ub = float(tt[below[0]]) if below.size else float(tt[-1])
-    best = None
-    for s in (+1, -1):
-        dth = 2 * np.pi - TOL_FIN - s * th0
-        a_up = float(np.maximum(0, s * tau).sum() / I)
-        a_dn = float(np.maximum(0, -s * tau).sum() / I)
-        t_min = _bangbang_time(dth, a_up, a_dn, w_max)
-        if best is None or t_min < best["t_min"]:
-            best = dict(direction=s, t_min=float(t_min), dth=float(dth))
-    r_max = float(np.max(np.abs(lv["tau_y"])))
-    w_req = best["dth"] / T_ub if T_ub > 0 else np.inf
-    L_req = I * (w_req + max(0.0, w_req - w_max))
-    J_min = L_req / r_max
-    fuel_min = J_min / (isp * G0)
+    turn = float(TURN_MIN)
+    pit = _axis_time(lv, "y", fmax_eff, {s: max(turn, 2 * np.pi - TOL_TD - s * th0) for s in (+1, -1)}, w_max)
+    rol = _axis_time(lv, "x", fmax_eff, {+1: turn, -1: turn}, wr_max)
     big = 1e6
-    return dict(t_min=min(best["t_min"], big), T_ub=T_ub, min_fuel=float(min(fuel_min, big)), Iyy=I, mass=m, Fup=Fup,
-                direction=best["direction"])
+
+    def fuel_for(ax: dict[str, Any], wlim: float) -> float:
+        w_req = ax["dth"] / T_ub if T_ub > 0 else np.inf
+        L_req = ax["I"] * (w_req + max(0.0, w_req - wlim))
+        return L_req / ax["r_max"] / (isp * G0)
+
+    fuel_p, fuel_r = fuel_for(pit, w_max), fuel_for(rol, wr_max)
+    # one nozzle's impulse can serve both axes, so the total is bounded by the larger single-axis need (not their sum)
+    return dict(t_min=min(pit["t_min"], big), T_ub=T_ub, t_min_roll=min(rol["t_min"], big), min_fuel=float(min(max(fuel_p, fuel_r), big)),
+                min_fuel_pitch=float(min(fuel_p, big)), min_fuel_roll=float(min(fuel_r, big)), Iyy=pit["I"], Ixx=rol["I"], mass=m, Fup=Fup,
+                direction=pit["direction"])
+
+
+# --------------------------------------------------------------------------- search start points
+_LV0: dict[str, Any] = {}
+
+
+def _sequential_x(fmax: float, u_roll: float, u_pitch: float, gap: float, lm_d: float, lt: float, ld: float, lu: float) -> tuple[np.ndarray, float]:
+    """A sequential schedule from constant-acceleration half-turns: roll couple then its reverse, then the outer pitch couple and its reverse
+    (durations from the MuJoCo model's roll / pitch inertia and the nozzle lever arms), plus a lift burst at launch and a landing burn."""
+    if not _LV0:
+        _LV0.update(_levers(1300.0))
+    lv = _LV0
+    a_r = 4 * 0.95 * fmax * u_roll / lv["Ixx"]
+    a_p = 4.2 * fmax * u_pitch / lv["Iyy"]
+    t_r = float(np.sqrt(2 * np.pi / a_r))
+    t_p = float(np.sqrt(2 * np.pi * 0.95 / a_p))
+    t_roll_end = 0.02 + 2 * t_r
+    win = {"roll_pos": (0.02, t_r, u_roll), "roll_neg": (0.02 + t_r, t_r, u_roll),
+           "pitch_back_outer": (t_roll_end + gap, t_p, u_pitch), "pitch_fwd_outer": (t_roll_end + gap + t_p, t_p, u_pitch), "pitch_fwd_inner": (0.0, 0.0, 0.0),
+           "lift_main": (0.0, lm_d, 1.0), "lift_landing": (lt, ld, lu)}
+    x = np.zeros(NPARAM)
+    for i, w in enumerate(WIN_NAMES):
+        a, b, c = win[w]
+        x[3 * i:3 * i + 3] = [a / T_START_MAX, b / DUR_MAX, c]
+    return np.clip(x, 0.0, 1.0), t_roll_end + gap + 2 * t_p
+
+
+def seeded_start(sim: "Sim", env: Env) -> tuple[np.ndarray, float, bool]:
+    """Best of a small grid of analytic sequential schedules, judged by the SAME cost on the nominal model (evaluations are counted in
+    ``sim.evals`` and so in the search budget). It is only a CMA-ES start point: it is not a witness and no verdict reads it directly."""
+    fmax = float(env.fmax[0])
+    cands = []
+    for u_r in (0.3, 0.5, 0.8):
+        for u_p in (0.3, 0.5, 0.8):
+            for lm in (0.0, 0.3):
+                _, t_end = _sequential_x(fmax, u_r, u_p, 0.05, lm, 0.0, 0.0, 0.0)
+                for lt in (np.arange(t_end + 0.05, 3.2, 0.1) if t_end + 0.05 < 3.2 else [min(t_end + 0.05, T_SIM - 0.5)]):
+                    for ld in (0.3, 0.5, 0.7):
+                        for lu in (0.5, 1.0):
+                            cands.append(_sequential_x(fmax, u_r, u_p, 0.05, lm, float(lt), ld, lu)[0])
+    X = np.array(cands)
+    m, _, _ = sim.evaluate_nominal(X, env)
+    j = int(np.where(m["success"], m["cost"], np.inf).argmin()) if m["success"].any() else int(m["cost"].argmin())
+    return X[j].copy(), float(m["cost"][j]), bool(m["success"][j])
+
+
+def start_point(restart: int, rng: np.random.Generator, seed_x: np.ndarray) -> tuple[np.ndarray, float, int]:
+    """CMA-ES start (mean, sigma, population) of search restart ``restart``. Three of every four restarts start at the seeded schedule
+    (sigma .03 / .08 / noisy copy) with a fixed population of 64; every fourth is a uniform draw with a population that doubles (cap 384)
+    so the search is not confined to one basin."""
+    k = restart % 4
+    if k == 0:
+        return seed_x.copy(), 0.03, 64
+    if k == 1:
+        return seed_x.copy(), 0.08, 64
+    if k == 2:
+        return np.clip(seed_x + rng.normal(0.0, 0.1, NPARAM), 0.0, 1.0), 0.1, 64
+    return rng.uniform(0.2, 0.6, NPARAM), 0.3, min(64 * 2 ** (1 + restart // 4), 384)
 
 
 # --------------------------------------------------------------------------- helpers on the spec
@@ -427,7 +532,7 @@ def _assum(spec: SpecSheet) -> dict[str, Assumption]:
 
 def _limits(spec: SpecSheet) -> dict[str, float]:
     c = {s.name: s.threshold for s in spec.success_criteria}
-    return dict(vz_max=c["touchdown_vertical_speed"], w_max=c["touchdown_pitch_rate"])
+    return dict(vz_max=c["touchdown_vertical_speed"], w_max=c["touchdown_pitch_rate"], wr_max=c["touchdown_roll_rate"])
 
 
 def params_to_x(params: dict[str, float]) -> np.ndarray:
@@ -481,8 +586,8 @@ class RocketCar:
               distribution=Uniform(low=1235.0, high=1365.0),
               source="default: spikes/roadster model, +-5% as in the spike's disturbance set; production mass unverified (target <1700 kg, https://en.wikipedia.org/wiki/Tesla_Roadster_(second_generation))",
               confidence=Confidence.low),
-            A(key="propellant_cap", label="Usable cold-gas propellant", value=25.0, unit="kg", distribution=Fixed(),
-              source="default: roadster spike (no sourced figure)", confidence=Confidence.low),
+            A(key="propellant_cap", label="Usable cold-gas propellant", value=60.0, unit="kg", distribution=Fixed(),
+              source="default: 60 kg. The earlier pitch-only default (25 kg, roadster spike, no sourced figure) is too small for a second rotation axis; 60 kg is about what a 200 L cylinder holds at 300 bar (catalog: 200 L Nitrogen COPV for the Thrust variant; ideal/vdW N2 at 300 bar ~ 61 kg). Unverified", confidence=Confidence.low),
             A(key="isp", label="Specific impulse (cold-gas N2)", value=70.0, unit="s", distribution=Fixed(),
               source="unverified: 70 s as in the spike; docs/judgment-spec.md R4 gives 60-75 s (widen the distribution in the panel to test)", confidence=Confidence.low),
             A(key="thrust_spread", label="Independent per-nozzle thrust error, half-range (uniform)", value=0.0, unit="", distribution=Fixed(),
@@ -517,7 +622,7 @@ class RocketCar:
                 a.source = "user"
                 a.confidence = Confidence.high
         parts = [
-            Part(name="Cold-gas nozzle set (10 nozzles)", role="thruster", mass_kg=0.0, cost_usd=None,
+            Part(name="Cold-gas nozzle set (18 nozzles)", role="thruster", mass_kg=0.0, cost_usd=None,
                  source="not itemised: mass inside vehicle_mass; no sourced unit cost"),
             Part(name="Composite overwrapped gas tank", role="propellant_tank", mass_kg=0.0, cost_usd=None,
                  source="not itemised: mass inside vehicle_mass; no sourced unit cost"),
@@ -532,22 +637,27 @@ class RocketCar:
                 ParamBound(name=f"{w}_throttle", low=0.0, high=1.0, unit="", init=0.4, description=f"Throttle (fraction of thruster_force_max) of window {w}"),
             ]
         crit = [
-            SuccessCriterion(name="full_flip", metric="rotation_deg", comparator=Comparator.ge, threshold=340.0, unit="deg",
-                             description="|pitch| within 20 deg of one full turn, at touchdown (30 deg) and at the end"),
+            SuccessCriterion(name="full_pitch_turn", metric="pitch_turn_deg", comparator=Comparator.ge, threshold=340.0, unit="deg",
+                             description="|integral of the body-frame pitch rate| from launch to first touchdown: one full turn about the body y axis (360 deg minus the 20 deg tolerance)"),
+            SuccessCriterion(name="full_roll_turn", metric="roll_turn_deg", comparator=Comparator.ge, threshold=340.0, unit="deg",
+                             description="|integral of the body-frame roll rate| from launch to first touchdown: one full turn about the body x axis (360 deg minus the 20 deg tolerance)"),
+            SuccessCriterion(name="upright_at_touchdown", metric="touchdown_upright_error_deg", comparator=Comparator.le, threshold=30.0, unit="deg",
+                             description="Roll and pitch each within 30 deg of a whole number of turns at first ground contact"),
             SuccessCriterion(name="touchdown_vertical_speed", metric="vz_td", comparator=Comparator.le, threshold=6.0, unit="m/s",
                              description="Vertical speed at first ground contact"),
             SuccessCriterion(name="touchdown_pitch_rate", metric="w_td", comparator=Comparator.le, threshold=3.0, unit="rad/s"),
+            SuccessCriterion(name="touchdown_roll_rate", metric="wr_td", comparator=Comparator.le, threshold=3.0, unit="rad/s"),
             SuccessCriterion(name="propellant_within_cap", metric="fuel_kg", comparator=Comparator.le, threshold=float(by["propellant_cap"].value), unit="kg"),
             SuccessCriterion(name="no_thrust_after_contact", metric="post_contact_impulse_kNs", comparator=Comparator.lt, threshold=0.05, unit="kN*s"),
-            SuccessCriterion(name="upright_settle", metric="final_roll_deg", comparator=Comparator.le, threshold=20.0, unit="deg",
-                             description="Final roll within 20 deg, ride height 0.5-0.8 m, vertical speed <1 m/s"),
+            SuccessCriterion(name="upright_settle", metric="final_upright_error_deg", comparator=Comparator.le, threshold=20.0, unit="deg",
+                             description="Final roll and pitch each within 20 deg of a whole number of turns, ride height 0.5-0.8 m, vertical speed <1 m/s"),
         ]
         return SpecSheet(idea=idea, template_id=TemplateId.rocket_car, tier=Tier.verified_template, assumptions=ass, parts=parts,
                          param_bounds=bounds, success_criteria=crit)
 
-    necessary_classes = {"flip_time_vs_air_time": "ACTUATOR_SATURATION", "propellant_mass": "ENERGY_BUDGET"}
+    necessary_classes = {"flip_time_vs_air_time": "ACTUATOR_SATURATION", "roll_time_vs_air_time": "ACTUATOR_SATURATION", "propellant_mass": "ENERGY_BUDGET"}
     model_labels = MODEL_LABELS
-    success_phrase = "a full pitch flip with an upright, speed-limited landing"
+    success_phrase = "a full roll and a full pitch rotation with an upright, speed-limited landing"
 
     def judge_nominal(self, spec: SpecSheet, params: dict[str, float]) -> bool:
         """Does ``params`` satisfy every success criterion on the nominal model?"""
@@ -558,7 +668,7 @@ class RocketCar:
         lv = _levers(_vals(spec)["vehicle_mass"])
         return dict(model_id="rocket_car_v1", model_hash=MODEL_HASH, mujoco_version=mujoco.__version__, n_bodies=1 + len(WHEELS),
                     n_thrusters=K, n_params=NPARAM, timestep_s=DT, horizon_s=T_SIM, mass_kg=round(lv["mass"], 2),
-                    pitch_inertia_kgm2=round(lv["Iyy"], 1), integrator="implicitfast")
+                    pitch_inertia_kgm2=round(lv["Iyy"], 1), roll_inertia_kgm2=round(lv["Ixx"], 1), integrator="implicitfast")
 
     # ---- helpers
     def _sim(self, spec: SpecSheet) -> Sim:
@@ -577,8 +687,8 @@ class RocketCar:
     def fix_control(self, spec: SpecSheet) -> dict[str, Any]:
         """The user-facing control the fix search sweeps (also the web slider)."""
         return dict(key="thruster_force_max", label="Max thrust per nozzle", unit="N",
-                    values=[2000.0, 2500.0, 3000.0, 3500.0, 4000.0, 5000.0, 6000.0],
-                    hint="Thrust each of the 10 cold-gas nozzles can deliver; no sourced figure exists for the real hardware.")
+                    values=[3000.0, 4000.0, 5000.0, 6000.0, 8000.0, 10000.0],
+                    hint="Thrust each of the 18 cold-gas nozzles can deliver (10 pitch/lift + 8 roll); no sourced figure exists for the real hardware.")
 
     # ---- necessary screen (favorable bounds, judgment-spec R3)
     def necessary_screen(self, spec: SpecSheet) -> list[NecessaryCheck]:
@@ -588,21 +698,24 @@ class RocketCar:
         fmax_fav = v["thruster_force_max"] * (1.0 + q("thrust_error", 0.95)) * (1.0 + v.get("thrust_spread", 0.0))
         # favourable: lightest vehicle, strongest thrust, best Isp, fastest launch, best ramp angle of the two ends
         def run(mass, fmax, isp, spd, ang):
-            return screen_bounds(mass, fmax, isp, v["propellant_cap"], v["ramp_height"], spd, np.deg2rad(ang), lim["w_max"])
+            return screen_bounds(mass, fmax, isp, v["propellant_cap"], v["ramp_height"], spd, np.deg2rad(ang), lim["w_max"], lim["wr_max"])
         nom = run(v["vehicle_mass"], fmax_nom, v["isp"], v["ramp_speed"], v["ramp_angle"])
         fav = None
         for ang in (q("ramp_angle", 0.05), q("ramp_angle", 0.95)):
             c = run(q("vehicle_mass", 0.05), fmax_fav, q("isp", 0.95), q("ramp_speed", 0.95), ang)
-            if fav is None or (c["T_ub"] - c["t_min"]) > (fav["T_ub"] - fav["t_min"]):
+            if fav is None or (c["T_ub"] - max(c["t_min"], c["t_min_roll"])) > (fav["T_ub"] - max(fav["t_min"], fav["t_min_roll"])):
                 fav = c
         note_fav = "evaluated at the favorable end of the assumptions (mass 5th pct, thrust +, Isp 95th pct, launch speed 95th pct)"
         return [
             NecessaryCheck(name="flip_time_vs_air_time", passed=bool(fav["t_min"] <= fav["T_ub"]), measured=round(fav["t_min"], 4),
                            limit=round(fav["T_ub"], 4), unit="s",
-                           note=f"Min bang-bang rotation time (all pitch couples at full thrust) vs flight-time upper bound (all lift thrusters at full thrust, impulse-capped); {note_fav}. Nominal: {nom['t_min']:.2f} s vs {nom['T_ub']:.2f} s."),
+                           note=f"Min bang-bang PITCH rotation time (every pitch-capable nozzle individually at full thrust, pitch inertia {fav['Iyy']:.0f} kg m^2 from the MuJoCo model) vs flight-time upper bound (all lift thrusters at full thrust, impulse-capped); {note_fav}. Nominal: {nom['t_min']:.2f} s vs {nom['T_ub']:.2f} s."),
+            NecessaryCheck(name="roll_time_vs_air_time", passed=bool(fav["t_min_roll"] <= fav["T_ub"]), measured=round(fav["t_min_roll"], 4),
+                           limit=round(fav["T_ub"], 4), unit="s",
+                           note=f"Min bang-bang ROLL rotation time (every roll-capable nozzle individually at full thrust, roll inertia {fav['Ixx']:.0f} kg m^2 from the MuJoCo model, one full turn) vs the same flight-time upper bound; {note_fav}. Nominal: {nom['t_min_roll']:.2f} s vs {nom['T_ub']:.2f} s."),
             NecessaryCheck(name="propellant_mass", passed=bool(fav["min_fuel"] <= v["propellant_cap"]), measured=round(fav["min_fuel"], 4),
                            limit=round(v["propellant_cap"], 4), unit="kg",
-                           note=f"Lower bound on propellant from required angular impulse over the flight time (rocket equation, impulse form); {note_fav}. Nominal: {nom['min_fuel']:.2f} kg."),
+                           note=f"Lower bound on propellant from the required angular impulse of the more demanding axis over the flight time (rocket equation, impulse form; pitch {fav['min_fuel_pitch']:.2f} kg, roll {fav['min_fuel_roll']:.2f} kg at the favorable end); {note_fav}. Nominal: {nom['min_fuel']:.2f} kg."),
         ]
 
     # ---- search
@@ -613,16 +726,18 @@ class RocketCar:
         t0 = time.perf_counter()
         e0 = sim.evals
         best = dict(cost=np.inf, x=None, success=False)
-        pop, restarts, log, stopped = 48, 0, [], "evals"
+        pop, restarts, log, stopped = 64, 0, [], "evals"
+        seed_x, seed_cost, seed_ok = seeded_start(sim, env)
+        best = dict(cost=seed_cost, x=seed_x.copy(), success=seed_ok)
         while not best["success"]:
             if sim.evals - e0 >= budget.max_evals:
                 break
             if time.perf_counter() - t0 >= budget.max_seconds:
                 stopped = "time"
                 break
-            x0 = rng.uniform(0.2, 0.6, NPARAM)
-            es = cma.CMAEvolutionStrategy(x0, 0.3, dict(bounds=[0, 1], popsize=pop, seed=int(rng.integers(1 << 30)), verbose=-9,
-                                                        tolfun=1e-9, tolx=1e-9))
+            x0, sigma0, pop = start_point(restarts, rng, seed_x)
+            es = cma.CMAEvolutionStrategy(x0, sigma0, dict(bounds=[0, 1], popsize=pop, seed=int(rng.integers(1 << 30)), verbose=-9,
+                                                           tolfun=1e-9, tolx=1e-9))
             g = 0
             while not es.stop() and g < 150 and sim.evals - e0 < budget.max_evals:
                 if time.perf_counter() - t0 >= budget.max_seconds:
@@ -641,7 +756,6 @@ class RocketCar:
                     best = dict(cost=float(m["cost"][i]), x=X[i].copy(), success=False)
             log.append(dict(restart=restarts, popsize=pop, generations=g, best_cost=round(best["cost"], 4)))
             restarts += 1
-            pop = min(pop * 2, 384)
             if stopped == "time":
                 break
         params = x_to_params(best["x"])
@@ -651,7 +765,7 @@ class RocketCar:
         failed = [k for k, v in mb["ok"].items() if not bool(v[0])]
         detail: dict[str, Any] = dict(
             restarts=restarts, log=log, stopped_by=stopped, failed_checks=failed,
-            best_metrics={k: round(float(mb[k][0]), 4) for k in ("th_td", "th_end", "vz_td", "w_td", "fuel", "post_imp")},
+            best_metrics={k: round(float(mb[k][0]), 4) for k in ("pitch_turn", "roll_turn", "phi_td", "pit_td", "phi_end", "pit_end", "vz_td", "w_td", "wr_td", "fuel", "post_imp")},
             binding=_binding(mb["margins"], None), taxonomy={k: TAXONOMY[k] for k in failed},
             rollout_evals=sim.evals - e0,
         )
@@ -745,9 +859,9 @@ class RocketCar:
         sid = [mujoco.mj_name2id(mdl, mujoco.mjtObj.mjOBJ_SITE, t[0]) for t in THRUSTERS]
         stride = 5
         pos, quat = [], []
-        series = {n: [] for n in ("pitch_deg", "height_m", "speed_mps", "fuel_kg")}
+        series = {n: [] for n in ("pitch_deg", "roll_deg", "height_m", "speed_mps", "fuel_kg")}
         thrust_series = {t[0]: [] for t in THRUSTERS}
-        impulse, theta_prev, theta_u = 0.0, None, 0.0
+        impulse, pit_u, rol_u = 0.0, 0.0, 0.0                # body-frame rate integrals (rotation progress), same definition as the judge
         touchdown, peak_force = None, 0.0
         qs = np.zeros(4)
         for k in range(NSTEP):
@@ -763,16 +877,8 @@ class RocketCar:
                     q.append([round(float(c), 5) for c in qs])
                 pos.append(p)
                 quat.append(q)
-                R = d.xmat[bid[0]].reshape(3, 3)
-                th = float(np.arctan2(-R[2, 0], R[0, 0]))
-                if theta_prev is None:
-                    theta_u = th
-                else:
-                    dd = (th - theta_prev + np.pi) % (2 * np.pi) - np.pi
-                    theta_u += dd
-                # unwrap must accumulate every sample; stride 5 (0.02 s) is far below pi of rotation per sample
-                theta_prev = th
-                series["pitch_deg"].append(round(float(np.degrees(theta_u)), 3))
+                series["pitch_deg"].append(round(float(np.degrees(pit_u)), 3))
+                series["roll_deg"].append(round(float(np.degrees(rol_u)), 3))
                 series["height_m"].append(round(float(d.qpos[2]), 4))
                 series["speed_mps"].append(round(float(np.linalg.norm(d.qvel[:3])), 4))
                 series["fuel_kg"].append(round(impulse / (env.isp[0] * G0), 4))
@@ -782,6 +888,8 @@ class RocketCar:
             impulse += float(F.sum()) * DT
             d.ctrl[:] = thr[k]
             mujoco.mj_step(mdl, d)
+            rol_u += float(d.qvel[3]) * DT
+            pit_u += float(d.qvel[4]) * DT
             # touchdown bookkeeping from the actual contact set (the car starts above the ground, so any contact is the landing)
             if d.ncon > 0:
                 fsum = 0.0
@@ -811,7 +919,7 @@ class RocketCar:
         success = bool(m["success"][0])
         if touchdown is not None:
             events.append(ContactEvent(t=round(touchdown["t"], 3), kind="landing", body="car", pos=[round(c, 4) for c in touchdown["pos"]],
-                                       magnitude=round(peak_force, 1), note=f"first touchdown; peak contact normal force {peak_force:.0f} N in 0.3 s (pitch {np.degrees(m['th_td'][0]):.0f} deg, vz {m['vz_td'][0]:.2f} m/s)"))
+                                       magnitude=round(peak_force, 1), note=f"first touchdown; peak contact normal force {peak_force:.0f} N in 0.3 s (pitch turned {np.degrees(m['pitch_turn'][0]):.0f} deg, roll turned {np.degrees(m['roll_turn'][0]):.0f} deg, vz {m['vz_td'][0]:.2f} m/s)"))
         if not success:
             failed = [k_ for k_, v in m["ok"].items() if not bool(v[0])]
             tf = touchdown["t"] if touchdown else T_SIM
@@ -832,6 +940,7 @@ class RocketCar:
                 e.body = "chassis"
         ser = [TimeSeries(name=f"thrust_{t[0]}", unit="N", values=thrust_series[t[0]]) for t in THRUSTERS]
         ser += [TimeSeries(name="pitch_deg", unit="deg", values=series["pitch_deg"]),
+                TimeSeries(name="roll_deg", unit="deg", values=series["roll_deg"]),
                 TimeSeries(name="height_m", unit="m", values=series["height_m"]),
                 TimeSeries(name="speed_mps", unit="m/s", values=series["speed_mps"]),
                 TimeSeries(name="fuel_kg", unit="kg", values=series["fuel_kg"])]
@@ -844,14 +953,14 @@ class RocketCar:
         v = _vals(spec)
         peak = max(params[f"{w}_throttle"] for w in WIN_NAMES) * v["thruster_force_max"]
         return [
-            BomItem(name=f"Cold-gas nozzle, >= {v['thruster_force_max']:.0f} N each (10 positions: 4 outer pitch, 4 belly lift, 2 inner pitch)",
-                    role="thruster", quantity=10, mass_kg=None, unit_cost_usd=None,
+            BomItem(name=f"Cold-gas nozzle, >= {v['thruster_force_max']:.0f} N each (18 positions: 4 outer pitch, 4 belly lift, 2 inner pitch, 8 side roll)",
+                    role="thruster", quantity=18, mass_kg=None, unit_cost_usd=None,
                     source=f"required rating from the sweep control; best schedule peaks at {peak:.0f} N; no sourced unit cost"),
             BomItem(name=f"Composite gas tank for >= {v['propellant_cap']:.0f} kg N2", role="propellant_tank", quantity=1, mass_kg=None,
                     unit_cost_usd=None, source="size from propellant_cap; no sourced unit cost"),
             BomItem(name="Nitrogen propellant (usable)", role="propellant", quantity=1, mass_kg=float(v["propellant_cap"]), unit_cost_usd=None,
                     source="propellant_cap assumption"),
-            BomItem(name="Proportional valves + plumbing (one per nozzle)", role="valve", quantity=10, mass_kg=None, unit_cost_usd=None,
+            BomItem(name="Proportional valves + plumbing (one per nozzle)", role="valve", quantity=18, mass_kg=None, unit_cost_usd=None,
                     source="needed for the throttle schedule; no sourced unit cost"),
         ]
 

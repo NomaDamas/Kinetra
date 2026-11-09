@@ -80,7 +80,7 @@ None of these is a bad product; they answer different questions. Descriptions ar
 - **Two verified templates only** (rocket car, humanoid jump). A drone catalog exists but the template is not shipped.
 - **Not judged:** CFD/aero, thermal, FEA, sensing/latency, combustion, safety/regulatory ([`judgment-spec.md`](judgment-spec.md) §C). Custom-part checks are hand calculations labelled "needs FEA".
 - **A brief does not replace testing.** It decides *which* physical test to run first and with which parts.
-- **Fragile results exist and are shown:** after adding its own designed hardware (+81 kg), the roadster's 5 kN design drops from 76.6 % to 54.8 % success (n = 500); the current roadster bundle does not sample per-nozzle thrust error, and with ±10 % thrust noise the 5 kN figure was ~13 %. The humanoid design loses its witness once its actuators' mass is added (`NOT_FOUND_IN_BUDGET`, weak).
+- **Fragile results exist and are shown:** the roadster roll + pitch maneuver has a witness only at 8 and 10 kN per nozzle (15.2 % and 12.6 % success, n = 500; 0.8–1.0 % with ±10 % per-nozzle thrust noise), and once its own designed hardware is added (+175 kg) no witness is found (`NOT_FOUND_IN_BUDGET`, weak). The humanoid design likewise loses its witness once its actuators' mass is added.
 
 ## 7. How we would prove it next
 
