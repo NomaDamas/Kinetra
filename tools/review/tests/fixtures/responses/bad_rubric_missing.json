@@ -1,0 +1,23 @@
+{
+ "status": 200,
+ "body": {
+  "id": "gen-1",
+  "model": "openai/gpt-6.1-sol",
+  "choices": [
+   {
+    "message": {
+     "role": "assistant",
+     "content": "{\"verdict\": \"changes\", \"rubric\": {\"1\": \"concern\", \"2\": \"pass\", \"3\": \"pass\", \"4\": \"pass\", \"5\": \"pass\", \"6\": \"pass\"}, \"findings\": [{\"severity\": \"nit\", \"item\": 3, \"where\": \"tools/x.py:9\", \"what\": \"단언이 약하다\", \"why\": \"값을 보지 않는다\", \"fix\": \"값을 비교한다\"}, {\"severity\": \"concern\", \"item\": 1, \"where\": \"tools/x.py:3\", \"what\": \"DoD 밖 코드\", \"why\": \"이슈에 없다\", \"fix\": \"제거한다\"}], \"summary\": \"DoD 밖 코드가 한 곳 있다.\"}"
+    }
+   }
+  ],
+  "usage": {
+   "prompt_tokens": 1200,
+   "completion_tokens": 800,
+   "completion_tokens_details": {
+    "reasoning_tokens": 500
+   },
+   "cost": 0.0123
+  }
+ }
+}

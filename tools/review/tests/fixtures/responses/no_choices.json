@@ -1,0 +1,9 @@
+{
+ "status": 200,
+ "body": {
+  "error": {
+   "message": "provider returned error",
+   "code": 502
+  }
+ }
+}

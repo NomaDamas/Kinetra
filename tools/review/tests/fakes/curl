@@ -1,0 +1,28 @@
+#!/usr/bin/env python3
+"""테스트 전용 curl 대체물(네트워크 없음). 진짜 curl 과 같은 인자로 불리고, FAKE_CURL_QUEUE 디렉터리의 응답을 순서대로 돌려준다.
+
+큐 파일 `1.json`, `2.json`...: {"status": 200, "body": <객체 또는 문자열>} 또는 {"exit": 28, "stderr": "..."}.
+호출마다 FAKE_CURL_LOG 에 {"argv", "stdin", "request"} 한 줄을 남긴다(키가 argv 에 없는지 보는 시험용).
+"""
+import json
+import os
+import sys
+from pathlib import Path
+
+a = sys.argv[1:]
+q = Path(os.environ["FAKE_CURL_QUEUE"])
+n = int((q / "count").read_text()) + 1 if (q / "count").exists() else 1
+(q / "count").write_text(str(n))
+stdin = sys.stdin.read()
+req = None
+for x in a:
+    if x.startswith("@"):
+        req = json.loads(Path(x[1:]).read_text(encoding="utf-8"))
+with open(os.environ["FAKE_CURL_LOG"], "a", encoding="utf-8") as f:
+    f.write(json.dumps({"argv": a, "stdin": stdin, "request": req}, ensure_ascii=False) + "\n")
+spec = json.loads((q / f"{n}.json").read_text(encoding="utf-8"))
+if "exit" in spec:
+    sys.stderr.write(spec.get("stderr", ""))
+    sys.exit(spec["exit"])
+body = spec["body"] if isinstance(spec["body"], str) else json.dumps(spec["body"], ensure_ascii=False)
+sys.stdout.write(body + "\n" + str(spec["status"]))
