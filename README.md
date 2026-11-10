@@ -24,6 +24,7 @@ This is a fresh start. The previous product (hackathon era) is preserved at the 
 | `data/`, `assets/` | Planet data, parts, licensed assets. `assets/LEDGER.csv` is the provenance ledger: one row per asset or tool/runtime dependency (`kind` column), with license and credit text |
 | `docs/` | Plan, process, decisions, architecture, research |
 | `tools/` | Developer tooling (`tools/assets/credits.py`: generates `CREDITS.md` from `assets/LEDGER.csv`) |
+| `scripts/ci/` | CI guards (`check_web_scripts.mjs`; `check_pr_body.py`: fails a PR whose body lacks `## 대목표`, a verbatim `docs/plan/values.md` quote under `## 핵심 가치`, or a `Closes #N`/`Refs #N` line, in template order) |
 | `scripts/gh/` | GitHub bootstrap scripts (`bootstrap.sh`: labels and milestones from `issues.yaml`, idempotent; `--dry-run` to preview) |
 
 ## Setup
@@ -43,4 +44,13 @@ Every asset and every tool/runtime dependency is a row in [`assets/LEDGER.csv`](
 uv run python tools/assets/credits.py            # regenerate CREDITS.md
 uv run python tools/assets/credits.py --check    # fail if CREDITS.md differs from the ledger
 uv run python -m unittest discover -s tools/assets/tests -v
+```
+
+## PR body check
+
+`.github/workflows/pr-body.yml` runs `scripts/ci/check_pr_body.py` on every PR open and body edit. The body must follow `.github/pull_request_template.md`: `## 대목표`, then `## 핵심 가치` with a verbatim quote (`> `) of one of V1–V5 from `docs/plan/values.md`, then a line that is exactly `Closes #N` (one leaf issue) or `Refs #N`.
+
+```bash
+python3 scripts/ci/check_pr_body.py --body-file body.md   # exit 1 and the reasons on a violating body
+python3 -m unittest discover -s scripts/ci/tests -p "test_check_pr_body.py" -v
 ```
