@@ -32,4 +32,5 @@ This is a fresh start. The previous product (hackathon era) is preserved at the 
 uv sync
 uv run pytest packages -q   # CI: .github/workflows/engine.yml (PRs and main)
 pnpm install --frozen-lockfile
+pnpm lint && pnpm build && pnpm test   # CI: .github/workflows/web.yml (PRs and main)
 ```

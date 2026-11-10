@@ -3,5 +3,12 @@
   "private": true,
   "description": "Kinetra Studio workspace root (see docs/plan/studio-plan.md)",
   "packageManager": "pnpm@10.18.3",
-  "engines": { "node": ">=22" }
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "lint": "pnpm -r --if-present run lint",
+    "build": "pnpm -r --if-present run build",
+    "test": "pnpm -r --if-present run test"
+  }
 }
