@@ -1,0 +1,9 @@
+{
+  "_comment": "P0-04d: pages the `screenshots` workflow captures on every PR (artifact `screenshots`). `path` is repo-relative; a path that does not exist is SKIPPED with a log line (so a screen can be listed before the PR that adds it merges). Add a screen = add an entry. Rules: tools/screenshots/capture.ts, docs/process/screenshots.md.",
+  "viewport": { "width": 1280, "height": 800 },
+  "screens": [
+    { "name": "design-system", "path": "design/exports/design-system/index.html", "fullPage": true },
+    { "name": "design-impl", "path": "design/exports/_impl/index.html", "fullPage": true },
+    { "name": "ui-preview", "path": "packages/ui/preview/index.html", "fullPage": true }
+  ]
+}

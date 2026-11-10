@@ -37,6 +37,24 @@ importers:
         specifier: 7.0.2
         version: 7.0.2
 
+  tools/screenshots:
+    devDependencies:
+      '@types/node':
+        specifier: 26.6.6
+        version: 26.6.6
+      '@types/pngjs':
+        specifier: 6.0.5
+        version: 6.0.5
+      playwright-core:
+        specifier: 1.65.0
+        version: 1.65.0
+      pngjs:
+        specifier: 7.0.0
+        version: 7.0.0
+      typescript:
+        specifier: 7.0.2
+        version: 7.0.2
+
 packages:
 
   '@types/node@26.6.6':

@@ -1,0 +1,22 @@
+{
+  "name": "@kinetra/screenshots",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Playwright screenshots of the pages listed in .github/screenshots.json (artifact on every PR) and a raw-WebGL empty scene that proves WebGL renders headless (P0-04d)",
+  "type": "module",
+  "scripts": {
+    "capture": "node capture.ts",
+    "webgl": "node webgl-check.ts",
+    "lint": "tsc --noEmit",
+    "build": "tsc --noEmit",
+    "test": "node --test \"test/*.test.ts\"",
+    "test:browser": "node --test \"test/*.browser.ts\""
+  },
+  "devDependencies": {
+    "@types/node": "26.6.6",
+    "@types/pngjs": "6.0.5",
+    "playwright-core": "1.65.0",
+    "pngjs": "7.0.0",
+    "typescript": "7.0.2"
+  }
+}

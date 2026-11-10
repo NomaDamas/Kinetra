@@ -1,0 +1,56 @@
+name: screenshots
+
+# P0-04d: Playwright (headless Chromium) screenshots of the pages listed in .github/screenshots.json, uploaded as the
+# `screenshots` artifact on every PR, plus a raw-WebGL empty scene whose PIXELS are asserted (proves WebGL renders headless).
+# A listed path that does not exist is skipped with a log line. Rules: docs/process/screenshots.md.
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: screenshots-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  screenshots:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4 # pnpm version comes from package.json "packageManager"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Playwright browser
+        run: pnpm --filter @kinetra/screenshots exec playwright-core install --with-deps chromium-headless-shell
+      - name: Screenshots of the listed pages
+        run: pnpm --filter @kinetra/screenshots capture
+      - name: WebGL empty scene (pixel assertion, headless)
+        run: pnpm --filter @kinetra/screenshots webgl
+      - name: WebGL flag sets (evidence, never fails the job)
+        continue-on-error: true
+        run: pnpm --filter @kinetra/screenshots webgl --probe --out out/webgl-probe
+      - name: Browser tests of the tool
+        run: pnpm --filter @kinetra/screenshots test:browser
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: screenshots
+          path: out/screenshots/
+          if-no-files-found: error
+          retention-days: 14
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: webgl
+          path: |
+            out/webgl/
+            out/webgl-probe/
+          if-no-files-found: warn
+          retention-days: 14
