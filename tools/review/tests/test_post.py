@@ -170,3 +170,73 @@ def test_post_comment_shows_partial_cost():
     r = result()
     r.usage.cost_unknown_calls = 1
     assert "비용 $0.0123(확인된 비용 합계, 호출 1회는 비용 미상)" in post.render_comment(r, ITEMS)
+
+
+# ---------------------------------------------------------------- 2차 리뷰 반영: 게시 전 검증
+
+def gh_calls():
+    log = Path(os.environ["FAKE_GH_LOG"])
+    return [json.loads(ln) for ln in log.read_text().splitlines()] if log.exists() else []
+
+
+def contradictory():
+    r = result()
+    r.review["verdict"] = "approve"
+    r.review["findings"][0]["severity"] = "block"
+    return r
+
+
+def bogus_severity():
+    r = result()
+    r.review["findings"][0]["severity"] = "critical"
+    return r
+
+
+def bad_rubric_value():
+    r = result()
+    r.review["rubric"]["3"] = "maybe"
+    return r
+
+
+@pytest.mark.parametrize("make", [contradictory, bogus_severity, bad_rubric_value])
+def test_post_invalid_review_is_rejected_before_any_gh_call(fake_env, make):
+    with pytest.raises(call.SchemaError):
+        post.post(101, "o/r", make())
+    assert comments(fake_env) == [] and gh_calls() == []  # 조회조차 하지 않았다
+
+
+@pytest.mark.parametrize("make", [contradictory, bogus_severity, bad_rubric_value])
+def test_post_cli_rejects_valid_json_with_invalid_review(fake_env, tmp_path, capsys, make):
+    f = tmp_path / "r.json"
+    f.write_text(make().to_json(), encoding="utf-8")
+    for extra in ([], ["--dry-run"]):
+        assert post.main(["101", "--repo", "o/r", "--result", str(f), *extra]) == 1
+        cap = capsys.readouterr()
+        assert cap.out == "" and "post:" in cap.err and "스키마 위반" in cap.err
+    assert comments(fake_env) == [] and gh_calls() == []
+
+
+def test_post_invalid_review_does_not_update_existing_comment(fake_env):
+    post.post(101, "o/r", result())
+    before = comments(fake_env)[0]["body"]
+    n = len(gh_calls())
+    with pytest.raises(call.SchemaError):
+        post.post(101, "o/r", contradictory())
+    assert comments(fake_env)[0]["body"] == before and len(gh_calls()) == n
+
+
+def test_post_review_not_an_object_is_rejected(fake_env, tmp_path, capsys):
+    d = json.loads(result().to_json())
+    d["review"] = ["x"]
+    f = tmp_path / "r.json"
+    f.write_text(json.dumps(d), encoding="utf-8")
+    assert post.main(["101", "--repo", "o/r", "--result", str(f)]) == 1
+    assert gh_calls() == [] and comments(fake_env) == []
+
+
+def test_post_valid_review_still_posts_normalized(fake_env):
+    r = result()
+    r.review["findings"].reverse()  # 심각도 순이 아니어도 검증 통과 후 정렬된다
+    post.post(101, "o/r", r)
+    body = comments(fake_env)[0]["body"]
+    assert body.index("| concern | 1 |") < body.index("| nit | 3 |")

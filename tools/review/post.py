@@ -12,6 +12,7 @@
 from __future__ import annotations
 
 import argparse
+import dataclasses
 import json
 import re
 import sys
@@ -108,8 +109,17 @@ def upsert(pr: int, repo: str, body: str, gh: GhFn = common.gh) -> tuple[str, in
     return "created", None
 
 
+def checked(result: call.Result, items: dict[str, str]) -> call.Result:
+    """게시 전에 리뷰를 call.validate 로 다시 검증한다(파일·표준입력에서 온 JSON 은 믿지 않는다). 어기면 SchemaError.
+    통과한 정규화 사본으로 바꿔 돌려준다."""
+    if not isinstance(result.review, dict):
+        raise call.SchemaError(["review 가 객체가 아니다"])
+    return dataclasses.replace(result, review=call.validate(result.review, items))
+
+
 def post(pr: int, repo: str, result: call.Result, head_sha: str | None = None, gh: GhFn = common.gh, *, rubric_path=call.RUBRIC_PATH) -> tuple[str, int | None]:
     items, _ = call.load_rubric(rubric_path)
+    result = checked(result, items)  # gh 를 부르기 전에 검증한다. 어기면 아무것도 쓰지 않는다
     return upsert(pr, repo, render_comment(result, items, head_sha), gh)
 
 
@@ -126,7 +136,7 @@ def main(argv: list[str] | None = None) -> int:
         result = call.Result.from_json(text)
         if args.dry_run:
             items, _ = call.load_rubric()
-            sys.stdout.write(render_comment(result, items, args.head_sha))
+            sys.stdout.write(render_comment(checked(result, items), items, args.head_sha))
             return 0
         repo = args.repo or common.default_repo()
         action, cid = post(args.pr, repo, result, args.head_sha)
