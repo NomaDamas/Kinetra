@@ -179,7 +179,7 @@ uv run spikes/godot-jolt/test_scale.py
 - **4륜차 두 장면에서 Godot 4.7.2 + Jolt와 MuJoCo 4.0.0의 궤적은 같은 장면 수치(질량, 치수, 마찰, 시간 간격, 구동 토크)로 시작해도 갈린다.** 경사 주행(4 s, 이동 경로 8.14 m)에서 차체 위치 차이는 **끝에서 최대 49.4 mm**(경로의 0.61%), 자세 차이 최대 0.27 mrad. 낙하(3 s)에서 위치 차이는 **착지 직후(스텝 236, 0.472 s) 최대 22.7 mm**, 끝에서 20.5 mm, 자세 차이 최대 **0.0386 rad(2.2°)**. 값은 모두 시뮬(`시뮬` 배지)이고 엔진 둘의 접촉·바퀴 모델 차이를 합친 것이다. 어느 쪽이 "현실에 가깝다"는 뜻이 아니다.
 - **같은 빌드 반복은 비트 단위로 같다**: 두 장면 모두 Godot CSV의 sha256이 별도 프로세스 2회에서 같았다.
 - **이 차이를 어떻게 읽나(노이즈 바닥과 함께).** MuJoCo 쪽 설정만 바꿔도 같은 크기의 차이가 난다: 적분기를 `implicitfast`로 바꾸면 1e-8 m(무시), 시간 간격 2 ms → 1 ms면 경사 2.2 mm, 낙하 3.8 mm, 접촉 강성 `solref` 0.02 → 0.004면 경사 9.3 mm, 낙하 **118 mm**(낙하 3.4 m 경로의 3.5%). Godot 쪽도 시작 높이를 1 µm만 흔들면 경사 0.68 mm, 낙하 **6.8 mm**로 커진다(접촉 뒤 증폭). 즉 낙하의 22.7 mm는 "엔진이 다르다"와 "접촉이 있는 궤적은 작은 차이를 키운다"가 섞인 값이고, 경사의 49 mm는 같은 방향으로 쌓이는 체계 오차(Godot의 차가 더 멀리 간다)다 [추정: 바퀴·접촉의 마찰·감쇠 모델 차이가 원인 후보이고 이번에 분해하지 않았다].
-- **웹 내보내기는 된다**: 헤드리스로 `--export-release Web`이 두 변형(스레드 있음/없음)에서 끝났다. **번들 크기는 약 39 MB(gzip 약 10.3 MB, brotli 약 8.4 MB)이고 거의 전부 엔진 `.wasm`**이다. 내 장면 쪽(`.pck`)은 3.9 KB. 즉 웹 클라이언트로 쓰면 첫 방문에 약 8~10 MB 전송이 든다(압축 서버 가정). **로딩 시간은 [측정 대기: 디스크]**(아래).
+- **웹 내보내기는 된다, 그러나 이 헤드리스 브라우저에서 스레드 있는 빌드는 끝까지 못 돌았다.** 헤드리스로 `--export-release Web`이 두 변형(스레드 있음/없음)에서 끝났다. **번들 크기는 약 39 MB(gzip 약 10.3 MB, brotli 약 7.2 MB)이고 거의 전부 엔진 `.wasm`**이다. 내 장면 쪽(`.pck`)은 3.9 KB. 헤드리스 Chromium(SwiftShader)에서 스레드 있는 변형은 **페이지 로드 이벤트 355 ms(성능 타이밍 207 ms)에 페이지가 뜨고, 약 1.1 s에 엔진이 시작해 Jolt를 선택했으며(`physics_engine=Jolt Physics`), 이어서 `PAGEERROR memory access out of bounds`로 죽어 1,000스텝 결과를 내지 못했다**(120 s 대기 후 `ran=false`). 원인은 분해하지 않았다(1회 실행, 부하 아래, 소프트웨어 렌더러, 이 장면의 박스 200개 설정 중 어느 것인지 불명) [확인 필요].
 - **OpenXR은 엔진에 있으나 이 머신에서는 시작되지 않는다**: macOS 바이너리에 `OpenXRInterface`가 등록돼 있고 `initialize()`가 `false`를 돌려줬다. 이 머신에 OpenXR 런타임이 없기 때문이다(아래). 실기·에뮬레이터 프레임률은 이번 범위 밖이다.
 
 ### 방법: 4륜차 장면
@@ -232,27 +232,30 @@ uv run spikes/godot-jolt/test_scale.py
 | 내보내기 | `godot --headless --path spikes/godot-jolt/web --export-release Web index.html`, Godot 4.7.2, 공식 웹 템플릿 `web_release.zip`(sha256 `02f0dca1…67a3`)과 `web_nothreads_release.zip`(`d3ee2f08…32a0`)(범위 요청으로 `.tpz` 1.19 GiB 전체를 받지 않고 이 둘만 꺼냄). 렌더러 `gl_compatibility`(웹은 WebGL 2만 가능, 공식 문서) |
 | 내보낸 앱 | 장면 하나, 에셋 없음. 물리 서버 직접 호출로 박스 200개를 1,000스텝(500 Hz) 돌리고 `window.__godot_result`와 콘솔에 결과를 남긴다(`web/main.gd`). 내보내기 시간 약 70 s(부하 아래) |
 
-번들 크기(`/tmp`에 내보낸 두 폴더의 바이트. 압축은 gzip -6과 `brotli -q 5`로 이쪽에서 계산한 값이며 서버 설정에 따라 달라진다):
+번들 크기(`/tmp`에 내보낸 두 폴더의 바이트). 압축 크기는 서버 설정에 따라 달라진다. **스레드 있음 열**은 `measure.mjs`가 Node `zlib`으로 잰 값이다(gzip 레벨 6, brotli 기본 품질 11, `results/a0-03b-web-threads.json`). **스레드 없음 열**의 압축 값은 측정 하니스가 아니라 이쪽에서 따로 계산한 값이다(Python gzip 레벨 6, `brotli -q 5`)이라 위 열과 직접 비교하지 않는다.
 
 | 파일 | 스레드 있음(바이트) | 스레드 없음(바이트) |
 |---|---|---|
-| `index.wasm` | 38,820,072 (gzip 10,149,848 / brotli 8,353,062) | 39,514,754 (gzip 10,114,291 / brotli 8,326,654) |
-| `index.js` | 314,653 (gzip 74,580) | 279,815 (gzip 68,740) |
+| `index.wasm` | 38,820,072 (gzip 10,222,942 / brotli 7,082,995) | 39,514,754 (gzip 10,114,291 / brotli q5 8,326,654) |
+| `index.js` | 314,653 (gzip 75,003 / brotli 63,750) | 279,815 (gzip 68,740) |
 | `index.pck` (내 장면) | 3,944 | 3,944 |
 | `index.html` + 워크릿 2 + `index.png` | 약 37,000 | 약 37,000 |
-| **합계** | **39,175,688** (gzip 10,252,260) | **39,835,533** (gzip 10,210,865) |
+| **합계** | **39,175,688** (gzip 10,325,928 / brotli 7,173,257) | **39,835,533** (gzip 10,210,865) |
 
-- 번들의 99%가 엔진 `.wasm`이다. 에셋을 더해도 이 바닥(압축 후 약 8~10 MB)은 줄지 않는다. 엔진을 필요한 모듈만 넣어 다시 빌드하면 줄일 수 있다는 것은 공식 문서의 말이고(`optimizing_for_size`) **이번에 시험하지 않았다**.
+- 번들의 99%가 엔진 `.wasm`이다. 에셋을 더해도 이 바닥(압축 후 약 7~10 MB)은 줄지 않는다. 엔진을 필요한 모듈만 넣어 다시 빌드하면 줄일 수 있다는 것은 공식 문서의 말이고(`optimizing_for_size`) **이번에 시험하지 않았다**.
 - 스레드 있는 변형은 `SharedArrayBuffer`가 필요해 **COOP/COEP 헤더**(`same-origin` / `require-corp`)를 서버가 보내야 한다(공식 문서). 스레드 없는 변형은 헤더가 필요 없지만 공식 문서가 "성능이 낮다"고 적는다. 우리 공유 링크가 정적 호스팅이면 헤더 제약이 걸린다.
 - 공식 문서의 웹 제약(원문 확인): Godot 4의 C#은 웹 내보내기 불가, WebGL 2만 대상, Safari에 알려진 문제, 탭이 비활성이면 `_physics_process`가 멈춤.
-- 이 장면에서 **Jolt가 웹 빌드에도 들어 있는지**: 내보낸 앱은 `physics/3d/physics_engine="Jolt Physics"`로 내보냈고 `.wasm`이 38.8 MB(MuJoCo WASM 11.2 MB의 3.5배)다. 브라우저 안에서 실제로 Jolt가 돈다는 것은 로딩 측정에서 확인한다 [측정 대기: 디스크].
+- **Jolt가 웹 빌드에도 들어 있다**: 내보낸 앱은 `physics/3d/physics_engine="Jolt Physics"`로 내보냈고, 브라우저 안에서 시작 로그가 `physics_engine=Jolt Physics`를 출력했다. `.wasm`은 38.8 MB(MuJoCo WASM 11.2 MB의 3.5배). 박스 200개 시뮬이 브라우저에서 완주하는지는 확인하지 못했다(위).
 
-로딩·실행 측정(`web-measure`: 헤드리스 Chromium(Playwright 1.65.0의 `chromium-headless-shell-1254` 재사용, 새 브라우저 설치 없음), 정적 서버, 두 변형, COOP/COEP 유무): `pnpm --dir spikes/godot-jolt measure -- --dir <export> --name <name> [--isolated] --out <json>`는 가드 밖에서 시작하면 종료 코드 2다. **[측정 대기: 디스크]** 아래 표의 로딩 시간 칸이 비었다.
+로딩·실행 측정: `pnpm --dir spikes/godot-jolt measure -- --dir <export> --name <name> [--isolated] --out <json>`은 헤드리스 Chromium(Playwright 1.65.0 `chromium-headless-shell-1254`을 재사용, 새 브라우저 설치 없음, 158.0.8127.18) + 이 디렉터리의 정적 서버로 내보낸 폴더를 열고, `load` 이벤트 시각과 `window.__godot_result`가 생길 때까지 시간(상한 120 s)을 기록한다. 가드 밖에서 시작하면 종료 코드 2다. 가드 아래(통과, 경고: 스왑 93%)에서 돌렸다. 소프트웨어 렌더러(SwiftShader)라서 **실제 GPU 로딩 시간이 아니다**.
 
-| 변형 | 로드 이벤트(ms) | 첫 결과까지(ms) | 페이지 결과 | 격리 | 비고 |
+| 변형 | 로드 이벤트(ms) | 엔진 시작 로그까지(ms, 페이지 안 `ready_ms`) | 페이지 결과 | 격리(`crossOriginIsolated`, SAB) | 비고 |
 |---|---|---|---|---|---|
-| 스레드 있음 + COOP/COEP | [측정 대기: 디스크] | | | | |
-| 스레드 없음 | [측정 대기: 디스크] | | | | |
+| 스레드 있음 + COOP/COEP | 355 (DOMContentLoaded 207) | 1,092 | **없음**: `PAGEERROR memory access out of bounds`, 120 s 후 `ran=false` | true / true | Godot 로그: "Emscripten 4.0.20, multi-threaded", `physics_engine=Jolt Physics`, 4.7.2-stable. 1회 실행 |
+| 스레드 없음 | [측정 대기: 디스크] | | | | 가드가 SSD 여유 부족으로 차단 중(8.1 GiB < 10 GiB). 같은 명령으로 채운다 |
+
+- 이 한 번의 실행으로 말할 수 있는 것: **엔진 시작과 Jolt 선택까지는 브라우저에서 된다.** 말할 수 없는 것: 박스 200개 물리가 브라우저에서 돈다. 그 단계에서 죽었고 원인(스레드 빌드의 메모리 한도, 소프트웨어 렌더러, 내 장면 설정, 엔진 버그 중 어느 것인지)을 분해하지 않았다. 재실행·스레드 없음 변형·실제 GPU 브라우저에서의 확인이 필요하다 [확인 필요].
+- 자원 기록(가드 통과, 경고 있음): 명령 `resource_guard.py --profile heavy -- pnpm --dir spikes/godot-jolt measure -- --dir /tmp/godot-web-out --name threads --isolated ...`, 284.8 s, 종료 코드 0. SSD 여유 11.16 → 7.00 GiB(실행 중 최악 6.99), 스왑 13.88 → 16.79 GiB(실행 중 최악 17.32), 메모리 압력 normal. SSD 감소는 다른 프로세스의 영향과 섞였다(이 실행은 내보낸 폴더를 읽기만 한다).
 
 ### OpenXR 지원 상태
 
@@ -294,6 +297,6 @@ pnpm --dir spikes/godot-jolt install --frozen-lockfile && pnpm --dir spikes/godo
 
 - 장면 2개, 각 1회, 차 하나. 바퀴 마찰은 MuJoCo(구름 마찰 없음)와 Jolt(단일 마찰 계수) 모델이 같지 않아 같은 계수를 줘도 거동이 같지 않다. 차이를 모델 항목별로 분해하지 않았다.
 - MuJoCo 쪽은 기본 접촉 설정이고 Godot 쪽은 Jolt 기본값이다. 각자의 기본값이 "자연스러운" 짝이라고 보장하지 않는다. 노이즈 바닥 표가 설정 민감도를 보인다.
-- 웹: 번들 크기는 실제 내보낸 파일이다. 로딩 시간과 브라우저 안 물리 실행은 못 쟀다 [측정 대기: 디스크]. 헤드리스 Chromium(SwiftShader)이므로 잰다 해도 실제 GPU 로딩 시간이 아니다.
+- 웹: 번들 크기는 실제 내보낸 파일이다. 스레드 있는 변형은 헤드리스 Chromium에서 시작까지만 되고 물리 실행 중 죽었다(위, 1회). 스레드 없는 변형의 로딩은 [측정 대기: 디스크]. 헤드리스 Chromium(SwiftShader)이므로 실제 GPU 로딩 시간이 아니다.
 - OpenXR: 존재와 이 머신의 시작 실패만 확인했다. 헤드셋이 없다.
 - 플랫폼 간·다른 버전 간 결정론은 범위 밖(#54 코멘트의 MuJoCo 플랫폼 간 불일치 관찰과 같은 한계가 있을 수 있다).
