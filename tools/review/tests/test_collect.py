@@ -188,3 +188,115 @@ def test_collect_reads_plan_from_base_not_head(fake_env):
 def test_collect_cli_prints_json(fake_env, capsys):
     assert collect.main(["101", "--repo", "o/r"]) == 0
     assert json.loads(capsys.readouterr().out)["pr"]["number"] == 101
+
+
+# ---------------------------------------------------------------- 리뷰 반영(#379 Sol 리뷰)
+
+KEY = "sk-or-v1-FAKEKEYFORTESTS0123456789abcdef"
+
+
+def with_fixture(pr101_dir, monkeypatch, pr=None, diff=None, issue=None, remove=(), write=None):
+    if pr is not None:
+        d = json.loads((pr101_dir / "pr.json").read_text())
+        d.update(pr)
+        (pr101_dir / "pr.json").write_text(json.dumps(d))
+    if diff is not None:
+        (pr101_dir / "diff.patch").write_text(diff, encoding="utf-8")
+    if issue is not None:
+        (pr101_dir / "issue-77.json").write_text(json.dumps(issue))
+    for r in remove:
+        (pr101_dir / "contents" / r).unlink()
+    for k, v in (write or {}).items():
+        (pr101_dir / "contents" / k).write_text(v, encoding="utf-8")
+    monkeypatch.setenv("FAKE_GH_DIR", str(pr101_dir))
+
+
+def test_collect_output_is_redacted_json_and_prompt(fake_env, pr101_dir, monkeypatch, capsys):
+    secret_diff = (
+        "diff --git a/tools/k.py b/tools/k.py\nindex 1..2 100644\n--- a/tools/k.py\n+++ b/tools/k.py\n@@ -1 +1,3 @@\n"
+        f'-x = 1\n+KEY = "{KEY}"\n+H = "Authorization: Bearer abc.def-123"\n+T = "ghp_{"a" * 24}"\n'
+    )
+    with_fixture(pr101_dir, monkeypatch, pr={"body": f"Closes #77\n키 {KEY} sk-live-abcdefgh12345"}, diff=secret_diff)
+    for argv in (["101", "--repo", "o/r"], ["101", "--repo", "o/r", "--prompt"]):
+        assert collect.main(argv) == 0
+        out = capsys.readouterr().out
+        for leak in (KEY, "sk-live-abcdefgh12345", "abc.def-123", "ghp_" + "a" * 24):
+            assert leak not in out, (argv, leak)
+        assert "***" in out and "tools/k.py" in out
+    assert KEY not in collect.render(build())  # 모델에 보내는 본문도 같다
+
+
+QUOTED = (
+    'diff --git "a/docs/\\355\\225\\234\\352\\270\\200.md" "b/docs/\\355\\225\\234\\352\\270\\200.md"\n'
+    "new file mode 100644\nindex 0000000..1111111\n--- /dev/null\n"
+    '+++ "b/docs/\\355\\225\\234\\352\\270\\200.md"\n@@ -0,0 +1,2 @@\n+한글\n+본문\n'
+    'diff --git "a/tab\\there \\"q\\".txt" "b/tab\\there \\"q\\".txt"\nindex 1..2 100644\n--- "a/tab\\there \\"q\\".txt"\n+++ "b/tab\\there \\"q\\".txt"\n@@ -1 +1 @@\n-a\n+b\n'
+    "diff --git a/with space.txt b/with space.txt\nindex 1..2 100644\n--- a/with space.txt\n+++ b/with space.txt\n@@ -1 +1 @@\n-a\n+b\n"
+    'diff --git "a/old \\355\\225\\234.py" "b/new \\355\\225\\234.py"\nsimilarity index 90%\nrename from "old \\355\\225\\234.py"\nrename to "new \\355\\225\\234.py"\n--- "a/old \\355\\225\\234.py"\n+++ "b/new \\355\\225\\234.py"\n@@ -1 +1 @@\n-a\n+b\n'
+    "diff --git a/plain.py b/plain.py\nindex 1..2 100644\n--- a/plain.py\n+++ b/plain.py\n@@ -1 +1 @@\n-a\n+b\n"
+)
+
+
+def test_collect_quoted_and_special_paths_are_kept():
+    files = collect.parse_diff(QUOTED)
+    assert [f.path for f in files] == ["docs/한글.md", 'tab\there "q".txt', "with space.txt", "new 한.py", "plain.py"]
+    assert [(f.status, f.additions, f.deletions) for f in files] == [("added", 2, 0), ("modified", 1, 1), ("modified", 1, 1), ("renamed", 1, 1), ("modified", 1, 1)]
+    assert all(f.text for f in files)  # 본문이 조용히 사라지지 않는다
+    parts, omitted, _ = collect.pack(files)
+    assert "한글" in parts[0] and "plain.py" in parts[0] and omitted == []
+
+
+def test_collect_quoted_deleted_and_excluded_paths():
+    raw = 'diff --git "a/\\355\\225\\234.glb" "b/\\355\\225\\234.glb"\nnew file mode 100644\nBinary files /dev/null and "b/\\355\\225\\234.glb" differ\n'
+    (f,) = collect.parse_diff(raw)
+    assert f.path == "한.glb" and f.excluded == "에셋·바이너리" and f.text == ""
+
+
+@pytest.mark.parametrize(
+    "line",
+    ['diff --git "a/x b/x', 'diff --git "a/x\\q" "b/x"', 'diff --git "a/x\\777" "b/x"', "diff --git garbage", 'diff --git "a/x"', "diff --git a/x c/x"],
+)
+def test_collect_unparseable_header_is_an_error_not_skipped(line):
+    with pytest.raises(common.ReviewError, match="헤더"):
+        collect.parse_diff(line + "\nindex 1..2\n")
+
+
+def test_collect_text_before_first_header_is_an_error():
+    with pytest.raises(common.ReviewError, match="헤더로 시작하지"):
+        collect.parse_diff("junk\n")
+
+
+def test_collect_bad_header_stops_collect(fake_env, pr101_dir, monkeypatch):
+    with_fixture(pr101_dir, monkeypatch, diff="diff --git garbage\n")
+    with pytest.raises(common.ReviewError, match="헤더"):
+        build()
+
+
+@pytest.mark.parametrize("name", ["docs/plan/studio-plan.md", "docs/plan/values.md", "docs/process/done-definition.md"])
+def test_collect_missing_required_file_404_is_an_error(fake_env, pr101_dir, monkeypatch, name):
+    with_fixture(pr101_dir, monkeypatch, remove=[name])
+    with pytest.raises(common.ReviewError, match=name.split("/")[-1] + ".*없다"):
+        build()
+
+
+@pytest.mark.parametrize("name", ["docs/plan/studio-plan.md", "docs/plan/values.md", "docs/process/done-definition.md"])
+@pytest.mark.parametrize("content", ["", "  \n\n"])
+def test_collect_empty_required_file_is_an_error(fake_env, pr101_dir, monkeypatch, name, content):
+    with_fixture(pr101_dir, monkeypatch, write={name: content})
+    with pytest.raises(common.ReviewError, match="비어 있다"):
+        build()
+
+
+def test_collect_issue_without_stage_area_labels_falls_back_to_pr_labels(fake_env, pr101_dir, monkeypatch):
+    issue = {"number": 77, "title": "라벨 없는 이슈", "body": "본문", "labels": [{"name": "type:infra"}, {"name": "prio:P0"}]}
+    with_fixture(pr101_dir, monkeypatch, issue=issue, pr={"labels": [{"name": "area:web"}, {"name": "stage:S1-studio"}, {"name": "type:infra"}]})
+    b = build()
+    assert [i["number"] for i in b.issues] == [77]
+    assert b.labels == ["area:web", "stage:S1-studio"]
+    heads = [s["heading"] for s in b.plan_sections]
+    assert "### 4.1 화면 구조" in heads and "## 9. MVP 범위" in heads and "### S0" not in heads
+
+
+def test_collect_issue_labels_win_over_pr_labels_and_first_labelled_issue_is_used(fake_env, pr101_dir, monkeypatch):
+    with_fixture(pr101_dir, monkeypatch, pr={"labels": [{"name": "area:web"}]})
+    assert build().labels == ["area:process", "stage:S0-process"]  # 이슈 라벨이 우선

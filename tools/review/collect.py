@@ -132,7 +132,81 @@ class Bundle:
 
 # ---------------------------------------------------------------- diff
 
-_HEAD = re.compile(r"^diff --git a/(.*) b/(.*)$")
+_C_ESC = {"a": 7, "b": 8, "f": 12, "n": 10, "r": 13, "t": 9, "v": 11, '"': 34, "\\": 92}
+
+
+def _unquote(text: str, pos: int) -> tuple[str, int]:
+    """`text[pos]` 의 `"` 로 시작하는 git C 인용 문자열을 읽어 (값, 끝 다음 위치). 닫는 `"` 가 없거나 모르는 이스케이프면 ValueError."""
+    assert text[pos] == '"'
+    out = bytearray()
+    i = pos + 1
+    while i < len(text):
+        c = text[i]
+        if c == '"':
+            return out.decode("utf-8", errors="backslashreplace"), i + 1
+        if c != "\\":
+            out += c.encode("utf-8")
+            i += 1
+            continue
+        i += 1
+        if i >= len(text):
+            break
+        c = text[i]
+        if c in _C_ESC:
+            out.append(_C_ESC[c])
+            i += 1
+        elif c in "01234567":
+            j = i
+            while j < len(text) and j < i + 3 and text[j] in "01234567":
+                j += 1
+            val = int(text[i:j], 8)
+            if val > 255:
+                raise ValueError("8진수 이스케이프가 255를 넘는다")
+            out.append(val)
+            i = j
+        else:
+            raise ValueError(f"모르는 이스케이프 \\{c}")
+    raise ValueError("닫는 따옴표가 없다")
+
+
+def parse_header(line: str, block: str = "") -> tuple[str, str]:
+    """`diff --git <a경로> <b경로>` 줄에서 (a경로, b경로). git 은 특수문자·비 ASCII 경로를 `"a/\\355..."` 처럼 인용한다.
+    인용 안 된 경로는 공백을 품을 수 있어, a·b 가 같으면 그 분할을, 이름이 바뀐 경우는 `rename to` 줄로 푼다. 못 풀면 ReviewError."""
+    prefix = "diff --git "
+    rest = line[len(prefix):] if line.startswith(prefix) else ""
+    try:
+        if rest.startswith('"'):
+            first, pos = _unquote(rest, 0)
+            if rest[pos : pos + 1] != " ":
+                raise ValueError("두 번째 경로가 없다")
+            second_raw = rest[pos + 1 :]
+            second = _unquote(second_raw, 0)[0] if second_raw.startswith('"') else second_raw
+        else:
+            split = rest.find(' "b/')
+            if split > 0 and rest.startswith("a/") and rest.endswith('"'):  # 앞은 평문, 뒤만 인용
+                first, second = rest[:split], _unquote(rest, split + 1)[0]
+            else:
+                cands = [m.start() for m in re.finditer(r" b/", rest)]
+                same = [i for i in cands if rest[:i] and rest[2:i] == rest[i + 3 :]] if rest.startswith("a/") else []
+                if same:
+                    first, second = rest[: same[0]], rest[same[0] + 1 :]
+                elif len(cands) == 1 and rest.startswith("a/"):
+                    first, second = rest[: cands[0]], rest[cands[0] + 1 :]
+                else:
+                    mt = re.search(r"^rename to (.*)$", block, re.M)
+                    if not mt or not rest.startswith("a/") or not rest.endswith("b/" + _maybe_unquote(mt.group(1))):
+                        raise ValueError("경로를 나눌 수 없다")
+                    new = _maybe_unquote(mt.group(1))
+                    first, second = rest[: len(rest) - len(new) - 3], "b/" + new
+        if not (first.startswith("a/") and second.startswith("b/")):
+            raise ValueError("a/ b/ 접두사가 없다")
+        return first[2:], second[2:]
+    except ValueError as e:
+        raise common.ReviewError(f"diff 헤더를 해석하지 못했다({e}): {line[:200]}") from None
+
+
+def _maybe_unquote(text: str) -> str:
+    return _unquote(text, 0)[0] if text.startswith('"') else text
 
 
 def parse_diff(raw: str) -> list[FileChange]:
@@ -141,10 +215,9 @@ def parse_diff(raw: str) -> list[FileChange]:
         if not block.strip():
             continue
         lines = block.splitlines()
-        m = _HEAD.match(lines[0])
-        if not m:
-            continue
-        path = m.group(2)
+        if not lines[0].startswith("diff --git "):
+            raise common.ReviewError(f"diff 가 `diff --git` 헤더로 시작하지 않는다: {lines[0][:200]}")
+        path = parse_header(lines[0], block)[1]
         status = "modified"
         add = dele = 0
         in_hunk = False
@@ -238,9 +311,7 @@ def section_keys(labels: list[str]) -> list[str]:
     return list(dict.fromkeys(keys))
 
 
-def plan_excerpt(plan_text: str | None, labels: list[str], limit: int = PLAN_MAX) -> list[dict]:
-    if not plan_text:
-        return []
+def plan_excerpt(plan_text: str, labels: list[str], limit: int = PLAN_MAX) -> list[dict]:
     out: list[dict] = []
     used = 0
     for key in section_keys(labels):
@@ -281,6 +352,16 @@ def _file_at(gh: GhFn, repo: str, path: str, ref: str) -> str | None:
         raise
 
 
+def _required(gh: GhFn, repo: str, path: str, ref: str) -> str:
+    """심판 기준 문서. 없거나 비면 문맥 없이 리뷰하지 않고 멈춘다."""
+    text = _file_at(gh, repo, path, ref)
+    if text is None:
+        raise common.ReviewError(f"기준 브랜치 {ref} 에 {path} 가 없다. 필수 문서라 수집을 멈춘다")
+    if not text.strip():
+        raise common.ReviewError(f"기준 브랜치 {ref} 의 {path} 가 비어 있다. 필수 문서라 수집을 멈춘다")
+    return text
+
+
 def collect(pr_number: int, repo: str, gh: GhFn = common.gh, *, chunk_max: int = CHUNK_MAX, max_chunks: int = MAX_CHUNKS) -> Bundle:
     pr = json.loads(gh("pr", "view", str(pr_number), "-R", repo, "--json", "number,title,body,url,labels,baseRefName,headRefName,headRefOid"))
     pr["labels"] = sorted(lb["name"] for lb in pr.get("labels", []))
@@ -291,12 +372,17 @@ def collect(pr_number: int, repo: str, gh: GhFn = common.gh, *, chunk_max: int =
         d["labels"] = sorted(lb["name"] for lb in d.get("labels", []))
         d["body"] = d.get("body") or ""
         issues.append(d)
-    # stage·area 라벨은 이슈의 것을 우선한다(PR 에는 보통 안 붙는다)
-    label_src = issues[0]["labels"] if issues else pr["labels"]
-    labels = [lb for lb in label_src if lb.startswith(("stage:", "area:"))]
+    # stage·area 라벨은 연결 이슈의 것을 우선하고, 이슈에 하나도 없으면(또는 이슈가 없으면) PR 의 것을 쓴다
+    labels: list[str] = []
+    for src in (*(i["labels"] for i in issues), pr["labels"]):
+        labels = [lb for lb in src if lb.startswith(("stage:", "area:"))]
+        if labels:
+            break
 
     base = pr["baseRefName"]
-    plan = _file_at(gh, repo, PLAN_PATH, base)
+    plan = _required(gh, repo, PLAN_PATH, base)
+    values = _required(gh, repo, VALUES_PATH, base)
+    done = _required(gh, repo, DONE_PATH, base)
     files = parse_diff(gh("pr", "diff", str(pr_number), "-R", repo))
     parts, omitted, truncated = pack(files, chunk_max, max_chunks)
     return Bundle(
@@ -304,8 +390,8 @@ def collect(pr_number: int, repo: str, gh: GhFn = common.gh, *, chunk_max: int =
         pr=pr,
         issues=issues,
         labels=labels,
-        values=_file_at(gh, repo, VALUES_PATH, base),
-        done_definition=_file_at(gh, repo, DONE_PATH, base),
+        values=values,
+        done_definition=done,
         plan_sections=plan_excerpt(plan, labels),
         files=[f.row() for f in files],
         deleted=[f.path for f in files if f.status == "deleted" and f.excluded is None],
@@ -318,7 +404,11 @@ def collect(pr_number: int, repo: str, gh: GhFn = common.gh, *, chunk_max: int =
 # ---------------------------------------------------------------- 렌더
 
 def render(b: Bundle, part: int = 0) -> str:
-    """모델에 보낼 사용자 메시지. part 는 diff_parts 의 색인."""
+    """모델에 보낼 사용자 메시지(비밀 마스킹 적용). part 는 diff_parts 의 색인."""
+    return common.redact(_render(b, part))
+
+
+def _render(b: Bundle, part: int) -> str:
     pr = b.pr
     out = [
         f"# PR #{pr['number']}: {pr['title']}",
@@ -359,7 +449,7 @@ def main(argv: list[str] | None = None) -> int:
     except common.ReviewError as e:
         print(f"collect: {common.redact(str(e))}", file=sys.stderr)
         return 1
-    sys.stdout.write(render(b) if args.prompt else b.to_json() + "\n")
+    sys.stdout.write(common.redact(render(b) if args.prompt else b.to_json() + "\n"))
     return 0
 
 
