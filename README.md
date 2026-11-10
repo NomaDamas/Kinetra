@@ -21,7 +21,7 @@ This is a fresh start. The previous product (hackathon era) is preserved at the 
 | `packages/core` | Engine-independent Project model and command layer |
 | `packages/engine` | Physics engine adapters |
 | `packages/judge` | Necessary-condition screen, search, Monte-Carlo verdicts |
-| `packages/ui` | Design-system tokens and components |
+| `packages/ui` | Design-system tokens (generated from the approved `design/exports/design-system/tokens.json`) and React components `ValueBadge`, `EvidenceLevel`; see [`packages/ui/README.md`](packages/ui/README.md) |
 | `design/` | Claude Design briefs and approved exports |
 | `data/`, `assets/` | Planet data, parts, licensed assets. `assets/LEDGER.csv` is the provenance ledger: one row per asset or tool/runtime dependency (`kind` column), with license and credit text |
 | `docs/` | Plan, process, decisions, architecture, research |
