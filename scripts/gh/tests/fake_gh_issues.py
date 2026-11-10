@@ -31,7 +31,7 @@ fail = os.environ.get("FAKE_GH_FAIL_ONCE")
 if fail and fail in " ".join(a) and not st.get("failed_once"):
     st["failed_once"] = True
     save()
-    sys.exit(os.environ.get("FAKE_GH_FAIL_MSG", "HTTP 403: You have exceeded a secondary rate limit"))
+    sys.exit(os.environ.get("FAKE_GH_FAIL_MSG", "gh: You have exceeded a secondary rate limit. (HTTP 403)"))
 
 if a[:2] == ["repo", "view"]:
     print("o/r")

@@ -36,7 +36,12 @@ TITLE_ID_RE = re.compile(r"^\[([A-Za-z0-9\-]+)\]")
 ID_RE = re.compile(r"^[A-Za-z0-9\-]+$")
 DEP_LINE_RE = re.compile(r"^선행: #[0-9]+", re.MULTILINE)
 DEP_HEADING = "## 의존성"
-RATE_LIMIT_RE = re.compile(r"secondary rate limit|rate limit|abuse|HTTP 403|HTTP 429", re.IGNORECASE)
+# 속도 제한일 때만 다시 시도한다. 권한 없음 같은 평범한 403 은 한 번 부르고 실패로 보고한다.
+RATE_LIMIT_RE = re.compile(
+    r"secondary rate limit|api rate limit exceeded|rate limit exceeded|abuse detection|retry-after:|"
+    r"x-ratelimit-remaining:\s*0\b|HTTP 429",
+    re.IGNORECASE,
+)
 MAX_ATTEMPTS = 6
 RETRY_WAIT = 60  # 초. 시도마다 곱한다
 sleep = time.sleep  # 테스트가 바꾼다
@@ -145,9 +150,17 @@ def fetch_existing(repo: str, wanted: set[str]) -> dict[str, dict]:
 # ---------- 계획과 적용 ----------
 
 def with_dependency_line(body: str, line: str) -> str:
-    if DEP_HEADING in body:
-        return re.sub(r"(" + re.escape(DEP_HEADING) + r"[ \t]*\n)", lambda m: m.group(1) + line + "\n", body, count=1)
-    return body.rstrip("\n") + f"\n\n{DEP_HEADING}\n{line}\n"
+    """`## 의존성` 절 맨 위에 `line` 을 넣는다. 제목은 줄 단위로 찾고(CRLF 와 끝 공백을 허용, 파일 끝에 제목만 있어도 됨),
+    없으면 절을 덧붙인다. 줄바꿈은 본문이 쓰는 방식(CRLF 면 CRLF)을 따른다."""
+    nl = "\r\n" if "\r\n" in body else "\n"
+    lines = body.splitlines(keepends=True)
+    for i, raw in enumerate(lines):
+        if raw.rstrip("\r\n").strip() == DEP_HEADING:
+            if not raw.endswith(("\n", "\r")):  # 제목이 마지막 줄이고 줄바꿈이 없다
+                lines[i] = raw + nl
+            lines.insert(i + 1, line + nl)
+            return "".join(lines)
+    return body.rstrip("\r\n") + f"{nl}{nl}{DEP_HEADING}{nl}{line}{nl}"
 
 
 def seed(repo: str, items: list[dict], *, dry_run: bool, only_new: bool, delay: float, out=print) -> dict[str, int]:

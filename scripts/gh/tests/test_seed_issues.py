@@ -131,6 +131,24 @@ class SeedTests(unittest.TestCase):
         patched = [c for c in e.writes() if "PATCH" in c]
         self.assertEqual({c[c.index("-X") + 2].rsplit("/", 1)[1] for c in patched}, {str(it["E1-02"]["number"]), str(it["E1-03"]["number"])})
 
+    def test_crlf_and_eof_heading_bodies_are_patched_once_then_rerun_is_zero_writes(self):
+        e = Env(issues=[
+            {"id": 9001, "number": 1, "title": "[E1] epic", "body": "## 대목표\r\nG0\r\n## 의존성\r\n선행: 없음", "parent": None},
+            {"id": 9002, "number": 2, "title": "[E1-01] first", "body": "## 문제\r\np\r\n## 의존성", "parent": None},
+            {"id": 9003, "number": 3, "title": "[E1-02] second", "body": "## 문제\nq\n## 의존성", "parent": None},
+            {"id": 9004, "number": 4, "title": "[E1-03] third", "body": "## 문제\r\nr", "parent": None},
+        ])
+        self.addCleanup(e.close)
+        e.run()
+        it = by_title(e.data())
+        self.assertEqual(it["E1-02"]["body"], "## 문제\nq\n## 의존성\n선행: #2 (E1-01), #1 (E1)\n")
+        self.assertEqual(it["E1-03"]["body"], "## 문제\r\nr\r\n\r\n## 의존성\r\n선행: #3 (E1-02)\r\n")
+        self.assertEqual(it["E1-03"]["body"].count("\n") - it["E1-03"]["body"].count("\r\n"), 0)  # 줄바꿈이 섞이지 않았다
+        n = len(e.data()["calls"])
+        e.run()
+        again = e.data()["calls"][n:]
+        self.assertEqual([c for c in again if "POST" in c or "PATCH" in c], [], "두 번째 실행은 쓰기가 없어야 한다")
+
     def test_existing_dependency_line_is_not_duplicated(self):
         self.e.run()
         d = self.e.data()
@@ -184,13 +202,41 @@ class SeedTests(unittest.TestCase):
         self.assertIn("속도 제한", r.stderr)
         self.assertEqual(len(e.data()["issues"]), 4)
 
-    def test_other_gh_failure_is_reported_and_not_retried(self):
-        e = Env(FAKE_GH_FAIL_ONCE="POST repos/o/r/issues", FAKE_GH_FAIL_MSG="HTTP 422: Validation Failed")
+    def failing_post_calls(self, msg):
+        e = Env(FAKE_GH_FAIL_ONCE="POST repos/o/r/issues", FAKE_GH_FAIL_MSG=msg)
         self.addCleanup(e.close)
-        r = e.run(expect=1)
-        self.assertIn("seed_issues: gh api -X POST repos/o/r/issues", r.stderr)
-        self.assertNotIn("속도 제한", r.stderr)
-        self.assertEqual(e.data()["issues"], [])
+        code = (
+            "import sys; sys.path.insert(0, %r); import seed_issues as s; s.sleep = lambda x: None; "
+            "sys.exit(s.main(['--file', %r, '--delay', '0']))" % (str(HERE.parent), str(FIXTURE))
+        )
+        r = subprocess.run([sys.executable, "-c", code], env=e.env, capture_output=True, text=True)
+        posts = [c for c in e.data()["calls"] if "POST" in c and any(x.endswith("/issues") for x in c)]
+        return r, posts, e
+
+    def test_plain_permission_403_is_one_call_and_fails(self):
+        for msg in ("gh: Resource not accessible by personal access token (HTTP 403)",
+                    "gh: Must have admin rights to Repository. (HTTP 403)",
+                    "HTTP 422: Validation Failed"):
+            with self.subTest(msg):
+                r, posts, e = self.failing_post_calls(msg)
+                self.assertEqual(r.returncode, 1, r.stdout)
+                self.assertEqual(len(posts), 1, "속도 제한이 아니면 다시 부르지 않는다")
+                self.assertNotIn("속도 제한", r.stderr)
+                self.assertIn("seed_issues: gh api -X POST repos/o/r/issues", r.stderr)
+                self.assertEqual(e.data()["issues"], [])
+
+    def test_rate_limit_responses_are_retried(self):
+        for msg in ("gh: You have exceeded a secondary rate limit. (HTTP 403)",
+                    "gh: API rate limit exceeded for user ID 1. (HTTP 403)",
+                    "HTTP 403\nx-ratelimit-remaining: 0",
+                    "HTTP 403\nRetry-After: 30",
+                    "gh: Too Many Requests (HTTP 429)"):
+            with self.subTest(msg):
+                r, posts, e = self.failing_post_calls(msg)
+                self.assertEqual(r.returncode, 0, r.stderr)
+                self.assertGreater(len(posts), 4, "한 번 실패한 호출을 다시 불렀어야 한다")
+                self.assertIn("속도 제한", r.stderr)
+                self.assertEqual(len(e.data()["issues"]), 4)
 
 
 class SpecValidationTests(unittest.TestCase):
@@ -229,6 +275,23 @@ class SpecValidationTests(unittest.TestCase):
         for name, text in cases.items():
             with self.subTest(name), self.assertRaises(seed_issues.SpecError):
                 self.load(self.BASE + text)
+
+    def test_dependency_heading_line_wise(self):
+        f = seed_issues.with_dependency_line
+        L = "선행: #1 (X)"
+        # CRLF 본문: 제목을 찾고 줄바꿈 방식을 따른다
+        self.assertEqual(f("a\r\n## 의존성\r\n선행: 없음", L), "a\r\n## 의존성\r\n" + L + "\r\n선행: 없음")
+        # 제목이 파일 끝에 있고 줄바꿈이 없다
+        self.assertEqual(f("a\n## 의존성", L), "a\n## 의존성\n" + L + "\n")
+        self.assertEqual(f("a\r\n## 의존성", L), "a\r\n## 의존성\r\n" + L + "\r\n")
+        self.assertEqual(f("a\n## 의존성\n", L), "a\n## 의존성\n" + L + "\n")
+        # 제목 뒤 공백
+        self.assertEqual(f("## 의존성  \nb", L), "## 의존성  \n" + L + "\nb")
+        # 제목이 아닌 줄(문장 속, 더 깊은 제목, 인용)은 제목이 아니다 -> 절을 덧붙인다
+        for body in ("본문에 ## 의존성 이라고 씀", "### 의존성\nx", "> ## 의존성\nx", "## 의존성 메모\nx"):
+            out = f(body, L)
+            self.assertTrue(out.startswith(body.rstrip("\n")), body)
+            self.assertTrue(out.endswith("\n\n## 의존성\n" + L + "\n"), (body, out))
 
     def test_with_dependency_line(self):
         f = seed_issues.with_dependency_line
