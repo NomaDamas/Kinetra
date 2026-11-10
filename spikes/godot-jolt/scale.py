@@ -29,6 +29,7 @@ sys.path.insert(0, str(ROOT / "tools" / "dev"))
 import resource_guard  # noqa: E402
 
 HEAVY_BODIES = 1000
+BREAK_CUBES = 100  # the break scene adds 100 weld-column cubes to whatever free pile shares its world (scale.gd)
 DEFAULT_GODOT = Path.home() / ".cache" / "kinetra-godot" / "Godot.app" / "Contents" / "MacOS" / "Godot"
 
 
@@ -80,6 +81,12 @@ def compare(runs: list[dict]) -> dict:
                 first_diff = i
                 break
     return {"checkpoints_compared": k, "identical": same, "first_diff_checkpoint": first_diff}
+
+
+def total_bodies(scene: str, n: int) -> int:
+    """Every dynamic body a run simulates: the free pile plus, in the break scene, its 100 cubes. This (not the larger
+    of the two) is what the heavy-run threshold in docs/process/dev-resources.md applies to."""
+    return n + (BREAK_CUBES if scene == "break" else 0)
 
 
 def scene_args(scene: str, n: int) -> list[str]:
@@ -138,12 +145,12 @@ def main(argv: list[str] | None = None) -> int:
         print(f"Godot binary not found: {args.godot}. Download the official macOS build into ~/.cache/kinetra-godot "
               "(spikes/godot-jolt/REPORT.md, 'Godot binary') or pass --godot / env GODOT.", file=sys.stderr)
         return 4
-    if max([*args.bodies, *([] if args.no_break else args.break_pile)], default=0) >= HEAVY_BODIES:
+    scenes = [("pile", n) for n in args.bodies] + ([] if args.no_break else [("break", n) for n in args.break_pile])
+    if any(total_bodies(scene, n) >= HEAVY_BODIES for scene, n in scenes):
         resource_guard.guard_or_exit("heavy")
 
     spec = machine_spec(args.godot)
     print(json.dumps({"machine": spec, "argv": sys.argv, "loadavg_start": os.getloadavg()}, indent=1), flush=True)
-    scenes = [("pile", n) for n in args.bodies] + ([] if args.no_break else [("break", n) for n in args.break_pile])
     results = []
     for scene, n in scenes:
         runs = []

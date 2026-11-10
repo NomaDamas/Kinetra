@@ -66,7 +66,7 @@ var t_process_start := 0
 
 func _initialize() -> void:
 	_parse_args(OS.get_cmdline_user_args())
-	if max(n_pile, n_break) + 0 >= HEAVY_BODIES and OS.get_environment("KINETRA_GUARD_PASSED") != "1":
+	if n_pile + n_break >= HEAVY_BODIES and OS.get_environment("KINETRA_GUARD_PASSED") != "1":
 		printerr("scale.gd: >= %d bodies is a heavy run (docs/process/dev-resources.md). Start it through tools/dev/resource_guard.py --profile heavy -- <cmd>." % HEAVY_BODIES)
 		quit(2)
 		return
