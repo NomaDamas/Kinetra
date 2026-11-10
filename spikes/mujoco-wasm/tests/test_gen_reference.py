@@ -81,6 +81,11 @@ class ReferenceTest(unittest.TestCase):
         rows, nq = stored["rows_per_scenario"], stored["nq"]
         new = np.frombuffer(blob.tobytes(), dtype="<f8").reshape(len(manifest["scenarios"]), rows, nq)
         old = np.fromfile(HERE / "reference" / "native_qpos.f64", dtype="<f8").reshape(len(stored["scenarios"]), rows, nq)
+        # platform-independent integrity of the committed files: every scenario slice of native_qpos.f64 hashes to the
+        # committed manifest's qpos_sha256 (same hash as gen_reference.sha256_bytes), and the blob has exactly that many rows
+        self.assertEqual(old.size * 8, (HERE / "reference" / "native_qpos.f64").stat().st_size)
+        for i, s_ in enumerate(stored["scenarios"]):
+            self.assertEqual(g.sha256_bytes(old[i]), s_["qpos_sha256"], f"{s_['id']}: committed blob slice vs manifest hash")
         self.assertEqual([e["id"] for e in stored["scenarios"]], [e["id"] for e in manifest["scenarios"]])
         self.assertEqual(stored["scenarios"][0]["id"], "nominal")
         self.assertEqual(stored["scenarios"][0]["ctrl_sha256"], manifest["scenarios"][0]["ctrl_sha256"])
