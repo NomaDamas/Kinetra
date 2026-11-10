@@ -15,8 +15,9 @@
 1. **`DONE.json`이 없다.** 지시의 마지막 줄이었지만 세션이 `NOTES.md`를 쓴 뒤 "You're out of usage credits"(사용 크레딧 소진) 메시지와 함께 멈췄다. omp가 정지 파일로 세션을 끝냈다. 대신 omp가 `NOTES.md`의 파일 표와 폴더를 직접 대조했다: `index.html`, `source/*.dc.html` 14개, `source/canvas.json`, `source/tools/build_export.py`, `NOTES.md`가 있다(`NOTES.md`가 표에 적은 `DONE.json`만 없음). 아트보드 파일들은 마지막 수정 시각이 `index.html` 이전이라 쓰는 중에 끊긴 흔적은 보이지 않는다.
 2. **`preview.png`는 omp가 찍었다**(헤드리스 Chrome, 임시 `--user-data-dir`, 끝나고 삭제). 맨 위 약 2400px(S1~S3 일부)만 보인다. 주석 줄의 긴 글자(상시 조작 요소 수 설명)가 오른쪽에서 잘려 보이는데 `index.html` 자체의 그림이다. 아트보드 밖으로 넘치는 요소는 없다고 `NOTES.md`가 적었으나 omp는 다시 재지 않았다.
 3. **이 계정에 Design System 유형 산출물이 없어** 캔버스에 디자인 시스템 기록을 달지 못했다(`NOTES.md` 15번). 색과 치수는 토큰 값을 글자 그대로 썼다.
-4. **글꼴.** 이 `index.html`은 외부 요청이 0건이고 글꼴 파일이 없다(Pretendard, JetBrains Mono는 설치돼 있을 때만, 아니면 시스템 글꼴). 캔버스의 아트보드(`source/*.dc.html`)는 디자인 시스템 원본처럼 JetBrains Mono를 Google Fonts에서 부른다. 원장 행은 필요 없다(`scripts/check_assets.py`는 `assets/`와 `apps/**/public/`만 본다).
+4. **글꼴.** 이 `index.html`은 외부 요청이 0건이고 글꼴 파일이 없다(Pretendard, JetBrains Mono는 설치돼 있을 때만, 아니면 시스템 글꼴). 캔버스 원본(`source/*.dc.html` 14개)은 디자인 시스템 원본처럼 JetBrains Mono 스타일시트를 Google Fonts에서 부른다(원격 참조, 저장소에 글꼴 파일 없음). 원장 행이 없는 이유는 검사 범위가 아니라 **이 저장소가 글꼴 파일을 배포하지 않기 때문**이다. 앱(C-04)이 글꼴 파일을 `apps/**/public/`에 넣는 순간 두 글꼴(SIL OFL 1.1)의 원장 행이 필요하다.
 5. **이 폴더의 자기 점검 수치는 Claude Design 세션이 낸 값이다.** omp는 `build_export.py`를 임시 폴더에서 돌려 `index.html`이 바이트 단위로 같게 다시 만들어지는 것(재생성 성공)을 확인했다. 조작 요소 수는 다시 세지 않았다. S1은 14개이고 `NOTES.md`가 "부품 목록 안의 `인용` 배지를 목록 하나에 넣어 센 해석"을 [확인 필요]로 적었다. 승인 때 S1을 눈으로 세 주기 바란다.
+6. **리뷰에서 나온 디자인 지적(승인 뒤라 이 내보내기는 고치지 않고 구현에 넘김).** ① S1의 클릭 가능한 `인용` 배지를 상시 조작 요소 수에 넣을지 브리프 규칙과 어긋날 수 있다 — C-04 구현 때 브리프 5.1의 계산 규칙으로 다시 센다. ② S9(엔진 오프라인)의 비활성 사유 툴팁이 상단바 행 안에 줄바꿈 없이 놓여 좁은 폭에서 다른 요소를 밀 수 있다 — 구현에서는 상단바 밖 오버레이로 띄운다. 둘 다 D0-04 디자인 대조의 예외 목록에 사유와 함께 적는다.
 
 ## 비용과 한도 (상태 막대에서 읽은 값)
 
