@@ -1,0 +1,10 @@
+{
+  "browser": { "mode": "launch", "executable_path": "<chrome-headless-shell 경로: ~/Library/Caches/ms-playwright/chromium_headless_shell-1254/chrome-headless-shell-mac-arm64/chrome-headless-shell>" },
+  "start_url": { "url": "http://127.0.0.1:8765/index.html" },
+  "capture": { "network": { "request_body": true, "response_body": true, "header_values": true } },
+  "actions": [
+    { "step_id": "wait-tablist", "action": "wait_for", "timeout_ms": 15000, "locator": { "kind": "css", "selector": "[data-live=mode]" }, "state": "visible" },
+    { "step_id": "click-run-tab", "action": "click", "timeout_ms": 15000, "locator": { "kind": "css", "selector": "[data-live=mode] [role=tab]:nth-of-type(2)" } },
+    { "step_id": "settle", "action": "wait_for_timeout", "duration_ms": 500 }
+  ]
+}

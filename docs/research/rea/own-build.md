@@ -18,7 +18,7 @@
 |---|---|
 | 대상 | `design/exports/design-system/index.html` (우리 저장소, D0-02c 내보내기). sha256 `42184fee52a5c2937d28f5568b15bc2f7ab0a6f2853649e53a63206df0021237` |
 | 허용 목록 줄 | `allow \| own-build \| apps/studio (웹 번들 산출물 …) \| own` |
-| 편차 | 줄의 대상 문구는 `apps/studio`다. 그 폴더에는 아직 빌드 출력이 없어서, 같은 줄의 취지("우리 저장소에서 우리가 만든 산출물, 번들 크기·구성, 런타임 동작")에 드는 우리 산출물 중 실제로 열리는 것을 골랐다. 이 파일은 Claude Design이 만든 산출물을 omp가 그대로 복사한 것이다(`design/exports/design-system/README.md`). **허용 목록 문구를 이 대상까지 넓히는 변경은 하지 않았다.** 넓히려면 창업자 승인 PR이 필요하다(`rea-policy.md` "허용 목록 변경 절차") |
+| 편차 | 줄의 대상 문구는 `apps/studio`다. 그 폴더에는 아직 빌드 출력이 없어서, 같은 줄의 취지("우리 저장소에서 우리가 만든 산출물, 번들 크기·구성, 런타임 동작")에 드는 우리 산출물 중 실제로 열리는 것을 골랐다. 이 파일은 Claude Design이 만든 산출물을 omp가 그대로 복사한 것이다(`design/exports/design-system/README.md`). **허용 목록 변경(`design/exports/**` 추가)은 같은 브랜치의 별도 커밋으로 준비했고, 창업자 승인 대기 중이다. 승인되지 않았다.** 승인 전에는 이 점검이 목록의 문구 밖이라는 점이 그대로다(`rea-policy.md` "허용 목록 변경 절차") |
 | 번들 속 서드파티 | 글꼴 JetBrains Mono(SIL OFL 1.1, 브리프 3.4절)를 브라우저가 Google Fonts에서 받는다. REA는 이를 **관찰만** 했다(요청 기록). 그 내용(글꼴 CSS·파일)을 분석하거나 저장소에 옮기지 않았다 |
 | 금지 행위 | 독점 제품이 아니다. 디컴파일·에셋 추출·DRM 우회 없음. 결과 JSON은 저장소에 올리지 않았다(임시 폴더에서 삭제) |
 | 브라우저 | 사람이 쓰는 Chrome은 건드리지 않았다. Playwright 설치본 `chromium_headless_shell-1254`(HeadlessChrome 158.0.8127.18)만 썼고 DevTools 포트는 `127.0.0.1`, 프로필은 던지는 `--user-data-dir`(끝나고 삭제), 대상 서버는 `127.0.0.1`의 `python3 -m http.server` |
@@ -115,7 +115,9 @@ curl -s -X PUT "http://127.0.0.1:9333/json/new?http://127.0.0.1:8765/index.html"
 npx rea list-browser-targets http://127.0.0.1:9333 --allowed-origins http://127.0.0.1:8765 --format json
 npx rea analyze-web-bundle http://127.0.0.1:9333 <targetId> --allowed-origins http://127.0.0.1:8765 --observation-ms 1500 --format json
 npx rea inspect-web-page   http://127.0.0.1:9333 <targetId> --allowed-origins http://127.0.0.1:8765 --observation-ms 2000 --format json
-npx rea capture-browser-scenario <시나리오.json> --format json     # 4.2절의 시나리오
+# 시나리오: docs/research/rea/own-build-scenario.json (executable_path의 자리표시자를 이 머신의 경로로 바꾼다).
+# 4.2절의 요청 3건은 이 파일(네트워크 캡처 켬)의 결과다. `capture` 키를 지우면 4.2절의 "단계 3개 completed, 완결" 실행이 된다.
+npx rea capture-browser-scenario docs/research/rea/own-build-scenario.json --format json
 npx rea analyze-javascript-application <index.html만 복사한 폴더> --format json
 ```
 
