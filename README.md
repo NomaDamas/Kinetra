@@ -10,6 +10,7 @@ This is a fresh start. The previous product (hackathon era) is preserved at the 
 - [`docs/plan/values.md`](docs/plan/values.md): core values V1–V5 and goals, quoted verbatim in every issue and PR
 - [`docs/plan/issues.yaml`](docs/plan/issues.yaml): every epic, issue and sub-issue (seeded to GitHub Issues)
 - [`docs/process/done-definition.md`](docs/process/done-definition.md), [`docs/process/review-rubric.md`](docs/process/review-rubric.md): what "100% done" means and the review → triage → merge loop
+- [`docs/process/combat-safety-line.md`](docs/process/combat-safety-line.md): combat-mode safety line (game-level kinetic physics only; what is never provided), verbatim from plan section 15.3
 
 ## Layout
 
