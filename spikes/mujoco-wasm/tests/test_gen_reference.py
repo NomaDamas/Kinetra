@@ -7,6 +7,7 @@ They assert the harness reproduces what it claims (legacy model hash, legacy her
 committed reference files match a regeneration). They do not assert any speed value."""
 import hashlib
 import json
+import platform
 import sys
 import unittest
 from pathlib import Path
@@ -16,6 +17,12 @@ import numpy as np
 HERE = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(HERE))
 import gen_reference as g  # noqa: E402
+
+
+# Cross-platform bounds on max |qpos difference| (m, rad) vs the committed macOS arm64 reference. MEASURED on the CI runner;
+# the values and the run link are recorded in REPORT.md.
+PRE_CONTACT_BOUND = 1e-9  # measured worst 1.73e-12 (Linux x86-64 CI), ~600x headroom
+FULL_BOUND = 5e-3         # measured worst 7.69e-4 (the nominal-with-1e-12-nudge control), 6.5x headroom; see REPORT.md
 
 
 class ReferenceTest(unittest.TestCase):
@@ -55,9 +62,47 @@ class ReferenceTest(unittest.TestCase):
     def test_committed_reference_matches_regeneration(self):
         manifest, blob = g.build()
         stored = json.loads((HERE / "reference" / "manifest.json").read_text())
-        self.assertEqual([e["qpos_sha256"] for e in stored["scenarios"]], [e["qpos_sha256"] for e in manifest["scenarios"]])
-        self.assertEqual(hashlib.sha256((HERE / "reference" / "native_qpos.f64").read_bytes()).hexdigest(), hashlib.sha256(blob.tobytes()).hexdigest())
-
+        same_platform = platform.platform() == stored["platform"]
+        if same_platform:
+            # the machine class that wrote the reference: the whole trajectory must be bitwise the same
+            self.assertEqual([e["qpos_sha256"] for e in stored["scenarios"]], [e["qpos_sha256"] for e in manifest["scenarios"]])
+            self.assertEqual(hashlib.sha256((HERE / "reference" / "native_qpos.f64").read_bytes()).hexdigest(), hashlib.sha256(blob.tobytes()).hexdigest())
+            return
+        # Another platform (CI is Linux x86-64, the reference was written on macOS arm64). Bitwise equality with the committed
+        # reference cannot be asserted there (see REPORT.md, "Linux x86-64 vs macOS arm64"), so assert instead:
+        # (a) within-platform determinism: a second regeneration here is BITWISE identical to the first (trajectories, control
+        #     and trajectory hashes), so a real regression cannot hide behind "another platform";
+        # (b) the full trajectory (all 1126 rows, all scenarios) stays within the measured cross-platform bound of the committed
+        #     reference, and the flight before first contact within PRE_CONTACT_BOUND.
+        manifest2, blob2 = g.build()
+        self.assertEqual(blob.tobytes(), blob2.tobytes(), "regeneration on this platform is not bitwise repeatable")
+        self.assertEqual([e["ctrl_sha256"] for e in manifest["scenarios"]], [e["ctrl_sha256"] for e in manifest2["scenarios"]])
+        self.assertEqual([e["qpos_sha256"] for e in manifest["scenarios"]], [e["qpos_sha256"] for e in manifest2["scenarios"]])
+        rows, nq = stored["rows_per_scenario"], stored["nq"]
+        new = np.frombuffer(blob.tobytes(), dtype="<f8").reshape(len(manifest["scenarios"]), rows, nq)
+        old = np.fromfile(HERE / "reference" / "native_qpos.f64", dtype="<f8").reshape(len(stored["scenarios"]), rows, nq)
+        # platform-independent integrity of the committed files: every scenario slice of native_qpos.f64 hashes to the
+        # committed manifest's qpos_sha256 (same hash as gen_reference.sha256_bytes), and the blob has exactly that many rows
+        self.assertEqual(old.size * 8, (HERE / "reference" / "native_qpos.f64").stat().st_size)
+        for i, s_ in enumerate(stored["scenarios"]):
+            self.assertEqual(g.sha256_bytes(old[i]), s_["qpos_sha256"], f"{s_['id']}: committed blob slice vs manifest hash")
+        self.assertEqual([e["id"] for e in stored["scenarios"]], [e["id"] for e in manifest["scenarios"]])
+        self.assertEqual(stored["scenarios"][0]["id"], "nominal")
+        self.assertEqual(stored["scenarios"][0]["ctrl_sha256"], manifest["scenarios"][0]["ctrl_sha256"])
+        worst_full, worst_pre = 0.0, 0.0
+        for i, (s_, m_) in enumerate(zip(stored["scenarios"], manifest["scenarios"])):
+            for ws, wm in zip(s_["windows"], m_["windows"]):
+                for k in ("ts", "dur", "mag"):
+                    self.assertAlmostEqual(ws[k], wm[k], delta=1e-9, msg=f"{s_['id']} window {ws['name']} {k}")
+            fcs = [c for c in (s_["first_contact_step"], m_["first_contact_step"]) if c >= 0]
+            pre = min(fcs) if fcs else rows
+            d = np.abs(old[i] - new[i])
+            full, pre_d = float(d.max()), float(d[:pre].max())
+            print(f"CROSS-PLATFORM {s_['id']}: first_contact old/new {s_['first_contact_step']}/{m_['first_contact_step']} max|dqpos| full={full:.3e} pre-contact={pre_d:.3e}")
+            worst_full, worst_pre = max(worst_full, full), max(worst_pre, pre_d)
+            self.assertLess(pre_d, PRE_CONTACT_BOUND, f"{s_['id']}: flight before first contact")
+            self.assertLess(full, FULL_BOUND, f"{s_['id']}: full trajectory")
+        print(f"CROSS-PLATFORM worst: full={worst_full:.3e} pre-contact={worst_pre:.3e} (bounds {FULL_BOUND:g} / {PRE_CONTACT_BOUND:g}) on {platform.platform()}")
 
 if __name__ == "__main__":
     unittest.main()
