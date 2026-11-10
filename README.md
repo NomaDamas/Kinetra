@@ -4,6 +4,13 @@ Build anything on an empty plain on Earth, Mars or the Moon with an agent, run i
 
 This is a fresh start. The previous product (hackathon era) is preserved at the git tag [`legacy-v0`](https://github.com/NomaDamas/Kinetra/tree/legacy-v0).
 
+## Plan
+
+- [`docs/plan/studio-plan.md`](docs/plan/studio-plan.md): product, UX/UI, architecture, roadmap (source of truth)
+- [`docs/plan/values.md`](docs/plan/values.md): core values V1–V5 and goals, quoted verbatim in every issue and PR
+- [`docs/plan/issues.yaml`](docs/plan/issues.yaml): every epic, issue and sub-issue (seeded to GitHub Issues)
+- [`docs/process/done-definition.md`](docs/process/done-definition.md), [`docs/process/review-rubric.md`](docs/process/review-rubric.md): what "100% done" means and the review → triage → merge loop
+
 ## Layout
 
 | Path | Purpose |
