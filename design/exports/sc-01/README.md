@@ -1,43 +1,45 @@
 # SC-01 Studio 셸 내보내기 (D0-03a)
 
-**상태: 창업자 승인 대기. 그리고 `/design`(Claude Design)으로 만든 것이 아니다(아래 "편차").** 이 폴더의 값과 문구는 모두 **[제안]**이다. #36의 승인 코멘트가 달리기 전에는 승인본이 아니다.
+**상태: 창업자 승인 대기.** 이 폴더의 치수와 문구는 모두 **[제안]**이다. #36의 승인 코멘트가 달리기 전에는 승인본이 아니다.
 
 ## 출처
 
 - 규격(브리프): `design/briefs/sc-01.md`. 0절 창업자 지시(기능은 빠짐없이, 화면은 단순하게, 진행형 공개)가 첫 조건이다. 토큰과 컴포넌트는 `design/exports/design-system/`(v0, 승인)을 그대로 쓴다.
-- Artifact URL: https://claude.ai/artifact/FpxzXZ2tvGBQ1N9z7rAVm5 (실행한 Claude Code 세션이 만든 비공개 Artifact. `index.html`과 같은 갤러리의 조각판).
-- 만든 방법: omp가 `docs/decisions/design-pty.md`의 절차대로 expect로 대화형 `claude`(Claude Code 2.1.322)를 신뢰 폴더 `/tmp/kin-design-probe`에서 띄웠다. 실행 id `sc01-20261110T195110`, 완료는 `DONE.json`의 실행 id 일치로 감지했다(1092초 뒤, 고정 제한으로 끊지 않음).
-- 원본 `NOTES.md`(Claude Code가 쓴 자기 점검 표와 편차 13건)와 `DONE.json`은 그대로 들어 있다.
+- **Claude Design 산출물 URL:** https://claude.ai/artifact/PQb3gPuTCNykoYGurUn9Af (제목 "SC-01 Studio 셸", 비공개). 같은 세션 로그의 `https://claude.ai/artifact/QKN21svewxgyPb6SYRqWnd`는 새 산출물을 만들 때 읽는 Artifact 유형 안내이며 디자인 산출물이 아니다 [추정: 로그 문구 기준].
+- 만든 방법: omp가 `docs/decisions/design-pty.md` 절차대로 expect로 `claude --model fable`(상태 막대 **Fable 5.2**, Claude Code 2.1.322)을 신뢰 폴더 `/tmp/kin-design-probe`에서 띄웠다. 먼저 `/design`만 입력해 자동완성("Make a new Design artifact from a brief")을 확인한 뒤, 브리프 파일 경로를 가리키는 짧은 지시를 보냈다. 로그에 `Artifact(` 호출이 나왔다(Claude Design 도구 사용 확인). 실행 id `sc01b-20261110T203657`.
+- 이 폴더의 `NOTES.md`는 Claude Design(Claude Code 세션)이 쓴 것이고 omp가 고치지 않았다.
+- 이전 시도(PR 처음 커밋)는 `/design`이 호출되지 않은 채 Claude Code(Opus 5.5)가 직접 만든 것이라 이 폴더에서 **교체**했다. 이유와 비교는 `docs/decisions/design-pty.md` "추가 관찰".
 
 ## 편차 (창업자가 수용할지 정한다)
 
-1. **`/design`이 호출되지 않았다.** omp가 보낸 한 줄 프롬프트는 `/design Design screen SC-01 …`로 시작했지만 모델은 "메시지가 문장 중간에서 시작한다"고 답하고 프로젝트 폴더를 먼저 살폈다. 로그에는 `/design` 호출 흔적이 없고, `NOTES.md`도 "이 세션에는 `/design`(Claude Design) 스킬이 없었다"고 적었다. 그래서 Claude Code(상태 막대 모델 **Opus 5.5**, 1·2회차 때의 Fable 5.2가 아님)가 브리프를 읽고 빌드 스크립트(`source/tools/build_sc01.py`)로 아트보드를 직접 만들었다. 형식은 디자인 시스템과 같은 `*.dc.html` + `canvas.json`이지만 **Claude Design의 산출물이 아니다.** 원인은 [추정]: 긴 입력이 붙여넣기로 처리되면서 앞부분(`/design `)이 잘렸다. 다음 실행은 `/design`을 먼저 따로 보내 자동완성을 확인한 뒤 본문을 보내는 것으로 고친다 [제안, 미검증].
-2. **글꼴 링크 없음.** 이 갤러리는 외부 요청 없이 열리도록 Google Fonts 링크를 넣지 않았다. 글꼴 파일은 여기에도 들어 있지 않다(이름으로만 참조, 없으면 시스템 글꼴). 외부 URL은 `index.html`에 0건이다. 원장 행은 필요 없다(`scripts/check_assets.py`는 `assets/`와 `apps/**/public/`만 본다).
-3. **브라우저 임시 프로필.** 프롬프트에 임시 `--user-data-dir`를 지시했고 `NOTES.md`는 지켰다고 적었다. 실행 로그의 명령 줄에서는 확인하지 못했다(화면 로그에 `user-data-dir` 문자열이 없다). omp는 창업자의 Chrome을 건드리지 않았고, 아래 `preview.png`는 omp가 임시 프로필로 따로 찍었다.
-4. 자기 점검의 숫자(상시 조작 요소 S1 = 14 등)는 Claude Code가 낸 값이다. omp는 `build_sc01.py`를 임시 폴더(`source/tools/selfcheck.json`이 없는 새 출력 폴더)에서 돌려 `index.html`이 바이트 단위로 같게 다시 만들어지는 것을 확인했다. 다만 스크립트는 마지막에 `source/tools/selfcheck.json`을 쓰려다 `FileNotFoundError`로 끝났다(출력 폴더에 `source/tools/`가 없었기 때문 [추정]). 조작 요소 수 자체는 다시 세지 않았다. 승인 때 S1을 눈으로 세 주기 바란다.
+1. **`DONE.json`이 없다.** 지시의 마지막 줄이었지만 세션이 `NOTES.md`를 쓴 뒤 "You're out of usage credits"(사용 크레딧 소진) 메시지와 함께 멈췄다. omp가 정지 파일로 세션을 끝냈다. 대신 omp가 `NOTES.md`의 파일 표와 폴더를 직접 대조했다: `index.html`, `source/*.dc.html` 14개, `source/canvas.json`, `source/tools/build_export.py`, `NOTES.md`가 있다(`NOTES.md`가 표에 적은 `DONE.json`만 없음). 아트보드 파일들은 마지막 수정 시각이 `index.html` 이전이라 쓰는 중에 끊긴 흔적은 보이지 않는다.
+2. **`preview.png`는 omp가 찍었다**(헤드리스 Chrome, 임시 `--user-data-dir`, 끝나고 삭제). 맨 위 약 2400px(S1~S3 일부)만 보인다. 주석 줄의 긴 글자(상시 조작 요소 수 설명)가 오른쪽에서 잘려 보이는데 `index.html` 자체의 그림이다. 아트보드 밖으로 넘치는 요소는 없다고 `NOTES.md`가 적었으나 omp는 다시 재지 않았다.
+3. **이 계정에 Design System 유형 산출물이 없어** 캔버스에 디자인 시스템 기록을 달지 못했다(`NOTES.md` 15번). 색과 치수는 토큰 값을 글자 그대로 썼다.
+4. **글꼴.** 이 `index.html`은 외부 요청이 0건이고 글꼴 파일이 없다(Pretendard, JetBrains Mono는 설치돼 있을 때만, 아니면 시스템 글꼴). 캔버스의 아트보드(`source/*.dc.html`)는 디자인 시스템 원본처럼 JetBrains Mono를 Google Fonts에서 부른다. 원장 행은 필요 없다(`scripts/check_assets.py`는 `assets/`와 `apps/**/public/`만 본다).
+5. **이 폴더의 자기 점검 수치는 Claude Design 세션이 낸 값이다.** omp는 `build_export.py`를 임시 폴더에서 돌려 `index.html`이 바이트 단위로 같게 다시 만들어지는 것(재생성 성공)을 확인했다. 조작 요소 수는 다시 세지 않았다. S1은 14개이고 `NOTES.md`가 "부품 목록 안의 `인용` 배지를 목록 하나에 넣어 센 해석"을 [확인 필요]로 적었다. 승인 때 S1을 눈으로 세 주기 바란다.
 
 ## 비용과 한도 (상태 막대에서 읽은 값)
 
 | 시점 | 세션 비용 | 주간 한도 |
 |---|---|---|
-| 실행 전(Ctrl-C 한 번으로 상태 막대를 띄워 읽음) | $0.00 | 70% left |
-| 실행 18분 시점 | $5.43 | 65% left |
+| 시작 1분 뒤(Ctrl-C 한 번으로 상태 막대를 띄워 읽음) | $0.00 | 60% left |
+| 실행 3분 | $2.36 | 59~60% left |
+| 실행 33분 | $14.42 | 60% left |
+| 실행 35분(멈춘 시점) | $15.47 | 59% left |
 
-DONE.json 확인은 1092초(약 18분) 시점이다. 25% 미만이면 중단하는 기준(Main 지시)은 통과했다.
+같은 계정에서 다른 세션이 함께 돌고 있어 주간 한도 표시를 이번 실행만의 사용량으로 읽을 수 없다 [추정]. 시작 전 한도(25% 미만이면 중단)는 통과했다.
 
 ## 파일
 
 | 경로 | 내용 |
 |---|---|
-| `index.html` | 독립 갤러리(257428바이트). 아트보드 S1~S10 + 자기 점검 표. 외부 요청 없음 |
-| `source/S1-Default.dc.html` … `S10-Keyboard.dc.html` | 아트보드 원본 10개(S7은 세 화면을 나란히) |
-| `source/canvas.json` | 위치·크기·제목·순서 |
-| `source/tools/build_sc01.py`, `selfcheck.json` | 원본과 `index.html`을 만드는 스크립트와 그 점검 결과 |
-| `NOTES.md` | Claude Code가 쓴 노트(자기 점검 표, 브리프와 다른 점 13건, 새로 정한 값) |
-| `DONE.json` | 완료 표식(실행 id와 파일 목록) |
-| `preview.png` | `index.html`을 헤드리스 Chrome(임시 `--user-data-dir`, 끝나고 삭제)으로 1440×2400에서 찍은 스크린샷. 맨 위 약 2400px(S1~S3 일부)만 보인다 |
+| `index.html` | 독립 갤러리(253306바이트). 아트보드 14장(S1~S10, S7은 a·b·c 세 장, 보충 A·B) |
+| `source/*.dc.html`, `source/canvas.json` | 캔버스 아트보드 원본 14개와 위치·크기·제목·순서 |
+| `source/tools/build_export.py` | 원본에서 `index.html`을 만드는 스크립트: `python3 source/tools/build_export.py source <out_dir>` |
+| `NOTES.md` | Claude Design 세션이 쓴 노트: 자기 점검 표, 기능 도달 단계, 브리프에서 벗어난 곳 15건 |
+| `preview.png` | omp가 찍은 스크린샷(1440×2400) |
 
 ## 승인 때 봐 달라는 것
 
 - S1(기본 화면)의 상시 조작 요소가 14개 이하이고 `primary`가 하나인지. 기능이 줄었다고 느끼는 곳이 있는지(`NOTES.md`의 기능 도달 단계 표).
-- `NOTES.md` "브리프와 다르거나 새로 정한 것"의 [확인 필요] 항목(5, 8, 11번).
+- `NOTES.md` "새로 정한 값과 브리프에서 벗어난 곳"의 항목: 보충 아트보드 2장 추가(1번), 에이전트 바의 `보내기` 버튼 없음(4번, SC-03에서 정함), S8 컴파일 중 주 행동 활성(13번).

@@ -1,106 +1,47 @@
 {
   "v": 3,
-  "createdOnFiles": {
-    "v": 1,
-    "at": "2026-11-10T10:00:00Z"
-  },
-  "title": "Kinetra Studio 셸 SC-01",
-  "launch": {
-    "view": "canvas"
-  },
+  "createdOnFiles": {"v": 1, "at": "2026-11-10T12:06:32Z"},
+  "title": "SC-01 Studio 셸",
+  "launch": {"view": "canvas"},
   "pages": [],
   "boards": {
-    "S1-Default.dc.html": {
-      "x": 0,
-      "y": 0,
-      "w": 1440,
-      "h": 900,
-      "title": "S1 기본: 조립 · 선택 없음 · 변경안 없음"
-    },
-    "S2-Selected.dc.html": {
-      "x": 1520,
-      "y": 0,
-      "w": 1440,
-      "h": 900,
-      "title": "S2 조립 · 부품 하나 선택"
-    },
-    "S3-Run.dc.html": {
-      "x": 0,
-      "y": 1060,
-      "w": 1440,
-      "h": 900,
-      "title": "S3 실행 · 1회 실행 뒤"
-    },
-    "S4-VerdictNone.dc.html": {
-      "x": 1520,
-      "y": 1060,
-      "w": 1440,
-      "h": 900,
-      "title": "S4 판정 · 판정 없음"
-    },
-    "S5-VerdictL2.dc.html": {
-      "x": 0,
-      "y": 2120,
-      "w": 1440,
-      "h": 900,
-      "title": "S5 판정 · L2 FEASIBLE_FOUND"
-    },
-    "S6-Halo.dc.html": {
-      "x": 1520,
-      "y": 2120,
-      "w": 1440,
-      "h": 900,
-      "title": "S6 Halo · 판정 없음"
-    },
-    "S7-Collapsed.dc.html": {
-      "x": 0,
-      "y": 3180,
-      "w": 4512,
-      "h": 1024,
-      "title": "S7 패널 접힘 변형 (a) (b) (c)"
-    },
-    "S8-PlanetSwitch.dc.html": {
-      "x": 0,
-      "y": 4364,
-      "w": 1440,
-      "h": 900,
-      "title": "S8 행성 전환 직후 (지구 → 달)"
-    },
-    "S9-Offline.dc.html": {
-      "x": 1520,
-      "y": 4364,
-      "w": 1440,
-      "h": 900,
-      "title": "S9 엔진 오프라인"
-    },
-    "S10-Keyboard.dc.html": {
-      "x": 0,
-      "y": 5424,
-      "w": 1440,
-      "h": 900,
-      "title": "S10 키보드 주석 (S1 위에 겹침)"
-    }
+    "Main.dc.html": {"x": 0, "y": 0, "w": 1440, "h": 940, "title": "S1 기본 · 조립, 선택 없음, 변경안 없음"},
+    "S2.dc.html": {"x": 1520, "y": 0, "w": 1440, "h": 940, "title": "S2 조립 · 부품 하나 선택"},
+    "S3.dc.html": {"x": 3040, "y": 0, "w": 1440, "h": 940, "title": "S3 실행 · 1회 실행 뒤"},
+    "S4.dc.html": {"x": 0, "y": 1360, "w": 1440, "h": 940, "title": "S4 판정 · 판정 없음"},
+    "S5.dc.html": {"x": 1520, "y": 1360, "w": 1440, "h": 940, "title": "S5 판정 · L2 FEASIBLE_FOUND"},
+    "S6.dc.html": {"x": 3040, "y": 1360, "w": 1440, "h": 940, "title": "S6 Halo · 판정 없음"},
+    "S7a.dc.html": {"x": 0, "y": 2720, "w": 1440, "h": 940, "title": "S7 (a) 왼쪽만 접힘"},
+    "S7b.dc.html": {"x": 1520, "y": 2720, "w": 1440, "h": 940, "title": "S7 (b) 오른쪽 열림 + 왼쪽 접힘"},
+    "S7c.dc.html": {"x": 3040, "y": 2720, "w": 1440, "h": 940, "title": "S7 (c) 모두 접힘"},
+    "S8.dc.html": {"x": 0, "y": 4080, "w": 1440, "h": 940, "title": "S8 행성 전환 직후"},
+    "S9.dc.html": {"x": 1520, "y": 4080, "w": 1440, "h": 940, "title": "S9 엔진 오프라인"},
+    "S10.dc.html": {"x": 3040, "y": 4080, "w": 1440, "h": 940, "title": "S10 키보드 · 주석 아트보드"},
+    "X1.dc.html": {"x": 0, "y": 5440, "w": 1440, "h": 940, "title": "보충 A · 공개 견본: 증거 근거, 부품 검색, 더보기"},
+    "X2.dc.html": {"x": 1520, "y": 5440, "w": 1440, "h": 940, "title": "보충 B · 공개 견본: 내 것·가져오기, 공유, 변경안 카드 자리"}
   },
   "order": [
-    "S1-Default.dc.html",
-    "S2-Selected.dc.html",
-    "S3-Run.dc.html",
-    "S4-VerdictNone.dc.html",
-    "S5-VerdictL2.dc.html",
-    "S6-Halo.dc.html",
-    "S7-Collapsed.dc.html",
-    "S8-PlanetSwitch.dc.html",
-    "S9-Offline.dc.html",
-    "S10-Keyboard.dc.html"
+    "Main.dc.html",
+    "S2.dc.html",
+    "S3.dc.html",
+    "S4.dc.html",
+    "S5.dc.html",
+    "S6.dc.html",
+    "S7a.dc.html",
+    "S7b.dc.html",
+    "S7c.dc.html",
+    "S8.dc.html",
+    "S9.dc.html",
+    "S10.dc.html",
+    "X1.dc.html",
+    "X2.dc.html"
   ],
   "notes": {
-    "row-1": {
-      "x": 0,
-      "y": -200,
-      "text": "SC-01 Studio 셸 · S1~S10",
-      "kind": "title1",
-      "maxW": 2960
-    }
+    "row-1": {"x": 0, "y": -300, "text": "SC-01 Studio 셸 · 조립과 실행", "kind": "title1", "maxW": 4480},
+    "row-2": {"x": 0, "y": 1060, "text": "판정과 Halo", "kind": "title1", "maxW": 4480},
+    "row-3": {"x": 0, "y": 2420, "text": "S7 패널 접힘 변형 (실행 모드 기준)", "kind": "title1", "maxW": 4480},
+    "row-4": {"x": 0, "y": 3780, "text": "행성 전환, 엔진 오프라인, 키보드", "kind": "title1", "maxW": 4480},
+    "row-5": {"x": 0, "y": 5140, "text": "보충: 공개 지도의 한 번 누름 견본", "kind": "title1", "maxW": 2960}
   },
   "designSystems": []
 }
