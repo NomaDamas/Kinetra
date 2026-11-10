@@ -4,7 +4,18 @@
 
 ## 에셋 (asset)
 
-(없음)
+### demo-cube
+
+- 표기: demo-cube, omp, CC0-1.0
+- 저작자: omp
+- 라이선스: CC0-1.0
+- 원본: https://github.com/NomaDamas/Kinetra/pull/398
+- 경로: `assets/props/demo-cube.txt`
+- 용도: P0-05 통합 시연용 시험 에셋
+- 변경 내역: 없음(시험용으로 omp가 만든 파일)
+- 받은 날짜: 2026-11-10
+- 원본 해시: `sha256:b1d5f90171dc3e6431f91232b5db7f604b9147b931e19dbffca834b989bf0217`
+- 확인자: omp
 
 ## 의존성 (dependency)
 
