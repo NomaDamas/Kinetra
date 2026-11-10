@@ -11,7 +11,7 @@ PR 본문이나 머지 직전 코멘트에 항목마다 확인 근거를 남긴�
 3. **그 밖의 CI 확인.** `ledger`(원장 검사), `pr-body`는 필수로 걸지 않았지만 빨간 채로 머지하지 않는다. 건너뛴 테스트가 늘었으면 이유를 본문에 적는다.
 4. **"100% 완료" 8항목** (`done-definition.md`, `issues.yaml`의 `done_definition`). 이슈 DoD 체크박스마다 증거 링크나 실제 출력이 있다.
 5. **계획 부합.** DoD 밖 코드가 없다. 대목표·핵심 가치와 변경이 이어진다. 루브릭 1번의 금지 사항을 어기지 않는다.
-6. **크기와 WIP.** 생성물·에셋을 뺀 변경이 400줄 이하(넘으면 이유를 본문에 적는다). 진행 중인 잎 3개 이하, 열린 PR 2개 이하.
+6. **크기와 WIP.** 생성물·에셋을 뺀 변경이 400줄 이하. 진행 중인 잎 3개 이하, 열린 PR 2개 이하.
 7. **리뷰와 트리아지.** Sol 리뷰(`openai/gpt-6.1-sol`, reasoning `high`)를 받았고 모든 지적이 `triage.md` 표에서 수용·기각·이월 중 하나로 처리됐다. 리뷰는 최대 2회. 2회 뒤에도 차단(`block`)이 남으면 머지하지 않고 창업자에게 올린다.
 8. **창업자 승인.** `triage.md`의 "창업자 승인 대상"에 걸리면 승인 기록(이슈나 PR 코멘트 링크)이 있다. 승인 요청은 `needs-founder` 라벨로 모은다.
 9. **의존성.** 선행 이슈가 닫혔다. 뒤따르는 이슈가 이 PR의 가정에 기대면 그 이슈 본문을 고치지 않고 코멘트로 알린다.
@@ -75,7 +75,7 @@ JSON
 
 ### 일부러 필수로 걸지 않은 것
 
-- `ledger`, `pr-body`: 위 3번처럼 빨간 채 머지하지 않지만 보호 규칙의 필수 검사에는 넣지 않았다. 이 PR을 만들 때 `ledger`는 main에 있었으나 `pr-body`는 `pull_request`에서만 돌아 main 커밋에는 결과가 없다. 필수 검사 이름이 한 번이라도 보고되지 않으면 GitHub 설정 화면에서 고르기 어렵다. 필요하면 창업자 승인 없이 omp가 `PUT .../required_status_checks`로 더한다.
+- `ledger`, `pr-body`: 위 3번처럼 빨간 채 머지하지 않지만 보호 규칙의 필수 검사에는 넣지 않았다. 이 PR을 만들 때 `ledger`는 main에 있었으나 `pr-body`는 `pull_request`에서만 돌아 main 커밋에는 결과가 없다. 필수 검사 이름이 한 번이라도 보고되지 않으면 GitHub 설정 화면에서 고르기 어렵다. 필요하면 omp가 `PATCH repos/NomaDamas/Kinetra/branches/main/protection/required_status_checks`로 더한다. 이 호출은 `checks` 배열을 통째로 바꾸므로 지금 걸린 `pytest`, `web`(app_id 15368)을 반드시 함께 넣는다. 빼면 그 검사가 필수에서 풀린다.
 - 리뷰 봇(P0-06)이 생겨도 봇의 판정은 필수 검사로 걸지 않는다. 판정은 `triage.md`를 거쳐 사람이 아닌 omp가 정한다.
 
 ### 확인과 되돌리기
@@ -86,4 +86,4 @@ gh api repos/NomaDamas/Kinetra --jq '{allow_squash_merge,allow_merge_commit,allo
 gh api -X DELETE repos/NomaDamas/Kinetra/branches/main/protection/enforce_admins   # 긴급 시 관리자 예외. 쓰면 이슈에 이유를 적고 곧 다시 켠다
 ```
 
-보호 규칙을 바꾸는 일은 이 문서의 표와 함께 PR로 고친다. 규칙을 약하게 바꾸는 변경은 창업자 승인 대상이다(`triage.md`).
+보호 규칙을 바꾸는 일은 이 문서의 표와 함께 PR로 고친다. 규칙을 약하게 바꾸는 변경은 루브릭의 승인 대상이 아니다. 창업자가 알아야 한다는 [제안]이 `triage.md`에 있고 채택 전까지 구속력은 없다.
