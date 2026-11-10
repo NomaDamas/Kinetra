@@ -120,7 +120,7 @@ class IssueFormTests(unittest.TestCase):
         text = (ROOT / "docs" / "plan" / "values.md").read_text(encoding="utf-8")
         goals = re.findall(r"^- \*\*(G\d)\*\* (.+)$", text, re.M)
         vals = re.findall(r"^- \*\*(V\d) ([^*]+)\*\*", text, re.M)
-        self.assertEqual((len(goals), len(vals)), (6, 5))
+        self.assertEqual((len(goals), len(vals)), (7, 5))
         for f in FORMS:
             with self.subTest(form=f):
                 by_id = {e["id"]: e for e in load(f)["body"] if "id" in e}

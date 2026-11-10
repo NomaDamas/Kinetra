@@ -14,7 +14,7 @@ body:
   id: goal
   attributes:
     label: 대목표
-    description: docs/plan/values.md의 대목표 G0~G5 중 이 일이 속한 것 하나.
+    description: docs/plan/values.md의 대목표 G0~G6 중 이 일이 속한 것 하나.
     options:
     - G0 모든 작업이 대목표·핵심 가치·계획에 묶여 한 번에 100% 끝나는 루프를 만든다.
     - G1 창업자가 세 행성 어디서든 상상한 물건을 만들어 정직한 판정이 붙은 Halo로 내보낸다.
@@ -22,6 +22,7 @@ body:
     - G3 만화 장면이 실제로 되는지 필요조건과 에너지로 답한다.
     - G4 설계로 겨루고 함께 짓고 부순다.
     - G5 시뮬에서 된 설계가 실물 키트로 이어지고 실측이 판정을 보정한다.
+    - G6 물·바다·유체가 있는 장면도 근사의 등급을 밝힌 채 만들고 돌려 본다.
   validations:
     required: true
 - type: input
