@@ -1,0 +1,23 @@
+{
+  "name": "kinetra-spike-mujoco-wasm",
+  "private": true,
+  "version": "0.0.0",
+  "description": "A0-01b: MuJoCo WASM (browser) vs native trajectory difference and frame rate. Standalone pnpm project, not part of the root workspace.",
+  "type": "module",
+  "packageManager": "pnpm@10.18.3",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "node serve.mjs",
+    "measure": "node measure.mjs",
+    "test": "node --test --test-name-pattern=. tests/accumulator.test.mjs tests/compare.test.mjs tests/integrity.test.mjs tests/serve.test.mjs",
+    "test:browser": "node --test \"tests/browser-*.test.mjs\""
+  },
+  "dependencies": {
+    "@mujoco/mujoco": "4.0.0"
+  },
+  "devDependencies": {
+    "playwright": "1.65.0"
+  }
+}

@@ -21,6 +21,19 @@
 - 원본 해시: `sha256:c503ff7003dd7dfee19b575aed6a409fb9bc15bf9f1c4053892c793e05b5edb3`
 - 확인자: omp
 
+### dep-mujoco-wasm-4.0.0
+
+- 표기: MuJoCo, Copyright Google DeepMind. Apache License 2.0.
+- 저작자: Google DeepMind
+- 라이선스: Apache-2.0
+- 원본: https://www.npmjs.com/package/@mujoco/mujoco/v/4.0.0 https://github.com/google-deepmind/mujoco/tree/4.0.0/wasm https://github.com/google-deepmind/mujoco/blob/main/LICENSE
+- 경로: `spikes/mujoco-wasm/package.json`
+- 용도: 실행 의존성: 브라우저 WASM 실행과 네이티브 대비 궤적 차이 측정 스파이크(A0-01b). 공식 MuJoCo JavaScript/WASM 바인딩
+- 변경 내역: 없음(npm 패키지 @mujoco/mujoco 4.0.0 을 pnpm-lock 으로 고정, 수정 없이 사용). 해시는 `npm pack @mujoco/mujoco@4.0.0` 이 만든 tgz 의 sha256
+- 받은 날짜: 2026-11-10
+- 원본 해시: `sha256:66b97038b28d323dee676cf6c696074ef57e5e6f62521a5f48045ebaebdd27a0`
+- 확인자: omp
+
 ### dep-numpy-2.5.4
 
 - 표기: NumPy, Copyright (c) 2005-2026, NumPy Developers. BSD 3-Clause License.
@@ -32,6 +45,19 @@
 - 변경 내역: 없음(PEP 723 헤더에서 numpy==2.5.4 고정, 수정 없이 사용). NumPy 자체의 라이선스는 BSD-3-Clause(저장소 LICENSE.txt). PyPI 메타데이터 license_expression은 휠에 번들된 구성요소까지 합쳐 'BSD-3-Clause AND 0BSD AND MIT AND Zlib AND CC0-1.0'이다
 - 받은 날짜: 2026-11-10
 - 원본 해시: `sha256:9a94cf751c9ad8ebaa835bcd3d40dacf8534ad086b88c38029b65123c7999d2a`
+- 확인자: omp
+
+### dep-playwright-1.65.0
+
+- 표기: Playwright, Copyright (c) Microsoft Corporation. Apache License 2.0.
+- 저작자: Microsoft Corporation
+- 라이선스: Apache-2.0
+- 원본: https://www.npmjs.com/package/playwright/v/1.65.0 https://github.com/microsoft/playwright https://github.com/microsoft/playwright/blob/main/LICENSE
+- 경로: `spikes/mujoco-wasm/package.json`
+- 용도: 개발 도구: A0-01b 측정 페이지를 헤드리스 Chromium 에서 구동해 프레임률과 궤적을 수집(measure.mjs)
+- 변경 내역: 없음(devDependency, pnpm-lock 으로 고정, 수정 없이 사용). 해시는 `npm pack playwright@1.65.0` tgz 의 sha256. 추이 의존성 playwright-core 1.65.0 도 Apache-2.0. 브라우저는 `playwright install chromium-headless-shell` 로 받은 Playwright 자체 빌드(Chrome Headless Shell 158.0.8127.18)이며 저장소에 넣지 않음
+- 받은 날짜: 2026-11-10
+- 원본 해시: `sha256:5c535e6d0b00411c7b926f2f39aeaa80b9daa9ccfa2dd5c21db718cd8808aa42`
 - 확인자: omp
 
 ### dep-pyyaml-6.0.3
