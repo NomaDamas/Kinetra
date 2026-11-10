@@ -406,7 +406,7 @@ items:
       ## 문제
       PR 양식이 없어 DoD 대조와 정직성·라이선스 항목이 빠진다.
       ## 완료 정의 (DoD)
-      - [ ] `.github/pull_request_template.md`가 execution-plan C절 문안에 "디자인 승인본" 항목을 더한 형태다
+      - [ ] `.github/pull_request_template.md`가 `docs/plan/history/execution-plan.md` C절 "PR 템플릿" 문안에 "디자인 승인본" 항목을 더한 형태다
       - [ ] 증거: 시험 PR 본문
       - [ ] "100% 완료" 8항목 충족(`docs/process/done-definition.md`, issues.yaml `done_definition`)
       ## 범위 밖

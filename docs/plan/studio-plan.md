@@ -1,6 +1,6 @@
 # Kinetra Studio 계획 — 새 출발
 
-> 기준: `final-plan.md`, `execution-plan.md`에서 여전히 유효한 것은 그대로 두고, 창업자의 새 결정으로 덮어쓴다. 표기: **[추정]** 근거 없는 판단, **[확인 필요]** 채택 전 검증할 사실, **[제안]** 이 문서가 새로 내는 기준. 표기 없는 수치는 저장소에서 측정했거나 오늘 확인한 값이다. 팀은 1~2인으로 가정했다 [추정]. 이슈의 기계 판독 원본은 `issues.yaml`이다.
+> 기준: [`history/final-plan.md`](history/final-plan.md), [`history/execution-plan.md`](history/execution-plan.md)에서 여전히 유효한 것은 그대로 두고, 창업자의 새 결정으로 덮어쓴다. 표기: **[추정]** 근거 없는 판단, **[확인 필요]** 채택 전 검증할 사실, **[제안]** 이 문서가 새로 내는 기준. 표기 없는 수치는 저장소에서 측정했거나 오늘 확인한 값이다. 팀은 1~2인으로 가정했다 [추정]. 이슈의 기계 판독 원본은 `issues.yaml`이다.
 >
 > 창업자 확정(2차): XR은 S1 완성 범위다. 엔진은 최종 버전을 막지 않는 구조로 고른다. `legacy-v0` 태그 후 같은 저장소에서 새 트리로 간다. S0을 지금 시작한다.
 
@@ -529,7 +529,7 @@ REA는 코딩 에이전트가 네이티브 바이너리, JS/Electron 앱, .NET �
 
 ## 12. 개발 루프
 
-execution-plan E절 그대로다: 이슈 선택 → 브랜치 → DoD만 구현 → 자가 검증 → PR → CI → GPT-6.1 Sol high 리뷰 → omp 트리아지(수용, 기각, 이월) → 계획 부합 점검 → 창업자 승인(해당 시) → squash 머지. WIP 한도, PR 400줄, 리뷰 2회, 충돌 시 우선순위도 같다. 계획과 어려운 작업은 Fable 5.2 high가 맡는다.
+[`history/execution-plan.md`](history/execution-plan.md) E절 그대로다(운영 규칙 요약은 [`../process/review-rubric.md`](../process/review-rubric.md)): 이슈 선택 → 브랜치 → DoD만 구현 → 자가 검증 → PR → CI → GPT-6.1 Sol high 리뷰 → omp 트리아지(수용, 기각, 이월) → 계획 부합 점검 → 창업자 승인(해당 시) → squash 머지. WIP 한도, PR 400줄, 리뷰 2회, 충돌 시 우선순위도 같다. 계획과 어려운 작업은 Fable 5.2 high가 맡는다.
 
 바뀌는 것은 셋이다.
 
