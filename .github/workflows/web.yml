@@ -31,6 +31,8 @@ jobs:
       - name: Workspace projects and their scripts
         run: pnpm -r list --depth -1 && pnpm -r exec node -e "const p=require('./package.json');console.log(p.name,Object.keys(p.scripts||{}).join(',')||'(no scripts)')"
       - run: pnpm install --frozen-lockfile
+      - name: Playwright browser for tools/design (D0-04 design compare tests)
+        run: pnpm --filter @kinetra/design-tools exec playwright-core install --with-deps chromium-headless-shell
       - run: pnpm lint
       - run: pnpm build
       - run: pnpm test

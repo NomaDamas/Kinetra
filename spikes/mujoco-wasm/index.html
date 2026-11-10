@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>A0-01b MuJoCo WASM vs native</title>
+<style>
+  body { font: 13px/1.4 ui-monospace, Menlo, monospace; margin: 16px; color: #222; max-width: 1100px; }
+  h1 { font-size: 16px; margin: 0 0 4px; } h2 { font-size: 14px; margin: 18px 0 6px; }
+  table { border-collapse: collapse; } td, th { border: 1px solid #bbb; padding: 2px 8px; text-align: right; } th { background: #eee; }
+  td:first-child, th:first-child { text-align: left; } canvas { border: 1px solid #bbb; background: #fafafa; }
+  .note { color: #555; } #status { font-weight: bold; }
+</style>
+</head>
+<body>
+<h1>A0-01b: MuJoCo WASM (browser) vs native mujoco 4.0.0</h1>
+<p class="note">Rocket-car model from <code>legacy-v0</code>, fixed step 4 ms, 1125 steps (4.5 s). Measurement only; the physics is not a verdict (values.md V1).
+  Add <code>?manual=1</code> to wait for the button. Browser numbers depend on the machine and its load; see REPORT.md.</p>
+<p><button id="run">Run measurement</button> <span id="status">idle</span></p>
+<canvas id="cv" width="640" height="220"></canvas>
+<div id="out"></div>
+<script type="module" src="/src/main.js"></script>
+</body>
+</html>

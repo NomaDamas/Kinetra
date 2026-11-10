@@ -9,6 +9,7 @@
   "scripts": {
     "lint": "pnpm -r --if-present run lint",
     "build": "pnpm -r --if-present run build",
-    "test": "pnpm -r --if-present run test"
+    "test": "pnpm -r --if-present run test",
+    "design:compare": "node tools/design/compare.ts"
   }
 }

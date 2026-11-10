@@ -29,3 +29,30 @@ def pr101_dir(tmp_path):
     dst = tmp_path / "pr101"
     shutil.copytree(FIXTURES / "pr101", dst)
     return dst
+
+
+@pytest.fixture
+def curl_queue(tmp_path, monkeypatch):
+    """가짜 curl 의 응답 큐. 사용: q = curl_queue("ok.json", "http_429.json"). 호출 기록은 q.log()."""
+    import json
+
+    qdir = tmp_path / "curlq"
+    qdir.mkdir()
+    log = tmp_path / "curl_log.jsonl"
+    monkeypatch.setenv("FAKE_CURL_QUEUE", str(qdir))
+    monkeypatch.setenv("FAKE_CURL_LOG", str(log))
+
+    class Q:
+        def __call__(self, *names):
+            for i, name in enumerate(names, 1):
+                shutil.copy(FIXTURES / "responses" / name, qdir / f"{i}.json")
+            return self
+
+        def log(self):
+            return [json.loads(ln) for ln in log.read_text().splitlines()] if log.exists() else []
+
+        @property
+        def count(self):
+            return len(self.log())
+
+    return Q()

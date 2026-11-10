@@ -48,15 +48,13 @@ elif a[:1] == ["api"] and any(x.startswith("repos/o/r/contents/") for x in a):
     if not p.exists():
         fail("gh: Not Found (HTTP 404)")
     print(p.read_text(), end="")
-elif a[:1] == ["api"] and any(x.startswith("repos/o/r/issues/") and x.endswith("/comments") for x in a) and "POST" not in a:
-    _, st = state()
-    print(json.dumps([{"id": c["id"], "body": c["body"]} for c in st["comments"]]))
+elif a[:2] == ["api", "user"]:
+    print(os.environ.get("FAKE_GH_USER", "bot"))
 elif a[:1] == ["api"] and "PATCH" in a:
     p, st = state()
-    cid = int(a[-1].rsplit("/", 1)[1]) if a[-1].startswith("repos/") else int([x for x in a if x.startswith("repos/")][0].rsplit("/", 1)[1])
-    body = sys.stdin.read() if "--input" in a else next(x[5:] for x in a if x.startswith("body="))
-    if "--input" in a:
-        body = json.loads(body)["body"]
+    path = next(x for x in a if x.startswith("repos/"))
+    cid = int(path.rsplit("/", 1)[1])
+    body = json.loads(sys.stdin.read())["body"]
     for c in st["comments"]:
         if c["id"] == cid:
             c["body"] = body
@@ -64,10 +62,14 @@ elif a[:1] == ["api"] and "PATCH" in a:
     else:
         fail("gh: Not Found (HTTP 404)")
     p.write_text(json.dumps(st))
+elif a[:1] == ["api"] and any(x.startswith("repos/o/r/issues/") and "/comments" in x for x in a):
+    assert "--paginate" in a and "--slurp" in a, "listing must paginate"
+    _, st = state()
+    print(json.dumps([[{"id": c["id"], "body": c["body"], "user": {"login": c["user"]}} for c in st["comments"]]]))
 elif a[:2] == ["pr", "comment"]:
     p, st = state()
     body = sys.stdin.read() if opt("--body-file") == "-" else Path(opt("--body-file")).read_text()
-    st["comments"].append({"id": st["next_id"], "body": body})
+    st["comments"].append({"id": st["next_id"], "body": body, "user": os.environ.get("FAKE_GH_USER", "bot")})
     st["next_id"] += 1
     p.write_text(json.dumps(st))
 else:
