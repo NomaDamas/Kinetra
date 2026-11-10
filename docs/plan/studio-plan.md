@@ -607,7 +607,7 @@ S2의 잎은 하루 이하로 쪼갰고 S3~S5는 거친 단위다. S0 몫(FL-01,
 
 ## 12. 개발 루프
 
-[`history/execution-plan.md`](history/execution-plan.md) E절 그대로다(운영 규칙 요약은 [`../process/review-rubric.md`](../process/review-rubric.md)): 이슈 선택 → 브랜치 → DoD만 구현 → 자가 검증 → PR → CI → GPT-6.1 Sol high 리뷰 → omp 트리아지(수용, 기각, 이월) → 계획 부합 점검 → 창업자 승인(해당 시) → squash 머지. WIP 한도, PR 400줄, 리뷰 2회, 충돌 시 우선순위도 같다. 계획과 어려운 작업은 Fable 5.2 high가 맡는다.
+[`history/execution-plan.md`](history/execution-plan.md) E절 그대로다(운영 규칙 요약은 [`../process/review-rubric.md`](../process/review-rubric.md)): 이슈 선택 → 브랜치 → DoD만 구현 → 자가 검증 → PR → CI → GPT-6.1 Sol high 리뷰 → omp 트리아지(수용, 기각, 이월) → 계획 부합 점검 → 창업자 승인(해당 시) → squash 머지. WIP 한도, 리뷰 2회, 충돌 시 우선순위도 같다. PR 크기는 줄 수가 아니라 "따로 검증할 수 있는 한 단위"로 정한다(줄 수 상한은 창업자 결정 2026-11-11, #24로 없앴다). 계획과 어려운 작업은 Fable 5.2 high가 맡는다.
 
 바뀌는 것은 셋이다.
 
