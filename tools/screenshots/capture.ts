@@ -44,6 +44,8 @@ export interface Outcome {
   bytes?: number;
   sha256?: string;
   page_errors?: string[];
+  /** External (http/https/ftp/ws) requests the page made and the tool aborted. */
+  blocked_requests?: string[];
 }
 
 /** Validation only: no file is read. Names become file names, paths must stay inside the repo. */
@@ -101,10 +103,21 @@ export function guardProblem(env: NodeJS.ProcessEnv = process.env): string | nul
   return "a local browser run must start through the resource guard:\n  uv run python tools/dev/resource_guard.py --profile heavy -- <this command>";
 }
 
-/** Blocks every http(s)/ftp request and WebSocket: pages render from local files only, so the same input gives the same pixels. */
-async function offline(ctx: import("playwright-core").BrowserContext): Promise<void> {
-  await ctx.route(/^(https?|ftp):/i, (r) => r.abort());
-  await ctx.routeWebSocket(/.*/, (ws) => void ws.close({ code: 1008, reason: "offline" }));
+/**
+ * Blocks every http(s)/ftp request and WebSocket (pages render from local files only: one source of variation less, not a
+ * guarantee of identical pixels, see docs/process/screenshots.md). Returns the list of blocked URLs, filled as the page runs.
+ */
+async function offline(ctx: import("playwright-core").BrowserContext): Promise<string[]> {
+  const blocked: string[] = [];
+  await ctx.route(/^(https?|ftp):/i, (r) => {
+    blocked.push(r.request().url());
+    return r.abort();
+  });
+  await ctx.routeWebSocket(/.*/, (ws) => {
+    blocked.push(ws.url());
+    void ws.close({ code: 1008, reason: "offline" });
+  });
+  return blocked;
 }
 
 export async function captureAll(config: Config, outDir: string, browser: Browser, root = REPO_ROOT): Promise<Outcome[]> {
@@ -120,7 +133,7 @@ export async function captureAll(config: Config, outDir: string, browser: Browse
     }
     const ctx = await browser.newContext({ viewport: config.viewport, deviceScaleFactor: 1, reducedMotion: "reduce" });
     try {
-      await offline(ctx);
+      const blocked = await offline(ctx);
       const page = await ctx.newPage();
       const errors: string[] = [];
       page.on("pageerror", (e) => errors.push(e.message));
@@ -136,8 +149,9 @@ export async function captureAll(config: Config, outDir: string, browser: Browse
       outcomes.push({
         name: s.name, path: s.path, status: "captured", file: relative(root, file).split(sep).join("/"), width, height, bytes: png.length,
         sha256: createHash("sha256").update(png).digest("hex"), ...(errors.length ? { page_errors: errors } : {}),
+        ...(blocked.length ? { blocked_requests: [...blocked] } : {}),
       });
-      console.log(`OK   ${s.name}: ${s.path} -> ${width}x${height} (${png.length} bytes)${errors.length ? ` [${errors.length} page error(s)]` : ""}`);
+      console.log(`OK   ${s.name}: ${s.path} -> ${width}x${height} (${png.length} bytes)${errors.length ? ` [${errors.length} page error(s)]` : ""}${blocked.length ? ` [${blocked.length} external request(s) blocked]` : ""}`);
     } catch (e) {
       const reason = (e as Error).message.split("\n")[0]!;
       console.log(`FAIL ${s.name}: ${s.path}: ${reason}`);

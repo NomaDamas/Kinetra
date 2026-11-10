@@ -10,6 +10,7 @@ import { mkdir, writeFile } from "node:fs/promises";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { chromium } from "playwright-core";
+import type { Browser, LaunchOptions } from "playwright-core";
 import { PNG } from "pngjs";
 import { guardProblem } from "./capture.ts";
 
@@ -62,12 +63,18 @@ export function checkPixels(rgba: Uint8Array | Buffer, width: number, height: nu
   return { checks, measured: { background, center, outside, red_pixels: red, expected_red_pixels: Math.round(expected) } };
 }
 
-export async function runWebgl(flags: string, outDir?: string): Promise<WebglResult> {
+/** How a browser is started. Injected by tests to make a launch fail; the default is the real one. */
+export type Launcher = (options: LaunchOptions) => Promise<Browser>;
+const realLauncher: Launcher = (options) => chromium.launch(options);
+
+/** Never throws for a browser problem: a failed launch is a recorded `ok: false` result with the reason, so a probe goes on to the next flag set. */
+export async function runWebgl(flags: string, outDir?: string, launch: Launcher = realLauncher): Promise<WebglResult> {
   const args = FLAG_SETS[flags];
   if (!args) throw new Error(`unknown flag set ${flags} (have: ${Object.keys(FLAG_SETS).join(", ")})`);
   const result: WebglResult = { flags, args, ok: false, gl: null, checks: {}, measured: null };
-  const browser = await chromium.launch({ args });
+  let browser: Browser | undefined;
   try {
+    browser = await launch({ args });
     const ctx = await browser.newContext({ viewport: { width: 400, height: 400 }, deviceScaleFactor: 1 });
     const page = await ctx.newPage();
     await page.goto(pathToFileURL(PAGE).href, { waitUntil: "load" });
@@ -90,8 +97,15 @@ export async function runWebgl(flags: string, outDir?: string): Promise<WebglRes
     result.error = (e as Error).message.split("\n")[0]!;
     return result;
   } finally {
-    await browser.close();
+    await browser?.close().catch(() => {});
   }
+}
+
+/** One result per flag set, in order. A flag set that fails to launch or render is recorded and the next one still runs. */
+export async function runAll(names: string[], outDir?: string, launch: Launcher = realLauncher): Promise<WebglResult[]> {
+  const results: WebglResult[] = [];
+  for (const n of names) results.push(await runWebgl(n, outDir, launch));
+  return results;
 }
 
 async function main(): Promise<number> {
@@ -106,10 +120,9 @@ async function main(): Promise<number> {
   }
   await mkdir(out, { recursive: true });
   const names = probe ? Object.keys(FLAG_SETS) : [WEBGL_FLAGS];
-  const results: WebglResult[] = [];
-  for (const n of names) {
-    const r = await runWebgl(n, out);
-    results.push(r);
+  const results = await runAll(names, out);
+  for (const r of results) {
+    const n = r.flags;
     console.log(`${r.ok ? "PASS" : "FAIL"} flags=${n} [${r.args.join(" ") || "(none)"}] renderer=${r.gl?.renderer ?? "?"} ${r.error ?? ""}`);
     if (r.measured) console.log(`     red_pixels=${r.measured.red_pixels} (expected ${r.measured.expected_red_pixels}) center=${r.measured.center} background=${r.measured.background}`);
     for (const [k, v] of Object.entries(r.checks)) if (!v) console.log(`     check failed: ${k}`);
