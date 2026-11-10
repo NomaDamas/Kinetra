@@ -135,6 +135,24 @@ class RuleTests(unittest.TestCase):
         text = "```text   \nx\n```  \n" + body()
         self.assertEqual(c.check(text, VALUES), [])
 
+    def test_any_case_closing_keyword_counts_and_two_fail(self):
+        for extra in ("closes #14", "Fixes #14", "resolved #14", "CLOSE #14", "Closed: #14"):
+            with self.subTest(extra):
+                errors = c.check(body(link="Closes #13\n" + extra), VALUES)
+                self.assertTrue(any("닫는 참조" in e for e in errors), errors)
+        inline = body(link="Closes #13") + "\n이 PR은 fixes #14 도 닫는다\n"
+        self.assertTrue(any("닫는 참조" in e for e in c.check(inline, VALUES)))
+
+    def test_closing_words_in_code_or_comment_or_without_number_do_not_count(self):
+        text = body(link="Closes #13") + "```\ncloses #14\n```\n<!-- fixes #15 -->\nit closes the loop, prefix #16\n"
+        self.assertEqual(c.check(text, VALUES), [])
+
+    def test_comment_marker_inside_code_block_is_not_a_comment(self):
+        text = "```html\n<!-- 코드 안의 주석 시작\n```\n" + body()
+        self.assertEqual(c.check(text, VALUES), [])
+        text = "<!--\n```\n-->\n" + body()  # 주석 안의 울타리는 울타리가 아니다
+        self.assertEqual(c.check(text, VALUES), [])
+
     def test_unclosed_comment_hides_everything_to_eof(self):
         self.assertGreaterEqual(len(c.check("<!-- 닫지 않음\n" + body(), VALUES)), 3)
         self.assertEqual(c.check("<!-- 닫음 -->\n" + body(), VALUES), [])

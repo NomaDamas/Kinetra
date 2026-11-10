@@ -9,6 +9,8 @@
       인용(`> ` 줄)돼 있지 않다. `**` 강조 표시와 공백 개수는 무시하고 글자는 그대로 비교한다.
     - `Closes #N` 또는 `Refs #N` 만 있는 줄이 `## 핵심 가치` 뒤에 없다. `Closes` 는 잎 이슈 하나만 쓴다.
     - 순서가 다르다.
+닫는 참조(`close[sd]`, `fix(e[sd])`, `resolve[sd]` + `#N`, 대소문자 무시)는 본문 어디에 있든 둘 이상이면 실패한다.
+알려진 한계: 인용(`> `) 안에 중첩한 코드 블록은 해석하지 않는다. 이 검사는 빠진 항목을 잡는 용도이고 악의적 본문은 사람과 리뷰어가 본다.
 코드 블록(같은 문자로, 여는 길이 이상으로, 뒤에 공백만 있는 줄로 닫힌다)과 HTML 주석(닫히지 않은 `<!--` 는 끝까지) 안의 내용은 본문으로 치지 않는다. 템플릿 자리표시자(`Closes #<잎 이슈 하나>`)는 통과하지 못한다.
 """
 
@@ -29,7 +31,8 @@ VALUE_LINE_RE = re.compile(r"^- (\*\*V[1-5] [^*]+\*\* — .+)$")
 LINK_RE = re.compile(r"^(Closes|Refs) #([0-9]+)$")
 FENCE_OPEN_RE = re.compile(r"^ {0,3}(`{3,}|~{3,})(.*)$")
 FENCE_CLOSE_RE = re.compile(r"^ {0,3}(`{3,}|~{3,})[ \t]*$")
-COMMENT_RE = re.compile(r"<!--.*?(?:-->|\Z)", re.DOTALL)  # 닫히지 않은 `<!--` 는 끝까지 가린다
+# GitHub 가 이슈를 닫는 키워드(대소문자 무시). 본문 어디에 있든(코드 블록·주석 밖) 센다.
+CLOSING_REF_RE = re.compile(r"\b(?:close[sd]?|fix(?:e[sd])?|resolve[sd]?):?[ \t]+#[0-9]+", re.IGNORECASE)
 
 
 def normalize(text: str) -> str:
@@ -50,20 +53,37 @@ def load_values(path: Path = DEFAULT_VALUES) -> list[str]:
 
 
 def body_lines(body: str) -> list[str]:
-    """HTML 주석과 코드 블록을 지운 줄 목록."""
-    body = COMMENT_RE.sub("", body.replace("\r\n", "\n").replace("\r", "\n"))
-    lines, fence = [], None  # fence = (문자, 여는 길이)
-    for line in body.split("\n"):
-        if fence is None:
+    """HTML 주석과 코드 블록을 지운 줄 목록. 한 번에 훑어서 코드 블록 안의 `<!--` 는 주석이 아니고,
+    주석 안의 울타리는 울타리가 아니다. 닫히지 않은 `<!--` 는 끝까지 가린다."""
+    lines, fence, in_comment = [], None, False  # fence = (문자, 여는 길이)
+    for line in body.replace("\r\n", "\n").replace("\r", "\n").split("\n"):
+        if fence is not None:
+            m = FENCE_CLOSE_RE.match(line)
+            if m and m.group(1)[0] == fence[0] and len(m.group(1)) >= fence[1]:
+                fence = None
+            continue
+        if not in_comment:
             m = FENCE_OPEN_RE.match(line)
             if m and not (m.group(1)[0] == "`" and "`" in m.group(2)):
                 fence = (m.group(1)[0], len(m.group(1)))
                 continue
-            lines.append(line.rstrip())
-        else:
-            m = FENCE_CLOSE_RE.match(line)
-            if m and m.group(1)[0] == fence[0] and len(m.group(1)) >= fence[1]:
-                fence = None
+        kept, rest = [], line
+        while rest:
+            if in_comment:
+                end = rest.find("-->")
+                if end < 0:
+                    rest = ""
+                else:
+                    in_comment, rest = False, rest[end + 3 :]
+            else:
+                start = rest.find("<!--")
+                if start < 0:
+                    kept.append(rest)
+                    rest = ""
+                else:
+                    kept.append(rest[:start])
+                    in_comment, rest = True, rest[start + 4 :]
+        lines.append("".join(kept).rstrip())
     return lines
 
 
@@ -99,6 +119,9 @@ def check(body: str, values: list[str]) -> list[str]:
 
     links = [(i, m) for i, line in enumerate(lines) if (m := LINK_RE.match(line))]
     closes = [i for i, m in links if m.group(1) == "Closes"]
+    closing_refs = CLOSING_REF_RE.findall("\n".join(lines))
+    if len(closing_refs) > 1 and len(closes) <= 1:
+        errors.append(f"닫는 참조(close/fix/resolve + #N)가 {len(closing_refs)}개다. 잎 이슈 하나만 닫는다")
     if not closes:
         errors.append("`Closes #N` 만 있는 줄이 정확히 하나 있어야 한다 (잎 이슈 번호는 숫자, 예: `Closes #13`)")
     elif len(closes) > 1:
