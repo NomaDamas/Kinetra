@@ -79,6 +79,19 @@ export function isAllowedRequest(requestUrl: string, origins: ReadonlySet<string
   return (u.protocol === "http:" || u.protocol === "https:") && origins.has(u.origin);
 }
 
+/** Same allow-list for WebSocket urls: ws(s) is compared as the http(s) origin it upgrades from. */
+export function isAllowedSocket(socketUrl: string, origins: ReadonlySet<string>): boolean {
+  let u: URL;
+  try {
+    u = new URL(socketUrl);
+  } catch {
+    return false;
+  }
+  if (u.protocol !== "ws:" && u.protocol !== "wss:") return false;
+  u.protocol = u.protocol === "ws:" ? "http:" : "https:";
+  return isAllowedRequest(u.href, origins);
+}
+
 const TOLERANCE_KEYS = new Set(Object.keys(DEFAULT_TOLERANCE));
 
 export function validateScreen(name: string, screen: Screen | undefined): asserts screen is Screen {
@@ -107,7 +120,21 @@ export function validateScreen(name: string, screen: Screen | undefined): assert
   }
 }
 
-async function shoot(
+/** Injected right after load, before any rectangle is measured, so a moving element is measured where it rests. */
+export const FREEZE_CSS = "*,*::before,*::after{animation:none!important;transition:none!important;caret-color:transparent!important}";
+
+/** Blocks every HTTP(S) request and every WebSocket whose origin is not allowed (parsed-origin allow-list). */
+export async function applyNetworkPolicy(ctx: import("playwright-core").BrowserContext, origins: ReadonlySet<string>): Promise<void> {
+  await ctx.route(/^(https?|ftp):/i, (r) => (isAllowedRequest(r.request().url(), origins) ? r.continue() : r.abort()));
+  // route() does not see WebSockets. An allowed socket is passed through untouched; any other is closed
+  // before it reaches the network.
+  await ctx.routeWebSocket(/.*/, (ws) => {
+    if (isAllowedSocket(ws.url(), origins)) ws.connectToServer();
+    else void ws.close({ code: 1008, reason: "blocked by tools/design/compare.ts" });
+  });
+}
+
+export async function shoot(
   browser: import("playwright-core").Browser,
   side: Side,
   viewport: { width: number; height: number },
@@ -118,9 +145,10 @@ async function shoot(
     // Same input every run: nothing leaves the machine, so web fonts fall back to the system fonts
     // on both sides. Both sides are always rendered in the same run, by the same browser.
     const origins = allowedOrigins(side.url);
-    await ctx.route(/^(https?|wss?|ftp):/i, (r) => (isAllowedRequest(r.request().url(), origins) ? r.continue() : r.abort()));
+    await applyNetworkPolicy(ctx, origins);
     const page = await ctx.newPage();
     await page.goto(target(side.url), { waitUntil: "load" });
+    await page.addStyleTag({ content: FREEZE_CSS });
     if (side.css) await page.addStyleTag({ content: side.css });
     await page.evaluate(() => document.fonts.ready);
     const el = side.selector ? page.locator(side.selector) : page.locator("html");

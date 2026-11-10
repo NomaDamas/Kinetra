@@ -6,7 +6,14 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
-import { allowedOrigins, compareScreen, ConfigError, isAllowedRequest, loadScreens, validateScreen } from "../compare.ts";
+import { createServer as createHttp } from "node:http";
+import { createServer as createTcp } from "node:net";
+import type { AddressInfo } from "node:net";
+import { writeFileSync } from "node:fs";
+import { chromium } from "playwright-core";
+import {
+  allowedOrigins, applyNetworkPolicy, compareScreen, ConfigError, isAllowedRequest, isAllowedSocket, loadScreens, shoot, validateScreen,
+} from "../compare.ts";
 
 const COMPARE = fileURLToPath(new URL("../compare.ts", import.meta.url));
 const SIDE = { url: "design/exports/design-system/index.html", selector: "#valuebadges" };
@@ -94,4 +101,73 @@ test("request allow-list uses the parsed origin, not a string prefix", () => {
   assert.equal(isAllowedRequest("https://fonts.googleapis.com/css2", origins), false);
   assert.equal(isAllowedRequest("not a url", origins), false);
   assert.equal(isAllowedRequest("http://127.0.0.1:5173/a.js", allowedOrigins("design/exports/x/index.html")), false);
+});
+
+test("ws(s) urls use the same parsed-origin allow-list", () => {
+  const origins = allowedOrigins("http://127.0.0.1:5173/");
+  assert.equal(isAllowedSocket("ws://127.0.0.1:5173/hmr", origins), true);
+  assert.equal(isAllowedSocket("wss://127.0.0.1:5173/hmr", origins), false);
+  assert.equal(isAllowedSocket("ws://127.0.0.1:5174/hmr", origins), false);
+  assert.equal(isAllowedSocket("ws://127.0.0.1:5173.evil.com/", origins), false);
+  assert.equal(isAllowedSocket("ws://evil.com/", origins), false);
+  assert.equal(isAllowedSocket("http://127.0.0.1:5173/", origins), false);
+  assert.equal(isAllowedSocket("junk", origins), false);
+});
+
+test("an external ws:// from a page never reaches the network", async () => {
+  // "External" = any origin other than the page's own. The probe is a raw TCP server on another port
+  // that counts connections; the page tries to open a WebSocket to it.
+  let hits = 0;
+  const probe = createTcp((sock) => { hits++; sock.destroy(); });
+  await new Promise<void>((ok) => probe.listen(0, "127.0.0.1", ok));
+  const probePort = (probe.address() as AddressInfo).port;
+  const web = createHttp((_req, res) => {
+    res.setHeader("content-type", "text/html");
+    res.end(`<!doctype html><body><script>
+      window.result = new Promise((done) => {
+        const ws = new WebSocket("ws://127.0.0.1:${probePort}/x");
+        ws.onclose = (e) => done("closed:" + e.code);
+        ws.onerror = () => done("error");
+        setTimeout(() => done("timeout"), 4000);
+      });
+    </script></body>`);
+  });
+  await new Promise<void>((ok) => web.listen(0, "127.0.0.1", ok));
+  const webPort = (web.address() as AddressInfo).port;
+  const browser = await chromium.launch();
+  try {
+    const ctx = await browser.newContext();
+    await applyNetworkPolicy(ctx, allowedOrigins(`http://127.0.0.1:${webPort}/`));
+    const page = await ctx.newPage();
+    await page.goto(`http://127.0.0.1:${webPort}/`);
+    const outcome = await page.evaluate(() => (window as unknown as { result: Promise<string> }).result);
+    assert.equal(outcome, "closed:1008");
+    await new Promise((r) => setTimeout(r, 300));
+    assert.equal(hits, 0, "the blocked socket must not connect to the other origin");
+    await ctx.close();
+  } finally {
+    await browser.close();
+    web.close();
+    probe.close();
+  }
+});
+
+test("animations are frozen before ignore rectangles are measured", async () => {
+  const dir = mkdtempSync(join(tmpdir(), "kin-anim-"));
+  const file = join(dir, "page.html");
+  // The animation holds the box 300px to the right forever. At rest it is at left 40px.
+  writeFileSync(file, `<!doctype html><style>
+    body{margin:0} #box{width:50px;height:20px;margin-left:40px;background:#123;animation:m 1s linear infinite}
+    @keyframes m{from{margin-left:300px}to{margin-left:300px}}
+  </style><div id="box"></div>`);
+  const browser = await chromium.launch();
+  try {
+    const { ignore } = await shoot(browser, { url: file, selector: "html" }, { width: 800, height: 200 }, ["#box"]);
+    assert.equal(ignore.length, 1);
+    assert.equal(ignore[0]!.x, 40, "the rectangle must be at the resting position, not the animated one");
+    assert.equal(ignore[0]!.width, 50);
+  } finally {
+    await browser.close();
+    rmSync(dir, { recursive: true, force: true });
+  }
 });
