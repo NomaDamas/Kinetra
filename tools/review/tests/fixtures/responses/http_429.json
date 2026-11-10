@@ -1,0 +1,9 @@
+{
+ "status": 429,
+ "body": {
+  "error": {
+   "message": "rate limited",
+   "code": 429
+  }
+ }
+}
