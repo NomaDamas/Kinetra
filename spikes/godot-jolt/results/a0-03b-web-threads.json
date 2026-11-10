@@ -17,8 +17,8 @@
   {
    "file": "index.html",
    "bytes": 5305,
-   "gzip_bytes": 2125,
-   "brotli_bytes": 1630
+   "gzip_bytes": 2126,
+   "brotli_bytes": 1628
   },
   {
    "file": "index.js",
@@ -28,9 +28,9 @@
   },
   {
    "file": "index.pck",
-   "bytes": 3944,
-   "gzip_bytes": 3009,
-   "brotli_bytes": 2801
+   "bytes": 4136,
+   "gzip_bytes": 3210,
+   "brotli_bytes": 3005
   },
   {
    "file": "index.png",
@@ -45,32 +45,37 @@
    "brotli_bytes": 7082995
   }
  ],
- "total_bytes": 39175688,
- "total_gzip_bytes": 10325928,
- "total_brotli_bytes": 7173257,
+ "total_bytes": 39175880,
+ "total_gzip_bytes": 10326130,
+ "total_brotli_bytes": 7173459,
  "browser": {
   "name": "chromium-headless-shell (playwright-core 1.65.0)",
   "version": "158.0.8127.18"
  },
- "load_event_ms": 355,
+ "load_event_ms": 67,
  "cross_origin_isolated": true,
  "shared_array_buffer": true,
- "ran": false,
- "ms_to_result": 120525,
- "page_result": null,
+ "ran": true,
+ "ms_to_result": 3125,
+ "page_result": "KINETRA done steps=1000 wall_ms=2233 mean_z=0.1000",
  "console": [
   "Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org",
   "OpenGL API OpenGL ES 3.0 (WebGL 2.0 (OpenGL ES 3.0 Chromium)) - Compatibility - Using Device: WebKit - WebKit WebGL",
   "Build configuration: Emscripten 4.0.20, multi-threaded, no GDExtension support.",
-  "KINETRA ready physics_engine=Jolt Physics version=4.7.2-stable (official) ready_ms=1092",
-  "[.WebGL-0x12c00858800]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
-  "[.WebGL-0x12c00858800]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
-  "[.WebGL-0x12c00858800]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
-  "[.WebGL-0x12c00858800]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels (this message will no longer repeat)",
-  "PAGEERROR memory access out of bounds"
+  "WARNING: 'res://main.tscn': In external resource #0, invalid UID: 'uid://bkrcbtqr5n6p5' - using text path instead: 'res://main.gd'.",
+  "   at: open (core/io/resource_format_binary.cpp:1028)",
+  "KINETRA ready physics_engine=Jolt Physics version=4.7.2-stable (official) engine_clock_ready_ms=597 ready_since_navigation_ms=860.2",
+  "[.WebGL-0x12400858800]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+  "[.WebGL-0x12400858800]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+  "[.WebGL-0x12400858800]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+  "[.WebGL-0x12400858800]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels (this message will no longer repeat)",
+  "KINETRA done steps=1000 wall_ms=2233 mean_z=0.1000"
  ],
+ "engine_clock_ready_ms": 597,
+ "ready_since_navigation_ms_in_page": 860.2,
+ "ready_since_navigation_ms_harness": 864,
  "navigation_timing": {
-  "dom_content_loaded_ms": 207,
-  "load_event_ms": 207
+  "dom_content_loaded_ms": 62,
+  "load_event_ms": 62
  }
 }
