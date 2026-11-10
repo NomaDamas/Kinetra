@@ -1,0 +1,8 @@
+{
+  "id": "launcher_basic",
+  "category": "launcher",
+  "name": "기본 발사기",
+  "energy_source": "declared_launch_energy",
+  "export_policy": "exportable",
+  "export_note": "하드웨어 사양서의 BOM과 STEP·STL에 발사기와 투사체를 포함한다"
+}
