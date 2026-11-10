@@ -1,0 +1,106 @@
+{
+  "v": 3,
+  "createdOnFiles": {
+    "v": 1,
+    "at": "2026-11-10T10:00:00Z"
+  },
+  "title": "Kinetra Studio 셸 SC-01",
+  "launch": {
+    "view": "canvas"
+  },
+  "pages": [],
+  "boards": {
+    "S1-Default.dc.html": {
+      "x": 0,
+      "y": 0,
+      "w": 1440,
+      "h": 900,
+      "title": "S1 기본: 조립 · 선택 없음 · 변경안 없음"
+    },
+    "S2-Selected.dc.html": {
+      "x": 1520,
+      "y": 0,
+      "w": 1440,
+      "h": 900,
+      "title": "S2 조립 · 부품 하나 선택"
+    },
+    "S3-Run.dc.html": {
+      "x": 0,
+      "y": 1060,
+      "w": 1440,
+      "h": 900,
+      "title": "S3 실행 · 1회 실행 뒤"
+    },
+    "S4-VerdictNone.dc.html": {
+      "x": 1520,
+      "y": 1060,
+      "w": 1440,
+      "h": 900,
+      "title": "S4 판정 · 판정 없음"
+    },
+    "S5-VerdictL2.dc.html": {
+      "x": 0,
+      "y": 2120,
+      "w": 1440,
+      "h": 900,
+      "title": "S5 판정 · L2 FEASIBLE_FOUND"
+    },
+    "S6-Halo.dc.html": {
+      "x": 1520,
+      "y": 2120,
+      "w": 1440,
+      "h": 900,
+      "title": "S6 Halo · 판정 없음"
+    },
+    "S7-Collapsed.dc.html": {
+      "x": 0,
+      "y": 3180,
+      "w": 4512,
+      "h": 1024,
+      "title": "S7 패널 접힘 변형 (a) (b) (c)"
+    },
+    "S8-PlanetSwitch.dc.html": {
+      "x": 0,
+      "y": 4364,
+      "w": 1440,
+      "h": 900,
+      "title": "S8 행성 전환 직후 (지구 → 달)"
+    },
+    "S9-Offline.dc.html": {
+      "x": 1520,
+      "y": 4364,
+      "w": 1440,
+      "h": 900,
+      "title": "S9 엔진 오프라인"
+    },
+    "S10-Keyboard.dc.html": {
+      "x": 0,
+      "y": 5424,
+      "w": 1440,
+      "h": 900,
+      "title": "S10 키보드 주석 (S1 위에 겹침)"
+    }
+  },
+  "order": [
+    "S1-Default.dc.html",
+    "S2-Selected.dc.html",
+    "S3-Run.dc.html",
+    "S4-VerdictNone.dc.html",
+    "S5-VerdictL2.dc.html",
+    "S6-Halo.dc.html",
+    "S7-Collapsed.dc.html",
+    "S8-PlanetSwitch.dc.html",
+    "S9-Offline.dc.html",
+    "S10-Keyboard.dc.html"
+  ],
+  "notes": {
+    "row-1": {
+      "x": 0,
+      "y": -200,
+      "text": "SC-01 Studio 셸 · S1~S10",
+      "kind": "title1",
+      "maxW": 2960
+    }
+  },
+  "designSystems": []
+}
