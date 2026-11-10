@@ -11,6 +11,7 @@ This is a fresh start. The previous product (hackathon era) is preserved at the 
 - [`docs/plan/issues.yaml`](docs/plan/issues.yaml): every epic, issue and sub-issue (seeded to GitHub Issues)
 - [`docs/process/done-definition.md`](docs/process/done-definition.md), [`docs/process/review-rubric.md`](docs/process/review-rubric.md): what "100% done" means and the review → triage → merge loop
 - [`docs/process/merge-checklist.md`](docs/process/merge-checklist.md), [`docs/process/triage.md`](docs/process/triage.md): pre-merge checklist and applied `main` protection; accept / reject / defer table and founder-approval list
+- [`docs/process/dev-resources.md`](docs/process/dev-resources.md): one heavy run at a time, the resource guard (`tools/dev/resource_guard.py`), entry-point list, cleanup procedure
 
 ## Layout
 
@@ -24,7 +25,7 @@ This is a fresh start. The previous product (hackathon era) is preserved at the 
 | `design/` | Claude Design briefs and approved exports |
 | `data/`, `assets/` | Planet data, parts, licensed assets. `assets/LEDGER.csv` is the provenance ledger: one row per asset or tool/runtime dependency (`kind` column), with license and credit text |
 | `docs/` | Plan, process, decisions, architecture, research |
-| `tools/` | Developer tooling (`tools/assets/credits.py`: generates `CREDITS.md` from `assets/LEDGER.csv`; `tools/rea/allowlist.txt`: the only targets REA may be pointed at, rules in [`docs/process/rea-policy.md`](docs/process/rea-policy.md)) |
+| `tools/` | Developer tooling (`tools/assets/credits.py`: generates `CREDITS.md` from `assets/LEDGER.csv`; `tools/rea/allowlist.txt`: the only targets REA may be pointed at, rules in [`docs/process/rea-policy.md`](docs/process/rea-policy.md); `tools/dev/resource_guard.py`: SSD, swap and memory-pressure check before heavy runs, thresholds in `tools/dev/resource_guard.toml`) |
 | `scripts/` | `check_assets.py`: fails if an asset file (under `assets/` or `apps/**/public/`) has no ledger row, a ledger row has no file, or an unmodified asset's sha256 differs (`.github/workflows/assets.yml`) |
 | `scripts/ci/` | CI guards (`check_web_scripts.mjs`; `check_pr_body.py`: fails a PR whose body lacks `## 대목표`, a verbatim `docs/plan/values.md` quote under `## 핵심 가치`, or exactly one `Closes #N` line, in template order) |
 | `scripts/gh/` | GitHub bootstrap scripts (`bootstrap.sh`: labels and milestones from `issues.yaml`, idempotent; `--dry-run` to preview) |

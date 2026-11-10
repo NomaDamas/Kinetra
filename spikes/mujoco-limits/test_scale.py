@@ -107,6 +107,37 @@ class CliTest(unittest.TestCase):
     def test_repeats_negative_rejected(self):
         self.assertNotEqual(self.run_cli("--repeats", "-1").returncode, 0)
 
+    def run_guarded(self, *extra):
+        # 어떤 머신에서도 차단되도록 SSD 여유 임계를 비현실적으로 높인 설정 (P0-09)
+        import tempfile
+        with tempfile.TemporaryDirectory() as d:
+            cfg = os.path.join(d, "g.toml")
+            src = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "tools", "dev", "resource_guard.toml")
+            with open(src, encoding="utf-8") as f:
+                text = f.read()
+            with open(cfg, "w", encoding="utf-8") as f:
+                f.write(text.replace("ssd_free_gb_block_below = 10", "ssd_free_gb_block_below = 1e12"))
+            env = dict(os.environ, KINETRA_GUARD_CONFIG=cfg)
+            return subprocess.run(
+                [sys.executable, os.path.join(os.path.dirname(os.path.abspath(__file__)), "scale.py"), *extra],
+                capture_output=True, text=True, env=env,
+            )
+
+    def test_heavy_run_is_blocked_by_resource_guard_before_any_work(self):
+        p = self.run_guarded("--bodies", "1000", "--no-break")
+        self.assertEqual(p.returncode, 2, p.stdout + p.stderr)
+        self.assertIn("결과: 차단", p.stdout)
+        self.assertNotIn('"machine"', p.stdout)  # 측정 시작 전에 끝났다
+
+    def test_heavy_break_pile_is_also_guarded(self):
+        p = self.run_guarded("--bodies", "5", "--break-pile", "1000")
+        self.assertEqual(p.returncode, 2, p.stdout + p.stderr)
+
+    def test_light_run_does_not_call_the_guard(self):
+        p = self.run_guarded("--bodies", "5", "--no-break", "--repeats", "1", "--sim-seconds", "0.02")
+        self.assertEqual(p.returncode, 0, p.stdout + p.stderr)
+        self.assertNotIn("자원 가드", p.stdout)
+
 
 if __name__ == "__main__":
     unittest.main()
