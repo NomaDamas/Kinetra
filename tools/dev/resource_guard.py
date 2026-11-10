@@ -16,7 +16,9 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 import os
+import signal
 import re
 import shutil
 import subprocess
@@ -31,7 +33,7 @@ DEFAULT_CONFIG = Path(os.environ.get("KINETRA_GUARD_CONFIG") or HERE / "resource
 REPO_ROOT = HERE.parents[1]
 
 EXIT_PASS, EXIT_BLOCK, EXIT_ERROR = 0, 2, 3
-GIB = 2**30
+GIB = 2**30  # 단위는 GiB(2**30 바이트)로 통일한다. 출력·설정·문서 모두 GiB
 LEVELS = ("normal", "warn", "critical")  # 메모리 압력 단계, 낮은 쪽부터
 MACOS_LEVELS = {1: "normal", 2: "warn", 4: "critical"}  # kern.memorystatus_vm_pressure_level
 SAMPLE_SECONDS = 2.0
@@ -88,15 +90,19 @@ def _run(*cmd: str) -> str:
 
 
 def collect(path: Path, cfg: dict) -> dict:
-    """실제 머신을 잰다. 반환: ssd_free_gb, swap_used_pct, swap_used_gb, swap_total_gb, memory_pressure, memory_pressure_detail"""
+    """실제 머신을 잰다. 반환: ssd_free_gib, swap_used_pct, swap_used_gib, swap_total_gib, memory_pressure, memory_pressure_detail"""
     try:
         du = shutil.disk_usage(path)
     except OSError as e:
         raise GuardError(f"디스크 여유를 읽지 못했다({path}): {e}") from e
-    m = {"ssd_free_gb": du.free / GIB, "ssd_path": str(path)}
+    m = {"ssd_free_gib": du.free / GIB, "ssd_path": str(path)}
     if sys.platform == "darwin":
         used, total = parse_vm_swapusage(_run("sysctl", "-n", "vm.swapusage"))
-        level = int(_run("sysctl", "-n", "kern.memorystatus_vm_pressure_level"))
+        raw = _run("sysctl", "-n", "kern.memorystatus_vm_pressure_level")
+        try:
+            level = int(raw)
+        except ValueError as e:
+            raise GuardError(f"kern.memorystatus_vm_pressure_level 를 읽지 못했다: {raw!r}") from e
         if level not in MACOS_LEVELS:
             raise GuardError(f"알 수 없는 kern.memorystatus_vm_pressure_level={level}")
         pressure, detail = MACOS_LEVELS[level], f"kern.memorystatus_vm_pressure_level={level}"
@@ -105,17 +111,16 @@ def collect(path: Path, cfg: dict) -> dict:
             used, total = parse_meminfo_swap(Path("/proc/meminfo").read_text())
         except OSError as e:
             raise GuardError(f"/proc/meminfo: {e}") from e
-        try:
+        try:  # 압력을 못 읽으면(파일 없음=PSI 꺼진 커널, 권한 없음) 통과로 치지 않고 측정 실패로 끝낸다
             psi = parse_psi_memory(Path("/proc/pressure/memory").read_text())
-        except OSError:  # PSI 가 꺼진 커널. 못 재는 것을 통과로 치지 않고 경고로 남긴다.
-            pressure, detail = "unknown", "/proc/pressure/memory 없음(PSI 꺼짐)"
-        else:
-            pressure, detail = classify_psi(psi["full"], cfg), f"psi full avg10={psi['full']}"
+        except OSError as e:
+            raise GuardError(f"/proc/pressure/memory 를 읽지 못했다(커널에 PSI 가 꺼져 있거나 권한이 없다): {e}") from e
+        pressure, detail = classify_psi(psi["full"], cfg), f"psi full avg10={psi['full']}"
     else:
         raise GuardError(f"지원하지 않는 OS: {sys.platform}")
     m.update(
-        swap_used_gb=used / GIB,
-        swap_total_gb=total / GIB,
+        swap_used_gib=used / GIB,
+        swap_total_gib=total / GIB,
         swap_used_pct=(100.0 * used / total) if total else 0.0,
         memory_pressure=pressure,
         memory_pressure_detail=detail,
@@ -135,29 +140,48 @@ def load_profile(config: Path, name: str) -> dict:
     if name not in profiles:
         raise GuardError(f"프로필 '{name}' 이 없다. 있는 것: {', '.join(sorted(profiles)) or '(없음)'}")
     cfg = dict(profiles[name])
-    need = {"badge", "ssd_free_gb_block_below", "swap_used_pct_warn_at", "memory_pressure_warn_at",
+    need = {"badge", "ssd_free_gib_block_below", "swap_used_pct_warn_at", "memory_pressure_warn_at",
             "memory_pressure_block_at", "linux_psi_full_avg10_warn", "linux_psi_full_avg10_critical"}
     if missing := need - cfg.keys():
         raise GuardError(f"프로필 '{name}' 에 키가 없다: {', '.join(sorted(missing))}")
+    validate_profile(cfg, name)
+    return cfg
+
+
+def _number(cfg: dict, key: str, lo: float, hi: float) -> float:
+    v = cfg[key]
+    if isinstance(v, bool) or not isinstance(v, (int, float)) or not math.isfinite(v) or not lo <= v <= hi:
+        raise GuardError(f"{key} 는 {lo:g}~{hi:g} 사이의 유한한 숫자여야 한다: {v!r}")
+    return float(v)
+
+
+def validate_profile(cfg: dict, name: str) -> None:
+    """임계가 말이 되는지 본다. 틀린 임계로 판정하느니 측정 실패(종료 코드 3)로 끝낸다."""
+    if not isinstance(cfg["badge"], str) or not cfg["badge"].strip():
+        raise GuardError(f"프로필 '{name}': badge 는 비어 있지 않은 문자열이어야 한다: {cfg['badge']!r}")
+    _number(cfg, "ssd_free_gib_block_below", 0, 1e9)
+    _number(cfg, "swap_used_pct_warn_at", 0, 100)
     for k in ("memory_pressure_warn_at", "memory_pressure_block_at"):
         if cfg[k] not in LEVELS:
             raise GuardError(f"{k} 는 {LEVELS} 중 하나여야 한다: {cfg[k]!r}")
-    return cfg
+    if LEVELS.index(cfg["memory_pressure_warn_at"]) > LEVELS.index(cfg["memory_pressure_block_at"]):
+        raise GuardError("memory_pressure_warn_at 는 memory_pressure_block_at 보다 높을 수 없다")
+    warn, crit = _number(cfg, "linux_psi_full_avg10_warn", 0, 100), _number(cfg, "linux_psi_full_avg10_critical", 0, 100)
+    if warn > crit:
+        raise GuardError(f"linux_psi_full_avg10_warn({warn:g}) 가 critical({crit:g}) 보다 클 수 없다")
 
 
 def evaluate(m: dict, cfg: dict) -> list[dict]:
     """측정값과 임계로 항목별 판정을 만든다. status: pass | warn | block"""
     rows = []
-    free, floor = m["ssd_free_gb"], cfg["ssd_free_gb_block_below"]
-    rows.append({"item": "ssd_free", "value": f"{free:.1f} GB 남음", "rule": f"{floor:g} GB 미만이면 차단",
+    free, floor = m["ssd_free_gib"], cfg["ssd_free_gib_block_below"]
+    rows.append({"item": "ssd_free", "value": f"{free:.1f} GiB 남음", "rule": f"{floor:g} GiB 미만이면 차단",
                  "status": "block" if free < floor else "pass"})
     pct, warn_at = m["swap_used_pct"], cfg["swap_used_pct_warn_at"]
-    rows.append({"item": "swap_used", "value": f"{pct:.1f}% ({m['swap_used_gb']:.1f}/{m['swap_total_gb']:.1f} GB)",
+    rows.append({"item": "swap_used", "value": f"{pct:.1f}% ({m['swap_used_gib']:.1f}/{m['swap_total_gib']:.1f} GiB)",
                  "rule": f"{warn_at:g}% 이상이면 경고", "status": "warn" if pct >= warn_at else "pass"})
     p = m["memory_pressure"]
-    if p == "unknown":
-        status = "warn"
-    elif LEVELS.index(p) >= LEVELS.index(cfg["memory_pressure_block_at"]):
+    if LEVELS.index(p) >= LEVELS.index(cfg["memory_pressure_block_at"]):
         status = "block"
     elif LEVELS.index(p) >= LEVELS.index(cfg["memory_pressure_warn_at"]):
         status = "warn"
@@ -187,30 +211,53 @@ def render(rows: list[dict], cfg: dict, profile: str) -> str:
 
 # ---------- 실행 ----------
 
+def _stop(proc: subprocess.Popen) -> None:
+    """자식과 그 프로세스 그룹을 끝내고 거둔다(TERM, 10초 뒤 KILL)."""
+    for sig in (signal.SIGTERM, signal.SIGKILL):
+        try:
+            os.killpg(proc.pid, sig)
+        except ProcessLookupError:
+            pass
+        try:
+            proc.wait(timeout=10 if sig == signal.SIGTERM else None)
+            return
+        except subprocess.TimeoutExpired:
+            continue
+
+
 def run_around(cmd: list[str], path: Path, cfg: dict, before: dict, measure) -> tuple[int, str]:
-    """명령을 돌리며 SSD 최저·스왑 최고를 표본한다. 반환: (명령 종료 코드, 전/후/최악 표)"""
-    worst_free, worst_swap = before["ssd_free_gb"], before["swap_used_gb"]
+    """명령을 돌리며 SSD 최저·스왑 최고를 표본한다. 반환: (명령 종료 코드, 전/후/최악 표).
+    표본 측정이 실패하면 자식을 프로세스 그룹째 끝내고 GuardError 를 올린다(아무것도 남기지 않는다).
+    가드가 인터럽트를 받아도 자식을 끝낸다."""
+    worst_free, worst_swap = before["ssd_free_gib"], before["swap_used_gib"]
     t0 = time.monotonic()
     try:
-        proc = subprocess.Popen(cmd, env={**os.environ, WRAPPED_ENV: "1"})
+        proc = subprocess.Popen(cmd, env={**os.environ, WRAPPED_ENV: "1"}, start_new_session=True)
     except OSError as e:
         raise GuardError(f"명령을 시작하지 못했다: {e}") from e
-    while proc.poll() is None:
-        try:
-            proc.wait(timeout=SAMPLE_SECONDS)
-        except subprocess.TimeoutExpired:
-            s = measure(path, cfg)
-            worst_free, worst_swap = min(worst_free, s["ssd_free_gb"]), max(worst_swap, s["swap_used_gb"])
-    after = measure(path, cfg)
-    worst_free, worst_swap = min(worst_free, after["ssd_free_gb"]), max(worst_swap, after["swap_used_gb"])
+    try:
+        while proc.poll() is None:
+            try:
+                proc.wait(timeout=SAMPLE_SECONDS)
+            except subprocess.TimeoutExpired:
+                s = measure(path, cfg)
+                worst_free, worst_swap = min(worst_free, s["ssd_free_gib"]), max(worst_swap, s["swap_used_gib"])
+        after = measure(path, cfg)
+    except GuardError as e:
+        _stop(proc)
+        raise GuardError(f"실행 중 측정에 실패해 명령을 끝냈다(종료 코드 {proc.returncode}): {e}") from e
+    except BaseException:
+        _stop(proc)
+        raise
+    worst_free, worst_swap = min(worst_free, after["ssd_free_gib"]), max(worst_swap, after["swap_used_gib"])
     table = "\n".join([
         f"측정 기록 (명령: {' '.join(cmd)}, 종료 코드 {proc.returncode}, {time.monotonic() - t0:.1f}초)",
         "| 항목 | 전 | 후 | 변화 | 실행 중 최악 |",
         "|---|---|---|---|---|",
-        f"| SSD 여유 GB | {before['ssd_free_gb']:.2f} | {after['ssd_free_gb']:.2f} "
-        f"| {after['ssd_free_gb'] - before['ssd_free_gb']:+.2f} | {worst_free:.2f} |",
-        f"| 스왑 사용 GB | {before['swap_used_gb']:.2f} | {after['swap_used_gb']:.2f} "
-        f"| {after['swap_used_gb'] - before['swap_used_gb']:+.2f} | {worst_swap:.2f} |",
+        f"| SSD 여유 GiB | {before['ssd_free_gib']:.2f} | {after['ssd_free_gib']:.2f} "
+        f"| {after['ssd_free_gib'] - before['ssd_free_gib']:+.2f} | {worst_free:.2f} |",
+        f"| 스왑 사용 GiB | {before['swap_used_gib']:.2f} | {after['swap_used_gib']:.2f} "
+        f"| {after['swap_used_gib'] - before['swap_used_gib']:+.2f} | {worst_swap:.2f} |",
         f"| 스왑 사용률 % | {before['swap_used_pct']:.1f} | {after['swap_used_pct']:.1f} "
         f"| {after['swap_used_pct'] - before['swap_used_pct']:+.1f} | |",
         f"| 메모리 압력 | {before['memory_pressure']} | {after['memory_pressure']} | | |",

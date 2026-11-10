@@ -4,8 +4,8 @@
 
 [profiles.heavy]
 badge = "기본값"
-# SSD 여유가 이 값(GB) 미만이면 차단한다. 이 머신은 여유가 19 GB 안팎이므로 아래 근거 표를 본다.
-ssd_free_gb_block_below = 10
+# SSD 여유가 이 값(GiB) 미만이면 차단한다. 이 머신은 여유가 19 GiB 안팎이므로 아래 근거 표를 본다.
+ssd_free_gib_block_below = 10
 # 스왑 사용률(%)이 이 값 이상이면 경고한다(차단하지 않는다).
 swap_used_pct_warn_at = 90
 # 메모리 압력 단계: normal < warn < critical. macOS 는 kern.memorystatus_vm_pressure_level(1/2/4),
