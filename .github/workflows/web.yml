@@ -1,0 +1,32 @@
+name: web
+
+# P0-04b: pnpm workspace (apps/*, packages/ui) install, lint, build, test on every PR and on main.
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: web-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  web:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4 # pnpm version comes from package.json "packageManager"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - name: Workspace projects and their scripts
+        run: pnpm -r list --depth -1 && pnpm -r exec node -e "const p=require('./package.json');console.log(p.name,Object.keys(p.scripts||{}).join(',')||'(no scripts)')"
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm lint
+      - run: pnpm build
+      - run: pnpm test

@@ -31,4 +31,5 @@ This is a fresh start. The previous product (hackathon era) is preserved at the 
 ```bash
 uv sync
 pnpm install --frozen-lockfile
+pnpm lint && pnpm build && pnpm test   # CI: .github/workflows/web.yml (PRs and main)
 ```
