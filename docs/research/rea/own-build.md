@@ -18,7 +18,7 @@
 |---|---|
 | 대상 | `design/exports/design-system/index.html` (우리 저장소, D0-02c 내보내기). sha256 `42184fee52a5c2937d28f5568b15bc2f7ab0a6f2853649e53a63206df0021237` |
 | 허용 목록 줄 | `allow \| own-build \| apps/studio (웹 번들 산출물 …) \| own` |
-| 편차 | 줄의 대상 문구는 `apps/studio`다. 그 폴더에는 아직 빌드 출력이 없어서, 같은 줄의 취지("우리 저장소에서 우리가 만든 산출물, 번들 크기·구성, 런타임 동작")에 드는 우리 산출물 중 실제로 열리는 것을 골랐다. 이 파일은 Claude Design이 만든 산출물을 omp가 그대로 복사한 것이다(`design/exports/design-system/README.md`). **허용 목록 변경(`design/exports/**` 추가)은 같은 브랜치의 별도 커밋으로 준비했고, 창업자 승인 대기 중이다. 승인되지 않았다.** 승인 전에는 이 점검이 목록의 문구 밖이라는 점이 그대로다(`rea-policy.md` "허용 목록 변경 절차") |
+| 편차 | 줄의 대상 문구는 `apps/studio`다. 그 폴더에는 아직 빌드 출력이 없어서, 같은 줄의 취지("우리 저장소에서 우리가 만든 산출물, 번들 크기·구성, 런타임 동작")에 드는 우리 산출물 중 실제로 열리는 것을 골랐다. 이 파일은 Claude Design이 만든 산출물을 omp가 그대로 복사한 것이다(`design/exports/design-system/README.md`). **허용 목록에 `design/exports/**`를 더했다(창업자 승인 2026-11-10 (#410 코멘트)).** 이 점검은 그 줄이 생기기 전에 시작했고, 변경은 같은 브랜치의 별도 커밋이다(`rea-policy.md` "허용 목록 변경 절차") |
 | 번들 속 서드파티 | 글꼴 JetBrains Mono(SIL OFL 1.1, 브리프 3.4절)를 브라우저가 Google Fonts에서 받는다. REA는 이를 **관찰만** 했다(요청 기록). 그 내용(글꼴 CSS·파일)을 분석하거나 저장소에 옮기지 않았다 |
 | 금지 행위 | 독점 제품이 아니다. 디컴파일·에셋 추출·DRM 우회 없음. 결과 JSON은 저장소에 올리지 않았다(임시 폴더에서 삭제) |
 | 브라우저 | 사람이 쓰는 Chrome은 건드리지 않았다. Playwright 설치본 `chromium_headless_shell-1254`(HeadlessChrome 158.0.8127.18)만 썼고 DevTools 포트는 `127.0.0.1`, 프로필은 던지는 `--user-data-dir`(끝나고 삭제), 대상 서버는 `127.0.0.1`의 `python3 -m http.server` |
@@ -105,9 +105,10 @@ CLI는 모두 `/tmp/rea-probe`에서 `npx rea …`로 돌렸다. 대상 페이�
 
 ```bash
 # 설치(3절). 저장소 밖에서만.
+REPO=$(git rev-parse --show-toplevel)     # 저장소 안에서 먼저 한 번 실행해 둔다
 # 대상 서버와 브라우저(루프백, 던지는 프로필)
-(cd design/exports/design-system && python3 -m http.server 8765 --bind 127.0.0.1) &
-"$HOME/Library/Caches/ms-playwright/chromium_headless_shell-1254/<버전>/chrome-headless-shell" \
+(cd "$REPO/design/exports/design-system" && python3 -m http.server 8765 --bind 127.0.0.1) &
+"$HOME/Library/Caches/ms-playwright/chromium_headless_shell-1254/chrome-headless-shell-mac-arm64/chrome-headless-shell" \
   --remote-debugging-port=9333 --remote-debugging-address=127.0.0.1 \
   --user-data-dir=/tmp/rea-chrome-profile --no-first-run about:blank &
 curl -s -X PUT "http://127.0.0.1:9333/json/new?http://127.0.0.1:8765/index.html"   # 대상 탭 만들기
@@ -115,9 +116,12 @@ curl -s -X PUT "http://127.0.0.1:9333/json/new?http://127.0.0.1:8765/index.html"
 npx rea list-browser-targets http://127.0.0.1:9333 --allowed-origins http://127.0.0.1:8765 --format json
 npx rea analyze-web-bundle http://127.0.0.1:9333 <targetId> --allowed-origins http://127.0.0.1:8765 --observation-ms 1500 --format json
 npx rea inspect-web-page   http://127.0.0.1:9333 <targetId> --allowed-origins http://127.0.0.1:8765 --observation-ms 2000 --format json
-# 시나리오: docs/research/rea/own-build-scenario.json (executable_path의 자리표시자를 이 머신의 경로로 바꾼다).
+# 시나리오: $REPO/docs/research/rea/own-build-scenario.json. executable_path 자리표시자는 임시 사본에서 바꾼다(저장소 파일은 그대로).
 # 4.2절의 요청 3건은 이 파일(네트워크 캡처 켬)의 결과다. `capture` 키를 지우면 4.2절의 "단계 3개 completed, 완결" 실행이 된다.
-npx rea capture-browser-scenario docs/research/rea/own-build-scenario.json --format json
+CHROME="$HOME/Library/Caches/ms-playwright/chromium_headless_shell-1254/chrome-headless-shell-mac-arm64/chrome-headless-shell"
+python3 -c 'import json,sys; d=json.load(open(sys.argv[1])); d["browser"]["executable_path"]=sys.argv[2]; json.dump(d,open(sys.argv[3],"w"))' \
+  "$REPO/docs/research/rea/own-build-scenario.json" "$CHROME" /tmp/rea-scenario.json
+npx rea capture-browser-scenario /tmp/rea-scenario.json --format json
 npx rea analyze-javascript-application <index.html만 복사한 폴더> --format json
 ```
 
