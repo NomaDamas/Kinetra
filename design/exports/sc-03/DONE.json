@@ -1,0 +1,73 @@
+{
+  "run_id": "sc03-20261110T223024",
+  "screen": "SC-03",
+  "title": "에이전트 바와 변경안 카드",
+  "status": "done",
+  "brief": "design/briefs/sc-03.md",
+  "design_system": "design/exports/design-system/",
+  "shell": "design/exports/sc-01/",
+  "artifact_url": "https://claude.ai/artifact/YcLuwMRPM6uUn9RRHYszLs",
+  "artboards": [
+    "S1",
+    "S2",
+    "S3",
+    "S4",
+    "S5",
+    "S6",
+    "S7",
+    "S8",
+    "S9",
+    "S10",
+    "S11",
+    "S12",
+    "S13"
+  ],
+  "self_check": {
+    "s1_controls": 2,
+    "s1_control_names": [
+      "마이크",
+      "입력창"
+    ],
+    "primary_in_card_and_bar": 0,
+    "artboards_with_top_bar": 0,
+    "max_reach_steps": 2,
+    "new_color_tokens": 0,
+    "banned_phrases": 0,
+    "status_danger_used_in": [
+      "S10 (b) 실패",
+      "S12 삭제 확인"
+    ],
+    "min_text_contrast": 5.76,
+    "targets_under_24px": 0,
+    "overflow_or_clipped": 0,
+    "card_area_max_px": 296,
+    "card_area_cap_px": 306,
+    "needs_confirmation": [
+      "배지 없이 둔 항목 수(디자인 시스템과 다름)",
+      "탭 순서 입력창→마이크(SC-01 S10과 다름)",
+      "예산 단위(G-01)"
+    ]
+  },
+  "measurement": "headless Chrome, throwaway --user-data-dir /tmp/kin-sc03-chrome.*, deleted after each run",
+  "files": {
+    "NOTES.md": "09d94d8d754d846772d81a33c023b5ba99f1c128a431303e2659cb560b284815",
+    "index.html": "625138619c826a299e9a70f1d56705654ff49d66361931caf836979a0cf36aa6",
+    "source/Main.dc.html": "e8f5861013d27819fea7eda38bf5ccf16998a9672f4d7485a4094e14133fa860",
+    "source/S10.dc.html": "bd06d52c4a8df934d1c36e6fb6ef2896051b3fd07d152ff150dba94153abc4d0",
+    "source/S11.dc.html": "a1715ff709268ae2b0abd0d438fd5803197c9da916c365b7474e0b9beff5247e",
+    "source/S12.dc.html": "3e9bed2d6ca47b7b53b98afca600aabb9560ae97f9b118bd9e6f1e7889876cec",
+    "source/S13.dc.html": "cf25cf566b6ca3ad349eadd75327a059fbdc7418226f4e73ff739ef9a28c0756",
+    "source/S2.dc.html": "692e426a9519f24c2140ccdb435862672dc5b3f3b18a7776f9c2a14653c48777",
+    "source/S3.dc.html": "4df6b86c90284eba03608cb9d8860c9c89ad44f8ef0b222013168025e87655c9",
+    "source/S4.dc.html": "5bd613f5e7ea0d4a187f7efef0658f6dbb31c1eacb4fac1ccd6402dd62863c1d",
+    "source/S5.dc.html": "72c2cb0372d449e6f8be223889af3bda4d509911124852c1d271a0feb645b6fa",
+    "source/S6.dc.html": "6d19bba9506b6a4d7aab8ee35b5b7b2ad7921ad6d95d537d924ef9ebc30da2a8",
+    "source/S7.dc.html": "e14a49cbf58fe34f17b432660810d6d0534b7d8e35cdd3eca4add7a7a722379d",
+    "source/S8.dc.html": "4a8daa24bf5783c53903892ec845209c1cccbb6d9e0b8c7de759d3f09e9dc952",
+    "source/S9.dc.html": "0048b6d774aba70f6de6545d8dcb95faa7d4210d5c766d7d4aeb9a85bf3abccd",
+    "source/canvas.json": "83c42d2f21e7e9dcc049d594ba312294905e4d44858058e2e05d573f9733b2c9",
+    "source/tools/build_export.py": "89efed605f2b4b727c55f6009fae370e5d6e77d3b7384cd1af50b0a5421fb94a",
+    "source/tools/read_measure.py": "4d0208ef877fe54121c1395deb88ec18c1b789080b4d083159b821906cbdeeb2"
+  },
+  "finished_at": "2026-11-10T13:58:59Z"
+}
