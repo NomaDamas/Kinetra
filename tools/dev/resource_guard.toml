@@ -1,0 +1,17 @@
+# 개발 자원 가드 임계 (P0-09). 읽는 곳: tools/dev/resource_guard.py
+# badge 는 값의 출처 배지다. 기본값 = 우리가 정한 값이고 측정으로 검증한 인용이 아니다.
+# 임계를 바꾸면 docs/process/dev-resources.md 의 "임계 근거" 표와 측정 기록도 같이 고친다.
+
+[profiles.heavy]
+badge = "기본값"
+# SSD 여유가 이 값(GiB) 미만이면 차단한다. 이 머신은 여유가 19 GiB 안팎이므로 아래 근거 표를 본다.
+ssd_free_gib_block_below = 10
+# 스왑 사용률(%)이 이 값 이상이면 경고한다(차단하지 않는다).
+swap_used_pct_warn_at = 90
+# 메모리 압력 단계: normal < warn < critical. macOS 는 kern.memorystatus_vm_pressure_level(1/2/4),
+# Linux 는 /proc/pressure/memory 의 full avg10 으로 단계를 나눈다.
+memory_pressure_warn_at = "warn"
+memory_pressure_block_at = "critical"
+# Linux 전용: PSI full avg10(%) 이 이 값 이상이면 각각 warn, critical 단계로 본다.
+linux_psi_full_avg10_warn = 5.0
+linux_psi_full_avg10_critical = 20.0

@@ -41,6 +41,12 @@ import time
 import mujoco
 import numpy as np
 
+# P0-09: 강체 1,000개 이상은 무거운 실행이다. 시작 전에 자원 가드를 통과해야 한다(docs/process/dev-resources.md).
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "tools", "dev"))
+import resource_guard  # noqa: E402
+
+HEAVY_BODIES = 1000
+
 BOX_HALF = 0.05  # 0.1 m cube
 LAYERS = 5
 PITCH_XY = 0.18  # > cube diagonal 0.141 m: no initial overlap with yaw/tilt jitter
@@ -286,6 +292,9 @@ def main() -> int:
     ap.add_argument("--repeats", type=positive_int, default=2, help="runs per scene (>= 1; hash comparison needs >= 2)")
     ap.add_argument("--json", help="write full results to this file")
     args = ap.parse_args()
+
+    if max([*args.bodies, *([] if args.no_break else args.break_pile)], default=0) >= HEAVY_BODIES:
+        resource_guard.guard_or_exit("heavy")
 
     spec = machine_spec()
     print(json.dumps({"machine": spec, "argv": sys.argv, "uptime_start": uptime()}, indent=1), flush=True)
