@@ -153,8 +153,4 @@ omp가 헤드리스 Chrome(임시 `--user-data-dir`)로 `index.html`을 1440×24
 
 ## 실행 기록: SC-03 (D0-03c)
 
-- SC-03: 모델 Opus 5.5(`--model opus`), `/design` 먼저 + 짧은 지시, `Artifact(` 3분 안에 확인, `DONE.json` 실행 id 일치로 1728초 만에 정상 완료. 28분 $8.21, 주간 한도 37
-
-## 실행 기록: SC-03 (D0-03c)
-
 - SC-03: 모델 Opus 5.5(`--model opus`), `/design` 먼저 + 짧은 지시, `Artifact(` 3분 안에 확인, `DONE.json` 실행 id 일치로 1728초 만에 정상 완료. 28분 $8.21, 주간 한도 37%→34% left(상태 막대, 다른 세션과 공유).
