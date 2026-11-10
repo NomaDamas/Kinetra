@@ -1,0 +1,39 @@
+name: spikes
+
+# P0-04e: offline tests of every spike under spikes/ on every PR and on main. Python tests (PEP 723 header) run as
+# `uv run <file>`, pnpm spikes run `pnpm --dir spikes/<name> install --frozen-lockfile && pnpm --dir spikes/<name> test`.
+# Browser tests (`test:browser`) and measurement runs are NOT run here. A spike without tests is skipped and the log says why.
+# The plan is built by scripts/ci/run_spike_tests.py from what is on disk, so a new spike with tests is picked up without
+# editing this file.
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: spikes-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  spikes:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+          cache-dependency-glob: "spikes/**/*.py"
+      - uses: pnpm/action-setup@v4 # pnpm version comes from the root package.json "packageManager"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Runner tests (scripts/ci)
+        run: python3 -m unittest discover -s scripts/ci/tests -p "test_run_spike_tests.py" -v
+      - name: Plan (what runs, what is skipped and why)
+        run: python3 scripts/ci/run_spike_tests.py --plan
+      - name: Spike offline tests
+        run: python3 scripts/ci/run_spike_tests.py
