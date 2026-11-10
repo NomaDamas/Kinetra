@@ -21,6 +21,12 @@ export function quatAngle(a, ai, b, bi) {
  */
 export function compareTrajectories(a, b, rows, nq, touchdownStep, thresholds = [1e-9, 1e-6, 1e-3, 1e-2, 1e-1]) {
   if (a.length < rows * nq || b.length < rows * nq) throw new Error("trajectory shorter than rows*nq");
+  // NaN/Infinity in either trajectory is a broken run, not a "small error": Math.max/hypot would silently skip or hide it.
+  for (const [name, t] of [["first", a], ["second", b]]) {
+    for (let i = 0; i < rows * nq; i++) {
+      if (!Number.isFinite(t[i])) throw new Error(`non-finite value in ${name} trajectory at row ${Math.floor(i / nq)}, column ${i % nq}`);
+    }
+  }
   let maxPos = 0, maxPosStep = 0, maxAng = 0, maxAngStep = 0, maxWheel = 0, maxWheelStep = 0;
   let maxPosPre = 0, maxAngPre = 0, maxPosPost = 0, maxAngPost = 0;
   let bitwisePrefix = rows;

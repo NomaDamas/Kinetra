@@ -260,7 +260,7 @@ A0-01a 절의 표와 같다(mujoco 4.0.0 Apache-2.0, numpy 2.5.4 BSD-3-Clause). 
 
 ## A0-01b. 브라우저 WASM 실행과 네이티브 대비 차이 (이슈 #44)
 
-전체 보고서: [`spikes/mujoco-wasm/REPORT.md`](../mujoco-wasm/REPORT.md). 측정만 했고 최적화하지 않았다. 모든 값은 **[추정: 부하 평균 133~217, 스왑 91~95% 아래 측정]**이고 오차 수치만 부하와 무관하다.
+전체 보고서: [`spikes/mujoco-wasm/REPORT.md`](../mujoco-wasm/REPORT.md). 측정만 했고 최적화하지 않았다. 모든 값은 **[추정: 부하 평균 113~217, 스왑 91~96% 아래 측정]**이고 오차 수치만 부하와 무관하다.
 
 - 바인딩: 공식 `@mujoco/mujoco` 4.0.0(Google DeepMind, Apache-2.0, 엔진 4.0.0). 커뮤니티 `zalo/mujoco_wasm`(MIT, 3.12.0)과 `mujoco-js` 0.0.7은 메타데이터만 확인.
 - 모델: `legacy-v0`의 `rocket_car` MJCF(sha256 `83b4990f…`, 레거시 번들 `model_hash`와 같음), 영웅 8,000 N 제어, 4 ms, 4.5 s.

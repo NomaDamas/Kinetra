@@ -150,7 +150,7 @@ def build() -> dict:
         q0, v0 = initial_state(sc["dz"])
         q, nc = run(ctrl, q0, v0)
         q2, nc2 = run(ctrl, q0, v0)
-        assert np.array_equal(q, q2) and np.array_equal(nc, nc2), "native run is not repeatable"
+        assert q.tobytes() == q2.tobytes() and nc.tobytes() == nc2.tobytes(), "native run is not bitwise repeatable"
         first = int(np.argmax(nc > 0)) if (nc > 0).any() else -1
         entries.append({
             "id": sc["id"], "kind": sc["kind"], "windows": sc["windows"], "qpos0": q0.tolist(), "qvel0": v0.tolist(),

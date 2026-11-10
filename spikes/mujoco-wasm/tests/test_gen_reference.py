@@ -49,7 +49,7 @@ class ReferenceTest(unittest.TestCase):
         q0, v0 = g.initial_state()
         a, _ = g.run(ctrl, q0, v0)
         b, _ = g.run(ctrl, q0, v0)
-        self.assertTrue(np.array_equal(a, b))
+        self.assertEqual(a.tobytes(), b.tobytes())  # bytes, not values: -0.0 == 0.0 and NaN != NaN would hide a difference
         self.assertGreater(a[-1, 0], 40.0)  # ~22 m/s for 4.5 s
 
     def test_committed_reference_matches_regeneration(self):

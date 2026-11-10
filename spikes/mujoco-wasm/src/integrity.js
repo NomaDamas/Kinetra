@@ -18,6 +18,13 @@ export function checkModelHash(modelSha256, manifest) {
   if (problems.length) throw new Error("model integrity: " + problems.join("; "));
 }
 
+/** The native reference trajectory actually fetched (float64 bytes of one scenario) must hash to the manifest's `qpos_sha256`. */
+export function checkReferenceHash(scenarioId, fetchedSha256, manifestSha256) {
+  if (typeof manifestSha256 !== "string" || fetchedSha256 !== manifestSha256) {
+    throw new Error(`reference integrity: scenario ${scenarioId} native qpos sha256 ${fetchedSha256} != manifest ${manifestSha256}`);
+  }
+}
+
 /** Every scenario that has controls: the rebuilt control schedule's hash must equal the native reference's `ctrl_sha256`. */
 export function checkControlHash(scenarioId, wasmCtrlSha256, nativeCtrlSha256) {
   if (typeof nativeCtrlSha256 !== "string" || wasmCtrlSha256 !== nativeCtrlSha256) {

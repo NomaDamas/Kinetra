@@ -37,6 +37,17 @@ test("tampered model: error mentions model integrity, no result", async () => {
   assert.equal(r.result, undefined);
 });
 
+test("tampered native reference trajectory (one byte flipped): error mentions reference integrity, no result", async () => {
+  const r = await run({ pattern: "**/reference/native_qpos.f64", handler: async (route) => {
+    const resp = await route.fetch();
+    const body = Buffer.from(await resp.body());
+    body[1000] ^= 0x01; // lowest mantissa bit of one double in scenario 0
+    await route.fulfill({ response: resp, body });
+  } });
+  assert.match(r.error, /reference integrity/);
+  assert.equal(r.result, undefined);
+});
+
 test("tampered controls (manifest window throttle changed): error mentions control integrity, no result", async () => {
   const r = await run({ pattern: "**/reference/manifest.json", handler: async (route) => {
     const resp = await route.fetch();

@@ -2,7 +2,7 @@ import { loadEngine, buildControls, makeSim, runRecorded, runBare, sha256Hex, NU
 import { compareTrajectories, summarize } from "/src/compare.js";
 import { drawCar } from "/src/draw.js";
 import { planFrame } from "/src/accumulator.js";
-import { sha256Bytes, checkModelHash, checkControlHash } from "/src/integrity.js";
+import { sha256Bytes, checkModelHash, checkControlHash, checkReferenceHash } from "/src/integrity.js";
 
 const params = new URLSearchParams(location.search);
 const BARE_REPEATS = Number(params.get("bare") ?? 7);
@@ -22,6 +22,7 @@ async function parity(mj, xml, manifest, blob) {
   const byId = Object.fromEntries(manifest.scenarios.map((s, i) => [s.id, i]));
   for (const [i, sc] of manifest.scenarios.entries()) {
     const native = f64At(blob, i, rows, nq);
+    checkReferenceHash(sc.id, await sha256Hex(native), sc.qpos_sha256); // throws: never compare against an unverified reference
     if (sc.kind === "native-only-control") {
       // native vs native: how far the native trajectory itself moves for a 1e-12 / 1e-9 m initial-height nudge
       const nominal = f64At(blob, byId.nominal, rows, nq);
@@ -179,7 +180,7 @@ async function main() {
     engine: { version: engine.version, load_ms: engine.load_ms, package: "@mujoco/mujoco 4.0.0" },
     env: { userAgent: navigator.userAgent, hardwareConcurrency: navigator.hardwareConcurrency, crossOriginIsolated, devicePixelRatio, visibility: document.visibilityState },
     manifest_summary: { native_version: manifest.mujoco_native_version, dt: manifest.dt, n_steps: manifest.n_steps, model_sha256: manifest.model_sha256, served_model_sha256: modelSha256, legacy_model_hash: manifest.legacy_model_hash, seed: manifest.seed },
-    integrity: { model_hash_ok: true, control_hash_ok_scenarios: par.filter((p) => p.ctrl_equal).length },
+    integrity: { model_hash_ok: true, reference_hash_ok_scenarios: manifest.scenarios.length, control_hash_ok_scenarios: par.filter((p) => p.ctrl_equal).length },
     parity: par, bare, frames, uncapped,
   };
   render(res);

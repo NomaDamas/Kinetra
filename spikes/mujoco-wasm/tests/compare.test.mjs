@@ -55,3 +55,14 @@ test("summarize percentiles", () => {
   const s = summarize([5, 1, 3, 2, 4]);
   assert.equal(s.min, 1); assert.equal(s.median, 3); assert.equal(s.max, 5); assert.equal(s.mean, 3);
 });
+
+test("compareTrajectories: NaN or Infinity in either trajectory is an error, not a small error", () => {
+  for (const bad of [NaN, Infinity, -Infinity]) {
+    const a = traj(4), b = traj(4);
+    b[2 * NQ + 1] = bad;
+    assert.throws(() => compareTrajectories(a, b, 4, NQ, -1), /non-finite value in second trajectory at row 2, column 1/);
+    assert.throws(() => compareTrajectories(b, a, 4, NQ, -1), /non-finite value in first trajectory at row 2, column 1/);
+  }
+  const a = traj(3); a[3] = NaN; // quaternion w of row 0
+  assert.throws(() => compareTrajectories(a, traj(3), 3, NQ, -1), /non-finite/);
+});
