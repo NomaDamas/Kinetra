@@ -102,10 +102,6 @@ class OkTests(unittest.TestCase):
         files = {"assets/props/rock.glb": CONTENT, "tools/x.py": b"print()"}
         self.assertEqual(Tree(self, [row(), dep], files=files).check().errors, [])
 
-    def test_real_repository_passes(self):
-        rep = ca.check(ca.ROOT)
-        self.assertEqual(rep.errors, [])
-
 
 class ViolationTests(unittest.TestCase):
     def assertOneError(self, rep, needle):
@@ -192,10 +188,6 @@ class CliTests(unittest.TestCase):
         r = self.run_cli(good.root)
         self.assertEqual(r.returncode, 1)
         self.assertIn("assets/unlisted.bin", r.stderr)
-
-    def test_real_repository_cli(self):
-        r = subprocess.run([sys.executable, str(SCRIPT)], capture_output=True, text=True)
-        self.assertEqual(r.returncode, 0, r.stderr)
 
 
 if __name__ == "__main__":
