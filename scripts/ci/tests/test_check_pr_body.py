@@ -44,7 +44,7 @@ class ExampleFileTests(unittest.TestCase):
         cases = {
             "bad_no_goal.md": "`## 대목표` 제목이 없다",
             "bad_paraphrased_value.md": "원문 그대로",
-            "bad_no_closes.md": "`Closes #N` 또는 `Refs #N`",
+            "bad_no_closes.md": "`Closes #N` 만 있는 줄이 정확히 하나",
         }
         for name, needle in cases.items():
             with self.subTest(name):
@@ -92,16 +92,20 @@ class RuleTests(unittest.TestCase):
         self.assertEqual(c.check(body(value=f">{plain}"), VALUES), [])
 
     def test_closes_forms(self):
-        for link in ("Closes #13", "Refs #13", "Closes #1"):
+        for link in ("Closes #13", "Closes #1"):
             with self.subTest(link):
                 self.assertEqual(c.check(body(link=link), VALUES), [])
-        for link in ("Closes #", "Closes #<잎 이슈 하나>", "closes #13", "Closes: #13", "Closes #13, #14", "see #13", "Closes #abc"):
+        for link in ("Refs #13", "Closes #", "Closes #<잎 이슈 하나>", "closes #13", "Closes: #13", "Closes #13, #14", "see #13", "Closes #abc"):
             with self.subTest(link):
                 self.assertTrue(c.check(body(link=link), VALUES))
 
     def test_two_closes_fail_but_closes_plus_refs_pass(self):
         self.assertTrue(any("하나만" in e for e in c.check(body(link="Closes #13\nCloses #14"), VALUES)))
         self.assertEqual(c.check(body(link="Closes #13\nRefs #8"), VALUES), [])
+
+    def test_refs_alone_never_replaces_closes(self):
+        errors = c.check(body(link="Refs #13"), VALUES)
+        self.assertTrue(any("정확히 하나" in e for e in errors), errors)
 
     def test_order_is_enforced(self):
         swapped = f"## 핵심 가치\n> {V3}\n## 대목표\nG0 — x\n## 문제\nCloses #13\n"
@@ -114,6 +118,26 @@ class RuleTests(unittest.TestCase):
         self.assertGreaterEqual(len(c.check(hidden, VALUES)), 3)
         fenced = f"```\n## 대목표\nG0\n## 핵심 가치\n> {V3}\nCloses #13\n```\n"
         self.assertGreaterEqual(len(c.check(fenced, VALUES)), 3)
+
+    def test_longer_fence_is_not_closed_by_shorter_inner_fence(self):
+        wrapped = "````markdown\n" + body() + "````\n"
+        self.assertGreaterEqual(len(c.check(wrapped, VALUES)), 3)
+        tilde = "~~~~\n" + body() + "~~~\n"  # 짧은 닫는 울타리는 닫지 못한다
+        self.assertGreaterEqual(len(c.check(tilde, VALUES)), 3)
+        other_char = "```\n" + body() + "~~~\n"  # 다른 문자는 닫지 못한다
+        self.assertGreaterEqual(len(c.check(other_char, VALUES)), 3)
+        trailing = "```\n```not a close\n" + body() + "```\n"  # 뒤에 글자가 있으면 닫지 못한다
+        self.assertGreaterEqual(len(c.check(trailing, VALUES)), 3)
+
+    def test_properly_closed_fence_then_body_passes(self):
+        text = "````\n```\nx\n```\n````\n" + body()
+        self.assertEqual(c.check(text, VALUES), [])
+        text = "```text   \nx\n```  \n" + body()
+        self.assertEqual(c.check(text, VALUES), [])
+
+    def test_unclosed_comment_hides_everything_to_eof(self):
+        self.assertGreaterEqual(len(c.check("<!-- 닫지 않음\n" + body(), VALUES)), 3)
+        self.assertEqual(c.check("<!-- 닫음 -->\n" + body(), VALUES), [])
 
     def test_crlf_body(self):
         self.assertEqual(c.check(body().replace("\n", "\r\n"), VALUES), [])

@@ -9,7 +9,7 @@
       인용(`> ` 줄)돼 있지 않다. `**` 강조 표시와 공백 개수는 무시하고 글자는 그대로 비교한다.
     - `Closes #N` 또는 `Refs #N` 만 있는 줄이 `## 핵심 가치` 뒤에 없다. `Closes` 는 잎 이슈 하나만 쓴다.
     - 순서가 다르다.
-코드 블록(```)과 HTML 주석(<!-- -->) 안의 내용은 본문으로 치지 않는다. 템플릿 자리표시자(`Closes #<잎 이슈 하나>`)는 통과하지 못한다.
+코드 블록(같은 문자로, 여는 길이 이상으로, 뒤에 공백만 있는 줄로 닫힌다)과 HTML 주석(닫히지 않은 `<!--` 는 끝까지) 안의 내용은 본문으로 치지 않는다. 템플릿 자리표시자(`Closes #<잎 이슈 하나>`)는 통과하지 못한다.
 """
 
 from __future__ import annotations
@@ -27,8 +27,9 @@ GOAL_HEADING = "## 대목표"
 VALUES_HEADING = "## 핵심 가치"
 VALUE_LINE_RE = re.compile(r"^- (\*\*V[1-5] [^*]+\*\* — .+)$")
 LINK_RE = re.compile(r"^(Closes|Refs) #([0-9]+)$")
-FENCE_RE = re.compile(r"^ {0,3}(```|~~~)")
-COMMENT_RE = re.compile(r"<!--.*?-->", re.DOTALL)
+FENCE_OPEN_RE = re.compile(r"^ {0,3}(`{3,}|~{3,})(.*)$")
+FENCE_CLOSE_RE = re.compile(r"^ {0,3}(`{3,}|~{3,})[ \t]*$")
+COMMENT_RE = re.compile(r"<!--.*?(?:-->|\Z)", re.DOTALL)  # 닫히지 않은 `<!--` 는 끝까지 가린다
 
 
 def normalize(text: str) -> str:
@@ -51,17 +52,18 @@ def load_values(path: Path = DEFAULT_VALUES) -> list[str]:
 def body_lines(body: str) -> list[str]:
     """HTML 주석과 코드 블록을 지운 줄 목록."""
     body = COMMENT_RE.sub("", body.replace("\r\n", "\n").replace("\r", "\n"))
-    lines, fence = [], None
+    lines, fence = [], None  # fence = (문자, 여는 길이)
     for line in body.split("\n"):
-        m = FENCE_RE.match(line)
-        if m:
-            if fence is None:
-                fence = m.group(1)
-            elif m.group(1) == fence:
-                fence = None
-            continue
         if fence is None:
+            m = FENCE_OPEN_RE.match(line)
+            if m and not (m.group(1)[0] == "`" and "`" in m.group(2)):
+                fence = (m.group(1)[0], len(m.group(1)))
+                continue
             lines.append(line.rstrip())
+        else:
+            m = FENCE_CLOSE_RE.match(line)
+            if m and m.group(1)[0] == fence[0] and len(m.group(1)) >= fence[1]:
+                fence = None
     return lines
 
 
@@ -96,16 +98,17 @@ def check(body: str, values: list[str]) -> list[str]:
             )
 
     links = [(i, m) for i, line in enumerate(lines) if (m := LINK_RE.match(line))]
-    if not links:
-        errors.append("`Closes #N` 또는 `Refs #N` 만 있는 줄이 없다 (이슈 번호는 숫자, 예: `Closes #13`)")
-    elif sum(m.group(1) == "Closes" for _, m in links) > 1:
+    closes = [i for i, m in links if m.group(1) == "Closes"]
+    if not closes:
+        errors.append("`Closes #N` 만 있는 줄이 정확히 하나 있어야 한다 (잎 이슈 번호는 숫자, 예: `Closes #13`)")
+    elif len(closes) > 1:
         errors.append("`Closes #N` 은 잎 이슈 하나만 쓴다")
 
     if goal and vals and goal[0] > vals[0]:
         errors.append(f"순서가 다르다: `{GOAL_HEADING}` 가 `{VALUES_HEADING}` 보다 앞에 와야 한다")
-    if vals and links and links[0][0] < vals[0]:
+    if vals and closes and closes[0] < vals[0]:
         errors.append(f"순서가 다르다: `Closes #N`/`Refs #N` 은 `{VALUES_HEADING}` 뒤에 와야 한다")
-    if goal and links and links[0][0] < goal[0]:
+    if goal and closes and closes[0] < goal[0]:
         errors.append(f"순서가 다르다: `Closes #N`/`Refs #N` 은 `{GOAL_HEADING}` 뒤에 와야 한다")
     return errors
 

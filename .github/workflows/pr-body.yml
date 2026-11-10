@@ -1,7 +1,7 @@
 name: pr-body
 
 # P0-04c: a PR body must follow .github/pull_request_template.md order:
-# ## 대목표 → ## 핵심 가치 (values.md quote) → Closes #N / Refs #N. Re-runs when the body is edited.
+# ## 대목표 → ## 핵심 가치 (values.md quote) → exactly one Closes #N (Refs #N optional, in addition). Re-runs when the body is edited.
 on:
   pull_request:
     types: [opened, edited, synchronize, reopened]
