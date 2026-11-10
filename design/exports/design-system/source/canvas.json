@@ -1,0 +1,41 @@
+{
+  "v": 3,
+  "createdOnFiles": {"v": 1, "at": "2026-11-10T09:00:00Z"},
+  "title": "Kinetra Studio 디자인 시스템",
+  "launch": {"view": "canvas"},
+  "pages": [],
+  "boards": {
+    "Main.dc.html": {"x": 0, "y": 0, "w": 1440, "h": 1240, "title": "A. 토큰 — 색"},
+    "Tokens-Scale.dc.html": {"x": 1520, "y": 0, "w": 1440, "h": 1100, "title": "A. 토큰 — 타이포·간격·모서리·높이·모션"},
+    "ValueBadges.dc.html": {"x": 0, "y": 1660, "w": 1440, "h": 1160, "title": "B. 값 배지 5종"},
+    "Evidence.dc.html": {"x": 1520, "y": 1660, "w": 1440, "h": 1080, "title": "C. 증거 4단계"},
+    "Controls.dc.html": {"x": 0, "y": 3240, "w": 1440, "h": 1100, "title": "D. 버튼·전환기·토스트·타임라인 표식", "is_interactive": true},
+    "Inspector.dc.html": {"x": 1520, "y": 3240, "w": 1440, "h": 920, "title": "D. 패널·카드·인스펙터 필드 행"},
+    "ChangeCard.dc.html": {"x": 3040, "y": 3240, "w": 1440, "h": 980, "title": "D. 변경안 카드"},
+    "VerdictCards.dc.html": {"x": 0, "y": 4760, "w": 1840, "h": 1520, "title": "D. 판정 카드"},
+    "AgentBar.dc.html": {"x": 1920, "y": 4760, "w": 1440, "h": 840, "title": "D. 에이전트 바"},
+    "States.dc.html": {"x": 0, "y": 6700, "w": 1440, "h": 1100, "title": "E. 상태 4종"},
+    "A11y.dc.html": {"x": 1520, "y": 6700, "w": 1440, "h": 960, "title": "F. 접근성"}
+  },
+  "order": [
+    "Main.dc.html",
+    "Tokens-Scale.dc.html",
+    "ValueBadges.dc.html",
+    "Evidence.dc.html",
+    "Controls.dc.html",
+    "Inspector.dc.html",
+    "ChangeCard.dc.html",
+    "VerdictCards.dc.html",
+    "AgentBar.dc.html",
+    "States.dc.html",
+    "A11y.dc.html"
+  ],
+  "notes": {
+    "row-a": {"x": 0, "y": -300, "text": "A. 토큰", "kind": "title1", "maxW": 2960},
+    "row-bc": {"x": 0, "y": 1360, "text": "B · C. 값 배지와 증거 단계", "kind": "title1", "maxW": 2960},
+    "row-d1": {"x": 0, "y": 2940, "text": "D. 컴포넌트", "kind": "title1", "maxW": 4480},
+    "row-d2": {"x": 0, "y": 4460, "text": "D. 컴포넌트: 판정 카드와 에이전트 바", "kind": "title1", "maxW": 3360},
+    "row-ef": {"x": 0, "y": 6400, "text": "E · F. 상태와 접근성", "kind": "title1", "maxW": 2960}
+  },
+  "designSystems": []
+}

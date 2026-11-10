@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>접근성</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+button,input{font-family:inherit}
+a{color:#5B9DFF}a:hover{color:#A8CBFF}
+:focus-visible{outline:2px solid #A8CBFF;outline-offset:2px}
+@media (prefers-reduced-motion:reduce){*{transition-property:opacity!important;animation:none!important}}
+</style>
+</helmet>
+<div style="width:1440px;height:960px;box-sizing:border-box;padding:48px;background:#0F1216;color:#E8EDF2;font-family:Pretendard,'Pretendard Variable',-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Malgun Gothic','Noto Sans KR',sans-serif;font-size:13px;line-height:20px;font-variant-numeric:tabular-nums;display:flex;flex-direction:column;gap:32px">
+
+<header style="display:flex;flex-direction:column;gap:4px">
+<div style="font-size:11px;line-height:16px;font-weight:500;color:#A9B4C0">Kinetra Studio 디자인 시스템 · F. 접근성</div>
+<h1 style="margin:0;font-size:20px;line-height:28px;font-weight:600">포커스 링과 키보드 순서</h1>
+<p style="margin:0;color:#A9B4C0;max-width:960px">기준은 WCAG 2.2 AA입니다. 글자 대비 4.5:1 이상, 비문자 요소 3:1 이상, 보이는 포커스 링, 키보드로 모든 조작, 누르는 영역 24 × 24 px 이상, prefers-reduced-motion 대응.</p>
+</header>
+
+<div style="display:flex;gap:48px;align-items:flex-start">
+
+<div style="flex:1 1 0;min-width:0;display:flex;flex-direction:column;gap:32px">
+<section style="display:flex;flex-direction:column;gap:12px">
+<h2 style="margin:0;font-size:16px;line-height:24px;font-weight:600">포커스 링 · 2 px color.focus.ring + 2 px 간격</h2>
+<div style="display:flex;align-items:center;gap:24px;flex-wrap:wrap;padding:20px 16px;background:#151A20;border:1px solid #26303A;border-radius:8px">
+<button type="button" style="height:28px;padding:0 12px;border:1px solid #7A899B;border-radius:4px;background:transparent;color:#E8EDF2;font-size:12px;font-weight:500;outline:2px solid #A8CBFF;outline-offset:2px">미리보기</button>
+<button type="button" role="tab" aria-selected="true" style="height:28px;padding:0 14px;border:0;border-radius:4px 4px 0 0;font-size:12px;font-weight:500;background:#22324A;color:#E8EDF2;box-shadow:inset 0 -2px 0 #5B9DFF;outline:2px solid #A8CBFF;outline-offset:2px">판정</button>
+<div role="radiogroup" aria-label="행성(견본)" style="display:inline-flex;padding:2px;gap:2px;border:1px solid #7A899B;border-radius:999px;background:#0F1318"><button type="button" role="radio" aria-checked="false" style="height:24px;padding:0 14px;border:0;border-radius:999px;background:transparent;color:#A9B4C0;font-size:12px;font-weight:500">지구</button><button type="button" role="radio" aria-checked="true" style="height:24px;padding:0 14px;border:0;border-radius:999px;background:#22324A;color:#E8EDF2;box-shadow:inset 0 0 0 1px #5B9DFF;font-size:12px;font-weight:500;outline:2px solid #A8CBFF;outline-offset:2px">화성</button><button type="button" role="radio" aria-checked="false" style="height:24px;padding:0 14px;border:0;border-radius:999px;background:transparent;color:#A9B4C0;font-size:12px;font-weight:500">달</button></div>
+<button type="button" style="display:inline-flex;align-items:center;height:24px;padding:0;border:0;background:none;color:#C5D0DC;font-size:11px;line-height:16px;font-weight:500;white-space:nowrap;cursor:pointer"><span style="display:inline-flex;align-items:center;gap:4px;height:20px;box-sizing:border-box;padding:0 8px;border-radius:999px;border:1px solid #7A899B;outline:2px solid #A8CBFF;outline-offset:2px"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 8.5v-3a2.5 2.5 0 0 1 2.5-2.5M7 8.5v-3a2.5 2.5 0 0 1 2.5-2.5"/></svg>인용</span></button>
+<input aria-label="차체 질량(견본)" value="1.3" style="height:24px;width:72px;box-sizing:border-box;padding:0 6px;border:1px solid #7A899B;border-radius:4px;background:#0F1318;color:#E8EDF2;font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:500;text-align:right;outline:2px solid #A8CBFF;outline-offset:2px">
+<label style="display:inline-flex;align-items:center;gap:8px;min-height:24px;font-size:12px"><input type="checkbox" checked style="width:14px;height:14px;margin:0;accent-color:#5B9DFF;outline:2px solid #A8CBFF;outline-offset:2px">명령 고르기</label>
+<button type="button" aria-label="실패: 전복" style="width:24px;height:24px;padding:0;border:0;border-radius:2px;background:#151A20;color:#BBAFF3;display:inline-flex;align-items:center;justify-content:center;outline:2px solid #A8CBFF;outline-offset:2px"><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M7 1.5l6 11H1z" fill="currentColor"/></svg></button>
+<a href="#kin-keys" style="font-size:12px;border-radius:2px;outline:2px solid #A8CBFF;outline-offset:2px">출처 열기</a>
+</div>
+<p style="margin:0;color:#A9B4C0;font-size:12px;line-height:16px">버튼, 탭, 라디오 항목, 값 배지, 입력, 체크박스, 타임라인 표식, 링크. 링의 최저 대비는 7.79입니다. 패널이나 토스트가 포커스된 요소를 가리지 않습니다.</p>
+</section>
+
+<section style="display:flex;flex-direction:column;gap:12px">
+<h2 style="margin:0;font-size:16px;line-height:24px;font-weight:600">키보드 순서</h2>
+<div style="display:grid;grid-template-columns:200px minmax(0,1fr) 200px;gap:8px;padding:12px;background:#151A20;border:1px solid #26303A;border-radius:8px;font-size:12px;font-weight:500">
+<div style="grid-column:span 3;display:flex;align-items:center;gap:8px;height:40px;padding:0 12px;border:1px dashed #7A899B;border-radius:4px"><span style="display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:999px;background:#E8EDF2;color:#0F1216;font-family:'JetBrains Mono',monospace;font-weight:600">1</span>상단바 · 모드 전환기, 행성 전환기, 증거 배지, 주 행동</div>
+<div style="display:flex;align-items:center;gap:8px;height:120px;padding:0 12px;border:1px dashed #7A899B;border-radius:4px"><span style="display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:999px;background:#E8EDF2;color:#0F1216;font-family:'JetBrains Mono',monospace;font-weight:600">2</span>라이브러리</div>
+<div style="display:flex;align-items:center;gap:8px;height:120px;padding:0 12px;border:1px dashed #7A899B;border-radius:4px"><span style="display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:999px;background:#E8EDF2;color:#0F1216;font-family:'JetBrains Mono',monospace;font-weight:600">3</span>뷰포트</div>
+<div style="display:flex;align-items:center;gap:8px;height:120px;padding:0 12px;border:1px dashed #7A899B;border-radius:4px"><span style="display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:999px;background:#E8EDF2;color:#0F1216;font-family:'JetBrains Mono',monospace;font-weight:600">4</span>인스펙터</div>
+<div style="grid-column:span 3;display:flex;align-items:center;gap:8px;height:40px;padding:0 12px;border:1px dashed #7A899B;border-radius:4px"><span style="display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:999px;background:#E8EDF2;color:#0F1216;font-family:'JetBrains Mono',monospace;font-weight:600">5</span>에이전트 바 · 마이크, 입력창, 보내기</div>
+<div style="grid-column:span 3;display:flex;align-items:center;gap:8px;height:40px;padding:0 12px;border:1px dashed #7A899B;border-radius:4px"><span style="display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:999px;background:#E8EDF2;color:#0F1216;font-family:'JetBrains Mono',monospace;font-weight:600">6</span>타임라인 · 표식</div>
+</div>
+<p style="margin:0;color:#A9B4C0;font-size:12px;line-height:16px">탭 순서를 보이는 도식이고 화면 배치가 아닙니다. 상단바 → 라이브러리 → 뷰포트 → 인스펙터 → 에이전트 바 → 타임라인 [제안]. 포커스가 어느 영역에도 갇히지 않습니다.</p>
+</section>
+</div>
+
+<div style="flex:0 0 520px;display:flex;flex-direction:column;gap:24px">
+<section id="kin-keys" style="display:flex;flex-direction:column;gap:8px">
+<h2 style="margin:0;font-size:16px;line-height:24px;font-weight:600">키</h2>
+<div style="display:grid;grid-template-columns:132px minmax(0,1fr);gap:8px 12px;align-items:center;font-size:12px;line-height:16px">
+<span><kbd style="font-family:'JetBrains Mono',monospace;font-size:11px;border:1px solid #7A899B;border-radius:2px;padding:1px 5px">Tab</kbd> <kbd style="font-family:'JetBrains Mono',monospace;font-size:11px;border:1px solid #7A899B;border-radius:2px;padding:1px 5px">Shift Tab</kbd></span><span style="color:#A9B4C0">다음, 이전 조작 요소로 옮깁니다</span>
+<span><kbd style="font-family:'JetBrains Mono',monospace;font-size:11px;border:1px solid #7A899B;border-radius:2px;padding:1px 5px">←</kbd> <kbd style="font-family:'JetBrains Mono',monospace;font-size:11px;border:1px solid #7A899B;border-radius:2px;padding:1px 5px">→</kbd></span><span style="color:#A9B4C0">모드 전환기(탭 목록)와 행성 전환기(라디오 그룹) 안에서 옮깁니다</span>
+<span><kbd style="font-family:'JetBrains Mono',monospace;font-size:11px;border:1px solid #7A899B;border-radius:2px;padding:1px 5px">Enter</kbd> <kbd style="font-family:'JetBrains Mono',monospace;font-size:11px;border:1px solid #7A899B;border-radius:2px;padding:1px 5px">Space</kbd></span><span style="color:#A9B4C0">누릅니다. 값 배지에서는 근거 팝오버를 엽니다</span>
+<span><kbd style="font-family:'JetBrains Mono',monospace;font-size:11px;border:1px solid #7A899B;border-radius:2px;padding:1px 5px">Esc</kbd></span><span style="color:#A9B4C0">팝오버, 모달, 미리보기를 닫습니다</span>
+</div>
+<p style="margin:0;color:#A9B4C0;font-size:12px;line-height:16px">변경안 카드의 네 행동은 모두 키보드로 닿습니다. 단축키는 툴팁에 적습니다.</p>
+</section>
+
+<section style="display:flex;flex-direction:column;gap:8px">
+<h2 style="margin:0;font-size:16px;line-height:24px;font-weight:600">누르는 영역 · 24 × 24 px 이상</h2>
+<div style="display:flex;align-items:center;gap:20px;flex-wrap:wrap;font-size:11px;line-height:16px;color:#A9B4C0">
+<span style="display:inline-flex;align-items:center;gap:8px"><span style="display:inline-flex;align-items:center;height:24px;box-sizing:border-box;border:1px dashed #A8CBFF"><span style="display:inline-flex;align-items:center;gap:4px;height:20px;box-sizing:border-box;padding:0 8px;border-radius:999px;background:#303B49;color:#E8EDF2;font-weight:500"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 6q1.25-5 2.5 0t2.5 0t2.5 0t2.5 0"/></svg>시뮬</span></span>배지: 보이는 높이 20 px, 영역 24 px</span>
+<span style="display:inline-flex;align-items:center;gap:8px"><span style="display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;box-sizing:border-box;border:1px dashed #A8CBFF;color:#BBAFF3"><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M7 1.5l6 11H1z" fill="currentColor"/></svg></span>표식: 24 px</span>
+<span style="display:inline-flex;align-items:center;gap:8px"><span style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;box-sizing:border-box;border:1px dashed #A8CBFF;color:#E8EDF2"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M2.5 2.5l7 7M9.5 2.5l-7 7"/></svg></span>아이콘 버튼: 28 px</span>
+</div>
+</section>
+
+<section style="display:flex;flex-direction:column;gap:8px">
+<h2 style="margin:0;font-size:16px;line-height:24px;font-weight:600">대비 하한</h2>
+<div style="display:grid;grid-template-columns:minmax(0,1fr) 64px 64px;gap:6px 12px;font-size:12px;line-height:16px">
+<span style="font-size:11px;font-weight:500;color:#A9B4C0">가장 불리한 조합</span><span style="font-size:11px;font-weight:500;color:#A9B4C0">대비</span><span style="font-size:11px;font-weight:500;color:#A9B4C0">하한</span>
+<span>글자: color.accent.primary, bg.selected 위</span><span style="font-family:'JetBrains Mono',monospace;font-weight:500">4.75</span><span style="font-family:'JetBrains Mono',monospace;color:#A9B4C0">4.5</span>
+<span>글자: color.text.tertiary, bg.selected 위</span><span style="font-family:'JetBrains Mono',monospace;font-weight:500">4.85</span><span style="font-family:'JetBrains Mono',monospace;color:#A9B4C0">4.5</span>
+<span>글자: color.status.danger, bg.selected 위</span><span style="font-family:'JetBrains Mono',monospace;font-weight:500">5.13</span><span style="font-family:'JetBrains Mono',monospace;color:#A9B4C0">4.5</span>
+<span>비문자: color.border.strong, bg.selected 위</span><span style="font-family:'JetBrains Mono',monospace;font-weight:500">3.62</span><span style="font-family:'JetBrains Mono',monospace;color:#A9B4C0">3</span>
+<span>비문자: color.focus.ring, bg.selected 위</span><span style="font-family:'JetBrains Mono',monospace;font-weight:500">7.79</span><span style="font-family:'JetBrains Mono',monospace;color:#A9B4C0">3</span>
+</div>
+<p style="margin:0;color:#A9B4C0;font-size:12px;line-height:16px">border.subtle와 border.default는 장식이며 뜻을 전하지 않습니다. 뜻을 갖는 경계에는 border.strong을 씁니다. 토큰 값을 조정해도 이 하한은 지킵니다.</p>
+</section>
+
+<section style="display:flex;flex-direction:column;gap:8px">
+<h2 style="margin:0;font-size:16px;line-height:24px;font-weight:600">색만으로 전하지 않기, 알림, 모션</h2>
+<ul style="margin:0;padding-left:18px;display:flex;flex-direction:column;gap:4px;font-size:12px;line-height:18px;color:#A9B4C0">
+<li>값 배지는 라벨 + 글리프 + 테두리 모양, 증거 단계는 코드(L0~L3) + 막대 칸 수 + 문구, 타임라인 표식은 모양으로도 구분됩니다.</li>
+<li>토스트는 포커스를 빼앗지 않습니다. 증거 단계가 바뀌면 스크린리더에 문구를 읽어 줍니다: "L1 미리보기. 1회 실행. 판정이 아닙니다".</li>
+<li>prefers-reduced-motion이면 이동·크기 변화를 없애고 불투명도 전환만 남깁니다. 진행 표시와 뼈대는 저절로 움직이지 않습니다.</li>
+</ul>
+</section>
+</div>
+</div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":960}}'>
+class Component extends DCLogic {
+renderVals() {
+return {};
+}
+}
+</script>
+</body>
+</html>
