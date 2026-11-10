@@ -24,6 +24,7 @@ This is a fresh start. The previous product (hackathon era) is preserved at the 
 | `data/`, `assets/` | Planet data, parts, licensed assets. `assets/LEDGER.csv` is the provenance ledger: one row per asset or tool/runtime dependency (`kind` column), with license and credit text |
 | `docs/` | Plan, process, decisions, architecture, research |
 | `tools/` | Developer tooling (`tools/assets/credits.py`: generates `CREDITS.md` from `assets/LEDGER.csv`) |
+| `scripts/` | `check_assets.py`: fails if an asset file (under `assets/` or `apps/**/public/`) has no ledger row, a ledger row has no file, or an unmodified asset's sha256 differs (`.github/workflows/assets.yml`) |
 | `scripts/ci/` | CI guards (`check_web_scripts.mjs`; `check_pr_body.py`: fails a PR whose body lacks `## 대목표`, a verbatim `docs/plan/values.md` quote under `## 핵심 가치`, or exactly one `Closes #N` line, in template order) |
 | `scripts/gh/` | GitHub bootstrap scripts (`bootstrap.sh`: labels and milestones from `issues.yaml`, idempotent; `--dry-run` to preview) |
 
@@ -45,6 +46,15 @@ uv run python tools/assets/credits.py            # regenerate CREDITS.md
 uv run python tools/assets/credits.py --check    # fail if CREDITS.md differs from the ledger
 uv run python -m unittest discover -s tools/assets/tests -v
 ```
+
+The ledger check (`.github/workflows/assets.yml`, PRs and main) ties the ledger to the files:
+
+```bash
+uv run python scripts/check_assets.py                      # exit 1 listing every violation
+uv run python -m unittest discover -s scripts/tests -v
+```
+
+Every file under `assets/` and `apps/**/public/` needs a `kind=asset` row whose `경로` is that file, and every row's path must exist. For an asset recorded as unmodified (`변경 내역` starts with `없음`) the file's sha256 must equal `원본 해시`. For a modified asset `원본 해시` is the hash of the downloaded original, which the repository does not contain, so the hash is not compared (the script reports how many were skipped). `CREDITS.md` must equal the generated output.
 
 ## PR body check
 
