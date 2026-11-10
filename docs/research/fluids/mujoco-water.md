@@ -11,7 +11,7 @@
 3. **타원체 유체 모델은 가속도 비례 부가질량을 주지 않는다.** 문서에는 `−m_A∘v̇` 항이 있지만 MuJoCo 4.0.0 소스는 가속도를 `NULL`로 넘겨 그 항을 끈다("disabled due to dependency on qacc"). 남는 것은 속도끼리 엮이는 항(`(m_A∘v)×ω` 등)뿐이다. 계획 15.2절의 "타원체 유체 모델은 부가질량과 항력을 다룬다"는 **반만 맞다.** 항력은 다루고 부가질량의 관성 효과는 다루지 않는다(실행으로 확인, 3.1절).
 4. **수역 한정 부력은 바디별 외력으로 정확히 줄 수 있다.** FL-03a의 수역 정의(수평 영역을 바닥과 수면 사이로 세운 기둥)로 상자를 잘라 잠긴 부피와 도심을 구하고 `ρ g V`를 도심에 주면 평형 흘수 오차가 최대 **2.4×10⁻⁴ %**(`xfrc_applied`)와 **9.0×10⁻⁶ %**(`mjcb_passive`)였다(12초 정착, 상자 8개). 문턱 [제안] "수계산 대비 1% 이하"를 만족한다.
 5. **부가질량은 "관성 증가 + 중력 보상"이 정확하고 싸고 안정하다. "지난 스텝 가속도에 비례한 힘"은 `m_a/m ≥ 1`에서 발산한다.** 뜨는 물체(밀도비 0.5 이하)가 정확히 그 영역이다.
-6. **같은 입력, 같은 경로는 반복 실행해도 궤적 해시가 같다**(모든 후보, 모든 장면). 단 **힘을 주는 경로가 다르면 해시가 다르다.** 경로는 결정론 계약의 일부다.
+6. **같은 입력, 같은 경로는 반복 실행해도 해시가 같았다.** 부가질량 후보 4/4(구 하나, 3회), 상자 50개 장면의 힘 경로 4/4(2회, 500 스텝). 반복 횟수가 적다. 단 **힘을 주는 경로가 다르면 해시가 다르다**(`xfrc`, `xfrc_step12`, `passive` 모두 서로 다름). 경로는 결정론 계약의 일부다.
 
 ## 2. 확인한 버전과 출처
 
@@ -207,7 +207,7 @@ uv run python tools/dev/resource_guard.py --profile heavy -- \
 # 5초 정착 대조(4절의 별도 행)
 uv run python tools/dev/resource_guard.py --profile heavy -- \
   uv run spikes/mujoco-water/mujoco_water.py --seed 0 --only B_draft --settle-s 5 --json spikes/mujoco-water/results/fl-01-draft-settle5.json
-uv run spikes/mujoco-water/test_mujoco_water.py     # 8개 시험, 속도·값을 단언하지 않는다(경계 부피, 1% 흘수, 해시 일치, 매질 전역성)
+uv run spikes/mujoco-water/test_mujoco_water.py     # 8개 시험(경계 부피, 1% 흘수, 해시 일치, 매질 전역성, 부가질량 후보 안정·정확도). 속도(µs)는 단언하지 않는다
 ```
 
 이슈의 검증 명령 `uv run python spikes/fluids/mujoco_water.py --seed 0`은 경로가 다르다. 이 저장소의 스파이크는 `spikes/<이름>/`(예: `spikes/mujoco-limits/`)이고 PEP 723 머리글을 읽으려면 `uv run <파일>`로 돌려야 한다(`uv run python <파일>`은 머리글을 무시한다). 결과 JSON: `spikes/mujoco-water/results/fl-01.json`(전체 실행, 162.3초), `fl-01-draft-settle5.json`(50.3초).
@@ -222,6 +222,7 @@ uv run spikes/mujoco-water/test_mujoco_water.py     # 8개 시험, 속도·값�
 | 메모리 압력 | normal | normal | | |
 
 - 소요 162.3초, 종료 코드 0. SSD 여유가 임계(10 GiB) 근처라 처음에는 가드가 차단했고(9.2 GiB), `docs/process/dev-resources.md` 정리 절차 2(`uv cache prune`, 이어서 `uv cache clean`, 합쳐서 약 4.7 GiB)를 한 뒤 통과했다. 다른 에이전트의 uv 캐시도 지워져 다음 실행에서 다시 받는다.
+- 이 시험들은 CI가 돌리지 않는다. 스파이크 오프라인 시험의 CI 편입은 #405([P0-04e])다. 계획 정정은 #404([FL-01a])다.
 - 한계: 부하 평균이 100을 넘는 머신이라 **벽시계 값은 모두 `추정`**이다. 스텝당 µs는 자릿수와 순서로만 읽는다. 정확도 값(흘수, 가속도, 부피)과 해시 일치는 부하와 무관하다. 반복은 장면별 2~3회뿐이다.
 
 ## 10. 범위 밖과 이월
@@ -230,4 +231,4 @@ uv run spikes/mujoco-water/test_mujoco_water.py     # 8개 시험, 속도·값�
 - 구·원통·볼록체의 잘라내기, 기울어 뜨는 자세의 복원 모멘트, 부유 진동 주기, 수중 항력의 종단속도 → FL-03a/b/d.
 - 부분 잠김에서의 부가질량, 관절 트리에서의 관성 갱신 → FL-03c.
 - RK4에서의 힘 주기 → 필요해지면 새 이슈.
-- 계획 문서 15.2절의 "타원체 유체 모델은 부가질량과 항력을 다룬다"는 문장과 5.2·15.2절의 `[확인 필요, FL-01]`을 이 결과로 고쳐야 한다. 계획 변경이 아니라 확인 결과의 반영이므로 이 PR에서 고치지 않고 이슈로 남긴다(`done-definition.md` 8번).
+- 계획 문서 15.2절의 "타원체 유체 모델은 부가질량과 항력을 다룬다"는 문장과 5.2·15.2절의 `[확인 필요, FL-01]`을 이 결과로 고쳐야 한다. 계획 정정은 #404([FL-01a])다. 이 PR에서 고치지 않았다(`done-definition.md` 8번).

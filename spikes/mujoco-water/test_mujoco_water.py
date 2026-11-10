@@ -79,11 +79,24 @@ class DraftTest(unittest.TestCase):
         q = {p: mw.run_boxes(boxes, water, p, 0.002, 150, floor_z=-1.0)["qpos"] for p in ("xfrc_step12", "passive")}
         self.assertLess(np.abs(q["xfrc_step12"] - q["passive"]).max(), 1e-9)
 
-    def test_added_mass_acceleration_matches_theory_when_stable(self):
-        r = mw.sphere_run("twopass", 0.75, 0.002, 100, sample=(50, 100))
-        a = (r["v"][100] - r["v"][50]) / (50 * 0.002)
-        a_exp = mw.G * (1 - 0.75) / (0.75 + mw.ADDED_MASS_SPHERE)
-        self.assertLess(abs(a - a_exp) / a_exp, 0.01)
+    def test_added_mass_candidates_over_all_ratios_and_timesteps(self):
+        res = mw.added_mass_experiment(repeats=2)
+        rows = res["rows"]
+        self.assertEqual({r["h"] for r in rows}, {0.002, 0.01})
+        self.assertEqual(len({r["density_ratio"] for r in rows}), 8)
+        for r in rows:
+            where = (r["method"], r["h"], r["density_ratio"])
+            if r["method"] in ("twopass", "inertia"):  # same-step force and inertia increase: stable and exact everywhere
+                self.assertTrue(r["stable"], where)
+                self.assertLess(abs(r["accel_error_pct"]), 1e-6, where)
+            elif r["method"] == "lag":  # diverges exactly where m_a/m >= 1 (density ratio <= 0.5), both timesteps
+                self.assertEqual(r["stable"], r["ma_over_m"] < 1.0, where)
+                if r["stable"]:
+                    self.assertLess(abs(r["accel_error_pct"]), 1.0, where)
+            else:  # no added mass: stable but the acceleration is wrong by 10 % or more
+                self.assertTrue(r["stable"], where)
+                self.assertGreaterEqual(abs(r["accel_error_pct"]), 10.0 - 1e-9, where)
+        self.assertTrue(all(res["hash_equal"].values()), res["hash_equal"])
 
 
 if __name__ == "__main__":
