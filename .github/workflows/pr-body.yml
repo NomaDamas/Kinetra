@@ -1,0 +1,27 @@
+name: pr-body
+
+# P0-04c: a PR body must follow .github/pull_request_template.md order:
+# ## 대목표 → ## 핵심 가치 (values.md quote) → exactly one Closes #N (Refs #N optional, in addition). Re-runs when the body is edited.
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pr-body-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  pr-body:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Guard tests (scripts/ci)
+        run: python3 -m unittest discover -s scripts/ci/tests -p "test_check_pr_body.py" -v
+      - name: Check PR body
+        env:
+          PR_BODY: ${{ github.event.pull_request.body }}
+        run: python3 scripts/ci/check_pr_body.py
