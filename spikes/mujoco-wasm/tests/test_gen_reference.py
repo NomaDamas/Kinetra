@@ -21,8 +21,8 @@ import gen_reference as g  # noqa: E402
 
 # Cross-platform bounds on max |qpos difference| (m, rad) vs the committed macOS arm64 reference. MEASURED on the CI runner;
 # the values and the run link are recorded in REPORT.md.
-PRE_CONTACT_BOUND = 1e-6
-FULL_BOUND = float('inf')  # temporary: measure first
+PRE_CONTACT_BOUND = 1e-9  # measured worst 1.73e-12 (Linux x86-64 CI), ~600x headroom
+FULL_BOUND = 5e-3         # measured worst 7.69e-4 (the nominal-with-1e-12-nudge control), 6.5x headroom; see REPORT.md
 
 
 class ReferenceTest(unittest.TestCase):
