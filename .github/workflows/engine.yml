@@ -1,0 +1,41 @@
+name: engine
+
+# P0-04a: Python workspace (packages/*) tests on every PR and on main.
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: engine-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  pytest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+          cache-dependency-glob: uv.lock
+      - name: uv sync
+        run: uv sync --locked
+      - name: pytest packages
+        run: uv run pytest packages -q -rs --junitxml=pytest-report.xml
+      - name: Test counts (skipped is always printed)
+        if: always()
+        run: |
+          python3 - <<'PY'
+          import os, xml.etree.ElementTree as ET
+          if not os.path.exists("pytest-report.xml"):
+              raise SystemExit("pytest-report.xml missing: pytest did not finish")
+          s = ET.parse("pytest-report.xml").getroot()
+          s = s if s.tag == "testsuite" else s[0]
+          total, fail, err, skip = (int(s.get(k, 0)) for k in ("tests", "failures", "errors", "skipped"))
+          print(f"tests={total} passed={total - fail - err - skip} failed={fail} errors={err} skipped={skip}")
+          PY
