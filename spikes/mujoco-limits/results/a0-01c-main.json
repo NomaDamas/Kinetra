@@ -1,0 +1,1303 @@
+{
+ "machine": {
+  "cpu": "Apple M2 Pro",
+  "cores_logical": 10,
+  "ram_gib": 32.0,
+  "os": "macOS-15.6.1-arm64-arm-64bit",
+  "python": "3.12.11",
+  "mujoco": "4.0.0",
+  "numpy": "2.5.4"
+ },
+ "start": {
+  "uptime": "19:09  up 22 days, 20:47, 5 users, load averages: 27.25 42.59 67.54",
+  "loadavg": [
+   27.2,
+   42.6,
+   67.5
+  ],
+  "swap": "total = 17408.00M  used = 16250.50M  free = 1157.50M  (encrypted)",
+  "disk_free": "/dev/disk3s1s1   460Gi    10Gi    20Gi    34%    426k  214M    0%   /"
+ },
+ "args": {
+  "parts": [
+   10,
+   50,
+   200
+  ],
+  "repeats": 5,
+  "seed": 0,
+  "json": "spikes/mujoco-limits/results/a0-01c-main.json"
+ },
+ "scenes": [
+  {
+   "parts": 10,
+   "runs": [
+    {
+     "parts": 10,
+     "seed": 0,
+     "load_before": {
+      "uptime": "19:09  up 22 days, 20:47, 5 users, load averages: 27.25 42.59 67.54",
+      "loadavg": [
+       27.2,
+       42.6,
+       67.5
+      ],
+      "swap": "total = 17408.00M  used = 16250.50M  free = 1157.50M  (encrypted)",
+      "disk_free": "/dev/disk3s1s1   460Gi    10Gi    20Gi    34%    426k  214M    0%   /"
+     },
+     "build_s": 0.02711295895278454,
+     "compile_s": 0.007939916802570224,
+     "first_frame_s": 0.0007137500215321779,
+     "nbody": 21,
+     "nq": 80,
+     "nv": 70,
+     "nmesh": 10,
+     "ngeom": 21,
+     "xml_s": 0.006370916962623596,
+     "xml_nbody_matches": true,
+     "edit_s": 0.001468040980398655,
+     "recompile_returns_new_objects": true,
+     "old_model_unchanged": true,
+     "edit_size_applied": true,
+     "edit_state_kept": true,
+     "edit_nbody_ok": true,
+     "edit_first_frame_s": 1.795799471437931e-05,
+     "add_s": 0.0013506661634892225,
+     "add_state_kept": true,
+     "add_nbody_ok": true,
+     "remove_s": 0.0013499578926712275,
+     "remove_nbody_ok": true,
+     "remove_state_kept": true,
+     "api": {
+      "MjSpec": {
+       "ok": true
+      },
+      "attach": {
+       "ok": true
+      },
+      "to_xml+from_xml_string": {
+       "ok": true
+      },
+      "recompile(edit geom size)": {
+       "ok": true
+      },
+      "attach(add part at runtime)": {
+       "ok": true
+      },
+      "recompile(add part)": {
+       "ok": true
+      },
+      "delete(remove part)": {
+       "ok": true
+      },
+      "recompile(remove part)": {
+       "ok": true
+      }
+     },
+     "load_after": {
+      "uptime": "19:09  up 22 days, 20:47, 5 users, load averages: 27.25 42.59 67.54",
+      "loadavg": [
+       27.2,
+       42.6,
+       67.5
+      ],
+      "swap": "total = 17408.00M  used = 16250.50M  free = 1157.50M  (encrypted)",
+      "disk_free": "/dev/disk3s1s1   460Gi    10Gi    20Gi    34%    426k  214M    0%   /"
+     }
+    },
+    {
+     "parts": 10,
+     "seed": 0,
+     "load_before": {
+      "uptime": "19:09  up 22 days, 20:47, 5 users, load averages: 27.25 42.59 67.54",
+      "loadavg": [
+       27.2,
+       42.6,
+       67.5
+      ],
+      "swap": "total = 17408.00M  used = 16250.50M  free = 1157.50M  (encrypted)",
+      "disk_free": "/dev/disk3s1s1   460Gi    10Gi    20Gi    34%    426k  214M    0%   /"
+     },
+     "build_s": 0.0028515420854091644,
+     "compile_s": 0.0016511657740920782,
+     "first_frame_s": 0.0002814589533954859,
+     "nbody": 21,
+     "nq": 80,
+     "nv": 70,
+     "nmesh": 10,
+     "ngeom": 21,
+     "xml_s": 0.003746083937585354,
+     "xml_nbody_matches": true,
+     "edit_s": 0.0016461669001728296,
+     "recompile_returns_new_objects": true,
+     "old_model_unchanged": true,
+     "edit_size_applied": true,
+     "edit_state_kept": true,
+     "edit_nbody_ok": true,
+     "edit_first_frame_s": 0.00019179191440343857,
+     "add_s": 0.0016474579460918903,
+     "add_state_kept": true,
+     "add_nbody_ok": true,
+     "remove_s": 0.0019135409966111183,
+     "remove_nbody_ok": true,
+     "remove_state_kept": true,
+     "api": {
+      "MjSpec": {
+       "ok": true
+      },
+      "attach": {
+       "ok": true
+      },
+      "to_xml+from_xml_string": {
+       "ok": true
+      },
+      "recompile(edit geom size)": {
+       "ok": true
+      },
+      "attach(add part at runtime)": {
+       "ok": true
+      },
+      "recompile(add part)": {
+       "ok": true
+      },
+      "delete(remove part)": {
+       "ok": true
+      },
+      "recompile(remove part)": {
+       "ok": true
+      }
+     },
+     "load_after": {
+      "uptime": "19:09  up 22 days, 20:47, 5 users, load averages: 27.25 42.59 67.54",
+      "loadavg": [
+       27.2,
+       42.6,
+       67.5
+      ],
+      "swap": "total = 17408.00M  used = 16250.50M  free = 1157.50M  (encrypted)",
+      "disk_free": "/dev/disk3s1s1   460Gi    10Gi    20Gi    34%    426k  214M    0%   /"
+     }
+    },
+    {
+     "parts": 10,
+     "seed": 0,
+     "load_before": {
+      "uptime": "19:09  up 22 days, 20:47, 5 users, load averages: 27.25 42.59 67.54",
+      "loadavg": [
+       27.2,
+       42.6,
+       67.5
+      ],
+      "swap": "total = 17408.00M  used = 16250.50M  free = 1157.50M  (encrypted)",
+      "disk_free": "/dev/disk3s1s1   460Gi    10Gi    20Gi    34%    426k  214M    0%   /"
+     },
+     "build_s": 0.0020286659710109234,
+     "compile_s": 0.0011563750449568033,
+     "first_frame_s": 0.00028316606767475605,
+     "nbody": 21,
+     "nq": 80,
+     "nv": 70,
+     "nmesh": 10,
+     "ngeom": 21,
+     "xml_s": 0.0034573329612612724,
+     "xml_nbody_matches": true,
+     "edit_s": 0.0015561669133603573,
+     "recompile_returns_new_objects": true,
+     "old_model_unchanged": true,
+     "edit_size_applied": true,
+     "edit_state_kept": true,
+     "edit_nbody_ok": true,
+     "edit_first_frame_s": 2.2625084966421127e-05,
+     "add_s": 0.0014680419117212296,
+     "add_state_kept": true,
+     "add_nbody_ok": true,
+     "remove_s": 0.0014918330125510693,
+     "remove_nbody_ok": true,
+     "remove_state_kept": true,
+     "api": {
+      "MjSpec": {
+       "ok": true
+      },
+      "attach": {
+       "ok": true
+      },
+      "to_xml+from_xml_string": {
+       "ok": true
+      },
+      "recompile(edit geom size)": {
+       "ok": true
+      },
+      "attach(add part at runtime)": {
+       "ok": true
+      },
+      "recompile(add part)": {
+       "ok": true
+      },
+      "delete(remove part)": {
+       "ok": true
+      },
+      "recompile(remove part)": {
+       "ok": true
+      }
+     },
+     "load_after": {
+      "uptime": "19:09  up 22 days, 20:47, 5 users, load averages: 27.25 42.59 67.54",
+      "loadavg": [
+       27.2,
+       42.6,
+       67.5
+      ],
+      "swap": "total = 17408.00M  used = 16250.50M  free = 1157.50M  (encrypted)",
+      "disk_free": "/dev/disk3s1s1   460Gi    10Gi    20Gi    34%    426k  214M    0%   /"
+     }
+    },
+    {
+     "parts": 10,
+     "seed": 0,
+     "load_before": {
+      "uptime": "19:09  up 22 days, 20:47, 5 users, load averages: 27.25 42.59 67.54",
+      "loadavg": [
+       27.2,
+       42.6,
+       67.5
+      ],
+      "swap": "total = 17408.00M  used = 16250.50M  free = 1157.50M  (encrypted)",
+      "disk_free": "/dev/disk3s1s1   460Gi    10Gi    20Gi    34%    426k  214M    0%   /"
+     },
+     "build_s": 0.0013277919497340918,
+     "compile_s": 0.0016361670568585396,
+     "first_frame_s": 0.00035099987871944904,
+     "nbody": 21,
+     "nq": 80,
+     "nv": 70,
+     "nmesh": 10,
+     "ngeom": 21,
+     "xml_s": 0.0039842501282691956,
+     "xml_nbody_matches": true,
+     "edit_s": 0.002379750134423375,
+     "recompile_returns_new_objects": true,
+     "old_model_unchanged": true,
+     "edit_size_applied": true,
+     "edit_state_kept": true,
+     "edit_nbody_ok": true,
+     "edit_first_frame_s": 2.3083994165062904e-05,
+     "add_s": 0.0015402091667056084,
+     "add_state_kept": true,
+     "add_nbody_ok": true,
+     "remove_s": 0.0013265002053231,
+     "remove_nbody_ok": true,
+     "remove_state_kept": true,
+     "api": {
+      "MjSpec": {
+       "ok": true
+      },
+      "attach": {
+       "ok": true
+      },
+      "to_xml+from_xml_string": {
+       "ok": true
+      },
+      "recompile(edit geom size)": {
+       "ok": true
+      },
+      "attach(add part at runtime)": {
+       "ok": true
+      },
+      "recompile(add part)": {
+       "ok": true
+      },
+      "delete(remove part)": {
+       "ok": true
+      },
+      "recompile(remove part)": {
+       "ok": true
+      }
+     },
+     "load_after": {
+      "uptime": "19:09  up 22 days, 20:47, 5 users, load averages: 27.25 42.59 67.54",
+      "loadavg": [
+       27.2,
+       42.6,
+       67.5
+      ],
+      "swap": "total = 17408.00M  used = 16250.50M  free = 1157.50M  (encrypted)",
+      "disk_free": "/dev/disk3s1s1   460Gi    10Gi    20Gi    34%    426k  214M    0%   /"
+     }
+    },
+    {
+     "parts": 10,
+     "seed": 0,
+     "load_before": {
+      "uptime": "19:09  up 22 days, 20:47, 5 users, load averages: 27.25 42.59 67.54",
+      "loadavg": [
+       27.2,
+       42.6,
+       67.5
+      ],
+      "swap": "total = 17408.00M  used = 16250.50M  free = 1157.50M  (encrypted)",
+      "disk_free": "/dev/disk3s1s1   460Gi    10Gi    20Gi    34%    426k  214M    0%   /"
+     },
+     "build_s": 0.0014379171188920736,
+     "compile_s": 0.0013388339430093765,
+     "first_frame_s": 0.000290165888145566,
+     "nbody": 21,
+     "nq": 80,
+     "nv": 70,
+     "nmesh": 10,
+     "ngeom": 21,
+     "xml_s": 0.00366862490773201,
+     "xml_nbody_matches": true,
+     "edit_s": 0.0013011661358177662,
+     "recompile_returns_new_objects": true,
+     "old_model_unchanged": true,
+     "edit_size_applied": true,
+     "edit_state_kept": true,
+     "edit_nbody_ok": true,
+     "edit_first_frame_s": 1.53339933604002e-05,
+     "add_s": 0.0011653329711407423,
+     "add_state_kept": true,
+     "add_nbody_ok": true,
+     "remove_s": 0.001411332981660962,
+     "remove_nbody_ok": true,
+     "remove_state_kept": true,
+     "api": {
+      "MjSpec": {
+       "ok": true
+      },
+      "attach": {
+       "ok": true
+      },
+      "to_xml+from_xml_string": {
+       "ok": true
+      },
+      "recompile(edit geom size)": {
+       "ok": true
+      },
+      "attach(add part at runtime)": {
+       "ok": true
+      },
+      "recompile(add part)": {
+       "ok": true
+      },
+      "delete(remove part)": {
+       "ok": true
+      },
+      "recompile(remove part)": {
+       "ok": true
+      }
+     },
+     "load_after": {
+      "uptime": "19:09  up 22 days, 20:47, 5 users, load averages: 27.25 42.59 67.54",
+      "loadavg": [
+       27.2,
+       42.6,
+       67.5
+      ],
+      "swap": "total = 17408.00M  used = 16250.50M  free = 1157.50M  (encrypted)",
+      "disk_free": "/dev/disk3s1s1   460Gi    10Gi    20Gi    34%    426k  214M    0%   /"
+     }
+    }
+   ],
+   "summary": {
+    "build_s": {
+     "n": 5,
+     "min": 0.0013,
+     "median": 0.002,
+     "max": 0.0271
+    },
+    "compile_s": {
+     "n": 5,
+     "min": 0.0012,
+     "median": 0.0016,
+     "max": 0.0079
+    },
+    "first_frame_s": {
+     "n": 5,
+     "min": 0.0003,
+     "median": 0.0003,
+     "max": 0.0007
+    },
+    "xml_s": {
+     "n": 5,
+     "min": 0.0035,
+     "median": 0.0037,
+     "max": 0.0064
+    },
+    "edit_s": {
+     "n": 5,
+     "min": 0.0013,
+     "median": 0.0016,
+     "max": 0.0024
+    },
+    "edit_first_frame_s": {
+     "n": 5,
+     "min": 0.0,
+     "median": 0.0,
+     "max": 0.0002
+    },
+    "add_s": {
+     "n": 5,
+     "min": 0.0012,
+     "median": 0.0015,
+     "max": 0.0016
+    },
+    "remove_s": {
+     "n": 5,
+     "min": 0.0013,
+     "median": 0.0014,
+     "max": 0.0019
+    }
+   }
+  },
+  {
+   "parts": 50,
+   "runs": [
+    {
+     "parts": 50,
+     "seed": 0,
+     "load_before": {
+      "uptime": "19:09  up 22 days, 20:47, 5 users, load averages: 27.25 42.59 67.54",
+      "loadavg": [
+       27.2,
+       42.6,
+       67.5
+      ],
+      "swap": "total = 17408.00M  used = 16250.50M  free = 1157.50M  (encrypted)",
+      "disk_free": "/dev/disk3s1s1   460Gi    10Gi    20Gi    34%    426k  214M    0%   /"
+     },
+     "build_s": 0.0060844579711556435,
+     "compile_s": 0.005342917051166296,
+     "first_frame_s": 0.000420666066929698,
+     "nbody": 101,
+     "nq": 400,
+     "nv": 350,
+     "nmesh": 50,
+     "ngeom": 101,
+     "xml_s": 0.016647584037855268,
+     "xml_nbody_matches": true,
+     "edit_s": 0.007420125184580684,
+     "recompile_returns_new_objects": true,
+     "old_model_unchanged": true,
+     "edit_size_applied": true,
+     "edit_state_kept": true,
+     "edit_nbody_ok": true,
+     "edit_first_frame_s": 7.370789535343647e-05,
+     "add_s": 0.006432166090235114,
+     "add_state_kept": true,
+     "add_nbody_ok": true,
+     "remove_s": 0.006031624972820282,
+     "remove_nbody_ok": true,
+     "remove_state_kept": true,
+     "api": {
+      "MjSpec": {
+       "ok": true
+      },
+      "attach": {
+       "ok": true
+      },
+      "to_xml+from_xml_string": {
+       "ok": true
+      },
+      "recompile(edit geom size)": {
+       "ok": true
+      },
+      "attach(add part at runtime)": {
+       "ok": true
+      },
+      "recompile(add part)": {
+       "ok": true
+      },
+      "delete(remove part)": {
+       "ok": true
+      },
+      "recompile(remove part)": {
+       "ok": true
+      }
+     },
+     "load_after": {
+      "uptime": "19:09  up 22 days, 20:47, 5 users, load averages: 27.25 42.59 67.54",
+      "loadavg": [
+       27.2,
+       42.6,
+       67.5
+      ],
+      "swap": "total = 17408.00M  used = 16250.50M  free = 1157.50M  (encrypted)",
+      "disk_free": "/dev/disk3s1s1   460Gi    10Gi    20Gi    34%    426k  214M    0%   /"
+     }
+    },
+    {
+     "parts": 50,
+     "seed": 0,
+     "load_before": {
+      "uptime": "19:09  up 22 days, 20:47, 5 users, load averages: 27.25 42.59 67.54",
+      "loadavg": [
+       27.2,
+       42.6,
+       67.5
+      ],
+      "swap": "total = 17408.00M  used = 16250.50M  free = 1157.50M  (encrypted)",
+      "disk_free": "/dev/disk3s1s1   460Gi    10Gi    20Gi    34%    426k  214M    0%   /"
+     },
+     "build_s": 0.007868499960750341,
+     "compile_s": 0.0050232079811394215,
+     "first_frame_s": 0.00048450008034706116,
+     "nbody": 101,
+     "nq": 400,
+     "nv": 350,
+     "nmesh": 50,
+     "ngeom": 101,
+     "xml_s": 0.018314833054319024,
+     "xml_nbody_matches": true,
+     "edit_s": 0.004959624959155917,
+     "recompile_returns_new_objects": true,
+     "old_model_unchanged": true,
+     "edit_size_applied": true,
+     "edit_state_kept": true,
+     "edit_nbody_ok": true,
+     "edit_first_frame_s": 5.9499870985746384e-05,
+     "add_s": 0.005436333129182458,
+     "add_state_kept": true,
+     "add_nbody_ok": true,
+     "remove_s": 0.004898292012512684,
+     "remove_nbody_ok": true,
+     "remove_state_kept": true,
+     "api": {
+      "MjSpec": {
+       "ok": true
+      },
+      "attach": {
+       "ok": true
+      },
+      "to_xml+from_xml_string": {
+       "ok": true
+      },
+      "recompile(edit geom size)": {
+       "ok": true
+      },
+      "attach(add part at runtime)": {
+       "ok": true
+      },
+      "recompile(add part)": {
+       "ok": true
+      },
+      "delete(remove part)": {
+       "ok": true
+      },
+      "recompile(remove part)": {
+       "ok": true
+      }
+     },
+     "load_after": {
+      "uptime": "19:09  up 22 days, 20:47, 5 users, load averages: 27.25 42.59 67.54",
+      "loadavg": [
+       27.2,
+       42.6,
+       67.5
+      ],
+      "swap": "total = 17408.00M  used = 16250.50M  free = 1157.50M  (encrypted)",
+      "disk_free": "/dev/disk3s1s1   460Gi    10Gi    20Gi    34%    426k  214M    0%   /"
+     }
+    },
+    {
+     "parts": 50,
+     "seed": 0,
+     "load_before": {
+      "uptime": "19:09  up 22 days, 20:47, 5 users, load averages: 27.25 42.59 67.54",
+      "loadavg": [
+       27.2,
+       42.6,
+       67.5
+      ],
+      "swap": "total = 17408.00M  used = 16250.50M  free = 1157.50M  (encrypted)",
+      "disk_free": "/dev/disk3s1s1   460Gi    10Gi    20Gi    34%    426k  214M    0%   /"
+     },
+     "build_s": 0.010199374984949827,
+     "compile_s": 0.00457954197190702,
+     "first_frame_s": 0.0004101248923689127,
+     "nbody": 101,
+     "nq": 400,
+     "nv": 350,
+     "nmesh": 50,
+     "ngeom": 101,
+     "xml_s": 0.017019917024299502,
+     "xml_nbody_matches": true,
+     "edit_s": 0.005088333040475845,
+     "recompile_returns_new_objects": true,
+     "old_model_unchanged": true,
+     "edit_size_applied": true,
+     "edit_state_kept": true,
+     "edit_nbody_ok": true,
+     "edit_first_frame_s": 5.1584094762802124e-05,
+     "add_s": 0.005019583040848374,
+     "add_state_kept": true,
+     "add_nbody_ok": true,
+     "remove_s": 0.004820917034521699,
+     "remove_nbody_ok": true,
+     "remove_state_kept": true,
+     "api": {
+      "MjSpec": {
+       "ok": true
+      },
+      "attach": {
+       "ok": true
+      },
+      "to_xml+from_xml_string": {
+       "ok": true
+      },
+      "recompile(edit geom size)": {
+       "ok": true
+      },
+      "attach(add part at runtime)": {
+       "ok": true
+      },
+      "recompile(add part)": {
+       "ok": true
+      },
+      "delete(remove part)": {
+       "ok": true
+      },
+      "recompile(remove part)": {
+       "ok": true
+      }
+     },
+     "load_after": {
+      "uptime": "19:09  up 22 days, 20:47, 5 users, load averages: 27.25 42.59 67.54",
+      "loadavg": [
+       27.2,
+       42.6,
+       67.5
+      ],
+      "swap": "total = 17408.00M  used = 16250.50M  free = 1157.50M  (encrypted)",
+      "disk_free": "/dev/disk3s1s1   460Gi    10Gi    20Gi    34%    426k  214M    0%   /"
+     }
+    },
+    {
+     "parts": 50,
+     "seed": 0,
+     "load_before": {
+      "uptime": "19:09  up 22 days, 20:47, 5 users, load averages: 27.25 42.59 67.54",
+      "loadavg": [
+       27.2,
+       42.6,
+       67.5
+      ],
+      "swap": "total = 17408.00M  used = 16250.50M  free = 1157.50M  (encrypted)",
+      "disk_free": "/dev/disk3s1s1   460Gi    10Gi    20Gi    34%    426k  214M    0%   /"
+     },
+     "build_s": 0.006443625083193183,
+     "compile_s": 0.004665332846343517,
+     "first_frame_s": 0.0004267080221325159,
+     "nbody": 101,
+     "nq": 400,
+     "nv": 350,
+     "nmesh": 50,
+     "ngeom": 101,
+     "xml_s": 0.016838083043694496,
+     "xml_nbody_matches": true,
+     "edit_s": 0.005358375143259764,
+     "recompile_returns_new_objects": true,
+     "old_model_unchanged": true,
+     "edit_size_applied": true,
+     "edit_state_kept": true,
+     "edit_nbody_ok": true,
+     "edit_first_frame_s": 5.608284845948219e-05,
+     "add_s": 0.00613274984061718,
+     "add_state_kept": true,
+     "add_nbody_ok": true,
+     "remove_s": 0.006483832839876413,
+     "remove_nbody_ok": true,
+     "remove_state_kept": true,
+     "api": {
+      "MjSpec": {
+       "ok": true
+      },
+      "attach": {
+       "ok": true
+      },
+      "to_xml+from_xml_string": {
+       "ok": true
+      },
+      "recompile(edit geom size)": {
+       "ok": true
+      },
+      "attach(add part at runtime)": {
+       "ok": true
+      },
+      "recompile(add part)": {
+       "ok": true
+      },
+      "delete(remove part)": {
+       "ok": true
+      },
+      "recompile(remove part)": {
+       "ok": true
+      }
+     },
+     "load_after": {
+      "uptime": "19:09  up 22 days, 20:47, 5 users, load averages: 27.25 42.59 67.54",
+      "loadavg": [
+       27.2,
+       42.6,
+       67.5
+      ],
+      "swap": "total = 17408.00M  used = 16250.50M  free = 1157.50M  (encrypted)",
+      "disk_free": "/dev/disk3s1s1   460Gi    10Gi    20Gi    34%    426k  214M    0%   /"
+     }
+    },
+    {
+     "parts": 50,
+     "seed": 0,
+     "load_before": {
+      "uptime": "19:09  up 22 days, 20:47, 5 users, load averages: 27.25 42.59 67.54",
+      "loadavg": [
+       27.2,
+       42.6,
+       67.5
+      ],
+      "swap": "total = 17408.00M  used = 16250.50M  free = 1157.50M  (encrypted)",
+      "disk_free": "/dev/disk3s1s1   460Gi    10Gi    20Gi    34%    426k  214M    0%   /"
+     },
+     "build_s": 0.005833833012729883,
+     "compile_s": 0.00529341702349484,
+     "first_frame_s": 0.0004392080008983612,
+     "nbody": 101,
+     "nq": 400,
+     "nv": 350,
+     "nmesh": 50,
+     "ngeom": 101,
+     "xml_s": 0.01733195804990828,
+     "xml_nbody_matches": true,
+     "edit_s": 0.0068182500544935465,
+     "recompile_returns_new_objects": true,
+     "old_model_unchanged": true,
+     "edit_size_applied": true,
+     "edit_state_kept": true,
+     "edit_nbody_ok": true,
+     "edit_first_frame_s": 7.637497037649155e-05,
+     "add_s": 0.005199667066335678,
+     "add_state_kept": true,
+     "add_nbody_ok": true,
+     "remove_s": 0.005984875140711665,
+     "remove_nbody_ok": true,
+     "remove_state_kept": true,
+     "api": {
+      "MjSpec": {
+       "ok": true
+      },
+      "attach": {
+       "ok": true
+      },
+      "to_xml+from_xml_string": {
+       "ok": true
+      },
+      "recompile(edit geom size)": {
+       "ok": true
+      },
+      "attach(add part at runtime)": {
+       "ok": true
+      },
+      "recompile(add part)": {
+       "ok": true
+      },
+      "delete(remove part)": {
+       "ok": true
+      },
+      "recompile(remove part)": {
+       "ok": true
+      }
+     },
+     "load_after": {
+      "uptime": "19:09  up 22 days, 20:47, 5 users, load averages: 27.25 42.59 67.54",
+      "loadavg": [
+       27.2,
+       42.6,
+       67.5
+      ],
+      "swap": "total = 17408.00M  used = 16250.50M  free = 1157.50M  (encrypted)",
+      "disk_free": "/dev/disk3s1s1   460Gi    10Gi    20Gi    34%    426k  214M    0%   /"
+     }
+    }
+   ],
+   "summary": {
+    "build_s": {
+     "n": 5,
+     "min": 0.0058,
+     "median": 0.0064,
+     "max": 0.0102
+    },
+    "compile_s": {
+     "n": 5,
+     "min": 0.0046,
+     "median": 0.005,
+     "max": 0.0053
+    },
+    "first_frame_s": {
+     "n": 5,
+     "min": 0.0004,
+     "median": 0.0004,
+     "max": 0.0005
+    },
+    "xml_s": {
+     "n": 5,
+     "min": 0.0166,
+     "median": 0.017,
+     "max": 0.0183
+    },
+    "edit_s": {
+     "n": 5,
+     "min": 0.005,
+     "median": 0.0054,
+     "max": 0.0074
+    },
+    "edit_first_frame_s": {
+     "n": 5,
+     "min": 0.0001,
+     "median": 0.0001,
+     "max": 0.0001
+    },
+    "add_s": {
+     "n": 5,
+     "min": 0.005,
+     "median": 0.0054,
+     "max": 0.0064
+    },
+    "remove_s": {
+     "n": 5,
+     "min": 0.0048,
+     "median": 0.006,
+     "max": 0.0065
+    }
+   }
+  },
+  {
+   "parts": 200,
+   "runs": [
+    {
+     "parts": 200,
+     "seed": 0,
+     "load_before": {
+      "uptime": "19:09  up 22 days, 20:47, 5 users, load averages: 27.25 42.59 67.54",
+      "loadavg": [
+       27.2,
+       42.6,
+       67.5
+      ],
+      "swap": "total = 17408.00M  used = 16250.50M  free = 1157.50M  (encrypted)",
+      "disk_free": "/dev/disk3s1s1   460Gi    10Gi    20Gi    34%    426k  214M    0%   /"
+     },
+     "build_s": 0.060739791020751,
+     "compile_s": 0.03994279191829264,
+     "first_frame_s": 0.0008907499723136425,
+     "nbody": 401,
+     "nq": 1600,
+     "nv": 1400,
+     "nmesh": 200,
+     "ngeom": 401,
+     "xml_s": 0.11277483310550451,
+     "xml_nbody_matches": true,
+     "edit_s": 0.04241016600281,
+     "recompile_returns_new_objects": true,
+     "old_model_unchanged": true,
+     "edit_size_applied": true,
+     "edit_state_kept": true,
+     "edit_nbody_ok": true,
+     "edit_first_frame_s": 0.00018262513913214207,
+     "add_s": 0.040983333019539714,
+     "add_state_kept": true,
+     "add_nbody_ok": true,
+     "remove_s": 0.044218249851837754,
+     "remove_nbody_ok": true,
+     "remove_state_kept": true,
+     "api": {
+      "MjSpec": {
+       "ok": true
+      },
+      "attach": {
+       "ok": true
+      },
+      "to_xml+from_xml_string": {
+       "ok": true
+      },
+      "recompile(edit geom size)": {
+       "ok": true
+      },
+      "attach(add part at runtime)": {
+       "ok": true
+      },
+      "recompile(add part)": {
+       "ok": true
+      },
+      "delete(remove part)": {
+       "ok": true
+      },
+      "recompile(remove part)": {
+       "ok": true
+      }
+     },
+     "load_after": {
+      "uptime": "19:09  up 22 days, 20:47, 5 users, load averages: 27.25 42.59 67.54",
+      "loadavg": [
+       27.2,
+       42.6,
+       67.5
+      ],
+      "swap": "total = 17408.00M  used = 16250.50M  free = 1157.50M  (encrypted)",
+      "disk_free": "/dev/disk3s1s1   460Gi    10Gi    20Gi    34%    426k  214M    0%   /"
+     }
+    },
+    {
+     "parts": 200,
+     "seed": 0,
+     "load_before": {
+      "uptime": "19:09  up 22 days, 20:47, 5 users, load averages: 27.25 42.59 67.54",
+      "loadavg": [
+       27.2,
+       42.6,
+       67.5
+      ],
+      "swap": "total = 17408.00M  used = 16250.50M  free = 1157.50M  (encrypted)",
+      "disk_free": "/dev/disk3s1s1   460Gi    10Gi    20Gi    34%    426k  214M    0%   /"
+     },
+     "build_s": 0.07382404198870063,
+     "compile_s": 0.041097457986325026,
+     "first_frame_s": 0.0011682079639285803,
+     "nbody": 401,
+     "nq": 1600,
+     "nv": 1400,
+     "nmesh": 200,
+     "ngeom": 401,
+     "xml_s": 0.1102967499755323,
+     "xml_nbody_matches": true,
+     "edit_s": 0.04038895899429917,
+     "recompile_returns_new_objects": true,
+     "old_model_unchanged": true,
+     "edit_size_applied": true,
+     "edit_state_kept": true,
+     "edit_nbody_ok": true,
+     "edit_first_frame_s": 0.0001727920025587082,
+     "add_s": 0.041166165843605995,
+     "add_state_kept": true,
+     "add_nbody_ok": true,
+     "remove_s": 0.04532883292995393,
+     "remove_nbody_ok": true,
+     "remove_state_kept": true,
+     "api": {
+      "MjSpec": {
+       "ok": true
+      },
+      "attach": {
+       "ok": true
+      },
+      "to_xml+from_xml_string": {
+       "ok": true
+      },
+      "recompile(edit geom size)": {
+       "ok": true
+      },
+      "attach(add part at runtime)": {
+       "ok": true
+      },
+      "recompile(add part)": {
+       "ok": true
+      },
+      "delete(remove part)": {
+       "ok": true
+      },
+      "recompile(remove part)": {
+       "ok": true
+      }
+     },
+     "load_after": {
+      "uptime": "19:09  up 22 days, 20:47, 5 users, load averages: 27.25 42.59 67.54",
+      "loadavg": [
+       27.2,
+       42.6,
+       67.5
+      ],
+      "swap": "total = 17408.00M  used = 16250.50M  free = 1157.50M  (encrypted)",
+      "disk_free": "/dev/disk3s1s1   460Gi    10Gi    20Gi    34%    426k  214M    0%   /"
+     }
+    },
+    {
+     "parts": 200,
+     "seed": 0,
+     "load_before": {
+      "uptime": "19:09  up 22 days, 20:47, 5 users, load averages: 26.75 42.23 67.26",
+      "loadavg": [
+       26.7,
+       42.2,
+       67.3
+      ],
+      "swap": "total = 17408.00M  used = 16250.50M  free = 1157.50M  (encrypted)",
+      "disk_free": "/dev/disk3s1s1   460Gi    10Gi    20Gi    34%    426k  214M    0%   /"
+     },
+     "build_s": 0.07419187505729496,
+     "compile_s": 0.04054291686043143,
+     "first_frame_s": 0.0008707500528544188,
+     "nbody": 401,
+     "nq": 1600,
+     "nv": 1400,
+     "nmesh": 200,
+     "ngeom": 401,
+     "xml_s": 0.1058460830245167,
+     "xml_nbody_matches": true,
+     "edit_s": 0.041059792041778564,
+     "recompile_returns_new_objects": true,
+     "old_model_unchanged": true,
+     "edit_size_applied": true,
+     "edit_state_kept": true,
+     "edit_nbody_ok": true,
+     "edit_first_frame_s": 0.000157458009198308,
+     "add_s": 0.03849845798686147,
+     "add_state_kept": true,
+     "add_nbody_ok": true,
+     "remove_s": 0.038976458832621574,
+     "remove_nbody_ok": true,
+     "remove_state_kept": true,
+     "api": {
+      "MjSpec": {
+       "ok": true
+      },
+      "attach": {
+       "ok": true
+      },
+      "to_xml+from_xml_string": {
+       "ok": true
+      },
+      "recompile(edit geom size)": {
+       "ok": true
+      },
+      "attach(add part at runtime)": {
+       "ok": true
+      },
+      "recompile(add part)": {
+       "ok": true
+      },
+      "delete(remove part)": {
+       "ok": true
+      },
+      "recompile(remove part)": {
+       "ok": true
+      }
+     },
+     "load_after": {
+      "uptime": "19:09  up 22 days, 20:47, 5 users, load averages: 26.75 42.23 67.26",
+      "loadavg": [
+       26.7,
+       42.2,
+       67.3
+      ],
+      "swap": "total = 17408.00M  used = 16250.50M  free = 1157.50M  (encrypted)",
+      "disk_free": "/dev/disk3s1s1   460Gi    10Gi    20Gi    34%    426k  214M    0%   /"
+     }
+    },
+    {
+     "parts": 200,
+     "seed": 0,
+     "load_before": {
+      "uptime": "19:09  up 22 days, 20:47, 5 users, load averages: 26.75 42.23 67.26",
+      "loadavg": [
+       26.7,
+       42.2,
+       67.3
+      ],
+      "swap": "total = 17408.00M  used = 16250.50M  free = 1157.50M  (encrypted)",
+      "disk_free": "/dev/disk3s1s1   460Gi    10Gi    20Gi    34%    426k  214M    0%   /"
+     },
+     "build_s": 0.054846541956067085,
+     "compile_s": 0.04047854198142886,
+     "first_frame_s": 0.001036916859447956,
+     "nbody": 401,
+     "nq": 1600,
+     "nv": 1400,
+     "nmesh": 200,
+     "ngeom": 401,
+     "xml_s": 0.1191972082015127,
+     "xml_nbody_matches": true,
+     "edit_s": 0.04084725002758205,
+     "recompile_returns_new_objects": true,
+     "old_model_unchanged": true,
+     "edit_size_applied": true,
+     "edit_state_kept": true,
+     "edit_nbody_ok": true,
+     "edit_first_frame_s": 0.0001580838579684496,
+     "add_s": 0.04938737512566149,
+     "add_state_kept": true,
+     "add_nbody_ok": true,
+     "remove_s": 0.04899279191158712,
+     "remove_nbody_ok": true,
+     "remove_state_kept": true,
+     "api": {
+      "MjSpec": {
+       "ok": true
+      },
+      "attach": {
+       "ok": true
+      },
+      "to_xml+from_xml_string": {
+       "ok": true
+      },
+      "recompile(edit geom size)": {
+       "ok": true
+      },
+      "attach(add part at runtime)": {
+       "ok": true
+      },
+      "recompile(add part)": {
+       "ok": true
+      },
+      "delete(remove part)": {
+       "ok": true
+      },
+      "recompile(remove part)": {
+       "ok": true
+      }
+     },
+     "load_after": {
+      "uptime": "19:09  up 22 days, 20:47, 5 users, load averages: 26.75 42.23 67.26",
+      "loadavg": [
+       26.7,
+       42.2,
+       67.3
+      ],
+      "swap": "total = 17408.00M  used = 16250.50M  free = 1157.50M  (encrypted)",
+      "disk_free": "/dev/disk3s1s1   460Gi    10Gi    20Gi    34%    426k  214M    0%   /"
+     }
+    },
+    {
+     "parts": 200,
+     "seed": 0,
+     "load_before": {
+      "uptime": "19:09  up 22 days, 20:47, 5 users, load averages: 26.75 42.23 67.26",
+      "loadavg": [
+       26.7,
+       42.2,
+       67.3
+      ],
+      "swap": "total = 17408.00M  used = 16250.50M  free = 1157.50M  (encrypted)",
+      "disk_free": "/dev/disk3s1s1   460Gi    10Gi    20Gi    34%    426k  214M    0%   /"
+     },
+     "build_s": 0.05985975009389222,
+     "compile_s": 0.0388288339599967,
+     "first_frame_s": 0.0008495000656694174,
+     "nbody": 401,
+     "nq": 1600,
+     "nv": 1400,
+     "nmesh": 200,
+     "ngeom": 401,
+     "xml_s": 0.11060587503015995,
+     "xml_nbody_matches": true,
+     "edit_s": 0.043315749848261476,
+     "recompile_returns_new_objects": true,
+     "old_model_unchanged": true,
+     "edit_size_applied": true,
+     "edit_state_kept": true,
+     "edit_nbody_ok": true,
+     "edit_first_frame_s": 0.0001910831779241562,
+     "add_s": 0.04324470809660852,
+     "add_state_kept": true,
+     "add_nbody_ok": true,
+     "remove_s": 0.04312441707588732,
+     "remove_nbody_ok": true,
+     "remove_state_kept": true,
+     "api": {
+      "MjSpec": {
+       "ok": true
+      },
+      "attach": {
+       "ok": true
+      },
+      "to_xml+from_xml_string": {
+       "ok": true
+      },
+      "recompile(edit geom size)": {
+       "ok": true
+      },
+      "attach(add part at runtime)": {
+       "ok": true
+      },
+      "recompile(add part)": {
+       "ok": true
+      },
+      "delete(remove part)": {
+       "ok": true
+      },
+      "recompile(remove part)": {
+       "ok": true
+      }
+     },
+     "load_after": {
+      "uptime": "19:09  up 22 days, 20:47, 5 users, load averages: 26.75 42.23 67.26",
+      "loadavg": [
+       26.7,
+       42.2,
+       67.3
+      ],
+      "swap": "total = 17408.00M  used = 16250.50M  free = 1157.50M  (encrypted)",
+      "disk_free": "/dev/disk3s1s1   460Gi    10Gi    20Gi    34%    426k  214M    0%   /"
+     }
+    }
+   ],
+   "summary": {
+    "build_s": {
+     "n": 5,
+     "min": 0.0548,
+     "median": 0.0607,
+     "max": 0.0742
+    },
+    "compile_s": {
+     "n": 5,
+     "min": 0.0388,
+     "median": 0.0405,
+     "max": 0.0411
+    },
+    "first_frame_s": {
+     "n": 5,
+     "min": 0.0008,
+     "median": 0.0009,
+     "max": 0.0012
+    },
+    "xml_s": {
+     "n": 5,
+     "min": 0.1058,
+     "median": 0.1106,
+     "max": 0.1192
+    },
+    "edit_s": {
+     "n": 5,
+     "min": 0.0404,
+     "median": 0.0411,
+     "max": 0.0433
+    },
+    "edit_first_frame_s": {
+     "n": 5,
+     "min": 0.0002,
+     "median": 0.0002,
+     "max": 0.0002
+    },
+    "add_s": {
+     "n": 5,
+     "min": 0.0385,
+     "median": 0.0412,
+     "max": 0.0494
+    },
+    "remove_s": {
+     "n": 5,
+     "min": 0.039,
+     "median": 0.0442,
+     "max": 0.049
+    }
+   }
+  }
+ ],
+ "end": {
+  "uptime": "19:09  up 22 days, 20:47, 5 users, load averages: 26.75 42.23 67.26",
+  "loadavg": [
+   26.7,
+   42.2,
+   67.3
+  ],
+  "swap": "total = 17408.00M  used = 16250.50M  free = 1157.50M  (encrypted)",
+  "disk_free": "/dev/disk3s1s1   460Gi    10Gi    20Gi    34%    426k  214M    0%   /"
+ }
+}
