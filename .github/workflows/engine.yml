@@ -31,6 +31,8 @@ jobs:
         run: uv run pytest packages -q -rs --junitxml=pytest-report.xml
       - name: pytest tools/dev (resource guard, fake measurements)
         run: uv run pytest tools/dev -q
+      - name: pytest tools/review (P0-06, offline with fake gh and curl)
+        run: uv run pytest tools/review -q -rs
       - name: Test counts (skipped is always printed)
         if: always()
         run: |
