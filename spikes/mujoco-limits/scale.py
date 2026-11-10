@@ -264,6 +264,13 @@ def compare(runs: list[dict]) -> dict:
     return {"checkpoints_compared": k, "identical": same}
 
 
+def positive_int(text: str) -> int:
+    value = int(text)
+    if value < 1:
+        raise argparse.ArgumentTypeError(f"must be >= 1, got {value}")
+    return value
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--bodies", type=int, nargs="+", default=[200, 1000, 5000])
@@ -276,7 +283,7 @@ def main() -> int:
     ap.add_argument("--sim-seconds", type=float, default=2.0)
     ap.add_argument("--wall-cap", type=float, default=60.0, help="stop a run after this many stepping seconds")
     ap.add_argument("--hash-every", type=int, default=10)
-    ap.add_argument("--repeats", type=int, default=2)
+    ap.add_argument("--repeats", type=positive_int, default=2, help="runs per scene (>= 1; hash comparison needs >= 2)")
     ap.add_argument("--json", help="write full results to this file")
     args = ap.parse_args()
 

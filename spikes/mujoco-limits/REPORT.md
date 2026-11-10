@@ -117,7 +117,7 @@ uv run spikes/mujoco-limits/test_scale.py
 
 두 번째 명령의 `pile-200`은 최종 해시 `5d816586a23eec90…`, `break-0`는 `064deadd66c5de63…`이 나와야 한다(MuJoCo 4.0.0, 이 머신 기준). 반복이 2회 미만이거나 공통 체크포인트가 없으면 스크립트는 `HASH <장면>: NOT COMPARABLE`을 출력하고 일치로 세지 않는다. 원본 JSON(실행별 체크포인트, 부하, 시각)은 `spikes/mujoco-limits/results/`에 있다.
 
-`test_scale.py`는 해시 비교(일치, 불일치, 단일 실행, 빈 체크포인트), 접촉 발생, 해제 100건 기록, 같은 시드 반복 일치를 단언한다.
+`test_scale.py`(11건)는 해시 비교(일치, 불일치, 단일 실행, 빈 체크포인트), 접촉 발생, 해제 100건 기록, 같은 시드 반복 일치, 완주한 작은 장면의 계수(스텝이 목표에 도달, `sim_s == steps*timestep`, `wall_s > 0`, `rtf`가 `sim_s/wall_s`와 반올림 오차 안에서 일치), `--repeats 0`·`-1`이 argparse에서 비정상 종료하는지를 단언한다. 속도 문턱이나 고정 해시 값은 단언하지 않는다.
 
 ### 의존성 라이선스 (원장은 P0-05 #15에서 다룬다)
 
