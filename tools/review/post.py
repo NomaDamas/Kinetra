@@ -38,14 +38,15 @@ def esc(text: str) -> str:
 
 
 def code(text: str) -> str:
-    t = common.redact(str(text)).replace("`", "'")
+    """표 칸에 넣는 코드 조각. 백틱은 작은따옴표로, `|` 는 `\\|` 로 바꿔 칸이 밀리지 않게 한다(GFM 은 코드 안에서도 `\\|` 를 `|` 로 읽는다)."""
+    t = common.redact(str(text)).replace("`", "'").replace("|", "\\|")
     return "`" + re.sub(r"\s+", " ", t).strip() + "`"
 
 
 def render_comment(result: call.Result, items: dict[str, str], head_sha: str | None = None) -> str:
     r = result.review
     u = result.usage
-    cost = "미상" if u.cost_usd is None else f"${u.cost_usd:.4f}"
+    cost = u.cost_text()
     lines = [
         MARKER,
         f"## Sol 리뷰 · 판정 `{r['verdict']}` ({_VERDICT_KO[r['verdict']]})",

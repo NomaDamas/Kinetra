@@ -142,3 +142,31 @@ def test_post_unknown_login_fails_without_posting(fake_env, monkeypatch, capsys,
     monkeypatch.setenv("FAKE_GH_USER", "")
     assert post.main(["101", "--repo", "o/r", "--result", str(f)]) == 1
     assert "gh 로그인" in capsys.readouterr().err and comments(fake_env) == []
+
+
+def split_row(row: str) -> list[str]:
+    """GFM 표 줄을 칸으로 나눈다: 이스케이프된 `\\|` 는 칸 경계가 아니다."""
+    import re
+
+    cells = re.split(r"(?<!\\)\|", row.strip())
+    return [c.strip() for c in cells[1:-1]]
+
+
+def test_post_pipe_in_where_keeps_six_columns():
+    nasty = {"severity": "concern", "item": 2, "where": "a|b.py:3 | x", "what": "w|x", "why": "y|z", "fix": "f|g"}
+    body = post.render_comment(result(findings=[nasty, dict(nasty, where="`x`|`y`.py:1")]), ITEMS)
+    rows = [ln for ln in body.splitlines() if ln.startswith("| concern |")]
+    assert len(rows) == 2
+    for row in rows:
+        cells = split_row(row)
+        assert len(cells) == 6, cells
+        assert cells[0] == "concern" and cells[1] == "2"
+    assert "`a\\|b.py:3 \\| x`" in rows[0]
+    header = next(ln for ln in body.splitlines() if ln.startswith("| 심각도 |"))
+    assert len(split_row(header)) == 6
+
+
+def test_post_comment_shows_partial_cost():
+    r = result()
+    r.usage.cost_unknown_calls = 1
+    assert "비용 $0.0123(확인된 비용 합계, 호출 1회는 비용 미상)" in post.render_comment(r, ITEMS)
