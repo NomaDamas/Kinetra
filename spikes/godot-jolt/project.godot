@@ -1,0 +1,23 @@
+; A0-03: headless measurement project (no scenes, no assets). Z-up, SI units, 500 Hz like the MuJoCo spikes (timestep 0.002).
+config_version=5
+
+[application]
+
+config/name="kinetra-spike-godot-jolt"
+
+[debug]
+
+file_logging/enable_file_logging=false
+
+[physics]
+
+common/physics_ticks_per_second=500
+3d/physics_engine="Jolt Physics"
+3d/default_gravity=9.80665
+3d/default_gravity_vector=Vector3(0, 0, -1)
+3d/default_linear_damp=0.0
+3d/default_angular_damp=0.0
+jolt_physics_3d/limits/temporary_memory_buffer_size=512
+jolt_physics_3d/limits/max_bodies=16384
+jolt_physics_3d/limits/max_body_pairs=262144
+jolt_physics_3d/limits/max_contact_constraints=131072

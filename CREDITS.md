@@ -34,6 +34,19 @@
 - 원본 해시: `sha256:db919544cdd5c9bd50928619fee0498341e4c0845b03d38752b510cff3994e07`
 - 확인자: omp
 
+### dep-godot-4.7.2
+
+- 표기: Godot Engine, Copyright (c) 2014-present Godot Engine contributors, (c) 2007-2014 Juan Linietsky, Ariel Manzur. MIT License. Jolt Physics, Copyright (c) 2021 Jorrit Rouwe. MIT License.
+- 저작자: Godot Engine contributors; Juan Linietsky, Ariel Manzur (Jolt Physics: Jorrit Rouwe)
+- 라이선스: MIT
+- 원본: https://godotengine.org/ https://github.com/godotengine/godot/releases/tag/4.7.2-stable https://github.com/godotengine/godot/blob/4.7.2-stable/LICENSE.txt https://github.com/godotengine/godot/blob/4.7.2-stable/thirdparty/README.md
+- 경로: `spikes/godot-jolt/scale.py`
+- 용도: 실행 의존성: Godot + Jolt 한계 측정 스파이크(A0-03a/b)의 헤드리스 물리 실행과 웹 내보내기. 저장소에 들어오지 않고 제품 코드가 의존하지 않는다
+- 변경 내역: 없음(공식 macOS universal 빌드 Godot_v4.7.2-stable_macos.universal.zip 을 수정 없이 사용. 해시는 그 zip 의 sha256; 릴리스의 SHA512-SUMS.txt 와도 일치(sha512 38aa16e5…69ca). 바이너리는 저장소 밖 ~/.cache/kinetra-godot 에 둔다. 번들 Jolt Physics 5.5.0 (MIT, Jorrit Rouwe, thirdparty/jolt_physics)은 같은 바이너리에 들어 있어 별도 행이 없다)
+- 받은 날짜: 2026-11-10
+- 원본 해시: `sha256:c58a24e31d720be9d62f60cb5627c4e695fb72f21b0cfe1bc9ccaa9a3b3ba63e`
+- 확인자: omp
+
 ### dep-mujoco-4.0.0
 
 - 표기: MuJoCo, Copyright Google DeepMind. Apache License 2.0.
