@@ -15,7 +15,7 @@
 
 | 항목 | 값 |
 |---|---|
-| 명령 | `uv run --no-project --with mujoco python spikes/mujoco-limits/scale.py --bodies 200 1000 5000 --json spikes/mujoco-limits/results/a0-01a-main.json` (저장소 루트에서) |
+| 명령 | `uv run --no-project --with mujoco python spikes/mujoco-limits/scale.py --bodies 200 1000 5000 --json spikes/mujoco-limits/results/a0-01a-main.json` (저장소 루트에서, 버전 고정 전 명령. 풀린 버전은 MuJoCo 4.0.0, NumPy 2.5.4, Python 3.12.11이고 지금 스크립트 헤더의 고정 버전과 같다) |
 | 시드 | 0 (초기 자세·위치 지터 `default_rng(0)`, 초기 속도 `default_rng(1)`, 해제 순서 `default_rng(2)`) |
 | 물리 | `timestep=0.002`, `integrator=Euler`, 나머지는 MuJoCo 기본값(솔버 Newton, cone pyramidal, 마찰 기본) |
 | 장면 `pile-N` | 한 변 0.1 m 정육면체 N개(밀도 1000)를 5층 격자(간격 0.18 m, ±0.01 m 지터, 임의 요 + ±0.15 rad 기울임, 초기 xy 속도 ±0.3 m/s)로 평면 위 높이 최대 약 0.8 m에서 낙하. 사방은 벽으로 막은 통. 자유 관절(freejoint) 박스 = 접촉 포함 |
@@ -77,7 +77,7 @@
 | 주 실행 | pile-1000 | 2 | 24 | **예** | 4fdac41d313f8faa |
 | 주 실행 | pile-5000 | 2 | 12 | **예** | af3e9889119a… |
 | 주 실행 | break-0 | 2 | 100 | **예** | 01a09ad03a6e… |
-| 주 실행 | break-1000 | 2 | 25 | **예** | 상한 시점이 달라 마지막 해시는 다름. 공통 구간은 일치(cc827f0c3113… 은 반복 0의 값) |
+| 주 실행 | break-1000 | 2 | 25 | **예** | 두 반복의 마지막 기록 체크포인트가 모두 250스텝이고 해시가 같다(cc827f0c3113…). 반복 1은 255스텝까지 돌았지만 해시는 10스텝마다 표본이라 마지막 5스텝은 해시에 들어 있지 않다 |
 | 고정 스텝(240스텝) 프로세스 1, 2회 | pile-200 | 2 | 24 | **예** | 5d816586a23eec90 |
 | 고정 스텝 프로세스 1 | pile-1000 | 2 | 24 | **예** | 4fdac41d313f8faa |
 | 고정 스텝 프로세스 1 | break-0 | 2 | 24 | **예** | 064deadd66c5de63 |
@@ -103,17 +103,28 @@
 
 ### 재현 방법
 
-저장소 루트에서(`mujoco`, `numpy`는 `uv`가 스크립트 전용 환경에 받는다. 저장소의 워크스페이스 의존성에는 추가하지 않았다):
+저장소 루트에서. 의존성은 스크립트 머리의 PEP 723 메타데이터에 고정했다(`mujoco==4.0.0`, `numpy==2.5.4`, `requires-python >=3.11`). 측정은 Python 3.12.11에서 했다. 저장소의 워크스페이스 의존성에는 추가하지 않았다.
 
 ```
-uv run --no-project --with mujoco python spikes/mujoco-limits/scale.py --bodies 200 1000 5000
+uv run spikes/mujoco-limits/scale.py --bodies 200 1000 5000
 # 고정 스텝 해시 재현(빠름, 한가한 쪽 6초가량, 부하 아래에서도 수 분 이내):
-uv run --no-project --with mujoco python spikes/mujoco-limits/scale.py --bodies 200 --break-pile 0 --repeats 2 --sim-seconds 0.48 --wall-cap 600
+uv run spikes/mujoco-limits/scale.py --bodies 200 --break-pile 0 --repeats 2 --sim-seconds 0.48 --wall-cap 600
+# 하니스 점검(오프라인, 속도·해시 값은 단언하지 않음):
+uv run spikes/mujoco-limits/test_scale.py
 ```
 
-이슈의 검증 명령 `uv run python spikes/mujoco-limits/scale.py ...`는 저장소 루트의 워크스페이스 환경에 `mujoco`가 없어 그대로는 `ImportError`가 난다(실행해 확인하지는 않았고 `pyproject.toml`의 의존성이 비어 있음을 근거로 한 추정). 대신 스크립트 머리의 PEP 723 메타데이터 덕에 `uv run spikes/mujoco-limits/scale.py --bodies 200 1000 5000`도 된다(작은 장면으로 실행 확인).
+이슈의 검증 명령 `uv run python spikes/mujoco-limits/scale.py ...`는 저장소 루트의 워크스페이스 환경에 `mujoco`가 없어 그대로는 `ImportError`가 난다(실행해 확인하지는 않았고 `pyproject.toml`의 의존성이 비어 있음을 근거로 한 추정). 위 `uv run spikes/mujoco-limits/scale.py ...` 형태가 헤더 덕에 동작한다.
 
-두 번째 명령의 `pile-200`은 최종 해시 `5d816586a23eec90…`, `break-0`는 `064deadd66c5de63…`이 나와야 한다(MuJoCo 4.0.0, 이 머신 기준). 원본 JSON(실행별 체크포인트, 부하, 시각)은 `spikes/mujoco-limits/results/`에 있다.
+두 번째 명령의 `pile-200`은 최종 해시 `5d816586a23eec90…`, `break-0`는 `064deadd66c5de63…`이 나와야 한다(MuJoCo 4.0.0, 이 머신 기준). 반복이 2회 미만이거나 공통 체크포인트가 없으면 스크립트는 `HASH <장면>: NOT COMPARABLE`을 출력하고 일치로 세지 않는다. 원본 JSON(실행별 체크포인트, 부하, 시각)은 `spikes/mujoco-limits/results/`에 있다.
+
+`test_scale.py`는 해시 비교(일치, 불일치, 단일 실행, 빈 체크포인트), 접촉 발생, 해제 100건 기록, 같은 시드 반복 일치를 단언한다.
+
+### 의존성 라이선스 (원장은 P0-05 #15에서 다룬다)
+
+| 의존성 | 라이선스 | 출처 |
+|---|---|---|
+| mujoco 4.0.0 | Apache-2.0 | https://github.com/google-deepmind/mujoco , https://pypi.org/project/mujoco/ |
+| numpy 2.5.4 | BSD-3-Clause | https://github.com/numpy/numpy , https://pypi.org/project/numpy/ |
 
 ### 알려진 한계 (정직성)
 

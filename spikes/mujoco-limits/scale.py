@@ -1,13 +1,13 @@
 # /// script
 # requires-python = ">=3.11"
-# dependencies = ["mujoco", "numpy"]
+# dependencies = ["mujoco==4.0.0", "numpy==2.5.4"]
 # ///
 """A0-01a: native MuJoCo multi-body and joint-release scale measurement.
 
 Measurement only (no optimization). Run:
 
-    uv run --no-project --with mujoco python spikes/mujoco-limits/scale.py --bodies 200 1000 5000
-    (equivalently `uv run spikes/mujoco-limits/scale.py ...`: PEP 723 header above)
+    uv run spikes/mujoco-limits/scale.py --bodies 200 1000 5000
+    (dependencies are pinned in the PEP 723 header above)
 
 Scenes
   pile-N   N free boxes dropped into a walled bin on a plane (contacts included).
@@ -252,8 +252,14 @@ def run_once(args, scene: str, n_pile: int) -> dict:
 
 
 def compare(runs: list[dict]) -> dict:
-    """Compare chained-hash checkpoints over the common prefix of all repeats."""
-    k = min(len(r["checkpoints"]) for r in runs)
+    """Compare chained-hash checkpoints over the common prefix of all repeats.
+
+    identical is True / False, or None ("not comparable") when fewer than two runs
+    were given or the runs share no checkpoint. None is never reported as a match.
+    """
+    k = min((len(r["checkpoints"]) for r in runs), default=0)
+    if len(runs) < 2 or k == 0:
+        return {"checkpoints_compared": k, "identical": None}
     same = all(r["checkpoints"][:k] == runs[0]["checkpoints"][:k] for r in runs)
     return {"checkpoints_compared": k, "identical": same}
 
@@ -289,8 +295,9 @@ def main() -> int:
             r["repeat"] = i
             print(json.dumps({k: v for k, v in r.items() if k != "checkpoints"}), flush=True)
         label = f"{scene}-{n}"
-        print(f"HASH {label}: {cmp['identical']} over {cmp['checkpoints_compared']} checkpoints "
-              f"(final {runs[0]['final_hash'][:16]})", flush=True)
+        verdict = "NOT COMPARABLE" if cmp["identical"] is None else cmp["identical"]
+        print(f"HASH {label}: {verdict} over {cmp['checkpoints_compared']} checkpoints "
+              f"(final {(runs[0]['final_hash'] or 'none')[:16]})", flush=True)
         results.append({"label": label, "runs": runs, "determinism": cmp})
 
     if args.json:
