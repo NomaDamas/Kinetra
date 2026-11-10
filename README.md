@@ -10,6 +10,7 @@ This is a fresh start. The previous product (hackathon era) is preserved at the 
 - [`docs/plan/values.md`](docs/plan/values.md): core values V1–V5 and goals, quoted verbatim in every issue and PR
 - [`docs/plan/issues.yaml`](docs/plan/issues.yaml): every epic, issue and sub-issue (seeded to GitHub Issues)
 - [`docs/process/done-definition.md`](docs/process/done-definition.md), [`docs/process/review-rubric.md`](docs/process/review-rubric.md): what "100% done" means and the review → triage → merge loop
+- [`docs/process/merge-checklist.md`](docs/process/merge-checklist.md), [`docs/process/triage.md`](docs/process/triage.md): pre-merge checklist and applied `main` protection; accept / reject / defer table and founder-approval list
 
 ## Layout
 
