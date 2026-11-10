@@ -24,6 +24,7 @@ This is a fresh start. The previous product (hackathon era) is preserved at the 
 | `data/`, `assets/` | Planet data, parts, licensed assets |
 | `docs/` | Plan, process, decisions, architecture, research |
 | `tools/` | Developer tooling |
+| `scripts/gh/` | GitHub bootstrap scripts (`bootstrap.sh`: labels and milestones from `issues.yaml`, idempotent; `--dry-run` to preview) |
 
 ## Setup
 

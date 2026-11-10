@@ -1,0 +1,8 @@
+labels:
+  - {name: "type:a", color: "1d76db", description: "A"}
+  - {name: "Area:B", color: "0e8a16", description: "B"}
+  - {name: "prio:P0", color: "b60205", description: "C"}
+milestones:
+  - {title: "S0", description: "zero"}
+  - {title: "S1", description: "one"}
+  - {title: "S2", description: "two"}
