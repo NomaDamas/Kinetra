@@ -11,6 +11,7 @@
 
 # --- 우리 빌드 ---
 allow | own-build | apps/studio (웹 번들 산출물, 빌드 출력은 저장소에 커밋하지 않음) | own | https://github.com/NomaDamas/Kinetra | 2026-11-10 | 번들 크기·구성, 런타임 동작, 성능 병목. 번들에 섞인 서드파티는 그 라이선스 줄을 따른다
+allow | own-build | design/exports/** (Claude Design 내보내기. 디자인 시스템 갤러리 HTML 등 우리 저장소에 들어 있는 웹 산출물) | own | https://github.com/NomaDamas/Kinetra | 2026-11-10 | 번들 크기·구성, 런타임 동작. 창업자 승인 대기. 갤러리가 외부 글꼴 CSS를 부르면 그 서드파티는 해당 라이선스 줄을 따른다(요청 관찰만, 내용 분석·복제 없음)
 
 # --- 허용적 라이선스 오픈소스: 소스와 런타임 동작을 함께 연구 ---
 allow | oss-permissive | https://github.com/google-deepmind/mujoco | Apache-2.0 | https://github.com/google-deepmind/mujoco/blob/main/LICENSE | 2026-11-10 | 고지 유지. 코드를 옮기면 assets/LEDGER.csv 행 추가
