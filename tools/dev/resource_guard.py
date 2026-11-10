@@ -4,7 +4,7 @@
     uv run python tools/dev/resource_guard.py --profile heavy; echo $?
     uv run python tools/dev/resource_guard.py --profile heavy -- <명령...>
 
-종료 코드: 0 통과(경고 포함), 2 차단, 3 측정 실패(재지 못하면 돌리지 않는다).
+종료 코드: 0 통과(경고 포함), 2 차단, 3 측정 실패(재지 못하면 돌리지 않는다). `--` 실행 중 신호를 받아 끝나면 128+신호 번호.
 `--` 뒤에 명령을 주면 가드를 통과했을 때만 그 명령을 돌리고, 실행 전·후·중 최악값을 표로 남긴다
 (docs/process/dev-resources.md 의 측정 기록 양식). 명령의 종료 코드를 그대로 돌려준다.
 (명령이 2나 3으로 끝나면 가드의 코드와 겹치므로, 차단 여부는 먼저 출력되는 `결과:` 줄로 가른다.)
@@ -24,6 +24,7 @@ import shutil
 import subprocess
 import sys
 import time
+import threading
 import tomllib
 from pathlib import Path
 
@@ -137,8 +138,12 @@ def load_profile(config: Path, name: str) -> dict:
     except (OSError, tomllib.TOMLDecodeError) as e:
         raise GuardError(f"설정 파일을 읽지 못했다({config}): {e}") from e
     profiles = data.get("profiles", {})
+    if not isinstance(profiles, dict):
+        raise GuardError(f"설정 파일의 profiles 가 테이블이 아니다: {profiles!r}")
     if name not in profiles:
         raise GuardError(f"프로필 '{name}' 이 없다. 있는 것: {', '.join(sorted(profiles)) or '(없음)'}")
+    if not isinstance(profiles[name], dict):
+        raise GuardError(f"프로필 '{name}' 이 테이블이 아니다: {profiles[name]!r}")
     cfg = dict(profiles[name])
     need = {"badge", "ssd_free_gib_block_below", "swap_used_pct_warn_at", "memory_pressure_warn_at",
             "memory_pressure_block_at", "linux_psi_full_avg10_warn", "linux_psi_full_avg10_critical"}
@@ -211,44 +216,86 @@ def render(rows: list[dict], cfg: dict, profile: str) -> str:
 
 # ---------- 실행 ----------
 
-def _stop(proc: subprocess.Popen) -> None:
-    """자식과 그 프로세스 그룹을 끝내고 거둔다(TERM, 10초 뒤 KILL)."""
-    for sig in (signal.SIGTERM, signal.SIGKILL):
+STOP_GRACE_SECONDS = 10.0
+
+
+def _group_alive(pgid: int) -> bool:
+    try:
+        os.killpg(pgid, 0)
+    except ProcessLookupError:
+        return False
+    except PermissionError:  # 그룹은 있으나 우리 것이 아닌 프로세스가 섞였다. 살아 있는 것으로 본다
+        return True
+    return True
+
+
+def _stop(proc: subprocess.Popen, grace: float | None = None) -> None:
+    """명령의 프로세스 그룹 전체를 끝내고 거둔다. TERM 을 보내고 그룹이 비기를 `grace` 초 기다린 뒤,
+    남았으면 그룹에 KILL 을 보낸다. 리더가 먼저 끝나도 그룹에 남은 손자까지 본다."""
+    grace = STOP_GRACE_SECONDS if grace is None else grace
+    pgid = proc.pid  # start_new_session=True 라서 리더의 pid 가 그룹 id 다
+    for sig, wait in ((signal.SIGTERM, grace), (signal.SIGKILL, 5.0)):
         try:
-            os.killpg(proc.pid, sig)
+            os.killpg(pgid, sig)
         except ProcessLookupError:
             pass
-        try:
-            proc.wait(timeout=10 if sig == signal.SIGTERM else None)
-            return
-        except subprocess.TimeoutExpired:
-            continue
+        deadline = time.monotonic() + wait
+        while True:
+            proc.poll()  # 리더를 거둔다(좀비 리더가 그룹을 살려 두지 않게)
+            if not _group_alive(pgid):
+                return
+            if time.monotonic() >= deadline:
+                break
+            time.sleep(0.02)
+    proc.poll()
+
+
+class Interrupted(Exception):
+    def __init__(self, signum: int):
+        super().__init__(f"신호 {signal.Signals(signum).name} 를 받아 명령을 끝냈다")
+        self.signum = signum
 
 
 def run_around(cmd: list[str], path: Path, cfg: dict, before: dict, measure) -> tuple[int, str]:
     """명령을 돌리며 SSD 최저·스왑 최고를 표본한다. 반환: (명령 종료 코드, 전/후/최악 표).
     표본 측정이 실패하면 자식을 프로세스 그룹째 끝내고 GuardError 를 올린다(아무것도 남기지 않는다).
-    가드가 인터럽트를 받아도 자식을 끝낸다."""
+    실행 중 SIGTERM·SIGINT 를 받으면 같은 정리를 하고 Interrupted 를 올린다. 이전 핸들러는 돌려 놓는다."""
     worst_free, worst_swap = before["ssd_free_gib"], before["swap_used_gib"]
     t0 = time.monotonic()
     try:
         proc = subprocess.Popen(cmd, env={**os.environ, WRAPPED_ENV: "1"}, start_new_session=True)
     except OSError as e:
         raise GuardError(f"명령을 시작하지 못했다: {e}") from e
+    state = {"cleaning": False}
+
+    def on_signal(signum, frame):
+        if not state["cleaning"]:  # 정리 중 오는 신호로 정리를 끊지 않는다
+            raise Interrupted(signum)
+
+    previous = {}
+    if threading.current_thread() is threading.main_thread():
+        for sig in (signal.SIGTERM, signal.SIGINT):
+            previous[sig] = signal.signal(sig, on_signal)
     try:
-        while proc.poll() is None:
-            try:
-                proc.wait(timeout=SAMPLE_SECONDS)
-            except subprocess.TimeoutExpired:
-                s = measure(path, cfg)
-                worst_free, worst_swap = min(worst_free, s["ssd_free_gib"]), max(worst_swap, s["swap_used_gib"])
-        after = measure(path, cfg)
-    except GuardError as e:
-        _stop(proc)
-        raise GuardError(f"실행 중 측정에 실패해 명령을 끝냈다(종료 코드 {proc.returncode}): {e}") from e
-    except BaseException:
-        _stop(proc)
-        raise
+        try:
+            while proc.poll() is None:
+                try:
+                    proc.wait(timeout=SAMPLE_SECONDS)
+                except subprocess.TimeoutExpired:
+                    s = measure(path, cfg)
+                    worst_free, worst_swap = min(worst_free, s["ssd_free_gib"]), max(worst_swap, s["swap_used_gib"])
+            after = measure(path, cfg)
+        except GuardError as e:
+            state["cleaning"] = True
+            _stop(proc)
+            raise GuardError(f"실행 중 측정에 실패해 명령을 끝냈다: {e}") from e
+        except BaseException:
+            state["cleaning"] = True
+            _stop(proc)
+            raise
+    finally:
+        for sig, handler in previous.items():
+            signal.signal(sig, handler)
     worst_free, worst_swap = min(worst_free, after["ssd_free_gib"]), max(worst_swap, after["swap_used_gib"])
     table = "\n".join([
         f"측정 기록 (명령: {' '.join(cmd)}, 종료 코드 {proc.returncode}, {time.monotonic() - t0:.1f}초)",
@@ -307,6 +354,9 @@ def main(argv: list[str] | None = None, measure=collect) -> int:
         return EXIT_PASS
     try:
         code, table = run_around(around, args.path, cfg, m, measure)
+    except Interrupted as e:
+        print(f"자원 가드: {e}", file=sys.stderr)
+        return 128 + e.signum
     except GuardError as e:
         print(f"자원 가드 실패: {e}", file=sys.stderr)
         return EXIT_ERROR

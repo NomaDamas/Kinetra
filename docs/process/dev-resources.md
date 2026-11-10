@@ -23,7 +23,8 @@ uv run pytest tools/dev -q                                              # 가짜
 - macOS는 `sysctl vm.swapusage`와 `kern.memorystatus_vm_pressure_level`(1=normal, 2=warn, 4=critical)을 읽는다. Linux는 `/proc/meminfo`의 스왑과 `/proc/pressure/memory`의 `full avg10`을 읽는다(PSI가 꺼진 커널이라 파일이 없거나 권한이 없어 읽지 못하면 측정 실패로 종료 코드 3이고 명령은 시작하지 않는다. 못 잰 압력을 통과로 치지 않는다). Linux 경로는 파서와, 플랫폼·`/proc` 읽기를 가짜로 바꾼 `collect` 테스트로 확인했고, 진짜 Linux 읽기는 CI 러너(`engine.yml`의 `uv run pytest tools/dev`)에서만 돈다. 이 머신(macOS)에서는 진짜 Linux 읽기를 돌려 보지 않았다.
 - 단위는 GiB(2**30 바이트)로 통일했다(출력, 설정 키 `*_gib`, 문서). `vm.swapusage`의 M과 `df -h`의 G도 2진 단위다.
 - 설정값이 유한한 숫자가 아니거나 범위(SSD 0 이상, 퍼센트 0~100)를 벗어나거나 PSI warn > critical, 압력 warn > block이면 종료 코드 3이다.
-- `-- 명령` 실행 중 측정이 실패하면 명령을 프로세스 그룹째 끝내고(TERM, 10초 뒤 KILL) 종료 코드 3이다. 가드가 인터럽트를 받아도 같다. 자식은 새 세션에서 시작한다.
+- `-- 명령` 실행 중 측정이 실패하면 명령을 프로세스 그룹째 끝내고 종료 코드 3이다: 그룹에 TERM을 보내 최대 10초 그룹이 비기를 기다리고(리더가 먼저 끝나도 손자까지 본다), 남았으면 그룹에 KILL. 가드가 SIGTERM·SIGINT를 받아도 같은 정리를 하고 128+신호 번호로 끝난다(실행 중에만 핸들러를 걸고 끝나면 이전 핸들러로 되돌린다). 자식은 새 세션에서 시작한다.
+- 설정의 `profiles`나 고른 프로필이 TOML 테이블이 아니면 종료 코드 3이다.
 - 다른 도구에서는 `import resource_guard; resource_guard.guard_or_exit("heavy")`로 부른다. 이미 `-- 명령`으로 가드를 통과해 시작된 자식 프로세스는 `KINETRA_GUARD_PASSED=1`을 받아 같은 표를 다시 찍지 않는다.
 
 ## 임계값 (`tools/dev/resource_guard.toml`)

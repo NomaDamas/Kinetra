@@ -5,6 +5,7 @@
 import contextlib
 import io
 import json
+import subprocess
 import sys
 import tempfile
 import unittest
@@ -215,6 +216,63 @@ class WrapCommandTests(unittest.TestCase):
                 time.sleep(0.05)
             self.assertEqual(alive, [], "자식 또는 손자 프로세스가 남았다")
 
+    def test_group_is_killed_even_when_leader_exits_and_grandchild_ignores_term(self):
+        import time
+        with tempfile.TemporaryDirectory() as d:
+            pidfile = Path(d) / "pid"
+            # 손자는 TERM 을 무시하고 리더는 곧 끝난다. 측정이 두 번째에 실패해 정리가 일어난다.
+            script = (f"import subprocess,sys,time; p=subprocess.Popen(['sh','-c','trap \"\" TERM; echo $$ > {pidfile}; sleep 300']); "
+                      "time.sleep(1.0)")
+            calls = {"n": 0}
+
+            def flaky(path, cfg):
+                calls["n"] += 1
+                if calls["n"] >= 2:
+                    time.sleep(0.5)  # 리더가 끝나고 손자만 남은 뒤에 실패한다
+                    raise rg.GuardError("측정 실패")
+                return meas()
+
+            old = (rg.SAMPLE_SECONDS, rg.STOP_GRACE_SECONDS)
+            rg.SAMPLE_SECONDS, rg.STOP_GRACE_SECONDS = 0.3, 0.3
+            try:
+                code, _, err = run_main(["--", sys.executable, "-c", script], None, measure=flaky)
+            finally:
+                rg.SAMPLE_SECONDS, rg.STOP_GRACE_SECONDS = old
+            self.assertEqual(code, 3, err)
+            pid = int(pidfile.read_text())
+            deadline = time.time() + 5
+            while _alive(pid) and time.time() < deadline:
+                time.sleep(0.05)
+            self.assertFalse(_alive(pid), "TERM 을 무시하는 손자가 KILL 되지 않았다")
+
+    def test_sigterm_to_guard_kills_child_and_grandchild_and_restores_handlers(self):
+        import signal
+        import time
+        with tempfile.TemporaryDirectory() as d:
+            pidfile = Path(d) / "pids"
+            code = (
+                "import sys; sys.path.insert(0, %r); import resource_guard as rg\n"
+                "m = {'ssd_free_gib': 99.0, 'ssd_path': '/', 'swap_used_gib': 0.0, 'swap_total_gib': 1.0, 'swap_used_pct': 0.0,"
+                " 'memory_pressure': 'normal', 'memory_pressure_detail': 'f'}\n"
+                "import signal; before = signal.getsignal(signal.SIGTERM)\n"
+                "rc = rg.main(['--', 'sh', '-c', %r], measure=lambda p, c: m)\n"
+                "assert signal.getsignal(signal.SIGTERM) is before, 'SIGTERM 핸들러가 복원되지 않았다'\n"
+                "sys.exit(rc)\n"
+            ) % (str(HERE.parent), f"sleep 300 & echo $$ $! > {pidfile}; wait")
+            g = subprocess.Popen([sys.executable, "-c", code], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+            deadline = time.time() + 10
+            while (not pidfile.exists() or not pidfile.read_text().strip().count(" ")) and time.time() < deadline:
+                time.sleep(0.05)
+            pids = [int(x) for x in pidfile.read_text().split()]
+            self.assertTrue(all(_alive(p) for p in pids))
+            g.send_signal(signal.SIGTERM)
+            out, err = g.communicate(timeout=30)
+            self.assertEqual(g.returncode, 128 + signal.SIGTERM, err)
+            deadline = time.time() + 5
+            while any(_alive(p) for p in pids) and time.time() < deadline:
+                time.sleep(0.05)
+            self.assertEqual([p for p in pids if _alive(p)], [])
+
     def test_missing_command_exits_3(self):
         code, _, err = run_main(["--", "/no/such/binary-kinetra"], meas())
         self.assertEqual(code, 3)
@@ -231,6 +289,26 @@ def write_cfg(d, **over):
     p = Path(d) / "c.toml"
     p.write_text(text, encoding="utf-8")
     return p
+
+
+class ProfileShapeTests(unittest.TestCase):
+    def check(self, text, expect_in_err):
+        with tempfile.TemporaryDirectory() as d:
+            cfg = Path(d) / "c.toml"
+            cfg.write_text(text, encoding="utf-8")
+            marker = Path(d) / "ran"
+            code, _, err = run_main(["--config", str(cfg), "--", sys.executable, "-c", f"open({str(marker)!r}, 'w')"], meas())
+            self.assertEqual(code, 3, err)
+            self.assertIn(expect_in_err, err)
+            self.assertFalse(marker.exists())
+
+    def test_profiles_not_a_table(self):
+        self.check('profiles = "heavy"\n', "profiles")
+        self.check("profiles = [1, 2]\n", "profiles")
+
+    def test_selected_profile_not_a_table(self):
+        self.check('[profiles]\nheavy = "x"\n', "heavy")
+        self.check("[profiles]\nheavy = 5\n", "heavy")
 
 
 class ThresholdValidationTests(unittest.TestCase):
