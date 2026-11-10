@@ -239,3 +239,164 @@ def test_call_cli_failure_exit_code_and_masked_message(fake_env, curl_queue, tmp
     curl_queue("http_401.json")
     assert call.main(["101", "--repo", "o/r", "--cost-log", str(tmp_path / "c.jsonl")]) == 1
     assert "HTTP 401" in capsys.readouterr().err
+
+
+# ---------------------------------------------------------------- 1차 리뷰 반영
+
+def good():
+    return response_review("ok.json")
+
+
+@pytest.mark.parametrize(
+    "mutate",
+    [
+        lambda r: r.update(findings=[1, "x", None]),  # 배열 원소가 객체가 아님 + approve
+        lambda r: r.update(verdict="approve", findings=[None]),
+        lambda r: r.update(verdict="approve", findings=[[]]),
+        lambda r: r.update(verdict="approve", rubric={"1": ["block"], "2": {}, "3": None, "4": 1, "5": "pass", "6": "pass", "7": "pass"}),
+        lambda r: r.update(verdict=["approve"]),
+        lambda r: r.update(verdict={"a": 1}),
+        lambda r: r["findings"][0].update(severity=["block"]),
+        lambda r: r["findings"][0].update(severity={"x": 1}),
+        lambda r: r["findings"][0].update(item=[1]),
+        lambda r: r["findings"][0].update(item=1.0),
+        lambda r: r["findings"][0].update(where=5),
+        lambda r: r["findings"][0].update(what=None),
+        lambda r: r.update(rubric={1: "pass"}),
+        lambda r: r.update(summary=5),
+        lambda r: r.update(findings=None),
+        lambda r: r.update(verdict="approve", findings={"a": "b"}),
+    ],
+)
+def test_call_schema_never_raises_typeerror(mutate):
+    r = good()
+    mutate(r)
+    with pytest.raises(call.SchemaError):
+        call.validate(r, ITEMS)
+
+
+def test_call_validate_non_dict_top_level():
+    for bad in ([], "x", 1, None):
+        with pytest.raises(call.SchemaError):
+            call.validate(bad, ITEMS)
+
+
+def test_call_approve_with_block_is_checked_only_on_valid_arrays():
+    r = good()
+    r["verdict"] = "approve"
+    r["findings"][0]["severity"] = "block"
+    with pytest.raises(call.SchemaError, match="approve"):
+        call.validate(r, ITEMS)
+    r["findings"][0]["severity"] = "concern"
+    r["rubric"]["2"] = "pass"
+    r["rubric"]["1"] = "pass"
+    assert call.validate(r, ITEMS)["verdict"] == "approve"
+
+
+@pytest.mark.parametrize("where", ["tools/x.py:9", "a/b c/d.py:1", "한글/파일.md:12-30", "x.py:7-7", "C:/x.py:3"])
+def test_call_where_accepts_path_line(where):
+    r = good()
+    r["findings"][0]["where"] = where
+    call.validate(r, ITEMS)
+
+
+@pytest.mark.parametrize("where", ["x.py", "x.py:0", "x.py:-3", "x.py:abc", "x.py:9-3", "x.py:1-", ":5", " x.py:5", "x.py:5\n", "x.py:1,2", "a|b.py:3", "a`b.py:3", "x.py:1.5", "여러 곳", "x.py:99999999999"])
+def test_call_where_rejects_bad_syntax(where):
+    r = good()
+    r["findings"][0]["where"] = where
+    with pytest.raises(call.SchemaError, match="where"):
+        call.validate(r, ITEMS)
+
+
+def _queue(*specs):
+    q = Path(os.environ["FAKE_CURL_QUEUE"])
+    for i, spec in enumerate(specs, 1):
+        (q / f"{i}.json").write_text(json.dumps(spec, ensure_ascii=False))
+
+
+def _resp(content, **usage):
+    return {"status": 200, "body": {"choices": [{"message": {"content": content}}], "usage": usage or {"prompt_tokens": 10, "completion_tokens": 5, "cost": 0.01}}}
+
+
+import os  # noqa: E402
+
+MALFORMED = {
+    "choices_not_list": {"status": 200, "body": {"choices": "x", "usage": {"prompt_tokens": 7, "cost": 0.02}}},
+    "choices_dict": {"status": 200, "body": {"choices": {"message": {}}}},
+    "choice_not_dict": {"status": 200, "body": {"choices": ["x"]}},
+    "message_not_dict": {"status": 200, "body": {"choices": [{"message": "x"}]}},
+    "message_null": {"status": 200, "body": {"choices": [{"message": None}]}},
+    "content_list": {"status": 200, "body": {"choices": [{"message": {"content": ["a"]}}]}},
+    "content_null": {"status": 200, "body": {"choices": [{"message": {"content": None}}]}},
+    "body_list": {"status": 200, "body": [1, 2]},
+    "body_string_json": {"status": 200, "body": "\"just a string\""},
+    "usage_garbage": {"status": 200, "body": {"choices": [{"message": {"content": "no json here"}}], "usage": "oops"}},
+    "usage_nested_garbage": {"status": 200, "body": {"choices": [{"message": {"content": "{}"}}], "usage": {"completion_tokens_details": "x", "cost": "free", "prompt_tokens": -4}}},
+}
+
+
+@pytest.mark.parametrize("name", sorted(MALFORMED))
+def test_call_malformed_response_retries_then_gives_up_with_two_attempts(fake_env, curl_queue, tmp_path, name):
+    _queue(MALFORMED[name], MALFORMED[name], MALFORMED[name])
+    with pytest.raises(common.ReviewError, match="2번 모두 실패"):
+        run(fake_env, tmp_path)
+    assert curl_queue.count == 2  # 상한 2번
+    rows = [json.loads(ln) for ln in (tmp_path / "cost.jsonl").read_text().splitlines()]
+    assert [r["ok"] for r in rows] == [False, False]  # 시도마다 기록
+
+
+def test_call_malformed_then_valid_recovers(fake_env, curl_queue, tmp_path):
+    _queue(MALFORMED["message_not_dict"], json.loads((RESP / "ok.json").read_text()))
+    res = run(fake_env, tmp_path)
+    assert res.attempts == 2 and res.review["verdict"] == "changes"
+
+
+def test_call_malformed_attempt_cost_is_counted_per_attempt(fake_env, curl_queue, tmp_path):
+    _queue(MALFORMED["choices_not_list"], json.loads((RESP / "ok.json").read_text()))
+    res = run(fake_env, tmp_path)
+    rows = [json.loads(ln) for ln in (tmp_path / "cost.jsonl").read_text().splitlines()]
+    assert rows[0]["ok"] is False and rows[0]["prompt_tokens"] == 7 and rows[0]["cost_usd"] == pytest.approx(0.02)
+    assert res.usage.cost_usd == pytest.approx(0.0323) and res.usage.prompt_tokens == 1207
+
+
+def test_call_schema_violation_retry_keeps_cost_for_every_attempt(fake_env, curl_queue, tmp_path):
+    bad = good()
+    bad["findings"] = [None]
+    bad["verdict"] = "approve"  # 예전에는 TypeError 로 재시도 없이 죽었다
+    _queue(_resp(json.dumps(bad), prompt_tokens=100, completion_tokens=10, cost=0.5), json.loads((RESP / "ok.json").read_text()))
+    res = run(fake_env, tmp_path)
+    assert res.attempts == 2 and res.usage.calls == 2 and res.usage.cost_usd == pytest.approx(0.5123)
+
+
+def test_call_unknown_cost_is_reported_as_partial_sum(fake_env, curl_queue, tmp_path):
+    _queue(_resp("not json", prompt_tokens=100, completion_tokens=10), json.loads((RESP / "ok.json").read_text()))
+    u = run(fake_env, tmp_path).usage
+    assert u.cost_usd == pytest.approx(0.0123) and u.cost_unknown_calls == 1
+    assert u.cost_text() == "$0.0123(확인된 비용 합계, 호출 1회는 비용 미상)"
+
+
+def test_call_transport_failure_counts_as_unknown_cost(fake_env, curl_queue, tmp_path):
+    q = Path(os.environ["FAKE_CURL_QUEUE"])
+    (q / "1.json").write_text(json.dumps({"exit": 28, "stderr": "timeout"}))
+    (q / "2.json").write_text((RESP / "ok.json").read_text())
+    u = run(fake_env, tmp_path).usage
+    assert u.cost_unknown_calls == 1 and "미상" in u.cost_text() and u.cost_usd == pytest.approx(0.0123)
+
+
+def test_call_cost_text_variants():
+    assert call.Usage().cost_text() == "미상"
+    assert call.Usage(cost_usd=0.5).cost_text() == "$0.5000"
+    assert call.Usage(cost_usd=0.5, cost_unknown_calls=2).cost_text() == "$0.5000(확인된 비용 합계, 호출 2회는 비용 미상)"
+
+
+def test_call_usage_add_survives_garbage():
+    u = call.Usage()
+    for raw in ("x", 5, None, [], {"cost": float("nan")}, {"cost": -1}, {"cost": True}, {"completion_tokens_details": 3}):
+        u.add(raw)
+    assert u.calls == 8 and u.cost_usd is None and u.cost_unknown_calls == 8
+
+
+def test_call_cli_prints_partial_cost_text(fake_env, curl_queue, tmp_path, capsys):
+    _queue(_resp("no", prompt_tokens=1), json.loads((RESP / "ok.json").read_text()))
+    assert call.main(["101", "--repo", "o/r", "--cost-log", str(tmp_path / "c.jsonl")]) == 0
+    assert "확인된 비용 합계" in capsys.readouterr().err
