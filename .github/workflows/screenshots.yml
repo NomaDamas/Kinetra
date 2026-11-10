@@ -35,9 +35,16 @@ jobs:
         run: pnpm --filter @kinetra/screenshots webgl
       - name: WebGL flag sets (evidence, never fails the job)
         continue-on-error: true
-        run: pnpm --filter @kinetra/screenshots webgl --probe --out out/webgl-probe
+        # absolute --out: `pnpm --filter` runs in tools/screenshots, a relative path would land there, outside the uploaded out/
+        run: pnpm --filter @kinetra/screenshots webgl --probe --out "$GITHUB_WORKSPACE/out/webgl-probe"
       - name: Browser tests of the tool
         run: pnpm --filter @kinetra/screenshots test:browser
+      - name: Artifact content check (screenshots, webgl and webgl-probe must all be there)
+        if: always()
+        run: |
+          for f in out/screenshots/manifest.json out/webgl/webgl-result.json out/webgl-probe/webgl-result.json; do
+            test -s "$f" && echo "present: $f" || { echo "MISSING: $f"; exit 1; }
+          done
       - uses: actions/upload-artifact@v4
         if: always()
         with:
