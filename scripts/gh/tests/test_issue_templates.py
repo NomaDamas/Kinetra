@@ -14,10 +14,12 @@ DIR = ROOT / ".github" / "ISSUE_TEMPLATE"
 FORMS = ["epic", "work", "asset", "research", "design"]
 ID_RE = re.compile(r"^[A-Za-z0-9_-]+$")
 TYPES = {"markdown", "textarea", "input", "dropdown", "checkboxes"}
-# 대목표 → 핵심 가치 → 이것이 없으면 → 문제 → DoD → 범위 밖 → 검증 방법 → 의존성 (이 순서의 부분열)
+# 대목표 → 대목표 연결 → 핵심 가치 → 핵심 가치 원문 → 이것이 없으면 → 문제 → DoD → 범위 밖 → 검증 방법 → 의존성 (이 순서의 부분열)
 COMMON_ORDER = [
     ("goal", "대목표"),
+    ("goal-link", "대목표 연결"),
     ("values", "핵심 가치"),
+    ("values-quote", "핵심 가치 원문"),
     ("without-this", "이것이 없으면 대목표의 무엇이 막히는가"),
     ("problem", "문제"),
     ("dod", "완료 정의 (DoD)"),

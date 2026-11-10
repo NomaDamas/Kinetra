@@ -167,7 +167,7 @@ body:
     options:
     - label: 게임 추출물, 만화·애니 캐릭터·로고, 상표, NC·ND, 출처 불명이 아니다
       required: true
-    - label: 시각 전용이다. 물리 부품의 형상과 물성은 파라메트릭 정의에서만 나온다
+    - label: 시각·음향 전용이다. 물리 부품의 형상과 물성은 파라메트릭 정의에서만 나온다
       required: true
     - label: CC0가 아니면 창업자 승인(needs-founder)을 받는다
       required: true
