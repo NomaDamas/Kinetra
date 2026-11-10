@@ -21,9 +21,9 @@ This is a fresh start. The previous product (hackathon era) is preserved at the 
 | `packages/judge` | Necessary-condition screen, search, Monte-Carlo verdicts |
 | `packages/ui` | Design-system tokens and components |
 | `design/` | Claude Design briefs and approved exports |
-| `data/`, `assets/` | Planet data, parts, licensed assets |
+| `data/`, `assets/` | Planet data, parts, licensed assets. `assets/LEDGER.csv` is the provenance ledger: one row per asset or tool/runtime dependency (`kind` column), with license and credit text |
 | `docs/` | Plan, process, decisions, architecture, research |
-| `tools/` | Developer tooling |
+| `tools/` | Developer tooling (`tools/assets/credits.py`: generates `CREDITS.md` from `assets/LEDGER.csv`) |
 | `scripts/gh/` | GitHub bootstrap scripts (`bootstrap.sh`: labels and milestones from `issues.yaml`, idempotent; `--dry-run` to preview) |
 
 ## Setup
@@ -32,4 +32,14 @@ This is a fresh start. The previous product (hackathon era) is preserved at the 
 uv sync
 uv run pytest packages -q   # CI: .github/workflows/engine.yml (PRs and main)
 pnpm install --frozen-lockfile
+```
+
+## Asset and dependency ledger
+
+Every asset and every tool/runtime dependency is a row in [`assets/LEDGER.csv`](assets/LEDGER.csv) (columns and the `asset` / `dependency` `kind` rule: `tools/assets/credits.py` docstring). [`CREDITS.md`](CREDITS.md) is generated from it and must not be edited by hand:
+
+```bash
+uv run python tools/assets/credits.py            # regenerate CREDITS.md
+uv run python tools/assets/credits.py --check    # fail if CREDITS.md differs from the ledger
+uv run python -m unittest discover -s tools/assets/tests -v
 ```
