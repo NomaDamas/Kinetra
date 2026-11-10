@@ -85,10 +85,42 @@ class DiffTest(unittest.TestCase):
         b = traj([[0, 0, 0, -1, 0, 0, 0]])
         self.assertAlmostEqual(car.diff(a, b)["ang_max_rad"], 0.0, places=7)
 
-    def test_common_rows_only(self):
+    def test_truncated_trajectory_is_an_error(self):
         a = traj([[0, 0, 0, 1, 0, 0, 0]] * 5)
         b = traj([[0, 0, 0, 1, 0, 0, 0]] * 3)
-        self.assertEqual(car.diff(a, b)["rows"], 3)
+        with self.assertRaises(ValueError):
+            car.diff(a, b)
+        with self.assertRaises(ValueError):
+            car.diff(b, a)
+
+    def test_same_length_compares_every_row(self):
+        a = traj([[0, 0, 0, 1, 0, 0, 0]] * 3)
+        self.assertEqual(car.diff(a, a)["rows"], 3)
+
+
+class RequireFullTest(unittest.TestCase):
+    def test_full_trajectory_passes(self):
+        a = traj([[0, 0, 0, 1, 0, 0, 0]] * 4)
+        self.assertIs(car.require_full("t", a, 3), a)
+
+    def test_short_or_long_is_an_error(self):
+        a = traj([[0, 0, 0, 1, 0, 0, 0]] * 3)
+        with self.assertRaises(ValueError):
+            car.require_full("t", a, 3)
+        with self.assertRaises(ValueError):
+            car.require_full("t", a, 1)
+
+    def test_non_finite_is_an_error(self):
+        a = traj([[0, 0, 0, 1, 0, 0, 0], [float("nan"), 0, 0, 1, 0, 0, 0]])
+        with self.assertRaises(ValueError):
+            car.require_full("t", a, 1)
+
+    def test_committed_scene_step_counts_match_mujoco_rows(self):
+        p = car.load_params()
+        for scene in p["scenes"]:
+            traj_ = car.run_mujoco(p, scene)
+            car.require_full(scene, traj_, int(p["scenes"][scene]["steps"]))
+            car.require_full(scene + " dt0.001", car.run_mujoco(p, scene, timestep=0.001)[::2], int(p["scenes"][scene]["steps"]))
 
 
 class CsvTest(unittest.TestCase):
@@ -103,6 +135,31 @@ class CsvTest(unittest.TestCase):
             os.unlink(name)
         self.assertEqual(r.shape, (2, 7))
         self.assertEqual(r[1, 0], 1.5)
+
+    def _read(self, text):
+        import tempfile
+        with tempfile.NamedTemporaryFile("w", suffix=".csv", delete=False) as f:
+            f.write(text)
+            name = f.name
+        try:
+            return car.read_godot_csv(car.Path(name))
+        finally:
+            os.unlink(name)
+
+    def test_missing_middle_row_is_an_error(self):
+        with self.assertRaises(ValueError):
+            self._read("step,x,y,z,qw,qx,qy,qz\n0,1,2,3,1,0,0,0\n2,1.5,2,3,1,0,0,0\n")
+
+    def test_single_row_keeps_two_dimensions(self):
+        self.assertEqual(self._read("step,x,y,z,qw,qx,qy,qz\n0,1,2,3,1,0,0,0\n").shape, (1, 7))
+
+
+class WebSceneTest(unittest.TestCase):
+    def test_world3d_is_held_as_a_member_for_the_scene_lifetime(self):
+        src = (car.HERE / "web" / "main.gd").read_text()
+        self.assertRegex(src, r"(?m)^var world: World3D")
+        self.assertIn("world = World3D.new()", src)
+        self.assertNotIn("var w := World3D.new()", src)
 
 
 if __name__ == "__main__":

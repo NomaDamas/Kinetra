@@ -179,8 +179,8 @@ uv run spikes/godot-jolt/test_scale.py
 - **4륜차 두 장면에서 Godot 4.7.2 + Jolt와 MuJoCo 4.0.0의 궤적은 같은 장면 수치(질량, 치수, 마찰, 시간 간격, 구동 토크)로 시작해도 갈린다.** 경사 주행(4 s, 이동 경로 8.14 m)에서 차체 위치 차이는 **끝에서 최대 49.4 mm**(경로의 0.61%), 자세 차이 최대 0.27 mrad. 낙하(3 s)에서 위치 차이는 **착지 직후(스텝 236, 0.472 s) 최대 22.7 mm**, 끝에서 20.5 mm, 자세 차이 최대 **0.0386 rad(2.2°)**. 값은 모두 시뮬(`시뮬` 배지)이고 엔진 둘의 접촉·바퀴 모델 차이를 합친 것이다. 어느 쪽이 "현실에 가깝다"는 뜻이 아니다.
 - **같은 빌드 반복은 비트 단위로 같다**: 두 장면 모두 Godot CSV의 sha256이 별도 프로세스 2회에서 같았다.
 - **이 차이를 어떻게 읽나(노이즈 바닥과 함께).** MuJoCo 쪽 설정만 바꿔도 같은 크기의 차이가 난다: 적분기를 `implicitfast`로 바꾸면 1e-8 m(무시), 시간 간격 2 ms → 1 ms면 경사 2.2 mm, 낙하 3.8 mm, 접촉 강성 `solref` 0.02 → 0.004면 경사 9.3 mm, 낙하 **118 mm**(낙하 3.4 m 경로의 3.5%). Godot 쪽도 시작 높이를 1 µm만 흔들면 경사 0.68 mm, 낙하 **6.8 mm**로 커진다(접촉 뒤 증폭). 즉 낙하의 22.7 mm는 "엔진이 다르다"와 "접촉이 있는 궤적은 작은 차이를 키운다"가 섞인 값이고, 경사의 49 mm는 같은 방향으로 쌓이는 체계 오차(Godot의 차가 더 멀리 간다)다 [추정: 바퀴·접촉의 마찰·감쇠 모델 차이가 원인 후보이고 이번에 분해하지 않았다].
-- **웹 내보내기는 된다, 그러나 이 헤드리스 브라우저에서 스레드 있는 빌드는 끝까지 못 돌았다.** 헤드리스로 `--export-release Web`이 두 변형(스레드 있음/없음)에서 끝났다. **번들 크기는 약 39 MB(gzip 약 10.3 MB, brotli 약 7.2 MB)이고 거의 전부 엔진 `.wasm`**이다. 내 장면 쪽(`.pck`)은 3.9 KB. 헤드리스 Chromium(SwiftShader)에서 스레드 있는 변형은 **페이지 로드 이벤트 355 ms(성능 타이밍 207 ms)에 페이지가 뜨고, 약 1.1 s에 엔진이 시작해 Jolt를 선택했으며(`physics_engine=Jolt Physics`), 이어서 `PAGEERROR memory access out of bounds`로 죽어 1,000스텝 결과를 내지 못했다**(120 s 대기 후 `ran=false`). 원인은 분해하지 않았다(1회 실행, 부하 아래, 소프트웨어 렌더러, 이 장면의 박스 200개 설정 중 어느 것인지 불명) [확인 필요].
-- **OpenXR은 엔진에 있으나 이 머신에서는 시작되지 않는다**: macOS 바이너리에 `OpenXRInterface`가 등록돼 있고 `initialize()`가 `false`를 돌려줬다. 이 머신에 OpenXR 런타임이 없기 때문이다(아래). 실기·에뮬레이터 프레임률은 이번 범위 밖이다.
+- **웹 내보내기는 된다, 그러나 이 헤드리스 브라우저에서 스레드 있는 빌드는 끝까지 못 돌았다.** 헤드리스로 `--export-release Web`이 두 변형(스레드 있음/없음)에서 끝났다. **번들 크기는 약 39 MB(gzip 약 10.3 MB, brotli 약 7.2 MB)이고 거의 전부 엔진 `.wasm`**이다. 내 장면 쪽(`.pck`)은 3.9 KB. 헤드리스 Chromium(SwiftShader)에서 스레드 있는 변형은 **페이지 로드 이벤트 355 ms(성능 타이밍 207 ms)에 페이지가 뜨고, 엔진 자체 시계로 약 1.1 s에 엔진이 시작해 Jolt를 선택했으며(`physics_engine=Jolt Physics`; 이 값은 엔진이 켜진 뒤부터 센 값이라 **페이지 탐색 시작부터의 로딩 시간이 아니다**, 아래), 이어서 `PAGEERROR memory access out of bounds`로 죽어 1,000스텝 결과를 내지 못했다**(120 s 대기 후 `ran=false`). 원인은 분해하지 않았다(1회 실행, 부하 아래, 소프트웨어 렌더러, 이 장면의 박스 200개 설정 중 어느 것인지 불명) [확인 필요]. **그 뒤 수정한 것(미검증)**: 측정 장면 `web/main.gd`가 `World3D`를 `_ready()`의 지역 변수로 들고 있어, 참조 계수 객체인 `World3D`(와 그것이 가진 물리 공간)가 `_ready()`가 끝나면 해제될 수 있었다. 멤버 변수로 바꿔 장면 수명 동안 붙잡는다. 이것이 위 `memory access out of bounds`의 원인인지는 모른다 [추정]. **수정한 장면을 다시 내보냈지만(두 변형) 가드가 SSD 여유 부족(7.7 GiB < 10 GiB)으로 차단해 다시 재지 못했다: 수정 효과는 [측정 대기: 디스크]이고, 위 크래시 기록은 수정 전 빌드의 것이다.**
+- **OpenXR: 이 머신에서 `initialize()`가 `false`를 돌려줬고, 설치된 OpenXR 런타임은 찾지 못했다 [추정: 다른 원인 미배제]**(헤드리스 실행, `xr/openxr/enabled=false` 등 다른 원인은 로더 오류 로그로 배제하지 않았다). macOS 바이너리에는 `OpenXRInterface`가 등록돼 있다(아래). 실기·에뮬레이터 프레임률은 이번 범위 밖이다.
 
 ### 방법: 4륜차 장면
 
@@ -249,11 +249,12 @@ uv run spikes/godot-jolt/test_scale.py
 
 로딩·실행 측정: `pnpm --dir spikes/godot-jolt measure -- --dir <export> --name <name> [--isolated] --out <json>`은 헤드리스 Chromium(Playwright 1.65.0 `chromium-headless-shell-1254`을 재사용, 새 브라우저 설치 없음, 158.0.8127.18) + 이 디렉터리의 정적 서버로 내보낸 폴더를 열고, `load` 이벤트 시각과 `window.__godot_result`가 생길 때까지 시간(상한 120 s)을 기록한다. 가드 밖에서 시작하면 종료 코드 2다. 가드 아래(통과, 경고: 스왑 93%)에서 돌렸다. 소프트웨어 렌더러(SwiftShader)라서 **실제 GPU 로딩 시간이 아니다**.
 
-| 변형 | 로드 이벤트(ms) | 엔진 시작 로그까지(ms, 페이지 안 `ready_ms`) | 페이지 결과 | 격리(`crossOriginIsolated`, SAB) | 비고 |
+| 변형 | 로드 이벤트(ms, `Date.now()` 차) | 엔진 시계 기준 준비 시각(ms, `engine_clock_ready_ms` = 엔진 시작부터, 로딩 시간 아님) | 페이지 결과 | 격리(`crossOriginIsolated`, SAB) | 비고 |
 |---|---|---|---|---|---|
-| 스레드 있음 + COOP/COEP | 355 (DOMContentLoaded 207) | 1,092 | **없음**: `PAGEERROR memory access out of bounds`, 120 s 후 `ran=false` | true / true | Godot 로그: "Emscripten 4.0.20, multi-threaded", `physics_engine=Jolt Physics`, 4.7.2-stable. 1회 실행 |
-| 스레드 없음 | [측정 대기: 디스크] | | | | 가드가 SSD 여유 부족으로 차단 중(8.1 GiB < 10 GiB). 같은 명령으로 채운다 |
+| 스레드 있음 + COOP/COEP | 355 (DOMContentLoaded 207) | 1,092 (수정 전 `ready_ms`라는 이름으로 기록, 같은 값) | **없음**: `PAGEERROR memory access out of bounds`, 120 s 후 `ran=false` | true / true | Godot 로그: "Emscripten 4.0.20, multi-threaded", `physics_engine=Jolt Physics`, 4.7.2-stable. 1회 실행 |
+| 스레드 없음 | [측정 대기: 디스크] | | | | 가드가 SSD 여유 부족으로 차단 중(7.7 GiB < 10 GiB). 같은 명령으로 채운다. 이 칸이 비어 있는 동안 PR은 닫지 않는다 |
 
+- **필드가 뜻하는 것(수정)**: `engine_clock_ready_ms`는 Godot `Time.get_ticks_msec()`, 곧 엔진이 시작한 시점부터 센 값이다. 다운로드·`.wasm` 컴파일이 끝난 **뒤**에 0이 되므로 로딩 시간이 아니다(이전 이름 `ready_ms`가 그렇게 읽혔다). 탐색 시작부터의 시간은 두 가지로 따로 잰다: `ready_since_navigation_ms_in_page` = 엔진이 준비된 순간 페이지 안에서 읽은 `performance.now()`(`performance.timeOrigin` = 탐색 시작 기준), `ready_since_navigation_ms_harness` = 하니스가 같은 로그 줄을 받은 `Date.now()`에서 `performance.timeOrigin`을 뺀 값(콘솔 전달 지연이 섞임). 위 표의 355 ms·1,092 ms는 **수정 전 하니스가 기록한 값**이라 탐색 기준 값이 없다. 수정 후 값은 다시 재야 채워진다 [측정 대기: 디스크].
 - 이 한 번의 실행으로 말할 수 있는 것: **엔진 시작과 Jolt 선택까지는 브라우저에서 된다.** 말할 수 없는 것: 박스 200개 물리가 브라우저에서 돈다. 그 단계에서 죽었고 원인(스레드 빌드의 메모리 한도, 소프트웨어 렌더러, 내 장면 설정, 엔진 버그 중 어느 것인지)을 분해하지 않았다. 재실행·스레드 없음 변형·실제 GPU 브라우저에서의 확인이 필요하다 [확인 필요].
 - 자원 기록(가드 통과, 경고 있음): 명령 `resource_guard.py --profile heavy -- pnpm --dir spikes/godot-jolt measure -- --dir /tmp/godot-web-out --name threads --isolated ...`, 284.8 s, 종료 코드 0. SSD 여유 11.16 → 7.00 GiB(실행 중 최악 6.99), 스왑 13.88 → 16.79 GiB(실행 중 최악 17.32), 메모리 압력 normal. SSD 감소는 다른 프로세스의 영향과 섞였다(이 실행은 내보낸 폴더를 읽기만 한다).
 
@@ -263,7 +264,7 @@ uv run spikes/godot-jolt/test_scale.py
 |---|---|---|
 | 엔진에 OpenXR이 있나 | **예** (`OpenXRInterface`, `OpenXRAPIExtension`, `WebXRInterface`, `XROrigin3D`, `XRController3D`, `XRCamera3D`가 이 macOS 바이너리에 모두 있다) | `xr_probe.gd` → `results/a0-03b-xr.json` |
 | 이 머신에서 시작되나 | **아니오**. `XRServer`에 `OpenXR`가 등록돼 있고(`interfaces_registered: ["Native mobile","OpenXR"]`) `initialize()` → `false` | 같은 파일. 공식 문서도 "등록됨 = 사용 가능일 뿐, 호스트가 지원하지 않으면 초기화가 실패한다"고 적는다 |
-| 왜 | 이 머신에 OpenXR 런타임이 없다: `XR_RUNTIME_JSON` 비어 있음, `/usr/local/share/openxr`·`/etc/xdg/openxr`·`~/.config/openxr` 없음. macOS에 대한 일반적 지원 여부는 문서에서 확인하지 못했다 | 위 명령 |
+| 왜 | **`initialize()`가 `false`를 돌려줬고 설치된 OpenXR 런타임은 찾지 못했다 [추정: 다른 원인 미배제]**. 근거는 `XR_RUNTIME_JSON` 비어 있음, `/usr/local/share/openxr`·`/etc/xdg/openxr`·`~/.config/openxr` 없음뿐이다. 프로브는 `initialize()`의 반환값만 모으고(`xr_probe.gd`), 같은 결과 JSON에 `xr/openxr/enabled=false`도 기록돼 있으며, 헤드리스 실행이나 초기화 설정 같은 다른 원인은 로더·초기화 오류 로그로 배제하지 않았다. macOS에 대한 일반적 지원 여부는 문서에서 확인하지 못했다 | 위 명령 |
 | 공식 지원 범위(문서) | SteamVR로 되는 데스크톱 헤드셋(OpenXR), Quest 링크·Android XR 다이렉트·Pico 커넥트, 안드로이드 독립형 헤드셋(Quest 1/2/3/Pro, Pico 4, Magic Leap 2, Lynx R1, HTC Vive Focus Vision, Android XR), Linux 독립형 Steam Frame, **visionOS는 "제한적: 평면 위 앱만, 몰입형은 아직 안 됨"** | `godot-docs` `about/list_of_features.rst` 4.x 최신(master) |
 | 웹 XR | `WebXRInterface` 클래스가 있다. 이번에 브라우저에서 실행하지 않았다 | 클래스 존재만 확인 |
 | 실기·에뮬레이터 프레임률 | **측정하지 않았다** (범위 밖. A0-02b는 WebXR 쪽) | |
@@ -283,7 +284,7 @@ uv run python tools/dev/resource_guard.py --profile heavy -- pnpm --dir spikes/g
 pnpm --dir spikes/godot-jolt install --frozen-lockfile && pnpm --dir spikes/godot-jolt test   # 서버 단위 시험(CI가 돌린다)
 ```
 
-`test_car.py`(10건)는 장면 수치 파일이 생성기와 같은지, 경사 출발 높이·각도, MuJoCo 낙하가 착지해 유한하고 전진 속도를 유지하는지, 같은 실행 두 번이 비트 같음, 구동 토크가 오르막 거리를 늘리는지, 차이 계산(0, 위치+회전 값, `q`와 `−q` 같음, 공통 행만 비교), CSV 읽기를 단언한다. 차이의 크기는 단언하지 않는다. pnpm 시험(2건)은 정적 서버의 경로 탈출 거부, COOP/COEP 유무, wasm 타입, 404, 루프백만을 단언한다.
+`test_car.py`(18건)는 장면 수치 파일이 생성기와 같은지, 경사 출발 높이·각도, MuJoCo 낙하가 착지해 유한하고 전진 속도를 유지하는지, 같은 실행 두 번이 비트 같음, 구동 토크가 오르막 거리를 늘리는지, 차이 계산(0, 위치+회전 값, `q`와 `−q` 같음, 두 궤적의 길이가 다르면 **오류**이지 짧은 쪽에 맞춰 자르지 않음), 측정 구간 단언(`require_full`: 장면의 `steps+1`행·유한 값이 아니면 오류, 두 엔진이 같은 구간을 덮는다), CSV 읽기(스텝 열이 0,1,2,…가 아니면 오류), 웹 장면이 `World3D`를 멤버로 붙잡는지(소스 검사)를 단언한다. 차이의 크기는 단언하지 않는다. pnpm 시험(2건)은 정적 서버의 경로 탈출 거부, COOP/COEP 유무, wasm 타입, 404, 루프백만을 단언한다.
 
 ### 의존성 라이선스 (원장)
 
@@ -297,6 +298,6 @@ pnpm --dir spikes/godot-jolt install --frozen-lockfile && pnpm --dir spikes/godo
 
 - 장면 2개, 각 1회, 차 하나. 바퀴 마찰은 MuJoCo(구름 마찰 없음)와 Jolt(단일 마찰 계수) 모델이 같지 않아 같은 계수를 줘도 거동이 같지 않다. 차이를 모델 항목별로 분해하지 않았다.
 - MuJoCo 쪽은 기본 접촉 설정이고 Godot 쪽은 Jolt 기본값이다. 각자의 기본값이 "자연스러운" 짝이라고 보장하지 않는다. 노이즈 바닥 표가 설정 민감도를 보인다.
-- 웹: 번들 크기는 실제 내보낸 파일이다. 스레드 있는 변형은 헤드리스 Chromium에서 시작까지만 되고 물리 실행 중 죽었다(위, 1회). 스레드 없는 변형의 로딩은 [측정 대기: 디스크]. 헤드리스 Chromium(SwiftShader)이므로 실제 GPU 로딩 시간이 아니다.
+- 웹: 번들 크기는 실제 내보낸 파일이다. 스레드 있는 변형은 헤드리스 Chromium에서 시작까지만 되고 물리 실행 중 죽었다(위, 1회). 스레드 없는 변형의 로딩은 [측정 대기: 디스크]이고, `World3D` 수명 수정 뒤 스레드 있는 변형의 재측정도 [측정 대기: 디스크](수정은 미검증). 헤드리스 Chromium(SwiftShader)이므로 실제 GPU 로딩 시간이 아니다.
 - OpenXR: 존재와 이 머신의 시작 실패만 확인했다. 헤드셋이 없다.
 - 플랫폼 간·다른 버전 간 결정론은 범위 밖(#54 코멘트의 MuJoCo 플랫폼 간 불일치 관찰과 같은 한계가 있을 수 있다).

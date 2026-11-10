@@ -33,7 +33,8 @@ const result = { name, cross_origin_isolated_headers: isolated, files, total_byt
 try {
   const page = await browser.newPage();
   const logs = [];
-  page.on("console", (m) => logs.push(m.text()));
+  let readySeenAtEpochMs = null;  // Date.now() when the "KINETRA ready" console line reached this harness
+  page.on("console", (m) => { const t = m.text(); logs.push(t); if (readySeenAtEpochMs === null && t.startsWith("KINETRA ready")) readySeenAtEpochMs = Date.now(); });
   page.on("pageerror", (e) => logs.push("PAGEERROR " + e.message));
   const t0 = Date.now();
   await page.goto(url, { waitUntil: "load" });
@@ -45,6 +46,18 @@ try {
   result.ms_to_result = Date.now() - t0;
   result.page_result = ok ? await page.evaluate(() => window.__godot_result) : null;
   result.console = logs.slice(-12);
+  // Engine-ready time measured from navigation start. Two independent readings (null if the engine never got ready):
+  //  - ready_since_navigation_ms_in_page: performance.now() read inside the page by main.gd when the engine was ready
+  //    (performance.now() = ms since performance.timeOrigin = navigation start);
+  //  - ready_since_navigation_ms_harness: wall clock when this harness saw the same log line minus performance.timeOrigin.
+  // The engine's own Time.get_ticks_msec() is reported separately as engine_clock_ready_ms: it starts when the engine
+  // starts, AFTER the download/compile, so it is NOT a load time.
+  const readyLine = logs.find((l) => l.startsWith("KINETRA ready")) ?? null;
+  const num = (key) => { const m = readyLine?.match(new RegExp(key + "=(-?[0-9.]+)")); return m ? Number(m[1]) : null; };
+  result.engine_clock_ready_ms = num("engine_clock_ready_ms");
+  result.ready_since_navigation_ms_in_page = num("ready_since_navigation_ms");
+  const timeOrigin = await page.evaluate(() => performance.timeOrigin);
+  result.ready_since_navigation_ms_harness = readySeenAtEpochMs === null ? null : Math.round(readySeenAtEpochMs - timeOrigin);
   result.navigation_timing = await page.evaluate(() => {
     const n = performance.getEntriesByType("navigation")[0];
     return { dom_content_loaded_ms: Math.round(n.domContentLoadedEventEnd), load_event_ms: Math.round(n.loadEventEnd) };

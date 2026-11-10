@@ -1,15 +1,16 @@
 extends Node
 # 200 free cubes on a floor via PhysicsServer3D (same API as ../scale.gd), 1000 physics steps at 500 Hz, then report.
+var world: World3D  # member on purpose: World3D is reference counted and owns the physics space, so it must live as long as the scene
 var space: RID
 var bodies: Array[RID] = []
 var steps := 0
 var t_first := 0
-var t_ready := 0
+var t_ready := 0  # Time.get_ticks_msec(): milliseconds on the ENGINE clock (starts when the engine starts), not since page navigation
 
 func _ready() -> void:
 	t_ready = Time.get_ticks_msec()
-	var w := World3D.new()
-	space = w.space
+	world = World3D.new()
+	space = world.space
 	PhysicsServer3D.space_set_active(space, true)
 	var floor_shape := PhysicsServer3D.box_shape_create()
 	PhysicsServer3D.shape_set_data(floor_shape, Vector3(50, 50, 1))
@@ -29,8 +30,14 @@ func _ready() -> void:
 		PhysicsServer3D.body_set_state(b, PhysicsServer3D.BODY_STATE_TRANSFORM,
 				Transform3D(Basis(), Vector3((i % 10) * 0.13, ((i / 10) % 10) * 0.13, 0.1 + (i / 100) * 0.13)))
 		bodies.append(b)
+	# performance.now() in the page is milliseconds since performance.timeOrigin = navigation start, so this one is the
+	# page-load time up to "engine ready"; -1 outside the browser.
+	var ready_since_navigation_ms := -1.0
+	if OS.has_feature("web"):
+		ready_since_navigation_ms = float(JavaScriptBridge.eval("performance.now()"))
 	print("KINETRA ready physics_engine=", ProjectSettings.get_setting("physics/3d/physics_engine"),
-			" version=", Engine.get_version_info()["string"], " ready_ms=", t_ready)
+			" version=", Engine.get_version_info()["string"], " engine_clock_ready_ms=", t_ready,
+			" ready_since_navigation_ms=%.1f" % ready_since_navigation_ms)
 
 func _physics_process(_d: float) -> void:
 	if steps == 0:

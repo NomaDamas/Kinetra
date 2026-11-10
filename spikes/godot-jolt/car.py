@@ -150,9 +150,10 @@ def angle_between(qa: np.ndarray, qb: np.ndarray) -> np.ndarray:
 
 
 def diff(a: np.ndarray, b: np.ndarray) -> dict:
-    """Trajectory difference a vs b over their common rows (positions m, angles rad)."""
-    n = min(len(a), len(b))
-    a, b = a[:n], b[:n]
+    """Trajectory difference a vs b (positions m, angles rad). Different lengths are an error, never truncated."""
+    if a.shape != b.shape:
+        raise ValueError(f"trajectories cover different intervals: {a.shape[0]} rows vs {b.shape[0]} rows")
+    n = len(a)
     dp = np.linalg.norm(a[:, 0:3] - b[:, 0:3], axis=1)
     da = angle_between(a[:, 3:7], b[:, 3:7])
     path = float(np.sum(np.linalg.norm(np.diff(a[:, 0:3], axis=0), axis=1)))
@@ -167,7 +168,21 @@ def diff(a: np.ndarray, b: np.ndarray) -> dict:
 
 
 def read_godot_csv(path: Path) -> np.ndarray:
-    return np.loadtxt(path, delimiter=",", skiprows=1)[:, 1:8]
+    """Rows of x y z qw qx qy qz. The step column must run 0, 1, 2, ... without gaps or reordering."""
+    raw = np.loadtxt(path, delimiter=",", skiprows=1, ndmin=2)
+    if not np.array_equal(raw[:, 0], np.arange(len(raw))):
+        raise ValueError(f"{path}: step column is not 0..{len(raw) - 1} in order")
+    return raw[:, 1:8]
+
+
+def require_full(name: str, traj: np.ndarray, steps: int) -> np.ndarray:
+    """A trajectory must hold steps+1 finite rows (row 0 = initial state) so every engine covers the same measured
+    interval; a truncated or non-finite one is an error, not a smaller comparison."""
+    if traj.shape != (steps + 1, 7):
+        raise ValueError(f"{name}: expected {steps + 1} rows x 7 columns (steps={steps}), got {traj.shape}")
+    if not np.all(np.isfinite(traj)):
+        raise ValueError(f"{name}: trajectory has non-finite values")
+    return traj
 
 
 def run_godot(godot: Path, scene: str, out: Path, *, dz: float = 0.0, project: Path | None = None) -> np.ndarray:
@@ -221,10 +236,11 @@ def main(argv=None) -> int:
     tmp = Path(tempfile.mkdtemp(prefix="a003b-"))
     try:
         for scene in p["scenes"]:
-            mj = run_mujoco(p, scene)
-            g1 = run_godot(args.godot, scene, tmp / f"{scene}-1.csv")
-            g2 = run_godot(args.godot, scene, tmp / f"{scene}-2.csv")
-            gp = run_godot(args.godot, scene, tmp / f"{scene}-dz.csv", dz=args.dz)
+            steps = int(p["scenes"][scene]["steps"])
+            mj = require_full("mujoco", run_mujoco(p, scene), steps)
+            g1 = require_full("godot", run_godot(args.godot, scene, tmp / f"{scene}-1.csv"), steps)
+            g2 = require_full("godot repeat", run_godot(args.godot, scene, tmp / f"{scene}-2.csv"), steps)
+            gp = require_full("godot dz", run_godot(args.godot, scene, tmp / f"{scene}-dz.csv", dz=args.dz), steps)
             sha = [hashlib.sha256((tmp / f"{scene}-{i}.csv").read_bytes()).hexdigest() for i in ("1", "2")]
             variants = {
                 "mujoco_euler_dt0.002 (reference)": mj,
@@ -234,7 +250,7 @@ def main(argv=None) -> int:
                 f"mujoco_start_z+{args.dz:g}": run_mujoco(p, scene, dz=args.dz),
             }
             entry = {
-                "steps": len(mj) - 1,
+                "steps": steps,
                 "godot_same_build_repeat": {"csv_sha256": sha, "identical": sha[0] == sha[1]},
                 "godot_vs_mujoco": diff(g1, mj),
                 "noise_floor": {
