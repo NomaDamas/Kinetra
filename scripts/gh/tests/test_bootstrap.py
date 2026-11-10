@@ -145,6 +145,32 @@ class IdempotenceTests(unittest.TestCase):
             self.assertIn("milestones create=0 update=0 keep=3", second)
             self.assertEqual(json.loads(state.read_text()), after1)
 
+    def test_option_like_label_name_is_created_then_kept(self):
+        spec = HERE / "option_like.yaml"
+        with tempfile.TemporaryDirectory() as d:
+            d = Path(d)
+            shim = d / "gh"
+            shim.write_text(f'#!/bin/sh\nexec "{sys.executable}" "{HERE / "fake_gh.py"}" "$@"\n')
+            shim.chmod(shim.stat().st_mode | stat.S_IEXEC)
+            state = d / "state.json"
+            state.write_text(json.dumps({"labels": [], "milestones": []}))
+            env = {**os.environ, "PATH": f"{d}{os.pathsep}{os.environ['PATH']}", "FAKE_GH_STATE": str(state)}
+
+            def run():
+                r = subprocess.run([sys.executable, str(HERE.parent / "bootstrap.py"), "--file", str(spec)],
+                                   env=env, capture_output=True, text=True)
+                self.assertEqual(r.returncode, 0, r.stderr)
+                return r.stdout
+
+            self.assertIn("labels create=2 update=0 keep=0", run())
+            names = sorted(l["name"] for l in json.loads(state.read_text())["labels"])
+            self.assertEqual(names, ["--help", "-x"])
+            self.assertEqual([m["title"] for m in json.loads(state.read_text())["milestones"]], ["--help"])
+            after1 = json.loads(state.read_text())
+            self.assertIn("labels create=0 update=0 keep=2; milestones create=0 update=0 keep=1", run())
+            self.assertEqual(json.loads(state.read_text()), after1)
+
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -130,7 +130,8 @@ def apply(repo: str, actions: list[tuple]) -> None:
             continue
         if kind == "label":
             verb = "create" if op == "create" else "edit"
-            gh("label", verb, spec["name"], "-R", repo, "--color", spec["color"], "--description", spec["description"])
+            # 옵션을 먼저, 이름은 `--` 뒤에: `--help` 같은 옵션 모양 이름이 플래그로 해석되지 않게 한다.
+            gh("label", verb, "-R", repo, f"--color={spec['color']}", f"--description={spec['description']}", "--", spec["name"])
         elif op == "create":
             gh("api", "-X", "POST", f"repos/{repo}/milestones", "-f", f"title={spec['title']}", "-f", f"description={spec['description']}")
         else:
