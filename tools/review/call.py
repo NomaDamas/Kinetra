@@ -217,12 +217,12 @@ class Usage:
         raw = raw if isinstance(raw, dict) else {}
         details = raw.get("completion_tokens_details")
         cost = raw.get("cost")
-        ok = isinstance(cost, (int, float)) and not isinstance(cost, bool) and math.isfinite(cost) and cost >= 0
+        value = _cost(cost)
         one = {
             "prompt_tokens": _int(raw.get("prompt_tokens")),
             "completion_tokens": _int(raw.get("completion_tokens")),
             "reasoning_tokens": _int(details.get("reasoning_tokens") if isinstance(details, dict) else None),
-            "cost_usd": float(cost) if ok else None,
+            "cost_usd": value,
         }
         self.calls += 1
         self.prompt_tokens += one["prompt_tokens"]
@@ -244,6 +244,17 @@ class Usage:
         if self.cost_unknown_calls:
             return f"${self.cost_usd:.4f}(확인된 비용 합계, 호출 {self.cost_unknown_calls}회는 비용 미상)"
         return f"${self.cost_usd:.4f}"
+
+
+def _cost(cost) -> float | None:
+    """응답이 준 비용을 유한한 0 이상의 float 로. 아니면(문자열, bool, NaN, 음수, float 로 못 바꾸는 큰 정수) None = 미상."""
+    if isinstance(cost, bool) or not isinstance(cost, (int, float)):
+        return None
+    try:
+        value = float(cost)
+    except OverflowError:
+        return None
+    return value if math.isfinite(value) and value >= 0 else None
 
 
 def _int(v) -> int:
@@ -363,11 +374,13 @@ def review_bundle(
     rubric_path: Path = RUBRIC_PATH,
     cost_log: Path | None = DEFAULT_COST_LOG,
     sleep: Callable[[float], None] = time.sleep,
+    usage: Usage | None = None,
 ) -> Result:
+    """`usage` 를 넘기면 그 객체에 호출마다 누적한다. 실패로 예외가 나도 호출한 쪽이 토큰·비용 합계를 볼 수 있다."""
     key = common.api_key()
     items, doc = load_rubric(rubric_path)
     system = system_prompt(items, doc)
-    usage = Usage()
+    usage = usage if usage is not None else Usage()
     reviews: list[dict] = []
     errors: list[str] = []
     n_parts = max(1, len(bundle.diff_parts))
@@ -390,7 +403,8 @@ def review_bundle(
                 if attempt == ATTEMPTS:
                     raise common.ReviewError(f"리뷰 호출이 {ATTEMPTS}번 모두 실패했다. " + " | ".join(errors[-ATTEMPTS:])) from None
                 if isinstance(e, SchemaError):
-                    extra = "직전 응답이 스키마를 어겼다: " + "; ".join(e.errors[:8]) + "\n같은 입력을 다시 리뷰하고 스키마를 지켜 JSON 객체 하나만 출력한다."
+                    detail = common.redact("; ".join(e.errors[:8]))  # 모델이 되돌려 준 값이 들어 있을 수 있다
+                    extra = "직전 응답이 스키마를 어겼다: " + detail + "\n같은 입력을 다시 리뷰하고 스키마를 지켜 JSON 객체 하나만 출력한다."
                 sleep(2.0)
                 continue
             log_cost(cost_log, {**entry, "ok": True, **one})
@@ -399,20 +413,26 @@ def review_bundle(
     return Result(MODEL, merge(reviews), usage, n_parts, attempts, errors)
 
 
+def usage_line(u: Usage) -> str:
+    return f"call: 호출 {u.calls}회, 토큰 {u.prompt_tokens}+{u.completion_tokens}(reasoning {u.reasoning_tokens}), 비용 {u.cost_text()}"
+
+
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description="PR 리뷰를 OpenRouter(openai/gpt-6.1-sol, reasoning high)에 요청해 검증된 JSON 을 출력한다")
     ap.add_argument("pr", type=int)
     ap.add_argument("--repo", help="OWNER/REPO (기본: 현재 디렉터리의 gh 저장소)")
     ap.add_argument("--cost-log", type=Path, default=DEFAULT_COST_LOG, help="호출마다 토큰·비용을 덧붙이는 JSONL (기본: out/review-cost.jsonl)")
     args = ap.parse_args(argv)
+    usage = Usage()
     try:
         bundle = collect_mod.collect(args.pr, args.repo or common.default_repo())
-        result = review_bundle(bundle, cost_log=args.cost_log)
+        result = review_bundle(bundle, cost_log=args.cost_log, usage=usage)
     except common.ReviewError as e:
         print(f"call: {common.redact(str(e))}", file=sys.stderr)
+        if usage.calls or usage.cost_unknown_calls:  # 실패해도 쓴 토큰과 비용은 알린다
+            print(usage_line(usage), file=sys.stderr)
         return 1
-    u = result.usage
-    print(f"call: 호출 {u.calls}회, 토큰 {u.prompt_tokens}+{u.completion_tokens}(reasoning {u.reasoning_tokens}), 비용 {u.cost_text()}", file=sys.stderr)
+    print(usage_line(result.usage), file=sys.stderr)
     sys.stdout.write(result.to_json() + "\n")
     return 0
 

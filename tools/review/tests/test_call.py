@@ -400,3 +400,62 @@ def test_call_cli_prints_partial_cost_text(fake_env, curl_queue, tmp_path, capsy
     _queue(_resp("no", prompt_tokens=1), json.loads((RESP / "ok.json").read_text()))
     assert call.main(["101", "--repo", "o/r", "--cost-log", str(tmp_path / "c.jsonl")]) == 0
     assert "확인된 비용 합계" in capsys.readouterr().err
+
+
+# ---------------------------------------------------------------- 2차 리뷰 반영
+
+def test_call_schema_retry_message_masks_echoed_secret(fake_env, curl_queue, tmp_path):
+    bad = good()
+    bad["verdict"] = FAKE_KEY  # 모델이 비밀을 되돌려 쓴 잘못된 필드
+    bad["findings"][0]["severity"] = f"Bearer {FAKE_KEY}"
+    _queue(_resp(json.dumps(bad)), json.loads((RESP / "ok.json").read_text()))
+    res = run(fake_env, tmp_path)
+    assert res.attempts == 2
+    first, second = (c["request"] for c in curl_queue.log())
+    retry_text = json.dumps(second, ensure_ascii=False)
+    assert FAKE_KEY not in retry_text and "스키마를 어겼다" in retry_text and "***" in retry_text
+    assert FAKE_KEY not in " ".join(res.errors) and FAKE_KEY not in (tmp_path / "cost.jsonl").read_text()
+
+
+@pytest.mark.parametrize("cost", [10**400, -(10**400), 1e999, float("inf"), float("nan"), -1, True, "1", None, [1]])
+def test_call_usage_add_odd_cost_is_unknown_not_a_crash(cost):
+    u = call.Usage()
+    one = u.add({"prompt_tokens": 3, "cost": cost})
+    assert one["cost_usd"] is None and u.cost_usd is None and u.cost_unknown_calls == 1 and u.prompt_tokens == 3
+
+
+def test_call_huge_int_cost_through_the_call_path(fake_env, curl_queue, tmp_path):
+    d = json.loads((RESP / "ok.json").read_text())
+    q = Path(os.environ["FAKE_CURL_QUEUE"])
+    (q / "1.json").write_text(json.dumps(d).replace('"cost": 0.0123', '"cost": ' + "9" * 400))  # JSON 의 아주 큰 정수
+    assert "9" * 400 in (q / "1.json").read_text()
+    res = run(fake_env, tmp_path)
+    assert res.usage.cost_usd is None and res.usage.cost_unknown_calls == 1 and res.usage.prompt_tokens == 1200
+    assert "미상" in res.usage.cost_text()
+    row = json.loads((tmp_path / "cost.jsonl").read_text().splitlines()[0])
+    assert row["ok"] is True and row["cost_usd"] is None
+
+
+def test_call_cli_failure_after_two_validation_failures_prints_summary(fake_env, curl_queue, tmp_path, capsys, monkeypatch):
+    monkeypatch.setattr(call.time, "sleep", lambda s: None)
+    curl_queue("bad_verdict.json", "bad_item.json", "ok.json")
+    assert call.main(["101", "--repo", "o/r", "--cost-log", str(tmp_path / "c.jsonl")]) == 1
+    err = capsys.readouterr().err
+    assert "2번 모두 실패" in err
+    assert "call: 호출 2회, 토큰 2400+1600(reasoning 1000), 비용 $0.0246" in err
+    assert curl_queue.count == 2
+
+
+def test_call_review_bundle_fills_the_callers_usage_on_failure(fake_env, curl_queue, tmp_path):
+    curl_queue("bad_verdict.json", "bad_verdict.json")
+    u = call.Usage()
+    with pytest.raises(common.ReviewError):
+        call.review_bundle(collect.collect(101, "o/r"), cost_log=None, sleep=lambda s: None, usage=u)
+    assert u.calls == 2 and u.cost_usd == pytest.approx(0.0246)
+
+
+def test_call_cli_auth_failure_prints_summary_with_unknown_cost(fake_env, curl_queue, tmp_path, capsys):
+    curl_queue("http_401.json")
+    assert call.main(["101", "--repo", "o/r", "--cost-log", str(tmp_path / "c.jsonl")]) == 1
+    err = capsys.readouterr().err
+    assert "HTTP 401" in err and "call: 호출 1회, 토큰 0+0(reasoning 0), 비용 미상" in err
