@@ -45,7 +45,7 @@ def run(pr: int, repo: str, *, do_post: bool = True, out_dir: Path = DEFAULT_OUT
     print(f"run: {call.MODEL} reasoning high 호출", file=sys.stderr)
     result = call.review_bundle(bundle, transport=transport, cost_log=cost_log)
     u = result.usage
-    cost = "미상" if u.cost_usd is None else f"${u.cost_usd:.4f}"
+    cost = u.cost_text()
     print(f"run: 판정 {result.review['verdict']}, 지적 {len(result.review['findings'])}건, 토큰 {u.prompt_tokens}+{u.completion_tokens}(reasoning {u.reasoning_tokens}), 비용 {cost}", file=sys.stderr)
     out_dir.mkdir(parents=True, exist_ok=True)
     path = out_dir / f"pr-{pr}.json"
