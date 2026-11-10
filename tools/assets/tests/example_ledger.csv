@@ -1,0 +1,3 @@
+에셋 ID,경로,원본 URL,저작자,라이선스(SPDX),받은 날짜,원본 해시,변경 내역,용도,표기 문구,확인자,kind
+asset-example-rock-001,assets/props/rock-001.glb,https://example.org/models/rock-001,Example Author,CC0-1.0,2026-01-02,sha256:0000000000000000000000000000000000000000000000000000000000000001,"리토폴로지 5만 삼각형 이하, 2K PBR 베이크",시각,"Rock 001 by Example Author (CC0-1.0)",omp,asset
+dep-example-lib-1.2.3,tools/example.py,https://pypi.org/project/example-lib/1.2.3/ https://github.com/example/example-lib,Example Maintainers,MIT,2026-01-03,sha256:0000000000000000000000000000000000000000000000000000000000000002,없음,개발 도구: 예시,"example-lib, Copyright (c) Example Maintainers. MIT License.",omp,dependency
