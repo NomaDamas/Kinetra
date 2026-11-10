@@ -95,9 +95,67 @@
 
 내보낸 파일은 고치지 않고 그대로 커밋한다. 고쳐야 하면 고친 곳과 이유를 `README.md`에 전/후로 적는다(`design-system` 폴더의 "고친 정직성 문구" 절이 본보기).
 
-## 승인 뒤: 구현과 대조
+## 승인 뒤: 구현과 대조 (D0-04)
 
-화면 구현 PR은 본문 "디자인 승인본" 칸에 `design/exports/<화면>/` 경로를 쓴다(`.github/pull_request_template.md`). 구현을 승인본과 자동으로 비교하는 절차는 D0-04(#40)가 이 문서에 덧붙인다.
+화면 구현 PR은 본문 "디자인 승인본" 칸에 `design/exports/<화면>/` 경로를 쓰고(`.github/pull_request_template.md`), 아래 대조를 통과시킨다.
+
+### 실행
+
+```bash
+pnpm design:compare --screen <이름>            # 결과: out/design-compare/<이름>/ (gitignore 됨)
+pnpm design:compare --screen _trial            # 시험 쌍: 어긋남 없음 → 종료 코드 0
+pnpm design:compare --screen _trial-shifted    # 시험 쌍: 일부러 어긋남 → 종료 코드 1
+pnpm --filter @kinetra/design-tools test       # 위 둘과 비교 로직을 단언하는 테스트(CI `web`이 돈다)
+```
+
+- 구현: `tools/design/compare.ts`(Playwright, `playwright-core`의 헤드리스 Chromium), `tools/design/diff.ts`(`pixelmatch`, `pngjs`), 화면 목록 `tools/design/screens.json`.
+- 한 화면은 쌍(pair)의 목록이다. 쌍마다 승인본 쪽과 구현 쪽의 `url`(저장소 상대 HTML 경로 또는 `http(s)` 주소)과 캡처할 `selector`를 적는다. 승인본 쪽은 보통 `design/exports/<화면>/index.html`의 한 아트보드(`#id`)다.
+- 두 쪽은 **같은 실행에서 같은 브라우저로** 1440×900, 배율 1, 움직임 줄이기, 애니메이션 정지로 찍는다. 승인본 PNG를 저장소에 박제하지 않는다. 글꼴과 안티앨리어싱은 기계마다 다르므로 저장된 이미지와 비교하면 기계가 바뀔 때마다 깨진다.
+- 외부 네트워크 요청은 막는다(`127.0.0.1` 제외). 승인본 `index.html`이 Google Fonts를 부르는 문제(`design/exports/design-system/README.md`의 "글꼴" 절)와 상관없이 양쪽이 같은 대체 글꼴로 그려진다.
+- 산출물: `<쌍>.approved.png`, `<쌍>.implemented.png`, `<쌍>.diff.png`(차이 난 픽셀이 빨강, 안티앨리어싱으로 본 픽셀이 노랑, 한쪽에만 있는 영역이 자홍), `result.json`. 실패한 쌍은 차이 이미지 경로를 출력한다.
+- 종료 코드: 0 모든 쌍이 허용 오차 안, 1 어긋난 쌍이 있음, 2 사용법 또는 설정 오류.
+- 브라우저: Playwright 캐시(`~/Library/Caches/ms-playwright/chromium_headless_shell-1254`)를 쓴다. 없으면 `pnpm --filter @kinetra/design-tools exec playwright-core install chromium-headless-shell`. 이 머신에서는 무거운 실행이므로 `uv run python tools/dev/resource_guard.py --profile heavy -- <명령>`으로 감싼다(`dev-resources.md`). 두 번째 브라우저 버전을 설치하지 않는다. `playwright-core` 버전을 올리면 캐시의 브라우저 폴더 이름이 바뀐다.
+
+### 허용 오차 (기본값, 값 배지 `기본값`)
+
+값은 `tools/design/diff.ts`의 `DEFAULT_TOLERANCE`에 있고 이 표와 같아야 한다. 아래 조건을 **모두** 만족해야 통과다. 하나라도 넘으면 실패다.
+
+| 항목 | 값 | 무엇을 막는가 | 근거 |
+|---|---|---|---|
+| 픽셀 색 거리 `threshold` | 0.1 | 부분 픽셀 위치와 안티앨리어싱 노이즈. 이 값 이하의 색 차이와 글자 가장자리 안티앨리어싱 픽셀은 같은 것으로 본다 | pixelmatch 기본값. 같은 기계의 같은 브라우저에서는 0 차이가 나온다(`_trial` 시험이 0px를 단언한다) |
+| 차이 픽셀 비율 `maxDiffRatio` | 0.2% | 레이아웃이 전체적으로 밀리거나 색이 바뀐 것 | 1440×900 한 화면에서 약 2,600px. 글자 한두 줄이 한 칸 밀려도 넘는다 |
+| 어느 32×32 칸이든 차이 픽셀 수 `maxWindowDiffPixels` | 100 (칸 넓이의 약 10%) | 전체 비율에 묻히는 작은 부분 결함: 버튼 하나가 6 px 밀림, 배지 하나가 빠짐 | `_trial-shifted` 시험이 이 조건으로 실패한다(전체 비율은 0.026%로 통과인데 한 칸에 206px) |
+| 크기 차이 `maxSizeDeltaPx` | 0 | 캡처한 요소의 가로·세로가 다르면 레이아웃이 다른 것이다 | |
+| 무시 영역 합 `maxIgnoredRatio` | 25% | 무시 영역으로 어긋남을 가리는 것(예외 규칙 1). 넘으면 차이가 0이어도 실패 | |
+
+- 이 값은 [제안]이다. 첫 실제 화면(SC-01 구현)에서 가짜 실패나 놓침이 나오면 이 표와 `DEFAULT_TOLERANCE`를 같은 PR에서 함께 바꾸고 이유를 적는다.
+- 완전한 픽셀 일치를 요구하지 않는다(D0-04 범위 밖). 위 오차는 "눈에 띄는 어긋남"만 막는다.
+- 성공·실패를 나타내는 색이 아니다. 차이 이미지의 빨강은 "다르다"는 표시일 뿐 증거 색 규칙과 무관하다.
+
+### 예외 규칙
+
+예외는 `screens.json`의 쌍에 쓴다. **`ignore`나 `tolerance`를 쓰면 같은 쌍에 `reason`을 반드시 적는다.** 비어 있으면 도구가 시작 전에 거부한다. `reason`은 PR 리뷰에서 승인본 대조 항목으로 검토한다.
+
+1. **무시 영역(`ignore`: CSS 선택자 목록).** 승인본 렌더에서 그 요소가 차지한 사각형을 비교에서 뺀다. 허용되는 것은 **내용이 실행마다 달라지는 요소**뿐이다: 실제 시뮬레이션 값, 시계·타임스탬프, 3D 뷰포트 캔버스, 사용자 데이터. 허용되지 않는 것: 어긋난 요소를 가리려고 그 부분을 무시하는 것. 무시 영역의 합은 캡처 면적의 25%를 넘길 수 없다(도구가 실패로 처리한다). 뷰포트 캔버스의 안쪽은 이 대조의 대상이 아니다(기즈모·고스트는 코드 프로토타입으로 검증한다, `studio-plan.md`).
+2. **쌍별 허용 오차 완화(`tolerance`).** 글꼴이 승인본과 다르게 대체되는 것처럼 구조적으로 막을 수 없는 차이에만 쓴다. 완화한 항목, 완화한 값, 막을 수 없는 이유를 `reason`에 쓴다. 기본값보다 엄격하게 쓰는 것은 언제든 된다. `maxSizeDeltaPx`를 0보다 크게 두려면 어느 쪽이 왜 가변인지를 쓴다.
+3. **상태마다 쌍을 둔다.** 빈 화면, 로딩, 오류, 판정 4종처럼 브리프가 정한 상태는 쌍 하나씩이다. 승인본에 없는 상태를 구현에서 만들어 대조에서 빼지 않는다.
+4. **승인본 자체가 틀렸다.** 대조가 실패했는데 승인본의 값이 규격(브리프)과 어긋난 것이 이유라면 구현을 승인본에 맞추지 말고 이슈를 열어 창업자에게 올린다. 승인본을 고치는 PR이 먼저 병합돼야 한다(`design/exports/<화면>/README.md`에 고친 곳 기록).
+5. **예외는 PR 본문에 쓴다.** 새 `ignore`·`tolerance`가 들어가는 PR은 "디자인 승인본" 칸에 쌍 이름과 `reason`을 옮겨 적는다.
+
+### 화면 하나를 대조에 올리는 법
+
+1. `screens.json`에 `"<화면>": { "pairs": [ ... ] }`를 더한다. `approved.url`은 `design/exports/<화면>/index.html`, `implemented.url`은 구현 페이지(로컬 서버 주소 또는 정적 HTML 경로).
+2. `pnpm design:compare --screen <화면>`이 0으로 끝나는 것을 PR 본문 "검증 방법"에 붙인다. 실패하면 차이 이미지를 보고 구현을 고친다.
+3. 화면·시각 변경의 스크린샷 증거(`done-definition.md` 3번)는 `<쌍>.implemented.png`와 `<쌍>.diff.png`로 대신할 수 있다.
+
+### `_trial` 시험 쌍
+
+| 화면 이름 | 구성 | 기대 |
+|---|---|---|
+| `_trial` | 디자인 시스템 v0(`design/exports/design-system/index.html`)의 `#valuebadges`(B 값 배지)와 `#evidence`(C 증거 4단계)를 승인본으로 렌더하고, 같은 파일의 같은 아트보드를 "구현" 쪽으로 다시 렌더 | 두 쌍 모두 통과, 차이 0px |
+| `_trial-shifted` | 같은 B 아트보드의 "구현" 쪽에만 첫 자식을 오른쪽 6 px·아래 4 px 옮기는 CSS를 주입 | 실패(종료 코드 1), 한 32×32 칸에 차이 픽셀이 100을 넘는다 |
+
+`packages/ui` 미리보기(`#397`, D0-02d)가 병합되기 전에 만든 시험이라 "구현" 쪽이 승인본과 같은 파일이다. 이 시험이 증명하는 것은 도구의 동작(같은 입력은 통과, 어긋난 입력은 실패하고 차이 이미지가 나온다)이지 `packages/ui`가 승인본과 같다는 것이 아니다. `packages/ui` 미리보기를 "구현" 쪽으로 쓰는 쌍은 그 PR이 병합된 뒤 `screens.json`에 더한다.
 
 ## 시연 상태 (DoD 대조)
 

@@ -8,6 +8,32 @@
 
 ## 의존성 (dependency)
 
+### dep-@types/node-26.6.6
+
+- 표기: @types/node, DefinitelyTyped contributors. MIT License.
+- 저작자: DefinitelyTyped contributors
+- 라이선스: MIT
+- 원본: https://www.npmjs.com/package/@types/node/v/26.6.6 https://github.com/DefinitelyTyped/DefinitelyTyped https://github.com/DefinitelyTyped/DefinitelyTyped/blob/master/LICENSE
+- 경로: `tools/design/package.json`
+- 용도: 개발 도구: tools/design 의 node:* 타입
+- 변경 내역: 없음(수정 없이 사용). npm 배포 tarball 의 sha256. tools/design/package.json 의 devDependencies와 pnpm-lock.yaml 에서 26.6.6 로 고정.
+- 받은 날짜: 2026-11-10
+- 원본 해시: `sha256:7ef006842f7a647868e9d53588148cb058008b107aea6a728143730bee020456`
+- 확인자: omp
+
+### dep-@types/pngjs-6.0.5
+
+- 표기: @types/pngjs, DefinitelyTyped contributors. MIT License.
+- 저작자: DefinitelyTyped contributors
+- 라이선스: MIT
+- 원본: https://www.npmjs.com/package/@types/pngjs/v/6.0.5 https://github.com/DefinitelyTyped/DefinitelyTyped https://github.com/DefinitelyTyped/DefinitelyTyped/blob/master/LICENSE
+- 경로: `tools/design/package.json`
+- 용도: 개발 도구: pngjs 타입(tsc lint)
+- 변경 내역: 없음(수정 없이 사용). npm 배포 tarball 의 sha256. tools/design/package.json 의 devDependencies와 pnpm-lock.yaml 에서 6.0.5 로 고정.
+- 받은 날짜: 2026-11-10
+- 원본 해시: `sha256:db919544cdd5c9bd50928619fee0498341e4c0845b03d38752b510cff3994e07`
+- 확인자: omp
+
 ### dep-mujoco-4.0.0
 
 - 표기: MuJoCo, Copyright Google DeepMind. Apache License 2.0.
@@ -47,6 +73,19 @@
 - 원본 해시: `sha256:9a94cf751c9ad8ebaa835bcd3d40dacf8534ad086b88c38029b65123c7999d2a`
 - 확인자: omp
 
+### dep-pixelmatch-8.0.0
+
+- 표기: pixelmatch, Copyright (c) 2025, Mapbox. ISC License.
+- 저작자: Mapbox
+- 라이선스: ISC
+- 원본: https://www.npmjs.com/package/pixelmatch/v/8.0.0 https://github.com/mapbox/pixelmatch https://github.com/mapbox/pixelmatch/blob/main/LICENSE
+- 경로: `tools/design/package.json`
+- 용도: 개발 도구: 디자인 대조(D0-04)의 픽셀 비교와 차이 이미지
+- 변경 내역: 없음(수정 없이 사용). npm 배포 tarball 의 sha256. tools/design/package.json 의 devDependencies와 pnpm-lock.yaml 에서 8.0.0 로 고정.
+- 받은 날짜: 2026-11-10
+- 원본 해시: `sha256:ab59d4c4ec73fbf456c72cbd8200b1529a76142fd9291de72a62ba6e3a845e75`
+- 확인자: omp
+
 ### dep-playwright-1.65.0
 
 - 표기: Playwright, Copyright (c) Microsoft Corporation. Apache License 2.0.
@@ -60,6 +99,32 @@
 - 원본 해시: `sha256:5c535e6d0b00411c7b926f2f39aeaa80b9daa9ccfa2dd5c21db718cd8808aa42`
 - 확인자: omp
 
+### dep-playwright-core-1.65.0
+
+- 표기: Playwright, Copyright (c) Microsoft Corporation. Apache License 2.0.
+- 저작자: Microsoft Corporation
+- 라이선스: Apache-2.0
+- 원본: https://www.npmjs.com/package/playwright-core/v/1.65.0 https://github.com/microsoft/playwright https://github.com/microsoft/playwright/blob/main/LICENSE
+- 경로: `tools/design/package.json`
+- 용도: 개발 도구: 디자인 대조(D0-04)의 헤드리스 Chromium 스크린샷. 브라우저 바이너리는 Playwright 캐시(~/Library/Caches/ms-playwright 의 chromium_headless_shell-1254)이며 저장소에 들어오지 않는다
+- 변경 내역: 없음(수정 없이 사용). npm 배포 tarball 의 sha256. tools/design/package.json 의 devDependencies와 pnpm-lock.yaml 에서 1.65.0 로 고정.
+- 받은 날짜: 2026-11-10
+- 원본 해시: `sha256:315247c55a793ca760b2f05bdcee0e6a53fd65b1f22d1d3de8323c8c9395add3`
+- 확인자: omp
+
+### dep-pngjs-7.0.0
+
+- 표기: pngjs, Copyright (c) 2015 Luke Page & Original Contributors, (c) 2012 Kuba Niegowski. MIT License.
+- 저작자: Luke Page; Kuba Niegowski; pngjs contributors
+- 라이선스: MIT
+- 원본: https://www.npmjs.com/package/pngjs/v/7.0.0 https://github.com/pngjs/pngjs https://github.com/pngjs/pngjs/blob/master/LICENSE
+- 경로: `tools/design/package.json`
+- 용도: 개발 도구: 디자인 대조(D0-04)의 PNG 읽기·쓰기
+- 변경 내역: 없음(수정 없이 사용). npm 배포 tarball 의 sha256. tools/design/package.json 의 devDependencies와 pnpm-lock.yaml 에서 7.0.0 로 고정.
+- 받은 날짜: 2026-11-10
+- 원본 해시: `sha256:c4b71873d48a692dd5eeb1dcb62185c7aafe40f2180c7cc7f30ec71e89a080be`
+- 확인자: omp
+
 ### dep-pyyaml-6.0.3
 
 - 표기: PyYAML, Copyright (c) 2017-2021 Ingy döt Net, (c) 2006-2016 Kirill Simonov. MIT License.
@@ -71,4 +136,17 @@
 - 변경 내역: 없음(수정 없이 사용). 루트 pyproject.toml 의 dev 그룹(pyyaml>=6)과 uv.lock 에서 6.0.3 으로 고정, `scripts/gh/bootstrap.sh`·`seed_issues.sh` 는 `uv run --with pyyaml` 로도 실행
 - 받은 날짜: 2026-11-10
 - 원본 해시: `sha256:d76623373421df22fb4cf8817020cbb7ef15c725b9d5e45f17e189bfc384190f`
+- 확인자: omp
+
+### dep-typescript-7.0.2
+
+- 표기: TypeScript, Copyright (c) Microsoft Corporation. Apache License 2.0.
+- 저작자: Microsoft Corp.
+- 라이선스: Apache-2.0
+- 원본: https://www.npmjs.com/package/typescript/v/7.0.2 https://github.com/microsoft/TypeScript https://github.com/microsoft/TypeScript/blob/main/LICENSE.txt
+- 경로: `tools/design/package.json`
+- 용도: 개발 도구: tools/design 의 타입 검사(lint)
+- 변경 내역: 없음(수정 없이 사용). npm 배포 tarball 의 sha256. tools/design/package.json 의 devDependencies와 pnpm-lock.yaml 에서 7.0.2 로 고정.
+- 받은 날짜: 2026-11-10
+- 원본 해시: `sha256:da2513f4b95176d6dde8b51aab7afe8a927656c9d277369793f77f7e59371c08`
 - 확인자: omp
