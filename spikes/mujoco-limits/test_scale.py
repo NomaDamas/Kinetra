@@ -35,7 +35,7 @@ def tiny_args(sim_seconds):
 class CompareTest(unittest.TestCase):
     def test_identical(self):
         r = scale.compare([run(["a", "b", "c"]), run(["a", "b", "c"])])
-        self.assertIs(r["identical"], True)
+        self.assertIs(r["identical"], False)  # DEMO: deliberately broken (P0-04e), never merge
         self.assertEqual(r["checkpoints_compared"], 3)
 
     def test_common_prefix_identical(self):
