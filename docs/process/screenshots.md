@@ -15,11 +15,11 @@
 - **없는 경로는 건너뛰고 로그에 `SKIP <name>: <path> (path not found)`를 남긴다.** 그래서 아직 머지되지 않은 화면(`packages/ui/preview/index.html`, `design/exports/_impl/index.html`)을 미리 적어 둘 수 있다. 하나도 못 찍으면(전부 없음 또는 실패) 잡이 실패한다. 찍기로 한 페이지가 오류로 못 열리면 실패한다.
 - 화면을 추가하는 PR은 이 파일에 한 줄을 더한다.
 
-네트워크는 막는다(`http(s)`, WebSocket 중단). 페이지는 로컬 파일만으로 그려지므로 같은 입력은 같은 픽셀이다. 웹 폰트는 시스템 글꼴로 대체된다. 애니메이션과 전환은 끈다.
+네트워크는 막는다(`http(s)`, WebSocket 중단). 이것은 **변동 요인 하나(원격 자원의 내용·응답 시간)를 없앨 뿐 같은 픽셀을 보증하지 않는다.** 남는 요인: 글꼴(웹 폰트는 못 받아 시스템 글꼴로 대체되고, 시스템 글꼴 자체가 OS·러너 이미지마다 다르다), 그래픽 경로(SwiftShader 버전과 백엔드: 같은 Playwright 브라우저인데 로컬은 `SwiftShader Device (LLVM 10.0.0)`, CI는 `(Subzero)`로 나왔다), OS와 CPU, 브라우저 버전(Playwright 버전에 묶임). 그래서 스크린샷은 사람이 보는 증거이고 픽셀 대조는 같은 실행 안에서 두 쪽을 함께 렌더하는 `tools/design`이 맡는다. 애니메이션과 전환은 끈다.
 
 ## 결과 받기
 
-PR의 Actions → `screenshots` 실행 → Artifacts: `screenshots`(PNG들과 `manifest.json`: 이름, 경로, 크기, 바이트, sha256, 건너뜀 사유, 페이지 오류), `webgl`(WebGL 확인 PNG와 `webgl-result.json`, 플래그 탐색 결과). 보관 14일. CLI: `gh run download <run-id> -n screenshots`.
+PR의 Actions → `screenshots` 실행 → Artifacts: **`screenshots` 하나**. 안에 `screenshots/`(PNG들과 `manifest.json`: 이름, 경로, 크기, 바이트, sha256, 건너뜀 사유, 페이지 오류), `webgl/`(WebGL 확인 PNG와 `webgl-result.json`), `webgl-probe/`(플래그 묶음별 PNG와 `webgl-result.json`, `probe: true`: 어느 묶음이 통과했는지의 증거)가 들어 있다. 보관 14일. CLI: `gh run download <run-id> -n screenshots`.
 
 ## WebGL 헤드리스 확인
 
@@ -38,7 +38,7 @@ PR의 Actions → `screenshots` 실행 → Artifacts: `screenshots`(PNG들과 `m
 
 ## 로컬 실행
 
-브라우저를 띄우는 실행은 무거운 실행이다(`docs/process/dev-resources.md`). 가드 밖에서 시작하면 종료 코드 3으로 거절한다(`CI=true`일 때만 통과).
+브라우저를 띄우는 실행은 무거운 실행이다(`docs/process/dev-resources.md`). 진입점(`capture`, `webgl`, `webgl --probe`, `test:browser`의 모든 `test/*.browser.ts`)은 가드 밖에서 시작하면 거절한다(`capture`/`webgl`은 종료 코드 3, 브라우저 시험은 import 시점에 예외로 시작 전에 멈춤). `CI=true` 또는 `KINETRA_GUARD_PASSED=1`(가드가 `-- 명령`으로 감쌀 때 설정)이면 통과. `test/guard-entrypoints.test.ts`가 오프라인에서 이것을 단언한다.
 
 ```bash
 pnpm --filter @kinetra/screenshots exec playwright-core install chromium-headless-shell   # 한 번

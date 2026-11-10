@@ -1,5 +1,6 @@
 // Needs the Playwright browser and the resource guard locally (`pnpm --filter @kinetra/screenshots test:browser`).
 // Fails, not skips, when the browser is missing.
+import "./require-guard.ts"; // first: refuses to run outside the resource guard
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
