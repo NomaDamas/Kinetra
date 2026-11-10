@@ -40,9 +40,9 @@
 - 저작자: Ingy döt Net; Kirill Simonov
 - 라이선스: MIT
 - 원본: https://pypi.org/project/PyYAML/6.0.3/ https://github.com/yaml/pyyaml https://github.com/yaml/pyyaml/blob/main/LICENSE
-- 경로: `scripts/gh/bootstrap.sh`
-- 용도: 개발 도구: issues.yaml 파싱(GitHub 라벨·마일스톤 부트스트랩)
-- 변경 내역: 없음(수정 없이 `uv run --with pyyaml`로 실행 시 설치. 버전은 고정하지 않았고 6.0.3에서 확인)
+- 경로: `pyproject.toml`
+- 용도: 개발 도구: issues.yaml 파싱(GitHub 라벨·마일스톤 부트스트랩, 이슈 일괄 등록)
+- 변경 내역: 없음(수정 없이 사용). 루트 pyproject.toml 의 dev 그룹(pyyaml>=6)과 uv.lock 에서 6.0.3 으로 고정, `scripts/gh/bootstrap.sh`·`seed_issues.sh` 는 `uv run --with pyyaml` 로도 실행
 - 받은 날짜: 2026-11-10
 - 원본 해시: `sha256:d76623373421df22fb4cf8817020cbb7ef15c725b9d5e45f17e189bfc384190f`
 - 확인자: omp

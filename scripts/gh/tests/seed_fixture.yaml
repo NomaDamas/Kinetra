@@ -1,0 +1,52 @@
+labels:
+  - {name: "type:epic", color: "1d76db", description: "e"}
+  - {name: "type:task", color: "1d76db", description: "t"}
+milestones:
+  - {title: "S0", description: "zero"}
+items:
+  - id: E1
+    kind: epic
+    parent: null
+    title: "[E1] epic"
+    labels: ["type:epic"]
+    milestone: "S0"
+    depends_on: []
+    body: |-
+      ## 대목표
+      G0
+      ## 의존성
+      선행: 없음
+  - id: E1-01
+    kind: issue
+    parent: E1
+    title: "[E1-01] first"
+    labels: ["type:task"]
+    milestone: "S0"
+    depends_on: []
+    body: |-
+      ## 문제
+      p
+      ## 의존성
+      선행: 없음 / 후속: E1-02
+  - id: E1-02
+    kind: sub
+    parent: E1-01
+    title: "[E1-02] second"
+    labels: ["type:task"]
+    milestone: "S0"
+    depends_on: [E1-01, E1]
+    body: |-
+      ## 문제
+      q
+      ## 의존성
+      선행: E1-01
+  - id: E1-03
+    kind: sub
+    parent: E1
+    title: "[E1-03] no dependency heading"
+    labels: ["type:task"]
+    milestone: "S0"
+    depends_on: [E1-02]
+    body: |-
+      ## 문제
+      r
