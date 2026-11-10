@@ -60,6 +60,14 @@ describe("ValueBadge contract (brief 4절)", () => {
     void (<ValueBadge kind="cite" stale />);
   });
 
+  it("never lets `disabled` or `aria-disabled` reach the DOM, even through a spread or `as any`", () => {
+    const sneaky = { disabled: true, "aria-disabled": true } as any;
+    for (const kind of VALUE_BADGE_KINDS) {
+      const out = html(<ValueBadge kind={kind} {...sneaky} />);
+      expect(out).not.toContain("disabled");
+    }
+  });
+
   it("forwards button props (click opens the evidence popover)", () => {
     const out = html(<ValueBadge kind="sim" aria-haspopup="dialog" aria-controls="pop" />);
     expect(out).toContain('aria-haspopup="dialog"');

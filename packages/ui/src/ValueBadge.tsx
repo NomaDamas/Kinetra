@@ -39,7 +39,10 @@ export type ValueBadgeProps = CommonProps &
     | { kind: Exclude<ValueBadgeKind, "sim">; stale?: never }
   );
 
-export function ValueBadge({ kind, stale = false, modifier, ...button }: ValueBadgeProps): ReactElement {
+export function ValueBadge({ kind, stale = false, modifier, ...rest }: ValueBadgeProps): ReactElement {
+  // The types already omit `disabled`; strip it (and `aria-disabled`) at runtime too, so a spread props object or an
+  // `as any` can never make a badge inert: reading the evidence is never blocked (V1).
+  const { disabled: _disabled, "aria-disabled": _ariaDisabled, ...button } = rest as ButtonHTMLAttributes<HTMLButtonElement>;
   const label = [modifier, VALUE_BADGE_LABELS[kind], stale ? "오래됨" : undefined].filter(Boolean).join(" · ");
   const className = ["kin-value-badge", `kin-value-badge--${kind}`, stale ? "kin-value-badge--stale" : ""]
     .filter(Boolean)

@@ -8,12 +8,14 @@ Design-system tokens and React components, taken from the approved Claude Design
 | `src/components.css` | Component styles. Reads tokens only; no colour literals |
 | `src/ValueBadge.tsx` | `ValueBadge`, five kinds: `sim`, `cite`, `default`, `declared`, `estimate` (+ `modifier`, + `stale` for `sim`). Always a focusable button, never disabled |
 | `src/EvidenceLevel.tsx` | `EvidenceLevel`: `L0`, `L1` (+`narrow`), `L2` (`FEASIBLE_FOUND`, `INFEASIBLE_NECESSARY_CONDITION`, `NOT_FOUND_IN_BUDGET` = weak evidence), `L3` (0 measurements: always shown), `none` (`invalid`, `out-of-model`). The colour is the evidence strength, never the verdict (brief 5.2) |
+| `scripts/build-preview.mjs`, `preview/index.html` | Static page with every `ValueBadge` / `EvidenceLevel` variant (react-dom/server over the built `dist/`, tokens.css, components.css). Screenshot: `design/exports/_impl/d0-02d/preview.png`, next to the approved boards' render `approved-boards.png` |
 | `test/` | vitest. Snapshots plus checks against the approved boards (`source/ValueBadges.dc.html`, `source/Evidence.dc.html`): glyph paths, strength bars, colours, border shape, sizes |
 
 ```bash
 pnpm --filter ui tokens        # regenerate tokens/ after the export's tokens.json changes
 pnpm --filter ui lint          # tsc --noEmit + tokens are up to date (--check)
 pnpm --filter ui build         # tokens + tsc -> dist/
+pnpm --filter ui preview       # after build: regenerate preview/index.html
 pnpm --filter ui test          # vitest (snapshots in test/__snapshots__; review the diff before `vitest -u`)
 ```
 
