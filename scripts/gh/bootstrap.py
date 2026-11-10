@@ -27,19 +27,34 @@ class SpecError(Exception):
     pass
 
 
+def _text(value, where: str, *, required: bool) -> str:
+    """YAML 스칼라를 문자열로 정규화한다. 따옴표 없는 정수(예: title: 2)는 "2"로 본다.
+    bool, float, 리스트, 맵은 거부한다(`yes`가 True가 되거나 1.10이 1.1이 되는 식의 조용한 변형 방지)."""
+    if value is None:
+        value = ""
+    if isinstance(value, bool) or not isinstance(value, (str, int)):
+        raise SpecError(f"{where}: 문자열이어야 한다(받은 값 {value!r}, 형식 {type(value).__name__}). 따옴표로 감싸라")
+    text = str(value).strip()
+    if required and not text:
+        raise SpecError(f"{where}: 비어 있다")
+    return text
+
+
 def load_spec(path: Path) -> tuple[list[dict], list[dict]]:
     data = yaml.safe_load(path.read_text(encoding="utf-8"))
+    if not isinstance(data, dict):
+        raise SpecError(f"{path}: 최상위가 맵이 아니다")
     labels, milestones = data.get("labels"), data.get("milestones")
-    if not labels or not milestones:
-        raise SpecError(f"{path}: labels, milestones 가 비어 있거나 없다")
+    if not isinstance(labels, list) or not isinstance(milestones, list) or not labels or not milestones:
+        raise SpecError(f"{path}: labels, milestones 가 비어 있거나 리스트가 아니다")
     seen: set[str] = set()
     out_labels = []
     for i, lab in enumerate(labels):
-        name = lab.get("name")
-        color = str(lab.get("color", "")).lstrip("#")
-        desc = lab.get("description", "") or ""
-        if not name:
-            raise SpecError(f"labels[{i}]: name 없음")
+        if not isinstance(lab, dict):
+            raise SpecError(f"labels[{i}]: 맵이 아니다")
+        name = _text(lab.get("name"), f"labels[{i}].name", required=True)
+        color = _text(lab.get("color"), f"label {name!r}.color", required=True).lstrip("#")
+        desc = _text(lab.get("description"), f"label {name!r}.description", required=False)
         if name.lower() in seen:
             raise SpecError(f"labels: 중복 이름 {name!r}")
         seen.add(name.lower())
@@ -51,10 +66,10 @@ def load_spec(path: Path) -> tuple[list[dict], list[dict]]:
     seen = set()
     out_ms = []
     for i, ms in enumerate(milestones):
-        title = ms.get("title")
-        desc = ms.get("description", "") or ""
-        if not title:
-            raise SpecError(f"milestones[{i}]: title 없음")
+        if not isinstance(ms, dict):
+            raise SpecError(f"milestones[{i}]: 맵이 아니다")
+        title = _text(ms.get("title"), f"milestones[{i}].title", required=True)
+        desc = _text(ms.get("description"), f"milestone {title!r}.description", required=False)
         if title in seen:
             raise SpecError(f"milestones: 중복 제목 {title!r}")
         seen.add(title)

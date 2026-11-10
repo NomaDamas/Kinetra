@@ -50,6 +50,59 @@ class PlanTests(unittest.TestCase):
         os.unlink(f.name)
 
 
+class ScalarNormalizationTests(unittest.TestCase):
+    def load_text(self, text):
+        with tempfile.NamedTemporaryFile("w", suffix=".yaml", delete=False, encoding="utf-8") as f:
+            f.write(text)
+        try:
+            return bootstrap.load_spec(Path(f.name))
+        finally:
+            os.unlink(f.name)
+
+    def test_unquoted_integer_title_is_normalized_and_keeps(self):
+        labels, ms = self.load_text(
+            "labels: [{name: 2, color: 1d76db, description: d}]\n"
+            "milestones: [{title: 2, description: 7}]\n"
+        )
+        self.assertEqual(labels[0]["name"], "2")
+        self.assertEqual(ms, [{"title": "2", "description": "7"}])
+        # GitHub 에는 문자열 "2" 로 저장되어 있으므로 두 번째 실행은 keep 이어야 한다.
+        acts = bootstrap.plan(
+            labels, ms,
+            [{"name": "2", "color": "1d76db", "description": "d"}],
+            [{"number": 1, "title": "2", "description": "7"}],
+        )
+        self.assertEqual([a[0] for a in acts], ["keep", "keep"])
+
+    def test_invalid_scalars_rejected_before_any_change(self):
+        bad = [
+            "labels: [{name: yes, color: 1d76db}]\nmilestones: [{title: m}]\n",       # bool 이름
+            "labels: [{name: x, color: 1d76db}]\nmilestones: [{title: 1.10}]\n",      # float 제목
+            "labels: [{name: x, color: 1d76db}]\nmilestones: [{title: ''}]\n",        # 빈 제목
+            "labels: [{name: x, color: 1d76db}]\nmilestones: [{}]\n",                 # 제목 없음
+            "labels: [{name: [a], color: 1d76db}]\nmilestones: [{title: m}]\n",       # 리스트 이름
+            "labels: [{name: x, color: 1d76db}]\nmilestones: [{title: m}, {title: m}]\n",  # 중복
+        ]
+        for text in bad:
+            with self.subTest(text=text):
+                with self.assertRaises(bootstrap.SpecError):
+                    self.load_text(text)
+
+    def test_invalid_spec_makes_no_gh_calls(self):
+        with tempfile.TemporaryDirectory() as d:
+            d = Path(d)
+            bad = d / "bad.yaml"
+            bad.write_text("labels: [{name: x, color: 1d76db}]\nmilestones: [{title: 1.10}]\n")
+            shim = d / "gh"
+            shim.write_text(f'#!/bin/sh\necho called >> "{d}/calls"\nexit 1\n')
+            shim.chmod(shim.stat().st_mode | stat.S_IEXEC)
+            env = {**os.environ, "PATH": f"{d}{os.pathsep}{os.environ['PATH']}"}
+            r = subprocess.run([sys.executable, str(HERE.parent / "bootstrap.py"), "--file", str(bad), "--repo", "o/r"],
+                               env=env, capture_output=True, text=True)
+            self.assertEqual(r.returncode, 1)
+            self.assertFalse((d / "calls").exists(), "검증 실패 시 gh 를 호출하면 안 된다")
+
+
 class IdempotenceTests(unittest.TestCase):
     """bootstrap.py 를 실제 프로세스로 두 번 돌리고, PATH 의 fake gh 상태로 중복 없음을 확인한다."""
 
@@ -74,9 +127,11 @@ class IdempotenceTests(unittest.TestCase):
             }))
             env = {**os.environ, "PATH": f"{d}{os.pathsep}{os.environ['PATH']}", "FAKE_GH_STATE": str(state)}
 
+            before_dry = json.loads(state.read_text())
             dry = self.run_bootstrap(env, "--dry-run")
             self.assertIn("(dry-run)", dry)
-            self.assertEqual(len(json.loads(state.read_text())["labels"]), 2, "dry-run 은 변경하면 안 된다")
+            self.assertIn("would create label", dry)
+            self.assertEqual(json.loads(state.read_text()), before_dry, "dry-run 은 상태 전체를 바꾸면 안 된다")
 
             first = self.run_bootstrap(env)
             self.assertIn("labels create=2 update=1 keep=0", first)
