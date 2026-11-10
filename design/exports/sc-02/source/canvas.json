@@ -1,0 +1,38 @@
+{
+  "v": 3,
+  "createdOnFiles": {"v": 1, "at": "2026-11-10T12:54:45Z"},
+  "title": "SC-02 인스펙터",
+  "launch": {"view": "canvas"},
+  "pages": [],
+  "boards": {
+    "Main.dc.html": {"x": 0, "y": 0, "w": 644, "h": 882, "title": "S1 기본 · 강체 하나 선택(차체), 모두 접힘"},
+    "S2.dc.html": {"x": 724, "y": 0, "w": 1676, "h": 882, "title": "S2 강체 · 펼침 (관성, 재질 세부, 관절, 액추에이터)"},
+    "S3.dc.html": {"x": 2480, "y": 0, "w": 644, "h": 882, "title": "S3 관절 선택"},
+    "S4.dc.html": {"x": 0, "y": 1300, "w": 1676, "h": 882, "title": "S4 액추에이터 선택 · 접힘과 열림"},
+    "S5.dc.html": {"x": 1756, "y": 1300, "w": 644, "h": 882, "title": "S5 선택 없음"},
+    "S6.dc.html": {"x": 2480, "y": 1300, "w": 644, "h": 882, "title": "S6 다중 선택 · 부품 3개"},
+    "S7.dc.html": {"x": 0, "y": 2600, "w": 644, "h": 882, "title": "S7 값 편집 상태"},
+    "S8.dc.html": {"x": 724, "y": 2600, "w": 988, "h": 882, "title": "S8 읽기 전용 · 오래됨"},
+    "S10.dc.html": {"x": 1792, "y": 2600, "w": 644, "h": 882, "title": "S10 키보드 · 주석 아트보드"},
+    "S9.dc.html": {"x": 0, "y": 3900, "w": 2020, "h": 882, "title": "S9 값 배지 5종 근거 팝오버"}
+  },
+  "order": [
+    "Main.dc.html",
+    "S2.dc.html",
+    "S3.dc.html",
+    "S4.dc.html",
+    "S5.dc.html",
+    "S6.dc.html",
+    "S7.dc.html",
+    "S8.dc.html",
+    "S10.dc.html",
+    "S9.dc.html"
+  ],
+  "notes": {
+    "row-1": {"x": 0, "y": -300, "text": "SC-02 인스펙터 · 강체와 관절", "kind": "title1", "maxW": 3124},
+    "row-2": {"x": 0, "y": 1000, "text": "액추에이터, 선택 없음, 다중 선택", "kind": "title1", "maxW": 3124},
+    "row-3": {"x": 0, "y": 2300, "text": "편집, 읽기 전용, 키보드", "kind": "title1", "maxW": 2436},
+    "row-4": {"x": 0, "y": 3600, "text": "값 배지 근거 팝오버", "kind": "title1", "maxW": 2020}
+  },
+  "designSystems": []
+}

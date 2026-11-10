@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>S9 값 배지 근거 팝오버</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+button,input,select{font-family:inherit}
+input::placeholder{color:#93A0AE;opacity:1}
+:focus-visible{outline:2px solid #A8CBFF;outline-offset:2px}
+@media (prefers-reduced-motion:reduce){*{transition-property:opacity!important;animation:none!important}}
+</style>
+</helmet>
+<div style="width:2020px;height:882px;box-sizing:border-box;background:#0F1216;color:#E8EDF2;font-family:Pretendard,'Pretendard Variable',-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Malgun Gothic','Noto Sans KR',sans-serif;font-size:13px;line-height:20px;font-variant-numeric:tabular-nums;display:flex;flex-direction:column">
+
+<div data-note="1" style="flex:none;height:40px;box-sizing:border-box;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:0 16px;border-bottom:1px dashed #7A899B;font-size:12px;line-height:16px;color:#A9B4C0"><span><strong style="color:#E8EDF2;font-weight:600">S9 값 배지 5종 근거 팝오버</strong> · 배지를 누르면 열리고 Esc로 닫힙니다</span><span>팝오버 5 · 인스펙터 primary 0</span></div>
+
+<div style="flex:1 1 0;min-height:0;display:flex;padding:0 24px 24px 0">
+
+<div style="flex:none;width:300px;box-sizing:border-box;padding:16px 24px 0 16px;display:flex;flex-direction:column;gap:12px;font-size:12px;line-height:16px;color:#A9B4C0">
+<div aria-hidden="true" style="position:relative;width:240px;height:150px;box-sizing:border-box;border:1px solid #3A4654;border-radius:4px;background:#0F1216"><div style="position:absolute;left:0;right:0;top:0;height:8px;background:#151A20;border-bottom:1px solid #26303A"></div><div style="position:absolute;left:0;top:9px;bottom:16px;width:40px;background:#151A20;border-right:1px solid #26303A"></div><div style="position:absolute;right:0;top:9px;bottom:16px;width:53px;box-sizing:border-box;background:#22324A;border:1px solid #5B9DFF"></div><div style="position:absolute;left:0;right:0;bottom:6px;height:9px;background:#151A20;border-top:1px solid #26303A"></div><div style="position:absolute;left:0;right:0;bottom:0;height:5px;background:#151A20;border-top:1px solid #26303A"></div></div>
+<div><strong style="color:#E8EDF2;font-weight:600">셸 안의 위치: SC-01 오른쪽 패널</strong><br>팝오버는 배지 바로 아래, 패널 안에 열립니다. 패널 폭(320)을 넘지 않습니다. elevation.3.</div>
+<div>각 열은 패널의 한 행만 잘라 그렸습니다. 열린 배지는 글자색 1 px 링 + 선택 면(디자인 시스템 B장 "팝오버 열림").</div>
+<div>대괄호와 "(예시)"는 실제 기록이 들어갈 자리입니다. 출처 이름, 라이선스, 사람 이름을 지어내지 않았습니다.</div>
+<div><span style="color:#E8EDF2">선언 해제</span>(계산값으로 돌아가기)는 사용자 선언 팝오버 안에 있습니다. 그래서 S1의 상시 조작 요소가 10개로 남습니다.</div>
+<div>읽기 전용 화면(S8)에서도 같은 팝오버가 열립니다. 그때 선언 해제는 비활성이고 이유를 적습니다.</div>
+</div>
+
+<div style="display:flex;gap:24px">
+
+<div style="flex:none;width:320px;display:flex;flex-direction:column">
+<div style="height:28px;display:flex;align-items:center;font-size:12px;line-height:16px;font-weight:500;color:#A9B4C0">시뮬 · 어떤 계산에서 나왔는가</div>
+<div data-panel="sim" style="width:320px;box-sizing:border-box;padding:12px 8px;background:#151A20;border:1px solid #26303A">
+<div style="display:grid;grid-template-columns:64px minmax(0,1fr) 28px auto;gap:8px;align-items:center;min-height:28px;padding:0 8px;border-radius:4px"><span style="font-size:12px;font-weight:500;color:#A9B4C0">질량중심</span><span style="font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:500;text-align:right;white-space:nowrap">0.12 0.00 0.45</span><span style="font-size:11px;font-weight:500;color:#A9B4C0">m</span><button type="button" data-ctl="시뮬 배지" data-badge="시뮬" aria-haspopup="dialog" aria-expanded="true" aria-controls="s9-p1" aria-label="값 배지 시뮬. 근거가 열려 있습니다" style="display:inline-flex;align-items:center;height:24px;padding:0;border:0;background:none;color:#E8EDF2;font-size:11px;line-height:16px;font-weight:500;white-space:nowrap;cursor:pointer"><span style="display:inline-flex;align-items:center;gap:4px;height:20px;box-sizing:border-box;padding:0 8px;border-radius:999px;background:#22324A;border:1px solid #E8EDF2"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 6q1.25-5 2.5 0t2.5 0t2.5 0t2.5 0"/></svg>시뮬</span></button></div>
+<div id="s9-p1" data-transient="1" role="dialog" aria-label="근거: 시뮬" style="margin:8px 8px 0;background:#222A33;border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,0.5);padding:12px;display:flex;flex-direction:column;gap:8px;font-size:12px;line-height:16px">
+<div style="display:flex;align-items:center;justify-content:space-between"><span style="font-weight:600">근거</span><span style="display:inline-flex;align-items:center;gap:4px;height:20px;box-sizing:border-box;padding:0 8px;border-radius:999px;background:#303B49;color:#E8EDF2;font-size:11px;font-weight:500"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 6q1.25-5 2.5 0t2.5 0t2.5 0t2.5 0"/></svg>시뮬</span></div>
+<div><span style="color:#A9B4C0">계산</span> 부품 형상과 재질에서 엔진이 계산한 질량중심</div>
+<div><span style="color:#A9B4C0">입력</span> 형상 [메시 이름], 재질 프리셋 A(예시)</div>
+<div><span style="color:#A9B4C0">계산 시각</span> [날짜와 시각]</div>
+<div style="color:#A9B4C0">계산값이라 고칠 수 없습니다. 형상이나 재질을 바꾸면 다시 계산됩니다.</div>
+<div style="font-size:11px;color:#93A0AE">Esc로 닫습니다</div>
+</div>
+</div>
+</div>
+
+<div style="flex:none;width:320px;display:flex;flex-direction:column">
+<div style="height:28px;display:flex;align-items:center;font-size:12px;line-height:16px;font-weight:500;color:#A9B4C0">인용 · 출처와 라이선스</div>
+<div data-panel="cite" style="width:320px;box-sizing:border-box;padding:12px 8px;background:#151A20;border:1px solid #26303A">
+<div style="display:grid;grid-template-columns:64px minmax(0,1fr) 28px auto;gap:8px;align-items:center;min-height:28px;padding:0 8px;border-radius:4px"><label for="s9-mat" style="font-size:12px;font-weight:500;color:#A9B4C0">재질</label><span style="grid-column:2 / 4;position:relative;display:flex;min-width:0"><select id="s9-mat" data-ctl="재질 선택" style="appearance:none;-webkit-appearance:none;width:100%;min-width:0;height:24px;box-sizing:border-box;padding:0 22px 0 6px;border:1px solid #7A899B;border-radius:4px;background:#0F1318;color:#E8EDF2;font-size:13px;line-height:20px"><option>재질 프리셋 A(예시)</option></select><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="#A9B4C0" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="position:absolute;right:6px;top:6px;pointer-events:none"><path d="M2.5 4.5L6 8l3.5-3.5"/></svg></span><button type="button" data-ctl="인용 배지" data-badge="인용" aria-haspopup="dialog" aria-expanded="true" aria-controls="s9-p2" aria-label="값 배지 인용. 출처가 열려 있습니다" style="display:inline-flex;align-items:center;height:24px;padding:0;border:0;background:none;color:#C5D0DC;font-size:11px;line-height:16px;font-weight:500;white-space:nowrap;cursor:pointer"><span style="display:inline-flex;align-items:center;gap:4px;height:20px;box-sizing:border-box;padding:0 8px;border-radius:999px;border:1px solid #C5D0DC;background:#22324A"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 8.5v-3a2.5 2.5 0 0 1 2.5-2.5M7 8.5v-3a2.5 2.5 0 0 1 2.5-2.5"/></svg>인용</span></button></div>
+<div id="s9-p2" data-transient="1" role="dialog" aria-label="근거: 인용" style="margin:8px 8px 0;background:#222A33;border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,0.5);padding:12px;display:flex;flex-direction:column;gap:8px;font-size:12px;line-height:16px">
+<div style="display:flex;align-items:center;justify-content:space-between"><span style="font-weight:600">근거</span><span style="display:inline-flex;align-items:center;gap:4px;height:20px;box-sizing:border-box;padding:0 8px;border-radius:999px;border:1px solid #7A899B;color:#C5D0DC;font-size:11px;font-weight:500"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 8.5v-3a2.5 2.5 0 0 1 2.5-2.5M7 8.5v-3a2.5 2.5 0 0 1 2.5-2.5"/></svg>인용</span></div>
+<div><span style="color:#A9B4C0">값</span> 재질 프리셋 A(예시)</div>
+<div><span style="color:#A9B4C0">출처</span> 출처 이름(예시) · [항목]</div>
+<div><span style="color:#A9B4C0">라이선스</span> [라이선스 이름]</div>
+<div><span style="color:#A9B4C0">기록</span> [원장 항목]</div>
+<div style="color:#A9B4C0">프리셋의 실제 목록과 수치는 B-06b가 출처와 함께 정합니다.</div>
+<div style="font-size:11px;color:#93A0AE">Esc로 닫습니다</div>
+</div>
+</div>
+</div>
+
+<div style="flex:none;width:320px;display:flex;flex-direction:column">
+<div style="height:28px;display:flex;align-items:center;font-size:12px;line-height:16px;font-weight:500;color:#A9B4C0">기본값 · 기본값의 출처</div>
+<div data-panel="default" style="width:320px;box-sizing:border-box;padding:12px 8px;background:#151A20;border:1px solid #26303A">
+<div style="display:grid;grid-template-columns:64px minmax(0,1fr) 28px auto;gap:8px;align-items:center;min-height:28px;padding:0 8px;border-radius:4px"><label for="s9-mu" style="font-size:12px;font-weight:500;color:#A9B4C0">마찰 계수</label><input id="s9-mu" data-ctl="마찰 계수 입력" value="0.6" style="height:24px;min-width:0;width:100%;box-sizing:border-box;padding:0 6px;border:1px solid #7A899B;border-radius:4px;background:#0F1318;color:#E8EDF2;font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:500;text-align:right"><span style="font-size:11px;font-weight:500;color:#A9B4C0">–</span><button type="button" data-ctl="기본값 배지" data-badge="기본값" aria-haspopup="dialog" aria-expanded="true" aria-controls="s9-p3" aria-label="값 배지 기본값. 근거가 열려 있습니다" style="display:inline-flex;align-items:center;height:24px;padding:0;border:0;background:none;color:#A9B4C0;font-size:11px;line-height:16px;font-weight:500;white-space:nowrap;cursor:pointer"><span style="display:inline-flex;align-items:center;gap:4px;height:20px;box-sizing:border-box;padding:0 8px;border-radius:999px;border:1px solid #A9B4C0;background:#22324A"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="6" cy="6" r="3.5"/></svg>기본값</span></button></div>
+<div style="display:flex;align-items:center;gap:6px;padding:0 8px 0 80px;font-size:11px;line-height:16px;color:#A9B4C0">재질 세부 안의 행<span style="color:#93A0AE;border:1px dotted #7A899B;border-radius:2px;padding:0 4px">예시</span></div>
+<div id="s9-p3" data-transient="1" role="dialog" aria-label="근거: 기본값" style="margin:8px 8px 0;background:#222A33;border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,0.5);padding:12px;display:flex;flex-direction:column;gap:8px;font-size:12px;line-height:16px">
+<div style="display:flex;align-items:center;justify-content:space-between"><span style="font-weight:600">근거</span><span style="display:inline-flex;align-items:center;gap:4px;height:20px;box-sizing:border-box;padding:0 8px;border-radius:999px;border:1px solid #3A4654;color:#A9B4C0;font-size:11px;font-weight:500"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="6" cy="6" r="3.5"/></svg>기본값</span></div>
+<div><span style="color:#A9B4C0">출처</span> [시스템 기본값 표의 항목]</div>
+<div style="color:#A9B4C0">사용자가 정하지 않아 시스템이 넣은 값입니다. 이 설계에 맞는지 확인된 적이 없습니다.</div>
+<div style="color:#A9B4C0">칸에 값을 넣으면 사용자 선언이 됩니다.</div>
+<div style="font-size:11px;color:#93A0AE">Esc로 닫습니다</div>
+</div>
+</div>
+</div>
+
+<div style="flex:none;width:320px;display:flex;flex-direction:column">
+<div style="height:28px;display:flex;align-items:center;font-size:12px;line-height:16px;font-weight:500;color:#A9B4C0">사용자 선언 · 선언한 사람과 시각</div>
+<div data-panel="declared" style="width:320px;box-sizing:border-box;padding:12px 8px;background:#151A20;border:1px solid #26303A">
+<div style="display:grid;grid-template-columns:64px minmax(0,1fr) 28px auto;gap:8px;align-items:center;min-height:28px;padding:0 8px;border-radius:4px"><label for="s9-mass" style="font-size:12px;font-weight:500;color:#A9B4C0">질량</label><input id="s9-mass" data-ctl="질량 값 입력" value="1.3" style="height:24px;min-width:0;width:100%;box-sizing:border-box;padding:0 6px;border:1px solid #7A899B;border-radius:4px;background:#0F1318;color:#E8EDF2;font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:500;text-align:right"><span style="font-size:11px;font-weight:500;color:#A9B4C0">t</span><button type="button" data-ctl="사용자 선언 배지" data-badge="사용자 선언" aria-haspopup="dialog" aria-expanded="true" aria-controls="s9-p4" aria-label="값 배지 사용자 선언. 근거가 열려 있습니다" style="display:inline-flex;align-items:center;height:24px;padding:0;border:0;background:none;color:#F2A8D0;font-size:11px;line-height:16px;font-weight:500;white-space:nowrap;cursor:pointer"><span style="display:inline-flex;align-items:center;gap:4px;height:20px;box-sizing:border-box;padding:0 8px;border-radius:999px;background:#22324A;border:1px solid #F2A8D0"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 10l.6-2.6 5.6-5.6 2 2-5.6 5.6z"/></svg>사용자 선언</span></button></div>
+<div id="s9-p4" data-transient="1" role="dialog" aria-label="근거: 사용자 선언" style="margin:8px 8px 0;background:#222A33;border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,0.5);padding:12px;display:flex;flex-direction:column;gap:8px;font-size:12px;line-height:16px">
+<div style="display:flex;align-items:center;justify-content:space-between"><span style="font-weight:600">근거</span><span style="display:inline-flex;align-items:center;gap:4px;height:20px;box-sizing:border-box;padding:0 8px;border-radius:999px;background:#3A1D2E;color:#F2A8D0;font-size:11px;font-weight:500"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 10l.6-2.6 5.6-5.6 2 2-5.6 5.6z"/></svg>사용자 선언</span></div>
+<div><span style="color:#A9B4C0">선언한 사람</span> [이름]</div>
+<div><span style="color:#A9B4C0">선언 시각</span> [날짜와 시각]</div>
+<div style="color:#A9B4C0">판정은 이 선언만큼만 맞습니다.</div>
+<div style="height:1px;background:#3A4654"></div>
+<div style="display:flex;align-items:center;gap:8px"><button type="button" data-ctl="선언 해제" style="flex:none;height:28px;padding:0 12px;border:1px solid #7A899B;border-radius:4px;background:transparent;color:#E8EDF2;font-size:12px;font-weight:500;cursor:pointer">선언 해제</button><span style="color:#A9B4C0">엔진 계산값(시뮬)으로 돌아갑니다</span></div>
+<div style="font-size:11px;color:#93A0AE">Esc로 닫습니다</div>
+</div>
+</div>
+</div>
+
+<div style="flex:none;width:320px;display:flex;flex-direction:column">
+<div style="height:28px;display:flex;align-items:center;font-size:12px;line-height:16px;font-weight:500;color:#A9B4C0">추정 · 추정 방법</div>
+<div data-panel="estimate" style="width:320px;box-sizing:border-box;padding:12px 8px;background:#151A20;border:1px solid #26303A">
+<div style="display:grid;grid-template-columns:64px minmax(0,1fr) 28px auto;gap:8px;align-items:center;min-height:28px;padding:0 8px;border-radius:4px"><label for="s9-proxy" style="font-size:12px;font-weight:500;color:#A9B4C0">프록시 질량</label><input id="s9-proxy" data-ctl="제안 질량 입력" value="0.9" style="height:24px;min-width:0;width:100%;box-sizing:border-box;padding:0 6px;border:1px dashed #D2C6A0;border-radius:4px;background:#0F1318;color:#E8EDF2;font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:500;text-align:right"><span style="font-size:11px;font-weight:500;color:#A9B4C0">t</span><button type="button" data-ctl="추정 배지" data-badge="추정" aria-haspopup="dialog" aria-expanded="true" aria-controls="s9-p5" aria-label="값 배지 추정. 추정 방법이 열려 있습니다" style="display:inline-flex;align-items:center;height:24px;padding:0;border:0;background:none;color:#D2C6A0;font-size:11px;line-height:16px;font-weight:500;white-space:nowrap;cursor:pointer"><span style="display:inline-flex;align-items:center;gap:4px;height:20px;box-sizing:border-box;padding:0 8px;border-radius:999px;background:#22324A;border:1px solid #D2C6A0"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 4.5q2-2 4 0t4 0M2 8q2-2 4 0t4 0"/></svg>추정</span></button></div>
+<div style="display:flex;align-items:center;gap:6px;padding:0 8px 0 80px;font-size:11px;line-height:16px;color:#A9B4C0">에이전트 초안<span style="color:#93A0AE;border:1px dotted #7A899B;border-radius:2px;padding:0 4px">예시</span></div>
+<div id="s9-p5" data-transient="1" role="dialog" aria-label="근거: 추정" style="margin:8px 8px 0;background:#222A33;border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,0.5);padding:12px;display:flex;flex-direction:column;gap:8px;font-size:12px;line-height:16px">
+<div style="display:flex;align-items:center;justify-content:space-between"><span style="font-weight:600">근거</span><span style="display:inline-flex;align-items:center;gap:4px;height:20px;box-sizing:border-box;padding:0 8px;border-radius:999px;background:#2C2819;border:1px dashed #D2C6A0;color:#D2C6A0;font-size:11px;font-weight:500"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 4.5q2-2 4 0t4 0M2 8q2-2 4 0t4 0"/></svg>추정</span></div>
+<div><span style="color:#A9B4C0">대상</span> 가져온 부품의 프록시 질량 제안</div>
+<div><span style="color:#A9B4C0">추정 방법</span> [방법 이름과 입력]</div>
+<div><span style="color:#A9B4C0">추정한 주체</span> 에이전트</div>
+<div style="color:#A9B4C0">수락하기 전에는 모델에 반영되지 않습니다. 수락과 거절은 행에서 합니다(S7).</div>
+<div style="font-size:11px;color:#93A0AE">Esc로 닫습니다</div>
+</div>
+</div>
+</div>
+
+</div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":2020,"height":882}}'>
+class Component extends DCLogic {
+renderVals() {
+return {};
+}
+}
+</script>
+</body>
+</html>

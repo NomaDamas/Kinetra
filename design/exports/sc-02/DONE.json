@@ -1,0 +1,46 @@
+{
+  "run_id": "sc02-20261110T215445",
+  "screen": "SC-02",
+  "brief": "design/briefs/sc-02.md",
+  "artifact": "https://claude.ai/artifact/W5F2kNGaJAdKUv1nBEhgdP",
+  "artboards": [
+    "Main.dc.html (S1)",
+    "S2.dc.html",
+    "S3.dc.html",
+    "S4.dc.html",
+    "S5.dc.html",
+    "S6.dc.html",
+    "S7.dc.html",
+    "S8.dc.html",
+    "S9.dc.html",
+    "S10.dc.html"
+  ],
+  "self_check": {
+    "s1_controls": 10,
+    "primary_in_inspector": 0,
+    "badge_kinds": 5,
+    "new_colors": 0,
+    "max_step": 2,
+    "banned_phrases": 0
+  },
+  "index_html_sha256": "5d80436c3e518882e7db1bd247020a4e668ba02c53fe2af0cbd700775186c16d",
+  "files": [
+    "NOTES.md",
+    "index.html",
+    "source/Main.dc.html",
+    "source/S10.dc.html",
+    "source/S2.dc.html",
+    "source/S3.dc.html",
+    "source/S4.dc.html",
+    "source/S5.dc.html",
+    "source/S6.dc.html",
+    "source/S7.dc.html",
+    "source/S8.dc.html",
+    "source/S9.dc.html",
+    "source/canvas.json",
+    "source/tools/build_export.py",
+    "source/tools/measure.sh",
+    "source/tools/shot.sh"
+  ],
+  "finished_at": "2026-11-10T13:28:29Z"
+}

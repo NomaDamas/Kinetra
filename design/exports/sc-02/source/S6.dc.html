@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>S6 인스펙터 다중 선택</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+button,input,select{font-family:inherit}
+input::placeholder{color:#93A0AE;opacity:1}
+:focus-visible{outline:2px solid #A8CBFF;outline-offset:2px}
+@media (prefers-reduced-motion:reduce){*{transition-property:opacity!important;animation:none!important}}
+</style>
+</helmet>
+<div style="width:644px;height:882px;box-sizing:border-box;background:#0F1216;color:#E8EDF2;font-family:Pretendard,'Pretendard Variable',-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Malgun Gothic','Noto Sans KR',sans-serif;font-size:13px;line-height:20px;font-variant-numeric:tabular-nums;display:flex;flex-direction:column">
+
+<div data-note="1" style="flex:none;height:40px;box-sizing:border-box;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:0 16px;border-bottom:1px dashed #7A899B;font-size:12px;line-height:16px;color:#A9B4C0"><span><strong style="color:#E8EDF2;font-weight:600">S6 다중 선택</strong> · 강체 3개</span><span>조작 요소 5 · 인스펙터 primary 0</span></div>
+
+<div style="flex:1 1 0;min-height:0;display:flex;padding:0 24px 24px 0">
+
+<div style="flex:none;width:300px;box-sizing:border-box;padding:16px 24px 0 16px;display:flex;flex-direction:column;gap:12px;font-size:12px;line-height:16px;color:#A9B4C0">
+<div aria-hidden="true" style="position:relative;width:240px;height:150px;box-sizing:border-box;border:1px solid #3A4654;border-radius:4px;background:#0F1216"><div style="position:absolute;left:0;right:0;top:0;height:8px;background:#151A20;border-bottom:1px solid #26303A"></div><div style="position:absolute;left:0;top:9px;bottom:16px;width:40px;background:#151A20;border-right:1px solid #26303A"></div><div style="position:absolute;right:0;top:9px;bottom:16px;width:53px;box-sizing:border-box;background:#22324A;border:1px solid #5B9DFF"></div><div style="position:absolute;left:0;right:0;bottom:6px;height:9px;background:#151A20;border-top:1px solid #26303A"></div><div style="position:absolute;left:0;right:0;bottom:0;height:5px;background:#151A20;border-top:1px solid #26303A"></div></div>
+<div><strong style="color:#E8EDF2;font-weight:600">셸 안의 위치: SC-01 오른쪽 패널</strong><br>320 × 790 px.</div>
+<div>공통 필드만 보입니다. 값이 같으면 그대로(재질), 다르면 <span style="color:#E8EDF2">—</span>이고 배지 자리에는 <span style="color:#E8EDF2">섞임</span>이라는 읽기 전용 글자가 옵니다. 섞임은 배지가 아니라 누를 수 없습니다.</div>
+<div>"3개에 적용됩니다" 한 줄이 제목 바로 아래에 늘 있습니다. 질량 칸에 값을 넣고 Enter를 누르면 세 부품 모두 그 값의 사용자 선언이 됩니다.</div>
+<div>관성, 관절, 액추에이터는 부품마다 달라 공통 필드가 아닙니다. 부품 하나를 고르면 보입니다.</div>
+</div>
+
+<div style="display:flex;gap:24px">
+<div style="flex:none;width:320px;display:flex;flex-direction:column">
+<div style="height:28px;display:flex;align-items:center;font-size:12px;line-height:16px;font-weight:500;color:#A9B4C0">패널 320 × 790</div>
+<aside data-panel="1" aria-label="인스펙터" style="flex:none;width:320px;height:790px;box-sizing:border-box;display:flex;flex-direction:column;background:#151A20;border:1px solid #26303A">
+<div style="flex:none;display:flex;align-items:center;justify-content:space-between;height:40px;box-sizing:border-box;padding:0 8px 0 16px;border-bottom:1px solid #26303A"><span style="font-size:12px;line-height:16px;font-weight:500;color:#A9B4C0">인스펙터</span><button type="button" data-ctl="패널 접기" aria-label="인스펙터 접기" aria-expanded="true" style="width:28px;height:28px;padding:0;border:1px solid transparent;border-radius:4px;background:transparent;color:#E8EDF2;display:inline-flex;align-items:center;justify-content:center"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 2.5L8 6l-3.5 3.5"/></svg></button></div>
+<div style="flex:none;display:flex;flex-direction:column;gap:2px;padding:12px 16px 8px"><div style="display:flex;align-items:baseline;gap:6px"><h2 style="margin:0;font-size:16px;line-height:24px;font-weight:600">부품 3개</h2><span style="font-size:12px;line-height:16px;font-weight:500;color:#A9B4C0">· 강체</span></div><span style="font-size:12px;line-height:16px;color:#A9B4C0">차체, 바퀴 A(예시), 바퀴 B(예시)</span></div>
+<div style="flex:1 1 0;min-height:0;padding:0 8px 12px;display:flex;flex-direction:column;gap:4px">
+<div role="note" style="display:flex;align-items:center;gap:6px;margin:0 8px 4px;padding:6px 8px;border-radius:4px;background:#1B2129;font-size:12px;line-height:16px;color:#E8EDF2"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="#A9B4C0" stroke-width="1.4" stroke-linecap="round" aria-hidden="true"><circle cx="6" cy="6" r="4.8"/><path d="M6 5.5v3M6 3.6v.2"/></svg>편집하면 3개에 적용됩니다</div>
+
+<div style="display:grid;grid-template-columns:64px minmax(0,1fr) 28px auto;gap:8px;align-items:center;min-height:28px;padding:0 8px;border-radius:4px"><label for="s6-mass" style="font-size:12px;font-weight:500;color:#A9B4C0">질량</label><input id="s6-mass" data-ctl="질량 값 입력" value="—" aria-describedby="s6-mass-d" style="height:24px;min-width:0;width:100%;box-sizing:border-box;padding:0 6px;border:1px solid #7A899B;border-radius:4px;background:#0F1318;color:#93A0AE;font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:500;text-align:right"><span style="font-size:11px;font-weight:500;color:#A9B4C0">t</span><span style="font-size:11px;line-height:16px;font-weight:500;color:#A9B4C0;padding:0 8px">섞임</span></div>
+<div id="s6-mass-d" style="padding:0 8px 0 80px;font-size:11px;line-height:16px;color:#A9B4C0">값이 서로 다릅니다</div>
+
+<div style="display:grid;grid-template-columns:64px minmax(0,1fr) 28px auto;gap:8px;align-items:center;min-height:28px;padding:0 8px;border-radius:4px"><label for="s6-mat" style="font-size:12px;font-weight:500;color:#A9B4C0">재질</label><span style="grid-column:2 / 4;position:relative;display:flex;min-width:0"><select id="s6-mat" data-ctl="재질 선택" style="appearance:none;-webkit-appearance:none;width:100%;min-width:0;height:24px;box-sizing:border-box;padding:0 22px 0 6px;border:1px solid #7A899B;border-radius:4px;background:#0F1318;color:#E8EDF2;font-size:13px;line-height:20px"><option>재질 프리셋 A(예시)</option></select><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="#A9B4C0" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="position:absolute;right:6px;top:6px;pointer-events:none"><path d="M2.5 4.5L6 8l3.5-3.5"/></svg></span><button type="button" data-ctl="재질 값 배지" data-badge="인용" aria-haspopup="dialog" aria-expanded="false" aria-label="값 배지 인용. 누르면 출처를 엽니다" style="display:inline-flex;align-items:center;height:24px;padding:0;border:0;background:none;color:#C5D0DC;font-size:11px;line-height:16px;font-weight:500;white-space:nowrap;cursor:pointer"><span style="display:inline-flex;align-items:center;gap:4px;height:20px;box-sizing:border-box;padding:0 8px;border-radius:999px;border:1px solid #7A899B"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 8.5v-3a2.5 2.5 0 0 1 2.5-2.5M7 8.5v-3a2.5 2.5 0 0 1 2.5-2.5"/></svg>인용</span></button></div>
+<div style="padding:0 8px 0 80px;font-size:11px;line-height:16px;color:#A9B4C0">세 부품 모두 같습니다</div>
+
+<div style="display:grid;grid-template-columns:64px minmax(0,1fr) 28px auto;gap:8px;align-items:center;min-height:28px;padding:0 8px;border-radius:4px"><span style="font-size:12px;font-weight:500;color:#A9B4C0">질량중심</span><span style="font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:500;text-align:right;color:#93A0AE">—</span><span style="font-size:11px;font-weight:500;color:#A9B4C0">m</span><span style="font-size:11px;line-height:16px;font-weight:500;color:#A9B4C0;padding:0 8px">섞임</span></div>
+<div style="padding:0 8px 0 80px;font-size:11px;line-height:16px;color:#A9B4C0">부품마다 계산값(읽기 전용)</div>
+
+<div style="height:1px;background:#26303A;margin:8px 0 4px"></div>
+<button type="button" data-ctl="재질 세부" aria-expanded="false" style="display:flex;align-items:center;gap:8px;width:100%;height:32px;box-sizing:border-box;padding:0 8px;border:0;border-radius:4px;background:transparent;color:#E8EDF2;font-size:13px;line-height:20px;font-weight:600;text-align:left;cursor:pointer"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 2.5L8 6l-3.5 3.5"/></svg>재질 세부<span style="margin-left:auto;font-size:11px;line-height:16px;font-weight:500;color:#93A0AE">밀도 · 항복강도 · 마찰</span></button>
+<div style="height:1px;background:#26303A;margin:4px 0"></div>
+<div style="padding:4px 8px 0;font-size:11px;line-height:16px;color:#93A0AE">관성, 관절, 액추에이터는 부품 하나를 고르면 보입니다.</div>
+</div>
+<div style="flex:none;display:flex;align-items:center;gap:6px;padding:8px 16px;border-top:1px solid #26303A;font-size:11px;line-height:16px;color:#93A0AE"><kbd style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#A9B4C0;border:1px solid #3A4654;border-radius:2px;padding:0 4px">Enter</kbd>확정<kbd style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#A9B4C0;border:1px solid #3A4654;border-radius:2px;padding:0 4px">Esc</kbd>취소 · 되돌리기는 ⋯ 메뉴</div>
+</aside>
+</div>
+</div>
+
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":644,"height":882}}'>
+class Component extends DCLogic {
+renderVals() {
+return {};
+}
+}
+</script>
+</body>
+</html>

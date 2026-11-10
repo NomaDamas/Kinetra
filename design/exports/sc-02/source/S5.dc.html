@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>S5 인스펙터 선택 없음</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+button,input,select{font-family:inherit}
+input::placeholder{color:#93A0AE;opacity:1}
+:focus-visible{outline:2px solid #A8CBFF;outline-offset:2px}
+@media (prefers-reduced-motion:reduce){*{transition-property:opacity!important;animation:none!important}}
+</style>
+</helmet>
+<div style="width:644px;height:882px;box-sizing:border-box;background:#0F1216;color:#E8EDF2;font-family:Pretendard,'Pretendard Variable',-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Malgun Gothic','Noto Sans KR',sans-serif;font-size:13px;line-height:20px;font-variant-numeric:tabular-nums;display:flex;flex-direction:column">
+
+<div data-note="1" style="flex:none;height:40px;box-sizing:border-box;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:0 16px;border-bottom:1px dashed #7A899B;font-size:12px;line-height:16px;color:#A9B4C0"><span><strong style="color:#E8EDF2;font-weight:600">S5 선택 없음</strong> · 패널은 열려 있고 빈 화면입니다</span><span>조작 요소 1 · 인스펙터 primary 0</span></div>
+
+<div style="flex:1 1 0;min-height:0;display:flex;padding:0 24px 24px 0">
+
+<div style="flex:none;width:300px;box-sizing:border-box;padding:16px 24px 0 16px;display:flex;flex-direction:column;gap:12px;font-size:12px;line-height:16px;color:#A9B4C0">
+<div aria-hidden="true" style="position:relative;width:240px;height:150px;box-sizing:border-box;border:1px solid #3A4654;border-radius:4px;background:#0F1216"><div style="position:absolute;left:0;right:0;top:0;height:8px;background:#151A20;border-bottom:1px solid #26303A"></div><div style="position:absolute;left:0;top:9px;bottom:16px;width:40px;background:#151A20;border-right:1px solid #26303A"></div><div style="position:absolute;right:0;top:9px;bottom:16px;width:53px;box-sizing:border-box;background:#22324A;border:1px solid #5B9DFF"></div><div style="position:absolute;left:0;right:0;bottom:6px;height:9px;background:#151A20;border-top:1px solid #26303A"></div><div style="position:absolute;left:0;right:0;bottom:0;height:5px;background:#151A20;border-top:1px solid #26303A"></div></div>
+<div><strong style="color:#E8EDF2;font-weight:600">셸 안의 위치: SC-01 오른쪽 패널</strong><br>320 × 790 px.</div>
+<div>디자인 시스템 7절의 빈 화면: <span style="color:#E8EDF2">type.heading</span> 한 줄 + 설명 한 줄. 패널 안에서 할 다음 행동이 없어서 버튼은 생략했습니다(고르는 곳은 뷰포트와 라이브러리입니다).</div>
+<div>일러스트와 가짜 예시 수치를 넣지 않습니다. 조작 요소는 접기 하나입니다.</div>
+</div>
+
+<div style="display:flex;gap:24px">
+<div style="flex:none;width:320px;display:flex;flex-direction:column">
+<div style="height:28px;display:flex;align-items:center;font-size:12px;line-height:16px;font-weight:500;color:#A9B4C0">패널 320 × 790</div>
+<aside data-panel="1" aria-label="인스펙터" style="flex:none;width:320px;height:790px;box-sizing:border-box;display:flex;flex-direction:column;background:#151A20;border:1px solid #26303A">
+<div style="flex:none;display:flex;align-items:center;justify-content:space-between;height:40px;box-sizing:border-box;padding:0 8px 0 16px;border-bottom:1px solid #26303A"><span style="font-size:12px;line-height:16px;font-weight:500;color:#A9B4C0">인스펙터</span><button type="button" data-ctl="패널 접기" aria-label="인스펙터 접기" aria-expanded="true" style="width:28px;height:28px;padding:0;border:1px solid transparent;border-radius:4px;background:transparent;color:#E8EDF2;display:inline-flex;align-items:center;justify-content:center"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 2.5L8 6l-3.5 3.5"/></svg></button></div>
+<div style="flex:1 1 0;min-height:0;padding:32px 16px;display:flex;flex-direction:column;gap:4px">
+<h2 style="margin:0;font-size:20px;line-height:28px;font-weight:600">선택한 부품이 없습니다</h2>
+<p style="margin:0;color:#A9B4C0">뷰포트에서 부품을 고르면 이 자리에 수치와 출처가 나옵니다.</p>
+</div>
+</aside>
+</div>
+</div>
+
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":644,"height":882}}'>
+class Component extends DCLogic {
+renderVals() {
+return {};
+}
+}
+</script>
+</body>
+</html>
