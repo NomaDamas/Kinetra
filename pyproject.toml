@@ -1,13 +1,17 @@
 [project]
-name = "physlab-core"
-version = "0.1.0"
-description = "Shared contracts (SpecSheet / Trajectory / Verdict) for the physical feasibility harness"
-requires-python = ">=3.10"
-dependencies = ["pydantic>=2.5,<3"]
+name = "kinetra"
+version = "0.0.0"
+description = "Kinetra Studio workspace root (see docs/plan/studio-plan.md)"
+requires-python = ">=3.11"
+dependencies = ["kinetra-core", "kinetra-engine", "kinetra-judge"]
 
-[build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
+[tool.uv]
+package = false
 
-[tool.hatch.build.targets.wheel]
-packages = ["packages/core/src/physlab_core"]
+[tool.uv.workspace]
+members = ["packages/core", "packages/engine", "packages/judge"]
+
+[tool.uv.sources]
+kinetra-core = { workspace = true }
+kinetra-engine = { workspace = true }
+kinetra-judge = { workspace = true }

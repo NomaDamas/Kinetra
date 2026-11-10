@@ -1,19 +1,9 @@
 [project]
 name = "kinetra-engine"
-version = "0.1.0"
-description = "Kinetra pipeline: templates, search, Monte-Carlo verdict, API"
-requires-python = ">=3.10"
-dependencies = [
-  "physlab-core",
-  "mujoco>=3.2",
-  "cma>=4.0",
-  "numpy",
-  "scipy",
-  "fastapi",
-  "uvicorn",
-  "websockets",
-  "trimesh",
-]
+version = "0.0.0"
+description = "Physics engine adapters (compile Project to engine, run)"
+requires-python = ">=3.11"
+dependencies = []
 
 [build-system]
 requires = ["hatchling"]
