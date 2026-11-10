@@ -1,0 +1,7 @@
+{
+  "name": "@kinetra/ui",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Kinetra design-system tokens and components (from approved Claude Design exports)",
+  "type": "module"
+}
