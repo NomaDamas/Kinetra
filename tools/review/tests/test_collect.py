@@ -300,3 +300,94 @@ def test_collect_issue_without_stage_area_labels_falls_back_to_pr_labels(fake_en
 def test_collect_issue_labels_win_over_pr_labels_and_first_labelled_issue_is_used(fake_env, pr101_dir, monkeypatch):
     with_fixture(pr101_dir, monkeypatch, pr={"labels": [{"name": "area:web"}]})
     assert build().labels == ["area:process", "stage:S0-process"]  # 이슈 라벨이 우선
+
+
+# ---------------------------------------------------------------- 2차 리뷰 반영
+
+PAT = "github_pat_11ABCDEFG0abcdefghij_KLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyz"
+
+
+@pytest.mark.parametrize(
+    "token",
+    [PAT, "ghp_" + "a" * 36, "gho_" + "b" * 36, "ghs_" + "c" * 36, "ghu_" + "d" * 36, "ghr_" + "e" * 36],
+)
+def test_collect_redacts_github_tokens_everywhere(fake_env, pr101_dir, monkeypatch, capsys, token):
+    diff = f'diff --git a/t.py b/t.py\nindex 1..2 100644\n--- a/t.py\n+++ b/t.py\n@@ -1 +1,2 @@\n-a\n+T = "{token}"\n'
+    with_fixture(pr101_dir, monkeypatch, pr={"body": f"Closes #77\n{token}", "title": f"제목 {token}"}, diff=diff)
+    b = build()
+    assert token not in collect.render(b) and token not in b.to_json()
+    for argv in (["101", "--repo", "o/r"], ["101", "--repo", "o/r", "--prompt"]):
+        assert collect.main(argv) == 0
+        assert token not in capsys.readouterr().out
+
+
+def test_collect_json_is_redacted_before_serialization_and_parses(fake_env, pr101_dir, monkeypatch, capsys):
+    # 따옴표·역슬래시·개행이 섞인 비밀 주변 문자열도 JSON 이 깨지지 않아야 한다
+    body = f'Closes #77\n"Authorization: Bearer abc.def"\\n 끝 {KEY} {PAT}\nquote " back \\ slash'
+    diff = f'diff --git a/t.py b/t.py\nindex 1..2 100644\n--- a/t.py\n+++ b/t.py\n@@ -1 +1,2 @@\n-a\n+K = "Bearer zzz.yyy-1"; X = "{KEY}"\n'
+    with_fixture(pr101_dir, monkeypatch, pr={"body": body}, diff=diff)
+    assert collect.main(["101", "--repo", "o/r"]) == 0
+    out = capsys.readouterr().out
+    data = json.loads(out)  # 파싱된다
+    for leak in (KEY, PAT, "abc.def", "zzz.yyy-1"):
+        assert leak not in out and leak not in json.dumps(data, ensure_ascii=False)
+    assert "***" in data["pr"]["body"] and 'quote " back \\ slash' in data["pr"]["body"]
+
+
+def test_collect_redact_obj_handles_nesting_and_keys(monkeypatch):
+    monkeypatch.setenv("OPENROUTER_API_KEY", KEY)
+    got = common.redact_obj({"a": [KEY, {KEY: ("x", KEY)}], "n": 3, "b": None})
+    assert got == {"a": ["***", {"***": ["x", "***"]}], "n": 3, "b": None}
+
+
+PLAN = "# P\n\n## 1. A\n\n" + "가" * 300 + "\n\n## 12. B\n\n" + "나" * 300 + "\n\n## 13. C\n\n" + "다" * 300 + "\n"
+
+
+def test_collect_plan_cap_names_truncated_and_omitted_sections():
+    out, omitted = collect.plan_excerpt(PLAN, ["area:process"], limit=400)
+    assert [s["heading"] for s in out] == ["## 1. A", "## 12. B"]
+    assert omitted == ["## 12. B (잘림)", "## 13. C (생략)"]
+    assert "상한에서 잘림" in out[1]["text"]
+    full, none = collect.plan_excerpt(PLAN, ["area:process"], limit=10_000)
+    assert none == [] and len(full) == 3
+
+
+def test_collect_plan_cap_with_missing_later_section_is_an_error_not_an_omission():
+    plan = "# P\n\n## 1. A\n\n" + "가" * 300 + "\n\n## 12. B\n\n" + "나" * 300 + "\n"  # 13절 없음
+    with pytest.raises(common.ReviewError, match="## 13."):
+        collect.plan_excerpt(plan, ["area:process"], limit=100)  # 상한이 작아도 존재 검사가 먼저다
+
+
+def test_collect_render_lists_plan_omitted(fake_env):
+    b = build()
+    b.plan_omitted = ["## 13. 비판 (생략)"]
+    assert "상한 때문에 잘리거나 빠진 절\n## 13. 비판 (생략)" in collect.render(b)
+
+
+@pytest.mark.parametrize(
+    "plan,present,absent",
+    [
+        # 틸드 펜스
+        ("## 1. A\n~~~\n## 안\n~~~\n## 2. B\n", ["## 1.", "## 2."], ["## 안"]),
+        # 더 긴 백틱 펜스 안의 짧은 ``` 는 닫지 않는다
+        ("## 1. A\n````\n```\n## 안\n```\n````\n## 2. B\n", ["## 1.", "## 2."], ["## 안"]),
+        # 다른 문자는 닫지 않는다
+        ("## 1. A\n```\n~~~\n## 안\n```\n## 2. B\n", ["## 1.", "## 2."], ["## 안"]),
+        # 닫는 줄에 정보 문자열이 있으면 닫지 않는다
+        ("## 1. A\n```\n```js\n## 안\n```\n## 2. B\n", ["## 1.", "## 2."], ["## 안"]),
+        # 들여쓰기 3칸까지는 펜스
+        ("## 1. A\n   ```\n## 안\n   ```\n## 2. B\n", ["## 1.", "## 2."], ["## 안"]),
+        # 정보 문자열이 있는 여는 펜스
+        ("## 1. A\n```python\n## 안\n```\n## 2. B\n", ["## 1.", "## 2."], ["## 안"]),
+        # 닫히지 않은 펜스는 끝까지
+        ("## 1. A\n```\n## 안\n## 2. B\n", ["## 1."], ["## 안", "## 2."]),
+        # 백틱 펜스 여는 줄의 정보 문자열에 백틱이 있으면 펜스가 아니다(인라인 코드)
+        ("## 1. A\n``` a `b`\n## 2. B\n", ["## 1.", "## 2."], []),
+    ],
+)
+def test_collect_fence_tracking(plan, present, absent):
+    heads = [ln for _, _, ln in collect._headings(plan)]
+    for p in present:
+        assert any(h.startswith(p) for h in heads), (p, heads)
+    for a in absent:
+        assert not any(h.startswith(a) for h in heads), (a, heads)

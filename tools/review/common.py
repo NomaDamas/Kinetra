@@ -17,7 +17,8 @@ KEY_ENV = "OPENROUTER_API_KEY"
 _SECRET_PATTERNS = (
     re.compile(r"sk-[A-Za-z0-9_\-]{8,}"),  # OpenRouter / OpenAI 형태
     re.compile(r"(?i)\bBearer\s+[^\s\"']+"),
-    re.compile(r"\bgh[pousr]_[A-Za-z0-9]{16,}"),  # GitHub 토큰
+    re.compile(r"\bgh[pousr]_[A-Za-z0-9]{16,}"),  # GitHub 토큰(classic, OAuth, 앱 등)
+    re.compile(r"\bgithub_pat_[A-Za-z0-9_]{20,}"),  # GitHub fine-grained PAT
 )
 
 
@@ -33,6 +34,18 @@ def redact(text: str) -> str:
     for pat in _SECRET_PATTERNS:
         text = pat.sub("***", text)
     return text
+
+
+def redact_obj(obj):
+    """JSON 으로 만들 값의 모든 문자열(키 이름 포함)을 직렬화 **전에** 가린다. 직렬화하면 따옴표·역슬래시·개행이
+    이스케이프돼 키가 문자열 검색으로 안 잡힐 수 있어서다."""
+    if isinstance(obj, str):
+        return redact(obj)
+    if isinstance(obj, dict):
+        return {redact(k) if isinstance(k, str) else k: redact_obj(v) for k, v in obj.items()}
+    if isinstance(obj, (list, tuple)):
+        return [redact_obj(v) for v in obj]
+    return obj
 
 
 def api_key() -> str:

@@ -116,6 +116,7 @@ class Bundle:
     values: str | None
     done_definition: str | None
     plan_sections: list[dict]  # {"heading", "text"}
+    plan_omitted: list[str]  # 발췌 상한 때문에 잘리거나 빠진 절 "제목 (잘림|생략)"
     files: list[dict]
     deleted: list[str]
     omitted: list[dict]  # 상한 때문에 diff 를 못 넣은 파일 {"path","reason"}
@@ -123,7 +124,7 @@ class Bundle:
     diff_parts: list[str]
 
     def to_json(self) -> str:
-        return json.dumps(asdict(self), ensure_ascii=False, indent=1, sort_keys=True)
+        return json.dumps(common.redact_obj(asdict(self)), ensure_ascii=False, indent=1, sort_keys=True)
 
     @classmethod
     def from_json(cls, text: str) -> "Bundle":
@@ -272,17 +273,27 @@ def pack(files: list[FileChange], chunk_max: int = CHUNK_MAX, max_chunks: int = 
 
 # ---------------------------------------------------------------- 계획 발췌
 
+_FENCE_OPEN = re.compile(r"^ {0,3}(`{3,}|~{3,})(.*)$")
+_FENCE_CLOSE = re.compile(r"^ {0,3}(`{3,}|~{3,})[ \t]*$")
+
+
 def _headings(text: str):
-    """(줄 번호, 레벨, 줄) — 코드 펜스 안은 건너뛴다."""
-    fence = False
+    """(줄 번호, 레벨, 줄) — 코드 펜스 안은 건너뛴다. 펜스는 같은 문자로, 여는 길이 이상으로, 정보 문자열 없이 닫힌다
+    (CommonMark). 백틱 펜스의 정보 문자열에는 백틱이 없다."""
+    fence: tuple[str, int] | None = None
     for i, ln in enumerate(text.splitlines()):
-        if ln.lstrip().startswith("```"):
-            fence = not fence
+        if fence is not None:
+            m = _FENCE_CLOSE.match(ln)
+            if m and m.group(1)[0] == fence[0] and len(m.group(1)) >= fence[1]:
+                fence = None
             continue
-        if not fence:
-            m = re.match(r"^(#{1,6}) ", ln)
-            if m:
-                yield i, len(m.group(1)), ln
+        m = _FENCE_OPEN.match(ln)
+        if m and not (m.group(1)[0] == "`" and "`" in m.group(2)):
+            fence = (m.group(1)[0], len(m.group(1)))
+            continue
+        h = re.match(r"^(#{1,6}) ", ln)
+        if h:
+            yield i, len(h.group(1)), ln
 
 
 def section(text: str, prefix: str) -> tuple[str, str] | None:
@@ -311,21 +322,29 @@ def section_keys(labels: list[str]) -> list[str]:
     return list(dict.fromkeys(keys))
 
 
-def plan_excerpt(plan_text: str, labels: list[str], limit: int = PLAN_MAX) -> list[dict]:
-    out: list[dict] = []
-    used = 0
+def plan_excerpt(plan_text: str, labels: list[str], limit: int = PLAN_MAX) -> tuple[list[dict], list[str]]:
+    """(절 목록, 상한 때문에 잘리거나 빠진 절 이름). 선택된 절이 하나라도 계획에 없으면 상한을 보기 전에 오류다."""
+    found = []
     for key in section_keys(labels):
-        found = section(plan_text, key)
-        if found is None:
+        got = section(plan_text, key)
+        if got is None:
             raise common.ReviewError(f"{PLAN_PATH} 에 '{key}' 절이 없다. tools/review/collect.py 의 절 매핑을 고쳐야 한다")
-        head, body = found
-        if used + len(body) > limit:
-            body = body[: max(0, limit - used)] + "\n[계획 발췌 상한에서 잘림]\n"
-        out.append({"heading": head, "text": body})
-        used += len(body)
-        if used >= limit:
-            break
-    return out
+        found.append(got)
+    out: list[dict] = []
+    omitted: list[str] = []
+    used = 0
+    for head, body in found:
+        room = limit - used
+        if len(body) <= room:
+            out.append({"heading": head, "text": body})
+            used += len(body)
+        elif room > 0:
+            out.append({"heading": head, "text": body[:room] + "\n[계획 발췌 상한에서 잘림]\n"})
+            omitted.append(f"{head} (잘림)")
+            used = limit
+        else:
+            omitted.append(f"{head} (생략)")
+    return out, omitted
 
 
 # ---------------------------------------------------------------- GitHub
@@ -385,6 +404,7 @@ def collect(pr_number: int, repo: str, gh: GhFn = common.gh, *, chunk_max: int =
     done = _required(gh, repo, DONE_PATH, base)
     files = parse_diff(gh("pr", "diff", str(pr_number), "-R", repo))
     parts, omitted, truncated = pack(files, chunk_max, max_chunks)
+    plan_sections, plan_omitted = plan_excerpt(plan, labels)
     return Bundle(
         repo=repo,
         pr=pr,
@@ -392,7 +412,8 @@ def collect(pr_number: int, repo: str, gh: GhFn = common.gh, *, chunk_max: int =
         labels=labels,
         values=values,
         done_definition=done,
-        plan_sections=plan_excerpt(plan, labels),
+        plan_sections=plan_sections,
+        plan_omitted=plan_omitted,
         files=[f.row() for f in files],
         deleted=[f.path for f in files if f.status == "deleted" and f.excluded is None],
         omitted=omitted,
@@ -424,6 +445,8 @@ def _render(b: Bundle, part: int) -> str:
     out.append("## \"100% 완료\" 정의 (docs/process/done-definition.md, 기준 브랜치)\n" + (b.done_definition.strip() if b.done_definition else "(없음)"))
     out.append(f"## 계획 발췌 (docs/plan/studio-plan.md, 라벨: {', '.join(b.labels) or '없음'})")
     out.extend([s["text"].rstrip() for s in b.plan_sections] or ["(없음)"])
+    if b.plan_omitted:
+        out.append("## 계획 발췌 상한 때문에 잘리거나 빠진 절\n" + "\n".join(b.plan_omitted))
     rows = [
         f"| `{f['path']}` | {f['status']} | +{f['additions']}/-{f['deletions']} | {f['excluded'] or ''} |"
         for f in b.files
@@ -449,7 +472,8 @@ def main(argv: list[str] | None = None) -> int:
     except common.ReviewError as e:
         print(f"collect: {common.redact(str(e))}", file=sys.stderr)
         return 1
-    sys.stdout.write(common.redact(render(b) if args.prompt else b.to_json() + "\n"))
+    # JSON 은 to_json() 이 직렬화 전에 값을 가린다(직렬화한 글에 다시 정규식을 돌리면 JSON 이 깨질 수 있다)
+    sys.stdout.write(render(b) if args.prompt else b.to_json() + "\n")
     return 0
 
 
