@@ -22,14 +22,21 @@ Per repeat, a fresh assembly is built and then edited in place. Timings (all `ti
   compile_s      `spec.compile()` of the finished assembly -> MjModel
   first_frame_s  MjData(model) + `mj_forward` + one `mj_step`: first physics frame
   xml_s          `spec.to_xml()` + `MjModel.from_xml_string` (the "re-serialize and reload" path)
-  edit_s         change one geom size in the spec, then `spec.recompile(model, data)`
-  add_s          attach one more part, then `spec.recompile(model, data)`
-  remove_s       delete one attached body (and its frame) from the spec, then `spec.recompile(model, data)`
+  edit_apply_s       the MjSpec edit itself: change one geom size
+  edit_recompile_s   `spec.recompile(model, data)` after that edit
+  edit_total_s       apply + recompile
+  add_*_s            same three, for `attach` of one more part (the part is built before the clock starts)
+  remove_*_s         same three, for `delete` of that part's body and frame
+
+A failed MjSpec call (it raised) gets no time at all: its `*_s` fields are None and it is left out of the
+statistics. The per-operation failure counts over all repeats are in `api_summary` of the JSON and are printed.
 
 Each recompile is also checked (`recompile` returns a new (model, data) pair; whether the old model object
 is left untouched is recorded as `old_model_unchanged`): the returned model has the expected body count, the size edit
-reached `geom_size`, and the old `qpos`/`qvel`/`time` survived (`state_kept`; for add/remove only
-the entries that still exist are compared). `api` records which MjSpec operations ran at all.
+reached `geom_size`, and the old `qpos`/`qvel`/`time` survived (`*_state_kept`; for add/remove only
+the entries that still exist are compared). `api` records which MjSpec operations ran.
+Before the first edit, 5 `mj_step`s run once so the state is not the default pose; each later recompile
+starts from the data the previous recompile returned.
 
 The numbers are wall clock. On a loaded machine they are pessimistic and noisy; the JSON stores
 load average and swap at run time so the reader can label them.
@@ -139,14 +146,39 @@ def snapshot(d) -> dict:
 
 
 def try_op(api: dict, name: str, fn):
-    """Run one MjSpec operation, record whether it worked, never hide an error."""
+    """Run one MjSpec operation and record the outcome in `api[name]`.
+
+    Returns (elapsed_s, ok, out). `elapsed_s` is None when the call raised: the time of a failed
+    call is not a measurement and never enters the statistics. The error text is kept.
+    """
+    t = time.perf_counter()
     try:
         out = fn()
-        api.setdefault(name, {"ok": True})
-        return out
     except Exception as e:  # noqa: BLE001 - the error text is the finding
         api[name] = {"ok": False, "error": f"{type(e).__name__}: {str(e)[:300]}"}
-        return None
+        return None, False, None
+    dt = time.perf_counter() - t
+    api.setdefault(name, {"ok": True})
+    return dt, True, out
+
+
+def edit_step(api, r, key, apply_name, apply_fn, spec, model, d):
+    """Time `apply_fn` (the MjSpec edit), then `spec.recompile(model, d)`, then both together.
+
+    Sets r[key+"_apply_s"], r[key+"_recompile_s"], r[key+"_total_s"] (None for anything that failed)
+    and returns (model, d, ok); on failure returns the inputs unchanged.
+    """
+    apply_s, ok, _ = try_op(api, apply_name, apply_fn)
+    r[key + "_apply_s"] = apply_s
+    r[key + "_recompile_s"] = r[key + "_total_s"] = None
+    if not ok:
+        return model, d, False
+    rec_s, ok, out = try_op(api, f"recompile({key})", lambda: spec.recompile(model, d))
+    if not ok:
+        return model, d, False
+    r[key + "_recompile_s"] = rec_s
+    r[key + "_total_s"] = apply_s + rec_s
+    return out[0], out[1], True
 
 
 def run_once(n: int, seed: int) -> dict:
@@ -158,18 +190,13 @@ def run_once(n: int, seed: int) -> dict:
     r["compile_s"], model = timed(spec.compile)
     r["first_frame_s"], data = timed(lambda: _first_frame(model))
     r.update(nbody=model.nbody, nq=model.nq, nv=model.nv, nmesh=model.nmesh, ngeom=model.ngeom)
-    api["MjSpec"] = {"ok": True}
-    api["attach"] = {"ok": True}
 
     # XML round trip of the same assembly
-    def xml_trip():
-        return mujoco.MjModel.from_xml_string(spec.to_xml())
+    r["xml_s"], ok, m_xml = try_op(api, "to_xml+from_xml_string", lambda: mujoco.MjModel.from_xml_string(spec.to_xml()))
+    r["xml_nbody_matches"] = bool(m_xml.nbody == model.nbody) if ok else None
 
-    xml_s, m_xml = try_timed(api, "to_xml+from_xml_string", xml_trip)
-    r["xml_s"] = xml_s
-    r["xml_nbody_matches"] = None if m_xml is None else bool(m_xml.nbody == model.nbody)
-
-    # advance the state so "state kept" is not trivially the default pose
+    # run 5 steps once so "state kept" is not trivially the default pose; later recompiles
+    # start from the data the previous recompile returned
     d = _warm(model)
     snap = snapshot(d)
     nq0, nv0, nbody0 = model.nq, model.nv, model.nbody
@@ -177,13 +204,15 @@ def run_once(n: int, seed: int) -> dict:
     # 1) edit one geom size in place
     geom = spec.geom("p0_box")
     old_size = float(geom.size[0])
-    geom.size[0] = old_size * 1.1
-    s, out = try_timed(api, "recompile(edit geom size)", lambda: spec.recompile(model, d))
-    r["edit_s"] = s
-    if out is not None:
-        r["recompile_returns_new_objects"] = bool(out[0] is not model and out[1] is not d)
-        r["old_model_unchanged"] = bool(abs(model.geom_size[model.geom("p0_box").id][0] - old_size) < 1e-9)
-        model, d = out
+
+    def edit():
+        geom.size[0] = old_size * 1.1
+
+    old_model, old_d = model, d
+    model, d, ok = edit_step(api, r, "edit", "edit(geom size)", edit, spec, model, d)
+    if ok:
+        r["recompile_returns_new_objects"] = bool(model is not old_model and d is not old_d)
+        r["old_model_unchanged"] = bool(abs(old_model.geom_size[old_model.geom("p0_box").id][0] - old_size) < 1e-9)
         r["edit_size_applied"] = bool(abs(model.geom_size[model.geom("p0_box").id][0] - old_size * 1.1) < 1e-9)
         r["edit_state_kept"] = keep_state(snap, d, nq0, nv0)
         r["edit_nbody_ok"] = bool(model.nbody == nbody0)
@@ -192,39 +221,28 @@ def run_once(n: int, seed: int) -> dict:
     # 2) add one part
     snap = snapshot(d)
     nq1, nv1, nbody1 = model.nq, model.nv, model.nbody
-    try_op(api, "attach(add part at runtime)", lambda: attach_part(spec, make_part(seed + n), n, n + 1))
-    s, out = try_timed(api, "recompile(add part)", lambda: spec.recompile(model, d))
-    r["add_s"] = s
-    if out is not None:
-        model, d = out
+    part = make_part(seed + n)  # building the part is not part of the timed edit
+    model, d, ok = edit_step(api, r, "add", "attach(add part)", lambda: attach_part(spec, part, n, n + 1), spec, model, d)
+    if ok:
         r["add_state_kept"] = keep_state(snap, d, nq1, nv1)
         r["add_nbody_ok"] = bool(model.nbody == nbody1 + 2)
 
-    # 3) remove one part (its frame and attached body)
+    # 3) remove that part (its attached body and its frame)
     snap = snapshot(d)
     nq2, nv2, nbody2 = model.nq, model.nv, model.nbody
 
     def remove():
         spec.delete(spec.body(f"p{n}_base"))
-        spec.delete(spec.frame(f"f{n}"))  # name is not guaranteed to survive attach; error is recorded
+        spec.delete(spec.frame(f"f{n}"))
 
-    try_op(api, "delete(remove part)", remove)
-    s, out = try_timed(api, "recompile(remove part)", lambda: spec.recompile(model, d))
-    r["remove_s"] = s
-    if out is not None:
-        model, d = out
+    model, d, ok = edit_step(api, r, "remove", "delete(remove part)", remove, spec, model, d)
+    if ok:
         r["remove_nbody_ok"] = bool(model.nbody == nbody2 - 2)
         r["remove_state_kept"] = keep_state(snap, d, nq2, nv2)
 
     r["api"] = api
     r["load_after"] = load_state()
     return r
-
-
-def try_timed(api: dict, name: str, fn):
-    t = time.perf_counter()
-    out = try_op(api, name, fn)
-    return time.perf_counter() - t, out
 
 
 def _first_frame(model):
@@ -244,7 +262,12 @@ def _warm(model):
     return d
 
 
-TIMED = ["build_s", "compile_s", "first_frame_s", "xml_s", "edit_s", "edit_first_frame_s", "add_s", "remove_s"]
+TIMED = [
+    "build_s", "compile_s", "first_frame_s", "xml_s",
+    "edit_apply_s", "edit_recompile_s", "edit_total_s", "edit_first_frame_s",
+    "add_apply_s", "add_recompile_s", "add_total_s",
+    "remove_apply_s", "remove_recompile_s", "remove_total_s",
+]
 
 
 def summarize(runs: list[dict]) -> dict:
@@ -254,10 +277,23 @@ def summarize(runs: list[dict]) -> dict:
         if xs:
             out[key] = {
                 "n": len(xs),
-                "min": round(min(xs), 4),
-                "median": round(statistics.median(xs), 4),
-                "max": round(max(xs), 4),
+                "min": round(min(xs), 6),
+                "median": round(statistics.median(xs), 6),
+                "max": round(max(xs), 6),
             }
+    return out
+
+
+def summarize_api(runs: list[dict]) -> dict:
+    """Per MjSpec operation: how many repeats ran it, and how many of those failed (all repeats counted)."""
+    out: dict = {}
+    for x in runs:
+        for name, v in x["api"].items():
+            o = out.setdefault(name, {"runs": 0, "failures": 0, "first_error": None})
+            o["runs"] += 1
+            if not v["ok"]:
+                o["failures"] += 1
+                o["first_error"] = o["first_error"] or v.get("error")
     return out
 
 
@@ -282,12 +318,13 @@ def main() -> int:
     for n in args.parts:
         runs = [run_once(n, args.seed) for _ in range(args.repeats)]
         summ = summarize(runs)
-        result["scenes"].append({"parts": n, "runs": runs, "summary": summ})
+        api_summ = summarize_api(runs)
+        result["scenes"].append({"parts": n, "runs": runs, "summary": summ, "api_summary": api_summ})
         print(f"\nparts={n} nbody={runs[0]['nbody']} nv={runs[0]['nv']} repeats={args.repeats}  (seconds: min / median / max)")
         for key, v in summ.items():
             print(f"  {key:19s} {v['min']:9.4f} {v['median']:9.4f} {v['max']:9.4f}")
-        bad = {k: runs[0]["api"][k] for k in runs[0]["api"] if not runs[0]["api"][k]["ok"]}
-        print("  api failures:", bad or "none")
+        bad = {k: v for k, v in api_summ.items() if v["failures"]}
+        print(f"  api failures (all {args.repeats} repeats):", bad or "none")
         for key in ("edit_state_kept", "add_state_kept", "remove_state_kept", "edit_size_applied", "recompile_returns_new_objects", "old_model_unchanged", "edit_nbody_ok", "add_nbody_ok", "remove_nbody_ok", "xml_nbody_matches"):
             vals = [x.get(key) for x in runs]
             print(f"  {key:19s} {vals}")
