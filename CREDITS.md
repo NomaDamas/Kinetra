@@ -15,7 +15,7 @@
 - 라이선스: Apache-2.0
 - 원본: https://pypi.org/project/mujoco/4.0.0/ https://github.com/google-deepmind/mujoco https://github.com/google-deepmind/mujoco/blob/main/LICENSE
 - 경로: `spikes/mujoco-limits/scale.py`
-- 용도: 실행 의존성: MuJoCo 한계 측정 스파이크(A0-01a)의 물리 시뮬레이션
+- 용도: 실행 의존성: MuJoCo 한계 측정 스파이크(A0-01a)의 물리 시뮬레이션과 물 스파이크(FL-01 spikes/mujoco-water/mujoco_water.py. 같은 고정 버전)
 - 변경 내역: 없음(PEP 723 헤더에서 mujoco==4.0.0 고정, 수정 없이 사용)
 - 받은 날짜: 2026-11-10
 - 원본 해시: `sha256:c503ff7003dd7dfee19b575aed6a409fb9bc15bf9f1c4053892c793e05b5edb3`
@@ -41,7 +41,7 @@
 - 라이선스: BSD-3-Clause
 - 원본: https://pypi.org/project/numpy/2.5.4/ https://github.com/numpy/numpy https://github.com/numpy/numpy/blob/main/LICENSE.txt
 - 경로: `spikes/mujoco-limits/scale.py`
-- 용도: 실행 의존성: MuJoCo 한계 측정 스파이크(A0-01a)의 수치 계산
+- 용도: 실행 의존성: MuJoCo 한계 측정 스파이크(A0-01a)의 수치 계산과 물 스파이크(FL-01 spikes/mujoco-water/mujoco_water.py. 같은 고정 버전)
 - 변경 내역: 없음(PEP 723 헤더에서 numpy==2.5.4 고정, 수정 없이 사용). NumPy 자체의 라이선스는 BSD-3-Clause(저장소 LICENSE.txt). PyPI 메타데이터 license_expression은 휠에 번들된 구성요소까지 합쳐 'BSD-3-Clause AND 0BSD AND MIT AND Zlib AND CC0-1.0'이다
 - 받은 날짜: 2026-11-10
 - 원본 해시: `sha256:9a94cf751c9ad8ebaa835bcd3d40dacf8534ad086b88c38029b65123c7999d2a`
