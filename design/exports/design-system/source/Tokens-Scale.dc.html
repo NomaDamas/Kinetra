@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>토큰: 타이포, 간격, 모서리, 높이, 모션</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+button{font-family:inherit}
+:focus-visible{outline:2px solid #A8CBFF;outline-offset:2px}
+@media (prefers-reduced-motion:reduce){*{transition-property:opacity!important;animation:none!important}}
+</style>
+</helmet>
+<div style="width:1440px;height:1160px;box-sizing:border-box;padding:48px;background:#0F1216;color:#E8EDF2;font-family:Pretendard,'Pretendard Variable',-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Malgun Gothic','Noto Sans KR',sans-serif;font-size:13px;line-height:20px;font-variant-numeric:tabular-nums;display:flex;flex-direction:column;gap:32px">
+
+<header style="display:flex;flex-direction:column;gap:4px">
+<div style="font-size:11px;line-height:16px;font-weight:500;color:#A9B4C0">Kinetra Studio 디자인 시스템 · A. 토큰</div>
+<h1 style="margin:0;font-size:20px;line-height:28px;font-weight:600">타이포그래피, 간격, 크기, 모서리, 높이, 모션</h1>
+<div style="display:flex;align-items:center;gap:8px;color:#A9B4C0"><span>이 장의 px·ms 값은 모두 [제안]이며 값 배지로는</span><button type="button" style="display:inline-flex;align-items:center;height:24px;padding:0;border:0;background:none;color:#A9B4C0;font-size:11px;line-height:16px;font-weight:500;white-space:nowrap;cursor:pointer"><span style="display:inline-flex;align-items:center;gap:4px;height:20px;box-sizing:border-box;padding:0 8px;border-radius:999px;border:1px solid #3A4654"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="6" cy="6" r="3.5"/></svg>기본값</span></button><span>입니다. 토큰 이름과 역할은 규격 3절 그대로입니다.</span></div>
+</header>
+
+<div style="display:flex;gap:48px;align-items:flex-start">
+
+<section style="flex:1 1 0;min-width:0;display:flex;flex-direction:column;gap:12px">
+<h2 style="margin:0;font-size:16px;line-height:24px;font-weight:600">타이포그래피</h2>
+<p style="margin:0;color:#A9B4C0;font-size:12px;line-height:16px">UI는 Pretendard, 수치·코드는 JetBrains Mono(tabular-nums). 둘 다 SIL OFL 1.1. 글꼴 파일은 이 갤러리에 들이지 않았습니다.</p>
+<div style="display:flex;flex-direction:column">
+<div style="display:grid;grid-template-columns:128px 104px 48px minmax(0,1fr) 200px;gap:16px;align-items:center;padding:6px 0;font-size:11px;line-height:16px;font-weight:500;color:#A9B4C0"><span>토큰</span><span>크기/줄 높이</span><span>굵기</span><span>견본</span><span>쓰임</span></div>
+<div style="display:grid;grid-template-columns:128px 104px 48px minmax(0,1fr) 200px;gap:16px;align-items:center;padding:10px 0;border-top:1px solid #26303A"><span style="font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:500">type.display</span><span style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#A9B4C0">28/36 px</span><span style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#A9B4C0">600</span><span style="display:flex;align-items:center;gap:8px"><span style="font-size:28px;line-height:36px;font-weight:600">15.2%</span><button type="button" style="display:inline-flex;align-items:center;height:24px;padding:0;border:0;background:none;color:#E8EDF2;font-size:11px;line-height:16px;font-weight:500;white-space:nowrap;cursor:pointer"><span style="display:inline-flex;align-items:center;gap:4px;height:20px;box-sizing:border-box;padding:0 8px;border-radius:999px;background:#303B49"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 6q1.25-5 2.5 0t2.5 0t2.5 0t2.5 0"/></svg>시뮬</span></button></span><span style="font-size:12px;line-height:16px;color:#A9B4C0">판정 카드의 p_success 한 곳</span></div>
+<div style="display:grid;grid-template-columns:128px 104px 48px minmax(0,1fr) 200px;gap:16px;align-items:center;padding:10px 0;border-top:1px solid #26303A"><span style="font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:500">type.heading</span><span style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#A9B4C0">20/28 px</span><span style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#A9B4C0">600</span><span style="font-size:20px;line-height:28px;font-weight:600">판정 없음</span><span style="font-size:12px;line-height:16px;color:#A9B4C0">모달 제목, 빈 화면 제목</span></div>
+<div style="display:grid;grid-template-columns:128px 104px 48px minmax(0,1fr) 200px;gap:16px;align-items:center;padding:10px 0;border-top:1px solid #26303A"><span style="font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:500">type.title</span><span style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#A9B4C0">16/24 px</span><span style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#A9B4C0">600</span><span style="font-size:16px;line-height:24px;font-weight:600">인스펙터</span><span style="font-size:12px;line-height:16px;color:#A9B4C0">패널·카드 제목</span></div>
+<div style="display:grid;grid-template-columns:128px 104px 48px minmax(0,1fr) 200px;gap:16px;align-items:center;padding:10px 0;border-top:1px solid #26303A"><span style="font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:500">type.body</span><span style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#A9B4C0">13/20 px</span><span style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#A9B4C0">400</span><span style="font-size:13px;line-height:20px">이 모델에서는 성공 사례를 찾았습니다</span><span style="font-size:12px;line-height:16px;color:#A9B4C0">본문, 필드 값</span></div>
+<div style="display:grid;grid-template-columns:128px 104px 48px minmax(0,1fr) 200px;gap:16px;align-items:center;padding:10px 0;border-top:1px solid #26303A"><span style="font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:500">type.label</span><span style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#A9B4C0">12/16 px</span><span style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#A9B4C0">500</span><span style="font-size:12px;line-height:16px;font-weight:500">차체 질량</span><span style="font-size:12px;line-height:16px;color:#A9B4C0">필드 라벨, 버튼, 탭</span></div>
+<div style="display:grid;grid-template-columns:128px 104px 48px minmax(0,1fr) 200px;gap:16px;align-items:center;padding:10px 0;border-top:1px solid #26303A"><span style="font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:500">type.caption</span><span style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#A9B4C0">11/16 px</span><span style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#A9B4C0">500</span><span style="font-size:11px;line-height:16px;font-weight:500">배지, 단위, 보조 설명</span><span style="font-size:12px;line-height:16px;color:#A9B4C0">배지, 단위, 보조 설명</span></div>
+<div style="display:grid;grid-template-columns:128px 104px 48px minmax(0,1fr) 200px;gap:16px;align-items:center;padding:10px 0;border-top:1px solid #26303A"><span style="font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:500">type.mono</span><span style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#A9B4C0">13/20 px</span><span style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#A9B4C0">500</span><span style="font-family:'JetBrains Mono',monospace;font-size:13px;line-height:20px;font-weight:500">FEASIBLE_FOUND</span><span style="font-size:12px;line-height:16px;color:#A9B4C0">수치, 판정 코드, 시드</span></div>
+</div>
+</section>
+
+<div style="flex:0 0 520px;display:flex;flex-direction:column;gap:32px">
+<section style="display:flex;flex-direction:column;gap:12px">
+<h2 style="margin:0;font-size:16px;line-height:24px;font-weight:600">수치 표기</h2>
+<div style="display:flex;flex-direction:column;gap:8px">
+<div style="display:flex;align-items:center;gap:8px"><span style="font-family:'JetBrains Mono',monospace;font-weight:500;width:176px">8.9 <span style="color:#A9B4C0">N</span></span><button type="button" style="display:inline-flex;align-items:center;height:24px;padding:0;border:0;background:none;color:#C5D0DC;font-size:11px;line-height:16px;font-weight:500;white-space:nowrap;cursor:pointer"><span style="display:inline-flex;align-items:center;gap:4px;height:20px;box-sizing:border-box;padding:0 8px;border-radius:999px;border:1px solid #7A899B"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 8.5v-3a2.5 2.5 0 0 1 2.5-2.5M7 8.5v-3a2.5 2.5 0 0 1 2.5-2.5"/></svg>인용</span></button><span style="font-size:12px;line-height:16px;color:#A9B4C0">숫자와 단위 사이는 띄웁니다</span></div>
+<div style="display:flex;align-items:center;gap:8px"><span style="font-family:'JetBrains Mono',monospace;font-weight:500;width:176px">15.2% [12.3, 18.6]</span><button type="button" style="display:inline-flex;align-items:center;height:24px;padding:0;border:0;background:none;color:#E8EDF2;font-size:11px;line-height:16px;font-weight:500;white-space:nowrap;cursor:pointer"><span style="display:inline-flex;align-items:center;gap:4px;height:20px;box-sizing:border-box;padding:0 8px;border-radius:999px;background:#303B49"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 6q1.25-5 2.5 0t2.5 0t2.5 0t2.5 0"/></svg>시뮬</span></button><span style="font-size:12px;line-height:16px;color:#A9B4C0">퍼센트는 붙이고 신뢰구간은 대괄호로 씁니다</span></div>
+<div style="display:flex;align-items:center;gap:8px"><span style="font-family:'JetBrains Mono',monospace;font-weight:500;width:176px">0.6 <span style="color:#A9B4C0">–</span></span><button type="button" style="display:inline-flex;align-items:center;height:24px;padding:0;border:0;background:none;color:#A9B4C0;font-size:11px;line-height:16px;font-weight:500;white-space:nowrap;cursor:pointer"><span style="display:inline-flex;align-items:center;gap:4px;height:20px;box-sizing:border-box;padding:0 8px;border-radius:999px;border:1px solid #3A4654"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="6" cy="6" r="3.5"/></svg>기본값</span></button><span style="font-size:11px;line-height:16px;color:#93A0AE;border:1px dotted #7A899B;border-radius:2px;padding:0 4px">예시</span><span style="font-size:12px;line-height:16px;color:#A9B4C0">무차원 값도 단위 자리에 –를 둡니다</span></div>
+</div>
+<p style="margin:0;color:#A9B4C0;font-size:12px;line-height:16px">수치는 값 · 단위 · 값 배지를 한 묶음으로 그립니다. 자릿수는 원본 그대로 두고, 더 좋아 보이도록 반올림하지 않습니다.</p>
+</section>
+
+<section style="display:flex;flex-direction:column;gap:12px">
+<h2 style="margin:0;font-size:16px;line-height:24px;font-weight:600">간격</h2>
+<div style="display:grid;grid-template-columns:104px 48px 56px minmax(0,1fr);gap:8px 16px;align-items:center;font-size:12px;line-height:16px">
+<span style="font-family:'JetBrains Mono',monospace;font-weight:500">space.050</span><span style="font-family:'JetBrains Mono',monospace;color:#A9B4C0">2 px</span><span style="height:12px;width:2px;background:#5B9DFF"></span><span style="color:#A9B4C0">배지 안쪽</span>
+<span style="font-family:'JetBrains Mono',monospace;font-weight:500">space.100</span><span style="font-family:'JetBrains Mono',monospace;color:#A9B4C0">4 px</span><span style="height:12px;width:4px;background:#5B9DFF"></span><span style="color:#A9B4C0">아이콘 간격</span>
+<span style="font-family:'JetBrains Mono',monospace;font-weight:500">space.200</span><span style="font-family:'JetBrains Mono',monospace;color:#A9B4C0">8 px</span><span style="height:12px;width:8px;background:#5B9DFF"></span><span style="color:#A9B4C0">필드 행 안쪽</span>
+<span style="font-family:'JetBrains Mono',monospace;font-weight:500">space.300</span><span style="font-family:'JetBrains Mono',monospace;color:#A9B4C0">12 px</span><span style="height:12px;width:12px;background:#5B9DFF"></span><span style="color:#A9B4C0">카드 안쪽</span>
+<span style="font-family:'JetBrains Mono',monospace;font-weight:500">space.400</span><span style="font-family:'JetBrains Mono',monospace;color:#A9B4C0">16 px</span><span style="height:12px;width:16px;background:#5B9DFF"></span><span style="color:#A9B4C0">패널 안쪽</span>
+<span style="font-family:'JetBrains Mono',monospace;font-weight:500">space.600</span><span style="font-family:'JetBrains Mono',monospace;color:#A9B4C0">24 px</span><span style="height:12px;width:24px;background:#5B9DFF"></span><span style="color:#A9B4C0">섹션 사이</span>
+<span style="font-family:'JetBrains Mono',monospace;font-weight:500">space.800</span><span style="font-family:'JetBrains Mono',monospace;color:#A9B4C0">32 px</span><span style="height:12px;width:32px;background:#5B9DFF"></span><span style="color:#A9B4C0">섹션 사이(넓게)</span>
+<span style="font-family:'JetBrains Mono',monospace;font-weight:500">space.1200</span><span style="font-family:'JetBrains Mono',monospace;color:#A9B4C0">48 px</span><span style="height:12px;width:48px;background:#5B9DFF"></span><span style="color:#A9B4C0">빈 화면 여백</span>
+</div>
+</section>
+</div>
+</div>
+
+<div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:48px;align-items:start">
+<section style="display:flex;flex-direction:column;gap:12px">
+<h2 style="margin:0;font-size:16px;line-height:24px;font-weight:600">크기</h2>
+<div style="display:flex;align-items:flex-end;gap:16px">
+<div style="display:flex;flex-direction:column;gap:6px;align-items:flex-start"><div style="height:24px;box-sizing:border-box;padding:0 8px;display:flex;align-items:center;border:1px solid #7A899B;border-radius:4px;font-size:12px;font-weight:500">조밀한 행</div><div style="font-family:'JetBrains Mono',monospace;font-size:11px;line-height:16px;color:#A9B4C0">size.control.sm<br>24 px</div></div>
+<div style="display:flex;flex-direction:column;gap:6px;align-items:flex-start"><div style="height:28px;box-sizing:border-box;padding:0 12px;display:flex;align-items:center;border:1px solid #7A899B;border-radius:4px;font-size:12px;font-weight:500">기본 컨트롤</div><div style="font-family:'JetBrains Mono',monospace;font-size:11px;line-height:16px;color:#A9B4C0">size.control.md<br>28 px</div></div>
+<div style="display:flex;flex-direction:column;gap:6px;align-items:flex-start"><div style="height:32px;box-sizing:border-box;padding:0 16px;display:flex;align-items:center;border:1px solid #7A899B;border-radius:4px;font-size:12px;font-weight:500">주 행동 버튼</div><div style="font-family:'JetBrains Mono',monospace;font-size:11px;line-height:16px;color:#A9B4C0">size.control.lg<br>32 px</div></div>
+<div style="display:flex;flex-direction:column;gap:6px;align-items:flex-start"><div style="height:20px;box-sizing:border-box;padding:0 8px;display:flex;align-items:center;border:1px solid #7A899B;border-radius:999px;font-size:11px;font-weight:500">배지</div><div style="font-family:'JetBrains Mono',monospace;font-size:11px;line-height:16px;color:#A9B4C0">size.badge<br>20 px</div></div>
+</div>
+<p style="margin:0;color:#A9B4C0;font-size:12px;line-height:16px">배지는 누를 수 있으므로 누르는 영역을 24 px로 넓힙니다.</p>
+</section>
+
+<section style="display:flex;flex-direction:column;gap:12px">
+<h2 style="margin:0;font-size:16px;line-height:24px;font-weight:600">모서리</h2>
+<div style="display:flex;gap:16px">
+<div style="display:flex;flex-direction:column;gap:6px"><div style="width:56px;height:40px;box-sizing:border-box;background:#1B2129;border:1px solid #7A899B;border-radius:2px"></div><div style="font-family:'JetBrains Mono',monospace;font-size:11px;line-height:16px;color:#A9B4C0">radius.xs<br>2 px</div><div style="font-size:11px;line-height:16px;color:#A9B4C0;width:64px">타임라인 표식</div></div>
+<div style="display:flex;flex-direction:column;gap:6px"><div style="width:56px;height:40px;box-sizing:border-box;background:#1B2129;border:1px solid #7A899B;border-radius:4px"></div><div style="font-family:'JetBrains Mono',monospace;font-size:11px;line-height:16px;color:#A9B4C0">radius.sm<br>4 px</div><div style="font-size:11px;line-height:16px;color:#A9B4C0;width:64px">입력, 버튼</div></div>
+<div style="display:flex;flex-direction:column;gap:6px"><div style="width:56px;height:40px;box-sizing:border-box;background:#1B2129;border:1px solid #7A899B;border-radius:6px"></div><div style="font-family:'JetBrains Mono',monospace;font-size:11px;line-height:16px;color:#A9B4C0">radius.md<br>6 px</div><div style="font-size:11px;line-height:16px;color:#A9B4C0;width:64px">카드</div></div>
+<div style="display:flex;flex-direction:column;gap:6px"><div style="width:56px;height:40px;box-sizing:border-box;background:#1B2129;border:1px solid #7A899B;border-radius:8px"></div><div style="font-family:'JetBrains Mono',monospace;font-size:11px;line-height:16px;color:#A9B4C0">radius.lg<br>8 px</div><div style="font-size:11px;line-height:16px;color:#A9B4C0;width:64px">패널, 모달, 토스트</div></div>
+<div style="display:flex;flex-direction:column;gap:6px"><div style="width:56px;height:40px;box-sizing:border-box;background:#1B2129;border:1px solid #7A899B;border-radius:999px"></div><div style="font-family:'JetBrains Mono',monospace;font-size:11px;line-height:16px;color:#A9B4C0">radius.pill<br>999 px</div><div style="font-size:11px;line-height:16px;color:#A9B4C0;width:64px">배지, 전환기</div></div>
+</div>
+</section>
+
+<section style="display:flex;flex-direction:column;gap:12px">
+<h2 style="margin:0;font-size:16px;line-height:24px;font-weight:600">높이</h2>
+<div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px">
+<div style="display:flex;flex-direction:column;gap:6px"><div style="height:56px;box-sizing:border-box;background:#0F1216;border:1px dashed #26303A"></div><div style="font-family:'JetBrains Mono',monospace;font-size:11px;line-height:16px;color:#A9B4C0">elevation.0</div><div style="font-size:11px;line-height:16px;color:#A9B4C0">bg.app, 그림자 없음 · 뷰포트 둘레</div></div>
+<div style="display:flex;flex-direction:column;gap:6px"><div style="height:56px;box-sizing:border-box;background:#151A20;border:1px solid #26303A;border-radius:8px"></div><div style="font-family:'JetBrains Mono',monospace;font-size:11px;line-height:16px;color:#A9B4C0">elevation.1</div><div style="font-size:11px;line-height:16px;color:#A9B4C0">bg.panel + border.subtle · 패널</div></div>
+<div style="display:flex;flex-direction:column;gap:6px"><div style="height:56px;box-sizing:border-box;background:#1B2129;border:1px solid #3A4654;border-radius:6px"></div><div style="font-family:'JetBrains Mono',monospace;font-size:11px;line-height:16px;color:#A9B4C0">elevation.2</div><div style="font-size:11px;line-height:16px;color:#A9B4C0">bg.card + border.default · 카드</div></div>
+<div style="display:flex;flex-direction:column;gap:6px"><div style="height:56px;box-sizing:border-box;background:#222A33;border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,0.5)"></div><div style="font-family:'JetBrains Mono',monospace;font-size:11px;line-height:16px;color:#A9B4C0">elevation.3</div><div style="font-size:11px;line-height:16px;color:#A9B4C0">bg.raised + 그림자 0 8px 24px rgba(0,0,0,0.5) · 팝오버, 메뉴, 토스트, 모달</div></div>
+</div>
+<p style="margin:0;color:#A9B4C0;font-size:12px;line-height:16px">모달 뒤에는 rgba(0,0,0,0.6) 가림막을 둡니다. 뷰포트 위에 겹치는 HUD와 증거 문구는 불투명한 bg.panel 면 위에 올립니다.</p>
+</section>
+</div>
+
+<section style="display:flex;flex-direction:column;gap:12px">
+<h2 style="margin:0;font-size:16px;line-height:24px;font-weight:600">모션</h2>
+<div style="display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:16px">
+<div style="background:#151A20;border:1px solid #26303A;border-radius:8px;padding:12px"><div style="font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:500">motion.duration.fast</div><div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#A9B4C0">80 ms</div><div style="font-size:12px;line-height:16px;color:#A9B4C0;margin-top:4px">hover, 누름</div></div>
+<div style="background:#151A20;border:1px solid #26303A;border-radius:8px;padding:12px"><div style="font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:500">motion.duration.base</div><div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#A9B4C0">160 ms</div><div style="font-size:12px;line-height:16px;color:#A9B4C0;margin-top:4px">패널 접기, 카드 등장, 배지 바뀜</div></div>
+<div style="background:#151A20;border:1px solid #26303A;border-radius:8px;padding:12px"><div style="font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:500">motion.duration.slow</div><div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#A9B4C0">240 ms</div><div style="font-size:12px;line-height:16px;color:#A9B4C0;margin-top:4px">모드 전환, 모달</div></div>
+<div style="background:#151A20;border:1px solid #26303A;border-radius:8px;padding:12px"><div style="font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:500">motion.ease.standard</div><div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#A9B4C0">cubic-bezier(0.2, 0, 0, 1)</div><div style="font-size:12px;line-height:16px;color:#A9B4C0;margin-top:4px">등장, 이동</div></div>
+<div style="background:#151A20;border:1px solid #26303A;border-radius:8px;padding:12px"><div style="font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:500">motion.ease.exit</div><div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#A9B4C0">cubic-bezier(0.4, 0, 1, 1)</div><div style="font-size:12px;line-height:16px;color:#A9B4C0;margin-top:4px">퇴장</div></div>
+</div>
+<ul style="margin:0;padding-left:18px;color:#A9B4C0;font-size:12px;line-height:18px">
+<li>판정 결과는 어떤 코드든 같은 전환으로 나타납니다. 축하, 흔들림, 번쩍임처럼 결과를 연출하는 모션은 없습니다.</li>
+<li>prefers-reduced-motion이면 이동·크기 변화를 없애고 불투명도 전환만 남깁니다. 5초 넘게 저절로 움직이는 요소에는 멈춤 수단을 둡니다(WCAG 2.2.2).</li>
+</ul>
+</section>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1160}}'>
+class Component extends DCLogic {
+renderVals() {
+return {};
+}
+}
+</script>
+</body>
+</html>

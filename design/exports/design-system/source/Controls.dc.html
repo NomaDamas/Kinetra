@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>버튼, 전환기, 토스트, 타임라인 표식</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+button{font-family:inherit}
+:focus-visible{outline:2px solid #A8CBFF;outline-offset:2px}
+label:has(input:focus-visible){outline:2px solid #A8CBFF;outline-offset:2px}
+@media (prefers-reduced-motion:reduce){*{transition-property:opacity!important;animation:none!important}}
+</style>
+</helmet>
+<div style="width:1440px;height:1100px;box-sizing:border-box;padding:48px;background:#0F1216;color:#E8EDF2;font-family:Pretendard,'Pretendard Variable',-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Malgun Gothic','Noto Sans KR',sans-serif;font-size:13px;line-height:20px;font-variant-numeric:tabular-nums;display:flex;flex-direction:column;gap:32px">
+
+<header style="display:flex;flex-direction:column;gap:4px">
+<div style="font-size:11px;line-height:16px;font-weight:500;color:#A9B4C0">Kinetra Studio 디자인 시스템 · D. 컴포넌트</div>
+<h1 style="margin:0;font-size:20px;line-height:28px;font-weight:600">버튼, 모드 전환기, 행성 전환기, 토스트, 타임라인 표식</h1>
+<p style="margin:0;color:#A9B4C0;max-width:960px">한 모드에 주 행동 하나입니다. 강조색 primary 버튼은 화면에 하나만 보이고, 나머지는 secondary, ghost, danger입니다. 모드 전환기와 행성 전환기는 Play에서 직접 눌러 볼 수 있습니다.</p>
+</header>
+
+<div style="display:flex;gap:48px;align-items:flex-start">
+
+<div style="flex:1 1 0;min-width:0;display:flex;flex-direction:column;gap:32px">
+
+<section style="display:flex;flex-direction:column;gap:12px">
+<h2 style="margin:0;font-size:16px;line-height:24px;font-weight:600">버튼</h2>
+<div style="display:grid;grid-template-columns:76px repeat(6,auto);gap:12px 16px;align-items:center;justify-items:start;justify-content:start">
+<span></span><span style="font-size:11px;line-height:16px;font-weight:500;color:#A9B4C0">기본</span><span style="font-size:11px;line-height:16px;font-weight:500;color:#A9B4C0">hover</span><span style="font-size:11px;line-height:16px;font-weight:500;color:#A9B4C0">포커스</span><span style="font-size:11px;line-height:16px;font-weight:500;color:#A9B4C0">누름</span><span style="font-size:11px;line-height:16px;font-weight:500;color:#A9B4C0">진행 중</span><span style="font-size:11px;line-height:16px;font-weight:500;color:#A9B4C0">비활성</span>
+
+<span style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#A9B4C0">primary</span>
+<button type="button" style="height:32px;padding:0 16px;border:0;border-radius:4px;background:#5B9DFF;color:#08111F;font-size:12px;font-weight:600">실행하기</button>
+<button type="button" style="height:32px;padding:0 16px;border:0;border-radius:4px;background:#5B9DFF;color:#08111F;font-size:12px;font-weight:600;box-shadow:inset 0 0 0 99px rgba(255,255,255,0.12)">실행하기</button>
+<button type="button" style="height:32px;padding:0 16px;border:0;border-radius:4px;background:#5B9DFF;color:#08111F;font-size:12px;font-weight:600;outline:2px solid #A8CBFF;outline-offset:2px">실행하기</button>
+<button type="button" style="height:32px;padding:0 16px;border:0;border-radius:4px;background:#5B9DFF;color:#08111F;font-size:12px;font-weight:600;box-shadow:inset 0 0 0 99px rgba(0,0,0,0.12)">실행하기</button>
+<button type="button" aria-busy="true" style="height:32px;padding:0 16px;border:0;border-radius:4px;background:#5B9DFF;color:#08111F;font-size:12px;font-weight:600;display:inline-flex;align-items:center;gap:6px"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M6 1.5a4.5 4.5 0 1 1-4.5 4.5"/></svg>여는 중</button>
+<button type="button" aria-disabled="true" style="height:32px;padding:0 16px;border:1px solid #3A4654;border-radius:4px;background:#222A33;color:#93A0AE;font-size:12px;font-weight:600;cursor:not-allowed">실행하기</button>
+
+<span style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#A9B4C0">secondary</span>
+<button type="button" style="height:28px;padding:0 12px;border:1px solid #7A899B;border-radius:4px;background:transparent;color:#E8EDF2;font-size:12px;font-weight:500">미리보기</button>
+<button type="button" style="height:28px;padding:0 12px;border:1px solid #7A899B;border-radius:4px;background:#263039;color:#E8EDF2;font-size:12px;font-weight:500">미리보기</button>
+<button type="button" style="height:28px;padding:0 12px;border:1px solid #7A899B;border-radius:4px;background:transparent;color:#E8EDF2;font-size:12px;font-weight:500;outline:2px solid #A8CBFF;outline-offset:2px">미리보기</button>
+<button type="button" style="height:28px;padding:0 12px;border:1px solid #7A899B;border-radius:4px;background:#263039;color:#E8EDF2;font-size:12px;font-weight:500;box-shadow:inset 0 1px 2px rgba(0,0,0,0.5)">미리보기</button>
+<button type="button" aria-busy="true" style="height:28px;padding:0 12px;border:1px solid #7A899B;border-radius:4px;background:transparent;color:#E8EDF2;font-size:12px;font-weight:500;display:inline-flex;align-items:center;gap:6px"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M6 1.5a4.5 4.5 0 1 1-4.5 4.5"/></svg>준비 중</button>
+<button type="button" aria-disabled="true" style="height:28px;padding:0 12px;border:1px solid #3A4654;border-radius:4px;background:transparent;color:#93A0AE;font-size:12px;font-weight:500;cursor:not-allowed">미리보기</button>
+
+<span style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#A9B4C0">ghost</span>
+<button type="button" style="height:28px;padding:0 12px;border:1px solid transparent;border-radius:4px;background:transparent;color:#E8EDF2;font-size:12px;font-weight:500">취소</button>
+<button type="button" style="height:28px;padding:0 12px;border:1px solid transparent;border-radius:4px;background:#263039;color:#E8EDF2;font-size:12px;font-weight:500">취소</button>
+<button type="button" style="height:28px;padding:0 12px;border:1px solid transparent;border-radius:4px;background:transparent;color:#E8EDF2;font-size:12px;font-weight:500;outline:2px solid #A8CBFF;outline-offset:2px">취소</button>
+<button type="button" style="height:28px;padding:0 12px;border:1px solid transparent;border-radius:4px;background:#263039;color:#E8EDF2;font-size:12px;font-weight:500;box-shadow:inset 0 1px 2px rgba(0,0,0,0.5)">취소</button>
+<button type="button" aria-busy="true" style="height:28px;padding:0 12px;border:1px solid transparent;border-radius:4px;background:transparent;color:#E8EDF2;font-size:12px;font-weight:500;display:inline-flex;align-items:center;gap:6px"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M6 1.5a4.5 4.5 0 1 1-4.5 4.5"/></svg>취소 중</button>
+<button type="button" aria-disabled="true" style="height:28px;padding:0 12px;border:1px solid transparent;border-radius:4px;background:transparent;color:#93A0AE;font-size:12px;font-weight:500;cursor:not-allowed">취소</button>
+
+<span style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#A9B4C0">danger</span>
+<button type="button" style="height:28px;padding:0 12px;border:1px solid #FF7B72;border-radius:4px;background:transparent;color:#FF7B72;font-size:12px;font-weight:500">삭제</button>
+<button type="button" style="height:28px;padding:0 12px;border:1px solid #FF7B72;border-radius:4px;background:#263039;color:#FF7B72;font-size:12px;font-weight:500">삭제</button>
+<button type="button" style="height:28px;padding:0 12px;border:1px solid #FF7B72;border-radius:4px;background:transparent;color:#FF7B72;font-size:12px;font-weight:500;outline:2px solid #A8CBFF;outline-offset:2px">삭제</button>
+<button type="button" style="height:28px;padding:0 12px;border:1px solid #FF7B72;border-radius:4px;background:#263039;color:#FF7B72;font-size:12px;font-weight:500;box-shadow:inset 0 1px 2px rgba(0,0,0,0.5)">삭제</button>
+<button type="button" aria-busy="true" style="height:28px;padding:0 12px;border:1px solid #FF7B72;border-radius:4px;background:transparent;color:#FF7B72;font-size:12px;font-weight:500;display:inline-flex;align-items:center;gap:6px"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M6 1.5a4.5 4.5 0 1 1-4.5 4.5"/></svg>삭제 중</button>
+<button type="button" aria-disabled="true" style="height:28px;padding:0 12px;border:1px solid #3A4654;border-radius:4px;background:transparent;color:#93A0AE;font-size:12px;font-weight:500;cursor:not-allowed">삭제</button>
+</div>
+<div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;font-size:12px;line-height:16px;color:#A9B4C0">
+<span style="display:inline-flex;align-items:center;gap:8px">아이콘·단축키<button type="button" style="height:28px;padding:0 8px 0 12px;border:1px solid #7A899B;border-radius:4px;background:transparent;color:#E8EDF2;font-size:12px;font-weight:500;display:inline-flex;align-items:center;gap:8px"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 2L1.5 4.5 4 7M1.5 4.5h5.5a3 3 0 0 1 0 6H4"/></svg>되돌리기<kbd style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#A9B4C0;border:1px solid #3A4654;border-radius:2px;padding:0 4px">Ctrl Z</kbd></button></span>
+<span style="display:inline-flex;align-items:center;gap:8px">비활성 이유 툴팁<span role="tooltip" style="background:#222A33;border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,0.5);padding:6px 10px;color:#E8EDF2">엔진에 연결되어야 실행할 수 있습니다</span></span>
+</div>
+<p style="margin:0;color:#A9B4C0;font-size:12px;line-height:16px">primary 행은 버튼 하나의 여섯 상태를 펼친 견본이고 화면 예시가 아닙니다. 비활성 버튼은 aria-disabled로 두어 포커스와 이유 툴팁이 닿게 합니다. 진행 중 표시는 저절로 돌지 않는 정지 그림입니다.</p>
+</section>
+
+<section style="display:flex;flex-direction:column;gap:12px">
+<h2 style="margin:0;font-size:16px;line-height:24px;font-weight:600">모드 전환기와 주 행동</h2>
+<div style="display:flex;align-items:center;justify-content:space-between;gap:16px;padding:8px 12px;background:#151A20;border:1px solid #26303A;border-radius:8px">
+<div role="tablist" aria-label="모드" data-live="mode" onKeyDown="{{onTabKey}}" style="display:inline-flex;gap:2px">
+<button type="button" role="tab" aria-selected="{{t0sel}}" tabIndex="{{t0tab}}" onClick="{{pick0}}" style="height:28px;padding:0 14px;border:0;border-radius:4px 4px 0 0;font-size:12px;font-weight:500;cursor:pointer;background:{{t0bg}};color:{{t0fg}};box-shadow:{{t0sh}}">조립</button>
+<button type="button" role="tab" aria-selected="{{t1sel}}" tabIndex="{{t1tab}}" onClick="{{pick1}}" style="height:28px;padding:0 14px;border:0;border-radius:4px 4px 0 0;font-size:12px;font-weight:500;cursor:pointer;background:{{t1bg}};color:{{t1fg}};box-shadow:{{t1sh}}">실행</button>
+<button type="button" role="tab" aria-selected="{{t2sel}}" tabIndex="{{t2tab}}" onClick="{{pick2}}" style="height:28px;padding:0 14px;border:0;border-radius:4px 4px 0 0;font-size:12px;font-weight:500;cursor:pointer;background:{{t2bg}};color:{{t2fg}};box-shadow:{{t2sh}}">판정</button>
+<button type="button" role="tab" aria-selected="{{t3sel}}" tabIndex="{{t3tab}}" onClick="{{pick3}}" style="height:28px;padding:0 14px;border:0;border-radius:4px 4px 0 0;font-size:12px;font-weight:500;cursor:pointer;background:{{t3bg}};color:{{t3fg}};box-shadow:{{t3sh}}">Halo</button>
+</div>
+<button type="button" data-live="primary" style="height:32px;padding:0 16px;border:0;border-radius:4px;background:#5B9DFF;color:#08111F;font-size:12px;font-weight:600;display:inline-flex;align-items:center;gap:6px"><sc-if value="{{isRun}}" hint-placeholder-val="{{false}}"><svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><path d="M2 1l7 4-7 4z" fill="currentColor"/></svg></sc-if><span>{{primaryLabel}}</span></button>
+</div>
+<p style="margin:0;color:#A9B4C0;font-size:12px;line-height:16px">탭 목록입니다. 좌우 화살표 키로 옮깁니다. 모드가 바뀌면 하나뿐인 primary 버튼이 그 모드의 주 행동으로 바뀝니다: 조립 → 실행하기, 실행 → 1회 실행, 판정 → 판정 실행, Halo → 내보내기(최종 문구는 SC-01).</p>
+<div style="display:flex;align-items:center;gap:12px;font-size:12px;line-height:16px;color:#A9B4C0"><span style="width:76px">비활성 탭</span>
+<div role="tablist" aria-label="모드(견본)" style="display:inline-flex;gap:2px">
+<button type="button" role="tab" aria-selected="false" style="height:28px;padding:0 14px;border:0;border-radius:4px 4px 0 0;font-size:12px;font-weight:500;background:transparent;color:#A9B4C0">조립</button>
+<button type="button" role="tab" aria-selected="true" style="height:28px;padding:0 14px;border:0;border-radius:4px 4px 0 0;font-size:12px;font-weight:500;background:#22324A;color:#E8EDF2;box-shadow:inset 0 -2px 0 #5B9DFF">실행</button>
+<button type="button" role="tab" aria-selected="false" aria-disabled="true" style="height:28px;padding:0 14px;border:0;border-radius:4px 4px 0 0;font-size:12px;font-weight:500;background:transparent;color:#93A0AE;text-decoration:line-through;cursor:not-allowed">판정</button>
+<button type="button" role="tab" aria-selected="false" aria-disabled="true" style="height:28px;padding:0 14px;border:0;border-radius:4px 4px 0 0;font-size:12px;font-weight:500;background:transparent;color:#93A0AE;text-decoration:line-through;cursor:not-allowed">Halo</button>
+</div>
+<span role="tooltip" style="background:#222A33;border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,0.5);padding:6px 10px;color:#E8EDF2">실행이 끝나야 모드를 바꿀 수 있습니다</span><span>이유 문구는 견본입니다</span></div>
+</section>
+
+<section style="display:flex;flex-direction:column;gap:12px">
+<h2 style="margin:0;font-size:16px;line-height:24px;font-weight:600">행성 전환기</h2>
+<div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+<div role="radiogroup" aria-label="행성" data-live="planet" style="display:inline-flex;padding:2px;gap:2px;border:1px solid #7A899B;border-radius:999px;background:#0F1318">
+<label style="position:relative;display:inline-flex;align-items:center;height:24px;padding:0 14px;border-radius:999px;font-size:12px;font-weight:500;cursor:pointer;background:{{p0bg}};color:{{p0fg}};box-shadow:{{p0sh}}"><input type="radio" name="planet" value="0" checked="{{p0on}}" onChange="{{pickP0}}" style="position:absolute;opacity:0;width:1px;height:1px;margin:0">지구</label>
+<label style="position:relative;display:inline-flex;align-items:center;height:24px;padding:0 14px;border-radius:999px;font-size:12px;font-weight:500;cursor:pointer;background:{{p1bg}};color:{{p1fg}};box-shadow:{{p1sh}}"><input type="radio" name="planet" value="1" checked="{{p1on}}" onChange="{{pickP1}}" style="position:absolute;opacity:0;width:1px;height:1px;margin:0">화성</label>
+<label style="position:relative;display:inline-flex;align-items:center;height:24px;padding:0 14px;border-radius:999px;font-size:12px;font-weight:500;cursor:pointer;background:{{p2bg}};color:{{p2fg}};box-shadow:{{p2sh}}"><input type="radio" name="planet" value="2" checked="{{p2on}}" onChange="{{pickP2}}" style="position:absolute;opacity:0;width:1px;height:1px;margin:0">달</label>
+</div>
+<sc-if value="{{changed}}" hint-placeholder-val="{{false}}"><span role="status" data-live="planet-note" style="display:inline-flex;align-items:center;gap:8px;font-size:12px;line-height:16px;color:#93A0AE"><svg width="30" height="12" viewBox="0 0 30 12" role="img" aria-label="증거 강도 0/4"><path d="M.5.5h5v11h-5zM8.5.5h5v11h-5zM16.5.5h5v11h-5zM24.5.5h5v11h-5z" fill="none" stroke="currentColor"/></svg>행성을 바꿨습니다. 이전 판정은 무효입니다</span></sc-if>
+</div>
+<p style="margin:0;color:#A9B4C0;font-size:12px;line-height:16px">라디오 그룹입니다. 화살표 키로 옮깁니다. 행성은 글자 라벨로 구분하고 행성별 색을 쓰지 않습니다.</p>
+<div style="display:grid;grid-template-columns:76px auto minmax(0,1fr);gap:10px 12px;align-items:center;font-size:12px;line-height:16px;color:#A9B4C0">
+<span>전환 중</span>
+<div role="radiogroup" aria-label="행성(견본: 전환 중)" aria-busy="true" style="display:inline-flex;padding:2px;gap:2px;border:1px solid #7A899B;border-radius:999px;background:#0F1318"><button type="button" role="radio" aria-checked="false" style="height:24px;padding:0 14px;border:0;border-radius:999px;background:transparent;color:#A9B4C0;font-size:12px;font-weight:500">지구</button><button type="button" role="radio" aria-checked="true" style="height:24px;padding:0 14px;border:0;border-radius:999px;background:#22324A;color:#E8EDF2;box-shadow:inset 0 0 0 1px #5B9DFF;font-size:12px;font-weight:500;display:inline-flex;align-items:center;gap:6px"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M6 1.5a4.5 4.5 0 1 1-4.5 4.5"/></svg>화성</button><button type="button" role="radio" aria-checked="false" style="height:24px;padding:0 14px;border:0;border-radius:999px;background:transparent;color:#A9B4C0;font-size:12px;font-weight:500">달</button></div>
+<span>화성의 물리로 다시 컴파일하는 중입니다</span>
+<span>실행 중 비활성</span>
+<div role="radiogroup" aria-label="행성(견본: 비활성)" aria-disabled="true" style="display:inline-flex;padding:2px;gap:2px;border:1px solid #3A4654;border-radius:999px;background:#0F1318"><button type="button" role="radio" aria-checked="true" aria-disabled="true" style="height:24px;padding:0 14px;border:0;border-radius:999px;background:#222A33;color:#93A0AE;box-shadow:inset 0 0 0 1px #7A899B;font-size:12px;font-weight:500;cursor:not-allowed">지구</button><button type="button" role="radio" aria-checked="false" aria-disabled="true" style="height:24px;padding:0 14px;border:0;border-radius:999px;background:transparent;color:#93A0AE;font-size:12px;font-weight:500;cursor:not-allowed">화성</button><button type="button" role="radio" aria-checked="false" aria-disabled="true" style="height:24px;padding:0 14px;border:0;border-radius:999px;background:transparent;color:#93A0AE;font-size:12px;font-weight:500;cursor:not-allowed">달</button></div>
+<span>실행 중에는 행성을 바꿀 수 없습니다</span>
+<span>전환 뒤 안내</span>
+<div role="radiogroup" aria-label="행성(견본: 전환 뒤)" style="display:inline-flex;padding:2px;gap:2px;border:1px solid #7A899B;border-radius:999px;background:#0F1318"><button type="button" role="radio" aria-checked="false" style="height:24px;padding:0 14px;border:0;border-radius:999px;background:transparent;color:#A9B4C0;font-size:12px;font-weight:500">지구</button><button type="button" role="radio" aria-checked="false" style="height:24px;padding:0 14px;border:0;border-radius:999px;background:transparent;color:#A9B4C0;font-size:12px;font-weight:500">화성</button><button type="button" role="radio" aria-checked="true" style="height:24px;padding:0 14px;border:0;border-radius:999px;background:#22324A;color:#E8EDF2;box-shadow:inset 0 0 0 1px #5B9DFF;font-size:12px;font-weight:500">달</button></div>
+<span style="display:inline-flex;align-items:center;gap:8px;color:#93A0AE"><svg width="30" height="12" viewBox="0 0 30 12" role="img" aria-label="증거 강도 0/4"><path d="M.5.5h5v11h-5zM8.5.5h5v11h-5zM16.5.5h5v11h-5zM24.5.5h5v11h-5z" fill="none" stroke="currentColor"/></svg>이전 판정은 무효입니다</span>
+</div>
+</section>
+</div>
+
+<div style="flex:0 0 600px;display:flex;flex-direction:column;gap:32px">
+
+<section style="display:flex;flex-direction:column;gap:12px">
+<h2 style="margin:0;font-size:16px;line-height:24px;font-weight:600">토스트</h2>
+<div style="display:flex;flex-direction:column;gap:12px;align-items:flex-start">
+<div role="status" style="display:flex;align-items:center;gap:10px;min-height:40px;box-sizing:border-box;padding:6px 8px 6px 12px;background:#222A33;border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,0.5);font-size:12px;line-height:16px"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="#8FB8E8" stroke-width="1.5" stroke-linecap="round" role="img" aria-label="알림"><circle cx="8" cy="8" r="6.5"/><path d="M8 7.5v4M8 4.8v.2"/></svg><span>변경안을 수락했습니다.</span><button type="button" style="height:28px;padding:0 10px;border:1px solid transparent;border-radius:4px;background:transparent;color:#E8EDF2;font-size:12px;font-weight:500;text-decoration:underline">되돌리기</button></div>
+<div role="status" style="display:flex;align-items:center;gap:10px;min-height:40px;box-sizing:border-box;padding:6px 8px 6px 12px;background:#222A33;border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,0.5);font-size:12px;line-height:16px"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="#8FB8E8" stroke-width="1.5" stroke-linecap="round" role="img" aria-label="알림"><circle cx="8" cy="8" r="6.5"/><path d="M8 7.5v4M8 4.8v.2"/></svg><span>판정 실행이 끝났습니다. 결과는 판정 카드에서 확인하세요.</span><button type="button" style="height:28px;padding:0 10px;border:1px solid transparent;border-radius:4px;background:transparent;color:#E8EDF2;font-size:12px;font-weight:500;text-decoration:underline">열기</button></div>
+<div role="status" style="display:flex;align-items:center;gap:10px;min-height:40px;box-sizing:border-box;padding:6px 12px;background:#222A33;border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,0.5);font-size:12px;line-height:16px"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="#F2B84B" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="경고"><path d="M8 2l6.5 11.5h-13zM8 6.5v3.5M8 11.8v.2"/></svg><span>엔진 연결이 불안정합니다. 저장이 늦어질 수 있습니다.</span></div>
+<div role="alert" style="display:flex;align-items:center;gap:10px;min-height:40px;box-sizing:border-box;padding:6px 8px 6px 12px;background:#222A33;border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,0.5);font-size:12px;line-height:16px"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="#FF7B72" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="오류"><path d="M5.3 1.5h5.4l3.8 3.8v5.4l-3.8 3.8H5.3l-3.8-3.8V5.3zM5.8 5.8l4.4 4.4M10.2 5.8l-4.4 4.4"/></svg><span>프로젝트를 저장하지 못했습니다.</span><button type="button" style="height:28px;padding:0 10px;border:1px solid transparent;border-radius:4px;background:transparent;color:#E8EDF2;font-size:12px;font-weight:500;text-decoration:underline">다시 시도</button><button type="button" aria-label="닫기" style="width:28px;height:28px;padding:0;border:1px solid transparent;border-radius:4px;background:transparent;color:#E8EDF2;display:inline-flex;align-items:center;justify-content:center"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M2.5 2.5l7 7M9.5 2.5l-7 7"/></svg></button></div>
+</div>
+<p style="margin:0;color:#A9B4C0;font-size:12px;line-height:16px">알림(status.info), 경고(status.warning), 오류(status.danger). 아이콘 모양도 서로 다릅니다. 토스트는 포커스를 빼앗지 않고, 오류는 닫을 때까지 남습니다. 판정 결과(코드·확률)는 토스트만으로 전하지 않습니다.</p>
+</section>
+
+<section style="display:flex;flex-direction:column;gap:12px">
+<h2 style="margin:0;font-size:16px;line-height:24px;font-weight:600">타임라인 표식</h2>
+<div style="background:#151A20;border:1px solid #26303A;border-radius:8px;padding:12px;display:flex;flex-direction:column;gap:12px">
+<div style="display:inline-flex;align-self:flex-start;align-items:center;gap:6px;height:20px;box-sizing:border-box;padding:0 8px;border-radius:999px;background:#2A2444;border:1px solid #BBAFF3;color:#BBAFF3;font-size:11px;font-weight:500"><svg width="30" height="12" viewBox="0 0 30 12" role="img" aria-label="증거 강도 2/4"><path d="M0 0h6v12H0zM8 0h6v12H8z" fill="currentColor"/><path d="M16.5.5h5v11h-5zM24.5.5h5v11h-5z" fill="none" stroke="currentColor"/></svg>L1 · 1회 실행 · 판정 아님</div>
+<div style="display:flex;justify-content:space-between;border-top:2px solid #3A4654;padding:0 24px;color:#BBAFF3">
+<div style="display:flex;flex-direction:column;align-items:center;gap:2px;margin-top:-13px"><button type="button" aria-label="실패: 슬립" style="width:24px;height:24px;padding:0;border:0;border-radius:2px;background:#151A20;color:#BBAFF3;display:inline-flex;align-items:center;justify-content:center"><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M7 1.5l6 11H1z" fill="currentColor"/></svg></button><span style="font-size:11px;line-height:16px;font-weight:500">슬립</span></div>
+<div style="display:flex;flex-direction:column;align-items:center;gap:2px;margin-top:-13px"><button type="button" aria-label="실패: 토크 부족" style="width:24px;height:24px;padding:0;border:0;border-radius:2px;background:#151A20;color:#BBAFF3;display:inline-flex;align-items:center;justify-content:center"><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M7 1.5l6 11H1z" fill="currentColor"/></svg></button><span style="font-size:11px;line-height:16px;font-weight:500">토크 부족</span></div>
+<div style="display:flex;flex-direction:column;align-items:center;gap:2px;margin-top:-13px"><button type="button" aria-label="실패: 전복, 선택됨" aria-pressed="true" style="width:24px;height:24px;padding:0;border:0;border-radius:2px;background:#22324A;color:#BBAFF3;box-shadow:0 0 0 1px #BBAFF3;display:inline-flex;align-items:center;justify-content:center"><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M7 1.5l6 11H1z" fill="currentColor"/></svg></button><span style="font-size:11px;line-height:16px;font-weight:500">전복 · 선택됨</span></div>
+<div style="display:flex;flex-direction:column;align-items:center;gap:2px;margin-top:-13px"><button type="button" aria-label="실패: 추진제 고갈" style="width:24px;height:24px;padding:0;border:0;border-radius:2px;background:#151A20;color:#BBAFF3;display:inline-flex;align-items:center;justify-content:center"><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M7 1.5l6 11H1z" fill="currentColor"/></svg></button><span style="font-size:11px;line-height:16px;font-weight:500">추진제 고갈</span></div>
+<div style="display:flex;flex-direction:column;align-items:center;gap:2px;margin-top:-13px"><button type="button" aria-label="파단, 단순화 모델" style="width:24px;height:24px;padding:0;border:0;border-radius:2px;background:#151A20;color:#BBAFF3;display:inline-flex;align-items:center;justify-content:center"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M2.5 2.5l9 9M11.5 2.5l-9 9"/></svg></button><span style="font-size:11px;line-height:16px;font-weight:500">파단 · 단순화 모델</span></div>
+</div>
+</div>
+
+<div style="background:#151A20;border:1px solid #26303A;border-radius:8px;padding:12px;display:flex;flex-direction:column;gap:12px">
+<div style="display:inline-flex;align-self:flex-start;align-items:center;gap:6px;height:20px;box-sizing:border-box;padding:0 8px;border-radius:999px;background:#322858;border:1px solid #D2BFFF;color:#D2BFFF;font-size:11px;font-weight:500"><svg width="30" height="12" viewBox="0 0 30 12" role="img" aria-label="증거 강도 3/4"><path d="M0 0h6v12H0zM8 0h6v12H8zM16 0h6v12h-6z" fill="currentColor"/><path d="M24.5.5h5v11h-5z" fill="none" stroke="currentColor"/></svg>L2 · 판정 표본 중 하나</div>
+<div style="display:flex;justify-content:space-around;border-top:2px solid #3A4654;padding:0 24px;color:#D2BFFF">
+<div style="display:flex;flex-direction:column;align-items:center;gap:2px;margin-top:-13px"><button type="button" aria-label="실패: 토크 부족" style="width:24px;height:24px;padding:0;border:0;border-radius:2px;background:#151A20;color:#D2BFFF;display:inline-flex;align-items:center;justify-content:center"><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M7 1.5l6 11H1z" fill="currentColor"/></svg></button><span style="font-size:11px;line-height:16px;font-weight:500">토크 부족</span></div>
+<div style="display:flex;flex-direction:column;align-items:center;gap:2px;margin-top:-13px"><button type="button" aria-label="파단, 단순화 모델" style="width:24px;height:24px;padding:0;border:0;border-radius:2px;background:#151A20;color:#D2BFFF;display:inline-flex;align-items:center;justify-content:center;outline:2px solid #A8CBFF;outline-offset:2px"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M2.5 2.5l9 9M11.5 2.5l-9 9"/></svg></button><span style="font-size:11px;line-height:16px;font-weight:500">파단 · 단순화 모델 · 포커스</span></div>
+</div>
+</div>
+
+<div style="display:flex;gap:16px;align-items:flex-start">
+<div role="dialog" aria-label="표식 근거" style="flex:0 0 300px;background:#222A33;border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,0.5);padding:12px;display:flex;flex-direction:column;gap:8px;font-size:12px;line-height:16px">
+<div style="display:flex;align-items:center;gap:6px;color:#BBAFF3;font-weight:600"><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M7 1.5l6 11H1z" fill="currentColor"/></svg>전복</div>
+<div><span style="color:#A9B4C0">원인</span> 무게중심이 지지 영역을 벗어났습니다</div>
+<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap"><span style="color:#A9B4C0">시점</span><span style="font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:500">2.4 <span style="color:#A9B4C0">s</span></span><button type="button" style="display:inline-flex;align-items:center;height:24px;padding:0;border:0;background:none;color:#E8EDF2;font-size:11px;line-height:16px;font-weight:500;white-space:nowrap;cursor:pointer"><span style="display:inline-flex;align-items:center;gap:4px;height:20px;box-sizing:border-box;padding:0 8px;border-radius:999px;background:#303B49"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 6q1.25-5 2.5 0t2.5 0t2.5 0t2.5 0"/></svg>시뮬</span></button><span style="font-size:11px;line-height:16px;color:#93A0AE;border:1px dotted #7A899B;border-radius:2px;padding:0 4px">예시</span></div>
+<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap"><span style="color:#A9B4C0">임계 대비 여유</span><span style="font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:500">-0.05 <span style="color:#A9B4C0">m</span></span><button type="button" style="display:inline-flex;align-items:center;height:24px;padding:0;border:0;background:none;color:#E8EDF2;font-size:11px;line-height:16px;font-weight:500;white-space:nowrap;cursor:pointer"><span style="display:inline-flex;align-items:center;gap:4px;height:20px;box-sizing:border-box;padding:0 8px;border-radius:999px;background:#303B49"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 6q1.25-5 2.5 0t2.5 0t2.5 0t2.5 0"/></svg>시뮬</span></button><span style="font-size:11px;line-height:16px;color:#93A0AE;border:1px dotted #7A899B;border-radius:2px;padding:0 4px">예시</span></div>
+<div style="color:#A9B4C0">이번 실행에서는 전복이 일어났습니다. 1회 실행이며 판정이 아닙니다.</div>
+</div>
+<div style="flex:1 1 0;min-width:0;display:flex;flex-direction:column;gap:8px;font-size:12px;line-height:16px;color:#A9B4C0">
+<div style="display:flex;align-items:center;gap:8px;color:#BBAFF3"><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M7 1.5l6 11H1z" fill="currentColor"/></svg><span style="color:#A9B4C0">실패: 전복, 슬립, 토크 부족, 추진제 고갈</span></div>
+<div style="display:flex;align-items:center;gap:8px;color:#BBAFF3"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M2.5 2.5l9 9M11.5 2.5l-9 9"/></svg><span style="color:#A9B4C0">파단: "단순화 모델" 표시가 붙습니다</span></div>
+<div style="display:flex;align-items:center;gap:8px;color:#A0ACBB"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round" aria-hidden="true"><path d="M7 2l5.5 10h-11z"/></svg><span style="color:#A9B4C0">정역학 경고: L0 조립의 색으로 그립니다</span></div>
+<div>hover·포커스하면 원인, 시점, 임계 대비 여유가 팝오버로 열립니다. 선택하면 실패 리포트와 이어집니다. 표식의 색은 그 실행의 증거 단계 색이고, 상태 색을 쓰지 않습니다.</div>
+</div>
+</div>
+</section>
+</div>
+</div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1100}}'>
+class Component extends DCLogic {
+state = { mode: 0, planet: 0, changed: false };
+renderVals() {
+const s = this.state || {};
+const mode = s.mode || 0;
+const planet = s.planet || 0;
+const labels = ['실행하기', '1회 실행', '판정 실행', '내보내기'];
+const v = { primaryLabel: labels[mode], isRun: mode === 1, changed: !!s.changed };
+for (let i = 0; i < 4; i++) {
+const on = i === mode;
+v['t' + i + 'bg'] = on ? '#22324A' : 'transparent';
+v['t' + i + 'fg'] = on ? '#E8EDF2' : '#A9B4C0';
+v['t' + i + 'sh'] = on ? 'inset 0 -2px 0 #5B9DFF' : 'none';
+v['t' + i + 'sel'] = on;
+v['t' + i + 'tab'] = on ? 0 : -1;
+v['pick' + i] = () => this.setState({ mode: i });
+}
+for (let i = 0; i < 3; i++) {
+const on = i === planet;
+v['p' + i + 'bg'] = on ? '#22324A' : 'transparent';
+v['p' + i + 'fg'] = on ? '#E8EDF2' : '#A9B4C0';
+v['p' + i + 'sh'] = on ? 'inset 0 0 0 1px #5B9DFF' : 'none';
+v['p' + i + 'on'] = on;
+v['pickP' + i] = () => this.setState({ planet: i, changed: i !== planet || !!s.changed });
+}
+v.onTabKey = (e) => {
+const d = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0;
+if (!d) return;
+e.preventDefault();
+const n = (mode + d + 4) % 4;
+this.setState({ mode: n });
+const tabs = e.currentTarget.querySelectorAll('[role="tab"]');
+if (tabs[n]) tabs[n].focus();
+};
+return v;
+}
+}
+</script>
+</body>
+</html>

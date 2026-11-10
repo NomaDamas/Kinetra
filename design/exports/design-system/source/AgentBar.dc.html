@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>에이전트 바</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+button,input{font-family:inherit}
+input::placeholder{color:#93A0AE;opacity:1}
+:focus-visible{outline:2px solid #A8CBFF;outline-offset:2px}
+@media (prefers-reduced-motion:reduce){*{transition-property:opacity!important;animation:none!important}}
+</style>
+</helmet>
+<div style="width:1440px;height:900px;box-sizing:border-box;padding:48px;background:#0F1216;color:#E8EDF2;font-family:Pretendard,'Pretendard Variable',-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Malgun Gothic','Noto Sans KR',sans-serif;font-size:13px;line-height:20px;font-variant-numeric:tabular-nums;display:flex;flex-direction:column;gap:32px">
+
+<header style="display:flex;flex-direction:column;gap:4px">
+<div style="font-size:11px;line-height:16px;font-weight:500;color:#A9B4C0">Kinetra Studio 디자인 시스템 · D. 컴포넌트</div>
+<h1 style="margin:0;font-size:20px;line-height:28px;font-weight:600">에이전트 바</h1>
+<p style="margin:0;color:#A9B4C0;max-width:960px">마이크 버튼, 입력창, 문맥 칩, 보내기, 에이전트 상태로 이루어집니다. 음성은 인식문을 확인한 뒤에만 보내고, 삭제류 명령은 확인 단계를 둡니다. 보내기는 모드의 주 행동이 아니므로 secondary입니다.</p>
+</header>
+
+<div style="display:flex;gap:48px;align-items:flex-start">
+
+<section style="flex:1 1 0;min-width:0;display:flex;flex-direction:column;gap:12px">
+<h2 style="margin:0;font-size:16px;line-height:24px;font-weight:600">마이크와 입력의 상태</h2>
+
+<div style="display:flex;flex-direction:column;gap:4px"><span style="font-size:11px;line-height:16px;font-weight:500;color:#A9B4C0">대기</span>
+<div style="display:flex;align-items:center;gap:8px;min-height:48px;box-sizing:border-box;padding:8px 12px;background:#151A20;border:1px solid #26303A;border-radius:8px">
+<button type="button" aria-label="음성 입력 시작" style="flex:none;width:32px;height:32px;padding:0;border:1px solid #7A899B;border-radius:999px;background:transparent;color:#E8EDF2;display:inline-flex;align-items:center;justify-content:center"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" aria-hidden="true"><rect x="5" y="1.5" width="4" height="7" rx="2"/><path d="M2.5 7a4.5 4.5 0 0 0 9 0M7 11.5v1.5"/></svg></button>
+<div style="flex:1 1 0;min-width:0;display:flex;align-items:center;gap:8px;height:32px;box-sizing:border-box;padding:0 8px;border:1px solid #7A899B;border-radius:4px;background:#0F1318"><span style="flex:none;display:inline-flex;align-items:center;height:20px;box-sizing:border-box;padding:0 8px;border:1px solid #3A4654;border-radius:999px;background:#222A33;font-size:11px;font-weight:500;color:#A9B4C0">선택: 뒤 왼쪽 추력기</span><input aria-label="에이전트에게 요청하기" placeholder="에이전트에게 요청하기" style="flex:1 1 0;min-width:0;height:24px;padding:0;border:0;background:transparent;color:#E8EDF2;font-size:13px"></div>
+<button type="button" style="flex:none;height:28px;padding:0 12px;border:1px solid #7A899B;border-radius:4px;background:transparent;color:#E8EDF2;font-size:12px;font-weight:500">보내기</button>
+<span style="flex:none;font-size:12px;line-height:16px;color:#A9B4C0">에이전트 대기</span>
+</div></div>
+
+<div style="display:flex;flex-direction:column;gap:4px"><span style="font-size:11px;line-height:16px;font-weight:500;color:#A9B4C0">듣는 중</span>
+<div style="display:flex;align-items:center;gap:8px;min-height:48px;box-sizing:border-box;padding:8px 12px;background:#151A20;border:1px solid #26303A;border-radius:8px">
+<button type="button" aria-label="듣기 멈춤" aria-pressed="true" style="flex:none;width:32px;height:32px;padding:0;border:1px solid #5B9DFF;border-radius:999px;background:#22324A;color:#E8EDF2;display:inline-flex;align-items:center;justify-content:center"><svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><rect x="2.5" y="2.5" width="7" height="7" rx="1" fill="currentColor"/></svg></button>
+<div role="status" style="flex:1 1 0;min-width:0;display:flex;align-items:center;gap:10px;height:32px;box-sizing:border-box;padding:0 8px;border:1px solid #5B9DFF;border-radius:4px;background:#0F1318"><svg width="28" height="16" viewBox="0 0 28 16" fill="#E8EDF2" role="img" aria-label="입력 음량"><rect x="0" y="6" width="3" height="4"/><rect x="6" y="3" width="3" height="10"/><rect x="12" y="0" width="3" height="16"/><rect x="18" y="4" width="3" height="8"/><rect x="24" y="6" width="3" height="4"/></svg><span>듣는 중입니다. 말을 마치면 멈춤을 누르세요.</span></div>
+<button type="button" style="flex:none;height:28px;padding:0 12px;border:1px solid transparent;border-radius:4px;background:transparent;color:#E8EDF2;font-size:12px;font-weight:500">취소</button>
+</div></div>
+
+<div style="display:flex;flex-direction:column;gap:4px"><span style="font-size:11px;line-height:16px;font-weight:500;color:#A9B4C0">받아쓰는 중</span>
+<div style="display:flex;align-items:center;gap:8px;min-height:48px;box-sizing:border-box;padding:8px 12px;background:#151A20;border:1px solid #26303A;border-radius:8px">
+<button type="button" aria-label="음성 입력" aria-disabled="true" style="flex:none;width:32px;height:32px;padding:0;border:1px solid #3A4654;border-radius:999px;background:#222A33;color:#93A0AE;display:inline-flex;align-items:center;justify-content:center;cursor:not-allowed"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" aria-hidden="true"><rect x="5" y="1.5" width="4" height="7" rx="2"/><path d="M2.5 7a4.5 4.5 0 0 0 9 0M7 11.5v1.5"/></svg></button>
+<div role="status" aria-busy="true" style="flex:1 1 0;min-width:0;display:flex;align-items:center;gap:8px;height:32px;box-sizing:border-box;padding:0 8px;border:1px solid #7A899B;border-radius:4px;background:#0F1318"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="#E8EDF2" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M6 1.5a4.5 4.5 0 1 1-4.5 4.5"/></svg><span style="color:#A9B4C0">뒤쪽 추력기 두 개를…</span><span style="font-size:11px;font-weight:500;color:#A9B4C0">받아쓰는 중</span></div>
+<button type="button" style="flex:none;height:28px;padding:0 12px;border:1px solid transparent;border-radius:4px;background:transparent;color:#E8EDF2;font-size:12px;font-weight:500">취소</button>
+</div></div>
+
+<div style="display:flex;flex-direction:column;gap:4px"><span style="font-size:11px;line-height:16px;font-weight:500;color:#A9B4C0">인식문 확인 · 확인한 뒤에만 보냅니다</span>
+<div style="display:flex;align-items:center;gap:8px;min-height:48px;box-sizing:border-box;padding:8px 12px;background:#151A20;border:1px solid #26303A;border-radius:8px">
+<button type="button" aria-label="다시 말하기" style="flex:none;width:32px;height:32px;padding:0;border:1px solid #7A899B;border-radius:999px;background:transparent;color:#E8EDF2;display:inline-flex;align-items:center;justify-content:center"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" aria-hidden="true"><rect x="5" y="1.5" width="4" height="7" rx="2"/><path d="M2.5 7a4.5 4.5 0 0 0 9 0M7 11.5v1.5"/></svg></button>
+<div style="flex:1 1 0;min-width:0;display:flex;align-items:center;gap:8px;height:32px;box-sizing:border-box;padding:0 8px;border:1px solid #7A899B;border-radius:4px;background:#0F1318"><span style="font-size:11px;font-weight:500;color:#A9B4C0">인식문</span><span>"뒤쪽 추력기 두 개를 삭제해 줘"</span></div>
+<button type="button" style="flex:none;height:28px;padding:0 12px;border:1px solid #7A899B;border-radius:4px;background:transparent;color:#E8EDF2;font-size:12px;font-weight:500">보내기</button>
+<button type="button" style="flex:none;height:28px;padding:0 12px;border:1px solid transparent;border-radius:4px;background:transparent;color:#E8EDF2;font-size:12px;font-weight:500">고치기</button>
+<button type="button" style="flex:none;height:28px;padding:0 12px;border:1px solid transparent;border-radius:4px;background:transparent;color:#E8EDF2;font-size:12px;font-weight:500">취소</button>
+</div></div>
+
+<div style="display:flex;flex-direction:column;gap:4px"><span style="font-size:11px;line-height:16px;font-weight:500;color:#A9B4C0">삭제 확인 · 삭제류 명령의 확인 단계</span>
+<div role="alertdialog" aria-label="삭제 확인" style="display:flex;align-items:center;gap:8px;min-height:48px;box-sizing:border-box;padding:8px 12px;background:#151A20;border:1px solid #FF7B72;border-radius:8px">
+<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="#FF7B72" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="파괴적 동작"><path d="M2.5 4.5h11M6 4.5V2.5h4v2M4 4.5l.7 9h6.6l.7-9"/></svg>
+<span style="flex:1 1 0;min-width:0">삭제 명령입니다. 뒤 왼쪽 추력기와 뒤 오른쪽 추력기를 삭제합니다. 진행할까요?</span>
+<button type="button" style="flex:none;height:28px;padding:0 12px;border:1px solid #FF7B72;border-radius:4px;background:transparent;color:#FF7B72;font-size:12px;font-weight:500">삭제</button>
+<button type="button" style="flex:none;height:28px;padding:0 12px;border:1px solid transparent;border-radius:4px;background:transparent;color:#E8EDF2;font-size:12px;font-weight:500">취소</button>
+</div></div>
+
+<div style="display:flex;flex-direction:column;gap:4px"><span style="font-size:11px;line-height:16px;font-weight:500;color:#A9B4C0">마이크 권한 거부</span>
+<div style="display:flex;align-items:center;gap:8px;min-height:48px;box-sizing:border-box;padding:8px 12px;background:#151A20;border:1px solid #26303A;border-radius:8px">
+<button type="button" aria-label="마이크 권한이 거부됨" aria-disabled="true" style="flex:none;width:32px;height:32px;padding:0;border:1px solid #3A4654;border-radius:999px;background:#222A33;color:#93A0AE;display:inline-flex;align-items:center;justify-content:center;cursor:not-allowed"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" aria-hidden="true"><rect x="5" y="1.5" width="4" height="7" rx="2"/><path d="M2.5 7a4.5 4.5 0 0 0 9 0M7 11.5v1.5M1.5 1.5l11 11"/></svg></button>
+<div style="flex:1 1 0;min-width:0;display:flex;align-items:center;gap:8px;height:32px;box-sizing:border-box;padding:0 8px;border:1px solid #7A899B;border-radius:4px;background:#0F1318"><input aria-label="에이전트에게 요청하기(글 입력)" placeholder="에이전트에게 요청하기" style="flex:1 1 0;min-width:0;height:24px;padding:0;border:0;background:transparent;color:#E8EDF2;font-size:13px"></div>
+<button type="button" style="flex:none;height:28px;padding:0 12px;border:1px solid #7A899B;border-radius:4px;background:transparent;color:#E8EDF2;font-size:12px;font-weight:500">보내기</button>
+<span role="status" style="flex:none;display:inline-flex;align-items:center;gap:6px;font-size:12px;line-height:16px;color:#F2B84B"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 2l6.5 11.5h-13zM8 6.5v3.5M8 11.8v.2"/></svg>마이크 권한이 거부되었습니다. 브라우저 설정에서 허용하세요</span>
+</div></div>
+
+<div style="display:flex;flex-direction:column;gap:4px"><span style="font-size:11px;line-height:16px;font-weight:500;color:#A9B4C0">음성 입력 지원 안 됨</span>
+<div style="display:flex;align-items:center;gap:8px;min-height:48px;box-sizing:border-box;padding:8px 12px;background:#151A20;border:1px solid #26303A;border-radius:8px">
+<button type="button" aria-label="음성 입력을 지원하지 않음" aria-disabled="true" style="flex:none;width:32px;height:32px;padding:0;border:1px dashed #3A4654;border-radius:999px;background:transparent;color:#93A0AE;display:inline-flex;align-items:center;justify-content:center;cursor:not-allowed"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" aria-hidden="true"><rect x="5" y="1.5" width="4" height="7" rx="2"/><path d="M2.5 7a4.5 4.5 0 0 0 9 0M7 11.5v1.5"/></svg></button>
+<div style="flex:1 1 0;min-width:0;display:flex;align-items:center;gap:8px;height:32px;box-sizing:border-box;padding:0 8px;border:1px solid #7A899B;border-radius:4px;background:#0F1318"><input aria-label="에이전트에게 요청하기(글 입력만)" placeholder="에이전트에게 요청하기" style="flex:1 1 0;min-width:0;height:24px;padding:0;border:0;background:transparent;color:#E8EDF2;font-size:13px"></div>
+<button type="button" style="flex:none;height:28px;padding:0 12px;border:1px solid #7A899B;border-radius:4px;background:transparent;color:#E8EDF2;font-size:12px;font-weight:500">보내기</button>
+<span style="flex:none;font-size:12px;line-height:16px;color:#A9B4C0">이 브라우저는 음성 입력을 지원하지 않습니다. 글로 입력하세요</span>
+</div></div>
+</section>
+
+<section style="flex:0 0 400px;display:flex;flex-direction:column;gap:12px">
+<h2 style="margin:0;font-size:16px;line-height:24px;font-weight:600">에이전트 상태</h2>
+<div style="display:flex;flex-direction:column;gap:10px">
+<div role="status" aria-busy="true" style="display:flex;align-items:center;gap:8px;min-height:40px;box-sizing:border-box;padding:6px 12px;background:#151A20;border:1px solid #26303A;border-radius:8px;font-size:12px;line-height:16px"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="#E8EDF2" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M6 1.5a4.5 4.5 0 1 1-4.5 4.5"/></svg><span style="flex:1 1 0">생각 중</span><button type="button" style="height:28px;padding:0 12px;border:1px solid transparent;border-radius:4px;background:transparent;color:#E8EDF2;font-size:12px;font-weight:500">멈춤</button></div>
+<div role="status" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;min-height:40px;box-sizing:border-box;padding:6px 12px;background:#151A20;border:1px solid #26303A;border-radius:8px;font-size:12px;line-height:16px"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="#F2B84B" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 2l6.5 11.5h-13zM8 6.5v3.5M8 11.8v.2"/></svg><span>검증기 재시도</span><span style="font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:500">2 / 3 <span style="color:#A9B4C0">회</span></span><button type="button" style="display:inline-flex;align-items:center;height:24px;padding:0;border:0;background:none;color:#E8EDF2;font-size:11px;line-height:16px;font-weight:500;white-space:nowrap;cursor:pointer"><span style="display:inline-flex;align-items:center;gap:4px;height:20px;box-sizing:border-box;padding:0 8px;border-radius:999px;background:#303B49"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 6q1.25-5 2.5 0t2.5 0t2.5 0t2.5 0"/></svg>시뮬</span></button><span style="font-size:11px;line-height:16px;color:#93A0AE;border:1px dotted #7A899B;border-radius:2px;padding:0 4px">예시</span></div>
+<div role="status" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;min-height:40px;box-sizing:border-box;padding:6px 12px;background:#151A20;border:1px solid #26303A;border-radius:8px;font-size:12px;line-height:16px"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="#E8EDF2" stroke-width="1.4" stroke-linejoin="round" aria-hidden="true"><path d="M2 2.5h10v7H2zM4.5 12h5" stroke-dasharray="2 1.5"/></svg><span>변경안</span><span style="font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:500">2 <span style="color:#A9B4C0">건</span></span><button type="button" style="display:inline-flex;align-items:center;height:24px;padding:0;border:0;background:none;color:#E8EDF2;font-size:11px;line-height:16px;font-weight:500;white-space:nowrap;cursor:pointer"><span style="display:inline-flex;align-items:center;gap:4px;height:20px;box-sizing:border-box;padding:0 8px;border-radius:999px;background:#303B49"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 6q1.25-5 2.5 0t2.5 0t2.5 0t2.5 0"/></svg>시뮬</span></button><span style="font-size:11px;line-height:16px;color:#93A0AE;border:1px dotted #7A899B;border-radius:2px;padding:0 4px">예시</span><span style="flex:1 1 0"></span><button type="button" style="height:28px;padding:0 12px;border:1px solid transparent;border-radius:4px;background:transparent;color:#E8EDF2;font-size:12px;font-weight:500;text-decoration:underline">열기</button></div>
+<div role="alert" style="display:flex;align-items:center;gap:8px;min-height:40px;box-sizing:border-box;padding:6px 12px;background:#151A20;border:1px solid #26303A;border-radius:8px;font-size:12px;line-height:16px"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="#FF7B72" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5.3 1.5h5.4l3.8 3.8v5.4l-3.8 3.8H5.3l-3.8-3.8V5.3zM5.8 5.8l4.4 4.4M10.2 5.8l-4.4 4.4"/></svg><span style="flex:1 1 0">요청을 처리하지 못했습니다. 설계는 바뀌지 않았습니다</span><button type="button" style="height:28px;padding:0 12px;border:1px solid #7A899B;border-radius:4px;background:transparent;color:#E8EDF2;font-size:12px;font-weight:500">다시 시도</button></div>
+</div>
+
+<h2 style="margin:12px 0 0;font-size:16px;line-height:24px;font-weight:600">에이전트의 말</h2>
+<div style="background:#1B2129;border:1px solid #3A4654;border-radius:6px;padding:12px;display:flex;flex-direction:column;gap:8px;font-size:12px;line-height:16px">
+<div style="font-size:11px;font-weight:500;color:#A9B4C0">에이전트</div>
+<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap"><span>시뮬 결과:</span><span style="font-family:'JetBrains Mono',monospace;font-weight:500">FEASIBLE_FOUND · 15.2% [12.3, 18.6]</span><button type="button" style="display:inline-flex;align-items:center;height:24px;padding:0;border:0;background:none;color:#E8EDF2;font-size:11px;line-height:16px;font-weight:500;white-space:nowrap;cursor:pointer"><span style="display:inline-flex;align-items:center;gap:4px;height:20px;box-sizing:border-box;padding:0 8px;border-radius:999px;background:#303B49"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 6q1.25-5 2.5 0t2.5 0t2.5 0t2.5 0"/></svg>시뮬</span></button></div>
+<div style="color:#A9B4C0">95% CI, n = 500 표본. 가정표와 "이 모델이 보지 않는 것"은 판정 카드에 있습니다.</div>
+</div>
+<p style="margin:0;color:#A9B4C0;font-size:12px;line-height:16px">에이전트는 판정하지 않습니다. 시뮬 결과의 수치만 인용하고, 인용한 수치에도 배지를 붙입니다.</p>
+</section>
+
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+renderVals() {
+return {};
+}
+}
+</script>
+</body>
+</html>

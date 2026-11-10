@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>상태 4종</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+button{font-family:inherit}
+:focus-visible{outline:2px solid #A8CBFF;outline-offset:2px}
+@media (prefers-reduced-motion:reduce){*{transition-property:opacity!important;animation:none!important}}
+</style>
+</helmet>
+<div style="width:1440px;height:1100px;box-sizing:border-box;padding:48px;background:#0F1216;color:#E8EDF2;font-family:Pretendard,'Pretendard Variable',-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Malgun Gothic','Noto Sans KR',sans-serif;font-size:13px;line-height:20px;font-variant-numeric:tabular-nums;display:flex;flex-direction:column;gap:32px">
+
+<header style="display:flex;flex-direction:column;gap:4px">
+<div style="font-size:11px;line-height:16px;font-weight:500;color:#A9B4C0">Kinetra Studio 디자인 시스템 · E. 상태</div>
+<h1 style="margin:0;font-size:20px;line-height:28px;font-weight:600">빈 화면, 로딩, 오류, 엔진 오프라인</h1>
+<p style="margin:0;color:#A9B4C0;max-width:960px">모든 패널과 카드는 이 네 상태를 갖습니다. 위 줄은 패널, 아래 줄은 카드입니다. 화면별 문구는 화면 브리프가 정하고, 여기 문구는 견본입니다.</p>
+</header>
+
+<div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px 24px;align-items:start">
+
+<div style="display:flex;flex-direction:column;gap:2px"><h2 style="margin:0;font-size:16px;line-height:24px;font-weight:600">빈 화면</h2><span style="font-size:12px;line-height:16px;color:#A9B4C0;min-height:48px">제목 한 줄 + 설명 한 줄 + 다음 행동 하나. 일러스트와 가짜 예시 수치를 넣지 않습니다.</span></div>
+<div style="display:flex;flex-direction:column;gap:2px"><h2 style="margin:0;font-size:16px;line-height:24px;font-weight:600">로딩</h2><span style="font-size:12px;line-height:16px;color:#A9B4C0;min-height:48px">패널은 뼈대(정지 그림). 실행·탐색·판정은 진행 막대 + n / N 표본 + 경과 시간 + 취소.</span></div>
+<div style="display:flex;flex-direction:column;gap:2px"><h2 style="margin:0;font-size:16px;line-height:24px;font-weight:600">오류</h2><span style="font-size:12px;line-height:16px;color:#A9B4C0;min-height:48px">무엇이 안 됐는지, 왜, 다음 행동, 복사할 수 있는 오류 코드. 시스템 오류에만 씁니다.</span></div>
+<div style="display:flex;flex-direction:column;gap:2px"><h2 style="margin:0;font-size:16px;line-height:24px;font-weight:600">엔진 오프라인</h2><span style="font-size:12px;line-height:16px;color:#A9B4C0;min-height:48px">마지막 시뮬 값과 판정에 "오래됨 · 마지막 계산 시각"을 붙입니다. 가짜 결과로 채우지 않습니다.</span></div>
+
+<div style="box-sizing:border-box;min-height:300px;background:#151A20;border:1px solid #26303A;border-radius:8px;display:flex;flex-direction:column">
+<div style="display:flex;align-items:center;height:40px;padding:0 16px;border-bottom:1px solid #26303A;font-size:16px;line-height:24px;font-weight:600">판정</div>
+<div style="padding:48px 16px 16px;display:flex;flex-direction:column;gap:8px;align-items:flex-start"><div style="font-size:20px;line-height:28px;font-weight:600">판정 없음</div><div style="color:#A9B4C0">판정을 실행하면 이 자리에 판정 카드가 나타납니다.</div><button type="button" style="margin-top:8px;height:28px;padding:0 12px;border:1px solid #7A899B;border-radius:4px;background:transparent;color:#E8EDF2;font-size:12px;font-weight:500">판정 모드로 가기</button></div>
+</div>
+
+<div aria-busy="true" style="box-sizing:border-box;min-height:300px;background:#151A20;border:1px solid #26303A;border-radius:8px;display:flex;flex-direction:column">
+<div style="display:flex;align-items:center;height:40px;padding:0 16px;border-bottom:1px solid #26303A;font-size:16px;line-height:24px;font-weight:600">라이브러리</div>
+<div role="status" aria-label="불러오는 중" style="padding:16px;display:flex;flex-direction:column;gap:12px">
+<div style="height:12px;width:40%;border-radius:2px;background:#263039"></div>
+<div style="height:28px;border-radius:4px;background:#222A33"></div>
+<div style="height:28px;border-radius:4px;background:#222A33"></div>
+<div style="height:28px;width:82%;border-radius:4px;background:#222A33"></div>
+<div style="height:12px;width:32%;border-radius:2px;background:#263039;margin-top:8px"></div>
+<div style="height:28px;border-radius:4px;background:#222A33"></div>
+<div style="height:28px;width:64%;border-radius:4px;background:#222A33"></div>
+<div style="font-size:12px;line-height:16px;color:#A9B4C0">부품 카탈로그를 불러오는 중</div>
+</div>
+</div>
+
+<div role="alert" style="box-sizing:border-box;min-height:300px;background:#151A20;border:1px solid #26303A;border-radius:8px;display:flex;flex-direction:column">
+<div style="display:flex;align-items:center;height:40px;padding:0 16px;border-bottom:1px solid #26303A;font-size:16px;line-height:24px;font-weight:600">라이브러리</div>
+<div style="padding:16px;display:flex;flex-direction:column;gap:8px;align-items:flex-start">
+<div style="display:flex;align-items:center;gap:8px;color:#FF7B72;font-size:12px;font-weight:600"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5.3 1.5h5.4l3.8 3.8v5.4l-3.8 3.8H5.3l-3.8-3.8V5.3zM5.8 5.8l4.4 4.4M10.2 5.8l-4.4 4.4"/></svg>시스템 오류</div>
+<div style="font-size:16px;line-height:24px;font-weight:600">부품 카탈로그를 불러오지 못했습니다</div>
+<div style="color:#A9B4C0">카탈로그 저장소에 연결하지 못했습니다. 이미 조립한 설계는 그대로입니다.</div>
+<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:12px"><span style="font-weight:500;color:#A9B4C0">오류 코드</span><span style="font-family:'JetBrains Mono',monospace;font-weight:500">[오류 코드]</span><button type="button" style="height:24px;padding:0 8px;border:1px solid transparent;border-radius:4px;background:transparent;color:#E8EDF2;font-size:12px;font-weight:500;text-decoration:underline">복사</button></div>
+<button type="button" style="margin-top:4px;height:28px;padding:0 12px;border:1px solid #7A899B;border-radius:4px;background:transparent;color:#E8EDF2;font-size:12px;font-weight:500">다시 시도</button>
+</div>
+</div>
+
+<div style="box-sizing:border-box;min-height:300px;background:#151A20;border:1px solid #26303A;border-radius:8px;display:flex;flex-direction:column">
+<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;height:40px;padding:0 16px;border-bottom:1px solid #26303A"><span style="font-size:16px;line-height:24px;font-weight:600">인스펙터</span><span style="display:inline-flex;align-items:center;gap:4px;height:20px;box-sizing:border-box;padding:0 8px;border:1px solid #F2B84B;border-radius:999px;font-size:11px;font-weight:500;color:#F2B84B"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 1.5l5 9H1zM6 5v2.5M6 9v.2"/></svg>엔진 연결 끊김</span></div>
+<div style="padding:12px 8px;display:flex;flex-direction:column;gap:4px">
+<div style="display:flex;align-items:center;gap:8px;min-height:28px;padding:0 8px;flex-wrap:wrap"><span style="flex:1 1 auto;font-size:12px;font-weight:500;color:#A9B4C0">차체 질량</span><span style="font-family:'JetBrains Mono',monospace;font-weight:500">1.3 <span style="color:#A9B4C0">t</span></span><button type="button" style="display:inline-flex;align-items:center;height:24px;padding:0;border:0;background:none;color:#F2A8D0;font-size:11px;line-height:16px;font-weight:500;white-space:nowrap;cursor:pointer"><span style="display:inline-flex;align-items:center;gap:4px;height:20px;box-sizing:border-box;padding:0 8px;border-radius:999px;background:#3A1D2E"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 10l.6-2.6 5.6-5.6 2 2-5.6 5.6z"/></svg>사용자 선언</span></button></div>
+<div style="display:flex;align-items:center;gap:8px;min-height:28px;padding:0 8px;flex-wrap:wrap"><span style="flex:1 1 auto;font-size:12px;font-weight:500;color:#A9B4C0">최대 추력</span><span style="font-family:'JetBrains Mono',monospace;font-weight:500">8.9 <span style="color:#A9B4C0">N</span></span><button type="button" style="display:inline-flex;align-items:center;height:24px;padding:0;border:0;background:none;color:#C5D0DC;font-size:11px;line-height:16px;font-weight:500;white-space:nowrap;cursor:pointer"><span style="display:inline-flex;align-items:center;gap:4px;height:20px;box-sizing:border-box;padding:0 8px;border-radius:999px;border:1px solid #7A899B"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 8.5v-3a2.5 2.5 0 0 1 2.5-2.5M7 8.5v-3a2.5 2.5 0 0 1 2.5-2.5"/></svg>인용</span></button></div>
+<div style="height:1px;background:#26303A;margin:8px 0"></div>
+<div style="display:flex;align-items:center;gap:8px;min-height:28px;padding:0 8px;flex-wrap:wrap"><span style="flex:1 1 auto;font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:500;color:#A9B4C0">p_success</span><span style="font-family:'JetBrains Mono',monospace;font-weight:500">15.2% [12.3, 18.6]</span><button type="button" style="display:inline-flex;align-items:center;height:24px;padding:0;border:0;background:none;color:#E8EDF2;font-size:11px;line-height:16px;font-weight:500;white-space:nowrap;cursor:pointer"><span style="display:inline-flex;align-items:center;gap:4px;height:20px;box-sizing:border-box;padding:0 8px;border-radius:999px;background:#303B49;border:1px dashed #A9B4C0"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 6q1.25-5 2.5 0t2.5 0t2.5 0t2.5 0"/></svg>시뮬 · 오래됨</span></button></div>
+<div style="padding:0 8px;font-size:11px;line-height:16px;font-weight:500;color:#A9B4C0;text-align:right">오래됨 · 마지막 계산 [시각]</div>
+<div style="padding:8px 8px 0;font-size:12px;line-height:16px;color:#A9B4C0">선언값과 인용값은 그대로 보입니다. 시뮬 값은 다시 계산할 때까지 오래됨으로 표시합니다.</div>
+</div>
+</div>
+
+<div style="background:#1B2129;border:1px solid #3A4654;border-radius:6px;padding:12px;display:flex;flex-direction:column;gap:8px;align-items:flex-start"><div style="font-size:16px;line-height:24px;font-weight:600">변경안 없음</div><div style="font-size:12px;line-height:16px;color:#A9B4C0">에이전트에게 요청하면 변경안이 여기에 쌓입니다.</div><button type="button" style="height:28px;padding:0 12px;border:1px solid transparent;border-radius:4px;background:transparent;color:#E8EDF2;font-size:12px;font-weight:500;text-decoration:underline">요청 입력하기</button></div>
+
+<div aria-busy="true" style="background:#1B2129;border:1px solid #3A4654;border-radius:6px;padding:12px;display:flex;flex-direction:column;gap:8px">
+<div style="display:inline-flex;align-self:flex-start;align-items:center;gap:6px;height:20px;box-sizing:border-box;padding:0 8px;border-radius:999px;background:#1B2129;border:1px solid #93A0AE;color:#93A0AE;font-size:11px;font-weight:500"><svg width="30" height="12" viewBox="0 0 30 12" role="img" aria-label="증거 강도 0/4"><path d="M.5.5h5v11h-5zM8.5.5h5v11h-5zM16.5.5h5v11h-5zM24.5.5h5v11h-5z" fill="none" stroke="currentColor"/></svg>진행 중 · 아직 판정이 아닙니다</div>
+<div style="font-size:16px;line-height:24px;font-weight:600">판정 계산 중</div>
+<div role="progressbar" aria-label="표본 진행" aria-valuemin="0" aria-valuemax="500" aria-valuenow="132" style="height:8px;box-sizing:border-box;background:#0F1318;border:1px solid #7A899B;border-radius:2px"><div style="width:26.4%;height:100%;background:#E8EDF2"></div></div>
+<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><span style="font-family:'JetBrains Mono',monospace;font-weight:500">132 / 500 <span style="color:#A9B4C0">표본</span></span><button type="button" style="display:inline-flex;align-items:center;height:24px;padding:0;border:0;background:none;color:#E8EDF2;font-size:11px;line-height:16px;font-weight:500;white-space:nowrap;cursor:pointer"><span style="display:inline-flex;align-items:center;gap:4px;height:20px;box-sizing:border-box;padding:0 8px;border-radius:999px;background:#303B49"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 6q1.25-5 2.5 0t2.5 0t2.5 0t2.5 0"/></svg>시뮬</span></button><span style="font-size:11px;line-height:16px;color:#93A0AE;border:1px dotted #7A899B;border-radius:2px;padding:0 4px">예시</span></div>
+<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><span style="font-size:12px;font-weight:500;color:#A9B4C0">경과 시간</span><span style="font-family:'JetBrains Mono',monospace;font-weight:500">42 <span style="color:#A9B4C0">s</span></span><button type="button" style="display:inline-flex;align-items:center;height:24px;padding:0;border:0;background:none;color:#E8EDF2;font-size:11px;line-height:16px;font-weight:500;white-space:nowrap;cursor:pointer"><span style="display:inline-flex;align-items:center;gap:4px;height:20px;box-sizing:border-box;padding:0 8px;border-radius:999px;background:#303B49"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 6q1.25-5 2.5 0t2.5 0t2.5 0t2.5 0"/></svg>시뮬</span></button><span style="font-size:11px;line-height:16px;color:#93A0AE;border:1px dotted #7A899B;border-radius:2px;padding:0 4px">예시</span></div>
+<div style="display:flex;gap:8px"><button type="button" style="height:28px;padding:0 12px;border:1px solid #7A899B;border-radius:4px;background:transparent;color:#E8EDF2;font-size:12px;font-weight:500">취소</button></div>
+</div>
+
+<div role="alert" style="background:#1B2129;border:1px solid #3A4654;border-radius:6px;padding:12px;display:flex;flex-direction:column;gap:8px;align-items:flex-start">
+<div style="display:flex;align-items:center;gap:8px;color:#FF7B72;font-size:12px;font-weight:600"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5.3 1.5h5.4l3.8 3.8v5.4l-3.8 3.8H5.3l-3.8-3.8V5.3zM5.8 5.8l4.4 4.4M10.2 5.8l-4.4 4.4"/></svg>시스템 오류</div>
+<div style="font-size:16px;line-height:24px;font-weight:600">미리보기를 실행하지 못했습니다</div>
+<div style="font-size:12px;line-height:16px;color:#A9B4C0">엔진이 실행 요청을 받지 못했습니다. 설계는 그대로이고 실행 결과는 없습니다.</div>
+<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:12px"><span style="font-weight:500;color:#A9B4C0">오류 코드</span><span style="font-family:'JetBrains Mono',monospace;font-weight:500">[오류 코드]</span><button type="button" style="height:24px;padding:0 8px;border:1px solid transparent;border-radius:4px;background:transparent;color:#E8EDF2;font-size:12px;font-weight:500;text-decoration:underline">복사</button></div>
+<button type="button" style="height:28px;padding:0 12px;border:1px solid #7A899B;border-radius:4px;background:transparent;color:#E8EDF2;font-size:12px;font-weight:500">다시 시도</button>
+</div>
+
+<div style="background:#1B2129;border:1px solid #3A4654;border-radius:6px;padding:12px;display:flex;flex-direction:column;gap:8px">
+<div style="display:flex;align-items:center;gap:6px;font-size:11px;line-height:16px;font-weight:500;color:#F2B84B"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 1.5l5 9H1zM6 5v2.5M6 9v.2"/></svg>오래됨 · 마지막 계산 [시각]</div>
+<div style="display:inline-flex;align-self:flex-start;align-items:center;gap:6px;height:20px;box-sizing:border-box;padding:0 8px;border-radius:999px;background:#2A2444;border:1px solid #BBAFF3;color:#BBAFF3;font-size:11px;font-weight:500"><svg width="30" height="12" viewBox="0 0 30 12" role="img" aria-label="증거 강도 2/4"><path d="M0 0h6v12H0zM8 0h6v12H8z" fill="currentColor"/><path d="M16.5.5h5v11h-5zM24.5.5h5v11h-5z" fill="none" stroke="currentColor"/></svg>L1 · 1회 실행 · 판정 아님</div>
+<div style="font-size:16px;line-height:24px;font-weight:600">마지막 미리보기 실행</div>
+<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><span style="font-size:12px;line-height:16px">이번 실행에서는 전복이 일어났습니다. 시점</span><span style="font-family:'JetBrains Mono',monospace;font-weight:500">2.4 <span style="color:#A9B4C0">s</span></span><button type="button" style="display:inline-flex;align-items:center;height:24px;padding:0;border:0;background:none;color:#E8EDF2;font-size:11px;line-height:16px;font-weight:500;white-space:nowrap;cursor:pointer"><span style="display:inline-flex;align-items:center;gap:4px;height:20px;box-sizing:border-box;padding:0 8px;border-radius:999px;background:#303B49;border:1px dashed #A9B4C0"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 6q1.25-5 2.5 0t2.5 0t2.5 0t2.5 0"/></svg>시뮬 · 오래됨</span></button><span style="font-size:11px;line-height:16px;color:#93A0AE;border:1px dotted #7A899B;border-radius:2px;padding:0 4px">예시</span></div>
+<div style="font-size:12px;line-height:16px;color:#A9B4C0">엔진에 다시 연결할 때까지 새로 실행할 수 없습니다. 지금 계산한 결과처럼 보이게 하지 않습니다.</div>
+</div>
+
+</div>
+
+<section style="display:flex;flex-direction:column;gap:12px">
+<h2 style="margin:0;font-size:16px;line-height:24px;font-weight:600">엔진 오프라인일 때의 상단바</h2>
+<div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:8px 12px;background:#151A20;border:1px solid #26303A;border-radius:8px">
+<span role="status" style="display:inline-flex;align-items:center;gap:6px;height:28px;box-sizing:border-box;padding:0 12px;border:1px solid #F2B84B;border-radius:999px;font-size:12px;font-weight:500;color:#F2B84B"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 2l6.5 11.5h-13zM8 6.5v3.5M8 11.8v.2"/></svg>엔진 연결 끊김</span>
+<button type="button" style="height:28px;padding:0 12px;border:1px solid #7A899B;border-radius:4px;background:transparent;color:#E8EDF2;font-size:12px;font-weight:500">다시 연결</button>
+<span style="flex:1 1 0"></span>
+<span role="tooltip" style="background:#222A33;border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,0.5);padding:6px 10px;font-size:12px;line-height:16px">엔진에 연결되어야 실행할 수 있습니다</span>
+<button type="button" aria-disabled="true" style="height:32px;padding:0 16px;border:1px solid #3A4654;border-radius:4px;background:#222A33;color:#93A0AE;font-size:12px;font-weight:600;cursor:not-allowed">실행하기</button>
+</div>
+<p style="margin:0;color:#A9B4C0;font-size:12px;line-height:16px">상단바에 "엔진 연결 끊김" 칩(status.warning)과 [다시 연결]을 두고, 주 행동 버튼은 비활성 + 이유로 둡니다. 엔진이 끊긴 동안 어떤 편집이 되는지는 어댑터 경계 결정(A0-04)의 몫이라 여기서 정하지 않습니다 [확인 필요]. 물리적 실패(전복, 파단)는 오류가 아니며 이 장의 오류 표현을 쓰지 않습니다.</p>
+</section>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1100}}'>
+class Component extends DCLogic {
+renderVals() {
+return {};
+}
+}
+</script>
+</body>
+</html>
