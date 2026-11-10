@@ -1,6 +1,8 @@
 import { loadEngine, buildControls, makeSim, runRecorded, runBare, sha256Hex, NU } from "/src/sim.js";
 import { compareTrajectories, summarize } from "/src/compare.js";
 import { drawCar } from "/src/draw.js";
+import { planFrame } from "/src/accumulator.js";
+import { sha256Bytes, checkModelHash, checkControlHash } from "/src/integrity.js";
 
 const params = new URLSearchParams(location.search);
 const BARE_REPEATS = Number(params.get("bare") ?? 7);
@@ -27,7 +29,8 @@ async function parity(mj, xml, manifest, blob) {
       continue;
     }
     const ctrl = buildControls(manifest, sc.windows);
-    const ctrlHash = await sha256Hex(ctrl); // same bytes as the native float64 control array only if shapes match (nsteps x nu, row-major)
+    const ctrlHash = await sha256Hex(ctrl); // float64 bytes, nsteps x nu row-major: the same layout gen_reference.py hashes
+    checkControlHash(sc.id, ctrlHash, sc.ctrl_sha256); // throws: no result is produced from different controls
     const runs = [];
     for (let rep = 0; rep < 2; rep++) {
       const sim = makeSim(mj, xml, manifest, sc);
@@ -71,26 +74,27 @@ function frameLoop(mj, xml, manifest, cv) {
   const ctx = cv.getContext("2d");
   const sim = makeSim(mj, xml, manifest, sc);
   const frameDt = [], work = [], stepsPer = [];
-  let loops = 0, k = 0, acc = 0, prev = null, capped = 0, simSteps = 0, wallStart = null;
+  let loops = 0, k = 0, acc = 0, prev = null, capped = 0, droppedS = 0, simSteps = 0, wallStart = null;
   const cr = sim.data.ctrl, qp = sim.data.qpos;
   return new Promise((resolve) => {
     function frame(ts) {
       if (prev === null) { prev = ts; wallStart = ts; requestAnimationFrame(frame); return; }
       const dtf = ts - prev; prev = ts; frameDt.push(dtf);
-      acc += Math.min(dtf, MAX_CATCHUP * dt * 1000) / 1000;
+      const plan = planFrame(acc, dtf, dt, MAX_CATCHUP);
+      acc = plan.acc;
+      if (plan.capped) { capped++; droppedS += plan.droppedS; }
       const w0 = performance.now();
-      let steps = 0;
-      while (acc >= dt && steps < MAX_CATCHUP) {
+      const steps = plan.steps;
+      for (let s = 0; s < steps; s++) {
         for (let i = 0; i < NU; i++) cr[i] = ctrl[k * NU + i];
         mj.mj_step(sim.model, sim.data);
-        acc -= dt; steps++; k++; simSteps++;
+        k++; simSteps++;
         if (k === n) { // scenario over: restart from the initial state, count a loop
           loops++; k = 0;
           mj.mj_resetData(sim.model, sim.data);
           sim.data.qpos.set(sc.qpos0); sim.data.qvel.set(sc.qvel0); mj.mj_forward(sim.model, sim.data);
         }
       }
-      if (steps === MAX_CATCHUP && acc >= dt) { capped++; acc = 0; }
       drawCar(ctx, cv.width, cv.height, qp, cr);
       work.push(performance.now() - w0); stepsPer.push(steps);
       if (loops >= FRAME_LOOPS) {
@@ -102,7 +106,7 @@ function frameLoop(mj, xml, manifest, cv) {
           sim_over_wall: (simSteps * dt) / (wall / 1000), mean_fps: frameDt.length / (wall / 1000),
           frame_interval_ms: summarize(frameDt), work_ms_per_frame: summarize(work), steps_per_frame: summarize(stepsPer),
           frames_over_20ms: frameDt.filter((x) => x > 20).length, frames_over_33ms: frameDt.filter((x) => x > 33.4).length,
-          catchup_capped_frames: capped,
+          catchup_capped_frames: capped, catchup_dropped_sim_s: droppedS, catchup_max_steps_per_frame: MAX_CATCHUP,
         });
         return;
       }
@@ -150,14 +154,17 @@ function render(res) {
   <table><tr><th>scenario</th><th>kind</th><th>max pos</th><th>max ang</th><th>pre-contact pos</th><th>pre-contact ang</th><th>final pos</th><th>bitwise</th><th>bitwise rows</th></tr>${rows}</table>
   <h2>mj_step throughput</h2><p>${fmt(res.bare.steps_per_s_median)} steps/s median, real-time factor ${fmt(res.bare.rtf_median)} (${res.bare.repeats} repeats)</p>
   <h2>Uncapped frame loop</h2><p>${fmt(res.uncapped.frames_per_s)} frames/s (4 steps + draw each); frame p50/p99 ${fmt(res.uncapped.frame_ms.median)} / ${fmt(res.uncapped.frame_ms.p99)} ms</p>
-  <h2>requestAnimationFrame loop</h2><p>${fmt(res.frames.mean_fps)} fps mean; frame interval p50/p95/p99 ${fmt(res.frames.frame_interval_ms.median)} / ${fmt(res.frames.frame_interval_ms.p95)} / ${fmt(res.frames.frame_interval_ms.p99)} ms; work per frame p50/p99 ${fmt(res.frames.work_ms_per_frame.median)} / ${fmt(res.frames.work_ms_per_frame.p99)} ms; sim/wall ${fmt(res.frames.sim_over_wall)}</p>`;
+  <h2>requestAnimationFrame loop</h2><p>${fmt(res.frames.mean_fps)} fps mean; frame interval p50/p95/p99 ${fmt(res.frames.frame_interval_ms.median)} / ${fmt(res.frames.frame_interval_ms.p95)} / ${fmt(res.frames.frame_interval_ms.p99)} ms; work per frame p50/p99 ${fmt(res.frames.work_ms_per_frame.median)} / ${fmt(res.frames.work_ms_per_frame.p99)} ms; sim/wall ${fmt(res.frames.sim_over_wall)}; catch-up capped frames ${res.frames.catchup_capped_frames}, dropped sim time ${fmt(res.frames.catchup_dropped_sim_s)} s</p>`;
 }
 
 async function main() {
   const cv = $("cv");
   status("loading engine");
   const engine = await loadEngine();
-  const [manifest, xml, blob] = await Promise.all([getJSON("/reference/manifest.json"), fetch("/model/rocket_car.xml").then((r) => r.text()), getF64("/reference/native_qpos.f64")]);
+  const [manifest, xmlBytes, blob] = await Promise.all([getJSON("/reference/manifest.json"), fetch("/model/rocket_car.xml").then((r) => r.arrayBuffer()), getF64("/reference/native_qpos.f64")]);
+  const modelSha256 = await sha256Bytes(xmlBytes);
+  checkModelHash(modelSha256, manifest); // throws before anything is measured
+  const xml = new TextDecoder().decode(xmlBytes);
   const expected = manifest.scenarios.length * (manifest.n_steps + 1) * manifest.nq;
   if (blob.length !== expected) throw new Error(`reference blob has ${blob.length} doubles, expected ${expected}`);
   status("parity");
@@ -171,7 +178,8 @@ async function main() {
   const res = {
     engine: { version: engine.version, load_ms: engine.load_ms, package: "@mujoco/mujoco 4.0.0" },
     env: { userAgent: navigator.userAgent, hardwareConcurrency: navigator.hardwareConcurrency, crossOriginIsolated, devicePixelRatio, visibility: document.visibilityState },
-    manifest_summary: { native_version: manifest.mujoco_native_version, dt: manifest.dt, n_steps: manifest.n_steps, model_sha256: manifest.model_sha256, seed: manifest.seed },
+    manifest_summary: { native_version: manifest.mujoco_native_version, dt: manifest.dt, n_steps: manifest.n_steps, model_sha256: manifest.model_sha256, served_model_sha256: modelSha256, legacy_model_hash: manifest.legacy_model_hash, seed: manifest.seed },
+    integrity: { model_hash_ok: true, control_hash_ok_scenarios: par.filter((p) => p.ctrl_equal).length },
     parity: par, bare, frames, uncapped,
   };
   render(res);

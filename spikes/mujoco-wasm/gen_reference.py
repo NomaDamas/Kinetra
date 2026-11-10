@@ -161,7 +161,7 @@ def build() -> dict:
     return {
         "mujoco_native_version": mujoco.__version__, "numpy_version": np.__version__, "python": platform.python_version(),
         "platform": platform.platform(), "seed": SEED, "dt": DT, "n_steps": NSTEP, "nq": 11, "nv": 10, "nu": len(THRUSTER_GROUP),
-        "fmax_N": FMAX, "model_file": "model/rocket_car.xml", "model_sha256": hashlib.sha256(MODEL_XML.read_bytes()).hexdigest(),
+        "fmax_N": FMAX, "model_file": "model/rocket_car.xml", "model_sha256": hashlib.sha256(MODEL_XML.read_bytes()).hexdigest(), "legacy_model_hash": LEGACY_MODEL_SHA256,
         "integrator": "implicitfast (from the MJCF)", "thruster_group": [g for _, g in THRUSTER_GROUP],
         "rows_per_scenario": NSTEP + 1, "scenarios": entries,
     }, np.concatenate(blobs)

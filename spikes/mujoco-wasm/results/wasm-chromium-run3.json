@@ -1,7 +1,7 @@
 {
  "engine": {
   "version": "4.0.0",
-  "load_ms": 81,
+  "load_ms": 310.2999999523163,
   "package": "@mujoco/mujoco 4.0.0"
  },
  "env": {
@@ -16,7 +16,13 @@
   "dt": 0.004,
   "n_steps": 1125,
   "model_sha256": "83b4990f9e0cb742f41299886410132641f42f42ef8e1d13ea9bb49909932cd9",
+  "served_model_sha256": "83b4990f9e0cb742f41299886410132641f42f42ef8e1d13ea9bb49909932cd9",
+  "legacy_model_hash": "83b4990f9e0cb742f41299886410132641f42f42ef8e1d13ea9bb49909932cd9",
   "seed": 0
+ },
+ "integrity": {
+  "model_hash_ok": true,
+  "control_hash_ok_scenarios": 21
  },
  "parity": [
   {
@@ -1025,51 +1031,51 @@
   "sim_seconds": 4.5,
   "wall_ms": {
    "n": 7,
-   "min": 6.199999809265137,
-   "median": 6.299999952316284,
-   "p95": 8.5,
-   "p99": 8.5,
-   "max": 8.5,
-   "mean": 6.614285707473755
+   "min": 6.3999998569488525,
+   "median": 6.6000001430511475,
+   "p95": 9.900000095367432,
+   "p99": 9.900000095367432,
+   "max": 9.900000095367432,
+   "mean": 7.028571469443185
   },
-  "steps_per_s_median": 178571.42992300782,
-  "rtf_median": 714.2857196920313,
+  "steps_per_s_median": 170454.54176004278,
+  "rtf_median": 681.818167040171,
   "reps_ms": [
-   6.599999904632568,
-   8.5,
-   6.199999809265137,
-   6.200000047683716,
-   6.300000190734863,
-   6.299999952316284,
-   6.200000047683716
+   6.6000001430511475,
+   6.700000047683716,
+   6.5,
+   9.900000095367432,
+   6.3999998569488525,
+   6.6000001430511475,
+   6.5
   ]
  },
  "frames": {
   "what": "requestAnimationFrame loop: accumulate real time, fixed 4 ms mj_step per accumulated 4 ms, canvas-2D draw each frame, scenario replayed back-to-back",
   "loops": 3,
   "frames": 811,
-  "wall_ms": 13516.2,
+  "wall_ms": 13516.1,
   "sim_steps": 3379,
   "sim_seconds": 13.516,
-  "sim_over_wall": 0.999985202941655,
-  "mean_fps": 60.00207158816826,
+  "sim_over_wall": 0.999992601416089,
+  "mean_fps": 60.002515518529755,
   "frame_interval_ms": {
    "n": 811,
    "min": 16.5,
    "median": 16.699999999999818,
-   "p95": 16.700000000000728,
-   "p99": 16.800000000000182,
+   "p95": 16.799999999999272,
+   "p99": 16.80000000000109,
    "max": 16.80000000000109,
-   "mean": 16.666091245376172
+   "mean": 16.6659679408139
   },
   "work_ms_per_frame": {
    "n": 811,
    "min": 0,
    "median": 0.10000014305114746,
-   "p95": 0.3000001907348633,
-   "p99": 1.4000000953674316,
-   "max": 10.700000047683716,
-   "mean": 0.2071516690213054
+   "p95": 0.2999999523162842,
+   "p99": 0.3000001907348633,
+   "max": 1.1000001430511475,
+   "mean": 0.1442663460859682
   },
   "steps_per_frame": {
    "n": 811,
@@ -1082,21 +1088,23 @@
   },
   "frames_over_20ms": 0,
   "frames_over_33ms": 0,
-  "catchup_capped_frames": 0
+  "catchup_capped_frames": 0,
+  "catchup_dropped_sim_s": 0,
+  "catchup_max_steps_per_frame": 25
  },
  "uncapped": {
   "what": "uncapped: 4 mj_step + canvas-2D draw per frame, back-to-back, no vsync wait (max frames/s the main thread can produce)",
   "frames": 843,
-  "wall_ms": 31.5,
-  "frames_per_s": 26761.904761904763,
+  "wall_ms": 35.700000047683716,
+  "frames_per_s": 23613.445346611294,
   "frame_ms": {
    "n": 843,
    "min": 0,
    "median": 0,
    "p95": 0.10000014305114746,
-   "p99": 0.10000014305114746,
-   "max": 5.5,
-   "mean": 0.03701067649596951
+   "p99": 0.20000004768371582,
+   "max": 0.40000009536743164,
+   "mean": 0.04211150680713948
   }
  },
  "browser": {
@@ -1108,16 +1116,16 @@
   "ncpu": 10,
   "platform": "Darwin 24.6.0 arm64",
   "load_avg_before": [
-   212.4560546875,
-   144.8603515625,
-   106.39697265625
+   136.73779296875,
+   153.11962890625,
+   146.216796875
   ],
   "load_avg_after": [
-   209.2763671875,
-   147.42431640625,
-   107.98095703125
+   138.2431640625,
+   152.693359375,
+   146.1875
   ],
-  "swap": "total = 22528.00M  used = 21470.38M  free = 1057.62M  (encrypted)",
+  "swap": "total = 17408.00M  used = 15679.56M  free = 1728.44M  (encrypted)",
   "node": "v22.22.2"
  },
  "query": "",
