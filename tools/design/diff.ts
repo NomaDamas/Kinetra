@@ -13,8 +13,6 @@ export interface Tolerance {
   maxWindowDiffPixels: number;
   /** Largest allowed difference in width or height between the two images, in px. */
   maxSizeDeltaPx: number;
-  /** Largest share of the image that may be excluded by ignore rectangles, 0..1. */
-  maxIgnoredRatio: number;
 }
 
 export const DEFAULT_TOLERANCE: Tolerance = {
@@ -23,8 +21,10 @@ export const DEFAULT_TOLERANCE: Tolerance = {
   windowSize: 32,
   maxWindowDiffPixels: 100,
   maxSizeDeltaPx: 0,
-  maxIgnoredRatio: 0.25,
 };
+
+/** Largest share of the image that ignore rectangles may cover. Not a Tolerance field: a pair cannot lift it. */
+export const MAX_IGNORED_RATIO = 0.25;
 
 /** Rectangle in image pixels, origin top-left. */
 export interface Rect {
@@ -49,6 +49,10 @@ export interface DiffResult {
 
 const PAD = [255, 0, 255, 255]; // magenta: area that exists in only one image
 
+function clamp(v: number, lo: number, hi: number): number {
+  return Number.isNaN(v) ? lo : Math.min(hi, Math.max(lo, v));
+}
+
 function padded(img: PNG, width: number, height: number): Uint8Array {
   if (img.width === width && img.height === height) return img.data;
   const out = new Uint8Array(width * height * 4);
@@ -72,8 +76,11 @@ export function comparePngs(
 
   const mask = new Uint8Array(width * height);
   for (const r of ignore) {
-    const x0 = Math.max(0, Math.floor(r.x)), x1 = Math.min(width, Math.ceil(r.x + r.width));
-    const y0 = Math.max(0, Math.floor(r.y)), y1 = Math.min(height, Math.ceil(r.y + r.height));
+    // Clip to the image first. fill() reads a negative end as "from the array end", so an unclipped
+    // rectangle that lies left of or above the image could mask unrelated pixels.
+    const x0 = clamp(Math.floor(r.x), 0, width), x1 = clamp(Math.ceil(r.x + r.width), 0, width);
+    const y0 = clamp(Math.floor(r.y), 0, height), y1 = clamp(Math.ceil(r.y + r.height), 0, height);
+    if (!(x1 > x0 && y1 > y0)) continue; // empty after clipping (also NaN)
     for (let y = y0; y < y1; y++) mask.fill(1, y * width + x0, y * width + x1);
   }
   const ignoredPixels = mask.reduce((n, v) => n + v, 0);
@@ -92,8 +99,8 @@ export function comparePngs(
   if (dw > tolerance.maxSizeDeltaPx || dh > tolerance.maxSizeDeltaPx) {
     reasons.push(`size ${a.width}x${a.height} (approved) vs ${b.width}x${b.height} (implemented), allowed delta ${tolerance.maxSizeDeltaPx}px`);
   }
-  if (ignoredPixels / (width * height) > tolerance.maxIgnoredRatio) {
-    reasons.push(`ignored area ${((ignoredPixels / (width * height)) * 100).toFixed(1)}% > ${(tolerance.maxIgnoredRatio * 100).toFixed(1)}%`);
+  if (ignoredPixels / (width * height) > MAX_IGNORED_RATIO) {
+    reasons.push(`ignored area ${((ignoredPixels / (width * height)) * 100).toFixed(1)}% > ${(MAX_IGNORED_RATIO * 100).toFixed(1)}%`);
   }
   if (diffRatio > tolerance.maxDiffRatio) {
     reasons.push(`diff ratio ${(diffRatio * 100).toFixed(3)}% > ${(tolerance.maxDiffRatio * 100).toFixed(3)}%`);

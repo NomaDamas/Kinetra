@@ -5,7 +5,7 @@
   "description": "Design compare: Playwright screenshot of an implemented page vs a render of the approved export (D0-04)",
   "type": "module",
   "scripts": {
-    "compare": "node tools/design/compare.ts",
+    "compare": "node compare.ts",
     "lint": "tsc --noEmit",
     "build": "tsc --noEmit",
     "test": "node --test \"test/*.test.ts\""

@@ -77,3 +77,25 @@ test("ignoring more than the allowed share of the image fails even with zero dif
   assert.equal(r.pass, false);
   assert.ok(r.reasons.some((x) => x.startsWith("ignored area")));
 });
+
+test("ignore rectangles are clipped to the image: outside or negative ones mask nothing", () => {
+  const a = page(20, 20), b = page(26, 20);
+  const outside = [
+    { x: -500, y: -500, width: 400, height: 400 },
+    { x: 0, y: -50, width: 200, height: 40 },
+    { x: 300, y: 0, width: 50, height: 50 },
+    { x: Number.NaN, y: 0, width: 10, height: 10 },
+  ];
+  const r = comparePngs(a, b, DEFAULT_TOLERANCE, outside);
+  assert.equal(r.ignoredPixels, 0);
+  assert.equal(r.pass, false);
+  // A rectangle that overhangs the corner masks only its inside part: 20x20.
+  assert.equal(comparePngs(a, a, DEFAULT_TOLERANCE, [{ x: -10, y: -10, width: 30, height: 30 }]).ignoredPixels, 20 * 20);
+});
+
+test("a per-pair tolerance cannot lift the ignored-area cap", () => {
+  const lifted = { ...DEFAULT_TOLERANCE, maxIgnoredRatio: 1, maxDiffRatio: 1, maxWindowDiffPixels: 1e9 } as typeof DEFAULT_TOLERANCE;
+  const r = comparePngs(page(20, 20), page(20, 20), lifted, [{ x: 0, y: 0, width: 200, height: 60 }]);
+  assert.equal(r.pass, false);
+  assert.ok(r.reasons.some((x) => x.startsWith("ignored area")));
+});
