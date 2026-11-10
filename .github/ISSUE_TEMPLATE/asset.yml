@@ -1,0 +1,173 @@
+name: 에셋
+description: 에셋(모델, 텍스처, HDRI, 소리) 반입. 출처와 라이선스가 원장(assets/LEDGER.csv)에 기록된 것만 쓴다.
+title: '[ASSET] '
+labels:
+- type:asset
+- license-check
+body:
+- type: markdown
+  attributes:
+    value: |-
+      모든 항목은 필수다. 이슈 본문은 대목표 → 핵심 가치 → '이것이 없으면 대목표의 무엇이 막히는가' → 세부 순서다(docs/process/done-definition.md).
+
+      금지: 게임 추출물, 만화·애니 캐릭터와 로고, 실제 브랜드 상표·차체 복제, NC·ND 라이선스, 출처 불명 파일. CC0가 아닌 에셋의 머지는 창업자 승인이다.
+- type: dropdown
+  id: goal
+  attributes:
+    label: 대목표
+    description: docs/plan/values.md의 대목표 G0~G5 중 이 일이 속한 것 하나.
+    options:
+    - G0 모든 작업이 대목표·핵심 가치·계획에 묶여 한 번에 100% 끝나는 루프를 만든다.
+    - G1 창업자가 세 행성 어디서든 상상한 물건을 만들어 정직한 판정이 붙은 Halo로 내보낸다.
+    - G2 같은 프로젝트에 목표와 규칙을 얹어 미션과 게임, 열린 세계로 넓힌다.
+    - G3 만화 장면이 실제로 되는지 필요조건과 에너지로 답한다.
+    - G4 설계로 겨루고 함께 짓고 부순다.
+    - G5 시뮬에서 된 설계가 실물 키트로 이어지고 실측이 판정을 보정한다.
+  validations:
+    required: true
+- type: input
+  id: goal-link
+  attributes:
+    label: 대목표 연결
+    description: 상위 에픽 이슈와 계획 문서 절.
+    placeholder: '#에픽, docs/plan/studio-plan.md N절'
+  validations:
+    required: true
+- type: dropdown
+  id: values
+  attributes:
+    label: 핵심 가치
+    description: 이 일이 지키는 핵심 가치(V1~V5). 하나 이상.
+    multiple: true
+    options:
+    - V1 정직한 판정
+    - V2 상상에서 현실까지
+    - V3 한 번에 100%
+    - V4 보여줄 수 있는 결과
+    - V5 깨끗한 출처
+  validations:
+    required: true
+- type: textarea
+  id: values-quote
+  attributes:
+    label: 핵심 가치 원문
+    description: values.md 원문을 글자 그대로 1~2개 인용한다.
+    placeholder: '> **V3 한 번에 100%** — 작은 단위를 증거와 함께 완전히 끝낸다. 부분 완성은 미완성이다.'
+  validations:
+    required: true
+- type: input
+  id: without-this
+  attributes:
+    label: 이것이 없으면 대목표의 무엇이 막히는가
+    description: 한 줄. 이 이슈가 없을 때 대목표에서 안 되는 것.
+  validations:
+    required: true
+- type: textarea
+  id: problem
+  attributes:
+    label: 문제
+    description: 어떤 에셋이 왜 필요한가. 이 에셋이 없으면 무엇이 안 되는가.
+  validations:
+    required: true
+- type: textarea
+  id: dod
+  attributes:
+    label: 완료 정의 (DoD)
+    description: 에셋이 앱에서 보이고 원장 행이 있으며 표기 문구가 크레딧에 나온다.
+    value: |-
+      - [ ] assets/LEDGER.csv 행 추가
+      - [ ] 전후 스크린샷
+      - [ ] 용량·삼각형 상한 충족
+      - [ ] 문서·크레딧 갱신
+      - [ ] "100% 완료" 8항목 충족(docs/process/done-definition.md)
+  validations:
+    required: true
+- type: textarea
+  id: out-of-scope
+  attributes:
+    label: 범위 밖
+    description: 하지 않을 것. 없으면 '없음'. DoD 밖에서 발견한 일은 고치지 않고 새 이슈로 등록한다.
+  validations:
+    required: true
+- type: textarea
+  id: verification
+  attributes:
+    label: 검증 방법
+    description: 명령어와 기대 결과.
+    placeholder: Blender 절차와 원장 검사 명령, 기대 결과
+  validations:
+    required: true
+- type: textarea
+  id: dependencies
+  attributes:
+    label: 의존성
+    description: '선행 #… / 후속 #… (없으면 ''없음'').'
+  validations:
+    required: true
+- type: input
+  id: asset-id
+  attributes:
+    label: 에셋 ID와 경로
+    description: 원장의 에셋 ID와 저장소 안 경로.
+    placeholder: moon-regolith-01, assets/…
+  validations:
+    required: true
+- type: input
+  id: source-url
+  attributes:
+    label: 원본 URL
+    description: 받은 페이지의 URL.
+  validations:
+    required: true
+- type: input
+  id: author
+  attributes:
+    label: 저작자
+    description: 원 저작자. 올린 사람이 원작자인지 확인한 사람 이름.
+  validations:
+    required: true
+- type: input
+  id: license
+  attributes:
+    label: 라이선스(SPDX)
+    description: 'SPDX 식별자. 허용: CC0-1.0, CC-BY-4.0, BSD-3-Clause 등 에셋 정책 표의 조건. 그 밖은 사유를 쓴다.'
+    placeholder: CC0-1.0
+  validations:
+    required: true
+- type: dropdown
+  id: usage
+  attributes:
+    label: 용도
+    description: 원장의 용도 열.
+    options:
+    - 시각
+    - HDRI
+    - 소리
+  validations:
+    required: true
+- type: input
+  id: attribution
+  attributes:
+    label: 표기 문구
+    description: CC-BY 등 저작자 표기 문구. CC0면 '없음'.
+  validations:
+    required: true
+- type: textarea
+  id: ledger
+  attributes:
+    label: 원장 행
+    description: assets/LEDGER.csv에 넣을 행(에셋 ID, 경로, 원본 URL, 저작자, 라이선스, 받은 날짜, 원본 해시, 변경 내역, 용도, 표기 문구, 확인자).
+  validations:
+    required: true
+- type: checkboxes
+  id: license-gate
+  attributes:
+    label: 라이선스 게이트
+    description: 모두 확인해야 등록할 수 있다.
+    options:
+    - label: 게임 추출물, 만화·애니 캐릭터·로고, 상표, NC·ND, 출처 불명이 아니다
+      required: true
+    - label: 시각·음향 전용이다. 물리 부품의 형상과 물성은 파라메트릭 정의에서만 나온다
+      required: true
+    - label: CC0가 아니면 창업자 승인(needs-founder)을 받는다
+      required: true
