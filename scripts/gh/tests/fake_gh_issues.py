@@ -45,7 +45,8 @@ elif a[0] == "api" and "--paginate" in a:
         items = []
         for it in sorted(st["issues"], key=lambda x: -x["number"]):  # GitHub 는 최신순
             d = {k: it[k] for k in ("id", "number", "title", "body")}
-            d["parent_issue_url"] = issue_url(it["parent"]) if it.get("parent") else None
+            p = it.get("parent")
+            d["parent_issue_url"] = (p if isinstance(p, str) else issue_url(p)) if p else None
             if it.get("pr"):
                 d["pull_request"] = {}
             items.append(d)

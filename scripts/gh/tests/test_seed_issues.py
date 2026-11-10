@@ -162,8 +162,50 @@ class SeedTests(unittest.TestCase):
         ])
         self.addCleanup(e.close)
         r = e.run()
-        self.assertIn("이미 #77 의 하위 이슈다", r.stderr)
+        self.assertIn("이미 repos/o/r/issues/77 의 하위 이슈다", r.stderr)
         self.assertEqual(by_title(e.data())["E1-01"]["parent"], 77)
+
+    def test_same_number_parent_in_another_repo_is_not_relinked(self):
+        e = Env(issues=[
+            {"id": 9001, "number": 1, "title": "[E1] epic", "body": "b", "parent": None},
+            # 부모 번호는 #1 로 같지만 다른 저장소의 이슈다
+            {"id": 9002, "number": 2, "title": "[E1-01] first", "body": "b",
+             "parent": "https://api.github.com/repos/other/repo/issues/1"},
+        ])
+        self.addCleanup(e.close)
+        r = e.run("--repo", "o/r")
+        self.assertIn("이미 repos/other/repo/issues/1 의 하위 이슈다", r.stderr)
+        # 이 저장소의 #1 아래로 잇는 호출은 새로 만든 E1-03 하나뿐이다. E1-01 은 다시 잇지 않는다
+        links = [c for c in e.data()["calls"] if "repos/o/r/issues/1/sub_issues" in c]
+        self.assertEqual(len(links), 1)
+        self.assertEqual(by_title(e.data())["E1-03"]["parent"], 1)
+        self.assertEqual(by_title(e.data())["E1-01"]["parent"], "https://api.github.com/repos/other/repo/issues/1")
+
+    def test_same_repo_parent_compares_case_insensitively_and_is_kept(self):
+        e = Env(issues=[
+            {"id": 9001, "number": 1, "title": "[E1] epic", "body": "b", "parent": None},
+            {"id": 9002, "number": 2, "title": "[E1-01] first", "body": "b",
+             "parent": "https://api.github.com/repos/O/R/issues/1"},
+        ])
+        self.addCleanup(e.close)
+        r = e.run("--repo", "o/r")
+        self.assertNotIn("이미", r.stderr)
+
+    def test_invalid_delay_fails_before_any_github_call(self):
+        for bad in ("-1", "nan", "inf", "-inf", "abc"):
+            with self.subTest(bad):
+                e = Env()
+                self.addCleanup(e.close)
+                r = subprocess.run([sys.executable, str(SCRIPT), "--file", str(FIXTURE), "--delay", bad],
+                                   env=e.env, capture_output=True, text=True)
+                self.assertNotEqual(r.returncode, 0)
+                self.assertIn("--delay", r.stderr)
+                self.assertEqual(e.data()["calls"], [], "gh 를 한 번도 부르면 안 된다")
+
+    def test_zero_delay_is_accepted(self):
+        e = Env()
+        self.addCleanup(e.close)
+        e.run("--dry-run")  # Env.run 은 --delay 0 을 준다
 
     def test_pull_requests_are_not_issues(self):
         e = Env(issues=[{"id": 9001, "number": 1, "title": "[E1] pr with same title", "body": "b", "parent": None, "pr": True}])

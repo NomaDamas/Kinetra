@@ -23,11 +23,13 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 import re
 import subprocess
 import sys
 import time
 from pathlib import Path
+from urllib.parse import urlparse
 
 import yaml
 
@@ -124,7 +126,7 @@ def fetch_pages(path: str) -> list[dict]:
 
 
 def fetch_existing(repo: str, wanted: set[str]) -> dict[str, dict]:
-    """ID -> {number, id, parent_number, body}. PR 은 제외한다. 중복 제목은 번호가 작은 쪽."""
+    """ID -> {number, id, parent_ref, body}. parent_ref 는 `repos/OWNER/REPO/issues/N`(소문자)로, 번호만이 아니라 저장소까지 가려 쓴다. PR 은 제외한다. 중복 제목은 번호가 작은 쪽."""
     found: dict[str, dict] = {}
     for it in sorted(fetch_pages(f"repos/{repo}/issues?state=all&per_page=100"), key=lambda x: x["number"]):
         if "pull_request" in it:
@@ -140,11 +142,26 @@ def fetch_existing(repo: str, wanted: set[str]) -> dict[str, dict]:
         found[iid] = {
             "number": it["number"],
             "id": it["id"],
-            "parent_number": int(parent_url.rsplit("/", 1)[1]) if parent_url else None,
+            "parent_ref": issue_ref(parent_url) if parent_url else None,
             "body": it.get("body") or "",
             "new": False,
         }
     return found
+
+
+def issue_ref(url: str) -> str:
+    """이슈 API URL 을 `repos/owner/repo/issues/N`(소문자)로 만든다. 다른 저장소의 같은 번호와 구별하기 위한 키."""
+    return urlparse(url).path.strip("/").lower()
+
+
+def non_negative_seconds(text: str) -> float:
+    try:
+        v = float(text)
+    except ValueError:
+        raise argparse.ArgumentTypeError(f"숫자여야 한다: {text!r}") from None
+    if not math.isfinite(v) or v < 0:
+        raise argparse.ArgumentTypeError(f"0 이상의 유한한 수여야 한다: {text!r}")
+    return v
 
 
 # ---------- 계획과 적용 ----------
@@ -184,13 +201,13 @@ def seed(repo: str, items: list[dict], *, dry_run: bool, only_new: bool, delay: 
         created.add(it["id"])
         out(f"{would}create [{it['id']}] ({it.get('kind', '?')})")
         if dry_run:
-            existing[it["id"]] = {"number": None, "id": None, "parent_number": None, "body": it["body"], "new": True}
+            existing[it["id"]] = {"number": None, "id": None, "parent_ref": None, "body": it["body"], "new": True}
             continue
         payload = {"title": it["title"], "body": it["body"], "labels": it.get("labels") or []}
         if it.get("milestone") is not None:
             payload["milestone"] = milestones[it["milestone"]]
         r = gh_json("api", "-X", "POST", f"repos/{repo}/issues", "--input", "-", stdin=json.dumps(payload))
-        existing[it["id"]] = {"number": r["number"], "id": r["id"], "parent_number": None, "body": it["body"], "new": True}
+        existing[it["id"]] = {"number": r["number"], "id": r["id"], "parent_ref": None, "body": it["body"], "new": True}
         sleep(delay)
 
     # 2. 연결, 3. 의존성 번호 치환
@@ -202,9 +219,10 @@ def seed(repo: str, items: list[dict], *, dry_run: bool, only_new: bool, delay: 
         parent = it.get("parent")
         if parent is not None:
             pnum = existing[parent]["number"]
-            if cur["parent_number"] is not None and cur["parent_number"] != pnum:
-                print(f"경고: [{it['id']}] 는 이미 #{cur['parent_number']} 의 하위 이슈다. yaml 의 부모 [{parent}] #{pnum} 로 옮기지 않는다", file=sys.stderr)
-            elif cur["parent_number"] is None:
+            want_ref = f"repos/{repo}/issues/{pnum}".lower()
+            if cur["parent_ref"] is not None and cur["parent_ref"] != want_ref:
+                print(f"경고: [{it['id']}] 는 이미 {cur['parent_ref']} 의 하위 이슈다. yaml 의 부모 [{parent}] {want_ref} 로 옮기지 않는다", file=sys.stderr)
+            elif cur["parent_ref"] is None:
                 counts["link"] += 1
                 done = True
                 out(f"{would}link [{it['id']}] -> [{parent}]")
@@ -231,7 +249,7 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--repo", help="OWNER/REPO (기본: 현재 디렉터리의 gh 저장소)")
     ap.add_argument("--dry-run", action="store_true", help="GitHub 를 읽기만 하고 아무것도 만들거나 고치지 않는다")
     ap.add_argument("--only-new", action="store_true", help="이번 실행에서 새로 만든 이슈에만 연결·치환을 적용한다")
-    ap.add_argument("--delay", type=float, default=1.0, help="이슈 하나를 만든 뒤 쉬는 초(기본 1.0, 속도 제한 완화)")
+    ap.add_argument("--delay", type=non_negative_seconds, default=1.0, help="이슈 하나를 만든 뒤 쉬는 초(기본 1.0, 속도 제한 완화)")
     args = ap.parse_args(argv)
     try:
         items = load_items(args.file)
