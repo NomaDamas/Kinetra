@@ -116,7 +116,7 @@ class CliTest(unittest.TestCase):
             with open(src, encoding="utf-8") as f:
                 text = f.read()
             with open(cfg, "w", encoding="utf-8") as f:
-                f.write(text.replace("ssd_free_gib_block_below = 10", "ssd_free_gib_block_below = 1e12"))
+                f.write(text.replace("ssd_free_gib_block_below = 10", "ssd_free_gib_block_below = 100000000"))
             env = dict(os.environ, KINETRA_GUARD_CONFIG=cfg)
             return subprocess.run(
                 [sys.executable, os.path.join(os.path.dirname(os.path.abspath(__file__)), "scale.py"), *extra],
