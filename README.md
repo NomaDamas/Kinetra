@@ -54,7 +54,7 @@ uv run python scripts/check_assets.py                      # exit 1 listing ever
 uv run python -m unittest discover -s scripts/tests -v
 ```
 
-Every file under `assets/` and `apps/**/public/` needs a `kind=asset` row whose `경로` is that file, and every row's path must exist. For an asset recorded as unmodified (`변경 내역` starts with `없음`) the file's sha256 must equal `원본 해시`. For a modified asset `원본 해시` is the hash of the downloaded original, which the repository does not contain, so the hash is not compared (the script reports how many were skipped). `CREDITS.md` must equal the generated output.
+Every file under `assets/` and `apps/**/public/` needs a `kind=asset` row whose `경로` is that file, and every row's path must exist. For an asset recorded as unmodified (`변경 내역` starts with `없음`) the file's sha256 must equal `원본 해시`. For a modified asset `원본 해시` is the hash of the downloaded original, which the repository does not contain, so the hash is not compared (the script reports how many were skipped). `CREDITS.md` must equal the generated output. Symlinks are not allowed: any symlink (file, directory or broken) under `assets/` or `apps/**/public/` is a violation and is never followed, and every ledger path (asset or dependency) must stay inside the repository after symlinks are resolved. `node_modules/` is skipped only while searching `apps/` for `public` folders; inside `assets/` or a `public` folder it is counted like any other directory. A symlinked directory met while searching `apps/` (including `apps` itself) is a violation.
 
 ## PR body check
 

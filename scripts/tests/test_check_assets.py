@@ -81,15 +81,20 @@ class OkTests(unittest.TestCase):
     def test_empty_ledger_and_no_assets_passes(self):
         self.assertEqual(Tree(self, [], files={"assets/.gitkeep": b""}).check().errors, [])
 
-    def test_gitkeep_ds_store_and_node_modules_are_not_assets(self):
+    def test_gitkeep_ds_store_and_apps_node_modules_are_not_assets(self):
         files = {
             "assets/props/rock.glb": CONTENT,
             "assets/.gitkeep": b"",
             "assets/props/.DS_Store": b"x",
             "apps/studio/public/.gitkeep": b"",
-            "apps/studio/public/node_modules/x/y.js": b"x",
+            "apps/studio/node_modules/pkg/public/z.js": b"x",
         }
         self.assertEqual(Tree(self, [row()], files=files).check().errors, [])
+
+    def test_node_modules_inside_asset_trees_still_needs_a_row(self):
+        files = {"assets/props/rock.glb": CONTENT, "apps/studio/public/node_modules/x/y.js": b"x", "assets/node_modules/a.bin": b"x"}
+        errors = Tree(self, [row()], files=files).check().errors
+        self.assertEqual(sorted(e.split(":")[0] for e in errors), ["apps/studio/public/node_modules/x/y.js", "assets/node_modules/a.bin"])
 
     def test_modified_asset_skips_hash_and_says_so(self):
         rep = Tree(self, [row(change="리토폴로지 5만 삼각형 이하", sha="sha256:" + "0" * 64)]).check()
@@ -174,6 +179,105 @@ class ViolationTests(unittest.TestCase):
         files = {"assets/a.bin": b"1", "apps/s/public/b.bin": b"2"}
         rep = Tree(self, [row()], files=files).check()
         self.assertEqual(len(rep.errors), 3, rep.errors)  # 파일 누락 1 + 원장 누락 2
+
+
+class SymlinkTests(unittest.TestCase):
+    def link(self, t, rel, target):
+        p = t.root / rel
+        p.parent.mkdir(parents=True, exist_ok=True)
+        p.symlink_to(target)
+
+    def outside(self):
+        d = tempfile.TemporaryDirectory()
+        self.addCleanup(d.cleanup)
+        out = Path(d.name)
+        (out / "secret.bin").write_bytes(CONTENT)
+        (out / "dir").mkdir()
+        (out / "dir" / "unlisted.glb").write_bytes(b"x")
+        return out
+
+    def test_directory_symlink_with_unlisted_file_is_a_violation(self):
+        out = self.outside()
+        t = Tree(self, [row()])
+        self.link(t, "assets/linked", out / "dir")
+        rep = t.check()
+        self.assertEqual(len(rep.errors), 1, rep.errors)
+        self.assertIn("assets/linked: 에셋 폴더 안의 심볼릭 링크", rep.errors[0])
+
+    def test_file_symlink_and_broken_symlink_under_assets_and_public(self):
+        out = self.outside()
+        t = Tree(self, [row()])
+        self.link(t, "assets/props/alias.glb", t.root / "assets/props/rock.glb")
+        self.link(t, "assets/props/broken.glb", out / "nope")
+        self.link(t, "apps/studio/public/x.png", out / "secret.bin")
+        got = sorted(e.split(":")[0] for e in t.check().errors)
+        self.assertEqual(got, ["apps/studio/public/x.png", "assets/props/alias.glb", "assets/props/broken.glb"])
+
+    def test_apps_subdirectory_symlink_hiding_public_is_a_violation(self):
+        t = Tree(self, [row()])
+        (t.root / "demo" / "public").mkdir(parents=True)
+        (t.root / "demo" / "public" / "unlisted.glb").write_bytes(b"x")
+        self.link(t, "apps/demo", "../demo")
+        rep = t.check()
+        self.assertEqual([e.split(":")[0] for e in rep.errors], ["apps/demo"], rep.errors)
+
+    def test_apps_itself_a_symlink(self):
+        out = self.outside()
+        t = Tree(self, [row()])
+        self.link(t, "apps", out / "dir")
+        self.assertEqual([e.split(":")[0] for e in t.check().errors], ["apps"])
+
+    def test_file_symlinks_and_node_modules_symlinks_in_apps_outside_public_are_ignored(self):
+        out = self.outside()
+        t = Tree(self, [row()])
+        self.link(t, "apps/studio/node_modules/pkg", out / "dir")  # pnpm 이 만드는 링크
+        self.link(t, "apps/studio/README.md", out / "secret.bin")
+        self.assertEqual(t.check().errors, [])
+
+    def test_public_directory_itself_a_symlink(self):
+        out = self.outside()
+        t = Tree(self, [row()])
+        self.link(t, "apps/studio/public", out / "dir")
+        self.assertEqual([e.split(":")[0] for e in t.check().errors], ["apps/studio/public"])
+
+    def test_assets_directory_symlink_is_not_followed(self):
+        out = self.outside()
+        t = Tree(self, [row()])
+        import shutil
+
+        shutil.rmtree(t.root / "assets" / "props")
+        self.link(t, "assets/props", out / "dir")
+        errors = t.check().errors
+        self.assertTrue(any(e.startswith("assets/props: 에셋 폴더 안의 심볼릭 링크") for e in errors), errors)
+        self.assertFalse(any("unlisted.glb" in e for e in errors), errors)
+
+    def test_ledger_path_through_file_symlink_leaving_root(self):
+        out = self.outside()
+        t = Tree(self, [row(path="assets/props/rock.glb")], files={})
+        self.link(t, "assets/props/rock.glb", out / "secret.bin")
+        rep = t.check()
+        self.assertTrue(any("저장소 밖을 가리킨다" in e for e in rep.errors), rep.errors)
+        self.assertEqual(rep.hashed, 0)
+
+    def test_ledger_path_through_parent_directory_symlink(self):
+        out = self.outside()
+        t = Tree(self, [row(path="assets/linked/unlisted.glb")], files={})
+        self.link(t, "assets/linked", out / "dir")
+        rep = t.check()
+        self.assertTrue(any("assets/linked/unlisted.glb 가 심볼릭 링크를 지나 저장소 밖을" in e for e in rep.errors), rep.errors)
+
+    def test_dependency_path_symlink_outside_root(self):
+        out = self.outside()
+        dep = row("dep-x-1.0", "tools/x.py", kind="dependency", sha="sha256:" + "1" * 64)
+        t = Tree(self, [row(), dep])
+        self.link(t, "tools/x.py", out / "secret.bin")
+        self.assertTrue(any("dep-x-1.0" in e and "저장소 밖" in e for e in t.check().errors), t.check().errors)
+
+    def test_symlink_inside_root_for_dependency_is_allowed(self):
+        dep = row("dep-x-1.0", "tools/x.py", kind="dependency", sha="sha256:" + "1" * 64)
+        t = Tree(self, [row(), dep], files={"assets/props/rock.glb": CONTENT, "tools/real.py": b"x"})
+        self.link(t, "tools/x.py", "real.py")
+        self.assertEqual(t.check().errors, [])
 
 
 class CliTests(unittest.TestCase):
