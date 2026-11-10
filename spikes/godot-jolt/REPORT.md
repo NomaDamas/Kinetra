@@ -171,3 +171,129 @@ uv run spikes/godot-jolt/test_scale.py
 - 박스 모양, 마찰, 솔버 설정 하나만 측정했다. Jolt 설정 튜닝은 하지 않았다. 멀티스레드는 기본/1스레드 두 가지만 봤다.
 - 결정론은 같은 바이너리·같은 머신 안에서만 봤다.
 - MuJoCo와의 배속 배수는 부하 시점·모델이 달라 근거가 약하다.
+
+## A0-03b. 웹 내보내기, OpenXR, MuJoCo 대비 오차 (이슈 #52)
+
+### 결론 먼저
+
+- **4륜차 두 장면에서 Godot 4.7.2 + Jolt와 MuJoCo 4.0.0의 궤적은 같은 장면 수치(질량, 치수, 마찰, 시간 간격, 구동 토크)로 시작해도 갈린다.** 경사 주행(4 s, 이동 경로 8.14 m)에서 차체 위치 차이는 **끝에서 최대 49.4 mm**(경로의 0.61%), 자세 차이 최대 0.27 mrad. 낙하(3 s)에서 위치 차이는 **착지 직후(스텝 236, 0.472 s) 최대 22.7 mm**, 끝에서 20.5 mm, 자세 차이 최대 **0.0386 rad(2.2°)**. 값은 모두 시뮬(`시뮬` 배지)이고 엔진 둘의 접촉·바퀴 모델 차이를 합친 것이다. 어느 쪽이 "현실에 가깝다"는 뜻이 아니다.
+- **같은 빌드 반복은 비트 단위로 같다**: 두 장면 모두 Godot CSV의 sha256이 별도 프로세스 2회에서 같았다.
+- **이 차이를 어떻게 읽나(노이즈 바닥과 함께).** MuJoCo 쪽 설정만 바꿔도 같은 크기의 차이가 난다: 적분기를 `implicitfast`로 바꾸면 1e-8 m(무시), 시간 간격 2 ms → 1 ms면 경사 2.2 mm, 낙하 3.8 mm, 접촉 강성 `solref` 0.02 → 0.004면 경사 9.3 mm, 낙하 **118 mm**(낙하 3.4 m 경로의 3.5%). Godot 쪽도 시작 높이를 1 µm만 흔들면 경사 0.68 mm, 낙하 **6.8 mm**로 커진다(접촉 뒤 증폭). 즉 낙하의 22.7 mm는 "엔진이 다르다"와 "접촉이 있는 궤적은 작은 차이를 키운다"가 섞인 값이고, 경사의 49 mm는 같은 방향으로 쌓이는 체계 오차(Godot의 차가 더 멀리 간다)다 [추정: 바퀴·접촉의 마찰·감쇠 모델 차이가 원인 후보이고 이번에 분해하지 않았다].
+- **웹 내보내기는 된다**: 헤드리스로 `--export-release Web`이 두 변형(스레드 있음/없음)에서 끝났다. **번들 크기는 약 39 MB(gzip 약 10.3 MB, brotli 약 8.4 MB)이고 거의 전부 엔진 `.wasm`**이다. 내 장면 쪽(`.pck`)은 3.9 KB. 즉 웹 클라이언트로 쓰면 첫 방문에 약 8~10 MB 전송이 든다(압축 서버 가정). **로딩 시간은 [측정 대기: 디스크]**(아래).
+- **OpenXR은 엔진에 있으나 이 머신에서는 시작되지 않는다**: macOS 바이너리에 `OpenXRInterface`가 등록돼 있고 `initialize()`가 `false`를 돌려줬다. 이 머신에 OpenXR 런타임이 없기 때문이다(아래). 실기·에뮬레이터 프레임률은 이번 범위 밖이다.
+
+### 방법: 4륜차 장면
+
+장면 수치는 `car_scene.json` 한 파일이고 MuJoCo 쪽(`car.py`)과 Godot 쪽(`car.gd`)이 같은 파일을 읽는다. `test_car.py`가 이 파일이 `make_params()`와 같다고 단언한다. Z 위, SI, 시간 간격 0.002 s(500 Hz), 중력 9.80665.
+
+| 항목 | 값 |
+|---|---|
+| 차체 | 상자 반치수 0.5 × 0.25 × 0.1 m, 질량 10 kg |
+| 바퀴 4개 | 원기둥 반지름 0.15 m, 반폭 0.05 m, 각 1 kg, 차체 기준 위치 (±0.35, ±0.30, −0.05), 힌지 축 = 차체 y. 바퀴-차체 충돌은 제외(MuJoCo는 부모-자식 기본, Godot는 `joint_disable_collisions_between_bodies`) |
+| 재질 | 모든 접촉 마찰 계수 1.0(MuJoCo `friction="1 0 0"` = 구름·비틀림 마찰 없음, Jolt는 한 계수), 반발 0. Jolt는 두 마찰의 최솟값을 쓰고(`SetCombineFriction`) MuJoCo는 최댓값이라, 같은 값으로 맞춰 차이를 없앴다 |
+| 구동 | 경사 장면만: 뒤 바퀴 둘에 각 3.0 N·m 일정 토크(바퀴에 +, 차체에 −, MuJoCo `<motor gear=1>`과 같은 작용). Godot는 `body_apply_torque`를 스텝마다 준다 |
+| 경사 장면 `slope` | 지면 기울기 10°(+x가 오르막), 출발 시 바퀴 아래와 지면 사이 0.5 mm, 정지에서 시작, 2,000스텝(4 s) |
+| 낙하 장면 `drop` | 평평한 바닥 위 1.2 m(바퀴 아래 1.0 m), 롤 3°·피치 5° 기울임, 전진 속도 1 m/s, 1,500스텝(3 s) |
+| MuJoCo | 4.0.0, Euler, `timestep=0.002`, 기본 솔버(Newton, pyramidal), 접촉 파라미터 기본. 자유 관절 + 힌지 4개 |
+| Godot | 4.7.2 + Jolt 5.5.0, 같은 시간 간격, 지면은 큰 정적 상자, 바퀴 힌지는 `joint_make_hinge`, 슬립 끔 |
+| 비교 | 매 스텝 차체 위치(m)와 자세(두 쿼터니언 사이의 측지 각, rad). 행 0 = 첫 스텝 전 |
+| 노이즈 바닥 | MuJoCo 변형 4개(적분기 `implicitfast`, 시간 간격 0.001(2스텝마다 비교), `solref=0.004 1`, 시작 높이 +1 µm)와 Godot 시작 높이 +1 µm을 같은 기준 궤적(MuJoCo Euler 0.002)과 비교 |
+| 실행 | `uv run spikes/godot-jolt/car.py --json spikes/godot-jolt/results/a0-03b-car.json` (가드 불필요: 몇 초짜리 가벼운 실행) |
+
+머신은 위 A0-03a와 같다. 이 실행의 load average는 180~190(`results/a0-03b-car.json`의 `machine.loadavg`). 궤적 값은 부하와 무관하다(같은 스텝 수의 결정론적 계산).
+
+### 결과 표: Godot + Jolt 대 MuJoCo (4륜차)
+
+| 장면 | 이동 경로(m) | 위치 차 최대(mm) | 최대 위치(스텝) | 끝 위치 차(mm) | 위치 차 RMS(mm) | 끝에서 경로 대비 | 자세 차 최대(rad) | 끝 자세 차(rad) |
+|---|---|---|---|---|---|---|---|---|
+| slope (2,000스텝) | 8.143 | **49.42** | 2000 | 49.42 | 26.19 | 0.61% | 0.00027 | 0.00003 |
+| drop (1,500스텝) | 3.375 | **22.74** | 236 | 20.46 | 10.78 | 0.61% | **0.0386** | 0.0063 |
+
+끝 상태(x, y, z): slope Godot (6.99936, 0.00021, 1.43690) vs MuJoCo (6.95065, 0.0, 1.42853). drop Godot (2.69196, 0.04394, 0.19998) vs MuJoCo (2.67593, 0.03124, 0.19986). 낙하 충돌 시각(차체 수직 속도 최소 시점): Godot 0.438 s, MuJoCo 0.440 s(속도는 위치의 유한차분).
+
+### 노이즈 바닥 (같은 기준 궤적과의 위치 차 최대, mm / 자세 차 최대 rad)
+
+| 변형 | slope | drop |
+|---|---|---|
+| MuJoCo `implicitfast` | 0.00001 / 4e-8 | 0.00003 / 6e-8 |
+| MuJoCo 시간 간격 0.001 s | 2.2 / 5e-5 | 3.8 / 0.0091 |
+| MuJoCo `solref=0.004` | 9.3 / 3.5e-4 | **117.9 / 0.063** |
+| MuJoCo 시작 높이 +1 µm | 0.001 / 7e-8 | 0.001 / 1.4e-6 |
+| **Godot** 시작 높이 +1 µm (Godot 기준) | 0.68 / 1.3e-4 | **6.8 / 0.0028** |
+| Godot 대 MuJoCo(위 표) | **49.4** / 2.7e-4 | **22.7** / 0.0386 |
+
+- MuJoCo는 1 µm 흔들림을 1 µm 안에 둔다(drop 1.3e-6 rad). Godot는 같은 흔들림을 낙하에서 약 6,800배(6.8 mm)로 키웠다. 이 값이 "Godot 쪽 재현성의 한계"는 아니다. 같은 입력에는 비트 단위로 같다(위). 입력의 작은 차이에 대한 민감도다.
+- 낙하의 Godot 대 MuJoCo 22.7 mm는 MuJoCo 접촉 강성을 5배 올린 변형의 118 mm보다 작고 시간 간격을 반으로 줄인 3.8 mm보다 크다. **허용 차이를 정하는 근거로 쓰려면 장면 수와 접촉 설정이 더 필요하다**: 이 측정은 장면 2개, 각 1회이다. 계획의 "측정 후 정한다"에 대한 입력일 뿐 문턱이 아니다.
+
+### 웹 내보내기
+
+| 항목 | 값 |
+|---|---|
+| 내보내기 | `godot --headless --path spikes/godot-jolt/web --export-release Web index.html`, Godot 4.7.2, 공식 웹 템플릿 `web_release.zip`(sha256 `02f0dca1…67a3`)과 `web_nothreads_release.zip`(`d3ee2f08…32a0`)(범위 요청으로 `.tpz` 1.19 GiB 전체를 받지 않고 이 둘만 꺼냄). 렌더러 `gl_compatibility`(웹은 WebGL 2만 가능, 공식 문서) |
+| 내보낸 앱 | 장면 하나, 에셋 없음. 물리 서버 직접 호출로 박스 200개를 1,000스텝(500 Hz) 돌리고 `window.__godot_result`와 콘솔에 결과를 남긴다(`web/main.gd`). 내보내기 시간 약 70 s(부하 아래) |
+
+번들 크기(`/tmp`에 내보낸 두 폴더의 바이트. 압축은 gzip -6과 `brotli -q 5`로 이쪽에서 계산한 값이며 서버 설정에 따라 달라진다):
+
+| 파일 | 스레드 있음(바이트) | 스레드 없음(바이트) |
+|---|---|---|
+| `index.wasm` | 38,820,072 (gzip 10,149,848 / brotli 8,353,062) | 39,514,754 (gzip 10,114,291 / brotli 8,326,654) |
+| `index.js` | 314,653 (gzip 74,580) | 279,815 (gzip 68,740) |
+| `index.pck` (내 장면) | 3,944 | 3,944 |
+| `index.html` + 워크릿 2 + `index.png` | 약 37,000 | 약 37,000 |
+| **합계** | **39,175,688** (gzip 10,252,260) | **39,835,533** (gzip 10,210,865) |
+
+- 번들의 99%가 엔진 `.wasm`이다. 에셋을 더해도 이 바닥(압축 후 약 8~10 MB)은 줄지 않는다. 엔진을 필요한 모듈만 넣어 다시 빌드하면 줄일 수 있다는 것은 공식 문서의 말이고(`optimizing_for_size`) **이번에 시험하지 않았다**.
+- 스레드 있는 변형은 `SharedArrayBuffer`가 필요해 **COOP/COEP 헤더**(`same-origin` / `require-corp`)를 서버가 보내야 한다(공식 문서). 스레드 없는 변형은 헤더가 필요 없지만 공식 문서가 "성능이 낮다"고 적는다. 우리 공유 링크가 정적 호스팅이면 헤더 제약이 걸린다.
+- 공식 문서의 웹 제약(원문 확인): Godot 4의 C#은 웹 내보내기 불가, WebGL 2만 대상, Safari에 알려진 문제, 탭이 비활성이면 `_physics_process`가 멈춤.
+- 이 장면에서 **Jolt가 웹 빌드에도 들어 있는지**: 내보낸 앱은 `physics/3d/physics_engine="Jolt Physics"`로 내보냈고 `.wasm`이 38.8 MB(MuJoCo WASM 11.2 MB의 3.5배)다. 브라우저 안에서 실제로 Jolt가 돈다는 것은 로딩 측정에서 확인한다 [측정 대기: 디스크].
+
+로딩·실행 측정(`web-measure`: 헤드리스 Chromium(Playwright 1.65.0의 `chromium-headless-shell-1254` 재사용, 새 브라우저 설치 없음), 정적 서버, 두 변형, COOP/COEP 유무): `pnpm --dir spikes/godot-jolt measure -- --dir <export> --name <name> [--isolated] --out <json>`는 가드 밖에서 시작하면 종료 코드 2다. **[측정 대기: 디스크]** 아래 표의 로딩 시간 칸이 비었다.
+
+| 변형 | 로드 이벤트(ms) | 첫 결과까지(ms) | 페이지 결과 | 격리 | 비고 |
+|---|---|---|---|---|---|
+| 스레드 있음 + COOP/COEP | [측정 대기: 디스크] | | | | |
+| 스레드 없음 | [측정 대기: 디스크] | | | | |
+
+### OpenXR 지원 상태
+
+| 항목 | 확인 | 근거 |
+|---|---|---|
+| 엔진에 OpenXR이 있나 | **예** (`OpenXRInterface`, `OpenXRAPIExtension`, `WebXRInterface`, `XROrigin3D`, `XRController3D`, `XRCamera3D`가 이 macOS 바이너리에 모두 있다) | `xr_probe.gd` → `results/a0-03b-xr.json` |
+| 이 머신에서 시작되나 | **아니오**. `XRServer`에 `OpenXR`가 등록돼 있고(`interfaces_registered: ["Native mobile","OpenXR"]`) `initialize()` → `false` | 같은 파일. 공식 문서도 "등록됨 = 사용 가능일 뿐, 호스트가 지원하지 않으면 초기화가 실패한다"고 적는다 |
+| 왜 | 이 머신에 OpenXR 런타임이 없다: `XR_RUNTIME_JSON` 비어 있음, `/usr/local/share/openxr`·`/etc/xdg/openxr`·`~/.config/openxr` 없음. macOS에 대한 일반적 지원 여부는 문서에서 확인하지 못했다 | 위 명령 |
+| 공식 지원 범위(문서) | SteamVR로 되는 데스크톱 헤드셋(OpenXR), Quest 링크·Android XR 다이렉트·Pico 커넥트, 안드로이드 독립형 헤드셋(Quest 1/2/3/Pro, Pico 4, Magic Leap 2, Lynx R1, HTC Vive Focus Vision, Android XR), Linux 독립형 Steam Frame, **visionOS는 "제한적: 평면 위 앱만, 몰입형은 아직 안 됨"** | `godot-docs` `about/list_of_features.rst` 4.x 최신(master) |
+| 웹 XR | `WebXRInterface` 클래스가 있다. 이번에 브라우저에서 실행하지 않았다 | 클래스 존재만 확인 |
+| 실기·에뮬레이터 프레임률 | **측정하지 않았다** (범위 밖. A0-02b는 WebXR 쪽) | |
+
+계획 5.2절의 "OpenXR, 더 강하다 [확인 필요]"에 대한 이번 답: **엔진 지원 문서는 웹 클라이언트(WebXR)보다 폭이 넓다(독립형 헤드셋 직접 지원)는 쪽이지만, 이 머신에서는 런타임이 없어 실제 구동을 확인하지 못했다.** 헤드셋에서의 성능 비교는 하지 않았다.
+
+### 재현 방법
+
+저장소 루트에서(A0-03a와 같은 Godot 바이너리 필요).
+
+```
+uv run spikes/godot-jolt/car.py --json spikes/godot-jolt/results/a0-03b-car.json    # 4륜차 2장면 대 MuJoCo
+uv run spikes/godot-jolt/test_car.py                                                # 오프라인 점검(Godot 불필요)
+godot --headless --path spikes/godot-jolt --script xr_probe.gd                      # OpenXR 상태 한 줄(`XR {json}`)
+godot --headless --path spikes/godot-jolt/web --export-release Web /tmp/godot-web-out/index.html   # 웹 내보내기(웹 템플릿 필요)
+uv run python tools/dev/resource_guard.py --profile heavy -- pnpm --dir spikes/godot-jolt measure -- --dir /tmp/godot-web-out --name threads --isolated --out spikes/godot-jolt/results/a0-03b-web-threads.json
+pnpm --dir spikes/godot-jolt install --frozen-lockfile && pnpm --dir spikes/godot-jolt test   # 서버 단위 시험(CI가 돌린다)
+```
+
+`test_car.py`(10건)는 장면 수치 파일이 생성기와 같은지, 경사 출발 높이·각도, MuJoCo 낙하가 착지해 유한하고 전진 속도를 유지하는지, 같은 실행 두 번이 비트 같음, 구동 토크가 오르막 거리를 늘리는지, 차이 계산(0, 위치+회전 값, `q`와 `−q` 같음, 공통 행만 비교), CSV 읽기를 단언한다. 차이의 크기는 단언하지 않는다. pnpm 시험(2건)은 정적 서버의 경로 탈출 거부, COOP/COEP 유무, wasm 타입, 404, 루프백만을 단언한다.
+
+### 의존성 라이선스 (원장)
+
+| 의존성 | 라이선스 | 비고 |
+|---|---|---|
+| Godot 4.7.2 + 웹 내보내기 템플릿 | MIT | 위 원장 행 `dep-godot-4.7.2`가 템플릿도 같은 릴리스로 포함한다 |
+| playwright-core 1.65.0 | Apache-2.0 | 이미 원장에 있음(`dep-playwright-core-1.65.0`). 이 스파이크도 같은 버전을 pnpm으로 고정 |
+| mujoco 4.0.0, numpy 2.5.4 | Apache-2.0, BSD-3-Clause | 이미 원장에 있음(`car.py` PEP 723 고정) |
+
+### 알려진 한계 (정직성)
+
+- 장면 2개, 각 1회, 차 하나. 바퀴 마찰은 MuJoCo(구름 마찰 없음)와 Jolt(단일 마찰 계수) 모델이 같지 않아 같은 계수를 줘도 거동이 같지 않다. 차이를 모델 항목별로 분해하지 않았다.
+- MuJoCo 쪽은 기본 접촉 설정이고 Godot 쪽은 Jolt 기본값이다. 각자의 기본값이 "자연스러운" 짝이라고 보장하지 않는다. 노이즈 바닥 표가 설정 민감도를 보인다.
+- 웹: 번들 크기는 실제 내보낸 파일이다. 로딩 시간과 브라우저 안 물리 실행은 못 쟀다 [측정 대기: 디스크]. 헤드리스 Chromium(SwiftShader)이므로 잰다 해도 실제 GPU 로딩 시간이 아니다.
+- OpenXR: 존재와 이 머신의 시작 실패만 확인했다. 헤드셋이 없다.
+- 플랫폼 간·다른 버전 간 결정론은 범위 밖(#54 코멘트의 MuJoCo 플랫폼 간 불일치 관찰과 같은 한계가 있을 수 있다).
