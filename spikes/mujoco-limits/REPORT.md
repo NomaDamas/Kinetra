@@ -256,3 +256,14 @@ A0-01a 절의 표와 같다(mujoco 4.0.0 Apache-2.0, numpy 2.5.4 BSD-3-Clause). 
 - `recompile`을 연속으로 여러 번 부른 누적 시간, 메모리 사용량, 멀티스레드 컴파일은 측정하지 않았다.
 - "첫 프레임"은 물리 계산 한 프레임(`mj_forward` + `mj_step`)이고 렌더링 시간은 포함하지 않는다.
 - 웹(WASM) 쪽 재컴파일은 A0-01b의 범위다.
+
+
+## A0-01b. 브라우저 WASM 실행과 네이티브 대비 차이 (이슈 #44)
+
+전체 보고서: [`spikes/mujoco-wasm/REPORT.md`](../mujoco-wasm/REPORT.md). 측정만 했고 최적화하지 않았다. 모든 값은 **[추정: 부하 평균 139~217, 스왑 약 95% 아래 측정]**이고 오차 수치만 부하와 무관하다.
+
+- 바인딩: 공식 `@mujoco/mujoco` 4.0.0(Google DeepMind, Apache-2.0, 엔진 4.0.0). 커뮤니티 `zalo/mujoco_wasm`(MIT, 3.12.0)과 `mujoco-js` 0.0.7은 메타데이터만 확인.
+- 모델: `legacy-v0`의 `rocket_car` MJCF(sha256 `83b4990f…`, 레거시 번들 `model_hash`와 같음), 영웅 8,000 N 제어, 4 ms, 4.5 s.
+- 궤적 차이(WASM 대 네이티브 `mujoco==4.0.0`, 시나리오 21개, 헤드리스 Chromium 158 3회): **최대 위치 오차 6.144e-6 m, 최대 자세 오차 4.093e-6 rad**(영웅 시나리오), 접촉 전 구간은 9.7e-14 m / 1.4e-13 rad 이하. 비트 일치는 없다. 접촉 뒤에 오차가 자란다: 같은 네이티브에서 시작 높이만 1e-9 m 바꾸면 최대 1.0e-2 m.
+- 프레임률: `requestAnimationFrame` 루프에서 60.00 fps(vsync 상한), 프레임 간격 p99 16.8 ms, 20 ms 넘은 프레임 0. `mj_step` 처리량 약 17만 스텝/s(실시간의 약 700배).
+- 한계: 로켓 자동차 1대, Chromium 하나, 단일 스레드 빌드, WASM 재컴파일 미측정, 2D 캔버스 그리기(WebGL 아님).
