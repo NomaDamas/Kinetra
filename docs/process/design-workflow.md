@@ -104,5 +104,5 @@
 | D0-01a DoD | 상태 | 증거 |
 |---|---|---|
 | `docs/process/design-workflow.md`: 브리프 → `/design` → 리뷰 → HTML·zip 또는 Handoff → `design/exports/` 커밋 | 완료 | 이 문서 |
-| 창업자가 시험 화면 1개로 절차를 끝까지 따라 했다 | **창업자 대기, 미완료** | omp가 대신할 수 없다. 창업자가 경로 A를 시험 화면 하나로 따라 하면 `design/exports/_trial/`이 생긴다. 그때까지 이 칸은 비워 둔다 |
-| 증거: 내보낸 파일의 커밋 | omp 경로로만 있음 | 디자인 시스템 v0(#396)의 `design/exports/design-system/`이 경로 B의 시연이다. 경로 A의 증거가 아니다 |
+| 창업자가 시험 화면 1개로 절차를 끝까지 따라 했다 | **면제(창업자 결정 2026-11-10)** | 창업자가 #28 코멘트에서 면제하고 omp PTY 경로(B)를 표준으로 정했다. 창업자는 승인만 한다. 경로 A는 창업자가 원할 때 쓰는 대안으로 남긴다 |
+| 증거: 내보낸 파일의 커밋 | 완료(경로 B) | 디자인 시스템 v0(#396)의 `design/exports/design-system/`, 기록 `docs/decisions/design-pty.md`(#394) |
