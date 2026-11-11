@@ -16,7 +16,15 @@ import { PNG } from "pngjs";
 import { FIXTURES, REPO_ROOT } from "./validate.ts";
 
 const HERE = fileURLToPath(new URL(".", import.meta.url));
-export const FILES = ["mounting-plate-al6061", "drive-shaft-steel", "sensor-mast-user-material", "reflectance-ior"];
+export const FILES = [
+  "mounting-plate-al6061",
+  "drive-shaft-steel",
+  "sensor-mast-user-material",
+  "reflectance-ior",
+  "payload-mount-al6061",
+  "payload-declared-mass",
+  "ballast-weight-declared-mass",
+];
 export const DEFAULT_OUT = join(REPO_ROOT, "out", "gltf-check");
 const BACKGROUND = [0x14, 0x18, 0x1f];
 const TYPES: Record<string, string> = { ".html": "text/html", ".js": "text/javascript", ".mjs": "text/javascript", ".glb": "model/gltf-binary" };
