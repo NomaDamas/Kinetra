@@ -66,4 +66,4 @@
 
 ## 교차 참조 (C-01c 이월)
 
-`check_world_references(world, planets=..., materials=...)`: `World.planet`이 `planets`에 없거나 `terrain_props[].material`이 `materials`(프로젝트의 재료 ID, `DesignSpec.materials`)에 없으면 `ValueError`로 문제를 모두 나열한다. 재료가 `None`인 소품(행성 지면)은 재료가 필요 없다. `World`가 이것을 스스로 못 보는 이유는 `world.py` 머리말에 있다. 검증기(C-02c)가 이 함수를 부른다.
+`check_world_references(world, planets=..., materials=...)`: `World.planet`이 `planets`에 없거나 `terrain_props[].material`이 `materials`(프로젝트의 재료 ID, `DesignSpec.materials`)에 없으면 `ValueError`로 문제를 모두 나열한다. 재료가 `None`인 소품(행성 지면)은 재료가 필요 없다. `World`가 이것을 스스로 못 보는 이유는 `world.py` 머리말에 있다. 검증기(C-02c, `validator._world_findings`)가 이 함수를 부른다: 행성 쪽은 `validate_command`가 `unknown_id`로 거부하고, 재료 쪽은 `Project`가 이미 닫는다.

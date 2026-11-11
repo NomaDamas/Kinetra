@@ -39,12 +39,11 @@ def load(name):
 
 @pytest.fixture
 def project():
+    """The car's parts without their joints: these tests move single wheels, and the validator (C-02c, which
+    `History.execute` goes through) refuses to tear a joined pair apart."""
+    design = {**load("DesignSpec.four-wheel-car.json"), "joints": [], "actuators": [], "schedule": {"entries": []}}
     return Project.model_validate(
-        {
-            "design": load("DesignSpec.four-wheel-car.json"),
-            "world": load("World.ramp-and-step.json"),
-            "assumptions": load("AssumptionTable.vehicle-mass.json"),
-        }
+        {"design": design, "world": load("World.ramp-and-step.json"), "assumptions": load("AssumptionTable.vehicle-mass.json")}
     )
 
 

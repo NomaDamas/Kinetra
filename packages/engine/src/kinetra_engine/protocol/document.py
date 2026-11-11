@@ -6,9 +6,9 @@ document changed, and one `Accepted` or `Rejected` for whoever sent it. It never
 subscribers is the `Hub`'s (`Hub.publish`), and a publisher inside the process (the agent, G-02; the MCP server,
 G-08) must go through the `Hub`, not through a `Document` of its own, or the subscribers do not hear of the change.
 
-Everything that changes the project goes through `kinetra_core.History`, which goes through `apply_command`: a publisher
-of any origin gets the same applier and the same checks (C1). Nothing here validates a command itself; the policy
-checks of C-02c plug into that applier and arrive here for free.
+Everything that changes the project goes through `kinetra_core.History`, whose `execute` goes through `validate_command`
+(C-02c: structure, policy, placement) and whose undo and redo use `apply_command`: a publisher of any origin gets the same
+checks (C1). Nothing here validates a command itself.
 
 Two things are bounded, because a document stays open as long as the app does and an `Applied` carries whole changed
 sections (the one measured in the #505 review: 76 KB for a 277 B command in a 207-instance project):

@@ -761,7 +761,7 @@ export interface Reason {
   ids?: Ref[];
 }
 
-export type ReasonCode = "unknown_id" | "duplicate_id" | "in_use" | "index_out_of_range" | "invalid_command" | "invalid_project" | "not_editable" | "nothing_to_undo" | "nothing_to_redo";
+export type ReasonCode = "unknown_id" | "duplicate_id" | "in_use" | "index_out_of_range" | "invalid_command" | "invalid_project" | "not_editable" | "forbidden" | "invalid_snap" | "overlap" | "floating" | "nothing_to_undo" | "nothing_to_redo";
 
 /**
  * `id` of a `kind`. A snap point is `<instance>/<snap point>`, a parameter `<instance>/<parameter>`:
