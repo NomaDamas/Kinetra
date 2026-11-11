@@ -142,13 +142,18 @@ uv run python packages/core/scripts/export_schemas.py --check  # 쓰지 않고 �
 - 이력 길이의 상한은 없다. 계획과 이슈 어디에도 숫자가 없어서 만들어 쓰지 않았다. 칸당 명령 둘을 쥔다. 상한이나 저장 여부는 보관하는 C-03, C-05a가 정한다.
 - 이 PR에 없는 것: 개정 번호와 `applied` 메시지(C-05a), 이력의 저장 형식과 해시(C-03), 여러 사용자의 사용자별 되돌리기(N-04), 출처별 허용 정책(C-02c), 시각(벽시계 시각은 결정론 문서에 두지 않는다).
 
+## 선로의 메시지 (C-05a)
+
+`Command`와 `ApplyResult`를 선로에 올리는 메시지(`hello` `subscribe` `snapshot` `resumed` `applied` `publish` `accepted` `rejected` `request` `error`)는 `kinetra_core/protocol.py`에 있고 `schemas/`에 `ClientMessage`, `ServerMessage`로 생성된다. `ApplyResult`(프로젝트 + 역명령)는 그대로 적용기의 값이고, 선로의 `applied`(개정 번호, 발행자, 바뀐 구역)는 `Applied`로 이름이 다르다. 규칙과 필드는 [`client-adapter.md`](client-adapter.md) 3.1~3.2 확정.
+
 ## 알려진 확장 (이 PR 범위 밖, 뒤 잎이 더한다)
 
 - 곡선(토크-속도, 추력 곡선): B-03b, B-03c.
 - 단위 `kg/s`(추진제 소모율), `N*s`(충격량): 쓰는 잎이 `Unit`에 더한다.
 - 형상 레시피와 파생값의 입력: B-01a에서 들어왔다. `PartDef.shape`, `MassProperties.derivation`. `docs/architecture/part-mass.md`. 같은 레시피에서 시각 glTF와 재질 슬롯: B-01c, `docs/architecture/part-visual.md`.
-- 충돌 프록시: B-01b에서 들어왔다. `CollisionProxy`(기본형 지오메트리, 메운 빈 곳, 부피 오차). `docs/architecture/collision-proxy.md`.
+- 충돌 프록시: B-01b에서 들어왔다. `CollisionProxy`(기본형 지오메트리, 메운 빈 곳 또는 B-01f의 분해한 빈 곳, 부호 있는 부피 오차). `docs/architecture/collision-proxy.md`.
 - 컴파일 캐시와 부품 추가 절차서: B-01d. `docs/architecture/part-cache.md`, `docs/process/add-part.md`.
+- 구조 부품 빔과 판: B-02a. 정의는 `packages/engine/src/kinetra_engine/parts/library/`. `docs/architecture/parts-beam-plate.md`.
 - 바인딩 안 된 가정(가정이 설계의 어느 값을 흔드는지)과 가정 단위의 의미 검사: J-01a, L-02.
 - PBR 재질 슬롯: B-07(구현됨, [`materials.md`](materials.md)).
 - `export_policy`: HW-02a.

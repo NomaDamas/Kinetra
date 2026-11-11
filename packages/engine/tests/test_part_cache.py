@@ -452,3 +452,32 @@ def test_cache_a_dict_changed_after_the_call_does_not_change_what_was_stored():
     params["width"] = width(0.19)["width"]
     assert cache.mass_properties(part, al, width(0.12)) is stored
     assert cache.mass_properties(part, al, params).mass.value > stored.mass.value
+
+
+def test_cache_proxy_key_has_the_tolerance_and_on_unsupported_of_b01f():
+    # A tube is decomposed to the tolerance asked for, and an unsupported void is filled or rejected as asked: each combination
+    # is its own entry and each equals the uncached answer.
+    cache = PartCache(max_entries=16)
+    tube = PartDef.model_validate(
+        {
+            "id": "tube",
+            "name": "Tube",
+            "shape": {
+                "badge": "declared",
+                "source": {"ref": "B-01d test fixture"},
+                "components": [
+                    {"id": "outer", "primitive": {"kind": "cylinder", "radius": {"offset": 0.05, "terms": []}, "length": {"offset": 0.5, "terms": []}},
+                     "position": {"x": {"offset": 0.0, "terms": []}, "y": {"offset": 0.0, "terms": []}, "z": {"offset": 0.0, "terms": []}}},
+                    {"id": "bore", "operation": "subtract", "primitive": {"kind": "cylinder", "radius": {"offset": 0.04, "terms": []}, "length": {"offset": 0.5, "terms": []}},
+                     "position": {"x": {"offset": 0.0, "terms": []}, "y": {"offset": 0.0, "terms": []}, "z": {"offset": 0.0, "terms": []}}},
+                ],
+            },
+        }
+    )
+    default, loose, tight = cache.collision_proxy(tube), cache.collision_proxy(tube, None, 0.2), cache.collision_proxy(tube, None, 0.05)
+    assert default == collision_proxy(tube) and loose == collision_proxy(tube, None, 0.2) and tight == collision_proxy(tube, None, 0.05)
+    assert len({len(default.geoms), len(loose.geoms), len(tight.geoms)}) == 3  # three tolerances, three different proxies
+    assert cache.collision_proxy(tube, None, 0.2) is loose and cache.collision_proxy(tube) is default
+    assert cache.collision_proxy(tube, None, 0.1).derivation.tolerance.badge.value == "declared"  # a 0.1 the caller gave is not the default 0.1
+    assert default.derivation.tolerance.badge.value == "default"
+    assert cache.collision_proxy(tube, None, None, "reject") == collision_proxy(tube, None, None, "reject")

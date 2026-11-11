@@ -6,6 +6,16 @@
 // `{ x, y, z, w }` (docs/architecture/project-model.md).
 
 /**
+ * To the publisher: `id` is done and the document is at `revision` (the new one, or the unchanged one when the
+ * command changed nothing). Comes after the `applied` of the same change.
+ */
+export interface Accepted {
+  type: "accepted";
+  id: string;
+  revision: number;
+}
+
+/**
  * Command `command` on `actuator` during `[start, end)` seconds of simulated time.
  *
  * `command` is the fraction of the actuator's full command, in [-1, 1] for a motor (sign is direction) and
@@ -81,6 +91,21 @@ export interface AddPartDef {
   type: "add_part_def";
   part: PartDef;
   index?: number | null;
+}
+
+/**
+ * Revision `revision` of the document exists: `command` (as applied) from `origin` changed it as `changes`
+ * says, and the verdict is now `verdict`. Sent to every subscriber, the publisher included, in revision order.
+ */
+export interface Applied {
+  type: "applied";
+  revision: number;
+  id: string;
+  cause: "publish" | "undo" | "redo";
+  origin: Origin;
+  command: AddPartDef | ReplacePartDef | RemovePartDef | AddMaterialDef | ReplaceMaterialDef | RemoveMaterialDef | AddInstance | RemoveInstance | MoveInstance | SetParameter | ClearParameter | SetInstanceMaterial | AddJoint | ReplaceJoint | RemoveJoint | AddActuator | RemoveActuator | AddControlEntry | RemoveControlEntry | ReplaceControlEntry | AddAssumption | SetAssumption | RemoveAssumption | SelectPlanet | CommandBatch;
+  changes: ProjectChanges;
+  verdict: VerdictState;
 }
 
 /**
@@ -168,9 +193,18 @@ export interface ClearParameter {
 /**
  * The collision proxy of one part.
  *
- * `proxy_volume` and `recipe_volume` are the volumes of the geoms and of the shape recipe (added minus voids, the volume
- * `MassProperties` reports); `volume_error` is `(proxy - recipe) / recipe`, dimensionless and never negative.
- * `filled_voids` lists every void the proxy filled; their volumes add up to `proxy_volume - recipe_volume`.
+ * `proxy_volume` and `recipe_volume` are the volumes of the proxy (the union of its geoms) and of the shape recipe (added
+ * minus voids, the volume `MassProperties` reports); `volume_error` is `(proxy - recipe) / recipe`, dimensionless and
+ * **signed**. In every proxy `proxy_volume - recipe_volume` = the sum of `filled_voids` volumes + the sum of
+ * `union_volume - (host_volume - volume)` over `decomposed_voids`.
+ *
+ * - `added-primitives`: `decomposed_voids` is empty, every geom is its component unchanged (`id == component`), the
+ *   geoms do not overlap each other and `proxy_volume` is their sum; the error is never negative.
+ * - `void-decomposition`: `decomposed_voids` is not empty. A host's geoms are its pieces (`component` = the host's id), the
+ *   rest are components unchanged. `|error|` of each decomposed host is within `derivation.tolerance`. The decomposition the
+ *   engine builds is inside the recipe's material, so each host's error is never positive; the model does not require it.
+ *
+ * Mass, centre of mass and inertia never come from the proxy; they come from `MassProperties` (B-01a).
  */
 export interface CollisionProxy {
   badge: "sim";
@@ -178,6 +212,7 @@ export interface CollisionProxy {
   part_id: string;
   geoms: ProxyGeom[];
   filled_voids: FilledVoid[];
+  decomposed_voids: DecomposedVoid[];
   proxy_volume: DerivedScalar;
   recipe_volume: DerivedScalar;
   volume_error: DerivedScalar;
@@ -226,6 +261,27 @@ export interface Cylinder {
   kind: "cylinder";
   radius: AxisExpr;
   length: AxisExpr;
+}
+
+/**
+ * A subtracted shape component the proxy kept as a gap: the pieces of its `host` (the added component that contains
+ * it) leave this void empty.
+ *
+ * `volume` is the void's volume, `host_volume` the host primitive's, `union_volume` the volume of the union of the host's
+ * pieces (all in m^3), and `error` = `(union_volume - (host_volume - volume)) / (host_volume - volume)` the signed error
+ * of this host alone. `layout`: `strips` (disjoint boxes cut across a plate) or `ring` (boxes around a tube's axis,
+ * overlapping; `ring` then carries the report).
+ */
+export interface DecomposedVoid {
+  id: string;
+  primitive: "box" | "cylinder" | "sphere";
+  host: string;
+  volume: number;
+  host_volume: number;
+  union_volume: number;
+  error: number;
+  layout: "strips" | "ring";
+  ring?: RingReport | null;
 }
 
 export interface Density {
@@ -339,6 +395,15 @@ export interface Gravity {
   source: Source;
   value: number;
   unit: "m/s^2";
+}
+
+/**
+ * First message of each side: the protocol number it speaks. The core answers a `hello` it can serve with its
+ * own; with a number it cannot serve it answers `error` and closes.
+ */
+export interface Hello {
+  type: "hello";
+  protocol: number;
 }
 
 /** `entries[:cursor]` are applied, `entries[cursor:]` were undone and can be redone. */
@@ -544,12 +609,40 @@ export interface Project {
   assumptions?: AssumptionTable;
 }
 
+/**
+ * The sections of the project a change replaced, each as its whole new value. A section that is `None` did not
+ * change. `materials`, `parts`, `instances`, `joints`, `actuators`, `schedule` are the parts of `Project.design`;
+ * `world` and `assumptions` are the project's. A change is at the grain of a section, not of an item: a client
+ * that needs finer grain reads `Applied.command`, but never needs to apply it (D3).
+ */
+export interface ProjectChanges {
+  materials?: Material[] | null;
+  parts?: PartDef[] | null;
+  instances?: Instance[] | null;
+  joints?: Joint[] | null;
+  actuators?: Actuator[] | null;
+  schedule?: ControlSchedule | null;
+  world?: World | null;
+  assumptions?: AssumptionTable | null;
+}
+
 /** A prop dimension in metres, > 0. */
 export interface PropSize {
   badge: Badge;
   source: Source;
   value: number;
   unit: "m";
+}
+
+/**
+ * The connection broke the protocol (not a rejected command): bad JSON, a message that is no known message,
+ * a `publish` before `hello` or `subscribe`, an unknown project, a protocol number the core does not speak. A
+ * fatal error is followed by the core closing the connection.
+ */
+export interface ProtocolError {
+  type: "error";
+  message: string;
+  fatal: boolean;
 }
 
 /**
@@ -563,9 +656,14 @@ export interface Provenance {
   source: Source;
 }
 
-/** What the proxy was derived from: the recipe and the parameter values, with their badges. */
+/**
+ * What the proxy was derived from: the recipe and the parameter values, with their badges, and how the voids were
+ * handled. `tolerance` (a fraction, unit `1`, badge `default` when the engine's default, otherwise the caller's) is the
+ * bound on every decomposed host's `|error|`; it is present exactly when `method` is `void-decomposition`.
+ */
 export interface ProxyDerivation {
-  method?: "added-primitives";
+  method: "added-primitives" | "void-decomposition";
+  tolerance?: Quantity | null;
   shape: Provenance;
   parameters: ParameterUse[];
   input_badges: Badge[];
@@ -576,16 +674,31 @@ export interface ProxyDerivation {
  * One convex primitive of the proxy, in the part frame.
  *
  * `dimensions` are resolved lengths in metres under the names `shape.py` gives them (`size_x`, `radius`, `length`, ...),
- * `center` its centre in metres and `orientation` its rotation about that centre. `id` is the id of the added shape
- * component it copies; the geom is that component's primitive, unchanged. `volume` is in m^3.
+ * `center` its centre in metres and `orientation` its rotation about that centre. `component` is the id of the added
+ * shape component the geom belongs to. With method `added-primitives` the geom is that component's primitive unchanged
+ * and `id == component`; with `void-decomposition` a component that has voids is several geoms (pieces), each with
+ * its own `id`. `volume` is in m^3.
  */
 export interface ProxyGeom {
   id: string;
+  component: string;
   primitive: "box" | "cylinder" | "sphere";
   dimensions: Dimension[];
   center: [number, number, number];
   orientation: Quaternion;
   volume: number;
+}
+
+/**
+ * Send a command (one edit or a batch, all or nothing: C2). `id` is the publisher's command id (C6),
+ * `base_revision` the revision the publisher saw (C5), `origin` the input path (`client-adapter.md` 3.5).
+ */
+export interface Publish {
+  type: "publish";
+  id: string;
+  base_revision: number;
+  command: AddPartDef | ReplacePartDef | RemovePartDef | AddMaterialDef | ReplaceMaterialDef | RemoveMaterialDef | AddInstance | RemoveInstance | MoveInstance | SetParameter | ClearParameter | SetInstanceMaterial | AddJoint | ReplaceJoint | RemoveJoint | AddActuator | RemoveActuator | AddControlEntry | RemoveControlEntry | ReplaceControlEntry | AddAssumption | SetAssumption | RemoveAssumption | SelectPlanet | CommandBatch;
+  origin: Origin;
 }
 
 /** One physical number with its unit, badge and source. */
@@ -639,6 +752,13 @@ export interface Ref {
 }
 
 export type RefKind = "instance" | "joint" | "actuator" | "part" | "material" | "snap_point" | "schedule_entry" | "assumption" | "parameter" | "planet" | "prop";
+
+/** To the publisher: `id` changed nothing, for these reasons (never empty: C3). */
+export interface Rejected {
+  type: "rejected";
+  id: string;
+  reasons: Reason[];
+}
 
 /** Remove an actuator with its schedule entries. */
 export interface RemoveActuator {
@@ -712,6 +832,44 @@ export interface ReplaceMaterialDef {
 export interface ReplacePartDef {
   type: "replace_part_def";
   part: PartDef;
+}
+
+/**
+ * Ask the core to do something to the history. `undo` and `redo` take back and redo the document's last
+ * entry, whoever made it (one linear history in S1; per-user undo is N-04).
+ */
+export interface Request {
+  type: "request";
+  id: string;
+  action: RequestAction;
+  origin: Origin;
+}
+
+export type RequestAction = "undo" | "redo";
+
+/**
+ * The core continues a subscription from `after_revision`: the `revision - after_revision` `applied` messages
+ * that follow, in order, bring the client's copy to `revision`.
+ */
+export interface Resumed {
+  type: "resumed";
+  project_id: string;
+  epoch: string;
+  after_revision: number;
+  revision: number;
+}
+
+/**
+ * How a tube's ring of boxes sits against the real tube. `wall_closed`: every ray from the axis enters the wall once
+ * and leaves once, so there is no radial slit (the model rejects `False`). `inner_deviation` [m] is the largest radial
+ * distance the proxy's bore wall is from the real bore (towards the wall); `outer_deviation` [m] the largest the
+ * proxy's outer surface is inside the real outer cylinder (the notches between boxes).
+ */
+export interface RingReport {
+  staves: number;
+  wall_closed: boolean;
+  inner_deviation: number;
+  outer_deviation: number;
 }
 
 /** Put the project on another planet, by id. The planet's constants are not part of any command. */
@@ -795,6 +953,16 @@ export interface SnapRef {
   snap_point: string;
 }
 
+/** The whole document at `revision`, of the document life `epoch`. */
+export interface Snapshot {
+  type: "snapshot";
+  project_id: string;
+  epoch: string;
+  revision: number;
+  verdict: VerdictState;
+  project: Project;
+}
+
 /**
  * Where a value comes from.
  *
@@ -839,6 +1007,18 @@ export interface StepProp {
   height: PropSize;
 }
 
+/**
+ * Follow a project. `after_revision` and `epoch` are the last revision the client holds and the `epoch` it came
+ * with (a reconnect); `None` for a first subscription. Both are needed to be resumed: with only one the core
+ * answers a `snapshot`. One subscription per connection; a second `subscribe` replaces it.
+ */
+export interface Subscribe {
+  type: "subscribe";
+  project: string;
+  after_revision?: number | null;
+  epoch?: string | null;
+}
+
 export interface UniformDistribution {
   badge: Badge;
   source: Source;
@@ -855,6 +1035,8 @@ export interface Unverified {
   item: "gravity" | "atmosphere_density" | "insolation" | "ground_friction";
   reason: string;
 }
+
+export type VerdictState = "none" | "valid" | "invalid";
 
 /** `planet` is an ID (same pattern as every other ID); `terrain_props` sit on that planet's flat ground. */
 export interface World {
@@ -876,10 +1058,14 @@ export interface YieldStrength {
   unit: "Pa";
 }
 
+export type ClientMessage = Hello | Subscribe | Publish | Request;
+
 export type Command = AddPartDef | ReplacePartDef | RemovePartDef | AddMaterialDef | ReplaceMaterialDef | RemoveMaterialDef | AddInstance | RemoveInstance | MoveInstance | SetParameter | ClearParameter | SetInstanceMaterial | AddJoint | ReplaceJoint | RemoveJoint | AddActuator | RemoveActuator | AddControlEntry | RemoveControlEntry | ReplaceControlEntry | AddAssumption | SetAssumption | RemoveAssumption | SelectPlanet | CommandBatch;
 
 export type Distribution = FixedDistribution | UniformDistribution | NormalDistribution;
 
 export type EditCommand = AddPartDef | ReplacePartDef | RemovePartDef | AddMaterialDef | ReplaceMaterialDef | RemoveMaterialDef | AddInstance | RemoveInstance | MoveInstance | SetParameter | ClearParameter | SetInstanceMaterial | AddJoint | ReplaceJoint | RemoveJoint | AddActuator | RemoveActuator | AddControlEntry | RemoveControlEntry | ReplaceControlEntry | AddAssumption | SetAssumption | RemoveAssumption | SelectPlanet;
+
+export type ServerMessage = Hello | Snapshot | Resumed | Applied | Accepted | Rejected | ProtocolError;
 
 export type TerrainProp = RampProp | StepProp;

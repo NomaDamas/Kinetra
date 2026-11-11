@@ -21,6 +21,8 @@ export const FILES = [
   "drive-shaft-steel",
   "sensor-mast-user-material",
   "reflectance-ior",
+  "beam-al6061",
+  "plate-al6061",
   "payload-mount-al6061",
   "payload-declared-mass",
   "ballast-weight-declared-mass",
