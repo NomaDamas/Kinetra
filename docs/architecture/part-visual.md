@@ -2,7 +2,7 @@
 
 - 상태: 구현됨. 코드는 `packages/engine/src/kinetra_engine/parts/visual.py`(파일 만들기)와 `_tessellate.py`(삼각형 분할). 테스트는 `packages/engine/tests/test_gltf.py`(`uv run pytest packages/engine -q -k gltf`), 공식 검증기와 브라우저 증거는 `tools/gltf-check`.
 - 근거: 이슈 #94, `docs/architecture/client-adapter.md` A1(시각 메시와 물리 모델은 따로다), 핵심 가치 V5, `docs/architecture/part-mass.md`(같은 레시피), `docs/architecture/materials.md`(PBR 슬롯).
-- 범위 밖: 충돌 프록시(B-01b), 캐시(B-01d), 부품 종류(B-02, B-03), STEP·STL 내보내기(HW-02), 텍스처, 빈 곳(`subtract`)을 시각 메시에서 파내는 일(#496, B-01g).
+- 범위 밖: 충돌 프록시(B-01b), 캐시(B-01d, `part-cache.md`), 부품 종류(B-02, B-03), STEP·STL 내보내기(HW-02), 텍스처, 빈 곳(`subtract`)을 시각 메시에서 파내는 일(#496, B-01g).
 
 ## 쓰는 법
 

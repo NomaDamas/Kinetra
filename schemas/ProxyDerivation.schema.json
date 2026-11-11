@@ -1,13 +1,26 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "additionalProperties": false,
-  "description": "What the proxy was derived from: the recipe and the parameter values, with their badges.",
+  "description": "What the proxy was derived from: the recipe and the parameter values, with their badges, and how the voids were\nhandled. `tolerance` (a fraction, unit `1`, badge `default` when the engine's default, otherwise the caller's) is the\nbound on every decomposed host's `|error|`; it is present exactly when `method` is `void-decomposition`.",
   "properties": {
     "method": {
-      "const": "added-primitives",
-      "default": "added-primitives",
+      "enum": [
+        "added-primitives",
+        "void-decomposition"
+      ],
       "title": "Method",
       "type": "string"
+    },
+    "tolerance": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/Quantity"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
     },
     "shape": {
       "$ref": "#/$defs/Provenance"
@@ -35,6 +48,7 @@
     }
   },
   "required": [
+    "method",
     "shape",
     "parameters",
     "input_badges",

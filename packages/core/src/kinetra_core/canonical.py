@@ -11,12 +11,17 @@ The canonical form of a value (`canonical_json`):
 - Every field of every model, in a JSON object whose keys are sorted (by UTF-16 code unit, as RFC 8785 does).
   A field that is not required and holds its default is left out, so a leaf that later adds an optional field
   does not change the hash of a value that leaves it alone (`client-adapter.md` G5: fields can be added).
-- Every collection is sorted by the key that names its items (`_ORDER`): materials, parts, instances, joints,
-  actuators, schedule entries, terrain props by `id`; parameters, specs, instance parameter values by `name`;
-  snap points and shape components by `id`; assumptions by `key`; `accepts` tags by value; length terms by
-  `(param, factor)`. Every item of a collection has such a key, so the order is total. A collection of a type that
-  has no entry in `_ORDER` raises `CanonicalError` instead of being hashed in file order, and
-  `test_every_collection_of_the_project_model_has_a_canonical_order` fails when a leaf adds one.
+- Every collection is sorted by the key that names its items. The key is registered per FIELD (`_ORDER`, keyed by
+  the owning model and the field name), not per item type: `DesignSpec.materials`, `.parts`, `.instances`,
+  `.joints`, `.actuators`, `ControlSchedule.entries` and `World.terrain_props` by `id`; `PartDef.parameters`,
+  `.specs` and `Instance.parameters` by `name`; `PartDef.snap_points` and `Shape.components` by `id`;
+  `AssumptionTable.assumptions` by `key`; `SnapPoint.accepts` tags by value; `AxisExpr.terms` by
+  `(param, factor)`. Every item of a collection has such a key, so the order is total. Names and ids match
+  ASCII patterns, so code point order is UTF-16 code unit order and a client compares with `<`, not a locale
+  collation. A tuple field with no entry in `_ORDER` raises `CanonicalError` instead of being hashed in file order, and
+  `test_hash_every_collection_of_the_project_model_has_a_canonical_order` walks the model and fails when a leaf
+  adds a tuple field that is not registered (a list whose order MEANS something, like a route of ids, must never
+  be sorted: such a field is a new rule, not a new entry).
 - Whatever is not a collection keeps its meaning: a joint's `a` (parent) and `b` (child), a quaternion's four
   components, a snap point's position, ids and names. They are values, not display.
 - Numbers are written the way ECMAScript's `Number.prototype.toString` writes them (RFC 8785 section 3.2.2.3):
@@ -24,6 +29,10 @@ The canonical form of a value (`canonical_json`):
   [1e-6, 1e21). A non-finite number is an error (the model rejects it already).
 - Timestamps (`declared_at`) are converted to UTC and written `YYYY-MM-DDTHH:MM:SS[.f]Z`, the fraction with its
   trailing zeros trimmed. The same instant hashes the same whatever offset it was declared in.
+- Not stored in the text: a field that is not required and holds its default (above). Which fields these are,
+  with their defaults, is pinned in `test_hash_omitted_defaults_are_pinned`: **changing a model default is a change
+  of these rules** (it changes what an omitted field means and what is hashed), so it needs a file `version` bump
+  and a migration of older files, never a silent edit.
 - Strings are JSON-escaped as RFC 8785 says (only `"` `\\` and control characters; everything else is the UTF-8
   character itself) and are not normalised or trimmed: a different string is a different value. No whitespace
   between tokens.
@@ -38,7 +47,9 @@ the trajectory hash of a run (X-02d), asset content hashes (A2).
 What this does not promise: two projects with equal hashes are equal as documents, not bit for bit as inputs. The
 float sum of an engine that walks `instances` in list order can differ in its last digits from the sum in another
 order, and MuJoCo orders its solver by body order. A consumer that needs one hash to mean one trajectory has to read
-the project in this module's order (by id), which is the compiler's (X-01) to do.
+the project in this module's order (by id): the compiler's rule, issue #511. Until then there are two definition
+hashes in the repository on purpose: this one (order-free, "is it the same definition?", C-06) and
+`kinetra_engine.parts.cache.part_key` (strict, a cache key: never reuse a result computed from another order).
 """
 
 from __future__ import annotations
@@ -54,14 +65,14 @@ from typing import Any
 
 from pydantic import BaseModel
 
-from .assumption import Assumption
-from .designspec import ActuateEntry, Actuator, Instance, Joint, ParamValue
-from .geometry import ParamTerm
+from .assumption import AssumptionTable
+from .designspec import ControlSchedule, DesignSpec, Instance
+from .geometry import AxisExpr
 from .material import Material
-from .partdef import ParamDef, PartDef, SnapPoint, SpecDef
+from .partdef import PartDef, SnapPoint
 from .project import Project
-from .shape import ShapeComponent
-from .world import RampProp, StepProp
+from .shape import Shape
+from .world import World
 
 HASH_PREFIX = "sha256:"
 
@@ -70,39 +81,50 @@ class CanonicalError(ValueError):
     """A value has no canonical form (an unknown collection, a number that is not finite, text that is not UTF-8)."""
 
 
-# The key of each item of a collection, by the item's type. Keys are unique inside a collection (the models check
-# it), so sorting by them is total. `str` is the tags of `SnapPoint.accepts`.
-_ORDER: dict[type, Callable[[Any], Any]] = {
-    Material: lambda m: m.id,
-    PartDef: lambda m: m.id,
-    Instance: lambda m: m.id,
-    Joint: lambda m: m.id,
-    Actuator: lambda m: m.id,
-    ActuateEntry: lambda m: m.id,
-    ParamDef: lambda m: m.name,
-    SnapPoint: lambda m: m.id,
-    SpecDef: lambda m: m.name,
-    ShapeComponent: lambda m: m.id,
-    ParamValue: lambda m: m.name,
-    ParamTerm: lambda m: (m.param, m.factor),
-    Assumption: lambda m: m.key,
-    RampProp: lambda m: m.id,
-    StepProp: lambda m: m.id,
-    str: lambda s: s,
+# The key of each item of an ordered-by-name collection, by (owning model, field). A key is unique inside its
+# collection (the models check it), so sorting by it is total. `str` items are the tags of `SnapPoint.accepts`.
+def _id(m: Any) -> Any:
+    return m.id
+
+
+def _name(m: Any) -> Any:
+    return m.name
+
+
+_ORDER: dict[tuple[type, str], Callable[[Any], Any]] = {
+    (DesignSpec, "materials"): _id,
+    (DesignSpec, "parts"): _id,
+    (DesignSpec, "instances"): _id,
+    (DesignSpec, "joints"): _id,
+    (DesignSpec, "actuators"): _id,
+    (ControlSchedule, "entries"): _id,
+    (World, "terrain_props"): _id,
+    (PartDef, "parameters"): _name,
+    (PartDef, "specs"): _name,
+    (PartDef, "snap_points"): _id,
+    (Shape, "components"): _id,
+    (Instance, "parameters"): _name,
+    (AssumptionTable, "assumptions"): lambda m: m.key,
+    (SnapPoint, "accepts"): lambda tag: tag,
+    (AxisExpr, "terms"): lambda t: (t.param, t.factor),
 }
 
 
-def _sorted(items: tuple[Any, ...]) -> list[Any]:
-    for item in items:
-        if type(item) not in _ORDER:
-            raise CanonicalError(
-                f"no canonical order for a collection of {type(item).__name__}: add it to canonical._ORDER with the key that names its items"
-            )
-    return sorted(items, key=lambda item: _ORDER[type(item)](item))
+def _sorted(owner: BaseModel, field: str, items: tuple[Any, ...]) -> list[Any]:
+    key = _ORDER.get((type(owner), field))
+    if key is None:
+        raise CanonicalError(
+            f"no canonical order for {type(owner).__name__}.{field}: register the key that names its items in "
+            "canonical._ORDER (or, if its order is part of its meaning, make it a new rule with a file version)"
+        )
+    return sorted(items, key=key)
 
 
 def _utc(value: datetime) -> str:
-    u = value.astimezone(timezone.utc)
+    try:
+        u = value.astimezone(timezone.utc)
+    except OverflowError:
+        raise CanonicalError(f"timestamp {value.isoformat()} is outside the years 1 to 9999 once written in UTC") from None
     fraction = f".{u.microsecond:06d}".rstrip("0") if u.microsecond else ""
     return f"{u.year:04d}-{u.month:02d}-{u.day:02d}T{u.hour:02d}:{u.minute:02d}:{u.second:02d}{fraction}Z"
 
@@ -115,12 +137,10 @@ def _plain(value: Any) -> Any:
             item = getattr(value, name)
             if not field.is_required() and item == field.get_default(call_default_factory=True):
                 continue
-            out[name] = _plain(item)
+            out[name] = [_plain(i) for i in _sorted(value, name, item)] if isinstance(item, tuple) else _plain(item)
         return out
     if isinstance(value, Enum):
         return _plain(value.value)
-    if isinstance(value, tuple):
-        return [_plain(i) for i in _sorted(value)]
     if isinstance(value, datetime):
         if value.tzinfo is None:
             raise CanonicalError(f"timestamp without a time zone: {value!r}")

@@ -24,6 +24,9 @@ from .world import World
 
 
 class Project(BaseModel):
+    # extra="forbid" is a decision of the project file format (`projectfile.py`, C-03): a field a build does not know
+    # is refused, never ignored, and adding a field bumps the file version. C-06 (#455) relaxes the definition
+    # references of `DesignSpec`/`Project`, not this.
     model_config = ConfigDict(extra="forbid", frozen=True)
 
     design: DesignSpec = DesignSpec()

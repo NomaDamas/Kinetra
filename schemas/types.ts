@@ -168,9 +168,18 @@ export interface ClearParameter {
 /**
  * The collision proxy of one part.
  *
- * `proxy_volume` and `recipe_volume` are the volumes of the geoms and of the shape recipe (added minus voids, the volume
- * `MassProperties` reports); `volume_error` is `(proxy - recipe) / recipe`, dimensionless and never negative.
- * `filled_voids` lists every void the proxy filled; their volumes add up to `proxy_volume - recipe_volume`.
+ * `proxy_volume` and `recipe_volume` are the volumes of the proxy (the union of its geoms) and of the shape recipe (added
+ * minus voids, the volume `MassProperties` reports); `volume_error` is `(proxy - recipe) / recipe`, dimensionless and
+ * **signed**. In every proxy `proxy_volume - recipe_volume` = the sum of `filled_voids` volumes + the sum of
+ * `union_volume - (host_volume - volume)` over `decomposed_voids`.
+ *
+ * - `added-primitives`: `decomposed_voids` is empty, every geom is its component unchanged (`id == component`), the
+ *   geoms do not overlap each other and `proxy_volume` is their sum; the error is never negative.
+ * - `void-decomposition`: `decomposed_voids` is not empty. A host's geoms are its pieces (`component` = the host's id), the
+ *   rest are components unchanged. `|error|` of each decomposed host is within `derivation.tolerance`. The decomposition the
+ *   engine builds is inside the recipe's material, so each host's error is never positive; the model does not require it.
+ *
+ * Mass, centre of mass and inertia never come from the proxy; they come from `MassProperties` (B-01a).
  */
 export interface CollisionProxy {
   badge: "sim";
@@ -178,6 +187,7 @@ export interface CollisionProxy {
   part_id: string;
   geoms: ProxyGeom[];
   filled_voids: FilledVoid[];
+  decomposed_voids: DecomposedVoid[];
   proxy_volume: DerivedScalar;
   recipe_volume: DerivedScalar;
   volume_error: DerivedScalar;
@@ -226,6 +236,27 @@ export interface Cylinder {
   kind: "cylinder";
   radius: AxisExpr;
   length: AxisExpr;
+}
+
+/**
+ * A subtracted shape component the proxy kept as a gap: the pieces of its `host` (the added component that contains
+ * it) leave this void empty.
+ *
+ * `volume` is the void's volume, `host_volume` the host primitive's, `union_volume` the volume of the union of the host's
+ * pieces (all in m^3), and `error` = `(union_volume - (host_volume - volume)) / (host_volume - volume)` the signed error
+ * of this host alone. `layout`: `strips` (disjoint boxes cut across a plate) or `ring` (boxes around a tube's axis,
+ * overlapping; `ring` then carries the report).
+ */
+export interface DecomposedVoid {
+  id: string;
+  primitive: "box" | "cylinder" | "sphere";
+  host: string;
+  volume: number;
+  host_volume: number;
+  union_volume: number;
+  error: number;
+  layout: "strips" | "ring";
+  ring?: RingReport | null;
 }
 
 /** The hash of one definition the project carries (a `PartDef` or a `Material`). */
@@ -583,9 +614,14 @@ export interface Provenance {
   source: Source;
 }
 
-/** What the proxy was derived from: the recipe and the parameter values, with their badges. */
+/**
+ * What the proxy was derived from: the recipe and the parameter values, with their badges, and how the voids were
+ * handled. `tolerance` (a fraction, unit `1`, badge `default` when the engine's default, otherwise the caller's) is the
+ * bound on every decomposed host's `|error|`; it is present exactly when `method` is `void-decomposition`.
+ */
 export interface ProxyDerivation {
-  method?: "added-primitives";
+  method: "added-primitives" | "void-decomposition";
+  tolerance?: Quantity | null;
   shape: Provenance;
   parameters: ParameterUse[];
   input_badges: Badge[];
@@ -596,11 +632,14 @@ export interface ProxyDerivation {
  * One convex primitive of the proxy, in the part frame.
  *
  * `dimensions` are resolved lengths in metres under the names `shape.py` gives them (`size_x`, `radius`, `length`, ...),
- * `center` its centre in metres and `orientation` its rotation about that centre. `id` is the id of the added shape
- * component it copies; the geom is that component's primitive, unchanged. `volume` is in m^3.
+ * `center` its centre in metres and `orientation` its rotation about that centre. `component` is the id of the added
+ * shape component the geom belongs to. With method `added-primitives` the geom is that component's primitive unchanged
+ * and `id == component`; with `void-decomposition` a component that has voids is several geoms (pieces), each with
+ * its own `id`. `volume` is in m^3.
  */
 export interface ProxyGeom {
   id: string;
+  component: string;
   primitive: "box" | "cylinder" | "sphere";
   dimensions: Dimension[];
   center: [number, number, number];
@@ -732,6 +771,19 @@ export interface ReplaceMaterialDef {
 export interface ReplacePartDef {
   type: "replace_part_def";
   part: PartDef;
+}
+
+/**
+ * How a tube's ring of boxes sits against the real tube. `wall_closed`: every ray from the axis enters the wall once
+ * and leaves once, so there is no radial slit (the model rejects `False`). `inner_deviation` [m] is the largest radial
+ * distance the proxy's bore wall is from the real bore (towards the wall); `outer_deviation` [m] the largest the
+ * proxy's outer surface is inside the real outer cylinder (the notches between boxes).
+ */
+export interface RingReport {
+  staves: number;
+  wall_closed: boolean;
+  inner_deviation: number;
+  outer_deviation: number;
 }
 
 /** Put the project on another planet, by id. The planet's constants are not part of any command. */

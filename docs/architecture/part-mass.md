@@ -2,7 +2,7 @@
 
 - 상태: 구현됨. 모델은 `packages/core/src/kinetra_core/`의 `shape.py`(레시피), `geometry.py`(길이식, 위치, 쿼터니언), `massprops.py`(결과). 계산은 `packages/engine/src/kinetra_engine/parts/mass.py`. 테스트는 `packages/engine/tests/test_inertia.py`, `packages/core/tests/test_shape.py`.
 - 근거: `docs/plan/studio-plan.md` 3절(build123d port), 5절, `docs/architecture/client-adapter.md` D4(파생값은 코어가 계산해 배지와 함께 보낸다), 이슈 #92, C-01a의 "알려진 확장"(형상 레시피와 파생값의 입력).
-- 범위 밖: 충돌 프록시(B-01b), glTF(B-01c, `part-visual.md`), 캐시(B-01d), 부품 종류와 실재료 값(B-02, B-03, B-07), STEP·STL(HW-02).
+- 범위 밖: 충돌 프록시(B-01b), glTF(B-01c, `part-visual.md`), 캐시(B-01d, `part-cache.md`), 부품 종류와 실재료 값(B-02, B-03, B-07), STEP·STL(HW-02).
 
 ## 쓰는 법
 
@@ -52,12 +52,12 @@ result = mass_properties(part_def, material, {"width": q})   # 덮어쓸 파라�
 | `input_badges` | 위 입력 배지의 서로 다른 값(배지 순서). 검증이 `shape`·`density`·`parameters`의 배지와 대조해 다르면 거절한다(따로 고칠 수 없다) |
 | `assumptions` | 균질 강체, 닫힌 식, 겹치지 않는 합 |
 
-모든 필드가 튜플·불변이라 `MassProperties`는 해시된다(B-01d 캐시 키로 쓸 수 있다). 덮어쓴 파라미터는 `ParamValue` 같은 하위 클래스로 와도 평범한 `Quantity`로 바꿔 담아 JSON 왕복이 같다. `MassProperties`의 `badge`는 `sim` 하나로 고정되어 있어 `cite`나 `declared`로 위조할 수 없다(검증이 거절한다). 선언한 밀도로 낸 질량은 그 선언만큼만 맞다. 입력 배지를 하나로 합치는 규칙(X-07의 "가장 약한 입력")은 소비하는 쪽이 정한다. 이 모듈은 순위를 정하지 않고 입력 배지를 그대로 내놓는다.
+모든 필드가 튜플·불변이라 `MassProperties`는 해시된다. 캐시(B-01d, `part-cache.md`)의 키는 이 결과가 아니라 입력(정의, 재료, 파라미터)이다. 덮어쓴 파라미터는 `ParamValue` 같은 하위 클래스로 와도 평범한 `Quantity`로 바꿔 담아 JSON 왕복이 같다. `MassProperties`의 `badge`는 `sim` 하나로 고정되어 있어 `cite`나 `declared`로 위조할 수 없다(검증이 거절한다). 선언한 밀도로 낸 질량은 그 선언만큼만 맞다. 입력 배지를 하나로 합치는 규칙(X-07의 "가장 약한 입력")은 소비하는 쪽이 정한다. 이 모듈은 순위를 정하지 않고 입력 배지를 그대로 내놓는다.
 
 ## 검증
 
 - 변이 점검: `ixy` 평행축 부호, `iyz` 인덱스, 겹침 바디의 역회전, `_check_physical` 호출 삭제를 각각 넣으면 `test_inertia.py`가 실패한다.
-- 겹침 공차는 상대 1e-9라서 맞닿게 놓으려는 돌린 요소를 7자리 정도로 적으면 반올림 방향에 따라 겹침으로 거절될 수 있다(`0.1414214` 통과, `0.1414213` 거절). 부품을 손으로 적는 B-02, B-03과 `add-part.md`(B-01d)가 알아야 한다.
+- 겹침 공차는 상대 1e-9라서 맞닿게 놓으려는 돌린 요소를 7자리 정도로 적으면 반올림 방향에 따라 겹침으로 거절될 수 있다(`0.1414214` 통과, `0.1414213` 거절). 부품을 손으로 적는 B-02, B-03이 알아야 하고 `docs/process/add-part.md`의 "맞닿은 요소"에 규칙을 적었다(멀어지는 쪽으로 올림은 3~12자리 모두 통과, 내림은 7·8자리에서 거절, `repr(float)` 전체는 통과).
 
 - 해석해가 있는 형상 3종(상자, 원기둥, 구)을 손계산 값과 $10^{-9}$ 상대 오차로 비교한다. 이어 L자 두 상자(평행축), 구멍 난 판, 두꺼운 관, 회전한 원기둥·상자(곱 관성 부호)도 손계산 값과 비교한다.
 - 독립 수치 적분(z 방향 현을 격자 위에서 적분하는 방식이라 닫힌 식을 쓰지 않는다)과 상자+보어+옆으로 누운 막대+구의 합성체를 부피·무게중심·관성 모두 1% 이하로 비교한다.

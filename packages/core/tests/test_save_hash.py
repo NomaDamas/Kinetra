@@ -8,6 +8,7 @@ import copy
 import json
 import os
 import random
+import sys
 import types
 import typing
 from pathlib import Path
@@ -308,38 +309,40 @@ def test_hash_of_a_shape_component_ignores_the_written_identity_orientation():
 
 def test_hash_unknown_collection_has_no_canonical_order(monkeypatch):
     p = project_of(load(CAR))
-    monkeypatch.delitem(canonical._ORDER, kinetra_core.Joint)
-    with pytest.raises(CanonicalError, match="no canonical order for a collection of Joint"):
+    monkeypatch.delitem(canonical._ORDER, (kinetra_core.DesignSpec, "joints"))
+    with pytest.raises(CanonicalError, match="no canonical order for DesignSpec.joints"):
         project_hash(p)
 
 
-def _tuple_item_types(tp):
+def _members(tp):
     origin = typing.get_origin(tp)
-    if origin is tuple:
-        yield typing.get_args(tp)[0]
-    elif origin is typing.Annotated:
-        yield from _tuple_item_types(typing.get_args(tp)[0])
+    if origin is typing.Annotated:
+        yield from _members(typing.get_args(tp)[0])
     elif origin in (typing.Union, types.UnionType):
         for arg in typing.get_args(tp):
-            yield from _tuple_item_types(arg)
-
-
-def _members(tp):
-    if typing.get_origin(tp) is typing.Annotated:
-        yield from _members(typing.get_args(tp)[0])
-    elif typing.get_origin(tp) in (typing.Union, types.UnionType):
-        for arg in typing.get_args(tp):
             yield from _members(arg)
+    elif origin is tuple:
+        for arg in typing.get_args(tp):
+            if arg is not Ellipsis:
+                yield from _members(arg)
     else:
         yield tp
 
 
-def test_hash_every_collection_of_the_project_model_has_a_canonical_order():
-    """A leaf that adds a tuple field to a model reachable from `Project` fails here until it names the key that
-    orders the items in `canonical._ORDER` (else the new collection would be hashed in file order)."""
+def _is_tuple_field(tp) -> bool:
+    origin = typing.get_origin(tp)
+    if origin is typing.Annotated:
+        return _is_tuple_field(typing.get_args(tp)[0])
+    if origin in (typing.Union, types.UnionType):
+        return any(_is_tuple_field(a) for a in typing.get_args(tp))
+    return origin is tuple
+
+
+def ordered_fields(root: type[BaseModel]) -> set[tuple[type, str]]:
+    """Every (model, field) reachable from `root` whose type is a tuple: a collection that needs a canonical order."""
     seen: set[type] = set()
-    stack = [Project]
-    collections: list[tuple[str, type]] = []
+    stack = [root]
+    found: set[tuple[type, str]] = set()
     while stack:
         model = stack.pop()
         if model in seen:
@@ -348,20 +351,42 @@ def test_hash_every_collection_of_the_project_model_has_a_canonical_order():
         for name, hint in typing.get_type_hints(model, include_extras=True).items():
             if name.startswith("model_"):
                 continue
-            for item in _tuple_item_types(hint):
-                for member in _members(item):
-                    collections.append((f"{model.__name__}.{name}", member))
-            for member in _members(hint):
-                if isinstance(member, type) and issubclass(member, BaseModel):
-                    stack.append(member)
-            for item in _tuple_item_types(hint):
-                for member in _members(item):
-                    if isinstance(member, type) and issubclass(member, BaseModel):
-                        stack.append(member)
-    assert len(collections) >= 12
-    missing = [f"{where}: {t.__name__}" for where, t in collections if t not in canonical._ORDER]
-    assert missing == []
-    assert {t for _, t in collections} == set(canonical._ORDER)  # and nothing is listed that no collection holds
+            if _is_tuple_field(hint):
+                found.add((model, name))
+            stack.extend(m for m in _members(hint) if isinstance(m, type) and issubclass(m, BaseModel))
+    return found
+
+
+def test_hash_every_collection_of_the_project_model_has_a_canonical_order():
+    """A leaf that adds a tuple field to a model reachable from `Project` fails here until it registers the field
+    in `canonical._ORDER`, and a field whose order means something (a route of ids) must not be registered at all:
+    the guard is per field, so a `tuple[str, ...]` is not sorted just because `SnapPoint.accepts` is."""
+    fields = ordered_fields(Project)
+    assert len(fields) >= 12
+    assert sorted(f"{m.__name__}.{n}" for m, n in fields - set(canonical._ORDER)) == []
+    assert sorted(f"{m.__name__}.{n}" for m, n in set(canonical._ORDER) - fields) == []  # nothing listed that holds no collection
+
+
+class _Route(BaseModel):
+    stops: tuple[str, ...]
+
+
+class _Holder(BaseModel):
+    route: _Route
+
+
+class _Terms(BaseModel):
+    accepts: tuple[str, ...]
+
+
+def test_hash_a_new_tuple_field_on_a_scratch_model_is_not_sorted_silently():
+    assert (_Route, "stops") in ordered_fields(_Holder)
+    assert (_Route, "stops") not in canonical._ORDER
+    with pytest.raises(CanonicalError, match=r"no canonical order for _Route\.stops"):
+        canonical._plain(_Route(stops=("c", "a", "b")))
+    # a field NAME that is registered on another model (SnapPoint.accepts) is no licence either
+    with pytest.raises(CanonicalError, match=r"_Terms\.accepts"):
+        canonical._plain(_Terms(accepts=("b", "a")))
 
 
 def test_hash_collection_keys_are_unique_inside_a_collection(car):
@@ -643,3 +668,223 @@ def test_save_open_the_hash_says_same_or_different_not_who_wrote_it():
     d["project_hash"] = project_hash(changed)
     d["definitions"] = json.loads(dump_project(changed))["definitions"]
     assert parse_project(json.dumps(d)).project == changed
+
+
+# --- the defaults the hash leaves out are pinned --------------------------------------------------------------
+
+
+OMITTED_DEFAULTS = {
+    "Actuator.joint": None,
+    "Assumption.distribution": {"kind": "fixed"},
+    "Assumption.editable": True,
+    "AssumptionTable.assumptions": [],
+    "AxisExpr.terms": [],
+    "ControlSchedule.entries": [],
+    "DesignSpec.actuators": [],
+    "DesignSpec.instances": [],
+    "DesignSpec.joints": [],
+    "DesignSpec.materials": [],
+    "DesignSpec.parts": [],
+    "DesignSpec.schedule": {"entries": []},
+    "Instance.material": None,
+    "Instance.parameters": [],
+    "Joint.break_threshold": None,
+    "Joint.limits": None,
+    "NormalDistribution.clip_high": None,
+    "NormalDistribution.clip_low": None,
+    "PartDef.parameters": [],
+    "PartDef.shape": None,
+    "PartDef.snap_points": [],
+    "PartDef.specs": [],
+    "Project.assumptions": {"assumptions": []},
+    "Project.design": {"materials": [], "parts": [], "instances": [], "joints": [], "actuators": [], "schedule": {"entries": []}},
+    "RampProp.material": None,
+    "ShapeComponent.operation": "add",
+    "ShapeComponent.orientation": {"x": 0.0, "y": 0.0, "z": 0.0, "w": 1.0},
+    "SnapPoint.accepts": [],
+    "Source.declared_at": None,
+    "Source.declared_by": None,
+    "Source.license": None,
+    "Source.locator": None,
+    "Source.url": None,
+    "StepProp.material": None,
+    "World.terrain_props": [],
+}
+
+
+def test_hash_omitted_defaults_are_pinned():
+    """The canonical text leaves out every optional field that holds its default, so each default is part of the
+    rules: a changed default changes what an omitted field means and what a file hashes to. This table is the rule.
+    A failure here means CHANGING A MODEL DEFAULT IS A CHANGE OF THE FILE FORMAT: bump `projectfile.VERSION`, keep
+    reading the older version by its own rules and migrate (project-model.md, "저장·열기와 정의 해시"), and only then
+    edit this table."""
+    from pydantic import TypeAdapter
+
+    actual = {}
+    for model, name in sorted(_walk_models(Project), key=lambda mn: (mn[0].__name__, mn[1])):
+        field = model.model_fields[name]
+        if field.is_required():
+            continue
+        default = field.get_default(call_default_factory=True)
+        actual[f"{model.__name__}.{name}"] = None if default is None else TypeAdapter(type(default)).dump_python(default, mode="json")
+    assert actual == OMITTED_DEFAULTS
+
+
+def _walk_models(root):
+    seen, stack = set(), [root]
+    while stack:
+        model = stack.pop()
+        if model in seen:
+            continue
+        seen.add(model)
+        for name, hint in typing.get_type_hints(model, include_extras=True).items():
+            if name.startswith("model_"):
+                continue
+            yield model, name
+            stack.extend(m for m in _members(hint) if isinstance(m, type) and issubclass(m, BaseModel))
+
+
+def test_hash_of_a_part_with_a_shape_is_pinned():
+    """`block-with-hole` has a shape with an omitted `orientation` and a default `operation`."""
+    part = PartDef.model_validate(load("PartDef.block-with-hole.json"))
+    assert definition_hash(part) == "sha256:50a101681253c56d230d115e76b26965a8ac9dd4359ba7d275228236d706930a"
+
+
+def test_hash_a_shape_component_with_its_operation_written_out_is_the_same_definition():
+    data = PartDef.model_validate(load("PartDef.block-with-hole.json")).model_dump(mode="json")
+    assert any(c["operation"] == "add" for c in data["shape"]["components"])  # model_dump writes the default
+    assert definition_hash(PartDef.model_validate(data)) == definition_hash(PartDef.model_validate(load("PartDef.block-with-hole.json")))
+
+
+# --- the frozen v1 file -------------------------------------------------------------------------------------
+
+V1_FILE = Path(__file__).parent / "fixtures" / "project-file-v1.kinetra.json"
+V1_PROJECT_HASH = "sha256:6500512c2dd957e47b65b737c9b289779e3ac09ed1cb76a44c7918b02e3c6124"
+
+
+def test_save_open_reads_the_frozen_v1_file():
+    """`fixtures/project-file-v1.kinetra.json` is a file written by the first release of the format. It is NEVER
+    regenerated (unlike `schemas/examples/ProjectFile.*`, which tracks the writer): a later change that makes it
+    unreadable, or that changes its hash or the bytes the writer gives for it, breaks users' saved files. The way out
+    is a new `version` that still reads this one by its own rules, not an edit of this file or of the pins."""
+    raw = V1_FILE.read_bytes()
+    opened = parse_project(raw)
+    assert opened.version == 1 and opened.project_hash == V1_PROJECT_HASH == project_hash(opened.project)
+    assert any(p.shape is not None for p in opened.project.design.parts)  # it covers a shape, the omitted-default case
+    assert dump_project(opened.project) == raw
+
+
+# --- save: concurrency, links, permissions ---------------------------------------------------------------------
+
+
+def test_save_concurrent_saves_of_one_path_leave_one_whole_file(car, tmp_path):
+    from concurrent.futures import ThreadPoolExecutor
+
+    path = tmp_path / "p.kinetra.json"
+    small = project_of({"world": {"planet": "mars"}})
+    projects = [car, small, project_of(load(ROCKET)), project_of({"world": {"planet": "earth"}})]
+    with ThreadPoolExecutor(max_workers=4) as pool:
+        futures = [pool.submit(save_project, projects[i % 4], path) for i in range(160)]
+        for f in futures:
+            f.result()  # none raises
+    assert open_project(path).project in projects  # one whole file, not a mix
+    assert [p.name for p in tmp_path.iterdir()] == ["p.kinetra.json"]  # no temporary left
+
+
+def test_save_does_not_follow_a_link_planted_at_a_predictable_temporary_name(car, tmp_path, monkeypatch):
+    victim = tmp_path / "victim.txt"
+    victim.write_text("keep me")
+    path = tmp_path / "p.kinetra.json"
+    # even if an attacker guessed the name, O_EXCL refuses the link instead of writing through it
+    monkeypatch.setattr("secrets.token_hex", lambda n: "00" * n)
+    (tmp_path / ".kinetra-0000000000000000.tmp").symlink_to(victim)
+    with pytest.raises(FileExistsError):
+        save_project(car, path)
+    assert victim.read_text() == "keep me" and not path.exists()
+
+
+def test_save_through_a_symlink_updates_the_real_file_and_keeps_the_link(car, tmp_path):
+    real_dir = tmp_path / "sync"
+    real_dir.mkdir()
+    real = real_dir / "real.kinetra.json"
+    save_project(project_of({"world": {"planet": "earth"}}), real)
+    link = tmp_path / "link.kinetra.json"
+    link.symlink_to(real)
+    save_project(car, link)
+    assert link.is_symlink() and os.readlink(link) == str(real)
+    assert open_project(real).project == car
+    assert sorted(p.name for p in real_dir.iterdir()) == ["real.kinetra.json"]
+
+
+@pytest.mark.skipif(os.name != "posix", reason="permission bits")
+def test_save_keeps_the_permission_bits_of_the_file_it_replaces(car, tmp_path):
+    path = tmp_path / "p.kinetra.json"
+    save_project(project_of({"world": {"planet": "earth"}}), path)
+    os.chmod(path, 0o600)
+    save_project(car, path)
+    assert (path.stat().st_mode & 0o777) == 0o600
+    os.chmod(path, 0o640)
+    save_project(car, path)
+    assert (path.stat().st_mode & 0o777) == 0o640
+
+
+def test_save_a_new_file_gets_the_default_permissions(car, tmp_path):
+    path = tmp_path / "new.kinetra.json"
+    save_project(car, path)
+    assert open_project(path).project == car
+
+
+def test_save_asks_the_device_to_flush(car, tmp_path, monkeypatch):
+    calls = []
+    real_fsync = os.fsync
+    monkeypatch.setattr(os, "fsync", lambda fd: (calls.append(fd), real_fsync(fd))[1])
+    if sys.platform == "darwin":
+        import fcntl
+
+        real_fcntl = fcntl.fcntl
+        monkeypatch.setattr(fcntl, "fcntl", lambda fd, op, *a: (calls.append(op), real_fcntl(fd, op, *a))[1])
+        save_project(car, tmp_path / "p.kinetra.json")
+        assert fcntl.F_FULLFSYNC in calls
+    else:
+        save_project(car, tmp_path / "p.kinetra.json")
+        assert calls
+
+
+# --- values the model accepts but cannot be written, and hostile input -----------------------------------------
+
+
+@pytest.mark.parametrize("stamp", ["0001-01-01T00:00:00+09:00", "9999-12-31T23:59:59-01:00"])
+def test_hash_a_timestamp_that_overflows_utc_is_a_canonical_error_not_an_overflow(stamp, tmp_path):
+    data = load(CAR)
+    walk_stamp = []
+
+    def walk(node):
+        if isinstance(node, dict):
+            if "declared_at" in node:
+                node["declared_at"] = stamp
+                walk_stamp.append(1)
+                return
+            for v in node.values():
+                walk(v)
+        elif isinstance(node, list):
+            for v in node:
+                walk(v)
+
+    walk(data["design"]["materials"][0])
+    assert walk_stamp
+    p = project_of(data)  # the model accepts it
+    with pytest.raises(CanonicalError, match="outside the years 1 to 9999"):
+        project_hash(p)
+    with pytest.raises(CanonicalError):
+        save_project(p, tmp_path / "x.kinetra.json")
+    assert list(tmp_path.iterdir()) == []
+    text = json.dumps({"format": "kinetra-project", "version": 1, "project": data, "project_hash": "sha256:" + "0" * 64, "definitions": []})
+    assert refused(text, ProjectFileErrorCode.INVALID_PROJECT)
+
+
+def test_save_open_refuses_json_nested_too_deeply_as_not_json():
+    for depth in (300_000,):
+        msg = refused("[" * depth, ProjectFileErrorCode.NOT_JSON)
+        assert msg
+    nested = '{"format":"kinetra-project","version":1,"project":' + "[" * 200_000 + "]" * 200_000 + "}"
+    refused(nested, ProjectFileErrorCode.NOT_JSON)
