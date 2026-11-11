@@ -351,8 +351,41 @@ def _blank(src: str, spans) -> str:
     return "".join(out)
 
 
+REGEX_PRECEDERS = set("(,=:[!&|?{};") | {"return"}
+
+
+def regex_literal_end(src: str, i: int) -> int | None:
+    """End index of a JS/TS regex literal that starts at `src[i] == "/"`, or None when this `/` is a division.
+
+    It is a regex when the previous token is `( , = : [ ! & | ? { } ;` `return`, or nothing on this line. Inside, `\\x`
+    is an escape and `[...]` a class in which `/` does not end it; it ends at the next `/`. A line end first means it was
+    not a regex."""
+    k = i - 1
+    while k >= 0 and src[k] in " \t":
+        k -= 1
+    if k >= 0 and src[k] != "\n":
+        word = re.search(r"[A-Za-z_$][\w$]*$", src[: k + 1])
+        if not (src[k] in REGEX_PRECEDERS or (word and word.group(0) == "return")):
+            return None
+    j, in_class = i + 1, False
+    while j < len(src) and src[j] != "\n":
+        ch = src[j]
+        if ch == "\\":
+            j += 2
+            continue
+        if ch == "[":
+            in_class = True
+        elif ch == "]":
+            in_class = False
+        elif ch == "/" and not in_class:
+            return j + 1
+        j += 1
+    return None
+
+
 def strip_c_family(src: str) -> str:
-    """Blank comments (`//`, `/* */`) and string literals ('...', "...", template `...` text; `${ }` stays code)."""
+    """Blank comments (`//`, `/* */`), regex literals and string literals ('...', "...", template `...` text; `${ }`
+    stays code)."""
     spans, i, n = [], 0, len(src)
     template_depth = []  # brace depth of each open `${`
     brace = 0
@@ -369,6 +402,9 @@ def strip_c_family(src: str) -> str:
             j = n if j < 0 else j + 2
             spans.append((i, j))
             i = j
+        elif c == "/" and (end := regex_literal_end(src, i)) is not None:
+            spans.append((i, end))
+            i = end
         elif c in "\"'":
             j = i + 1
             while j < n and src[j] != c and src[j] != "\n":
@@ -501,6 +537,13 @@ def test_bodies_gravity_scan_catches_every_spelling_by_value(tmp_path, literal):
         ("m.xml", '<option timestep="0.002" gravity="0 0 -9.81"/>\n'),  # MJCF
         ("n.json", '{"note": "9.81 in text", "gravity": [0, 0, -9.81]}\n'),
         ("o.html", '<div data-g="9.81"></div>\n'),
+        ("q.ts", "const re = /[\"']/g; const g = 9.81;\n"),  # a quote inside a regex literal is not a string
+        ("r.ts", "const t = a / b; const g = 9.81;\n"),  # division, not a regex
+        ("s.ts", "const t = (a + b) / 2; const u = x / 3; const g = 9.81;\n"),  # two divisions on one line
+        ("t.ts", "const parts = s.split(/\\/+/); const g = 9.81;\n"),  # escaped slash inside a regex
+        ("u.ts", "if (/[/\"]/.test(s)) { g = 9.81; }\n"),  # `/` inside a character class, regex after `(`
+        ("v.ts", "function f() { return /'/.test(s) ? 9.81 : 0; }\n"),  # regex after `return`
+        ("w.ts", "/[\"']/.test(s); const g = 9.81;\n"),  # regex at the start of a line
         ("p.vue", '<!-- g = 1 --><script>const g = 9.81</script>\n'),
     ],
 )
@@ -523,6 +566,7 @@ def test_bodies_gravity_scan_catches_the_forms_a_naive_scanner_misses(tmp_path, 
         ("i.ts", "const lineHeight = 1.62; // gravity-scan: ok CSS line height, not a gravity\n"),
         ("j.py", "CELL_VOLTAGE = 3.7  # gravity-scan: ok battery cell volts\n"),
         ("l.json", '{"ref": "g = 9.81 on \\"Earth\\" 3.73"}\n'),
+        ("m.ts", "const re = /9.81/g; const x = 1;\n"),  # a number inside a regex literal is not a literal
         ("k.ts", "const hex = 0x3f; const big = 1e10; const t = 2;\n"),
     ],
 )
