@@ -1,6 +1,6 @@
-# Project 모델: 단위·좌표·값 배지, 재료·부품·DesignSpec·World·가정표 (C-01a, C-01b, C-01c, C-01d)
+# Project 모델과 명령: 단위·좌표·값 배지, 재료·부품·DesignSpec·World·가정표, Command (C-01a, C-01b, C-01c, C-01d, C-02a)
 
-- 상태: 구현됨. 코드는 `packages/core/src/kinetra_core/`(`conventions.py`, `provenance.py`, `material.py`, `partdef.py`, `designspec.py`, `world.py`, `assumption.py`), 테스트는 `packages/core/tests/test_material_partdef.py`와 `test_designspec.py`, `test_world_assumption.py`.
+- 상태: 구현됨. 코드는 `packages/core/src/kinetra_core/`(`conventions.py`, `provenance.py`, `material.py`, `partdef.py`, `designspec.py`, `world.py`, `assumption.py`, `project.py`, `commands.py`), 테스트는 `packages/core/tests/test_material_partdef.py`와 `test_designspec.py`, `test_world_assumption.py`, `test_commands.py`.
 - 근거: `docs/plan/studio-plan.md` 5절, `docs/architecture/client-adapter.md` G4·G6, 이슈 #60의 A0-04 이월 코멘트.
 - 범위 밖: MJCF(X-01). JSON Schema와 TS 타입은 코어 모델에서 생성한다(아래 "스키마와 TS 타입", C-01d).
 
@@ -80,8 +80,35 @@ uv run python packages/core/scripts/export_schemas.py --check  # 쓰지 않고 �
 - `schemas/types.ts`: 모든 이름의 TypeScript `interface`/`type`(`packages/core/scripts/schema_to_ts.py`). 기본값이 있는 필드는 선택(`?`)이다. 코어가 빠진 것을 채워 주기 때문이다. 단위는 필드마다 리터럴 타입(`unit: "kg/m^3"`), 배지와 단위 어휘는 닫힌 유니온이다. 변환기가 모르는 스키마 키워드를 만나면 경로와 함께 실패한다(조용히 느슨한 타입을 내지 않는다).
 - 타입은 모양만 안다. 교차 검사(참조가 닫혀 있는가, 쿼터니언이 단위 길이인가, 자리표시 출처인가)는 코어의 검증기가 한다. 클라이언트는 타입으로 읽고 쓰되 판정은 코어에 맡긴다.
 - 웹: `schemas/`는 pnpm 워크스페이스 패키지 `@kinetra/schemas`(`types`는 `types.ts`, `@kinetra/schemas/<Name>.schema.json`으로 스키마도 가져온다)이고 `apps/studio`가 의존한다. `pnpm lint`가 `tsc`로 타입을, `pnpm test`가 `schemas/test/types.test.ts`를 돈다.
-- `schemas/examples/<Name>.<설명>.json`은 손으로 쓴 예시다(`DesignSpec.four-wheel-car`, `Material.example`, `PartDef.block-with-hole`(형상 포함), `World.ramp-and-step`, `AssumptionTable.vehicle-mass`). `packages/core/tests/test_schema_export.py`가 예시마다 JSON Schema(`jsonschema`)와 모델 둘 다 통과하는지 보고, 잘못된 입력(출처 없음, 모르는 배지, 틀린 단위, 범위 밖, 배열 쿼터니언, 모르는 필드)을 둘 다 거부하는지 본다. 예시의 수치는 실부품 데이터가 아니다. 대부분 `사용자 선언`이고 일부는 `기본값`(`Material.example`과 4륜차 예시의 재료 마찰)과 `추정`(가정표의 퍼짐)이며 출처 문구에 "예시"라고 적었다.
+- `schemas/examples/<Name>.<설명>.json`은 손으로 쓴 예시다(`DesignSpec.four-wheel-car`, `Material.example`, `PartDef.block-with-hole`(형상 포함), `World.ramp-and-step`, `AssumptionTable.vehicle-mass`, `CommandBatch.move-and-select-planet`). `packages/core/tests/test_schema_export.py`가 예시마다 JSON Schema(`jsonschema`)와 모델 둘 다 통과하는지 보고, 잘못된 입력(출처 없음, 모르는 배지, 틀린 단위, 범위 밖, 배열 쿼터니언, 모르는 필드)을 둘 다 거부하는지 본다. 예시의 수치는 실부품 데이터가 아니다. 대부분 `사용자 선언`이고 일부는 `기본값`(`Material.example`과 4륜차 예시의 재료 마찰)과 `추정`(가정표의 퍼짐)이며 출처 문구에 "예시"라고 적었다.
 - 새 모델을 더한 PR은 `export_schemas.py`를 돌려 `schemas/`를 같이 커밋한다. 안 하면 CI의 `--check`와 `test_committed_schemas_match_the_models`가 실패한다.
+
+## `Project`와 `Command` (C-02a)
+
+코드는 `kinetra_core/project.py`, `commands.py`, 테스트는 `packages/core/tests/test_commands.py`. 모든 편집은 `Command`다(계획 5.3절, `client-adapter.md` I1). 입력 수단(마우스, 에이전트, 음성, XR, MCP)마다 다른 Command는 없다.
+
+- `Project` = `design`(`DesignSpec`) + `world`(`World`, 필수) + `assumptions`(`AssumptionTable`). 명령이 적용되는 단위이고 클라이언트가 사본으로 쥐는 문서다(`client-adapter.md` D1). 각 부분의 검사는 그 부분에 있고, `Project`는 부분을 가로지르는 참조 하나만 더한다: 지형 소품의 `material`은 프로젝트의 재료여야 한다. 그래서 끊긴 참조(부품 없는 인스턴스, 스냅 포인트 없는 결합, 결합 없는 모터, 액추에이터 없는 스케줄 항목, 재료 없는 소품)를 가진 `Project`는 만들어지지 않는다.
+- `apply_command(project, command) -> Applied(project, inverse)`. 입력을 바꾸지 않고, 새 `Project`와 역명령을 돌려준다. 결과는 `Project.model_validate`로 통째로 다시 검증한다(`model_copy`는 검증을 건너뛰므로 쓰지 않는다). 거부되면 `CommandRejected`의 `reasons`(`Reason`: `code`, 읽을 수 있는 문장, 관련 ID)가 오고 프로젝트는 그대로다(`rejected` 메시지의 내용, `client-adapter.md` 3.2). 코드: `unknown_id`, `duplicate_id`, `in_use`, `index_out_of_range`, `invalid_command`, `invalid_project`(검증기 문장을 그대로 싣는다).
+- 역명령을 적용하면 원본과 같은 프로젝트가 된다(모든 컬렉션의 순서까지). 역명령의 역명령은 같은 편집을 다시 한다(다시 실행). 테스트가 명령마다 이를 본다.
+- `type` 태그가 필수인 판별 유니온 `Command`(`schemas/Command.schema.json`, `types.ts`의 `Command`). 명령은 문서의 말로 쓴다(ID, 파라미터 이름, SI 값과 배지·출처; I2). 누가 보냈는지는 명령에 없고 이력 기록(C-02b)이 갖는다.
+
+| 명령 | 효과 | 역명령 |
+|---|---|---|
+| `add_instance` / `remove_instance` | 부품 인스턴스 추가·삭제. 삭제는 그 인스턴스의 결합, 그 인스턴스나 그 결합에 달린 액추에이터, 그 액추에이터의 스케줄 항목을 같은 명령에서 함께 지운다 | `remove_instance` / 묶음(`add_instance`, 지운 결합·액추에이터·항목을 원래 위치에 다시 추가) |
+| `move_instance` | 인스턴스의 저장된 월드 자세를 바꾼다. 결합한 짝은 따라오지 않는다(자세가 권위). 짝이 따라오게 하려면 묶음으로 보낸다 | 이전 자세의 `move_instance` |
+| `set_parameter` / `clear_parameter` | 인스턴스의 파라미터 값을 정하거나(단위·범위는 `PartDef`의 것) 지워 기본값으로 되돌린다 | 이전 값의 `set_parameter`, 또는 `clear_parameter`(지운 자리에 `index`) |
+| `set_instance_material` | 인스턴스에 프로젝트의 재료를 지정(`None`이면 없음) | 이전 재료 |
+| `add_joint` / `remove_joint` | 결합·해제. 해제는 그 결합을 모터가 구동하던 액추에이터와 그 항목을 함께 지운다 | `remove_joint` / 묶음 |
+| `add_actuator` / `remove_actuator` | 액추에이터. 삭제는 그 스케줄 항목도 지운다 | `remove_actuator` / 묶음 |
+| `add_control_entry`, `remove_control_entry`, `replace_control_entry` | 제어 스케줄 항목. 항목에는 ID가 없어 위치(`index`)가 곧 식별자다 | 서로의 역 |
+| `add_assumption`, `set_assumption`(같은 `key`를 제자리에서 교체), `remove_assumption` | 가정표 편집 | 서로의 역 |
+| `select_planet` | `world.planet`을 ID로 바꾼다. 행성 상수는 어떤 명령에도 실리지 않는다(`client-adapter.md` C4) | 이전 행성 |
+| `add_part_def`, `remove_part_def`, `add_material_def`, `remove_material_def` | 프로젝트가 담는 정의(재료·부품). 삭제는 쓰는 곳이 있으면 `in_use`로 거부한다(사용자가 지우지 않은 것을 지우지 않는다). 재료의 값을 고치는 명령은 없다: 지우고 다시 넣는다 | 서로의 역 |
+| `batch` | 편집 명령을 순서대로 모두 적용하거나 모두 거부한다(C2). 중첩은 없다. 사유의 문장 앞에 `commands[n] (type):`이 붙는다 | 역명령들의 역순 묶음 |
+
+- 목록 순서는 값의 일부라서 `add_*`는 `index`(없으면 끝)를 받고, 역명령은 원래 자리로 되돌린다.
+- 삭제가 연쇄를 일으켜도 한 명령이고 한 역명령이다(#476 리뷰: 끊긴 상태를 만들지 않는다). 이력에서 한 칸이 되는 묶음 단위는 C-02b가 정한다.
+- 이 PR에 없는 것: 발행자와 되돌리기·다시 실행·이력(C-02b), 배치 검사(겹침, 뜬 부품, 스냅 호환)와 행성 상수·물성 DB·판정 결과를 바꾸려는 시도의 거부, `planet`이 `data/bodies`에 있는지, 어느 출처가 정의 명령을 보낼 수 있는지(C-02c), 저장 형식과 정의 해시(C-03), 선로의 메시지(C-05a), 지형 소품 편집(W-05), 수역(FL-02b), 분리 항목(X-08), 정의가 없는 인스턴스(C-06). 이 PR의 예시 수치는 모두 테스트가 선언한 값이다.
 
 ## 알려진 확장 (이 PR 범위 밖, 뒤 잎이 더한다)
 
@@ -92,4 +119,4 @@ uv run python packages/core/scripts/export_schemas.py --check  # 쓰지 않고 �
 - 바인딩 안 된 가정(가정이 설계의 어느 값을 흔드는지)과 가정 단위의 의미 검사: J-01a, L-02.
 - PBR 재질 슬롯: B-07(구현됨, [`materials.md`](materials.md)).
 - `export_policy`: HW-02a.
-- 모델은 불변이지만 `model_copy(update=...)`는 검증을 건너뛴다. 명령 적용기(C-02a)는 바꾼 뒤 `model_validate`로 다시 검증해야 한다.
+- 모델은 불변이지만 `model_copy(update=...)`는 검증을 건너뛴다. 명령 적용기(C-02a)는 JSON 형태로 고친 뒤 `model_validate`로 통째로 다시 검증한다.

@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "type": {
+      "const": "remove_assumption",
+      "title": "Type",
+      "type": "string"
+    },
+    "key": {
+      "minLength": 1,
+      "title": "Key",
+      "type": "string"
+    }
+  },
+  "required": [
+    "type",
+    "key"
+  ],
+  "title": "RemoveAssumption",
+  "type": "object"
+}

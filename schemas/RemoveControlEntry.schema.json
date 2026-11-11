@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Remove the schedule entry at `index` (entries have no id; the position is the identity).",
+  "properties": {
+    "type": {
+      "const": "remove_control_entry",
+      "title": "Type",
+      "type": "string"
+    },
+    "index": {
+      "minimum": 0,
+      "title": "Index",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "type",
+    "index"
+  ],
+  "title": "RemoveControlEntry",
+  "type": "object"
+}

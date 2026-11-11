@@ -32,6 +32,55 @@ export interface Actuator {
 
 export type ActuatorKind = "motor" | "thruster";
 
+export interface AddActuator {
+  type: "add_actuator";
+  actuator: Actuator;
+  index?: number | null;
+}
+
+export interface AddAssumption {
+  type: "add_assumption";
+  assumption: Assumption;
+  index?: number | null;
+}
+
+export interface AddControlEntry {
+  type: "add_control_entry";
+  entry: ActuateEntry;
+  index?: number | null;
+}
+
+export interface AddInstance {
+  type: "add_instance";
+  instance: Instance;
+  index?: number | null;
+}
+
+export interface AddJoint {
+  type: "add_joint";
+  joint: Joint;
+  index?: number | null;
+}
+
+export interface AddMaterialDef {
+  type: "add_material_def";
+  material: Material;
+  index?: number | null;
+}
+
+/** Put a part definition into the project (`DesignSpec` carries the definitions it uses). */
+export interface AddPartDef {
+  type: "add_part_def";
+  part: PartDef;
+  index?: number | null;
+}
+
+/** The result of `apply_command`: the new project and the command that undoes the edit. */
+export interface Applied {
+  project: Project;
+  inverse: AddPartDef | RemovePartDef | AddMaterialDef | RemoveMaterialDef | AddInstance | RemoveInstance | MoveInstance | SetParameter | ClearParameter | SetInstanceMaterial | AddJoint | RemoveJoint | AddActuator | RemoveActuator | AddControlEntry | RemoveControlEntry | ReplaceControlEntry | AddAssumption | SetAssumption | RemoveAssumption | SelectPlanet | CommandBatch;
+}
+
 /** One assumption of the verdict, as the human-review panel shows it. */
 export interface Assumption {
   /** Stable machine key, e.g. 'vehicle_mass'. Verdict sensitivities cite it. */
@@ -80,6 +129,13 @@ export interface CatalogEntry {
   pbr: PbrSlots;
 }
 
+/** Unset a parameter of an instance: it takes the part's default again. */
+export interface ClearParameter {
+  type: "clear_parameter";
+  instance: string;
+  name: string;
+}
+
 /**
  * The collision proxy of one part.
  *
@@ -97,6 +153,12 @@ export interface CollisionProxy {
   recipe_volume: DerivedScalar;
   volume_error: DerivedScalar;
   derivation: ProxyDerivation;
+}
+
+/** Edits applied in order as one: all of them or none (`client-adapter.md` C2). */
+export interface CommandBatch {
+  type: "batch";
+  commands: (AddPartDef | RemovePartDef | AddMaterialDef | RemoveMaterialDef | AddInstance | RemoveInstance | MoveInstance | SetParameter | ClearParameter | SetInstanceMaterial | AddJoint | RemoveJoint | AddActuator | RemoveActuator | AddControlEntry | RemoveControlEntry | ReplaceControlEntry | AddAssumption | SetAssumption | RemoveAssumption | SelectPlanet)[];
 }
 
 /**
@@ -290,6 +352,13 @@ export interface MaterialCatalog {
   entries: CatalogEntry[];
 }
 
+/** Set the stored world pose of one instance. */
+export interface MoveInstance {
+  type: "move_instance";
+  id: string;
+  pose: Pose;
+}
+
 export interface NormalDistribution {
   badge: Badge;
   source: Source;
@@ -387,6 +456,12 @@ export interface Position {
   z: AxisExpr;
 }
 
+export interface Project {
+  design?: DesignSpec;
+  world: World;
+  assumptions?: AssumptionTable;
+}
+
 /** A prop dimension in metres, > 0. */
 export interface PropSize {
   badge: Badge;
@@ -457,6 +532,92 @@ export interface RampProp {
   width: PropSize;
   kind: "ramp";
   incline: Incline;
+}
+
+/** Why a command was rejected: a stable `code`, a readable sentence and the ids it is about. */
+export interface Reason {
+  code: ReasonCode;
+  message: string;
+  ids?: string[];
+}
+
+export type ReasonCode = "unknown_id" | "duplicate_id" | "in_use" | "index_out_of_range" | "invalid_command" | "invalid_project";
+
+/** Remove an actuator with its schedule entries. */
+export interface RemoveActuator {
+  type: "remove_actuator";
+  id: string;
+}
+
+export interface RemoveAssumption {
+  type: "remove_assumption";
+  key: string;
+}
+
+/** Remove the schedule entry at `index` (entries have no id; the position is the identity). */
+export interface RemoveControlEntry {
+  type: "remove_control_entry";
+  index: number;
+}
+
+/** Delete an instance with its joints, the actuators on it or on those joints, and their schedule entries. */
+export interface RemoveInstance {
+  type: "remove_instance";
+  id: string;
+}
+
+/** Release a joint, with the actuators that drive it and their schedule entries. */
+export interface RemoveJoint {
+  type: "remove_joint";
+  id: string;
+}
+
+/** Take a material definition out. Rejected while an instance or a terrain prop uses it. */
+export interface RemoveMaterialDef {
+  type: "remove_material_def";
+  id: string;
+}
+
+/** Take a part definition out. Rejected while an instance uses it. */
+export interface RemovePartDef {
+  type: "remove_part_def";
+  id: string;
+}
+
+export interface ReplaceControlEntry {
+  type: "replace_control_entry";
+  index: number;
+  entry: ActuateEntry;
+}
+
+/** Put the project on another planet, by id. The planet's constants are not part of any command. */
+export interface SelectPlanet {
+  type: "select_planet";
+  planet: string;
+}
+
+/** Replace the assumption with the same `key`, in place. */
+export interface SetAssumption {
+  type: "set_assumption";
+  assumption: Assumption;
+}
+
+/** Assign a material of the project to an instance; `None` assigns none. */
+export interface SetInstanceMaterial {
+  type: "set_instance_material";
+  id: string;
+  material: string | null;
+}
+
+/**
+ * Set a parameter of an instance (unit and range are the part's). `index` is where a parameter that is not
+ * set yet goes in the instance's list; for one that is set already it must be absent.
+ */
+export interface SetParameter {
+  type: "set_parameter";
+  instance: string;
+  parameter: ParamValue;
+  index?: number | null;
 }
 
 /**
@@ -582,6 +743,10 @@ export interface YieldStrength {
   unit: "Pa";
 }
 
+export type Command = AddPartDef | RemovePartDef | AddMaterialDef | RemoveMaterialDef | AddInstance | RemoveInstance | MoveInstance | SetParameter | ClearParameter | SetInstanceMaterial | AddJoint | RemoveJoint | AddActuator | RemoveActuator | AddControlEntry | RemoveControlEntry | ReplaceControlEntry | AddAssumption | SetAssumption | RemoveAssumption | SelectPlanet | CommandBatch;
+
 export type Distribution = FixedDistribution | UniformDistribution | NormalDistribution;
+
+export type EditCommand = AddPartDef | RemovePartDef | AddMaterialDef | RemoveMaterialDef | AddInstance | RemoveInstance | MoveInstance | SetParameter | ClearParameter | SetInstanceMaterial | AddJoint | RemoveJoint | AddActuator | RemoveActuator | AddControlEntry | RemoveControlEntry | ReplaceControlEntry | AddAssumption | SetAssumption | RemoveAssumption | SelectPlanet;
 
 export type TerrainProp = RampProp | StepProp;

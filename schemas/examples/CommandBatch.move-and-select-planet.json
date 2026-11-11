@@ -1,0 +1,21 @@
+{
+  "type": "batch",
+  "commands": [
+    {
+      "type": "move_instance",
+      "id": "wheel-fl",
+      "pose": {
+        "position": { "x": 0.2, "y": 0.1, "z": 0.05 },
+        "orientation": { "x": 0.0, "y": 0.0, "z": 0.0, "w": 1.0 },
+        "badge": "declared",
+        "source": {
+          "ref": "Kinetra schema example: illustrative value, not a measured part",
+          "declared_by": "kinetra-docs",
+          "declared_at": "2026-11-11T00:00:00Z"
+        }
+      }
+    },
+    { "type": "remove_instance", "id": "motor-l" },
+    { "type": "select_planet", "planet": "moon" }
+  ]
+}

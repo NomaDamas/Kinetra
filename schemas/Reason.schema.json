@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Why a command was rejected: a stable `code`, a readable sentence and the ids it is about.",
+  "properties": {
+    "code": {
+      "$ref": "#/$defs/ReasonCode"
+    },
+    "message": {
+      "minLength": 1,
+      "title": "Message",
+      "type": "string"
+    },
+    "ids": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "title": "Ids",
+      "type": "array"
+    }
+  },
+  "required": [
+    "code",
+    "message"
+  ],
+  "title": "Reason",
+  "type": "object",
+  "$defs": {
+    "ReasonCode": {
+      "enum": [
+        "unknown_id",
+        "duplicate_id",
+        "in_use",
+        "index_out_of_range",
+        "invalid_command",
+        "invalid_project"
+      ],
+      "title": "ReasonCode",
+      "type": "string"
+    }
+  }
+}
