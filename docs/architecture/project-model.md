@@ -26,7 +26,7 @@
 | `declared` | 사용자 선언 | 사용자가 넣은 값 | `declared_by`, `declared_at`(시간대 있는 시각) |
 | `estimate` | 추정 | 근거가 약한 판단 | `ref`(방법 이름과 입력) |
 
-- `source.license`는 `cite`에만, `declared_by`와 `declared_at`은 `declared`에만 쓸 수 있다. 라이선스는 SPDX 표현식이고 `NONE`·`NOASSERTION`·`UNKNOWN`은 거부한다.
+- `source.license`는 `cite`에만, `declared_by`와 `declared_at`은 `declared`에만 쓸 수 있다. 라이선스는 `assets/LEDGER.csv`와 같은 규칙의 SPDX 표현식이다(허용 목록의 식별자, `AND`/`OR`/`WITH`/괄호, `LicenseRef-*`는 `source.ref`에 `LicenseRef 사유: …`가 있을 때만, `NC`·`NONE`·`NOASSERTION`·`UNKNOWN` 거부). 파서는 `tools/assets/credits.py`의 사본(`kinetra_core/spdx.py`)이고 코어가 `tools/`를 import하지 않기 위해서다. 허용 목록·판정이 어긋나면 `tests/test_spdx.py`가 실패한다.
 - 자리표시 거부: `ref`, `locator`, `declared_by`는 글자나 숫자가 하나는 있어야 하고, 앞뒤 구두점을 걷어 낸 뒤 `TBD`·`TODO`로 시작하거나 `n/a`, `none`, `unknown`, `없음`, `미정`, `출처 없음` 등과 같으면 거부한다. 목록은 완전하지 않다. 거르지 못한 어림은 리뷰 루브릭 4번이 본다.
 - `url`은 `http(s)`이고 호스트가 있으며 공백이 없어야 한다.
 - `source.ref`가 가리키는 것이 값을 실제로 뒷받침하는지는 모델이 검사할 수 없다.

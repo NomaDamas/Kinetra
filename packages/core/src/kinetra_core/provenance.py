@@ -21,6 +21,7 @@ from urllib.parse import urlsplit
 from pydantic import AwareDatetime, BaseModel, ConfigDict, Field, field_validator, model_validator
 
 from .conventions import Unit
+from .spdx import SpdxError, check_spdx
 
 Number = Annotated[float, Field(strict=True, allow_inf_nan=False)]
 """A finite JSON number. Strict: strings and booleans are not numbers."""
@@ -61,17 +62,12 @@ def _text(v: str, what: str) -> str:
     return v
 
 
-_SPDX_ID = r"[A-Za-z0-9][A-Za-z0-9.+\-]*"
-_SPDX_RE = re.compile(rf"{_SPDX_ID}(?: (?:AND|OR|WITH) {_SPDX_ID})*")
-_SPDX_BANNED = frozenset({"NONE", "NOASSERTION", "UNKNOWN"})
-
-
 class Source(BaseModel):
     """Where a value comes from.
 
     `ref` is what was cited, declared or run: a document, a datasheet, a run id, or the reason a default was chosen
     (for an estimate: the method and its inputs). `locator` is where inside it (table, page, section). `url` is a
-    link when there is one. `license` (SPDX expression) and `declared_by` / `declared_at` feed the badge popover
+    link when there is one. `license` (SPDX expression over the repo allowlist, `spdx.py`) and `declared_by` / `declared_at` feed the badge popover
     (`ValueBadges`, 인용 and 사용자 선언); `Provenance` allows each only on its own badge.
     """
 
@@ -106,14 +102,14 @@ class Source(BaseModel):
             raise ValueError(f"source.url must be an http(s) URL with a host, got {v!r}")
         return v
 
-    @field_validator("license")
-    @classmethod
-    def _license(cls, v: str | None) -> str | None:
-        if v is None:
-            return None
-        if not _SPDX_RE.fullmatch(v) or any(t in _SPDX_BANNED for t in v.split()):
-            raise ValueError(f"source.license must be an SPDX expression (not NONE/NOASSERTION/UNKNOWN), got {v!r}")
-        return v
+    @model_validator(mode="after")
+    def _license(self) -> "Source":
+        if self.license is not None:
+            try:
+                check_spdx(self.license, notes=self.ref)  # a LicenseRef-* needs "LicenseRef 사유: ..." in ref
+            except SpdxError as e:
+                raise ValueError(f"source.license: {e}") from None
+        return self
 
 
 class Provenance(BaseModel):

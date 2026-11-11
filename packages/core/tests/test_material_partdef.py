@@ -433,7 +433,7 @@ def test_license_only_on_cited_and_declared_fields_only_on_declared():
     d["density"]["badge"] = "cite"
     Material.model_validate(d)
     d["density"]["source"]["license"] = "NOASSERTION"
-    with pytest.raises(ValidationError, match="SPDX"):
+    with pytest.raises(ValidationError, match="source.license"):
         Material.model_validate(d)
     d = material_dict()
     d["density"]["source"] = {"ref": "founder", "declared_by": "Min", "declared_at": "2026-11-11T09:00:00+09:00"}
