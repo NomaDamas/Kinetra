@@ -226,6 +226,35 @@ def test_mcp_stdio_is_one_message_per_line(tools):
     assert replies[3]["result"]["structuredContent"]["ok"]
 
 
+def test_mcp_a_lone_surrogate_in_a_message_never_stops_the_server(tools):
+    """JSON may spell a lone surrogate (`"\\ud800"`), which UTF-8 cannot encode. A request id is echoed back verbatim, so a reply
+    can carry one; it must still go out (escaped), and the server must go on reading."""
+
+    async def main():
+        server = McpServer(Hub({"desk": empty()}), "desk", tools=tools)
+        reader = asyncio.StreamReader()
+        lines = [
+            r'{"jsonrpc":"2.0","id":"\ud800","method":"initialize","params":{"protocolVersion":"2025-11-25"}}',
+            r'{"jsonrpc":"2.0","id":"\udfff","method":"tools/call","params":{"name":"\ud800","arguments":{}}}',
+            r'{"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"remove_part","arguments":{"instance":"\ud800"}}}',
+            r'{"jsonrpc":"2.0","id":4,"method":"tools/call","params":{"name":"add_part","arguments":{"part":"plate","place":{"type":"on_ground"},"source":"\ud83d"}}}',
+            json.dumps(rpc(5, "tools/call", {"name": "add_part", "arguments": PLATE})),
+        ]
+        reader.feed_data(("\n".join(lines) + "\n").encode())
+        reader.feed_eof()
+        sink = _Sink()
+        await serve_stdio(server, reader, sink)
+        return bytes(sink.data)
+
+    data = asyncio.run(main())
+    assert data.isascii()
+    replies = [json.loads(line) for line in data.decode("utf-8").splitlines()]
+    assert [r["id"] for r in replies] == ["\ud800", "\udfff", 3, 4, 5]
+    assert replies[0]["result"]["protocolVersion"] == "2025-11-25" and replies[1]["error"]["code"] == -32602
+    assert replies[2]["result"]["isError"] and replies[3]["result"]["isError"]  # a lone surrogate is not a valid string argument
+    assert replies[4]["result"]["structuredContent"]["ok"]
+
+
 def test_mcp_the_command_runs_the_core_on_stdio_and_the_screen_follows(tmp_path):
     path = tmp_path / "desk.kinetra.json"
     save_project(empty(), path)

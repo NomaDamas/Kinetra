@@ -162,8 +162,10 @@ class McpServer:
 
 
 def _encode(reply: dict) -> bytes:
-    # json.dumps escapes every control character, so the line never holds a newline of its own (stdio framing)
-    return json.dumps(reply, ensure_ascii=False, separators=(",", ":")).encode() + b"\n"
+    # ASCII on the wire: json.dumps then escapes every control character (the line never holds a newline of its own, stdio
+    # framing) and every non-ASCII one, a lone surrogate included (`"\ud800"` from a JSON string echoed back in a reason),
+    # which UTF-8 cannot encode; the line is then valid UTF-8 whatever text a reply carries
+    return json.dumps(reply, ensure_ascii=True, separators=(",", ":")).encode("ascii") + b"\n"
 
 
 async def serve_stdio(server: McpServer, reader: asyncio.StreamReader, writer: asyncio.StreamWriter) -> None:
