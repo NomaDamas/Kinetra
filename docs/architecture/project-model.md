@@ -59,7 +59,7 @@
 
 ## World와 가정표 (C-01c)
 
-코드는 `kinetra_core/world.py`, `assumption.py`, 테스트는 `packages/core/tests/test_world_assumption.py`. 이 PR에는 행성 수치가 없다. 행성 데이터와 로더는 W-01이다.
+코드는 `kinetra_core/world.py`, `assumption.py`, 테스트는 `packages/core/tests/test_world_assumption.py`. 이 PR에는 행성 수치가 없다. 행성 데이터와 로더는 W-01이고 [`bodies.md`](bodies.md)에 있다.
 
 - `World`: `planet`(ID 하나)과 `terrain_props`(경사로 `RampProp`, 턱 `StepProp`; `kind`로 구분하고 `kind`는 필수다). 중력, 대기 밀도, 지면 마찰, 일사는 행성의 상수라서 `data/bodies`(W-01)에만 있고 엔진만 읽는다(`client-adapter.md` 규칙 C4). `World`에는 그 값을 담을 필드가 없고, `gravity`, `g`, `air_density`, `ground_friction`, `insolation` 같은 이름(`PLANET_CONSTANT_NAMES`)이 오면 이유를 말하며 거부한다. 이 목록은 친절일 뿐이고(목록에 없는 이름은 `extra="forbid"`가 거부한다) 보장은 구조에서 나온다: 엔진은 행성 상수를 `data/bodies`에서만 읽고(W-03a) 검증기가 바꾸려는 명령을 거부한다(C-02c). `planet`이 `data/bodies`에 있는지와 `material`이 프로젝트의 재료인지는 `World` 혼자 알 수 없어서 검증기(#68)와 교차 참조 규칙(#76)이 본다.
 - 지형 소품: 평지는 z = 0 평면이고, 소품은 중심 (`x`, `y`)[m]과 +Z 둘레 회전 `yaw`[rad]로 놓는 `length` x `width` 직사각형이다. 놓는 자세 `placement`(x, y, yaw)는 `SnapPoint` 자세처럼 배지와 출처 하나가 통째로 덮는다. 크기(`length`, `width`, `incline`, `height`)는 각각 `Quantity`(배지·출처 필수)다. 경사로는 `incline`(rad, 0 초과 pi/2 미만)이고 `length`는 수평 길이다(높이는 `length * tan(incline)`로 파생하며 저장하지 않는다). 턱은 `height`(m, > 0). 표면 재료는 `material` ID로 참조하고(마찰은 재료의 것이다) `None`이면 행성 지면이다(마찰은 행성 데이터). 소품 ID는 월드 안에서 겹치지 않는다. 형상과 MJCF는 W-05, X-01이다.
@@ -87,7 +87,7 @@ uv run python packages/core/scripts/export_schemas.py --check  # 쓰지 않고 �
 
 코드는 `kinetra_core/project.py`, `commands.py`, 테스트는 `packages/core/tests/test_commands.py`. 모든 편집은 `Command`다(계획 5.3절, `client-adapter.md` I1). 입력 수단(마우스, 에이전트, 음성, XR, MCP)마다 다른 Command는 없다.
 
-- `Project` = `design`(`DesignSpec`) + `world`(`World`, 필수) + `assumptions`(`AssumptionTable`). 명령이 적용되는 단위이고 클라이언트가 사본으로 쥐는 문서다(`client-adapter.md` D1). 각 부분의 검사는 그 부분에 있고, `Project`는 부분을 가로지르는 참조 하나만 더한다: 지형 소품의 `material`은 프로젝트의 재료여야 한다. 그래서 끊긴 참조(부품 없는 인스턴스, 스냅 포인트 없는 결합, 결합 없는 모터, 액추에이터 없는 스케줄 항목, 재료 없는 소품)를 가진 `Project`는 만들어지지 않는다.
+- `Project` = `design`(`DesignSpec`) + `world`(`World`, 필수) + `assumptions`(`AssumptionTable`). 명령이 적용되는 단위이고 클라이언트가 사본으로 쥐는 문서다(`client-adapter.md` D1). 각 부분의 검사는 그 부분에 있고, `Project`는 부분을 가로지르는 참조 하나만 더한다: 지형 소품의 `material`은 프로젝트의 재료여야 한다. `bodies.check_world_references`(W-01)의 재료 쪽 규칙과 같은 것이고(`world`와 `design.materials`의 ID를 받는다), 행성에 데이터가 있는지는 그 함수와 검증기(C-02c)의 몫으로 `Project`가 검사하지 않는다. 그래서 끊긴 참조(부품 없는 인스턴스, 스냅 포인트 없는 결합, 결합 없는 모터, 액추에이터 없는 스케줄 항목, 재료 없는 소품)를 가진 `Project`는 만들어지지 않는다.
 - `apply_command(project, command) -> ApplyResult(project, inverse)`. 입력을 바꾸지 않고, 새 `Project`와 역명령을 돌려준다. 결과는 `Project.model_validate`로 통째로 다시 검증한다(`model_copy`는 검증을 건너뛰므로 쓰지 않는다). 거부되면 `CommandRejected`의 `reasons`(`Reason`: `code`, 읽을 수 있는 문장, `ids`: `{kind, id}` 참조 목록)가 오고 프로젝트는 그대로다(`rejected` 메시지의 내용, `client-adapter.md` 3.2). 코드: `unknown_id`, `duplicate_id`, `in_use`, `index_out_of_range`, `invalid_command`, `invalid_project`(검증기 문장을 그대로 싣고, 끊긴 참조는 그 ID를 `ids`에 싣는다), `not_editable`. `ids`의 `kind`는 `instance`, `joint`, `actuator`, `part`, `material`, `snap_point`(`<인스턴스>/<스냅 포인트>`), `schedule_entry`, `assumption`, `parameter`(`<인스턴스>/<이름>`), `planet`, `prop`이다. ID는 자기 컬렉션 안에서만 유일해서 종류 없는 문자열은 부품 `wheel`과 인스턴스 `wheel`을 구분하지 못한다. 결과 타입은 `ApplyResult`다(`client-adapter.md` 3.1의 `applied` 메시지는 개정 번호와 발행자를 더해 C-05a가 만든다).
 - 역명령을 적용하면 원본과 같은 프로젝트가 된다(모든 컬렉션의 순서까지). 역명령의 역명령은 같은 편집을 다시 한다(다시 실행). 테스트가 명령마다 이를 본다.
 - 명령은 기존 항목을 ID로 가리킨다(위치로 가리키지 않는다). 부분 수락(C2)이나 낡은 기준 개정(C5)에서 위치로 가리키는 명령은 유효한 채로 다른 항목을 고친다. `index`는 `add_*`가 새 항목을 어디에 넣을지만 뜻한다.

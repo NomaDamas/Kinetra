@@ -45,3 +45,4 @@ class Unit(StrEnum):
     KG_M2 = "kg*m^2"
     J = "J"
     W = "W"
+    W_PER_M2 = "W/m^2"  # irradiance (planet insolation, W-01)

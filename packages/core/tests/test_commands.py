@@ -20,6 +20,7 @@ from kinetra_core import (
     Ref,
     RefKind,
     apply_command,
+    check_world_references,
 )
 
 EXAMPLES = Path(__file__).resolve().parents[3] / "schemas" / "examples"
@@ -629,3 +630,11 @@ def test_apply_result_is_not_the_wire_message_name():
     import kinetra_core
 
     assert hasattr(kinetra_core, "ApplyResult") and not hasattr(kinetra_core, "Applied")
+
+
+def test_project_is_compatible_with_check_world_references(project):
+    """W-01's rule takes a `World` and the project's material ids; a `Project` that validates passes its material
+    half, and the planet half (the planet has data) stays the validator's (C-02c)."""
+    check_world_references(project.world, planets=["mars", "moon", "earth"], materials=[m.id for m in project.design.materials])
+    with pytest.raises(ValueError, match="unknown planet"):
+        check_world_references(project.world, planets=["moon"], materials=[m.id for m in project.design.materials])
