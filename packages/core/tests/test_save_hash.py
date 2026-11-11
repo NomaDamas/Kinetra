@@ -112,8 +112,8 @@ def test_hash_of_the_empty_project_is_pinned():
 
 
 def test_hash_of_the_example_projects_is_pinned():
-    assert project_hash(project_of(load(CAR))) == "sha256:89f684405667a3c2c09d890f9ac9d48bc93e7baba00318e76ddf778f73630c15"
-    assert project_hash(project_of(load(ROCKET))) == "sha256:89c8706101ce34a4601f7bd494b169a2848d25c9db5074ef29309be87333b9a1"
+    assert project_hash(project_of(load(CAR))) == "sha256:4c3283f83994dcb269b7fb6350aed31c841b60cc02ac3409de0e81e0ee30c66d"
+    assert project_hash(project_of(load(ROCKET))) == "sha256:5f6f172996fa79cc910c6d28aa44a892af7f9b0e0b46160c5ea4cafa3c5dec13"
 
 
 def test_hash_is_a_sha256_of_the_canonical_text(example):
@@ -689,6 +689,7 @@ OMITTED_DEFAULTS = {
     "DesignSpec.schedule": {"entries": []},
     "Instance.material": None,
     "Instance.parameters": [],
+    "Joint.axis": None,
     "Joint.break_threshold": None,
     "Joint.limits": None,
     "NormalDistribution.clip_high": None,

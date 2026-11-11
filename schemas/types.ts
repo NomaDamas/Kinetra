@@ -478,7 +478,10 @@ export interface Instance {
 /**
  * A connection between two snap points of two different instances. `a` is the parent side by convention.
  *
- * `limits` are optional (`None`: unlimited, as a wheel axle) and not allowed on a fixed joint.
+ * `axis` (hinge and slider): the line the one free motion is about or along, in the frame of the `a` snap point
+ * (`JointAxis`). `None` is +Z of that frame (`DEFAULT_JOINT_AXIS`). A fixed joint has no motion and so no axis.
+ * `limits` are optional (`None`: unlimited, as a wheel axle) and not allowed on a fixed joint; they bound the joint
+ * coordinate, which is 0 at the saved pose (`JointLimits`).
  * `break_threshold` is optional (`None`: never breaks).
  */
 export interface Joint {
@@ -486,13 +489,34 @@ export interface Joint {
   kind: JointKind;
   a: SnapRef;
   b: SnapRef;
+  axis?: JointAxis | null;
   limits?: JointLimits | null;
   break_threshold?: BreakThreshold | null;
 }
 
+/**
+ * The direction a hinge turns about or a slider moves along: a unit vector in the frame of the snap point of
+ * the joint's `a` end (the parent side), the same frame a snap point's `orientation` gives. One badge and source
+ * cover the vector. The sense is right-handed for a hinge (positive angle turns `b` counter-clockwise seen from
+ * the tip of the axis) and positive travel is along the vector for a slider. `-axis` describes the same line of
+ * motion with the sign of the coordinate (and so of its limits and of a motor command) flipped.
+ */
+export interface JointAxis {
+  badge: Badge;
+  source: Source;
+  x: number;
+  y: number;
+  z: number;
+}
+
 export type JointKind = "fixed" | "hinge" | "slider";
 
-/** Travel limits of the joint coordinate: rad for a hinge, m for a slider. `lower < upper`. */
+/**
+ * Travel limits of the joint coordinate: rad for a hinge, m for a slider. `lower < upper`.
+ *
+ * The coordinate is 0 at the saved pose, so the saved pose must be inside its own limits: `lower <= 0 <= upper`
+ * (a joint saved outside its travel would start in violation of its own limit). Both ends are inclusive.
+ */
 export interface JointLimits {
   lower: Quantity;
   upper: Quantity;

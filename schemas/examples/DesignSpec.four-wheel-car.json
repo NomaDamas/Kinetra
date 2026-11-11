@@ -579,6 +579,17 @@
       "b": {
         "instance": "wheel-rl",
         "snap_point": "hub"
+      },
+      "axis": {
+        "x": 0.0,
+        "y": 1.0,
+        "z": 0.0,
+        "badge": "declared",
+        "source": {
+          "ref": "Kinetra schema example: illustrative value, not a measured part",
+          "declared_by": "kinetra-docs",
+          "declared_at": "2026-11-11T00:00:00Z"
+        }
       }
     },
     {
@@ -591,6 +602,17 @@
       "b": {
         "instance": "wheel-rr",
         "snap_point": "hub"
+      },
+      "axis": {
+        "x": 0.0,
+        "y": 1.0,
+        "z": 0.0,
+        "badge": "declared",
+        "source": {
+          "ref": "Kinetra schema example: illustrative value, not a measured part",
+          "declared_by": "kinetra-docs",
+          "declared_at": "2026-11-11T00:00:00Z"
+        }
       }
     },
     {
@@ -603,6 +625,17 @@
       "b": {
         "instance": "wheel-fl",
         "snap_point": "hub"
+      },
+      "axis": {
+        "x": 0.0,
+        "y": 1.0,
+        "z": 0.0,
+        "badge": "declared",
+        "source": {
+          "ref": "Kinetra schema example: illustrative value, not a measured part",
+          "declared_by": "kinetra-docs",
+          "declared_at": "2026-11-11T00:00:00Z"
+        }
       }
     },
     {
@@ -615,6 +648,17 @@
       "b": {
         "instance": "wheel-fr",
         "snap_point": "hub"
+      },
+      "axis": {
+        "x": 0.0,
+        "y": 1.0,
+        "z": 0.0,
+        "badge": "declared",
+        "source": {
+          "ref": "Kinetra schema example: illustrative value, not a measured part",
+          "declared_by": "kinetra-docs",
+          "declared_at": "2026-11-11T00:00:00Z"
+        }
       }
     }
   ],
