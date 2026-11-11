@@ -27,8 +27,20 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - name: Playwright version
+        id: playwright-version
+        run: echo "version=$(pnpm --filter @kinetra/screenshots exec playwright-core --version | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -n 1)" >> "$GITHUB_OUTPUT"
+      - name: Playwright browser cache (keyed by the exact playwright-core version)
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ runner.arch }}-${{ steps.playwright-version.outputs.version }}-chromium-headless-shell
+      - name: Playwright OS dependencies (apt only if something is missing; retries + timeout)
+        timeout-minutes: 8
+        run: node scripts/ci/playwright_deps.mjs @kinetra/screenshots chromium-headless-shell
       - name: Playwright browser
-        run: pnpm --filter @kinetra/screenshots exec playwright-core install --with-deps chromium-headless-shell
+        timeout-minutes: 5
+        run: pnpm --filter @kinetra/screenshots exec playwright-core install chromium-headless-shell
       - name: Screenshots of the listed pages
         run: pnpm --filter @kinetra/screenshots capture
       - name: WebGL empty scene (pixel assertion, headless)
