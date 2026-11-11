@@ -419,6 +419,10 @@ class EditTools:
             raw = json.loads(arguments) if isinstance(arguments, str) else dict(arguments)
         except (ValueError, TypeError) as e:
             return self._refused(tool, (Reason(code=ReasonCode.INVALID_COMMAND, message=f"{tool}: the arguments are not JSON: {e}"),))
+        except RecursionError:  # JSON nested deeper than the parser's stack (G-04 review): refused, never raised
+            return self._refused(
+                tool, (Reason(code=ReasonCode.INVALID_COMMAND, message=f"{tool}: the arguments nest deeper than {gd.MAX_ARGUMENT_DEPTH} levels; no tool takes that"),)
+            )
         if not isinstance(raw, dict):
             return self._refused(tool, (Reason(code=ReasonCode.INVALID_COMMAND, message=f"{tool}: the arguments must be a JSON object"),))
         forbidden = gd.guard_arguments(tool, raw)  # G-04: before the schema, so an attempt is named as one
@@ -889,16 +893,19 @@ class HubEditTools:
         self._hub, self._project_id, self._origin = hub, project_id, origin
         self._tools = tools or EditTools()
 
-    def call(self, tool: str, arguments: str | Mapping[str, Any], *, confirmed: Iterable[gd.OutOfCatalog] = ()) -> ToolResult:
+    def call(self, tool: str, arguments: str | Mapping[str, Any], *, confirmed: Iterable[gd.OutOfCatalog | str] = ()) -> ToolResult:
         """Run the call against the document's current project and publish it. A call that introduces out-of-catalog values
-        (G-04) is published only when every one of its findings is in `confirmed`, the findings the user has seen and
-        accepted (a result's `out_of_catalog`); otherwise nothing is published and the result has `needs_confirmation`.
-        `confirmed` is a keyword of this method, never a field of the call: the model cannot confirm for the user."""
+        (G-04) is published only when the id of every one of its findings is in `confirmed`, the findings (or their `id`s)
+        the user has seen and accepted (a result's `out_of_catalog`); otherwise nothing is published and the result has
+        `needs_confirmation`. An id is bound to the definition's hash, so a value or definition that changed since needs a
+        new confirmation. `confirmed` is a keyword of this method, never a field of the call: the model cannot confirm for
+        the user."""
         document = self._hub.documents[self._project_id]
         result = self._tools.run(document.project, tool, arguments)
         if not result.ok:
             return result
-        unconfirmed = set(result.out_of_catalog) - set(confirmed)
+        ids = {c if isinstance(c, str) else c.id for c in confirmed}
+        unconfirmed = [f for f in result.out_of_catalog if f.id not in ids]
         if unconfirmed:
             labels = ", ".join(sorted({f.label for f in unconfirmed}))
             return replace(

@@ -47,6 +47,8 @@ allows.
 
 from __future__ import annotations
 
+import hashlib
+import json
 import re
 from collections.abc import Mapping
 from dataclasses import dataclass
@@ -56,6 +58,7 @@ from kinetra_core import (
     BADGE_LABEL_KO,
     PLANET_CONSTANT_NAMES,
     Badge,
+    Material,
     PartDef,
     PartRole,
     Project,
@@ -127,17 +130,38 @@ def _key_reason(tool: str, path: str, key: str, value: Any) -> Reason | None:
     return None
 
 
-def _walk(tool: str, data: Any, where: str, out: list[Reason]) -> None:
-    if isinstance(data, Mapping):
-        for key, value in data.items():
-            path = f"{where}.{key}" if where else str(key)
-            reason = _key_reason(tool, path, str(key), value)
-            if reason is not None:
-                out.append(reason)
-            _walk(tool, value, path, out)
-    elif isinstance(data, (list, tuple)):
-        for n, item in enumerate(data):
-            _walk(tool, item, f"{where}[{n}]", out)
+MAX_ARGUMENT_DEPTH = 16
+"""Deepest nesting of objects and lists the guard reads in a call's arguments. The deepest tool argument is 4 levels
+(`add_part.place.joint.limits.lower`); 16 leaves room for every schema error to be reported by the schema. Deeper input is
+refused as `invalid_command` without being read further, so no input can make the guard recurse or run long."""
+
+
+def _walk(tool: str, data: Any, out: list[Reason]) -> None:
+    """Pre-order walk with an explicit stack (no recursion), stopping at `MAX_ARGUMENT_DEPTH`."""
+    stack: list[tuple[Any, str, int]] = [(data, "", 0)]
+    while stack:
+        node, where, depth = stack.pop()
+        if not isinstance(node, (Mapping, list, tuple)):
+            continue
+        if depth >= MAX_ARGUMENT_DEPTH:
+            out.append(
+                Reason(
+                    code=ReasonCode.INVALID_COMMAND,
+                    message=f"{tool}: {where or 'arguments'}: nested deeper than {MAX_ARGUMENT_DEPTH} levels; no tool takes that",
+                )
+            )
+            continue
+        children: list[tuple[Any, str, int]] = []
+        if isinstance(node, Mapping):
+            for key, value in node.items():
+                path = f"{where}.{key}" if where else str(key)
+                reason = _key_reason(tool, path, str(key), value)
+                if reason is not None:
+                    out.append(reason)
+                children.append((value, path, depth + 1))
+        else:
+            children = [(item, f"{where}[{n}]", depth + 1) for n, item in enumerate(node)]
+        stack.extend(reversed(children))
 
 
 def guard_tool(tool: str) -> tuple[Reason, ...]:
@@ -155,10 +179,10 @@ def guard_tool(tool: str) -> tuple[Reason, ...]:
 
 
 def guard_arguments(tool: str, arguments: Any) -> tuple[Reason, ...]:
-    """The `forbidden` reasons of the parsed JSON arguments of one call, one per key; empty when the call may go on to the
-    tool's schema."""
+    """The `forbidden` reasons of the parsed JSON arguments of one call, one per key, and an `invalid_command` reason where
+    they nest deeper than `MAX_ARGUMENT_DEPTH`; empty when the call may go on to the tool's schema. Never raises."""
     out: list[Reason] = []
-    _walk(tool, arguments, "", out)
+    _walk(tool, arguments, out)
     return tuple(out)
 
 
@@ -171,20 +195,33 @@ class OutOfCatalog:
 
     `kind`: `thrust` (B-03c range), `differs` (C-06 difference from the catalog's definition with the same id), `spec`
     (a spec of a part that is not in the part library), `material` (a property of a material that is not in the material
-    catalog). `definition` is the part or material id, `field` the spec or property name (`""` for `differs`)."""
+    catalog). `definition` is the part or material id, `definition_hash` its `canonical.definition_hash` (so the finding
+    is about these exact numbers), `field` the spec or property name (`""` for `differs`).
+
+    `id` is derived from (kind, instance, definition, definition hash, field): the same finding has the same id in every
+    call, and a changed value or definition is a new finding with a new id. A user's confirmation is of ids
+    (`HubEditTools.call(confirmed=...)`), so a confirmation never carries over to numbers the user did not see."""
 
     kind: Literal["thrust", "differs", "spec", "material"]
     instance: str
     definition: str
+    definition_hash: str
     field: str
     label: str
     message: str
 
+    @property
+    def id(self) -> str:
+        key = json.dumps([self.kind, self.instance, self.definition, self.definition_hash, self.field], ensure_ascii=True)
+        return "ooc-" + hashlib.sha256(key.encode("ascii")).hexdigest()[:24]
+
     def to_json(self) -> dict:
         return {
+            "id": self.id,
             "kind": self.kind,
             "instance": self.instance,
             "definition": self.definition,
+            "definition_hash": self.definition_hash,
             "field": self.field,
             "label": self.label,
             "message": self.message,
@@ -195,7 +232,7 @@ def _label(badge: Badge) -> str:
     return f"{OUT_OF_CATALOG_KO} · {BADGE_LABEL_KO[badge]}"
 
 
-def _part_findings(inst: str, part: PartDef, in_library: bool) -> list[OutOfCatalog]:
+def _part_findings(inst: str, part: PartDef, digest: str, in_library: bool) -> list[OutOfCatalog]:
     out = []
     if part.role is PartRole.THRUSTER:
         f = catalog_finding(part)
@@ -205,6 +242,7 @@ def _part_findings(inst: str, part: PartDef, in_library: bool) -> list[OutOfCata
                     "thrust",
                     inst,
                     part.id,
+                    digest,
                     THRUSTER_RATED_THRUST,
                     f.label,
                     f"{f.label}: rated thrust {f.value:g} {f.unit.value} of part {part.id!r} is outside the cited "
@@ -223,6 +261,7 @@ def _part_findings(inst: str, part: PartDef, in_library: bool) -> list[OutOfCata
                 "spec",
                 inst,
                 part.id,
+                digest,
                 s.name,
                 label,
                 f"{label}: {s.name} = {s.value:g} {s.unit.value} of part {part.id!r}, which is not in the part library",
@@ -231,7 +270,7 @@ def _part_findings(inst: str, part: PartDef, in_library: bool) -> list[OutOfCata
     return out
 
 
-def _material_findings(inst: str, material) -> list[OutOfCatalog]:
+def _material_findings(inst: str, material: Material, digest: str) -> list[OutOfCatalog]:
     out = []
     for name in sorted(MATERIAL_PROPERTY_NAMES):
         q = getattr(material, name)
@@ -241,6 +280,7 @@ def _material_findings(inst: str, material) -> list[OutOfCatalog]:
                 "material",
                 inst,
                 material.id,
+                digest,
                 name,
                 label,
                 f"{label}: {name} = {q.value:g} {q.unit.value} of material {material.id!r}, which is not in the material catalog",
@@ -262,15 +302,17 @@ def out_of_catalog(project: Project, library: Mapping[str, PartDef]) -> frozense
     for inst in d.instances:
         part = parts.get(inst.part)
         if part is not None:
-            out.update(_part_findings(inst.id, part, in_library=inst.part in library))
+            digest = definition_hash(part)
+            out.update(_part_findings(inst.id, part, digest, in_library=inst.part in library))
             if (c := differs.get(("part", part.id))) is not None:
-                out.add(OutOfCatalog("differs", inst.id, part.id, "", CATALOG_DIFFERS_KO, c.message))
+                out.add(OutOfCatalog("differs", inst.id, part.id, digest, "", CATALOG_DIFFERS_KO, c.message))
         material = materials.get(inst.material) if inst.material is not None else None
         if material is not None:
+            digest = definition_hash(material)
             if (c := differs.get(("material", material.id))) is not None:
-                out.add(OutOfCatalog("differs", inst.id, material.id, "", CATALOG_DIFFERS_KO, c.message))
+                out.add(OutOfCatalog("differs", inst.id, material.id, digest, "", CATALOG_DIFFERS_KO, c.message))
             elif material.id not in material_ids:
-                out.update(_material_findings(inst.id, material))
+                out.update(_material_findings(inst.id, material, digest))
     return frozenset(out)
 
 

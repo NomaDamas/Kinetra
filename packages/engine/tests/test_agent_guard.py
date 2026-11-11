@@ -276,6 +276,66 @@ def test_guard_a_value_outside_a_parts_range_is_refused_not_labelled(tools, desk
     assert not r.ok and r.out_of_catalog == () and r.reasons
 
 
+# --- a confirmation is of these exact numbers ------------------------------------------------------------------------
+
+
+def test_guard_a_finding_has_a_stable_id_bound_to_the_definition(tools, desk):
+    args = {"instance": "plate-1", "material": OWN_MATERIAL.id}
+    a, b = tools.run(desk, "set_material", args), tools.run(desk, "set_material", args)
+    assert [f.id for f in a.out_of_catalog] == [f.id for f in b.out_of_catalog]
+    assert len({f.id for f in a.out_of_catalog}) == len(a.out_of_catalog) == 4
+    assert [x["id"] for x in a.to_json()["out_of_catalog"]] == [f.id for f in a.out_of_catalog]
+
+
+def test_guard_a_value_changed_after_the_confirmation_needs_a_new_one(tools, desk):
+    """The user confirms the own material's numbers; then (in another client) its density changes. The old confirmation
+    is of the old numbers: the same call waits again, and the new findings are published only once they are confirmed."""
+    hub, doc = hub_of(desk)
+    agent = HubEditTools(hub, "desk", tools=tools)
+    args = {"instance": "plate-1", "material": OWN_MATERIAL.id}
+    seen = agent.call("add_part", {"part": "plate", "place": {"type": "on_ground", "x": 1.0}})  # unrelated, published
+    assert seen.ok and doc.revision == 1
+    pending = agent.call("set_material", args)
+    assert pending.needs_confirmation and doc.revision == 1
+    heavier = OWN_MATERIAL.model_copy(update={"density": OWN_MATERIAL.density.model_copy(update={"value": 7800.0})})
+    edit = Publish(type="publish", id="user-edit", base_revision=doc.revision, command=ReplaceMaterialDef(type="replace_material_def", material=heavier), origin=Origin.MOUSE)
+    assert hub.publish("desk", edit).reply.type == "accepted" and doc.revision == 2
+    again = agent.call("set_material", args, confirmed=pending.out_of_catalog)
+    assert again.needs_confirmation and doc.revision == 2
+    assert not {f.id for f in again.out_of_catalog} & {f.id for f in pending.out_of_catalog}
+    assert any("7800" in f.message for f in again.out_of_catalog)
+    # confirming by id (what a UI sends back) works the same way
+    done = agent.call("set_material", args, confirmed=[f.id for f in again.out_of_catalog])
+    assert done.ok and doc.revision == 3
+
+
+# --- input the guard cannot be made to choke on ----------------------------------------------------------------------
+
+
+def test_guard_100k_levels_of_nesting_are_refused_never_raised(tools, desk):
+    from kinetra_engine.agent.guard import MAX_ARGUMENT_DEPTH
+
+    deep: dict = {}
+    node = deep
+    for _ in range(100_000):
+        node["a"] = {}
+        node = node["a"]
+    text = '{"part": ' + "[" * 100_000 + "]" * 100_000 + "}"
+    for arguments in (deep, text, {"part": "plate", "place": GROUND, "meta": deep}):
+        r = tools.run(desk, "add_part", arguments)
+        assert not r.ok and codes(r) == [ReasonCode.INVALID_COMMAND] and f"{MAX_ARGUMENT_DEPTH} levels" in r.reasons[0].message
+    hub, doc = hub_of(desk)
+    assert not HubEditTools(hub, "desk", tools=tools).call("add_part", text).ok and doc.revision == 0
+    # just past the bound, a forbidden key above it is still named, and nothing below it is read
+    nested = {"gravity": 1, "x": {}}
+    node = nested["x"]
+    for _ in range(MAX_ARGUMENT_DEPTH):
+        node["x"] = {}
+        node = node["x"]
+    assert {x.code for x in guard_arguments("add_part", nested)} == {ReasonCode.FORBIDDEN, ReasonCode.INVALID_COMMAND}
+
+
+
 # --- the guard does not trip on what the tools are -------------------------------------------------------------------
 
 

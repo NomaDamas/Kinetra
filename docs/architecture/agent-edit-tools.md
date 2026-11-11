@@ -40,7 +40,7 @@
 | id 자리에 정의: `part`나 `material`이 객체나 목록 | `{"part": {"id": "mine", ...}}` |
 | 사용자를 대신 말하는 키: `origin`, `badge`, confirm/confirmed/confirmation이 든 키 | `{"origin": "mouse"}`, `{"badge": "cite"}`, `{"userConfirmation": "yes"}` |
 
-이름은 camelCase를 쪼개고 영숫자가 아닌 글자를 `_`로 바꾸고 소문자로 맞춘 뒤 비교한다. 한 단어 이름이 긴 키 안에 든 것은 잡지 않는다(탱크의 `propellant_density`는 재료의 `density`가 아니다). 도구 필드와 라이브러리 부품의 파라미터 이름은 가드에 걸리지 않는다(테스트가 확인한다). 값은 읽지 않는다: `source` 문장은 사용자의 말이다.
+이름은 camelCase를 쪼개고 영숫자가 아닌 글자를 `_`로 바꾸고 소문자로 맞춘 뒤 비교한다. 한 단어 이름이 긴 키 안에 든 것은 잡지 않는다(탱크의 `propellant_density`는 재료의 `density`가 아니다). 도구 필드와 라이브러리 부품의 파라미터 이름은 가드에 걸리지 않는다(테스트가 확인한다). 값은 읽지 않는다: `source` 문장은 사용자의 말이다. 가드는 재귀 없이 명시적 스택으로 걸으며 `MAX_ARGUMENT_DEPTH`(16) 단계보다 깊은 인자는 더 읽지 않고 `invalid_command`로 거부한다(도구 인자의 가장 깊은 곳은 4단계). JSON 파서의 한도를 넘는 문자열도 예외가 아니라 `invalid_command`다(10만 단계 중첩 테스트).
 
 ## 카탈로그 밖 표시와 사용자 확인 (G-04)
 
@@ -53,7 +53,9 @@
 | `spec` | 부품 라이브러리에 없는 부품의 사양(추력기의 정격 추력은 위 범위로 판단) | 부품 라이브러리 | `카탈로그 밖 · <그 사양의 배지>` |
 | `material` | 재료 카탈로그에 없는 재료의 물성 넷 | 재료 카탈로그(B-07) | `카탈로그 밖 · <그 물성의 배지>`(예: 기본값이면 `카탈로그 밖 · 기본값`) |
 
-`HubEditTools.call(tool, arguments, *, confirmed=())`는 발견이 있는 호출을 그 발견이 모두 `confirmed`에 있을 때만 발행한다. 아니면 아무것도 발행하지 않고 `ok=False`, `needs_confirmation=True`, `out_of_catalog`, 적용할 `command`와 그 뒤 `project`(미리보기용)를 돌려준다. 사용자가 문구를 보고 확인하면 같은 호출을 `confirmed=result.out_of_catalog`로 다시 부른다. `confirmed`는 메서드의 키워드 인자이고 호출 인자가 아니어서 모델이 스스로 확인할 수 없다(그런 키는 가드가 거부한다). 다른 호출의 확인(다른 인스턴스의 발견)은 넘어오지 않는다. 부품의 파라미터 범위를 넘는 값은 표시하지 않고 검증기가 거절한다(DoD의 "거절하거나").
+`HubEditTools.call(tool, arguments, *, confirmed=())`는 발견이 있는 호출을 그 발견의 `id`가 모두 `confirmed`(발견 객체나 `id` 문자열)에 있을 때만 발행한다. 아니면 아무것도 발행하지 않고 `ok=False`, `needs_confirmation=True`, `out_of_catalog`, 적용할 `command`와 그 뒤 `project`(미리보기용)를 돌려준다. 사용자가 문구를 보고 확인하면 같은 호출을 `confirmed=result.out_of_catalog`(또는 그 `id`들)로 다시 부른다. `id`는 (종류, 인스턴스, 정의 id, 정의의 `definition_hash`, 사양·물성 이름)에서 만들어 호출마다 같고, 확인 뒤 값이나 정의가 바뀌면 새 `id`라서 다시 확인을 받아야 한다(`test_guard_a_value_changed_after_the_confirmation_needs_a_new_one`). `confirmed`는 메서드의 키워드 인자이고 호출 인자가 아니어서 모델이 스스로 확인할 수 없다(그런 키는 가드가 거부한다). 다른 호출의 확인(다른 인스턴스의 발견)은 넘어오지 않는다. 부품의 파라미터 범위를 넘는 값은 표시하지 않고 검증기가 거절한다(DoD의 "거절하거나").
+
+에이전트의 자유 텍스트 출력에서 판정처럼 읽히는 문장을 거르는 것은 G-03a(#528)의 `Explanation.of`의 몫이고, 이 가드는 명령 경로만 다룬다. 모든 에이전트 텍스트(MCP 응답 등)로 넓히는 일은 이 이슈의 범위 밖이다.
 
 우회 시도 테스트 다섯 종(`test_guard_bypass_1`~`5`): 금지된 이름의 도구, 실제 도구에 숨긴 행성 상수·판정 키, 재료 카탈로그 변경(도구로, 그리고 `origin = agent`로 직접 보낸 명령으로), 지어낸 부품, 사용자를 대신한 확인·출처·배지. 각각 순수 도구와 `Hub` 양쪽에서 거부되고 개정 번호, 프로젝트, 판정 상태, 카탈로그가 그대로인지 본다.
 
