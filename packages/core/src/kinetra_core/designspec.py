@@ -14,7 +14,11 @@ the instance's part frame. The pose is the stored authority for where an instanc
 anything, it says which two snap points belong together. Whether the joined snap points actually coincide at the
 stored poses, and whether a part floats free, is a placement check (C-02c validator, X-01d compile errors), not
 a `DesignSpec` validation. A joint's coordinate is 0 at the saved pose (hinge angle 0 rad, slider offset 0 m);
-`limits` are travel from there.
+`limits` are travel from there, so the saved pose lies inside them (`lower <= 0 <= upper`).
+
+Joint kinds (B-04a): a fixed joint leaves `b` no freedom, a hinge one rotation and a slider one translation, each
+about or along the joint `axis`, a unit vector in the frame of the `a` snap point (`+Z` when none is given). `joint_dof`
+and `Joint.displacement` state this as code; the body-tree builder (X-01a) and MJCF (X-01) read it from here.
 
 Joint graph: `a` is the parent side, `b` the child. This model only checks that each end exists and that no snap
 point is used twice. That the joints form a tree (no loop, one connected assembly) is the body-tree builder's
@@ -27,7 +31,7 @@ to the same drive is ambiguous). Which part may carry which actuator kind: a mot
 `motor`, a thruster on `thruster` (`PartRole`, B-03b). A part with another role is rejected; a part with no role is
 accepted (a bare body, and the compiler reports that it has no curve).
 
-Not here: MJCF (X-01); joint axis, DoF rules per kind, snap compatibility (B-04a, B-04b); springs and dampers
+Not here: MJCF (X-01); snap compatibility (B-04b), the joint axis in the world and its fit to the snap orientations (X-01a); springs and dampers
 (B-03e, X-01b); torque-speed and thrust curves and what a command of 1 means in N*m or N (B-03b, B-03c, X-01b,
 X-01c); release/separation schedule entries (X-08); definition hashes (`canonical.py`, C-03) and missing definitions (C-06);
 `World` and assumptions (C-01c).
@@ -35,13 +39,15 @@ X-01c); release/separation schedule entries (X-08); definition hashes (`canonica
 
 from __future__ import annotations
 
+import math
 from collections import Counter
+from dataclasses import dataclass
 from enum import StrEnum
 from typing import Annotated, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
-from .conventions import ID_PATTERN, Unit
+from .conventions import AXIS_NORM_TOLERANCE, ID_PATTERN, Unit
 from .material import Material
 from .partdef import Name, PartDef, PartRole, Quaternion
 from .provenance import Number, Provenance, Quantity
@@ -111,7 +117,11 @@ class JointKind(StrEnum):
 
 
 class JointLimits(BaseModel):
-    """Travel limits of the joint coordinate: rad for a hinge, m for a slider. `lower < upper`."""
+    """Travel limits of the joint coordinate: rad for a hinge, m for a slider. `lower < upper`.
+
+    The coordinate is 0 at the saved pose, so the saved pose must be inside its own limits: `lower <= 0 <= upper`
+    (a joint saved outside its travel would start in violation of its own limit). Both ends are inclusive.
+    """
 
     model_config = ConfigDict(extra="forbid", frozen=True)
 
@@ -124,7 +134,57 @@ class JointLimits(BaseModel):
             raise ValueError(f"lower and upper must share a unit, got {self.lower.unit.value!r} and {self.upper.unit.value!r}")
         if not self.lower.value < self.upper.value:
             raise ValueError(f"need lower < upper, got {self.lower.value} and {self.upper.value}")
+        if not self.lower.value <= 0.0 <= self.upper.value:
+            raise ValueError(
+                f"the joint coordinate is 0 at the saved pose, so limits must satisfy lower <= 0 <= upper, got {self.lower.value} and {self.upper.value}"
+            )
         return self
+
+
+class JointAxis(Provenance):
+    """The direction a hinge turns about or a slider moves along: a unit vector in the frame of the snap point of
+    the joint's `a` end (the parent side), the same frame a snap point's `orientation` gives. One badge and source
+    cover the vector. The sense is right-handed for a hinge (positive angle turns `b` counter-clockwise seen from
+    the tip of the axis) and positive travel is along the vector for a slider. `-axis` describes the same line of
+    motion with the sign of the coordinate (and so of its limits and of a motor command) flipped.
+    """
+
+    x: Number
+    y: Number
+    z: Number
+
+    @model_validator(mode="after")
+    def _unit(self) -> "JointAxis":
+        n = math.hypot(self.x, self.y, self.z)
+        if abs(n - 1.0) > AXIS_NORM_TOLERANCE:
+            raise ValueError(f"a joint axis must have unit length, got {n}")
+        return self
+
+
+DEFAULT_JOINT_AXIS = (0.0, 0.0, 1.0)
+"""The axis of a hinge or slider that names none: +Z of the `a` snap point's frame (the convention of the hub, shaft and
+nozzle snap points, `parts-wheel.md`, `part-motor.md`)."""
+
+
+@dataclass(frozen=True)
+class JointDof:
+    """Degrees of freedom of `b` relative to `a` that a joint kind leaves: rotations and translations, each about or
+    along the joint axis (so at most one in all, for the three kinds here)."""
+
+    rotational: int
+    translational: int
+
+    @property
+    def total(self) -> int:
+        return self.rotational + self.translational
+
+
+_DOF = {JointKind.FIXED: JointDof(0, 0), JointKind.HINGE: JointDof(1, 0), JointKind.SLIDER: JointDof(0, 1)}
+
+
+def joint_dof(kind: JointKind) -> JointDof:
+    """What a joint of this kind leaves free: a fixed joint nothing, a hinge one rotation, a slider one translation."""
+    return _DOF[kind]
 
 
 class BreakThreshold(Quantity):
@@ -140,7 +200,10 @@ _LIMIT_UNIT = {JointKind.HINGE: Unit.RAD, JointKind.SLIDER: Unit.M}
 class Joint(BaseModel):
     """A connection between two snap points of two different instances. `a` is the parent side by convention.
 
-    `limits` are optional (`None`: unlimited, as a wheel axle) and not allowed on a fixed joint.
+    `axis` (hinge and slider): the line the one free motion is about or along, in the frame of the `a` snap point
+    (`JointAxis`). `None` is +Z of that frame (`DEFAULT_JOINT_AXIS`). A fixed joint has no motion and so no axis.
+    `limits` are optional (`None`: unlimited, as a wheel axle) and not allowed on a fixed joint; they bound the joint
+    coordinate, which is 0 at the saved pose (`JointLimits`).
     `break_threshold` is optional (`None`: never breaks).
     """
 
@@ -150,6 +213,7 @@ class Joint(BaseModel):
     kind: JointKind
     a: SnapRef
     b: SnapRef
+    axis: JointAxis | None = None
     limits: JointLimits | None = None
     break_threshold: BreakThreshold | None = None
 
@@ -157,6 +221,8 @@ class Joint(BaseModel):
     def _consistent(self) -> "Joint":
         if self.a.instance == self.b.instance:
             raise ValueError(f"joint {self.id!r}: both ends are on instance {self.a.instance!r}")
+        if self.axis is not None and self.kind is JointKind.FIXED:
+            raise ValueError(f"joint {self.id!r}: a fixed joint has no axis")
         if self.limits is not None:
             want = _LIMIT_UNIT.get(self.kind)
             if want is None:
@@ -166,6 +232,49 @@ class Joint(BaseModel):
                     f"joint {self.id!r}: limits of a {self.kind.value} joint are in {want.value!r}, got {self.limits.lower.unit.value!r}"
                 )
         return self
+
+    @property
+    def dof(self) -> JointDof:
+        return joint_dof(self.kind)
+
+    @property
+    def unit_axis(self) -> tuple[float, float, float]:
+        """The axis as a unit vector in the `a` snap frame (renormalised: the model allows length 1 +- tolerance).
+        A fixed joint has none."""
+        if self.kind is JointKind.FIXED:
+            raise ValueError(f"joint {self.id!r}: a fixed joint has no axis")
+        if self.axis is None:
+            return DEFAULT_JOINT_AXIS
+        n = math.hypot(self.axis.x, self.axis.y, self.axis.z)
+        return (self.axis.x / n, self.axis.y / n, self.axis.z / n)
+
+    def displacement(self, coordinate: float = 0.0) -> tuple[tuple[tuple[float, float, float], ...], tuple[float, float, float]]:
+        """Where `b` is relative to its saved pose when the joint coordinate is `coordinate` (rad for a hinge, m for a
+        slider): `(R, t)`, rotation matrix (rows) and translation [m], in the `a` snap frame. The coordinate 0 is the
+        saved pose, `(I, 0)`. A hinge turns `b` about the axis through the joint point (right-handed, Rodrigues), a slider
+        moves it along the axis, a fixed joint takes only 0. A coordinate outside `limits` is an error (inclusive)."""
+        identity = ((1.0, 0.0, 0.0), (0.0, 1.0, 0.0), (0.0, 0.0, 1.0))
+        if not math.isfinite(coordinate):
+            raise ValueError(f"joint {self.id!r}: the coordinate must be finite, got {coordinate}")
+        if self.kind is JointKind.FIXED:
+            if coordinate != 0.0:
+                raise ValueError(f"joint {self.id!r}: a fixed joint has no coordinate to move (got {coordinate})")
+            return identity, (0.0, 0.0, 0.0)
+        if self.limits is not None and not self.limits.lower.value <= coordinate <= self.limits.upper.value:
+            raise ValueError(
+                f"joint {self.id!r}: coordinate {coordinate} is outside the limits [{self.limits.lower.value}, {self.limits.upper.value}]"
+            )
+        ax, ay, az = self.unit_axis
+        if self.kind is JointKind.SLIDER:
+            return identity, (ax * coordinate, ay * coordinate, az * coordinate)
+        c, s = math.cos(coordinate), math.sin(coordinate)
+        k = 1.0 - c
+        rotation = (
+            (c + ax * ax * k, ax * ay * k - az * s, ax * az * k + ay * s),
+            (ay * ax * k + az * s, c + ay * ay * k, ay * az * k - ax * s),
+            (az * ax * k - ay * s, az * ay * k + ax * s, c + az * az * k),
+        )
+        return rotation, (0.0, 0.0, 0.0)
 
 
 class ActuatorKind(StrEnum):

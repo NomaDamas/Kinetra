@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "additionalProperties": false,
-  "description": "Travel limits of the joint coordinate: rad for a hinge, m for a slider. `lower < upper`.",
+  "description": "Travel limits of the joint coordinate: rad for a hinge, m for a slider. `lower < upper`.\n\nThe coordinate is 0 at the saved pose, so the saved pose must be inside its own limits: `lower <= 0 <= upper`\n(a joint saved outside its travel would start in violation of its own limit). Both ends are inclusive.",
   "properties": {
     "lower": {
       "$ref": "#/$defs/Quantity"

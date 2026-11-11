@@ -679,7 +679,7 @@
     },
     "Joint": {
       "additionalProperties": false,
-      "description": "A connection between two snap points of two different instances. `a` is the parent side by convention.\n\n`limits` are optional (`None`: unlimited, as a wheel axle) and not allowed on a fixed joint.\n`break_threshold` is optional (`None`: never breaks).",
+      "description": "A connection between two snap points of two different instances. `a` is the parent side by convention.\n\n`axis` (hinge and slider): the line the one free motion is about or along, in the frame of the `a` snap point\n(`JointAxis`). `None` is +Z of that frame (`DEFAULT_JOINT_AXIS`). A fixed joint has no motion and so no axis.\n`limits` are optional (`None`: unlimited, as a wheel axle) and not allowed on a fixed joint; they bound the joint\ncoordinate, which is 0 at the saved pose (`JointLimits`).\n`break_threshold` is optional (`None`: never breaks).",
       "properties": {
         "id": {
           "pattern": "^[a-z][a-z0-9_-]{0,63}$",
@@ -694,6 +694,17 @@
         },
         "b": {
           "$ref": "#/$defs/SnapRef"
+        },
+        "axis": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/JointAxis"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
         },
         "limits": {
           "anyOf": [
@@ -727,6 +738,39 @@
       "title": "Joint",
       "type": "object"
     },
+    "JointAxis": {
+      "additionalProperties": false,
+      "description": "The direction a hinge turns about or a slider moves along: a unit vector in the frame of the snap point of\nthe joint's `a` end (the parent side), the same frame a snap point's `orientation` gives. One badge and source\ncover the vector. The sense is right-handed for a hinge (positive angle turns `b` counter-clockwise seen from\nthe tip of the axis) and positive travel is along the vector for a slider. `-axis` describes the same line of\nmotion with the sign of the coordinate (and so of its limits and of a motor command) flipped.",
+      "properties": {
+        "badge": {
+          "$ref": "#/$defs/Badge"
+        },
+        "source": {
+          "$ref": "#/$defs/Source"
+        },
+        "x": {
+          "title": "X",
+          "type": "number"
+        },
+        "y": {
+          "title": "Y",
+          "type": "number"
+        },
+        "z": {
+          "title": "Z",
+          "type": "number"
+        }
+      },
+      "required": [
+        "badge",
+        "source",
+        "x",
+        "y",
+        "z"
+      ],
+      "title": "JointAxis",
+      "type": "object"
+    },
     "JointKind": {
       "enum": [
         "fixed",
@@ -738,7 +782,7 @@
     },
     "JointLimits": {
       "additionalProperties": false,
-      "description": "Travel limits of the joint coordinate: rad for a hinge, m for a slider. `lower < upper`.",
+      "description": "Travel limits of the joint coordinate: rad for a hinge, m for a slider. `lower < upper`.\n\nThe coordinate is 0 at the saved pose, so the saved pose must be inside its own limits: `lower <= 0 <= upper`\n(a joint saved outside its travel would start in violation of its own limit). Both ends are inclusive.",
       "properties": {
         "lower": {
           "$ref": "#/$defs/Quantity"

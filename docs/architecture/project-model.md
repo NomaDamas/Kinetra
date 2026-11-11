@@ -46,7 +46,7 @@
 |---|---|---|
 | `Instance` | `id`, `part`, `parameters`, `material`(없을 수 있음), `pose` | `parameters`는 부품의 파라미터 이름만, 단위가 `ParamDef`와 같고 `[min, max]` 안이며, 같은 이름은 한 번만. 적지 않은 파라미터는 `PartDef` 기본값. 각 값은 `Quantity`(배지·출처 필수) |
 | `Pose` | `position`(`WorldPosition`, m, 월드), `orientation`(`{x,y,z,w}` 단위 쿼터니언), `badge`, `source` | 부품 좌표계의 월드 자세. 인스턴스 위치의 저장된 권위는 이 자세다. 배지·출처 하나가 자세 전체를 덮는다(스냅 포인트와 같다) |
-| `Joint` | `id`, `kind`(`fixed` `hinge` `slider`), `a`, `b`(`SnapRef`: 인스턴스 ID + 스냅 포인트 ID), `limits`, `break_threshold` | 양끝은 서로 다른 인스턴스의 존재하는 스냅 포인트이고 한 스냅 포인트는 결합 하나에만 쓰인다. `a`가 부모, `b`가 자식이다. 결합 좌표의 0은 저장된 자세다(힌지 0 rad, 슬라이더 0 m). `limits`는 `Quantity` 두 개(`lower < upper`, 같은 단위): 힌지는 rad, 슬라이더는 m, 고정 결합에는 없다. `break_threshold`는 `Quantity`(N, > 0)이고 없으면 파단하지 않는다 |
+| `Joint` | `id`, `kind`(`fixed` `hinge` `slider`), `a`, `b`(`SnapRef`: 인스턴스 ID + 스냅 포인트 ID), `axis`, `limits`, `break_threshold` | 양끝은 서로 다른 인스턴스의 존재하는 스냅 포인트이고 한 스냅 포인트는 결합 하나에만 쓰인다. `a`가 부모, `b`가 자식이다. `axis`(`JointAxis`: 단위 벡터 `x` `y` `z` + `badge` `source`)는 힌지가 도는 축, 슬라이더가 움직이는 방향이고 `a`의 스냅 포인트 좌표계로 적는다. 없으면 그 좌표계의 +Z(`DEFAULT_JOINT_AXIS`, 휠 `hub`·모터 `shaft`가 쓰는 관례)이며 고정 결합에는 축이 없다(적으면 거부). 길이는 1 ± 1e-6이다. 결합 좌표의 0은 저장된 자세다(힌지 0 rad, 슬라이더 0 m). `limits`는 `Quantity` 두 개(`lower < upper`, 같은 단위, 양끝 포함)이고 저장된 자세가 한계 안에 있어야 한다(`lower <= 0 <= upper`): 힌지는 rad, 슬라이더는 m, 고정 결합에는 없다. 없으면 한계가 없다(바퀴 축). `break_threshold`는 `Quantity`(N, > 0)이고 세 종류 모두에 둘 수 있으며 없으면 파단하지 않는다 |
 | `Actuator` | `id`, `kind`(`motor` `thruster`), `instance`, `joint` | 모터는 구동할 결합이 있어야 하고(고정 결합이 아니고, `instance`가 그 결합의 한쪽 끝), 추력기에는 결합이 없다. 같은 `kind`·`instance`·`joint`의 액추에이터 둘은 거부한다. 액추에이터 ID가 곧 조종 채널 ID다(`client-adapter.md` I5) |
 | `ControlSchedule` | `entries`: `ActuateEntry`(`id`, `actuator`, `start`, `end`[s], `command`, `badge`, `source`) | `0 <= start < end`. `command`는 완전 구동 대비 비율이고 모터는 [-1, 1], 추력기는 [0, 1]. `id`는 스케줄 안에서 유일하다(명령이 항목을 위치가 아니라 ID로 가리킨다, C-02a). 한 액추에이터의 구간은 겹치지 않는다(맞닿는 것은 된다). 배지·출처 하나가 항목을 덮는다 |
 
@@ -54,7 +54,8 @@
 - 자세가 권위다. 결합은 어느 두 스냅 포인트가 한 쌍인지만 말하고 아무것도 옮기지 않는다. 결합한 스냅 포인트가 저장된 자세에서 실제로 겹치는지, 부품이 공중에 떠 있는지는 배치 검사(C-02c 검증기, X-01d 컴파일 오류)이고 `DesignSpec` 검증이 아니다. 4륜차 예시는 조립된 차(바퀴 중심 z = 0.05 m, 오른쪽 모터는 Z축으로 180° 돌림, 맞닿는 스냅 포인트는 서로 `accepts`)이고 `test_designspec_four_wheel_car_is_assembled`가 결합한 모든 쌍이 월드에서 1e-9 안에 겹치는지 검사한다.
 - 결합 그래프가 트리(고리 없음, 한 덩어리)인지는 바디 트리를 만드는 X-01a의 규칙이고 컴파일 오류(X-01d)로 낸다. 이 모델은 양끝 존재와 스냅 포인트 중복 사용만 본다.
 - 액추에이터 종류와 부품 역할의 대응: 모터 액추에이터는 역할이 `motor`인 부품의 인스턴스에, 추력기는 `thruster`인 부품에 붙는다(B-03b, `part-motor.md`). 다른 역할이면 거절하고, 역할이 없는 부품은 받는다.
-- 결합의 축, 종류별 자유도, 스냅 호환 태그 검사는 B-04a·B-04b가, 스프링-댐퍼는 B-03e·X-01b가 더한다. 이 PR의 `limits`와 `break_threshold`는 그 필드가 올 자리와 단위 검사까지다. 파단 임계의 계산(물성 × 단면)은 X-04a다. 분리 항목(`type: "separate"`)은 X-08이 `ActuateEntry`와 같은 자리에 더한다.
+- 결합의 종류별 자유도(B-04a): `b`가 `a`에 대해 갖는 자유도는 고정 0, 힌지 회전 1(축 둘레), 슬라이더 이동 1(축 방향)이다(`joint_dof(kind)` → `JointDof(rotational, translational)`). `Joint.displacement(coordinate)`는 결합 좌표 하나에서 `b`가 저장된 자세에서 얼마나 옮겨 가는지 `(R, t)`(`a` 스냅 좌표계, 힌지는 `a`의 축을 지나는 점 둘레 오른손 회전, 슬라이더는 축 방향 이동)로 돌려주고, 좌표 0은 `(I, 0)`이다. 한계 밖이거나 유한하지 않은 좌표, 고정 결합의 0이 아닌 좌표는 오류다. 축의 부호를 뒤집으면 같은 직선에 좌표(와 한계, 모터 명령)의 부호만 뒤집힌다. 월드에서의 축(`a` 인스턴스 자세 × `a` 스냅 자세 × 축)과 두 스냅 방향이 이 축과 맞는지는 바디 트리를 만드는 X-01a와 컴파일 오류 X-01d의 몫이다. 스냅 호환 태그 검사는 B-04b, 스프링-댐퍼는 B-03e·X-01b가 더한다. `break_threshold`는 필드와 단위(N, > 0) 검사까지이고 파단 임계의 계산(물성 × 단면)은 X-04a, 파단 판정은 X-04다. 분리 항목(`type: "separate"`)은 X-08이 `ActuateEntry`와 같은 자리에 더한다.
+- `axis`는 B-04a가 더한 선택 필드라 없는 값은 정규 형태에서 빠지고(`Joint.axis` 기본값 `None`이 `OMITTED_DEFAULTS`에 고정됨) 축이 없는 옛 파일의 해시는 그대로다. 예시 3종(`DesignSpec.four-wheel-car`, `Project.four-wheel-car`, `Project.rocket-car-skeleton`)의 힌지는 `a`의 스냅 포인트 좌표계가 항등이라 `(0, 1, 0)`을 `axis`로 적었다(`사용자 선언`). 월드에서는 바퀴 축인 Y 직선이고, 모터를 Z축으로 180° 돌린 오른쪽은 방향이 -Y다. 그래서 예시 해시 둘이 바뀌었다. 저장 형식 `version`은 그대로다: 필드를 더했을 뿐 규칙이 바뀐 것이 아니다.
 - 이 PR의 수치는 모두 테스트가 선언한 값(`사용자 선언`)이다. 실부품 수치는 이 PR에 없다.
 
 ## World와 가정표 (C-01c)
@@ -210,7 +211,7 @@ uv run python packages/core/scripts/export_schemas.py --check  # 쓰지 않고 �
 - **되돌리기와 다시 실행은 배치 검사를 다시 하지 않는다.** `History.undo/redo`(C-02b)는 `apply_command`만 부른다. 되돌리기는 이전에 받아들여진 상태로, 다시 실행은 받아들여진 명령으로 돌아가는 것이라서(선형 이력, 역명령은 계산된 바로 그 상태에 적용된다) 배치 규칙이 그 사이에 바뀌지 않는 한 같은 답이다. 이미 겹친 프로젝트를 고친 편집을 되돌리면 겹친 상태가 돌아오는데, 그 상태는 사용자가 가졌던 것이다("새로 만든 문제만 거부한다"의 같은 근거). 새 편집은 문을 지난다: `History.execute`가 `validate_command`를 부르므로 거부된 명령(`forbidden`, `overlap` ...)은 프로젝트도 이력도 바꾸지 못한다(`test_history_execute_*`).
 - 허용 오차 `PLACEMENT_TOLERANCE` = 1 µm는 저장된 double을 위한 수치 허용치이지 물리적 주장이 아니다.
 - **명령이 새로 만든 문제만 거부한다.** 이미 겹침이 있는 프로젝트(파일에서 연 것)도 다른 곳은 고칠 수 있다. 묶음은 구조(`apply_command`)를 단계마다, 배치는 **끝 상태**로 본다: `add_instance` 뒤 `add_joint`, 조립 전체의 이동이 중간 상태가 헐거워도 된다.
-- 스냅의 방향(쿼터니언)과 결합 축은 비교하지 않는다(B-04a, B-04b). 컴파일 오류는 X-01d, 지형 소품 편집은 W-05.
+- 스냅의 방향(쿼터니언)과 결합 축은 비교하지 않는다(결합 축의 월드 방향은 X-01a, 스냅 호환은 B-04b). 컴파일 오류는 X-01d, 지형 소품 편집은 W-05.
 
 ## 알려진 확장 (이 PR 범위 밖, 뒤 잎이 더한다)
 
