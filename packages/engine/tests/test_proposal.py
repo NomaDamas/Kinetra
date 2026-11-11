@@ -9,10 +9,11 @@ from __future__ import annotations
 import json
 import uuid
 from datetime import datetime, timezone
+from pathlib import Path
 
 import pytest
 
-from kinetra_core import CommandBatch, Origin, Project, Publish, ReasonCode, validate_command
+from kinetra_core import AddPartDef, CommandBatch, Origin, PartDef, Project, Publish, ReasonCode, apply_command, validate_command
 from kinetra_engine.agent import DEFAULT_MAX_ATTEMPTS, EXPLANATION_LABEL, TOOL_NAMES, VERDICT_NOTICE, Explanation, Proposer
 from kinetra_engine.agent.proposal import MAX_REPLY_DEPTH, _too_deep
 from kinetra_engine.gateway import Budget, Gateway, HttpRequest, HttpResponse
@@ -20,6 +21,7 @@ from kinetra_engine.protocol import Hub
 
 KEY = "sk-or-v1-0123456789abcdef0123456789abcdef"
 NOW = datetime(2026, 11, 12, tzinfo=timezone.utc)
+EXAMPLES = Path(__file__).resolve().parents[3] / "schemas" / "examples"
 GROUND = {"type": "on_ground"}
 
 
@@ -143,7 +145,8 @@ def test_proposal_refused_by_the_validator_is_retried_with_the_reasons_and_then_
         ({"calls": [{"tool": "add_part"}]}, ReasonCode.INVALID_COMMAND),  # no arguments
         ({"calls": [plate()], "verdict": "it works"}, ReasonCode.INVALID_COMMAND),  # a field the reply does not have
         ({"calls": []}, ReasonCode.INVALID_COMMAND),  # neither calls nor a reason not to
-        ({"calls": [{"tool": "set_gravity", "arguments": {"value": 3.7}}]}, ReasonCode.INVALID_COMMAND),  # no such tool
+        ({"calls": [{"tool": "set_gravity", "arguments": {"value": 3.7}}]}, ReasonCode.FORBIDDEN),  # G-04: an attempt, named as one
+        ({"calls": [{"tool": "add_plate", "arguments": {}}]}, ReasonCode.INVALID_COMMAND),  # no such tool
         ({"calls": [{"tool": "add_part", "arguments": {"part": "plate", "place": GROUND, "pose": [0, 0, 1]}}]}, ReasonCode.INVALID_COMMAND),
         ({"calls": [{"tool": "remove_part", "arguments": {"instance": "ghost-1"}}]}, ReasonCode.UNKNOWN_ID),
     ],
@@ -286,6 +289,22 @@ def test_proposal_every_explanation_carries_the_label_whatever_the_filter_does(m
     if message:
         declined = proposer(Script({"calls": [], "message": message})).propose("car", empty(), "x").to_json()["explanation"]
         assert declined["label"] == EXPLANATION_LABEL and declined["is_verdict"] is False
+
+
+# --- out of the catalog (G-04): the proposal carries the labels for the user to confirm on accepting ------------------------
+
+
+def test_proposal_carries_the_out_of_catalog_findings_of_its_calls():
+    declared = PartDef.model_validate_json((EXAMPLES / "PartDef.thruster-declared-8kn.json").read_text(encoding="utf-8"))
+    base = apply_command(empty(), AddPartDef(type="add_part_def", part=declared)).project
+    thruster = {"part": "thruster-declared-8kn", "place": {"type": "snap_to", "snap_point": "mount", "target": {"instance": "plate-1", "snap_point": "top"}, "facing": "opposed"}}
+    result = proposer(Script({"calls": [plate(), {"tool": "add_part", "arguments": thruster}]})).propose("car", base, "an 8 kN thruster on a plate")
+    assert result.ok
+    first, second = result.proposal.calls
+    assert first.out_of_catalog == () and second.out_of_catalog
+    assert any(f.kind == "thrust" and f.label == "카탈로그 밖 · 사용자 선언" for f in second.out_of_catalog)
+    shown = result.to_json()["calls"]
+    assert "out_of_catalog" not in shown[0] and {x["label"] for x in shown[1]["out_of_catalog"]} == {"카탈로그 밖 · 사용자 선언"}
 
 
 # --- a reply too deep to read is a malformed reply, not a crash -------------------------------------------------------------

@@ -7,6 +7,7 @@
 ## 규칙
 
 - **출력은 적용 전 명령 묶음이다.** `Proposer(gateway).propose(project_id, project, request)`는 모델에게 편집 도구 호출의 순서 있는 목록을 받는다. 호출마다 앞 호출들이 남긴 프로젝트에서 `EditTools.run`(G-02a)으로 `Command`를 만들고, 모든 호출의 편집을 순서대로 펼쳐 평평한 `CommandBatch` 하나로 묶은 뒤 입력 프로젝트에 `validate_command`(C-02c)를 한 번 더 건다(모두 아니면 전무). 결과 `Proposal`은 그 묶음(`command`), 호출별 요약(`calls`), 묶음이 만들 프로젝트(`project`, 미리보기)다. `propose`는 입력 프로젝트의 순수 함수다: 아무것도 `Hub.publish`하지 않고 문서·이력·개정 번호는 그대로다. 문서에 넣는 것(`Publish`에 `proposal.command`)은 수락(G-03c)의 몫이다.
+- **카탈로그 밖 표시는 변경안에 실린다(G-04).** 호출마다 `EditTools.run`이 낸 `out_of_catalog`(그 호출이 새로 들인 카탈로그 밖 발견, `카탈로그 밖 · 사용자 선언` 같은 문구)가 `ProposedCall.out_of_catalog`와 `to_json()`의 호출 항목에 그대로 남는다. 변경안 단계에서는 확인을 묻지 않는다(적용하지 않으므로). 수락(G-03c)이 이 문구를 보이고 `HubEditTools.call`처럼 사용자 확인을 받아야 한다.
 - **거부되면 사유를 돌려주고 정해진 횟수 안에서 다시 시도한다.** 요청한 JSON 객체가 아닌 답, 도구가 거부한 호출(스키마, 없는 id), 검증기가 거부한 묶음(겹침, 뜸, 무효 스냅 …)은 거부된 시도다. 사유는 검증기의 `Reason`(코드, 문장, 타입이 있는 참조) 그대로이고 문장 앞에 `calls[n] (도구): `가 붙는다(묶음 전체 검사는 `batch: `). 모델의 답과 사유(JSON, 남은 시도 수 포함)가 대화에 붙어 다시 요청되고, 모델은 변경안 전체를 다시 보낸다. 거부된 호출 앞의 호출도 남기지 않는다(변경안은 통째다).
 - **재시도 초과는 실패 보고다.** `max_attempts`(기본 `DEFAULT_MAX_ATTEMPTS = 3`: 첫 답과 재시도 두 번) 번의 답이 모두 거부되면 `status = "retries_exhausted"`, `proposal = None`, `reasons`는 마지막 시도의 사유, `attempts`는 모든 시도(답 원문, 사유, 거부된 호출 번호)다. `to_json()`이 화면에 보낼 모양(상태, 시도 수, 마지막 사유, 시도별 거부)을 낸다.
 - **거절도 답이다.** 호출이 없고 `message`가 있는 답(도구로 할 수 없거나 해서는 안 되는 요청)은 `declined`이고 다시 묻지 않는다. 호출도 이유도 없는 답은 거부된 시도다. `ProposalResult.message`는 이 모듈의 문장(왜 멈췄는가)이고 모델의 말은 `explanation`이다.

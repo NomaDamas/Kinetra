@@ -55,6 +55,7 @@ from kinetra_core import Command, CommandBatch, CommandRejected, PartDef, Projec
 
 from ..gateway import BudgetExceeded, Gateway, GatewayError, LedgerWriteError
 from .edit_tools import EditTools, load_library, specs
+from .guard import OutOfCatalog
 
 DEFAULT_MAX_ATTEMPTS = 3
 """Model replies per proposal: the first and two retries. A design choice of this module (no source), each reply costs one gateway
@@ -136,13 +137,15 @@ class _Reply(BaseModel):
 
 @dataclass(frozen=True)
 class ProposedCall:
-    """One call of a proposal and what the edit tool made of it."""
+    """One call of a proposal and what the edit tool made of it. `out_of_catalog` (G-04) is what the call brings in beyond the
+    catalogs; accepting (G-03c) must show those labels and get the user's confirmation, as `HubEditTools.call` does."""
 
     tool: str
     arguments: Mapping[str, Any]
     summary: str
     command: Command
     effects: Mapping[str, Any] = field(default_factory=dict)
+    out_of_catalog: tuple[OutOfCatalog, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -223,7 +226,15 @@ class ProposalResult:
         if self.explanation is not None:
             out["explanation"] = self.explanation.to_json()
         if self.proposal is not None:
-            out["calls"] = [{"tool": c.tool, "summary": c.summary, **({"effects": dict(c.effects)} if c.effects else {})} for c in self.proposal.calls]
+            out["calls"] = [
+                {
+                    "tool": c.tool,
+                    "summary": c.summary,
+                    **({"effects": dict(c.effects)} if c.effects else {}),
+                    **({"out_of_catalog": [f.to_json() for f in c.out_of_catalog]} if c.out_of_catalog else {}),
+                }
+                for c in self.proposal.calls
+            ]
         if self.reasons:
             out["reasons"] = [r.model_dump(mode="json") for r in self.reasons]
         if not self.ok and any(a.reasons for a in self.attempts):
@@ -408,7 +419,7 @@ class Proposer:
             if not result.ok:
                 raise _Refused(_prefixed(f"calls[{index}] ({call.tool})", result.reasons), index)
             assert result.command is not None and result.project is not None
-            calls.append(ProposedCall(call.tool, call.arguments, result.summary, result.command, result.effects))
+            calls.append(ProposedCall(call.tool, call.arguments, result.summary, result.command, result.effects, result.out_of_catalog))
             edits.extend(result.command.commands if isinstance(result.command, CommandBatch) else (result.command,))
             current = result.project
         batch = CommandBatch(type="batch", commands=tuple(edits))
