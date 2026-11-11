@@ -2,7 +2,7 @@
 
 부품 하나를 정의 파일에서 시작해 질량·충돌 프록시·시각 glb가 나오고 테스트와 문서가 맞을 때까지 넣는 순서다. 종류별 부품(B-02 구조, B-03 구동)이 이 순서를 따른다. 근거: 이슈 #95, `docs/architecture/part-mass.md`, `collision-proxy.md`, `part-visual.md`, `docs/process/done-definition.md`. 목표는 부품 하나를 2시간 안에 넣는 것이다(`docs/plan/history/final-plan.md` Go 기준 표의 제안값이고 측정으로 확정한 값이 아니다. 실측은 아래 "소요 시간 기록").
 
-이 문서가 정하지 않는 것: 부품 종류와 실제 사양값(B-02, B-03), 가져온 glb(L-02), 빈 곳을 깎은 메시(#496), 임의 형상 커널(#484). 정의 파일을 어느 디렉터리에 두는지는 첫 부품 종류(B-02a)가 정하고 이 문서에 한 줄로 더한다. 아래 확인 명령은 어느 경로의 파일에도 돈다.
+이 문서가 정하지 않는 것: 부품 종류와 실제 사양값(B-02, B-03), 가져온 glb(L-02), 빈 곳을 깎은 메시(#496), 임의 형상 커널(#484). 정의 파일의 자리는 B-02a가 정했다: **라이브러리에 들어가는 부품은 `packages/engine/src/kinetra_engine/parts/library/<id>.json`**(파일 이름이 부품 id)이고 `PartDef.model_validate_json`으로 읽는다. 시험용 부품은 `packages/engine/tests/fixtures/parts/`에 둔다. 아래 확인 명령은 어느 경로의 파일에도 돈다.
 
 ## 0. 시작 전에 정할 것 (10분)
 
