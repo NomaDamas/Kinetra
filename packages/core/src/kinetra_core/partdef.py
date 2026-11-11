@@ -102,6 +102,19 @@ MOTOR_CURVE = "torque_speed"
 MOTOR_RATED_VOLTAGE = "rated_voltage"
 """Name of the spec a motor part must have: the supply voltage [V] the curve is for."""
 
+THRUSTER_CURVE = "thrust"
+"""Name of a thruster's thrust curve in `PartDef.curves` (B-03c): x = time since the command went on [s], y = thrust [N] at
+full command. After the last point the thrust stays at the last value (steady burn)."""
+THRUSTER_RATED_THRUST = "rated_thrust"
+"""Spec a thruster part must have: the steady thrust [N] at full command. It equals the last point of the thrust curve."""
+THRUSTER_PROPELLANT_FLOW = "propellant_flow"
+"""Spec a thruster part must have: propellant mass flow [kg/s] at the rated thrust. Flow follows thrust in proportion."""
+THRUSTER_OPENING_RESPONSE = "opening_response"
+"""Optional spec of a thruster part: the time [s] from the command to full thrust. When present it must equal the time at
+which the `thrust` curve first reaches the rated thrust, so the spec and the curve cannot tell two different rises."""
+THRUSTER_NOZZLE = "nozzle"
+"""Snap point a thruster part must have: at the nozzle exit; its +Z is the exhaust direction, the thrust on the part is -Z."""
+
 
 class PartDef(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
@@ -151,6 +164,8 @@ class PartDef(BaseModel):
             self._check_mass_parameter(self.mass_parameter, {p.name: p for p in self.parameters})
         if self.role is PartRole.MOTOR:
             self._check_motor()
+        if self.role is PartRole.THRUSTER:
+            self._check_thruster()
         return self
 
     def _check_mass_parameter(self, name: str, params: dict[str, ParamDef]) -> None:
@@ -197,6 +212,54 @@ class PartDef(BaseModel):
             raise ValueError(f"a motor part needs the spec {MOTOR_RATED_VOLTAGE!r} (V)")
         if spec.unit is not Unit.V or not spec.value > 0.0:
             raise ValueError(f"spec {MOTOR_RATED_VOLTAGE!r} is a positive voltage in 'V', got {spec.value} {spec.unit.value!r}")
+
+    def _check_thruster(self) -> None:
+        """A thruster part is a game-level thrust source: a thrust curve, a rated thrust, a propellant flow and a nozzle frame.
+
+        The curve is `(time since the command went on [s], thrust [N])`: it starts at time 0, never goes negative and
+        ends at the positive steady thrust, which is the `rated_thrust` spec. The `propellant_flow` spec [kg/s] is the
+        mass flow at that thrust. The `nozzle` snap point gives where the force acts and which way (its +Z is the exhaust
+        direction). Nothing here says what the propellant is or how it burns: that is outside the model (B-03c).
+        """
+        by_name = {c.name: c.curve for c in self.curves}
+        curve = by_name.get(THRUSTER_CURVE)
+        if curve is None:
+            raise ValueError(f"a thruster part needs the curve {THRUSTER_CURVE!r} (time [s] -> thrust [N])")
+        if (curve.x_unit, curve.y_unit) != (Unit.S, Unit.N):
+            raise ValueError(
+                f"curve {THRUSTER_CURVE!r} is time [s] -> thrust [N], got {curve.x_unit.value!r} -> {curve.y_unit.value!r}"
+            )
+        pts = curve.points
+        if pts[0].x != 0.0:
+            raise ValueError(f"curve {THRUSTER_CURVE!r} starts at time 0 (the command goes on), got {pts[0].x}")
+        if any(p.y < 0.0 for p in pts):
+            raise ValueError(f"curve {THRUSTER_CURVE!r}: thrust must not be negative")
+        if not pts[-1].y > 0.0:
+            raise ValueError(f"curve {THRUSTER_CURVE!r} ends at the steady thrust, which must be positive, got {pts[-1].y}")
+        specs = {s.name: s for s in self.specs}
+        for name, unit in ((THRUSTER_RATED_THRUST, Unit.N), (THRUSTER_PROPELLANT_FLOW, Unit.KG_PER_S)):
+            spec = specs.get(name)
+            if spec is None:
+                raise ValueError(f"a thruster part needs the spec {name!r} ({unit.value})")
+            if spec.unit is not unit or not spec.value > 0.0:
+                raise ValueError(f"spec {name!r} is positive in {unit.value!r}, got {spec.value} {spec.unit.value!r}")
+        rated = specs[THRUSTER_RATED_THRUST].value
+        if abs(rated - pts[-1].y) > 1e-9 * max(abs(rated), abs(pts[-1].y)):
+            raise ValueError(
+                f"spec {THRUSTER_RATED_THRUST!r} ({rated} N) must equal the last point of curve {THRUSTER_CURVE!r} ({pts[-1].y} N)"
+            )
+        opening = specs.get(THRUSTER_OPENING_RESPONSE)
+        if opening is not None:
+            if opening.unit is not Unit.S or not opening.value > 0.0:
+                raise ValueError(f"spec {THRUSTER_OPENING_RESPONSE!r} is positive in 's', got {opening.value} {opening.unit.value!r}")
+            rise = next(p.x for p in pts if abs(p.y - rated) <= 1e-9 * abs(rated))
+            if abs(opening.value - rise) > 1e-9 * max(opening.value, rise):
+                raise ValueError(
+                    f"spec {THRUSTER_OPENING_RESPONSE!r} ({opening.value} s) must equal the time the curve {THRUSTER_CURVE!r} "
+                    f"first reaches the rated thrust ({rise} s)"
+                )
+        if not any(sp.id == THRUSTER_NOZZLE for sp in self.snap_points):
+            raise ValueError(f"a thruster part needs the snap point {THRUSTER_NOZZLE!r} (nozzle exit, +Z = exhaust direction)")
 
     @staticmethod
     def _check_shape(shape: Shape, params: dict[str, ParamDef]) -> None:

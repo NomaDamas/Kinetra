@@ -27,6 +27,7 @@ export const FILES = [
   "payload-declared-mass",
   "ballast-weight-declared-mass",
   "motor-37d-12v-50-1-declared-mass",
+  "thruster-vacco-48003040-steel",
   "wheel-pom",
 ];
 export const DEFAULT_OUT = join(REPO_ROOT, "out", "gltf-check");

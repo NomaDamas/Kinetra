@@ -1,0 +1,264 @@
+{
+  "id": "thruster-declared-8kn",
+  "name": "Thruster, declared 8 kN (outside the catalog)",
+  "role": "thruster",
+  "snap_points": [
+    {
+      "badge": "default",
+      "source": {
+        "ref": "B-03c: snap frame convention chosen by Kinetra: +Z of a snap frame points out of the part surface. `nozzle`: +Z is the exhaust direction, so the force on the part is along -Z. Where the datasheet draws no mounting, the mount is the back face of the valve body"
+      },
+      "id": "mount",
+      "kind": "face",
+      "accepts": [
+        "face"
+      ],
+      "position": {
+        "x": {
+          "offset": 0.0,
+          "terms": []
+        },
+        "y": {
+          "offset": 0.0,
+          "terms": []
+        },
+        "z": {
+          "offset": -0.04729059031466532,
+          "terms": []
+        }
+      },
+      "orientation": {
+        "x": 1.0,
+        "y": 0.0,
+        "z": 0.0,
+        "w": 0.0
+      }
+    },
+    {
+      "badge": "default",
+      "source": {
+        "ref": "B-03c: snap frame convention chosen by Kinetra: +Z of a snap frame points out of the part surface. `nozzle`: +Z is the exhaust direction, so the force on the part is along -Z. Where the datasheet draws no mounting, the mount is the back face of the valve body"
+      },
+      "id": "nozzle",
+      "kind": "nozzle",
+      "accepts": [],
+      "position": {
+        "x": {
+          "offset": 0.0,
+          "terms": []
+        },
+        "y": {
+          "offset": 0.0,
+          "terms": []
+        },
+        "z": {
+          "offset": 0.04729059031466532,
+          "terms": []
+        }
+      },
+      "orientation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0,
+        "w": 1.0
+      }
+    }
+  ],
+  "specs": [
+    {
+      "name": "rated_thrust",
+      "value": 8000.0,
+      "unit": "N",
+      "badge": "declared",
+      "source": {
+        "ref": "B-03c example: a thrust the user declares for a game-scale thruster; not a datasheet value and no real engine. Propellant flow is declared at the same effective exhaust velocity as the cited VACCO 48003040 (rated thrust / flow), scaled to this thrust",
+        "declared_by": "kinetra-docs",
+        "declared_at": "2026-11-12T00:00:00Z"
+      }
+    },
+    {
+      "name": "propellant_flow",
+      "value": 10.890569154604275,
+      "unit": "kg/s",
+      "badge": "declared",
+      "source": {
+        "ref": "B-03c example: a thrust the user declares for a game-scale thruster; not a datasheet value and no real engine. Propellant flow is declared at the same effective exhaust velocity as the cited VACCO 48003040 (rated thrust / flow), scaled to this thrust",
+        "declared_by": "kinetra-docs",
+        "declared_at": "2026-11-12T00:00:00Z"
+      }
+    },
+    {
+      "name": "mass",
+      "value": 0.37648166710000003,
+      "unit": "kg",
+      "badge": "declared",
+      "source": {
+        "ref": "B-03c example: a thrust the user declares for a game-scale thruster; not a datasheet value and no real engine. Propellant flow is declared at the same effective exhaust velocity as the cited VACCO 48003040 (rated thrust / flow), scaled to this thrust",
+        "declared_by": "kinetra-docs",
+        "declared_at": "2026-11-12T00:00:00Z"
+      }
+    },
+    {
+      "name": "opening_response",
+      "value": 0.05,
+      "unit": "s",
+      "badge": "declared",
+      "source": {
+        "ref": "B-03c example: a thrust the user declares for a game-scale thruster; not a datasheet value and no real engine. Propellant flow is declared at the same effective exhaust velocity as the cited VACCO 48003040 (rated thrust / flow), scaled to this thrust",
+        "declared_by": "kinetra-docs",
+        "declared_at": "2026-11-12T00:00:00Z"
+      }
+    },
+    {
+      "name": "closing_response",
+      "value": 0.004,
+      "unit": "s",
+      "badge": "declared",
+      "source": {
+        "ref": "B-03c example: a thrust the user declares for a game-scale thruster; not a datasheet value and no real engine. Propellant flow is declared at the same effective exhaust velocity as the cited VACCO 48003040 (rated thrust / flow), scaled to this thrust",
+        "declared_by": "kinetra-docs",
+        "declared_at": "2026-11-12T00:00:00Z"
+      }
+    }
+  ],
+  "shape": {
+    "badge": "declared",
+    "source": {
+      "ref": "B-03c example: the geometry of the VACCO 48003040 drawing (three coaxial cylinders) reused only so the example has a body; it is not scaled to 8 kN and is not a design of an 8 kN thruster",
+      "declared_by": "kinetra-docs",
+      "declared_at": "2026-11-12T00:00:00Z"
+    },
+    "components": [
+      {
+        "id": "valve_body",
+        "primitive": {
+          "kind": "cylinder",
+          "radius": {
+            "offset": 0.014,
+            "terms": []
+          },
+          "length": {
+            "offset": 0.06458118062933065,
+            "terms": []
+          }
+        },
+        "operation": "add",
+        "position": {
+          "x": {
+            "offset": 0.0,
+            "terms": []
+          },
+          "y": {
+            "offset": 0.0,
+            "terms": []
+          },
+          "z": {
+            "offset": -0.015,
+            "terms": []
+          }
+        },
+        "orientation": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 1.0
+        }
+      },
+      {
+        "id": "neck",
+        "primitive": {
+          "kind": "cylinder",
+          "radius": {
+            "offset": 0.006,
+            "terms": []
+          },
+          "length": {
+            "offset": 0.012,
+            "terms": []
+          }
+        },
+        "operation": "add",
+        "position": {
+          "x": {
+            "offset": 0.0,
+            "terms": []
+          },
+          "y": {
+            "offset": 0.0,
+            "terms": []
+          },
+          "z": {
+            "offset": 0.02329059031466532,
+            "terms": []
+          }
+        },
+        "orientation": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 1.0
+        }
+      },
+      {
+        "id": "bell",
+        "primitive": {
+          "kind": "cylinder",
+          "radius": {
+            "offset": 0.011,
+            "terms": []
+          },
+          "length": {
+            "offset": 0.018,
+            "terms": []
+          }
+        },
+        "operation": "add",
+        "position": {
+          "x": {
+            "offset": 0.0,
+            "terms": []
+          },
+          "y": {
+            "offset": 0.0,
+            "terms": []
+          },
+          "z": {
+            "offset": 0.03829059031466532,
+            "terms": []
+          }
+        },
+        "orientation": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 1.0
+        }
+      }
+    ]
+  },
+  "curves": [
+    {
+      "name": "thrust",
+      "curve": {
+        "badge": "declared",
+        "source": {
+          "ref": "B-03c example: a thrust the user declares for a game-scale thruster; not a datasheet value and no real engine. Propellant flow is declared at the same effective exhaust velocity as the cited VACCO 48003040 (rated thrust / flow), scaled to this thrust",
+          "declared_by": "kinetra-docs",
+          "declared_at": "2026-11-12T00:00:00Z"
+        },
+        "x_unit": "s",
+        "y_unit": "N",
+        "points": [
+          {
+            "x": 0.0,
+            "y": 0.0
+          },
+          {
+            "x": 0.05,
+            "y": 8000.0
+          }
+        ]
+      }
+    }
+  ]
+}

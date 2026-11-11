@@ -20,6 +20,7 @@ test("every committed part fixture passes the Khronos validator with no errors a
       "plate-al6061.glb",
       "reflectance-ior.glb",
       "sensor-mast-user-material.glb",
+      "thruster-vacco-48003040-steel.glb",
       "wheel-pom.glb",
     ],
   );

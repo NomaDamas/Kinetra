@@ -1080,7 +1080,7 @@ export interface UniformDistribution {
 }
 
 /** Closed unit vocabulary (SI, written the way the JSON carries it). */
-export type Unit = "1" | "m" | "m^2" | "m^3" | "kg" | "s" | "rad" | "m/s" | "m/s^2" | "rad/s" | "N" | "N*m" | "N/m" | "N*s/m" | "N*m/rad" | "Pa" | "kg/m^3" | "kg*m^2" | "J" | "W" | "W/m^2" | "V" | "A";
+export type Unit = "1" | "m" | "m^2" | "m^3" | "kg" | "kg/s" | "s" | "rad" | "m/s" | "m/s^2" | "rad/s" | "N" | "N*s" | "N*m" | "N/m" | "N*s/m" | "N*m/rad" | "Pa" | "kg/m^3" | "kg*m^2" | "J" | "W" | "W/m^2" | "V" | "A";
 
 /** A constant that is not a cited number, and why. */
 export interface Unverified {
