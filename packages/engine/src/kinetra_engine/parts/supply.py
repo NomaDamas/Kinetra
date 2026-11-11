@@ -36,7 +36,11 @@ from kinetra_core.partdef import (
 
 from ._shape import ShapeError, _resolve_parameters, parameter_uses, resolve_shape
 
-__all__ = ["Draw", "Supply", "battery_supply", "electrical_power", "tank_supply", "tank_total_mass"]
+__all__ = ["Draw", "Supply", "SupplyError", "battery_supply", "electrical_power", "tank_supply", "tank_total_mass"]
+
+
+class SupplyError(ValueError):
+    """A request to a supply that no supply can honour: a negative or non-finite amount, rate or time step (B-03f)."""
 
 
 @dataclass(frozen=True)
@@ -95,21 +99,26 @@ class Supply:
     def draw(self, amount: float) -> Draw:
         """Take `amount` (J or kg, not negative). Gives what is left if that is less."""
         if not (math.isfinite(amount) and amount >= 0.0):
-            raise ValueError(f"an amount drawn is a finite number that is not negative, got {amount}")
+            raise SupplyError(f"an amount drawn is a finite number that is not negative, got {amount}")
         delivered = min(amount, self.remaining)
         left = 0.0 if delivered == self.remaining else self.remaining - delivered
         return Draw(replace(self, remaining=left), amount, delivered)
 
     def draw_rate(self, rate: float, dt: float) -> Draw:
-        """Take `rate` (W for a battery, kg/s for a tank) for `dt` seconds."""
+        """Take `rate` (W for a battery, kg/s for a tank) for `dt` seconds.
+
+        Both are checked on their own: a negative rate is refused even when `dt` is 0 (the product `-1.0 * 0.0` is `-0.0`
+        and would pass a check of the amount alone), and so is an infinite rate with `dt` 0 (`inf * 0` is NaN)."""
+        if not (math.isfinite(rate) and rate >= 0.0):
+            raise SupplyError(f"a rate drawn is a finite number that is not negative, got {rate}")
         if not (math.isfinite(dt) and dt >= 0.0):
-            raise ValueError(f"a time step is a finite number that is not negative, got {dt}")
+            raise SupplyError(f"a time step is a finite number that is not negative, got {dt}")
         return self.draw(rate * dt)
 
     def time_to_empty(self, rate: float) -> float:
         """Seconds until empty at a constant `rate` (W or kg/s) from now. `math.inf` at a rate of 0."""
         if not (math.isfinite(rate) and rate >= 0.0):
-            raise ValueError(f"a rate drawn is a finite number that is not negative, got {rate}")
+            raise SupplyError(f"a rate drawn is a finite number that is not negative, got {rate}")
         return math.inf if rate == 0.0 else self.remaining / rate
 
 

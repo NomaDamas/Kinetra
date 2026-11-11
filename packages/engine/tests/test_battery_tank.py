@@ -21,6 +21,7 @@ from kinetra_engine.parts import (
     PartCache,
     ShapeError,
     Supply,
+    SupplyError,
     battery_supply,
     collision_proxy,
     electrical_power,
@@ -397,3 +398,47 @@ def test_battery_and_tank_check_command_reports_each_part(capsys, tmp_path):
         assert code == 0 and report["part"] == name
         validate((tmp_path / f"{name}.glb").read_bytes())
     assert report["filled_voids"] == ["inside"]
+
+
+# ---- B-03f: a request no supply can honour is a SupplyError, whatever the other argument is ---------------------------
+
+
+@pytest.mark.parametrize("rate", [-1.0, -1e-12, -0.0 - 1.0, math.nan, math.inf, -math.inf])
+@pytest.mark.parametrize("dt", [0.0, 1.0, 1e-9])
+def test_battery_draw_rate_rejects_a_negative_or_non_finite_rate_for_any_time_step(rate, dt):
+    s = battery_supply(CELL)
+    with pytest.raises(SupplyError, match="a rate drawn"):
+        s.draw_rate(rate, dt)
+    assert s.remaining == 42120.0
+
+
+@pytest.mark.parametrize("dt", [-1.0, -1e-12, math.nan, math.inf, -math.inf])
+@pytest.mark.parametrize("rate", [0.0, 12.5])
+def test_battery_draw_rate_rejects_a_negative_or_non_finite_time_step_for_any_rate(rate, dt):
+    with pytest.raises(SupplyError, match="a time step"):
+        battery_supply(CELL).draw_rate(rate, dt)
+
+
+def test_battery_draw_rate_negative_rate_with_zero_time_is_the_reported_case():
+    """`-1.0 * 0.0` is `-0.0`, which `draw` accepts: the rate has to be checked before the product is formed."""
+    assert -1.0 * 0.0 == 0.0 and math.copysign(1.0, -1.0 * 0.0) == -1.0
+    with pytest.raises(SupplyError):
+        battery_supply(CELL).draw_rate(-1.0, 0.0)
+    with pytest.raises(SupplyError):
+        tank_supply(TANK).draw_rate(-0.002, 0.0)
+
+
+def test_battery_zero_rate_or_zero_time_is_a_valid_draw_of_nothing():
+    for rate, dt in ((0.0, 5.0), (12.5, 0.0), (0.0, 0.0)):
+        drawn = battery_supply(CELL).draw_rate(rate, dt)
+        assert (drawn.requested, drawn.delivered, drawn.satisfied, drawn.supply.remaining) == (0.0, 0.0, 1.0, 42120.0)
+
+
+def test_battery_supply_error_is_a_value_error_and_covers_draw_and_time_to_empty():
+    assert issubclass(SupplyError, ValueError)
+    s = battery_supply(CELL)
+    for bad in (-1.0, math.nan, math.inf):
+        with pytest.raises(SupplyError):
+            s.draw(bad)
+        with pytest.raises(SupplyError):
+            s.time_to_empty(bad)
