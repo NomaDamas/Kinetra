@@ -1,0 +1,177 @@
+{
+ "format": "KPR-spike-1",
+ "kind": "recorded-single-run",
+ "label": "1\ud68c \uc2e4\ud589. \ud310\uc815\uc774 \uc544\ub2d9\ub2c8\ub2e4",
+ "dt_s": 0.004,
+ "n_frames": 1126,
+ "bodies": [
+  "car",
+  "wheel_fl",
+  "wheel_fr",
+  "wheel_rl",
+  "wheel_rr"
+ ],
+ "floats_per_body": 7,
+ "pose_layout": "frame-major float32 LE: x y z qx qy qz qw (+Z up, meters, unit quaternion)",
+ "poses_file": "poses.bin",
+ "poses_bytes": 157640,
+ "poses_sha256": "df017e5d2d9c71ed8de7ca3ceb9e6dd77d2fabe9ebca3bde774b9b19045aed01",
+ "geoms": [
+  {
+   "body": "world",
+   "shape": "plane",
+   "rgba": [
+    0.55,
+    0.58,
+    0.62,
+    1
+   ]
+  },
+  {
+   "body": "car",
+   "shape": "box",
+   "size_m": [
+    2.1,
+    0.95,
+    0.52
+   ],
+   "pos_m": [
+    0.0,
+    0.0,
+    0.07999999999999996
+   ],
+   "quat_xyzw": [
+    0.0,
+    0.0,
+    0.0,
+    1.0
+   ],
+   "rgba": [
+    0.8,
+    0.1,
+    0.1,
+    1.0
+   ]
+  },
+  {
+   "body": "wheel_fl",
+   "shape": "cylinder",
+   "size_m": [
+    0.32,
+    0.12,
+    0.0
+   ],
+   "pos_m": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "quat_xyzw": [
+    0.7071067811865475,
+    0.0,
+    0.0,
+    0.7071067811865476
+   ],
+   "rgba": [
+    0.5,
+    0.5,
+    0.5,
+    1.0
+   ]
+  },
+  {
+   "body": "wheel_fr",
+   "shape": "cylinder",
+   "size_m": [
+    0.32,
+    0.12,
+    0.0
+   ],
+   "pos_m": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "quat_xyzw": [
+    0.7071067811865475,
+    0.0,
+    0.0,
+    0.7071067811865476
+   ],
+   "rgba": [
+    0.5,
+    0.5,
+    0.5,
+    1.0
+   ]
+  },
+  {
+   "body": "wheel_rl",
+   "shape": "cylinder",
+   "size_m": [
+    0.32,
+    0.12,
+    0.0
+   ],
+   "pos_m": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "quat_xyzw": [
+    0.7071067811865475,
+    0.0,
+    0.0,
+    0.7071067811865476
+   ],
+   "rgba": [
+    0.5,
+    0.5,
+    0.5,
+    1.0
+   ]
+  },
+  {
+   "body": "wheel_rr",
+   "shape": "cylinder",
+   "size_m": [
+    0.32,
+    0.12,
+    0.0
+   ],
+   "pos_m": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "quat_xyzw": [
+    0.7071067811865475,
+    0.0,
+    0.0,
+    0.7071067811865476
+   ],
+   "rgba": [
+    0.5,
+    0.5,
+    0.5,
+    1.0
+   ]
+  }
+ ],
+ "provenance": {
+  "scenario": "nominal",
+  "scenario_kind": "legacy-hero-8000N",
+  "mujoco": "4.0.0",
+  "numpy": "2.5.4",
+  "source_trajectory": "spikes/mujoco-wasm/reference/native_qpos.f64",
+  "source_qpos_sha256": "69fba6b754f4e3b6861a8fa9f4a8254278296fc941d75774d203e045c23aecf7",
+  "source_platform": "macOS-15.6.1-arm64-arm-64bit",
+  "source_generator": "spikes/mujoco-wasm/gen_reference.py",
+  "model_file": "spikes/mujoco-wasm/model/rocket_car.xml",
+  "model_sha256": "83b4990f9e0cb742f41299886410132641f42f42ef8e1d13ea9bb49909932cd9",
+  "legacy_model_hash": "83b4990f9e0cb742f41299886410132641f42f42ef8e1d13ea9bb49909932cd9",
+  "legacy_origin": "legacy-v0 packages/engine/src/kinetra_engine/templates/rocket_car.py build_mjcf(); hero controls from legacy-v0 apps/web/public/demo/roadster/traj_8000.json",
+  "ctrl_sha256": "4b243bc6e5b47a7fdbd287643e17cfd84c0b1089478142e0b365efd8079858ae",
+  "note": "recorded poses only; this bundle was not re-simulated and is not a judgement"
+ }
+}

@@ -240,6 +240,19 @@
 - 원본 해시: `sha256:e045f94c235c7adc50e77ba2a579c7bec41b496b6b47c3a7845f7c1e19959a88`
 - 확인자: omp
 
+### dep-esbuild-0.28.2-web-client
+
+- 표기: esbuild, Copyright (c) 2020 Evan Wallace. MIT License.
+- 저작자: Evan Wallace
+- 라이선스: MIT
+- 원본: https://www.npmjs.com/package/esbuild/v/0.28.2 https://github.com/evanw/esbuild https://github.com/evanw/esbuild/blob/main/LICENSE.md
+- 경로: `spikes/web-client/package.json`
+- 용도: 개발 도구: A0-02c 공유 페이지 스크립트(three.js 포함)를 하나의 번들로 묶고 줄이는 빌드. 측정용 스파이크이며 제품 코드가 아님
+- 변경 내역: 없음(수정 없이 사용). 해시는 `npm pack esbuild@0.28.2` tgz 의 sha256. spikes/web-client/package.json 의 devDependencies 와 pnpm-lock.yaml 에서 0.28.2 로 고정
+- 받은 날짜: 2026-11-11
+- 원본 해시: `sha256:e045f94c235c7adc50e77ba2a579c7bec41b496b6b47c3a7845f7c1e19959a88`
+- 확인자: omp
+
 ### dep-godot-4.7.2
 
 - 표기: Godot Engine, Copyright (c) 2014-present Godot Engine contributors, (c) 2007-2014 Juan Linietsky, Ariel Manzur. MIT License. Jolt Physics, Copyright (c) 2021 Jorrit Rouwe. MIT License.
