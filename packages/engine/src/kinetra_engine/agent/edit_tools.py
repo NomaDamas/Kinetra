@@ -13,7 +13,9 @@ Rules (the issue's DoD; read by G-03a proposals, G-04 guard, G-08 MCP server):
   validator's own `Reason`s, code + sentence + typed refs) so an agent can read why and try again (G-03a). `HubEditTools` publishes
   that `Command` through `Hub.publish`, so the document's history, revision and subscribers see it like any other edit (C1).
   No tool takes an origin, and no tool can carry a planet constant, a verdict or a change of the material catalog: such a field is
-  not in any argument schema (`extra="forbid"`), and the commands the tools build are the closed `Command` union.
+  not in any argument schema (`extra="forbid"`), and the commands the tools build are the closed `Command` union. An attempt is
+  refused as `forbidden` before the schema by the guard (G-04, `guard.py`), and what an accepted call uses beyond the catalogs is
+  in `ToolResult.out_of_catalog`; `HubEditTools.call` publishes such a call only with the user's confirmation.
 - **Position is a snap point, not a coordinate** (`studio-plan.md` risk 3). A part is placed by naming its own snap point and the snap
   point it meets (`snap_to`), joined at once by a joint; two parts already in the project are joined with `connect`. The pose of the
   instance is then computed in closed form (`snapmath.py`), so the two snap frames coincide (`facing: aligned`) or face each other
@@ -59,8 +61,8 @@ from __future__ import annotations
 import json
 import uuid
 from collections import deque
-from collections.abc import Callable, Mapping
-from dataclasses import dataclass, field
+from collections.abc import Callable, Iterable, Mapping
+from dataclasses import dataclass, field, replace
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Annotated, Any, Literal, Union
@@ -122,6 +124,7 @@ from kinetra_core import convex as cx
 from kinetra_core.conventions import ID_PATTERN
 from kinetra_engine.protocol import Hub
 
+from . import guard as gd
 from . import snapmath as sm
 
 LIBRARY_DIR = Path(__file__).resolve().parents[1] / "parts" / "library"
@@ -324,7 +327,11 @@ def specs() -> list[dict]:
 
 @dataclass(frozen=True)
 class ToolResult:
-    """What a tool call did. `ok` means the command was accepted (by the validator, and by the document when published)."""
+    """What a tool call did. `ok` means the command was accepted (by the validator, and by the document when published).
+
+    `out_of_catalog` (G-04) is what the call introduces beyond the catalogs, each with the label its value badge shows
+    (`카탈로그 밖 · 사용자 선언`, `카탈로그와 다름`). `needs_confirmation` means the call was not published because the user
+    has not confirmed those findings (`HubEditTools.call`); `command` and `project` are then what it would apply."""
 
     ok: bool
     tool: str
@@ -334,6 +341,8 @@ class ToolResult:
     reasons: tuple[Reason, ...] = ()
     effects: Mapping[str, Any] = field(default_factory=dict)
     revision: int | None = None
+    out_of_catalog: tuple[gd.OutOfCatalog, ...] = ()
+    needs_confirmation: bool = False
 
     def to_json(self) -> dict:
         """What goes back to the model: the outcome in words and ids, the reasons as the validator wrote them."""
@@ -344,6 +353,10 @@ class ToolResult:
             out["revision"] = self.revision
         if self.reasons:
             out["reasons"] = [r.model_dump(mode="json") for r in self.reasons]
+        if self.out_of_catalog:
+            out["out_of_catalog"] = [f.to_json() for f in self.out_of_catalog]
+        if self.needs_confirmation:
+            out["needs_confirmation"] = True
         return out
 
 
@@ -400,13 +413,17 @@ class EditTools:
         """Turn one call into a `Command` and validate it against `project`. Never raises for a bad call; the result says why."""
         entry = _TOOLS.get(tool)
         if entry is None:
-            return self._refused(tool, (Reason(code=ReasonCode.INVALID_COMMAND, message=f"unknown tool {tool!r}; the tools are {list(TOOL_NAMES)}"),))
+            named = gd.guard_tool(tool)  # G-04: `set_gravity` is an attempt, not a typo
+            return self._refused(tool, named or (Reason(code=ReasonCode.INVALID_COMMAND, message=f"unknown tool {tool!r}; the tools are {list(TOOL_NAMES)}"),))
         try:
             raw = json.loads(arguments) if isinstance(arguments, str) else dict(arguments)
         except (ValueError, TypeError) as e:
             return self._refused(tool, (Reason(code=ReasonCode.INVALID_COMMAND, message=f"{tool}: the arguments are not JSON: {e}"),))
         if not isinstance(raw, dict):
             return self._refused(tool, (Reason(code=ReasonCode.INVALID_COMMAND, message=f"{tool}: the arguments must be a JSON object"),))
+        forbidden = gd.guard_arguments(tool, raw)  # G-04: before the schema, so an attempt is named as one
+        if forbidden:
+            return self._refused(tool, forbidden)
         try:
             args = entry[0].model_validate(raw)
         except ValidationError as e:
@@ -422,13 +439,16 @@ class EditTools:
             return self._refused(tool, e.reasons)
         except ValidationError as e:  # the call is well-formed but the record it asks for is not (a motor without a joint, limits on a fixed joint)
             return self._refused(tool, tuple(_reason_of(tool, err) for err in e.errors()))
+        found = gd.introduced(project, applied.project, self._library)
+        labels = sorted({f.label for f in found})
         return ToolResult(
             ok=True,
             tool=tool,
-            summary=summary,
+            summary=summary + (f"; out of the catalog: {', '.join(labels)}" if found else ""),
             command=command,
             project=applied.project,
             effects=_changed_ids(project, applied.project),
+            out_of_catalog=found,
         )
 
     @staticmethod
@@ -869,17 +889,28 @@ class HubEditTools:
         self._hub, self._project_id, self._origin = hub, project_id, origin
         self._tools = tools or EditTools()
 
-    def call(self, tool: str, arguments: str | Mapping[str, Any]) -> ToolResult:
+    def call(self, tool: str, arguments: str | Mapping[str, Any], *, confirmed: Iterable[gd.OutOfCatalog] = ()) -> ToolResult:
+        """Run the call against the document's current project and publish it. A call that introduces out-of-catalog values
+        (G-04) is published only when every one of its findings is in `confirmed`, the findings the user has seen and
+        accepted (a result's `out_of_catalog`); otherwise nothing is published and the result has `needs_confirmation`.
+        `confirmed` is a keyword of this method, never a field of the call: the model cannot confirm for the user."""
         document = self._hub.documents[self._project_id]
         result = self._tools.run(document.project, tool, arguments)
         if not result.ok:
             return result
+        unconfirmed = set(result.out_of_catalog) - set(confirmed)
+        if unconfirmed:
+            labels = ", ".join(sorted({f.label for f in unconfirmed}))
+            return replace(
+                result,
+                ok=False,
+                needs_confirmation=True,
+                summary=f"{tool} is out of the catalog ({labels}) and waits for the user's confirmation; nothing changed",
+            )
         message = Publish(
             type="publish", id=uuid.uuid4().hex, base_revision=document.revision, command=result.command, origin=self._origin  # type: ignore[arg-type]
         )
         outcome = self._hub.publish(self._project_id, message)
         if outcome.reply.type == "rejected":
             return ToolResult(ok=False, tool=tool, summary=f"{tool} was refused by the document; nothing changed", reasons=tuple(outcome.reply.reasons))
-        return ToolResult(
-            ok=True, tool=tool, summary=result.summary, command=result.command, project=document.project, effects=result.effects, revision=outcome.reply.revision
-        )
+        return replace(result, project=document.project, revision=outcome.reply.revision)

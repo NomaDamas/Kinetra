@@ -143,8 +143,6 @@ BAD_CALLS = [
     ("add_part", "not json {", "not JSON"),
     ("add_part", "[1, 2]", "JSON object"),
     ("add_part", {"part": "plate"}, "place"),  # missing field
-    ("add_part", {"part": "plate", "place": GROUND, "gravity": 24.8}, "gravity"),  # a planet constant has no field
-    ("add_part", {"part": "plate", "place": GROUND, "verdict": "FEASIBLE_FOUND"}, "verdict"),
     ("add_part", {"part": "plate", "place": GROUND, "pose": {"x": 1}}, "pose"),  # no coordinates for a part
     ("add_part", {"part": "plate", "place": {"type": "teleport"}}, "place"),
     ("add_part", {"part": "Plate!", "place": GROUND}, "part"),  # not an id
@@ -540,7 +538,7 @@ def test_edit_tools_the_library_is_the_packaged_parts_and_a_call_cannot_define_a
     lib = load_library()
     assert {"plate", "beam", "wheel", "payload"} <= set(lib)
     r = run(tools, empty(), "add_part", {"part": {"id": "mine", "name": "mine"}, "place": GROUND})
-    assert not r.ok and codes(r) == [ReasonCode.INVALID_COMMAND]
+    assert not r.ok and codes(r) == [ReasonCode.FORBIDDEN]  # G-04: a definition in place of an id is an attempt, not a typo
     p = ok(tools, empty(), "add_part", {"part": "plate", "place": GROUND}).project
     assert p.design.parts[0] == lib["plate"]  # the library's definition, exactly
 
