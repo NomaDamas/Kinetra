@@ -109,6 +109,9 @@ THRUSTER_RATED_THRUST = "rated_thrust"
 """Spec a thruster part must have: the steady thrust [N] at full command. It equals the last point of the thrust curve."""
 THRUSTER_PROPELLANT_FLOW = "propellant_flow"
 """Spec a thruster part must have: propellant mass flow [kg/s] at the rated thrust. Flow follows thrust in proportion."""
+THRUSTER_OPENING_RESPONSE = "opening_response"
+"""Optional spec of a thruster part: the time [s] from the command to full thrust. When present it must equal the time at
+which the `thrust` curve first reaches the rated thrust, so the spec and the curve cannot tell two different rises."""
 THRUSTER_NOZZLE = "nozzle"
 """Snap point a thruster part must have: at the nozzle exit; its +Z is the exhaust direction, the thrust on the part is -Z."""
 
@@ -245,6 +248,16 @@ class PartDef(BaseModel):
             raise ValueError(
                 f"spec {THRUSTER_RATED_THRUST!r} ({rated} N) must equal the last point of curve {THRUSTER_CURVE!r} ({pts[-1].y} N)"
             )
+        opening = specs.get(THRUSTER_OPENING_RESPONSE)
+        if opening is not None:
+            if opening.unit is not Unit.S or not opening.value > 0.0:
+                raise ValueError(f"spec {THRUSTER_OPENING_RESPONSE!r} is positive in 's', got {opening.value} {opening.unit.value!r}")
+            rise = next(p.x for p in pts if abs(p.y - rated) <= 1e-9 * abs(rated))
+            if abs(opening.value - rise) > 1e-9 * max(opening.value, rise):
+                raise ValueError(
+                    f"spec {THRUSTER_OPENING_RESPONSE!r} ({opening.value} s) must equal the time the curve {THRUSTER_CURVE!r} "
+                    f"first reaches the rated thrust ({rise} s)"
+                )
         if not any(sp.id == THRUSTER_NOZZLE for sp in self.snap_points):
             raise ValueError(f"a thruster part needs the snap point {THRUSTER_NOZZLE!r} (nozzle exit, +Z = exhaust direction)")
 

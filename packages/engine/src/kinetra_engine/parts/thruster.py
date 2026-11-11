@@ -75,6 +75,8 @@ class Thruster:
     def thrust(self, t: float, command: float = 1.0) -> float:
         """Thrust [N] `t` seconds after the command went on to `command` in [0, 1]. 0 before it went on."""
         _check_command(command)
+        if math.isnan(t) or math.isinf(t):
+            raise ThrusterError(f"time must be finite, got {t}")
         if t < 0.0:
             return 0.0
         return command * self._at(t)

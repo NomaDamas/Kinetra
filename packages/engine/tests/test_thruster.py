@@ -356,3 +356,39 @@ def test_thruster_actuator_on_a_part_of_another_role_is_rejected():
     d["parts"][-1].pop("curves")
     with pytest.raises(ValueError, match="a thruster drives a part with role 'thruster'"):
         DesignSpec.model_validate(d)
+
+
+# --- review findings (#512) -----------------------------------------------------------------------------------------
+
+
+@pytest.mark.parametrize("t", [math.nan, math.inf, -math.inf])
+def test_thruster_thrust_rejects_a_time_that_is_not_finite(th, t):
+    for call in (th.thrust, th.force, th.mass_flow):
+        with pytest.raises(ThrusterError, match="finite"):
+            call(t)
+
+
+def test_thruster_opening_response_spec_equals_the_curve_rise_in_both_parts(vacco):
+    declared = PartDef.model_validate_json(EXAMPLE_8KN.read_text(encoding="utf-8"))
+    for part in (vacco, declared):
+        opening = next(s.value for s in part.specs if s.name == "opening_response")
+        points = part.curves[0].curve.points
+        rated = next(s.value for s in part.specs if s.name == "rated_thrust")
+        assert opening == next(p.x for p in points if p.y == rated)
+    assert next(s.value for s in declared.specs if s.name == "opening_response") == 0.05
+
+
+def test_thruster_opening_response_that_disagrees_with_the_curve_is_rejected():
+    def edit(d):
+        for s in d["specs"]:
+            if s["name"] == "opening_response":
+                s["value"] = 0.05  # the curve rises in 7 ms
+
+    reject(mutated(edit), "must equal the time the curve 'thrust' first reaches the rated thrust")
+
+
+def test_thruster_opening_response_is_checked_against_the_first_time_at_rated_thrust():
+    def edit(d):
+        d["curves"][0]["curve"]["points"] = [{"x": 0.0, "y": 0.0}, {"x": 0.007, "y": F}, {"x": 1.0, "y": F}]
+
+    PartDef.model_validate(mutated(edit))  # a flat tail after the rise is fine: the spec still names the first time

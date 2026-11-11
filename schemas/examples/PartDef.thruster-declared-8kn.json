@@ -100,7 +100,7 @@
     },
     {
       "name": "opening_response",
-      "value": 0.007,
+      "value": 0.05,
       "unit": "s",
       "badge": "declared",
       "source": {
