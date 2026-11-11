@@ -22,6 +22,12 @@ test("capture.ts exits 3 with the guard message outside the guard", () => {
   assert.match(r.stderr, /resource guard/);
 });
 
+test("skeleton.ts exits 3 with the guard message outside the guard", () => {
+  const r = run(["skeleton.ts"]);
+  assert.equal(r.status, 3, r.stderr);
+  assert.match(r.stderr, /resource guard/);
+});
+
 test("every test/*.browser.ts refuses to run outside the guard and starts no browser", () => {
   const files = readdirSync(join(ROOT, "test")).filter((f) => f.endsWith(".browser.ts"));
   assert.ok(files.length > 0);

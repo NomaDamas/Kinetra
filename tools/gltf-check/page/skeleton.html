@@ -1,0 +1,19 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>B-02 structural skeleton: glb per instance placed by pose</title>
+<style>
+html,body{margin:0;background:#14181f;color:#ddd;font:14px/1.4 system-ui,sans-serif}
+canvas{display:block}
+#label{position:fixed;left:8px;top:6px}
+#caption{padding:8px 12px;width:1256px}
+#caption table{border-collapse:collapse;margin-top:4px}
+#caption td,#caption th{padding:1px 14px 1px 0;text-align:left;font-variant-numeric:tabular-nums}
+#caption td.n{text-align:right}
+#caption tr.total td{border-top:1px solid #667;font-weight:bold}
+#note{color:#9aa;margin-top:4px}
+</style>
+<canvas id="c" width="1280" height="480"></canvas>
+<div id="label">B-02: 빔·판·차체 쉘·탑재체·고정대로 만든 뼈대. 인스턴스마다 glb를 자세(pose)대로 놓았습니다. 시각 메시이며 판정이 아닙니다</div>
+<div id="caption"></div>
+<script type="importmap">{"imports":{"three":"/node_modules/three/build/three.module.js","three/addons/":"/node_modules/three/examples/jsm/"}}</script>
+<script type="module" src="/page/skeleton.js"></script>
