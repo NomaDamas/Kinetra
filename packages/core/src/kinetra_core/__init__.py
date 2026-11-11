@@ -88,7 +88,8 @@ from .massprops import (
 )
 from .material import Density, ElasticModulus, Friction, Material, YieldStrength
 from .material_catalog import CatalogEntry, MaterialCatalog, load_material_catalog
-from .partdef import ParamDef, PartDef, SnapPoint, SpecDef
+from .curve import Curve, CurvePoint, NamedCurve
+from .partdef import MOTOR_CURVE, MOTOR_RATED_VOLTAGE, ParamDef, PartDef, PartRole, SnapPoint, SpecDef
 from .pbr import PbrColor, PbrScalar, PbrSlots
 from .project import Project
 from .refs import Ref, RefError, RefKind
@@ -101,6 +102,8 @@ __all__ = [
     "BODIES_DIR",
     "BODY_IDS",
     "COORDINATE_FRAME",
+    "MOTOR_CURVE",
+    "MOTOR_RATED_VOLTAGE",
     "PLANET_CONSTANT_NAMES",
     "QUATERNION_COMPONENTS",
     "ActuateEntry",
@@ -131,6 +134,8 @@ __all__ = [
     "ComponentContribution",
     "Confidence",
     "ControlSchedule",
+    "Curve",
+    "CurvePoint",
     "Cylinder",
     "Density",
     "Derivation",
@@ -161,11 +166,13 @@ __all__ = [
     "MoveInstance",
     "NormalDistribution",
     "Origin",
+    "NamedCurve",
     "ParamDef",
     "ParamTerm",
     "ParamValue",
     "ParameterUse",
     "PartDef",
+    "PartRole",
     "PbrColor",
     "PbrScalar",
     "PbrSlots",
