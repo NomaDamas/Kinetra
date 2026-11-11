@@ -131,6 +131,10 @@ def plate() -> PartDef:
     return library_part("plate")
 
 
+def shell() -> PartDef:
+    return library_part("shell")
+
+
 def sensor_mast() -> PartDef:
     return part(
         "sensor-mast",
@@ -167,6 +171,7 @@ SAMPLES = {
     "reflectance-ior": (mounting_plate, "pom-delrin-150"),
     "beam-al6061": (beam, "al6061-t6"),
     "plate-al6061": (plate, "al6061-t6"),
+    "shell-al6061": (shell, "al6061-t6"),
 }
 
 
