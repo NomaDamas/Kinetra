@@ -1,6 +1,6 @@
-# Project 모델과 명령: 단위·좌표·값 배지, 재료·부품·DesignSpec·World·가정표, Command, 되돌리기와 이력 (C-01a, C-01b, C-01c, C-01d, C-02a, C-02b)
+# Project 모델과 명령: 단위·좌표·값 배지, 재료·부품·DesignSpec·World·가정표, Command, 되돌리기와 이력, 저장·열기·정의 해시 (C-01a, C-01b, C-01c, C-01d, C-02a, C-02b, C-03)
 
-- 상태: 구현됨. 코드는 `packages/core/src/kinetra_core/`(`conventions.py`, `provenance.py`, `material.py`, `partdef.py`, `designspec.py`, `world.py`, `assumption.py`, `project.py`, `commands.py`), 테스트는 `packages/core/tests/test_material_partdef.py`와 `test_designspec.py`, `test_world_assumption.py`, `test_commands.py`.
+- 상태: 구현됨. 코드는 `packages/core/src/kinetra_core/`(`conventions.py`, `provenance.py`, `material.py`, `partdef.py`, `designspec.py`, `world.py`, `assumption.py`, `project.py`, `commands.py`, `canonical.py`, `projectfile.py`), 테스트는 `packages/core/tests/test_material_partdef.py`와 `test_designspec.py`, `test_world_assumption.py`, `test_commands.py`, `test_save_hash.py`.
 - 근거: `docs/plan/studio-plan.md` 5절, `docs/architecture/client-adapter.md` G4·G6, 이슈 #60의 A0-04 이월 코멘트.
 - 범위 밖: MJCF(X-01). JSON Schema와 TS 타입은 코어 모델에서 생성한다(아래 "스키마와 TS 타입", C-01d).
 
@@ -36,7 +36,7 @@
 - `Material`: `density`(kg/m^3, > 0), `yield_strength`(Pa, > 0), `elastic_modulus`(Pa, > 0), `friction`(무차원 쿨롱 계수, >= 0). 필드마다 단위와 범위가 타입에 있어 오류가 그 필드를 가리키고 JSON Schema에 `const`/`exclusiveMinimum`이 실린다. 두 재료의 접촉 마찰을 어떻게 합치는지는 컴파일러(X-01)가 정한다. 실제 재료 5종의 값은 B-07이 출처와 함께 채웠다: [`materials.md`](materials.md).
 - `PartDef`: `parameters`(이름, 단위, 기본값·최소·최대; 최소 <= 기본 <= 최대), `snap_points`(ID, 종류, 받아들이는 종류, 부품 로컬 좌표의 위치 `offset + Σ factor × 길이 파라미터`, 방향 쿼터니언, 배지·출처), `specs`(`SpecDef`: 이름이 붙은 `Quantity`의 튜플, 사양), `shape`(선택, B-01a: 질량·관성 계산의 레시피). `mass_parameter`(선택, B-02c: 질량을 정하는 kg 파라미터의 이름. 있으면 부품의 질량은 그 값이고 재료를 읽지 않는다. [`part-payload.md`](part-payload.md)).
 - 파라미터를 참조하는 스냅 포인트는 존재하는 길이(m) 파라미터만 가리킬 수 있다. 한 `PartDef` 안에서 파라미터 이름, 스냅 포인트 ID, 사양 이름은 각각 겹치지 않고, 스냅 포인트 ID와 사양 이름은 파라미터 이름과도 겹치지 않는다.
-- 모든 모델은 `extra="forbid"`, 불변(`frozen`)이고 컬렉션은 튜플이라 `PartDef`는 해시된다. 순서는 값의 일부로 보존한다(순서가 다르면 다른 값). 정의 해시용 정규 순서는 C-03이 정한다.
+- 모든 모델은 `extra="forbid"`, 불변(`frozen`)이고 컬렉션은 튜플이라 `PartDef`는 해시된다. 순서는 값의 일부로 보존한다(순서가 다르면 다른 값). 정의 해시용 정규 순서는 아래 "저장·열기와 정의 해시"(C-03)가 정한다.
 
 ## `DesignSpec` (C-01b)
 
@@ -126,7 +126,7 @@ uv run python packages/core/scripts/export_schemas.py --check  # 쓰지 않고 �
 - 편집마다 프로젝트 전체를 JSON으로 덤프하고 다시 검증하므로 편집 하나는 프로젝트 크기에 비례하고 묶음은 n배다(리뷰 측정: 인스턴스 200개에서 단일 이동 약 11 ms, 200건 묶음 약 1.1 s; 1,000개에서 25 ms, 4 s). 명령의 모양과 무관한 내부 문제라서 별도 이슈로 추적한다.
 - 역명령은 목록의 절대 위치(`index`)를 담는다. 한 줄로 선형인 이력(S1)에서는 역명령이 늘 자기가 계산된 상태에 적용되므로 정확하다. 다른 편집이 끼어드는 사용자별 되돌리기(N-04)는 위치가 아니라 이웃을 가리키는 방식이 필요하다.
 - 삭제가 연쇄를 일으켜도 한 명령이고 한 역명령이다(#476 리뷰: 끊긴 상태를 만들지 않는다). 이력에서 한 칸이 되는 단위는 아래 "되돌리기와 이력"이 정한다.
-- 이 PR에 없는 것: 배치 검사(겹침, 뜬 부품, 스냅 호환)와 행성 상수·물성 DB·판정 결과를 바꾸려는 시도의 거부, `planet`이 `data/bodies`에 있는지, 어느 출처가 정의 명령을 보낼 수 있는지(C-02c), 저장 형식과 정의 해시(C-03), 선로의 메시지(C-05a), 지형 소품 편집(W-05), 수역(FL-02b), 분리 항목(X-08), 정의가 없는 인스턴스(C-06). 이 PR의 예시 수치는 모두 테스트가 선언한 값이다.
+- 이 PR에 없는 것: 배치 검사(겹침, 뜬 부품, 스냅 호환)와 행성 상수·물성 DB·판정 결과를 바꾸려는 시도의 거부, `planet`이 `data/bodies`에 있는지, 어느 출처가 정의 명령을 보낼 수 있는지(C-02c), 선로의 메시지(C-05a), 지형 소품 편집(W-05), 수역(FL-02b), 분리 항목(X-08), 정의가 없는 인스턴스(C-06). 이 PR의 예시 수치는 모두 테스트가 선언한 값이다.
 
 ## 되돌리기와 이력 (C-02b)
 
@@ -139,8 +139,45 @@ uv run python packages/core/scripts/export_schemas.py --check  # 쓰지 않고 �
 - **바꾸는 것이 없는 명령은 칸을 만들지 않는다.** 적용 결과가 입력과 같으면(같은 행성, 같은 자세, 옮겼다 되돌리는 묶음) 명령은 수락되지만 이력은 그대로이고 `EditResult.entry`는 `None`이다. 아무것도 하지 않는 되돌리기 단계를 막고, 되돌려 둔 칸(다시 실행할 칸)을 잃지 않으며, C-05a가 개정 번호와 판정 상태(D5)를 건드리지 않을 근거가 된다.
 - 되돌린 뒤 문서를 실제로 바꾸는 새 명령이 오면 다시 실행할 칸은 버려진다(새 상태에 맞지 않는다).
 - 거부된 명령은 아무것도 바꾸지 않는다(`CommandRejected`). 되돌릴 것이 없을 때의 `undo`와 다시 할 것이 없을 때의 `redo`도 같은 길로 거부한다(`nothing_to_undo`, `nothing_to_redo`).
-- 이력 길이의 상한은 없다. 계획과 이슈 어디에도 숫자가 없어서 만들어 쓰지 않았다. 칸당 명령 둘을 쥔다. 상한이나 저장 여부는 보관하는 C-03, C-05a가 정한다.
-- 이 PR에 없는 것: 개정 번호와 `applied` 메시지(C-05a), 이력의 저장 형식과 해시(C-03), 여러 사용자의 사용자별 되돌리기(N-04), 출처별 허용 정책(C-02c), 시각(벽시계 시각은 결정론 문서에 두지 않는다).
+- 이력 길이의 상한은 없다. 계획과 이슈 어디에도 숫자가 없어서 만들어 쓰지 않았다. 칸당 명령 둘을 쥔다. 상한은 보관하는 C-05a가 정한다. 저장 파일에는 넣지 않는다(아래 C-03).
+- 이 PR에 없는 것: 개정 번호와 `applied` 메시지(C-05a), 여러 사용자의 사용자별 되돌리기(N-04), 출처별 허용 정책(C-02c), 시각(벽시계 시각은 결정론 문서에 두지 않는다).
+
+## 저장·열기와 정의 해시 (C-03)
+
+코드는 `kinetra_core/canonical.py`(정규 형식과 해시), `projectfile.py`(파일), 테스트는 `packages/core/tests/test_save_hash.py`(`uv run pytest packages/core -q -k "save or hash"`). 클라우드 저장과 계정은 범위 밖이다.
+
+### 파일
+
+프로젝트 파일은 UTF-8 JSON 문서 하나이고 이름은 `*.kinetra.json`이 관례다(`PROJECT_FILE_SUFFIX`). 모양은 `ProjectFile`(`schemas/ProjectFile.schema.json`, 예시 `schemas/examples/ProjectFile.four-wheel-car.json`)이다.
+
+| 필드 | 뜻 |
+|---|---|
+| `format`, `version` | `"kinetra-project"`, `1`. 읽는 쪽이 모르는 `version`은 다른 것을 읽기 전에 거부한다(`unsupported_version`). 버전은 봉투와 정규 규칙을 가리키고, 모델이 기존 데이터의 뜻을 바꿀 때도 올린다(필드의 이름·뜻·삭제 변경). **기본값이 있는 선택 필드를 더하는 것은 올리지 않는다**: 새 빌드는 이전 파일을 그대로 열고(없는 필드는 기본값) 해시도 같다(기본값은 해시에서 빠진다). 대신 새 빌드가 쓴 파일(`null`인 새 필드까지 쓴다)을 이전 빌드는 열지 못한다(아래 "앞으로 호환이 없다"). B-02c의 `PartDef.mass_parameter`가 그 경우이고, 고정한 v1 파일은 그대로 열리며 해시가 같다(`test_save_open_reads_the_frozen_v1_file`). **모델의 기본값을 바꾸는 것도 형식 변경이다**(해시가 기본값인 필드를 빼므로 기본값은 규칙의 일부다): 버전을 올리고, 새 읽기는 이전 버전의 파일을 그 버전의 규칙으로 대조한 뒤 이관한다. 정규 규칙이 생략하는 기본값 표는 `test_hash_omitted_defaults_are_pinned`가 고정하고, 다시 만들지 않는 v1 파일 `packages/core/tests/fixtures/project-file-v1.kinetra.json`이 `test_save_open_reads_the_frozen_v1_file`로 "v1은 지금도 열린다"를 지킨다 |
+| `project` | `Project` 그대로. 컬렉션 순서는 사용자가 가진 순서를 보존한다(순서는 값의 일부) |
+| `project_hash` | 프로젝트 전체의 해시(정규 형식) |
+| `definitions` | 프로젝트가 담은 재료와 부품 정의마다 `{kind, id, hash}`. 프로젝트의 순서(재료, 그다음 부품)를 따른다. 계획 5.3절의 "쓰는 부품 정의를 정의 해시와 함께 담는다"의 해시다. 카탈로그와 비교해 "카탈로그와 다름"을 알리는 것은 C-06이다 |
+
+- `save_project(project, path)`는 대상의 실제 경로(`realpath`: 심볼릭 링크는 따라가서 링크가 가리키는 파일이 갱신되고 링크는 남는다)와 같은 폴더에, 무작위 이름(`.kinetra-<16자리 16진>.tmp`)으로 배타 생성(`O_EXCL`: 같은 경로를 동시에 저장해도 임시 파일을 같이 쓰지 않고, 미리 심어 둔 링크를 따라가지 않는다)한 파일에 쓰고, 임시 파일은 소유자만 읽고 쓰게(0600) 만들어 내용이 대상보다 넓게 열린 순간이 없게 한 뒤 쓴 다음에 원래 파일의 권한 비트(새 파일이면 umask를 뺀 기본값)를 옮기고, 장치까지 내린 뒤(`fsync`, macOS는 드라이브 캐시까지 비우는 `F_FULLFSYNC`) `os.replace`로 바꾼다. 쓰다 실패하거나 프로세스가 끊겨도 이전 파일이 그대로 남고 임시 파일은 지운다. 같은 경로를 동시에 두 번 저장하면 각각 온전한 파일을 쓰고 마지막 교체가 이긴다(섞이지 않는다). 약속하지 않는 것: 전원이 나갈 때 디렉터리 항목까지 남는지(폴더는 `fsync`하지 않는다), Windows에서 다른 프로세스가 연 파일을 바꾸는 일(실패하고 이전 파일은 남는다). `open_project(path)` / `parse_project(bytes|str)`는 읽어서 `ProjectFile`을 돌려주거나 `ProjectFileError(code, ...)`를 던진다. `dump_project`는 파일의 바이트다.
+- **저장 → 열기 → 저장이 바이트 단위로 같다.** 같은 `Project`는 같은 바이트다(모델의 필드 순서, 들여쓰기 2칸, `ensure_ascii` 끔, 끝에 개행 하나, 파이썬의 가장 짧은 왕복 숫자 표기). 다른 프로그램이 쓴 파일(키 순서, 공백, 컬렉션 순서가 다른 것)은 열리고, 처음 저장할 때 이 형식으로 정리되며 그 뒤로 안정이다. 바이트 보존은 이 모듈이 쓴 파일에 대한 약속이다.
+- 열 때 해시를 읽은 프로젝트와 대조한다. 저장한 뒤 손으로 고쳤거나 잘렸거나 정규 규칙을 따르지 않는 쓰기 도구가 만든 파일은 `hash_mismatch`로 거부하고 무엇이 다른지 적는다. 조용히 열지 않는다. 사유는 `not_json`(JSON이 아님, 잘림, 중복 키, `NaN`/`Infinity`), `not_a_project_file`, `unsupported_version`, `invalid_project`(검증기의 문장), `hash_mismatch`다.
+- 해시는 서명이 아니다. 값을 바꾸고 해시도 맞게 다시 쓴 파일은 다른 프로젝트의 올바른 파일이다. 해시는 같은지 다른지만 말한다.
+- JSON 내보내기: `export_json(project)`는 봉투와 해시 없이 `Project`만 같은 서식으로 내놓는다(`schemas/Project.schema.json`이 설명하는 문서, `Project.model_validate_json`으로 열린다).
+- **v1에는 앞으로 호환이 없다(결정).** 모든 모델이 `extra="forbid"`이고 쓰기는 `null`인 필드까지 전부 쓴다. 선택 필드를 하나 더한 빌드의 파일을 이전 빌드가 열면 `version`이 1이어도 `invalid_project`(\"Extra inputs are not permitted\")다. 일부러 그렇게 정했다: 기본값이 있는 선택 필드를 더해도 `version`은 그대로이므로(위 표) 이전 빌드는 새 빌드의 파일을 `invalid_project`로 거부한다. 그 값이 하는 일을 바꾸는 변경(필드 이름·뜻·삭제, 기본값, 정규 규칙)은 `version`을 올려 모르는 버전을 `version`으로 먼저 정확한 사유와 함께 거부한다. `client-adapter.md` G5(모르는 선택 필드는 무시)는 선로 프로토콜의 규칙이고 이 파일의 규칙이 아니다. 해시가 기본값 필드를 빼는 것은 이 규칙과 모순이 아니다: 해시는 \"같은 값인가\"를, 파일은 \"이 빌드가 아는 것만 담았는가\"를 말한다. C-06(#455)은 `Project` 검증을 완화해 빠진 정의를 담게 하고 `_differences`의 \"프로젝트가 담지 않은 정의의 해시\" 규칙도 바꿔야 하는데, 조용히 무시하는 필드를 만들지 않는 이 규칙을 지키고 그 변경에 필요한 이관을 함께 가져온다.
+- 이력(C-02b)은 저장하지 않는다. 역명령은 계산된 그 상태에서만 맞는 절대 위치를 담아서, 프로젝트 없는 이력도 다른 프로젝트의 이력도 쓸모없다. 다시 연 프로젝트는 빈 `History`로 시작한다. 개정 번호, 발행자, 시각도 없다(저장 파일은 문서이고 사건이 아니다; 벽시계 시각은 의미가 없다, `client-adapter.md` F2).
+
+### 정규 형식과 해시
+
+해시는 "같은 것"을 말한다. 표시만 다른 두 값(목록 순서, 키 순서, 공백, `1`과 `1.0`, 시각을 쓴 UTC 오프셋)은 같은 해시이고 나머지가 다른 두 값은 다른 해시다. `project_hash(project)`와 `definition_hash(PartDef | Material)`는 `sha256:` + 아래 정규 텍스트의 UTF-8 바이트의 소문자 16진 SHA-256이다. 해시는 알고리즘만 싣고 규칙은 싣지 않는다: 규칙이 바뀌면 파일 `version`을 올린다.
+
+- **키**: JSON 객체의 키는 UTF-16 코드 단위 순으로 정렬한다(RFC 8785). 필수가 아닌 필드가 기본값이면 빼서, 뒤 잎이 선택 필드를 더해도 그 필드를 건드리지 않은 값의 해시가 바뀌지 않는다(`client-adapter.md` G5). 그래서 `{"design": {"materials": []}}`와 `design` 생략은 같은 해시이고, 항등 방향을 명시한 형상 요소와 생략한 것도 같다.
+- **컬렉션 순서**: 항목을 이름 붙이는 키로, **필드마다** 정렬한다(`canonical._ORDER`는 (소유 모델, 필드 이름)이 키다). `DesignSpec`의 재료·부품·인스턴스·결합·액추에이터, `ControlSchedule.entries`, `World.terrain_props`는 `id`; `PartDef.parameters`·`specs`와 `Instance.parameters`는 `name`; `PartDef.snap_points`와 `Shape.components`는 `id`; `AssumptionTable.assumptions`는 `key`; `SnapPoint.accepts`는 태그 값; `AxisExpr.terms`는 `(param, factor)`. 모든 컬렉션 항목은 그 컬렉션 안에서 유일한 키를 가지므로(모델이 검사한다) 순서는 전순서다. ID와 이름은 ASCII 패턴이라 코드 포인트 순과 UTF-16 코드 단위 순이 같다: TS 클라이언트는 `localeCompare`가 아니라 코드 단위 비교(`<`)를 써야 한다(`a_b`와 `a-b`의 순서가 로캘마다 다르다). 컬렉션이 아닌 것의 순서는 의미라서 그대로다: 결합의 `a`(부모)와 `b`(자식), 쿼터니언 성분, 위치 성분.
+- **새 컬렉션은 순서를 정해야 한다**: 등록되지 않은 튜플 필드를 만나면 파일 순서로 해시하지 않고 `CanonicalError`를 던진다. 키가 항목 타입이 아니라 필드에 걸려 있어서 다른 필드가 `tuple[str, ...]`를 등록했다는 이유로 순서가 의미인 목록(경유 ID 목록, 분리 순서)이 조용히 정렬되지 않는다. `Project`에서 닿는 모든 튜플 필드가 `_ORDER`에 있고 `_ORDER`에 튜플이 아닌 필드가 없는지 `test_hash_every_collection_of_the_project_model_has_a_canonical_order`가 모델을 훑어 검사하고(뒤 잎의 새 튜플 필드에서 실패한다), 순서가 의미인 필드는 등록하지 않는 새 규칙(파일 버전)으로 다룬다. 시각이 UTC로 쓸 수 없는 범위(0001-01-01 +09:00 등)면 `CanonicalError`다.
+- **숫자**: ECMAScript `Number.prototype.toString`(RFC 8785 3.2.2.3)과 같은 글자다. 같은 double로 읽히는 가장 짧은 자릿수, `1.0`은 `1`, `-0.0`은 `0`, 1e-6 미만과 1e21 이상은 지수 표기(`1e-7`, `1e+21`). 테스트 벡터는 JavaScript(Bun)의 `String(x)`에서 얻었고 같은 규칙으로 해시하는 TS 클라이언트는 같은 글자를 얻는다. 유한하지 않은 수는 모델이 이미 거부한다.
+- **시각**: `declared_at`은 UTC로 바꿔 `YYYY-MM-DDTHH:MM:SS[.f]Z`로 쓴다(소수부 끝의 0은 뗀다). 같은 순간은 오프셋이 달라도 같은 해시다.
+- **문자열**: RFC 8785의 이스케이프(`"`, `\`, 제어 문자만)이고 글자 그대로 UTF-8이다. 앞뒤 공백을 자르거나 유니코드 정규화를 하지 않는다: 다른 문자열은 다른 값이다. 토큰 사이에 공백이 없다.
+- **정의 해시**: `PartDef`나 `Material` 하나의 필드만 해시한다. 어느 프로젝트의 몇 번째에 있는지는 해시에 들어가지 않는다. 같은 ID의 재료와 부품은 필드가 달라 해시가 다르다.
+
+한계(`canonical.py` 머리말): 해시가 같은 두 프로젝트는 문서로서 같고 엔진 입력으로서 비트가 같다는 약속이 아니다. 인스턴스를 목록 순서로 더하는 엔진의 부동소수점 합은 순서가 다르면 끝자리가 다를 수 있고 MuJoCo는 바디 순서로 풀이를 한다(리뷰 측정: 형상 요소 5개의 120가지 순서에서 `definition_hash`는 1개, `MassProperties`의 비트는 5가지). 정규 순서로 컴파일하는 규칙은 #511이 맡는다. 그 전까지 **저장소에 정의 해시가 둘이다**: 이 문서의 `definition_hash`(순서 무관: "같은 정의인가", C-06의 카탈로그 비교와 파일의 `definitions`)와 B-01d의 `part_key`(`kinetra_engine.parts.cache`, 엄격: 순서·문구까지 다르면 다른 키, 부품 캐시). 컴파일 결과의 캐시 키로 `definition_hash`를 쓰면 안 된다. 판정 캐시(J)와 `run_started`의 키도 `project_hash` 하나로는 안 되고 (프로젝트 해시, 플랫폼 태그, 시드, 계산 설정)이어야 한다(행성 상수는 `data/bodies`에, 엔진 빌드는 태그에 있다). 해시는 서명이 아니라서 서버는 받은 해시를 믿지 말고 다시 계산한다. 이름·출처 문구·`declared_at`·배지도 해시에 들어가므로 이름만 고쳐도 해시가 바뀐다(안전한 쪽의 오류; 물리 부분만의 해시는 B-16이 필드 거르개로 더한다). 궤적 해시는 X-02d, 에셋 내용 해시는 A2의 몫이다.
 
 ## 선로의 메시지 (C-05a)
 

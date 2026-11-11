@@ -4,7 +4,7 @@ Every number is a `Quantity` (badge and source required) except a snap point's p
 it carries one badge and source for the whole pose.
 
 Collections are tuples, so a `PartDef` is immutable and hashable. Order is part of the value and is preserved;
-the canonical form for definition hashes (C-03) is C-03's to fix.
+the canonical order that definition hashes use is `canonical.py` (C-03).
 
 The optional `shape` (B-01a, `shape.py`) is the recipe mass, centre of mass and inertia are computed from. The
 optional `mass_parameter` (B-02c) names a kg parameter that fixes the mass itself; the recipe then only places it.

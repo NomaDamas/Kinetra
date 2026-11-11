@@ -9,7 +9,7 @@ validates has no instance without its part, no joint without its snap points, no
 schedule entry without its actuator, and no prop without its material.
 
 `world` is required: a project sits on a planet from the start (a planet is chosen with `SelectPlanet`, never
-absent). Not here: the file format, schema version and definition hashes (C-03), a missing-definitions state
+absent). Not here: the file format and hashes (`projectfile.py`, `canonical.py`, C-03), a missing-definitions state
 (C-06), `planet` existing in `data/bodies` (W-01 data, validator C-02c).
 """
 
@@ -24,6 +24,9 @@ from .world import World
 
 
 class Project(BaseModel):
+    # extra="forbid" is a decision of the project file format (`projectfile.py`, C-03): a field a build does not know
+    # is refused, never ignored, and adding a field bumps the file version. C-06 (#455) relaxes the definition
+    # references of `DesignSpec`/`Project`, not this.
     model_config = ConfigDict(extra="forbid", frozen=True)
 
     design: DesignSpec = DesignSpec()

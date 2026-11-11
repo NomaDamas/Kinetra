@@ -284,6 +284,13 @@ export interface DecomposedVoid {
   ring?: RingReport | null;
 }
 
+/** The hash of one definition the project carries (a `PartDef` or a `Material`). */
+export interface DefinitionHash {
+  kind: "material" | "part";
+  id: string;
+  hash: string;
+}
+
 export interface Density {
   badge: Badge;
   source: Source;
@@ -625,6 +632,20 @@ export interface ProjectChanges {
   world?: World | null;
   assumptions?: AssumptionTable | null;
 }
+
+/**
+ * What is in a project file. Building one with `project_file` gives hashes that match `project`; reading one
+ * with `parse_project` checks that they do.
+ */
+export interface ProjectFile {
+  format: "kinetra-project";
+  version: 1;
+  project: Project;
+  project_hash: string;
+  definitions: DefinitionHash[];
+}
+
+export type ProjectFileErrorCode = "not_json" | "not_a_project_file" | "unsupported_version" | "invalid_project" | "hash_mismatch";
 
 /** A prop dimension in metres, > 0. */
 export interface PropSize {
