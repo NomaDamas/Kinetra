@@ -32,6 +32,7 @@ export const FILES = [
   "battery-18650-declared-mass",
   "battery-pack-4s-declared-mass",
   "tank-al6061",
+  "shell-al6061",
 ];
 export const DEFAULT_OUT = join(REPO_ROOT, "out", "gltf-check");
 const BACKGROUND = [0x14, 0x18, 0x1f];

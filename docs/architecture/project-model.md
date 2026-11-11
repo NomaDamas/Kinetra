@@ -223,6 +223,7 @@ uv run python packages/core/scripts/export_schemas.py --check  # 쓰지 않고 �
 - 컴파일 캐시와 부품 추가 절차서: B-01d. `docs/architecture/part-cache.md`, `docs/process/add-part.md`.
 - 구조 부품 빔과 판: B-02a. 정의는 `packages/engine/src/kinetra_engine/parts/library/`. `docs/architecture/parts-beam-plate.md`.
 - 구동 부품 휠: B-03a. 정의는 같은 디렉터리의 `wheel.json`. `docs/architecture/parts-wheel.md`.
+- 구조 부품 차체 쉘: B-02b. 정의는 같은 `library/shell.json`. `docs/architecture/parts-shell.md`.
 - 바인딩 안 된 가정(가정이 설계의 어느 값을 흔드는지)과 가정 단위의 의미 검사: J-01a, L-02.
 - PBR 재질 슬롯: B-07(구현됨, [`materials.md`](materials.md)).
 - `export_policy`: HW-02a.

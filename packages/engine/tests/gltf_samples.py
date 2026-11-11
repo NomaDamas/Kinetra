@@ -140,6 +140,10 @@ def wheel() -> PartDef:
     return library_part("wheel")
 
 
+def shell() -> PartDef:
+    return library_part("shell")
+
+
 def sensor_mast() -> PartDef:
     return part(
         "sensor-mast",
@@ -188,6 +192,7 @@ SAMPLES = {
     "battery-18650-declared-mass": (lambda: library_part("battery-18650"), NO_MATERIAL),
     "battery-pack-4s-declared-mass": (lambda: library_part("battery-pack-4s"), NO_MATERIAL),
     "tank-al6061": (lambda: library_part("tank"), "al6061-t6"),
+    "shell-al6061": (shell, "al6061-t6"),
 }
 
 
