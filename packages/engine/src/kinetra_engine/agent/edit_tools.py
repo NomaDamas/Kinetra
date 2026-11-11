@@ -415,14 +415,15 @@ class EditTools:
         if entry is None:
             named = gd.guard_tool(tool)  # G-04: `set_gravity` is an attempt, not a typo
             return self._refused(tool, named or (Reason(code=ReasonCode.INVALID_COMMAND, message=f"unknown tool {tool!r}; the tools are {list(TOOL_NAMES)}"),))
+        too_deep = (Reason(code=ReasonCode.INVALID_COMMAND, message=f"{tool}: the arguments nest deeper than {gd.MAX_ARGUMENT_DEPTH} levels; no tool takes that"),)
+        if isinstance(arguments, str) and gd.json_too_deep(arguments):  # before the parser, whose own limit is the platform's
+            return self._refused(tool, too_deep)
         try:
             raw = json.loads(arguments) if isinstance(arguments, str) else dict(arguments)
         except (ValueError, TypeError) as e:
             return self._refused(tool, (Reason(code=ReasonCode.INVALID_COMMAND, message=f"{tool}: the arguments are not JSON: {e}"),))
-        except RecursionError:  # JSON nested deeper than the parser's stack (G-04 review): refused, never raised
-            return self._refused(
-                tool, (Reason(code=ReasonCode.INVALID_COMMAND, message=f"{tool}: the arguments nest deeper than {gd.MAX_ARGUMENT_DEPTH} levels; no tool takes that"),)
-            )
+        except RecursionError:  # not reached after the scan above; kept so no input can raise out of `run`
+            return self._refused(tool, too_deep)
         if not isinstance(raw, dict):
             return self._refused(tool, (Reason(code=ReasonCode.INVALID_COMMAND, message=f"{tool}: the arguments must be a JSON object"),))
         forbidden = gd.guard_arguments(tool, raw)  # G-04: before the schema, so an attempt is named as one

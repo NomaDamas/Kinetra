@@ -326,6 +326,13 @@ def test_guard_100k_levels_of_nesting_are_refused_never_raised(tools, desk):
         assert not r.ok and codes(r) == [ReasonCode.INVALID_COMMAND] and f"{MAX_ARGUMENT_DEPTH} levels" in r.reasons[0].message
     hub, doc = hub_of(desk)
     assert not HubEditTools(hub, "desk", tools=tools).call("add_part", text).ok and doc.revision == 0
+    # the text scan is the same bound on every platform, and brackets inside strings are not nesting
+    from kinetra_engine.agent.guard import json_too_deep
+
+    assert json_too_deep("[" * (MAX_ARGUMENT_DEPTH + 1) + "]" * (MAX_ARGUMENT_DEPTH + 1))
+    assert not json_too_deep("[" * MAX_ARGUMENT_DEPTH + "]" * MAX_ARGUMENT_DEPTH)
+    quoted = json.dumps({"part": "plate", "place": {"type": "on_ground", "x": 1.0}, "source": "[{" * 100 + ' "quoted"'})
+    assert not json_too_deep(quoted) and tools.run(desk, "add_part", quoted).ok
     # just past the bound, a forbidden key above it is still named, and nothing below it is read
     nested = {"gravity": 1, "x": {}}
     node = nested["x"]
@@ -333,7 +340,6 @@ def test_guard_100k_levels_of_nesting_are_refused_never_raised(tools, desk):
         node["x"] = {}
         node = node["x"]
     assert {x.code for x in guard_arguments("add_part", nested)} == {ReasonCode.FORBIDDEN, ReasonCode.INVALID_COMMAND}
-
 
 
 # --- the guard does not trip on what the tools are -------------------------------------------------------------------

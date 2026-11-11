@@ -186,6 +186,24 @@ def guard_arguments(tool: str, arguments: Any) -> tuple[Reason, ...]:
     return tuple(out)
 
 
+_JSON_TOKEN = re.compile(r'"(?:[^"\\]|\\.)*"|[\[\]{}]')
+
+
+def json_too_deep(text: str) -> bool:
+    """Whether JSON `text` nests objects and lists deeper than `MAX_ARGUMENT_DEPTH`, found by one scan of its brackets
+    (strings skipped) before it is parsed. The parser's own limit depends on the platform's stack; this one does not."""
+    depth = 0
+    for m in _JSON_TOKEN.finditer(text):
+        token = m.group()
+        if token in "[{":
+            depth += 1
+            if depth > MAX_ARGUMENT_DEPTH:
+                return True
+        elif token in "]}":
+            depth -= 1
+    return False
+
+
 # --- out of the catalog ---------------------------------------------------------------------------------------
 
 
