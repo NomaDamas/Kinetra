@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Built by us: the compiler and the build flags identify the binary (`build_flags` may be an empty string).",
+  "properties": {
+    "name": {
+      "maxLength": 200,
+      "minLength": 1,
+      "title": "Name",
+      "type": "string"
+    },
+    "version": {
+      "maxLength": 200,
+      "minLength": 1,
+      "title": "Version",
+      "type": "string"
+    },
+    "distribution": {
+      "const": "custom_build",
+      "title": "Distribution",
+      "type": "string"
+    },
+    "compiler": {
+      "maxLength": 200,
+      "minLength": 1,
+      "title": "Compiler",
+      "type": "string"
+    },
+    "build_flags": {
+      "maxLength": 2000,
+      "title": "Build Flags",
+      "type": "string"
+    }
+  },
+  "required": [
+    "name",
+    "version",
+    "distribution",
+    "compiler",
+    "build_flags"
+  ],
+  "title": "CustomBuildEngine",
+  "type": "object"
+}

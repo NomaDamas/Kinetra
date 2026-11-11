@@ -10,7 +10,7 @@
 |---|---|
 | 단위 | SI: m, kg, s, rad. 닫힌 어휘 `Unit`(`kg/m^3`, `Pa`, `N`, `N*m`, `1`(무차원) 등). 어휘에 없는 단위 문자열(`mm`, `deg`, `g/cm^3`)은 검증에서 거부된다 |
 | 좌표계 | 오른손 좌표계, +Z가 위 |
-| 쿼터니언 | Project JSON에서는 성분 이름이 있는 객체 `{x, y, z, w}`, `w`가 스칼라, 길이 1(허용 오차 1e-6). 배열로 쓰지 않는다. 실행 스트림 프레임(C-05b)은 같은 성분 순서와 뜻만 따르고 인코딩은 C-05b가 정한다 |
+| 쿼터니언 | Project JSON에서는 성분 이름이 있는 객체 `{x, y, z, w}`, `w`가 스칼라, 길이 1(허용 오차 1e-6). 배열로 쓰지 않는다. 실행 스트림 프레임(C-05b)은 같은 성분 순서와 뜻을 따른다: JSON 프레임은 같은 객체, 이진 프레임은 float32 x, y, z, w 순서([`client-adapter.md`](client-adapter.md) 3.3 확정) |
 | 수 | 유한한 JSON 숫자. 문자열·불리언·NaN·Infinity는 거부 |
 | ID | 재료·부품·스냅 포인트·인스턴스·결합·액추에이터·행성·지형 소품 `^[a-z][a-z0-9_-]{0,63}$`(`ID_PATTERN`), 파라미터·사양·종류 태그·가정 키 `^[a-z][a-z0-9_]{0,63}$` |
 
@@ -55,7 +55,7 @@
 - 결합 그래프가 트리(고리 없음, 한 덩어리)인지는 바디 트리를 만드는 X-01a의 규칙이고 컴파일 오류(X-01d)로 낸다. 이 모델은 양끝 존재와 스냅 포인트 중복 사용만 본다.
 - 액추에이터 종류와 부품 역할의 대응: 모터 액추에이터는 역할이 `motor`인 부품의 인스턴스에, 추력기는 `thruster`인 부품에 붙는다(B-03b, `part-motor.md`). 다른 역할이면 거절하고, 역할이 없는 부품은 받는다.
 - 결합의 종류별 자유도(B-04a): `b`가 `a`에 대해 갖는 자유도는 고정 0, 힌지 회전 1(축 둘레), 슬라이더 이동 1(축 방향)이다(`joint_dof(kind)` → `JointDof(rotational, translational)`). `Joint.displacement(coordinate)`는 결합 좌표 하나에서 `b`가 저장된 자세에서 얼마나 옮겨 가는지 `(R, t)`(`a` 스냅 좌표계, 힌지는 `a`의 축을 지나는 점 둘레 오른손 회전, 슬라이더는 축 방향 이동)로 돌려주고, 좌표 0은 `(I, 0)`이다. 한계 밖이거나 유한하지 않은 좌표, 고정 결합의 0이 아닌 좌표는 오류다. 축의 부호를 뒤집으면 같은 직선에 좌표(와 한계, 모터 명령)의 부호만 뒤집힌다. 월드에서의 축(`a` 인스턴스 자세 × `a` 스냅 자세 × 축)과 두 스냅 방향이 이 축과 맞는지는 바디 트리를 만드는 X-01a와 컴파일 오류 X-01d의 몫이다.
-- 스냅 호환 태그 검사는 B-04b가, 스프링-댐퍼는 B-03e가 부품 쪽을 더했고(`spring_damper` 역할의 파라미터 `stiffness`(N/m), `damping`(N·s/m), [`part-spring-damper.md`](part-spring-damper.md)) 결합이 그것을 쓰는 방법은 X-01b가 더한다. `break_threshold`는 필드와 단위(N, > 0) 검사까지이고 파단 임계의 계산(물성 × 단면, "단순화 모델")은 X-04a가 `kinetra_engine.break_threshold.critical_load`로 더했다([`break-threshold.md`](break-threshold.md)). 분리 항목(`type: "separate"`)은 X-08이 `ActuateEntry`와 같은 자리에 더한다.
+- 스냅 호환 태그 검사는 B-04b가, 스프링-댐퍼는 B-03e가 부품 쪽을 더했고(`spring_damper` 역할의 파라미터 `stiffness`(N/m), `damping`(N·s/m), [`part-spring-damper.md`](part-spring-damper.md)) 결합이 그것을 쓰는 방법은 X-01b가 더한다. `break_threshold`는 필드와 단위(N, > 0) 검사까지이고 파단 임계의 계산(물성 × 단면, "단순화 모델")은 X-04a가 `kinetra_engine.break_threshold.critical_load`로 더했다([`break-threshold.md`](break-threshold.md)). 분리 항목(`type: "separate"`)은 X-08이 `ActuateEntry`와 같은 자리에 더한다. 분리기 부품은 B-15가 더했다: `separator` 역할, 파라미터 `separation_impulse`(N·s, 0 허용, 배지 `사용자 선언`/`기본값`만), 두 면 스냅 포인트, 닿는 결합은 고정만([`part-separator.md`](part-separator.md)).
 - `axis`는 B-04a가 더한 기본값 있는 선택 필드라 없는 값은 정규 형태에서 빠지고(`Joint.axis` 기본값 `None`이 `OMITTED_DEFAULTS`에 고정됨) 축이 없는 옛 파일의 해시는 그대로다. 예시 3종(`DesignSpec.four-wheel-car`, `Project.four-wheel-car`, `Project.rocket-car-skeleton`)의 힌지는 `a`의 스냅 포인트 좌표계가 항등이라 `(0, 1, 0)`을 `axis`로 적었다(`사용자 선언`). 월드에서는 바퀴 축인 Y 직선이고, 모터를 Z축으로 180° 돌린 오른쪽은 방향이 -Y다. 그래서 예시 해시 둘이 바뀌었다.
 - **B-04a는 규칙을 하나 더 조였다: `JointLimits`는 `lower <= 0 <= upper`다.** 한계가 0을 포함하지 않는 결합이 든 파일은 이제 `invalid_project`로 열리지 않는다(저장소의 예시·고정 v1 파일에는 한계가 있는 결합이 없다). 저장 형식 `version`은 1 그대로다. 이유: `version`을 올리는 기준은 저장된 데이터의 뜻이나 정규 형태·해시가 바뀌는 것인데(위 `format`, `version` 행) 이 검사는 어떤 값의 뜻도 해시도 바꾸지 않고 이미 정해진 의미(좌표 0 = 저장된 자세, C-01b)에서 어긋난 값을 입력 검증에서 거부할 뿐이다. 열린 적 없는 파일을 위한 이관이 필요 없다. 한계가 0을 빠뜨린 파일이 이미 있다면 이 결정은 다시 열어야 한다.
 - 이 PR의 수치는 모두 테스트가 선언한 값(`사용자 선언`)이다. 실부품 수치는 이 PR에 없다.
@@ -83,7 +83,7 @@ uv run python packages/core/scripts/export_schemas.py --check  # 쓰지 않고 �
 - `schemas/types.ts`: 모든 이름의 TypeScript `interface`/`type`(`packages/core/scripts/schema_to_ts.py`). 기본값이 있는 필드는 선택(`?`)이다. 코어가 빠진 것을 채워 주기 때문이다. 단위는 필드마다 리터럴 타입(`unit: "kg/m^3"`), 배지와 단위 어휘는 닫힌 유니온이다. 변환기가 모르는 스키마 키워드를 만나면 경로와 함께 실패한다(조용히 느슨한 타입을 내지 않는다).
 - 타입은 모양만 안다. 교차 검사(참조가 닫혀 있는가, 쿼터니언이 단위 길이인가, 자리표시 출처인가)는 코어의 검증기가 한다. 클라이언트는 타입으로 읽고 쓰되 판정은 코어에 맡긴다.
 - 웹: `schemas/`는 pnpm 워크스페이스 패키지 `@kinetra/schemas`(`types`는 `types.ts`, `@kinetra/schemas/<Name>.schema.json`으로 스키마도 가져온다)이고 `apps/studio`가 의존한다. `pnpm lint`가 `tsc`로 타입을, `pnpm test`가 `schemas/test/types.test.ts`를 돈다.
-- `schemas/examples/<Name>.<설명>.json`은 손으로 쓴 예시다(`DesignSpec.four-wheel-car`, `Material.example`, `PartDef.block-with-hole`(형상 포함), `World.ramp-and-step`, `AssumptionTable.vehicle-mass`, `CommandBatch.move-and-select-planet`). `packages/core/tests/test_schema_export.py`가 예시마다 JSON Schema(`jsonschema`)와 모델 둘 다 통과하는지 보고, 잘못된 입력(출처 없음, 모르는 배지, 틀린 단위, 범위 밖, 배열 쿼터니언, 모르는 필드)을 둘 다 거부하는지 본다. 예시의 수치는 실부품 데이터가 아니다. 대부분 `사용자 선언`이고 일부는 `기본값`(`Material.example`과 4륜차 예시의 재료 마찰)과 `추정`(가정표의 퍼짐)이며 출처 문구에 "예시"라고 적었다.
+- `schemas/examples/<Name>.<설명>.json`은 손으로 쓴 예시다(`DesignSpec.four-wheel-car`, `Material.example`, `PartDef.block-with-hole`(형상 포함), `World.ramp-and-step`, `AssumptionTable.vehicle-mass`, `CommandBatch.move-and-select-planet`, 실행 스트림 `RunStarted.four-wheel-car`, `Frame.contact-and-condition`, `Frame.break`, `RunEnded.completed`: C-05b). `packages/core/tests/test_schema_export.py`가 예시마다 JSON Schema(`jsonschema`)와 모델 둘 다 통과하는지 보고, 잘못된 입력(출처 없음, 모르는 배지, 틀린 단위, 범위 밖, 배열 쿼터니언, 모르는 필드)을 둘 다 거부하는지 본다. 예시의 수치는 실부품 데이터가 아니다. 대부분 `사용자 선언`이고 일부는 `기본값`(`Material.example`과 4륜차 예시의 재료 마찰)과 `추정`(가정표의 퍼짐)이며 출처 문구에 "예시"라고 적었다.
 - 새 모델을 더한 PR은 `export_schemas.py`를 돌려 `schemas/`를 같이 커밋한다. 안 하면 CI의 `--check`와 `test_committed_schemas_match_the_models`가 실패한다.
 
 ## 예시 프로젝트 (C-01 에픽 통합, #60)

@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Joint `joint` released: the load on it reached its break threshold (both in N; plan 4.6, a simplified model).",
+  "properties": {
+    "kind": {
+      "const": "break",
+      "title": "Kind",
+      "type": "string"
+    },
+    "tick": {
+      "maximum": 4294967295,
+      "minimum": 0,
+      "title": "Tick",
+      "type": "integer"
+    },
+    "joint": {
+      "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+      "title": "Joint",
+      "type": "string"
+    },
+    "load": {
+      "$ref": "#/$defs/ForceN"
+    },
+    "threshold": {
+      "$ref": "#/$defs/ForceN"
+    }
+  },
+  "required": [
+    "kind",
+    "tick",
+    "joint",
+    "load",
+    "threshold"
+  ],
+  "title": "BreakEvent",
+  "type": "object",
+  "$defs": {
+    "ForceN": {
+      "description": "A force in newtons (`unit` is always `N`, so a client never guesses).",
+      "properties": {
+        "value": {
+          "minimum": 0,
+          "title": "Value",
+          "type": "number"
+        },
+        "unit": {
+          "const": "N",
+          "title": "Unit",
+          "type": "string"
+        }
+      },
+      "required": [
+        "value",
+        "unit"
+      ],
+      "title": "ForceN",
+      "type": "object"
+    }
+  }
+}

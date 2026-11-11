@@ -1,0 +1,82 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "discriminator": {
+    "mapping": {
+      "body": "#/$defs/BodyTarget",
+      "ground": "#/$defs/GroundTarget",
+      "prop": "#/$defs/PropTarget"
+    },
+    "propertyName": "kind"
+  },
+  "oneOf": [
+    {
+      "$ref": "#/$defs/BodyTarget"
+    },
+    {
+      "$ref": "#/$defs/PropTarget"
+    },
+    {
+      "$ref": "#/$defs/GroundTarget"
+    }
+  ],
+  "$defs": {
+    "BodyTarget": {
+      "description": "What a body touched: another body of the run.",
+      "properties": {
+        "kind": {
+          "const": "body",
+          "title": "Kind",
+          "type": "string"
+        },
+        "id": {
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+          "title": "Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "id"
+      ],
+      "title": "BodyTarget",
+      "type": "object"
+    },
+    "GroundTarget": {
+      "additionalProperties": false,
+      "description": "What a body touched: the ground. It has no id (the ground of the planet is one thing), so an `id` is refused.",
+      "properties": {
+        "kind": {
+          "const": "ground",
+          "title": "Kind",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind"
+      ],
+      "title": "GroundTarget",
+      "type": "object"
+    },
+    "PropTarget": {
+      "description": "What a body touched: a terrain prop, by its id in the project's world.",
+      "properties": {
+        "kind": {
+          "const": "prop",
+          "title": "Kind",
+          "type": "string"
+        },
+        "id": {
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+          "title": "Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "id"
+      ],
+      "title": "PropTarget",
+      "type": "object"
+    }
+  }
+}

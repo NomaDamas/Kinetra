@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "The engine could not go on: there is no trajectory to hash, so a `trajectory` is refused.",
+  "properties": {
+    "reason": {
+      "const": "failed",
+      "title": "Reason",
+      "type": "string"
+    }
+  },
+  "required": [
+    "reason"
+  ],
+  "title": "RunFailed",
+  "type": "object"
+}
