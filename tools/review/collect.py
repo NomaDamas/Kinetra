@@ -425,8 +425,29 @@ def collect(pr_number: int, repo: str, gh: GhFn = common.gh, *, chunk_max: int =
 # ---------------------------------------------------------------- 렌더
 
 def render(b: Bundle, part: int = 0) -> str:
-    """모델에 보낼 사용자 메시지(비밀 마스킹 적용). part 는 diff_parts 의 색인."""
-    return common.redact(_render(b, part))
+    """모델에 보낼 사용자 메시지(비밀 마스킹 적용). part 는 diff_parts 의 색인.
+    마스킹이 한 곳이라도 있으면 끝에 마스킹 안내를 붙여, 모델이 `***` 를 코드 결함으로 읽지 않게 한다."""
+    text, count, lines = common.redact_report(_render(b, part))
+    return text + mask_note(text, count, lines) if count else text
+
+
+NOTE_MAX_LINES = 20
+NOTE_SNIPPET = 70
+
+
+def mask_note(masked: str, count: int, lines: list[int]) -> str:
+    """마스킹된 자리 수와 줄 목록. 줄 번호는 `redact_report` 가 돌려준, 가린 본문(안내 제외)의 1부터 센 줄이다."""
+    rows = masked.split("\n")
+    shown = [f"- 줄 {n}: {rows[n - 1].strip()[:NOTE_SNIPPET]}" for n in lines[:NOTE_MAX_LINES] if 0 < n <= len(rows)]
+    rest = [n for n in lines[NOTE_MAX_LINES:] if 0 < n <= len(rows)]  # 발췌는 상한이 있어도 줄 번호는 전부 적는다
+    more = f"\n- 발췌 없이 줄 번호만({len(rest)}줄): " + ", ".join(map(str, rest)) if rest else ""
+    return (
+        f"\n## 마스킹 안내\n비밀 노출을 막으려고 이 입력의 {count}곳을 `***` 로 바꿨다(줄 {len(lines)}개). "
+        "아래 줄 목록에만 이런 `***` 가 있다. 그 `***` 는 원본 코드에 있는 문자열이 아니므로 하드코딩·누락·깨진 값 같은 결함으로 지적하지 않는다. 목록에 없는 줄의 `***` 는 실제 내용이다.\n"
+        + "\n".join(shown)
+        + more
+        + "\n"
+    )
 
 
 def _render(b: Bundle, part: int) -> str:
