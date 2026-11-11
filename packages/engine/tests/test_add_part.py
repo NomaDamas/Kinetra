@@ -52,10 +52,17 @@ def test_add_part_check_command_reports_the_hand_calculated_mass_and_centre(caps
     x = (v_up * -0.04 + v_pin * -0.04 - v_hole * 0.02) / volume
     z = (v_up * 0.03 + v_pin * 0.06) / volume
     assert report["center_of_mass_m"] == pytest.approx([x, 0.0, z], abs=1e-12)
-    # The void is filled in the proxy and not cut out of the drawing: both are named in the report.
-    assert report["filled_voids"] == ["hole"] == report["undrawn_voids"]
-    assert report["proxy_volume_error"] == pytest.approx(v_hole / volume, rel=1e-12)
-    assert report["proxy_geoms"] == 3
+    # The hole is a through-bore of the plate, so the proxy keeps it empty as box strips (B-01f) and it is not cut out of the
+    # drawing: both are named in the report. The error is signed: the strips lie inside the plate, so the proxy has less
+    # volume than the recipe, by at most the default tolerance of the plate's own volume minus the hole.
+    assert report["filled_voids"] == [] and report["undrawn_voids"] == ["hole"]
+    (hole,) = report["decomposed_voids"]
+    assert (hole["id"], hole["host"], hole["layout"]) == ("hole", "plate", "strips")
+    v_plate_net = v_plate - v_hole
+    assert -0.10 <= hole["error"] < 0.0
+    # proxy volume = plate strips + upright + pin (the plate's strips miss -error x its net volume); the part-level number follows
+    assert report["proxy_volume_error"] == pytest.approx(hole["error"] * v_plate_net / volume, rel=1e-9)
+    assert report["proxy_geoms"] == 12  # 10 strips + the upright + the pin
     assert set(report["milliseconds"]) == {"mass", "proxy", "glb"}
     glb = (tmp_path / "trial-bracket.glb").read_bytes()
     assert len(glb) == report["glb_bytes"]
