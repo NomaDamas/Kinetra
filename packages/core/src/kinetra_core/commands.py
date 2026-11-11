@@ -22,7 +22,8 @@ Shape rules (read by C-02b, C-02c, C-03, C-05a, XR-02):
   `model_copy`), so a command that would leave a reference dangling, a range broken or an id duplicated is
   rejected and nothing changes. A `Project` that exists has no dangling state; a command cannot build one.
 - Removing something removes what hangs on it in the same command. `RemoveInstance` takes the instance's
-  joints, the actuators on the instance or on those joints, and those actuators' schedule entries with it;
+  joints, the actuators on the instance, on those joints or drawing from it (`Actuator.supply`), and those
+  actuators' schedule entries with it;
   `RemoveJoint` takes the actuators on the joint and their entries; `RemoveActuator` takes its entries. The
   inverse is a `CommandBatch` that adds all of it back at the original positions. Definitions are the
   exception: `RemovePartDef` and `RemoveMaterialDef` are rejected while anything uses the definition
@@ -185,7 +186,8 @@ class AddInstance(_Cmd):
 
 
 class RemoveInstance(_Cmd):
-    """Delete an instance with its joints, the actuators on it or on those joints, and their schedule entries."""
+    """Delete an instance with its joints, the actuators on it, on those joints or drawing from it (a battery or tank),
+    and their schedule entries."""
 
     type: Literal["remove_instance"]
     id: _Id
@@ -459,7 +461,10 @@ def _dependents(project: Project, *, instance=None, joint_ids=(), actuator_ids=(
     actuators = [
         (n, a)
         for n, a in enumerate(d.actuators)
-        if a.id in actuator_ids or a.instance == instance or (a.joint is not None and a.joint in removed_joints)
+        if a.id in actuator_ids
+        or a.instance == instance
+        or (instance is not None and a.supply == instance)
+        or (a.joint is not None and a.joint in removed_joints)
     ]
     removed_actuators = {a.id for _, a in actuators}
     entries = [(n, e) for n, e in enumerate(d.schedule.entries) if e.actuator in removed_actuators]

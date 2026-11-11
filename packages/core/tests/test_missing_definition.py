@@ -331,3 +331,74 @@ def test_missing_definition_parts_are_compared_by_a_catalog_given_by_the_caller(
     assert catalog_differences(complete, same) == ()
     (diff,) = catalog_differences(complete, other)
     assert (diff.kind, diff.id) == ("part", "chassis")
+
+
+# --- placement of a placeholder ---------------------------------------------------------------------------------
+# A missing part has no geometry and is skipped; a missing material leaves the part, so its shape is checked as for
+# any instance (placement reads the shape, never the material).
+
+_SRC = {"ref": "unit-test fixture", "locator": "test_missing_definition.py"}
+_ID = {"x": 0.0, "y": 0.0, "z": 0.0, "w": 1.0}
+
+
+def _q(v):
+    return {"value": v, "unit": "m", "badge": "declared", "source": _SRC}
+
+
+def _cube():
+    ax = lambda t: {"offset": 0.0, "terms": t}  # noqa: E731
+    side = ax([{"param": "side", "factor": 1.0}])
+    return {
+        "id": "cube",
+        "name": "Cube",
+        "parameters": [{"name": "side", "unit": "m", "default": _q(0.2), "min": _q(0.05), "max": _q(1.0)}],
+        "shape": {
+            "badge": "declared",
+            "source": _SRC,
+            "components": [{"id": "body", "operation": "add", "primitive": {"kind": "box", "size_x": side, "size_y": side, "size_z": side}, "position": {"x": ax([]), "y": ax([]), "z": ax([])}}],
+        },
+    }
+
+
+def _inst(id, z, part="cube", material=None):
+    pose = {"position": {"x": 0.0, "y": 0.0, "z": z}, "orientation": _ID, "badge": "declared", "source": _SRC}
+    return {"id": id, "part": part, "pose": pose, **({} if material is None else {"material": material})}
+
+
+def _placed(*instances):
+    return Project.model_validate({"design": {"parts": [_cube()], "instances": list(instances)}, "world": {"planet": "earth"}})
+
+
+def test_missing_definition_a_placeholder_without_a_material_is_placed_by_its_shape():
+    ok = _placed(_inst("base", 0.1, material="unobtainium"))
+    assert [(m.kind, m.id) for m in missing_definitions(ok)] == [("material", "unobtainium")]
+    assert check_placement(ok) == ()
+    below = _placed(_inst("base", 0.05, material="unobtainium"))
+    assert [r.code for r in check_placement(below)] == [ReasonCode.OVERLAP]  # under the ground: judged from the shape
+    hover = _placed(_inst("base", 1.0, material="unobtainium"))
+    assert [r.code for r in check_placement(hover)] == [ReasonCode.FLOATING]
+    overlapping = _placed(_inst("a", 0.1, material="unobtainium"), _inst("b", 0.2))
+    assert [r.code for r in check_placement(overlapping)] == [ReasonCode.OVERLAP]
+    # the run is refused all the same
+    with pytest.raises(ProjectIncomplete):
+        require_complete(ok, BlockedOperation.RUN)
+
+
+def test_missing_definition_a_placeholder_without_a_part_has_no_geometry_and_is_skipped():
+    for z in (0.1, 0.05, 1.0):  # on the ground, under it, in the air: nothing is known, nothing is judged
+        project = _placed(_inst("ghost", z, part="no-such-part"))
+        assert [m.id for m in missing_definitions(project)] == ["no-such-part"]
+        assert check_placement(project) == ()
+    # and it does not hide or invent a finding for the instances that have a shape
+    mixed = _placed(_inst("ghost", 0.1, part="no-such-part"), _inst("hover", 1.0))
+    assert [r.code for r in check_placement(mixed)] == [ReasonCode.FLOATING]
+    assert check_placement(mixed)[0].ids == (Ref(kind=RefKind.INSTANCE, id="hover"),)
+
+
+def test_missing_definition_an_actuator_supply_on_a_placeholder_opens():
+    """A supply source whose part is missing: its role is not known, so it is not checked (and not a crash)."""
+    data = car_data()
+    data["design"]["actuators"][0]["supply"] = "wheel-fl"
+    data = without_part(data, "wheel")
+    project = Project.model_validate(data)
+    assert [m.id for m in missing_definitions(project)] == ["wheel"]

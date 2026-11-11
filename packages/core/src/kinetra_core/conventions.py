@@ -17,6 +17,7 @@ from enum import StrEnum
 COORDINATE_FRAME = "right-handed, +Z up"
 QUATERNION_COMPONENTS = ("x", "y", "z", "w")
 QUATERNION_NORM_TOLERANCE = 1e-6
+AXIS_NORM_TOLERANCE = 1e-6  # a joint axis is a unit vector, with the same numeric slack as a quaternion (not a physical claim)
 
 ID_PATTERN = r"^[a-z][a-z0-9_-]{0,63}$"  # stable ids of materials, parts, snap points, instances, joints, actuators (G3)
 NAME_PATTERN = r"^[a-z][a-z0-9_]{0,63}$"  # parameter, spec and tag names

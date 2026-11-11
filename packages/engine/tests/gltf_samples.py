@@ -140,6 +140,10 @@ def wheel() -> PartDef:
     return library_part("wheel")
 
 
+def shell() -> PartDef:
+    return library_part("shell")
+
+
 def sensor_mast() -> PartDef:
     return part(
         "sensor-mast",
@@ -182,8 +186,15 @@ SAMPLES = {
     "payload-mount-al6061": (lambda: library_part("payload-mount"), "al6061-t6"),
     # B-03b: a datasheet motor, mass declared by the datasheet weight, drawn without a material.
     "motor-37d-12v-50-1-declared-mass": (lambda: library_part("motor-37d-12v-50-1"), NO_MATERIAL),
+    # B-03e: a catalogue coil spring, mass an estimate declared by mass_parameter, drawn without a material.
+    "spring-damper-lee-lc032b08-declared-mass": (lambda: library_part("spring-damper-lee-lc032b08"), NO_MATERIAL),
     "thruster-vacco-48003040-steel": (thruster, "steel-a36"),
     "wheel-pom": (wheel, "pom-delrin-150"),
+    # B-03d: the cell has a cited mass (no material); the tank is aluminium with an inside the proxy fills.
+    "battery-18650-declared-mass": (lambda: library_part("battery-18650"), NO_MATERIAL),
+    "battery-pack-4s-declared-mass": (lambda: library_part("battery-pack-4s"), NO_MATERIAL),
+    "tank-al6061": (lambda: library_part("tank"), "al6061-t6"),
+    "shell-al6061": (shell, "al6061-t6"),
 }
 
 

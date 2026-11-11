@@ -665,6 +665,7 @@
             "instance": "motor-l",
             "snap_point": "mount"
           },
+          "axis": null,
           "limits": null,
           "break_threshold": null
         },
@@ -679,6 +680,7 @@
             "instance": "motor-r",
             "snap_point": "mount"
           },
+          "axis": null,
           "limits": null,
           "break_threshold": null
         },
@@ -692,6 +694,20 @@
           "b": {
             "instance": "wheel-rl",
             "snap_point": "hub"
+          },
+          "axis": {
+            "badge": "declared",
+            "source": {
+              "ref": "Kinetra schema example: illustrative value, not a measured part",
+              "locator": null,
+              "url": null,
+              "license": null,
+              "declared_by": "kinetra-docs",
+              "declared_at": "2026-11-11T00:00:00Z"
+            },
+            "x": 0.0,
+            "y": 1.0,
+            "z": 0.0
           },
           "limits": null,
           "break_threshold": null
@@ -707,6 +723,20 @@
             "instance": "wheel-rr",
             "snap_point": "hub"
           },
+          "axis": {
+            "badge": "declared",
+            "source": {
+              "ref": "Kinetra schema example: illustrative value, not a measured part",
+              "locator": null,
+              "url": null,
+              "license": null,
+              "declared_by": "kinetra-docs",
+              "declared_at": "2026-11-11T00:00:00Z"
+            },
+            "x": 0.0,
+            "y": 1.0,
+            "z": 0.0
+          },
           "limits": null,
           "break_threshold": null
         },
@@ -720,6 +750,20 @@
           "b": {
             "instance": "wheel-fl",
             "snap_point": "hub"
+          },
+          "axis": {
+            "badge": "declared",
+            "source": {
+              "ref": "Kinetra schema example: illustrative value, not a measured part",
+              "locator": null,
+              "url": null,
+              "license": null,
+              "declared_by": "kinetra-docs",
+              "declared_at": "2026-11-11T00:00:00Z"
+            },
+            "x": 0.0,
+            "y": 1.0,
+            "z": 0.0
           },
           "limits": null,
           "break_threshold": null
@@ -735,6 +779,20 @@
             "instance": "wheel-fr",
             "snap_point": "hub"
           },
+          "axis": {
+            "badge": "declared",
+            "source": {
+              "ref": "Kinetra schema example: illustrative value, not a measured part",
+              "locator": null,
+              "url": null,
+              "license": null,
+              "declared_by": "kinetra-docs",
+              "declared_at": "2026-11-11T00:00:00Z"
+            },
+            "x": 0.0,
+            "y": 1.0,
+            "z": 0.0
+          },
           "limits": null,
           "break_threshold": null
         }
@@ -744,13 +802,15 @@
           "id": "drive-motor-l",
           "kind": "motor",
           "instance": "motor-l",
-          "joint": "drive-l"
+          "joint": "drive-l",
+          "supply": null
         },
         {
           "id": "drive-motor-r",
           "kind": "motor",
           "instance": "motor-r",
-          "joint": "drive-r"
+          "joint": "drive-r",
+          "supply": null
         }
       ],
       "schedule": {
@@ -882,7 +942,7 @@
       ]
     }
   },
-  "project_hash": "sha256:89f684405667a3c2c09d890f9ac9d48bc93e7baba00318e76ddf778f73630c15",
+  "project_hash": "sha256:4c3283f83994dcb269b7fb6350aed31c841b60cc02ac3409de0e81e0ee30c66d",
   "definitions": [
     {
       "kind": "material",

@@ -86,7 +86,8 @@ class PartRole(StrEnum):
 
     The actuator on an instance must fit its part's role (`designspec.py`): a motor actuator drives a `motor` part, a
     thruster actuator a `thruster` part. What a role requires of the definition is checked by `PartDef` (the
-    required curves and specs), so a part that says `motor` always has the numbers a motor needs.
+    required curves, specs and parameters), so a part that says `motor` always has the numbers a motor needs and one that says
+    `spring_damper` has its stiffness and damping (B-03e).
     """
 
     MOTOR = "motor"
@@ -101,6 +102,10 @@ MOTOR_CURVE = "torque_speed"
 """Name of a motor's torque-speed curve in `PartDef.curves`: x = shaft speed [rad/s], y = torque [N*m] at full command."""
 MOTOR_RATED_VOLTAGE = "rated_voltage"
 """Name of the spec a motor part must have: the supply voltage [V] the curve is for."""
+SPRING_STIFFNESS = "stiffness"
+"""Name of the parameter a spring-damper part must have: the spring rate [N/m] along its axis."""
+SPRING_DAMPING = "damping"
+"""Name of the parameter a spring-damper part must have: the viscous damping coefficient [N*s/m] along its axis."""
 
 THRUSTER_CURVE = "thrust"
 """Name of a thruster's thrust curve in `PartDef.curves` (B-03c): x = time since the command went on [s], y = thrust [N] at
@@ -114,6 +119,18 @@ THRUSTER_OPENING_RESPONSE = "opening_response"
 which the `thrust` curve first reaches the rated thrust, so the spec and the curve cannot tell two different rises."""
 THRUSTER_NOZZLE = "nozzle"
 """Snap point a thruster part must have: at the nozzle exit; its +Z is the exhaust direction, the thrust on the part is -Z."""
+BATTERY_ENERGY_CAPACITY = "energy_capacity"
+"""Name of the spec a battery part must have: the energy [J] it holds when full (B-03d)."""
+BATTERY_NOMINAL_VOLTAGE = "nominal_voltage"
+"""Name of the spec a battery part must have: its nominal terminal voltage [V], what a motor's `rated_voltage` is compared with."""
+BATTERY_INITIAL_CHARGE = "initial_charge"
+"""Optional parameter of a battery part: the fraction of the capacity it starts with, a dimensionless number in [0, 1]. Absent: full."""
+TANK_PROPELLANT_DENSITY = "propellant_density"
+"""Name of the parameter a tank part must have: the mean density [kg/m^3] of what it holds when full (B-03d). The capacity
+[kg] is this times the volume of the tank's inside, so resizing the tank resizes what it holds. The inside is the shape's
+`subtract` components. No propellant is named and no pressure or temperature is modelled: it is one number the user sets."""
+TANK_INITIAL_FILL = "initial_fill"
+"""Optional parameter of a tank part: the fraction of the capacity it starts with, dimensionless in [0, 1]. Absent: full."""
 
 
 class PartDef(BaseModel):
@@ -164,8 +181,14 @@ class PartDef(BaseModel):
             self._check_mass_parameter(self.mass_parameter, {p.name: p for p in self.parameters})
         if self.role is PartRole.MOTOR:
             self._check_motor()
+        if self.role is PartRole.SPRING_DAMPER:
+            self._check_spring_damper()
         if self.role is PartRole.THRUSTER:
             self._check_thruster()
+        if self.role is PartRole.BATTERY:
+            self._check_battery()
+        if self.role is PartRole.TANK:
+            self._check_tank()
         return self
 
     def _check_mass_parameter(self, name: str, params: dict[str, ParamDef]) -> None:
@@ -178,6 +201,39 @@ class PartDef(BaseModel):
             raise ValueError(f"mass_parameter {name!r}: min must be above zero over the whole range, got {p.min.value} kg")
         if self.shape is None:
             raise ValueError("mass_parameter needs a shape recipe: the mass is spread over the recipe's volume")
+
+    def _check_battery(self) -> None:
+        """A battery part says how much energy it holds and at what voltage (specs `energy_capacity` [J], `nominal_voltage` [V])."""
+        specs = {s.name: s for s in self.specs}
+        for name, unit in ((BATTERY_ENERGY_CAPACITY, Unit.J), (BATTERY_NOMINAL_VOLTAGE, Unit.V)):
+            spec = specs.get(name)
+            if spec is None:
+                raise ValueError(f"a battery part needs the spec {name!r} ({unit.value})")
+            if spec.unit is not unit or not spec.value > 0.0:
+                raise ValueError(f"spec {name!r} is a positive number in {unit.value!r}, got {spec.value} {spec.unit.value!r}")
+        self._check_fraction_param(BATTERY_INITIAL_CHARGE)
+
+    def _check_tank(self) -> None:
+        """A tank part has an inside (a shape with a `subtract` component) and the parameter `propellant_density` [kg/m^3],
+        positive over its whole range. Capacity = density x volume of the inside (`kinetra_engine.parts.tank_supply`)."""
+        if self.shape is None or not any(c.operation == "subtract" for c in self.shape.components):
+            raise ValueError("a tank part needs a shape with an inside: at least one 'subtract' component")
+        rho = next((p for p in self.parameters if p.name == TANK_PROPELLANT_DENSITY), None)
+        if rho is None:
+            raise ValueError(f"a tank part needs the parameter {TANK_PROPELLANT_DENSITY!r} (kg/m^3), the density of what it holds")
+        if rho.unit is not Unit.KG_PER_M3 or not rho.min.value > 0.0:
+            raise ValueError(
+                f"parameter {TANK_PROPELLANT_DENSITY!r} is a positive density in 'kg/m^3' over its whole range, "
+                f"got unit {rho.unit.value!r}, min {rho.min.value}"
+            )
+        self._check_fraction_param(TANK_INITIAL_FILL)
+
+    def _check_fraction_param(self, name: str) -> None:
+        p = next((p for p in self.parameters if p.name == name), None)
+        if p is not None and (p.unit is not Unit.ONE or p.min.value < 0.0 or p.max.value > 1.0):
+            raise ValueError(
+                f"parameter {name!r} is a fraction: unit '1' and range inside [0, 1], got {p.unit.value!r} [{p.min.value}, {p.max.value}]"
+            )
 
     def _check_motor(self) -> None:
         """A motor part has a rated voltage and a torque-speed curve of a motor: it starts at stall and ends at no load.
@@ -213,6 +269,25 @@ class PartDef(BaseModel):
         if spec.unit is not Unit.V or not spec.value > 0.0:
             raise ValueError(f"spec {MOTOR_RATED_VOLTAGE!r} is a positive voltage in 'V', got {spec.value} {spec.unit.value!r}")
 
+    def _check_spring_damper(self) -> None:
+        """A spring-damper part has the two parameters the user tunes: a stiffness [N/m] that stays above zero over the
+        whole range (a zero spring is not a spring) and a damping [N*s/m] that is never negative (negative damping
+        feeds energy into the motion). Zero damping is allowed: an undamped spring is a spring."""
+        by_name = {p.name: p for p in self.parameters}
+        k = by_name.get(SPRING_STIFFNESS)
+        if k is None:
+            raise ValueError(f"a spring-damper part needs the parameter {SPRING_STIFFNESS!r} (N/m)")
+        if k.unit is not Unit.N_PER_M:
+            raise ValueError(f"parameter {SPRING_STIFFNESS!r} is a spring rate in 'N/m', got {k.unit.value!r}")
+        if not k.min.value > 0.0:
+            raise ValueError(f"parameter {SPRING_STIFFNESS!r}: min must be above zero over the whole range, got {k.min.value} N/m")
+        c = by_name.get(SPRING_DAMPING)
+        if c is None:
+            raise ValueError(f"a spring-damper part needs the parameter {SPRING_DAMPING!r} (N*s/m)")
+        if c.unit is not Unit.N_S_PER_M:
+            raise ValueError(f"parameter {SPRING_DAMPING!r} is a damping coefficient in 'N*s/m', got {c.unit.value!r}")
+        if not c.min.value >= 0.0:
+            raise ValueError(f"parameter {SPRING_DAMPING!r}: min must not be negative, got {c.min.value} N*s/m")
     def _check_thruster(self) -> None:
         """A thruster part is a game-level thrust source: a thrust curve, a rated thrust, a propellant flow and a nozzle frame.
 

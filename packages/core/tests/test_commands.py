@@ -558,7 +558,8 @@ def test_apply_replace_joint_keeps_position_motor_and_schedule(project):
 
 def test_apply_replace_joint_that_strands_its_motor_is_rejected(project):
     drive_l = next(j for j in load("DesignSpec.four-wheel-car.json")["joints"] if j["id"] == "drive-l")
-    err = rejected(project, cmd(type="replace_joint", joint={**drive_l, "kind": "fixed"}), ReasonCode.INVALID_PROJECT)
+    fixed = {k: v for k, v in drive_l.items() if k != "axis"} | {"kind": "fixed"}  # a fixed joint has no axis (B-04a)
+    err = rejected(project, cmd(type="replace_joint", joint=fixed), ReasonCode.INVALID_PROJECT)
     assert "fixed" in err.reasons[0].message
     assert {ref("joint", "drive-l"), ref("actuator", "drive-motor-l")} <= set(err.reasons[0].ids)
 

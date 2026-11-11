@@ -34,7 +34,7 @@
 ## 모델
 
 - `Material`: `density`(kg/m^3, > 0), `yield_strength`(Pa, > 0), `elastic_modulus`(Pa, > 0), `friction`(무차원 쿨롱 계수, >= 0). 필드마다 단위와 범위가 타입에 있어 오류가 그 필드를 가리키고 JSON Schema에 `const`/`exclusiveMinimum`이 실린다. 두 재료의 접촉 마찰을 어떻게 합치는지는 컴파일러(X-01)가 정한다. 실제 재료 5종의 값은 B-07이 출처와 함께 채웠다: [`materials.md`](materials.md).
-- `PartDef`: `parameters`(이름, 단위, 기본값·최소·최대; 최소 <= 기본 <= 최대), `snap_points`(ID, 종류, 받아들이는 종류, 부품 로컬 좌표의 위치 `offset + Σ factor × 길이 파라미터`, 방향 쿼터니언, 배지·출처), `specs`(`SpecDef`: 이름이 붙은 `Quantity`의 튜플, 사양), `shape`(선택, B-01a: 질량·관성 계산의 레시피). `mass_parameter`(선택, B-02c: 질량을 정하는 kg 파라미터의 이름. 있으면 부품의 질량은 그 값이고 재료를 읽지 않는다. [`part-payload.md`](part-payload.md)), `role`(선택, B-03b: `motor` `thruster` `wheel` `battery` `tank` `spring_damper`. 모터는 곡선 `torque_speed`와 사양 `rated_voltage`가 있어야 한다), `curves`(`NamedCurve`의 튜플, B-03b: 점들과 단위, 배지·출처 하나. [`part-motor.md`](part-motor.md)).
+- `PartDef`: `parameters`(이름, 단위, 기본값·최소·최대; 최소 <= 기본 <= 최대), `snap_points`(ID, 종류, 받아들이는 종류, 부품 로컬 좌표의 위치 `offset + Σ factor × 길이 파라미터`, 방향 쿼터니언, 배지·출처), `specs`(`SpecDef`: 이름이 붙은 `Quantity`의 튜플, 사양), `shape`(선택, B-01a: 질량·관성 계산의 레시피). `mass_parameter`(선택, B-02c: 질량을 정하는 kg 파라미터의 이름. 있으면 부품의 질량은 그 값이고 재료를 읽지 않는다. [`part-payload.md`](part-payload.md)), `role`(선택, B-03b: `motor` `thruster` `wheel` `battery` `tank` `spring_damper`. 모터는 곡선 `torque_speed`와 사양 `rated_voltage`가, `spring_damper`는 파라미터 `stiffness`(N/m)와 `damping`(N·s/m)이 있어야 한다. [`part-spring-damper.md`](part-spring-damper.md)), `curves`(`NamedCurve`의 튜플, B-03b: 점들과 단위, 배지·출처 하나. [`part-motor.md`](part-motor.md)).
 - 파라미터를 참조하는 스냅 포인트는 존재하는 길이(m) 파라미터만 가리킬 수 있다. 한 `PartDef` 안에서 파라미터 이름, 스냅 포인트 ID, 사양 이름은 각각 겹치지 않고, 스냅 포인트 ID와 사양 이름은 파라미터 이름과도 겹치지 않는다.
 - 모든 모델은 `extra="forbid"`, 불변(`frozen`)이고 컬렉션은 튜플이라 `PartDef`는 해시된다. 순서는 값의 일부로 보존한다(순서가 다르면 다른 값). 정의 해시용 정규 순서는 아래 "저장·열기와 정의 해시"(C-03)가 정한다.
 
@@ -46,15 +46,18 @@
 |---|---|---|
 | `Instance` | `id`, `part`, `parameters`, `material`(없을 수 있음), `pose` | `parameters`는 부품의 파라미터 이름만, 단위가 `ParamDef`와 같고 `[min, max]` 안이며, 같은 이름은 한 번만. 적지 않은 파라미터는 `PartDef` 기본값. 각 값은 `Quantity`(배지·출처 필수) |
 | `Pose` | `position`(`WorldPosition`, m, 월드), `orientation`(`{x,y,z,w}` 단위 쿼터니언), `badge`, `source` | 부품 좌표계의 월드 자세. 인스턴스 위치의 저장된 권위는 이 자세다. 배지·출처 하나가 자세 전체를 덮는다(스냅 포인트와 같다) |
-| `Joint` | `id`, `kind`(`fixed` `hinge` `slider`), `a`, `b`(`SnapRef`: 인스턴스 ID + 스냅 포인트 ID), `limits`, `break_threshold` | 양끝은 서로 다른 인스턴스의 존재하는 스냅 포인트이고 한 스냅 포인트는 결합 하나에만 쓰인다. `a`가 부모, `b`가 자식이다. 결합 좌표의 0은 저장된 자세다(힌지 0 rad, 슬라이더 0 m). `limits`는 `Quantity` 두 개(`lower < upper`, 같은 단위): 힌지는 rad, 슬라이더는 m, 고정 결합에는 없다. `break_threshold`는 `Quantity`(N, > 0)이고 없으면 파단하지 않는다 |
-| `Actuator` | `id`, `kind`(`motor` `thruster`), `instance`, `joint` | 모터는 구동할 결합이 있어야 하고(고정 결합이 아니고, `instance`가 그 결합의 한쪽 끝), 추력기에는 결합이 없다. 같은 `kind`·`instance`·`joint`의 액추에이터 둘은 거부한다. 액추에이터 ID가 곧 조종 채널 ID다(`client-adapter.md` I5) |
+| `Joint` | `id`, `kind`(`fixed` `hinge` `slider`), `a`, `b`(`SnapRef`: 인스턴스 ID + 스냅 포인트 ID), `axis`, `limits`, `break_threshold` | 양끝은 서로 다른 인스턴스의 존재하는 스냅 포인트이고 한 스냅 포인트는 결합 하나에만 쓰인다. `a`가 부모, `b`가 자식이다. `axis`(`JointAxis`: 단위 벡터 `x` `y` `z` + `badge` `source`)는 힌지가 도는 축, 슬라이더가 움직이는 방향이고 `a`의 스냅 포인트 좌표계로 적는다. 없으면 그 좌표계의 +Z(`DEFAULT_JOINT_AXIS`, 휠 `hub`·모터 `shaft`가 쓰는 관례)이며 고정 결합에는 축이 없다(적으면 거부). 길이는 1 ± 1e-6이다. 결합 좌표의 0은 저장된 자세다(힌지 0 rad, 슬라이더 0 m). `limits`는 `Quantity` 두 개(`lower < upper`, 같은 단위, 양끝 포함)이고 저장된 자세가 한계 안에 있어야 한다(`lower <= 0 <= upper`): 힌지는 rad, 슬라이더는 m, 고정 결합에는 없다. 없으면 한계가 없다(바퀴 축). `break_threshold`는 `Quantity`(N, > 0)이고 세 종류 모두에 둘 수 있으며 없으면 파단하지 않는다 |
+| `Actuator` | `id`, `kind`(`motor` `thruster`), `instance`, `joint`, `supply` | 모터는 구동할 결합이 있어야 하고(고정 결합이 아니고, `instance`가 그 결합의 한쪽 끝), 추력기에는 결합이 없다. 같은 `kind`·`instance`·`joint`의 액추에이터 둘은 거부한다. 액추에이터 ID가 곧 조종 채널 ID다(`client-adapter.md` I5). `supply`(B-03d, 없어도 됨)는 에너지나 추진제를 꺼내 쓰는 인스턴스다: 모터는 역할 `battery`인 부품의 인스턴스, 추력기는 `tank`인 부품의 인스턴스여야 하고(역할 없는 부품은 거부), 없는 인스턴스도 거부한다. `None`이면 계량하지 않는다(바닥나지 않는다). 한 공급원에 액추에이터 여럿이 달릴 수 있고 같은 잔량을 함께 쓴다 |
 | `ControlSchedule` | `entries`: `ActuateEntry`(`id`, `actuator`, `start`, `end`[s], `command`, `badge`, `source`) | `0 <= start < end`. `command`는 완전 구동 대비 비율이고 모터는 [-1, 1], 추력기는 [0, 1]. `id`는 스케줄 안에서 유일하다(명령이 항목을 위치가 아니라 ID로 가리킨다, C-02a). 한 액추에이터의 구간은 겹치지 않는다(맞닿는 것은 된다). 배지·출처 하나가 항목을 덮는다 |
 
 - `command`가 1일 때 몇 N·m, 몇 N인지는 부품의 사양(곡선)에서 온다(B-03b, B-03c, X-01b, X-01c). `DesignSpec`은 비율만 안다.
 - 자세가 권위다. 결합은 어느 두 스냅 포인트가 한 쌍인지만 말하고 아무것도 옮기지 않는다. 결합한 스냅 포인트가 저장된 자세에서 실제로 겹치는지, 부품이 공중에 떠 있는지는 배치 검사(C-02c 검증기, X-01d 컴파일 오류)이고 `DesignSpec` 검증이 아니다. 4륜차 예시는 조립된 차(바퀴 중심 z = 0.05 m, 오른쪽 모터는 Z축으로 180° 돌림, 맞닿는 스냅 포인트는 서로 `accepts`)이고 `test_designspec_four_wheel_car_is_assembled`가 결합한 모든 쌍이 월드에서 1e-9 안에 겹치는지 검사한다.
 - 결합 그래프가 트리(고리 없음, 한 덩어리)인지는 바디 트리를 만드는 X-01a의 규칙이고 컴파일 오류(X-01d)로 낸다. 이 모델은 양끝 존재와 스냅 포인트 중복 사용만 본다.
 - 액추에이터 종류와 부품 역할의 대응: 모터 액추에이터는 역할이 `motor`인 부품의 인스턴스에, 추력기는 `thruster`인 부품에 붙는다(B-03b, `part-motor.md`). 다른 역할이면 거절하고, 역할이 없는 부품은 받는다.
-- 결합의 축, 종류별 자유도, 스냅 호환 태그 검사는 B-04a·B-04b가, 스프링-댐퍼는 B-03e·X-01b가 더한다. 이 PR의 `limits`와 `break_threshold`는 그 필드가 올 자리와 단위 검사까지다. 파단 임계의 계산(물성 × 단면)은 X-04a다. 분리 항목(`type: "separate"`)은 X-08이 `ActuateEntry`와 같은 자리에 더한다.
+- 결합의 종류별 자유도(B-04a): `b`가 `a`에 대해 갖는 자유도는 고정 0, 힌지 회전 1(축 둘레), 슬라이더 이동 1(축 방향)이다(`joint_dof(kind)` → `JointDof(rotational, translational)`). `Joint.displacement(coordinate)`는 결합 좌표 하나에서 `b`가 저장된 자세에서 얼마나 옮겨 가는지 `(R, t)`(`a` 스냅 좌표계, 힌지는 `a`의 축을 지나는 점 둘레 오른손 회전, 슬라이더는 축 방향 이동)로 돌려주고, 좌표 0은 `(I, 0)`이다. 한계 밖이거나 유한하지 않은 좌표, 고정 결합의 0이 아닌 좌표는 오류다. 축의 부호를 뒤집으면 같은 직선에 좌표(와 한계, 모터 명령)의 부호만 뒤집힌다. 월드에서의 축(`a` 인스턴스 자세 × `a` 스냅 자세 × 축)과 두 스냅 방향이 이 축과 맞는지는 바디 트리를 만드는 X-01a와 컴파일 오류 X-01d의 몫이다.
+- 스냅 호환 태그 검사는 B-04b가, 스프링-댐퍼는 B-03e가 부품 쪽을 더했고(`spring_damper` 역할의 파라미터 `stiffness`(N/m), `damping`(N·s/m), [`part-spring-damper.md`](part-spring-damper.md)) 결합이 그것을 쓰는 방법은 X-01b가 더한다. `break_threshold`는 필드와 단위(N, > 0) 검사까지이고 파단 임계의 계산(물성 × 단면, "단순화 모델")은 X-04a가 `kinetra_engine.break_threshold.critical_load`로 더했다([`break-threshold.md`](break-threshold.md)). 분리 항목(`type: "separate"`)은 X-08이 `ActuateEntry`와 같은 자리에 더한다.
+- `axis`는 B-04a가 더한 기본값 있는 선택 필드라 없는 값은 정규 형태에서 빠지고(`Joint.axis` 기본값 `None`이 `OMITTED_DEFAULTS`에 고정됨) 축이 없는 옛 파일의 해시는 그대로다. 예시 3종(`DesignSpec.four-wheel-car`, `Project.four-wheel-car`, `Project.rocket-car-skeleton`)의 힌지는 `a`의 스냅 포인트 좌표계가 항등이라 `(0, 1, 0)`을 `axis`로 적었다(`사용자 선언`). 월드에서는 바퀴 축인 Y 직선이고, 모터를 Z축으로 180° 돌린 오른쪽은 방향이 -Y다. 그래서 예시 해시 둘이 바뀌었다.
+- **B-04a는 규칙을 하나 더 조였다: `JointLimits`는 `lower <= 0 <= upper`다.** 한계가 0을 포함하지 않는 결합이 든 파일은 이제 `invalid_project`로 열리지 않는다(저장소의 예시·고정 v1 파일에는 한계가 있는 결합이 없다). 저장 형식 `version`은 1 그대로다. 이유: `version`을 올리는 기준은 저장된 데이터의 뜻이나 정규 형태·해시가 바뀌는 것인데(위 `format`, `version` 행) 이 검사는 어떤 값의 뜻도 해시도 바꾸지 않고 이미 정해진 의미(좌표 0 = 저장된 자세, C-01b)에서 어긋난 값을 입력 검증에서 거부할 뿐이다. 열린 적 없는 파일을 위한 이관이 필요 없다. 한계가 0을 빠뜨린 파일이 이미 있다면 이 결정은 다시 열어야 한다.
 - 이 PR의 수치는 모두 테스트가 선언한 값(`사용자 선언`)이다. 실부품 수치는 이 PR에 없다.
 
 ## World와 가정표 (C-01c)
@@ -109,7 +112,7 @@ uv run python packages/core/scripts/export_schemas.py --check  # 쓰지 않고 �
 
 | 명령 | 효과 | 역명령 |
 |---|---|---|
-| `add_instance` / `remove_instance` | 부품 인스턴스 추가·삭제. 삭제는 그 인스턴스의 결합, 그 인스턴스나 그 결합에 달린 액추에이터, 그 액추에이터의 스케줄 항목을 같은 명령에서 함께 지운다 | `remove_instance` / 묶음(`add_instance`, 지운 결합·액추에이터·항목을 원래 위치에 다시 추가) |
+| `add_instance` / `remove_instance` | 부품 인스턴스 추가·삭제. 삭제는 그 인스턴스의 결합, 그 인스턴스나 그 결합에 달렸거나 그 인스턴스를 `supply`로 쓰는 액추에이터, 그 액추에이터의 스케줄 항목을 같은 명령에서 함께 지운다 | `remove_instance` / 묶음(`add_instance`, 지운 결합·액추에이터·항목을 원래 위치에 다시 추가) |
 | `move_instance` | 인스턴스의 저장된 월드 자세를 바꾼다. 결합한 짝은 따라오지 않는다(자세가 권위). 짝이 따라오게 하려면 묶음으로 보낸다 | 이전 자세의 `move_instance` |
 | `set_parameter` / `clear_parameter` | 인스턴스의 파라미터 값을 정하거나(단위·범위는 `PartDef`의 것) 지워 기본값으로 되돌린다 | 이전 값의 `set_parameter`, 또는 `clear_parameter`(지운 자리에 `index`) |
 | `set_instance_material` | 인스턴스에 프로젝트의 재료를 지정(`None`이면 없음) | 이전 재료 |
@@ -210,18 +213,20 @@ uv run python packages/core/scripts/export_schemas.py --check  # 쓰지 않고 �
 - **되돌리기와 다시 실행은 배치 검사를 다시 하지 않는다.** `History.undo/redo`(C-02b)는 `apply_command`만 부른다. 되돌리기는 이전에 받아들여진 상태로, 다시 실행은 받아들여진 명령으로 돌아가는 것이라서(선형 이력, 역명령은 계산된 바로 그 상태에 적용된다) 배치 규칙이 그 사이에 바뀌지 않는 한 같은 답이다. 이미 겹친 프로젝트를 고친 편집을 되돌리면 겹친 상태가 돌아오는데, 그 상태는 사용자가 가졌던 것이다("새로 만든 문제만 거부한다"의 같은 근거). 새 편집은 문을 지난다: `History.execute`가 `validate_command`를 부르므로 거부된 명령(`forbidden`, `overlap` ...)은 프로젝트도 이력도 바꾸지 못한다(`test_history_execute_*`).
 - 허용 오차 `PLACEMENT_TOLERANCE` = 1 µm는 저장된 double을 위한 수치 허용치이지 물리적 주장이 아니다.
 - **명령이 새로 만든 문제만 거부한다.** 이미 겹침이 있는 프로젝트(파일에서 연 것)도 다른 곳은 고칠 수 있다. 묶음은 구조(`apply_command`)를 단계마다, 배치는 **끝 상태**로 본다: `add_instance` 뒤 `add_joint`, 조립 전체의 이동이 중간 상태가 헐거워도 된다.
-- 스냅의 방향(쿼터니언)과 결합 축은 비교하지 않는다(B-04a, B-04b). 컴파일 오류는 X-01d, 지형 소품 편집은 W-05.
+- 스냅의 방향(쿼터니언)과 결합 축은 비교하지 않는다(결합 축의 월드 방향은 X-01a, 스냅 호환은 B-04b). 컴파일 오류는 X-01d, 지형 소품 편집은 W-05.
 
 ## 알려진 확장 (이 PR 범위 밖, 뒤 잎이 더한다)
 
 - 곡선(토크-속도, 추력 곡선): B-03b에서 들어왔다. `Curve`, `PartDef.curves`, 모터 `torque_speed`. [`part-motor.md`](part-motor.md). 추력 곡선은 B-03c에서 들어왔다(`thrust`).
 - 단위 `V`, `A`는 B-03b가 더했다. `kg/s`(추진제 소모율), `N*s`(충격량)는 B-03c가 더했다(`KG_PER_S`, `N_S`).
 - 추력기 부품: B-03c. `PartRole.THRUSTER`의 요건(`thrust` 곡선, `rated_thrust`·`propellant_flow` 사양, `nozzle` 스냅 포인트), 엔진 쪽 계산과 카탈로그 범위. `docs/architecture/parts-thruster.md`.
+- 배터리와 탱크(`PartRole.BATTERY`, `TANK`), 잔량(`kinetra_engine.parts.Supply`)과 `Actuator.supply`: B-03d. `docs/architecture/parts-battery-tank.md`.
 - 형상 레시피와 파생값의 입력: B-01a에서 들어왔다. `PartDef.shape`, `MassProperties.derivation`. `docs/architecture/part-mass.md`. 같은 레시피에서 시각 glTF와 재질 슬롯: B-01c, `docs/architecture/part-visual.md`.
 - 충돌 프록시: B-01b에서 들어왔다. `CollisionProxy`(기본형 지오메트리, 메운 빈 곳 또는 B-01f의 분해한 빈 곳, 부호 있는 부피 오차). `docs/architecture/collision-proxy.md`.
 - 컴파일 캐시와 부품 추가 절차서: B-01d. `docs/architecture/part-cache.md`, `docs/process/add-part.md`.
 - 구조 부품 빔과 판: B-02a. 정의는 `packages/engine/src/kinetra_engine/parts/library/`. `docs/architecture/parts-beam-plate.md`.
 - 구동 부품 휠: B-03a. 정의는 같은 디렉터리의 `wheel.json`. `docs/architecture/parts-wheel.md`.
+- 구조 부품 차체 쉘: B-02b. 정의는 같은 `library/shell.json`. `docs/architecture/parts-shell.md`.
 - 바인딩 안 된 가정(가정이 설계의 어느 값을 흔드는지)과 가정 단위의 의미 검사: J-01a, L-02.
 - PBR 재질 슬롯: B-07(구현됨, [`materials.md`](materials.md)).
 - `export_policy`: HW-02a.

@@ -7,9 +7,12 @@ instance whose definition is missing stays as a **placeholder**: the instance ex
 parameter values, pose, material id) with the joints, actuators and schedule entries that refer to it. A placeholder
 is not a new kind of record and has no field of its own: it is an `Instance` whose `part` (or `material`) is not
 among the project's definitions, so a save and an open give it back unchanged and the file format does not change
-(`projectfile.py`). It has no mass, no inertia, no shape and no collision geometry, and none is made up: the
-placement checks (`validator.py`) skip it like a part without a shape, and the mass and geometry code takes a
-`PartDef`, which a placeholder does not have.
+(`projectfile.py`). What the placeholder lacks depends on what is missing. A missing **part** leaves no mass, no inertia, no shape and
+no collision geometry, and none is made up: the placement checks (`validator.py`) skip it like a part without a shape
+(no `overlap`, no `floating`, no snap check of its joints), and the mass and geometry code takes a `PartDef`, which it
+does not have. A missing **material** leaves the part, so the shape and the snap points are there and the placement
+checks run on them as for any instance (they read the shape and never the material); only the mass, which needs the
+density, is undefined, and the run is refused all the same (`require_complete`).
 
 This module is the data of the rule (`docs/architecture/missing-definitions.md`):
 
