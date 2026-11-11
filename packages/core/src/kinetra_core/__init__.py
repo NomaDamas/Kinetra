@@ -26,9 +26,21 @@ from .designspec import (
     SnapRef,
     WorldPosition,
 )
+from .geometry import AxisExpr, ParamTerm, Position, Quaternion
+from .massprops import (
+    ComponentContribution,
+    Derivation,
+    DerivedInertia,
+    DerivedScalar,
+    DerivedVector,
+    Dimension,
+    MassProperties,
+    ParameterUse,
+)
 from .material import Density, ElasticModulus, Friction, Material, YieldStrength
-from .partdef import AxisExpr, ParamDef, ParamTerm, PartDef, Position, Quaternion, SnapPoint, SpecDef
+from .partdef import ParamDef, PartDef, SnapPoint, SpecDef
 from .provenance import BADGE_LABEL_KO, Badge, Provenance, Quantity, Source
+from .shape import Box, Cylinder, Shape, ShapeComponent, Sphere
 from .world import PLANET_CONSTANT_NAMES, Incline, Placement, PropSize, RampProp, StepProp, TerrainProp, World
 
 __all__ = [
@@ -43,10 +55,18 @@ __all__ = [
     "AssumptionTable",
     "AxisExpr",
     "Badge",
+    "Box",
     "BreakThreshold",
+    "ComponentContribution",
     "Confidence",
     "ControlSchedule",
+    "Cylinder",
     "Density",
+    "Derivation",
+    "DerivedInertia",
+    "DerivedScalar",
+    "DerivedVector",
+    "Dimension",
     "DesignSpec",
     "Distribution",
     "ElasticModulus",
@@ -57,11 +77,13 @@ __all__ = [
     "Joint",
     "JointKind",
     "JointLimits",
+    "MassProperties",
     "Material",
     "NormalDistribution",
     "ParamDef",
     "ParamTerm",
     "ParamValue",
+    "ParameterUse",
     "PartDef",
     "Placement",
     "Pose",
@@ -71,10 +93,13 @@ __all__ = [
     "Quantity",
     "Quaternion",
     "RampProp",
+    "Shape",
+    "ShapeComponent",
     "SnapPoint",
     "SnapRef",
     "Source",
     "SpecDef",
+    "Sphere",
     "StepProp",
     "TerrainProp",
     "UniformDistribution",

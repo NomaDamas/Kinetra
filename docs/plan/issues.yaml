@@ -2585,7 +2585,7 @@ items:
       ## 문제
       부품의 질량과 관성을 손으로 넣어야 한다.
       ## 완료 정의 (DoD)
-      - [ ] `PartDef` → build123d 형상 → 부피 × 밀도로 질량, 무게중심, 관성을 계산한다(legacy `design/cad.py` 이식)
+      - [ ] `PartDef` → 기본형 레시피(상자·원기둥·구, 닫힌 식) → 부피 × 밀도로 질량, 무게중심, 관성을 계산한다. build123d 커널은 쓰지 않는다: omp 결정(#480 트리아지, `docs/architecture/part-mass.md`), 커널은 B-01e. legacy `design/cad.py`는 질량 코드가 없는 내보내기라 이식하지 않는다
       - [ ] 테스트: 해석해가 있는 형상 3종과 오차 1% 이하
       - [ ] 계산 근거(형상, 밀도의 출처)가 값과 함께 남는다
       - [ ] "100% 완료" 8항목 충족(`docs/process/done-definition.md`, issues.yaml `done_definition`)
@@ -2676,6 +2676,34 @@ items:
       `uv run pytest packages/engine -q -k cache`
       ## 의존성
       선행: B-01b, B-01c / 후속: B-02, B-02a, B-02b, B-02c, B-03, B-03a, B-03b, B-03c, B-03d, B-03e
+  - id: B-01e
+    kind: issue
+    parent: B
+    title: "[B-01e] build123d 커널로 임의 형상 질량·관성"
+    labels: ["type:feature", "area:engine", "stage:S1-studio", "prio:P1", "size:M"]
+    milestone: "S1-W02"
+    depends_on: [B-01a]
+    body: |-
+      ## 대목표
+      G1 — 창업자가 세 행성 어디서든 상상한 물건을 만들어 정직한 판정이 붙은 Halo로 내보낸다. (에픽 B, docs/plan/studio-plan.md 3절, 4절)
+      ## 핵심 가치
+      > **V3 한 번에 100%** — 작은 단위를 증거와 함께 완전히 끝낸다. 부분 완성은 미완성이다.
+      > **V5 깨끗한 출처** — 수치, 부품, 에셋은 출처와 라이선스가 기록된 것만 쓴다. 사용자가 선언한 값과 가져온 에셋은 배지로 구분한다.
+      이 이슈가 없으면: 겹치거나 걸친 빈 곳, 모깎기·모따기가 있는 부품은 질량·관성을 계산할 수 없어(B-01a는 거절한다) 작업대의 부품 모양이 "겹치지 않는 기본형의 합"으로 제한된다.
+      ## 문제
+      B-01a는 상자·원기둥·구의 닫힌 식으로 질량·관성을 계산하고(`docs/architecture/part-mass.md`, omp 결정으로 build123d 없이 수용), 요소가 겹치거나 빈 곳이 더한 요소 하나 안에 없으면 `ShapeError`로 거절한다. 임의 형상(불리언 합집합·차집합, 모깎기, 압출)의 질량·관성은 형상 커널이 필요하다.
+      ## 완료 정의 (DoD)
+      - [ ] build123d(Apache-2.0)를 자원 가드(`resource_guard.py --profile heavy`) 통과 뒤에만 설치한다. 의존성 원장 행(닫힌 의존성 전부)과 CREDITS, 설치 크기를 PR에 적는다
+      - [ ] 레시피(`PartDef.shape`)를 커널 형상으로 만들어 부피 × 밀도로 질량, 무게중심, 관성을 계산한다. 겹치거나 걸친 요소도 불리언으로 바르게 계산한다
+      - [ ] 테스트: 같은 레시피에서 B-01a 닫힌 식과 커널 값이 1% 이하로 일치하고(겹치지 않는 합), 겹치는 합집합과 걸친 빈 곳은 해석해 또는 독립 적분과 1% 이하로 일치한다
+      - [ ] B-01a의 `MassProperties`와 `derivation` 계약을 그대로 쓴다(방법 필드에 커널 이름과 버전, 공차를 더한다). 닫힌 식 경로는 해석해 기준으로 남는다
+      - [ ] "100% 완료" 8항목 충족(`docs/process/done-definition.md`, issues.yaml `done_definition`)
+      ## 범위 밖
+      STEP·STL 내보내기(HW-02), glTF(B-01c), 부품 종류 자체(B-02, B-03).
+      ## 검증 방법
+      `uv run pytest packages/engine -q -k inertia`
+      ## 의존성
+      선행: B-01a / 후속: 없음(B-01c가 같은 커널을 쓸 수 있다)
   - id: B-02
     kind: issue
     parent: B
