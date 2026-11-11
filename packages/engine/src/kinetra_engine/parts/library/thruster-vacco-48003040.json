@@ -1,0 +1,262 @@
+{
+  "id": "thruster-vacco-48003040",
+  "name": "Cold gas thruster 2 lbf (VACCO 48003040)",
+  "role": "thruster",
+  "snap_points": [
+    {
+      "badge": "default",
+      "source": {
+        "ref": "B-03c: snap frame convention chosen by Kinetra: +Z of a snap frame points out of the part surface. `nozzle`: +Z is the exhaust direction, so the force on the part is along -Z. Where the datasheet draws no mounting, the mount is the back face of the valve body"
+      },
+      "id": "mount",
+      "kind": "face",
+      "accepts": [
+        "face"
+      ],
+      "position": {
+        "x": {
+          "offset": 0.0,
+          "terms": []
+        },
+        "y": {
+          "offset": 0.0,
+          "terms": []
+        },
+        "z": {
+          "offset": -0.04729059031466532,
+          "terms": []
+        }
+      },
+      "orientation": {
+        "x": 1.0,
+        "y": 0.0,
+        "z": 0.0,
+        "w": 0.0
+      }
+    },
+    {
+      "badge": "default",
+      "source": {
+        "ref": "B-03c: snap frame convention chosen by Kinetra: +Z of a snap frame points out of the part surface. `nozzle`: +Z is the exhaust direction, so the force on the part is along -Z. Where the datasheet draws no mounting, the mount is the back face of the valve body"
+      },
+      "id": "nozzle",
+      "kind": "nozzle",
+      "accepts": [],
+      "position": {
+        "x": {
+          "offset": 0.0,
+          "terms": []
+        },
+        "y": {
+          "offset": 0.0,
+          "terms": []
+        },
+        "z": {
+          "offset": 0.04729059031466532,
+          "terms": []
+        }
+      },
+      "orientation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0,
+        "w": 1.0
+      }
+    }
+  ],
+  "specs": [
+    {
+      "name": "rated_thrust",
+      "value": 8.896443230521,
+      "unit": "N",
+      "badge": "cite",
+      "source": {
+        "ref": "VACCO Industries, 2 LBF COLD GAS THRUSTER 48003040 datasheet (07 July 2004)",
+        "locator": "Operating parameters: Thrust @ 250 psia GN2 inlet 2.0 lbf (x 4.4482216152605 N/lbf)",
+        "url": "https://www.vacco.com/images/uploads/pdfs/cold_gas_thrusters.pdf"
+      }
+    },
+    {
+      "name": "propellant_flow",
+      "value": 0.012110916279000001,
+      "unit": "kg/s",
+      "badge": "cite",
+      "source": {
+        "ref": "VACCO Industries, 2 LBF COLD GAS THRUSTER 48003040 datasheet (07 July 2004)",
+        "locator": "Description: Flow 0.0267 lbm/sec GN2 @ 235 psia inlet (x 0.45359237 kg/lbm). Measured at 235 psia inlet, thrust is given at 250 psia: the datasheet's two conditions differ",
+        "url": "https://www.vacco.com/images/uploads/pdfs/cold_gas_thrusters.pdf"
+      }
+    },
+    {
+      "name": "mass",
+      "value": 0.37648166710000003,
+      "unit": "kg",
+      "badge": "cite",
+      "source": {
+        "ref": "VACCO Industries, 2 LBF COLD GAS THRUSTER 48003040 datasheet (07 July 2004)",
+        "locator": "Operating parameters: Weight 0.83 lbm (x 0.45359237 kg/lbm)",
+        "url": "https://www.vacco.com/images/uploads/pdfs/cold_gas_thrusters.pdf"
+      }
+    },
+    {
+      "name": "opening_response",
+      "value": 0.007,
+      "unit": "s",
+      "badge": "cite",
+      "source": {
+        "ref": "VACCO Industries, 2 LBF COLD GAS THRUSTER 48003040 datasheet (07 July 2004)",
+        "locator": "Description: Response, Opening 7 msec @ 16.8 VDC, 230 psig",
+        "url": "https://www.vacco.com/images/uploads/pdfs/cold_gas_thrusters.pdf"
+      }
+    },
+    {
+      "name": "closing_response",
+      "value": 0.004,
+      "unit": "s",
+      "badge": "cite",
+      "source": {
+        "ref": "VACCO Industries, 2 LBF COLD GAS THRUSTER 48003040 datasheet (07 July 2004)",
+        "locator": "Description: Response, Closing 4 msec @ 230 psig",
+        "url": "https://www.vacco.com/images/uploads/pdfs/cold_gas_thrusters.pdf"
+      }
+    }
+  ],
+  "shape": {
+    "badge": "estimate",
+    "source": {
+      "ref": "B-03c: the datasheet gives no dimensions. Valve body, neck and bell are three coaxial cylinders drawn by Kinetra; the body length (0.06458118062933065 m) is solved so that the solid steel-a36 part (7849.0 kg/m^3, B-07) has the datasheet mass 0.83 lbm = 0.37648166710000003 kg. Assign steel-a36 to the instance",
+      "locator": "VACCO 48003040 datasheet, Weight"
+    },
+    "components": [
+      {
+        "id": "valve_body",
+        "primitive": {
+          "kind": "cylinder",
+          "radius": {
+            "offset": 0.014,
+            "terms": []
+          },
+          "length": {
+            "offset": 0.06458118062933065,
+            "terms": []
+          }
+        },
+        "operation": "add",
+        "position": {
+          "x": {
+            "offset": 0.0,
+            "terms": []
+          },
+          "y": {
+            "offset": 0.0,
+            "terms": []
+          },
+          "z": {
+            "offset": -0.015,
+            "terms": []
+          }
+        },
+        "orientation": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 1.0
+        }
+      },
+      {
+        "id": "neck",
+        "primitive": {
+          "kind": "cylinder",
+          "radius": {
+            "offset": 0.006,
+            "terms": []
+          },
+          "length": {
+            "offset": 0.012,
+            "terms": []
+          }
+        },
+        "operation": "add",
+        "position": {
+          "x": {
+            "offset": 0.0,
+            "terms": []
+          },
+          "y": {
+            "offset": 0.0,
+            "terms": []
+          },
+          "z": {
+            "offset": 0.02329059031466532,
+            "terms": []
+          }
+        },
+        "orientation": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 1.0
+        }
+      },
+      {
+        "id": "bell",
+        "primitive": {
+          "kind": "cylinder",
+          "radius": {
+            "offset": 0.011,
+            "terms": []
+          },
+          "length": {
+            "offset": 0.018,
+            "terms": []
+          }
+        },
+        "operation": "add",
+        "position": {
+          "x": {
+            "offset": 0.0,
+            "terms": []
+          },
+          "y": {
+            "offset": 0.0,
+            "terms": []
+          },
+          "z": {
+            "offset": 0.03829059031466532,
+            "terms": []
+          }
+        },
+        "orientation": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 1.0
+        }
+      }
+    ]
+  },
+  "curves": [
+    {
+      "name": "thrust",
+      "curve": {
+        "badge": "estimate",
+        "source": {
+          "ref": "B-03c: thrust rises linearly from 0 to the cited rated thrust over the cited opening response (7 ms); the datasheet does not give the shape of the rise. The closing response (4 ms) is not modelled: the force stops when the command goes off",
+          "locator": "VACCO 48003040 datasheet, Response"
+        },
+        "x_unit": "s",
+        "y_unit": "N",
+        "points": [
+          {
+            "x": 0.0,
+            "y": 0.0
+          },
+          {
+            "x": 0.007,
+            "y": 8.896443230521
+          }
+        ]
+      }
+    }
+  ]
+}

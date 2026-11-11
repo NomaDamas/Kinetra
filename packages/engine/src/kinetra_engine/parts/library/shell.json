@@ -1,0 +1,2037 @@
+{
+  "id": "shell",
+  "name": "Body shell",
+  "parameters": [
+    {
+      "name": "length",
+      "unit": "m",
+      "default": {
+        "badge": "default",
+        "source": {
+          "ref": "B-02b: dimensions chosen by Kinetra for game-scale vehicles (an original body, not any real vehicle); not a datasheet or standard value"
+        },
+        "value": 0.4,
+        "unit": "m"
+      },
+      "min": {
+        "badge": "default",
+        "source": {
+          "ref": "B-02b: dimensions chosen by Kinetra for game-scale vehicles (an original body, not any real vehicle); not a datasheet or standard value"
+        },
+        "value": 0.2,
+        "unit": "m"
+      },
+      "max": {
+        "badge": "default",
+        "source": {
+          "ref": "B-02b: dimensions chosen by Kinetra for game-scale vehicles (an original body, not any real vehicle); not a datasheet or standard value"
+        },
+        "value": 0.8,
+        "unit": "m"
+      }
+    },
+    {
+      "name": "width",
+      "unit": "m",
+      "default": {
+        "badge": "default",
+        "source": {
+          "ref": "B-02b: dimensions chosen by Kinetra for game-scale vehicles (an original body, not any real vehicle); not a datasheet or standard value"
+        },
+        "value": 0.2,
+        "unit": "m"
+      },
+      "min": {
+        "badge": "default",
+        "source": {
+          "ref": "B-02b: dimensions chosen by Kinetra for game-scale vehicles (an original body, not any real vehicle); not a datasheet or standard value"
+        },
+        "value": 0.1,
+        "unit": "m"
+      },
+      "max": {
+        "badge": "default",
+        "source": {
+          "ref": "B-02b: dimensions chosen by Kinetra for game-scale vehicles (an original body, not any real vehicle); not a datasheet or standard value"
+        },
+        "value": 0.4,
+        "unit": "m"
+      }
+    },
+    {
+      "name": "height",
+      "unit": "m",
+      "default": {
+        "badge": "default",
+        "source": {
+          "ref": "B-02b: dimensions chosen by Kinetra for game-scale vehicles (an original body, not any real vehicle); not a datasheet or standard value"
+        },
+        "value": 0.12,
+        "unit": "m"
+      },
+      "min": {
+        "badge": "default",
+        "source": {
+          "ref": "B-02b: dimensions chosen by Kinetra for game-scale vehicles (an original body, not any real vehicle); not a datasheet or standard value"
+        },
+        "value": 0.06,
+        "unit": "m"
+      },
+      "max": {
+        "badge": "default",
+        "source": {
+          "ref": "B-02b: dimensions chosen by Kinetra for game-scale vehicles (an original body, not any real vehicle); not a datasheet or standard value"
+        },
+        "value": 0.3,
+        "unit": "m"
+      }
+    },
+    {
+      "name": "thickness",
+      "unit": "m",
+      "default": {
+        "badge": "default",
+        "source": {
+          "ref": "B-02b: dimensions chosen by Kinetra for game-scale vehicles (an original body, not any real vehicle); not a datasheet or standard value"
+        },
+        "value": 0.004,
+        "unit": "m"
+      },
+      "min": {
+        "badge": "default",
+        "source": {
+          "ref": "B-02b: dimensions chosen by Kinetra for game-scale vehicles (an original body, not any real vehicle); not a datasheet or standard value"
+        },
+        "value": 0.002,
+        "unit": "m"
+      },
+      "max": {
+        "badge": "default",
+        "source": {
+          "ref": "B-02b: dimensions chosen by Kinetra for game-scale vehicles (an original body, not any real vehicle); not a datasheet or standard value"
+        },
+        "value": 0.01,
+        "unit": "m"
+      }
+    }
+  ],
+  "snap_points": [
+    {
+      "badge": "default",
+      "source": {
+        "ref": "B-02b: snap frame convention chosen by Kinetra: +Z of the snap frame points out of the part surface; the axle position is the middle of the wheel opening; tags are a first proposal for B-04b"
+      },
+      "id": "bed",
+      "kind": "payload_seat",
+      "accepts": [
+        "payload_base"
+      ],
+      "position": {
+        "x": {
+          "offset": 0.0,
+          "terms": [
+            {
+              "param": "length",
+              "factor": -0.325
+            },
+            {
+              "param": "thickness",
+              "factor": 0.5
+            }
+          ]
+        },
+        "y": {
+          "offset": 0.0,
+          "terms": []
+        },
+        "z": {
+          "offset": 0.0,
+          "terms": [
+            {
+              "param": "height",
+              "factor": -0.5
+            },
+            {
+              "param": "thickness",
+              "factor": 1.0
+            }
+          ]
+        }
+      },
+      "orientation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0,
+        "w": 1.0
+      }
+    },
+    {
+      "badge": "default",
+      "source": {
+        "ref": "B-02b: snap frame convention chosen by Kinetra: +Z of the snap frame points out of the part surface; the axle position is the middle of the wheel opening; tags are a first proposal for B-04b"
+      },
+      "id": "underside",
+      "kind": "face",
+      "accepts": [
+        "face"
+      ],
+      "position": {
+        "x": {
+          "offset": 0.0,
+          "terms": []
+        },
+        "y": {
+          "offset": 0.0,
+          "terms": []
+        },
+        "z": {
+          "offset": 0.0,
+          "terms": [
+            {
+              "param": "height",
+              "factor": -0.5
+            }
+          ]
+        }
+      },
+      "orientation": {
+        "x": 1.0,
+        "y": 0.0,
+        "z": 0.0,
+        "w": 0.0
+      }
+    },
+    {
+      "badge": "default",
+      "source": {
+        "ref": "B-02b: snap frame convention chosen by Kinetra: +Z of the snap frame points out of the part surface; the axle position is the middle of the wheel opening; tags are a first proposal for B-04b"
+      },
+      "id": "roof",
+      "kind": "face",
+      "accepts": [
+        "face"
+      ],
+      "position": {
+        "x": {
+          "offset": 0.0,
+          "terms": [
+            {
+              "param": "length",
+              "factor": -0.025
+            }
+          ]
+        },
+        "y": {
+          "offset": 0.0,
+          "terms": []
+        },
+        "z": {
+          "offset": 0.0,
+          "terms": [
+            {
+              "param": "height",
+              "factor": 0.5
+            }
+          ]
+        }
+      },
+      "orientation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0,
+        "w": 1.0
+      }
+    },
+    {
+      "badge": "default",
+      "source": {
+        "ref": "B-02b: snap frame convention chosen by Kinetra: +Z of the snap frame points out of the part surface; the axle position is the middle of the wheel opening; tags are a first proposal for B-04b"
+      },
+      "id": "nose",
+      "kind": "edge",
+      "accepts": [
+        "end",
+        "edge"
+      ],
+      "position": {
+        "x": {
+          "offset": 0.0,
+          "terms": [
+            {
+              "param": "length",
+              "factor": 0.5
+            }
+          ]
+        },
+        "y": {
+          "offset": 0.0,
+          "terms": []
+        },
+        "z": {
+          "offset": 0.0,
+          "terms": [
+            {
+              "param": "height",
+              "factor": -0.25
+            },
+            {
+              "param": "thickness",
+              "factor": 0.5
+            }
+          ]
+        }
+      },
+      "orientation": {
+        "x": 0.0,
+        "y": 0.7071067811865476,
+        "z": 0.0,
+        "w": 0.7071067811865476
+      }
+    },
+    {
+      "badge": "default",
+      "source": {
+        "ref": "B-02b: snap frame convention chosen by Kinetra: +Z of the snap frame points out of the part surface; the axle position is the middle of the wheel opening; tags are a first proposal for B-04b"
+      },
+      "id": "tail",
+      "kind": "edge",
+      "accepts": [
+        "end",
+        "edge"
+      ],
+      "position": {
+        "x": {
+          "offset": 0.0,
+          "terms": [
+            {
+              "param": "length",
+              "factor": -0.5
+            }
+          ]
+        },
+        "y": {
+          "offset": 0.0,
+          "terms": []
+        },
+        "z": {
+          "offset": 0.0,
+          "terms": [
+            {
+              "param": "height",
+              "factor": -0.25
+            },
+            {
+              "param": "thickness",
+              "factor": 0.5
+            }
+          ]
+        }
+      },
+      "orientation": {
+        "x": 0.0,
+        "y": -0.7071067811865476,
+        "z": 0.0,
+        "w": 0.7071067811865476
+      }
+    },
+    {
+      "badge": "default",
+      "source": {
+        "ref": "B-02b: snap frame convention chosen by Kinetra: +Z of the snap frame points out of the part surface; the axle position is the middle of the wheel opening; tags are a first proposal for B-04b"
+      },
+      "id": "axle-fl",
+      "kind": "axle_mount",
+      "accepts": [
+        "shaft"
+      ],
+      "position": {
+        "x": {
+          "offset": 0.0,
+          "terms": [
+            {
+              "param": "length",
+              "factor": 0.32
+            }
+          ]
+        },
+        "y": {
+          "offset": 0.0,
+          "terms": [
+            {
+              "param": "width",
+              "factor": 0.5
+            }
+          ]
+        },
+        "z": {
+          "offset": 0.0,
+          "terms": [
+            {
+              "param": "height",
+              "factor": -0.375
+            },
+            {
+              "param": "thickness",
+              "factor": 0.75
+            }
+          ]
+        }
+      },
+      "orientation": {
+        "x": -0.7071067811865476,
+        "y": 0.0,
+        "z": 0.0,
+        "w": 0.7071067811865476
+      }
+    },
+    {
+      "badge": "default",
+      "source": {
+        "ref": "B-02b: snap frame convention chosen by Kinetra: +Z of the snap frame points out of the part surface; the axle position is the middle of the wheel opening; tags are a first proposal for B-04b"
+      },
+      "id": "axle-fr",
+      "kind": "axle_mount",
+      "accepts": [
+        "shaft"
+      ],
+      "position": {
+        "x": {
+          "offset": 0.0,
+          "terms": [
+            {
+              "param": "length",
+              "factor": 0.32
+            }
+          ]
+        },
+        "y": {
+          "offset": 0.0,
+          "terms": [
+            {
+              "param": "width",
+              "factor": -0.5
+            }
+          ]
+        },
+        "z": {
+          "offset": 0.0,
+          "terms": [
+            {
+              "param": "height",
+              "factor": -0.375
+            },
+            {
+              "param": "thickness",
+              "factor": 0.75
+            }
+          ]
+        }
+      },
+      "orientation": {
+        "x": 0.7071067811865476,
+        "y": 0.0,
+        "z": 0.0,
+        "w": 0.7071067811865476
+      }
+    },
+    {
+      "badge": "default",
+      "source": {
+        "ref": "B-02b: snap frame convention chosen by Kinetra: +Z of the snap frame points out of the part surface; the axle position is the middle of the wheel opening; tags are a first proposal for B-04b"
+      },
+      "id": "axle-rl",
+      "kind": "axle_mount",
+      "accepts": [
+        "shaft"
+      ],
+      "position": {
+        "x": {
+          "offset": 0.0,
+          "terms": [
+            {
+              "param": "length",
+              "factor": -0.32
+            }
+          ]
+        },
+        "y": {
+          "offset": 0.0,
+          "terms": [
+            {
+              "param": "width",
+              "factor": 0.5
+            }
+          ]
+        },
+        "z": {
+          "offset": 0.0,
+          "terms": [
+            {
+              "param": "height",
+              "factor": -0.375
+            },
+            {
+              "param": "thickness",
+              "factor": 0.75
+            }
+          ]
+        }
+      },
+      "orientation": {
+        "x": -0.7071067811865476,
+        "y": 0.0,
+        "z": 0.0,
+        "w": 0.7071067811865476
+      }
+    },
+    {
+      "badge": "default",
+      "source": {
+        "ref": "B-02b: snap frame convention chosen by Kinetra: +Z of the snap frame points out of the part surface; the axle position is the middle of the wheel opening; tags are a first proposal for B-04b"
+      },
+      "id": "axle-rr",
+      "kind": "axle_mount",
+      "accepts": [
+        "shaft"
+      ],
+      "position": {
+        "x": {
+          "offset": 0.0,
+          "terms": [
+            {
+              "param": "length",
+              "factor": -0.32
+            }
+          ]
+        },
+        "y": {
+          "offset": 0.0,
+          "terms": [
+            {
+              "param": "width",
+              "factor": -0.5
+            }
+          ]
+        },
+        "z": {
+          "offset": 0.0,
+          "terms": [
+            {
+              "param": "height",
+              "factor": -0.375
+            },
+            {
+              "param": "thickness",
+              "factor": 0.75
+            }
+          ]
+        }
+      },
+      "orientation": {
+        "x": 0.7071067811865476,
+        "y": 0.0,
+        "z": 0.0,
+        "w": 0.7071067811865476
+      }
+    }
+  ],
+  "specs": [],
+  "shape": {
+    "badge": "default",
+    "source": {
+      "ref": "B-02b: station fractions of the length and the wall layout chosen by Kinetra to give an original body outline (tub with wheel openings, hood, cabin, roof, rear deck); not a real vehicle, not a datasheet value"
+    },
+    "components": [
+      {
+        "id": "floor",
+        "primitive": {
+          "kind": "box",
+          "size_x": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "length",
+                "factor": 1.0
+              }
+            ]
+          },
+          "size_y": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "width",
+                "factor": 1.0
+              }
+            ]
+          },
+          "size_z": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "thickness",
+                "factor": 1.0
+              }
+            ]
+          }
+        },
+        "operation": "add",
+        "position": {
+          "x": {
+            "offset": 0.0,
+            "terms": []
+          },
+          "y": {
+            "offset": 0.0,
+            "terms": []
+          },
+          "z": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "height",
+                "factor": -0.5
+              },
+              {
+                "param": "thickness",
+                "factor": 0.5
+              }
+            ]
+          }
+        },
+        "orientation": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 1.0
+        }
+      },
+      {
+        "id": "wall_l_rear",
+        "primitive": {
+          "kind": "box",
+          "size_x": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "length",
+                "factor": 0.08
+              }
+            ]
+          },
+          "size_y": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "thickness",
+                "factor": 1.0
+              }
+            ]
+          },
+          "size_z": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "height",
+                "factor": 0.5
+              },
+              {
+                "param": "thickness",
+                "factor": -1.0
+              }
+            ]
+          }
+        },
+        "operation": "add",
+        "position": {
+          "x": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "length",
+                "factor": -0.46
+              }
+            ]
+          },
+          "y": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "width",
+                "factor": 0.5
+              },
+              {
+                "param": "thickness",
+                "factor": -0.5
+              }
+            ]
+          },
+          "z": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "height",
+                "factor": -0.25
+              },
+              {
+                "param": "thickness",
+                "factor": 0.5
+              }
+            ]
+          }
+        },
+        "orientation": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 1.0
+        }
+      },
+      {
+        "id": "wall_l_mid",
+        "primitive": {
+          "kind": "box",
+          "size_x": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "length",
+                "factor": 0.44
+              }
+            ]
+          },
+          "size_y": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "thickness",
+                "factor": 1.0
+              }
+            ]
+          },
+          "size_z": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "height",
+                "factor": 0.5
+              },
+              {
+                "param": "thickness",
+                "factor": -1.0
+              }
+            ]
+          }
+        },
+        "operation": "add",
+        "position": {
+          "x": {
+            "offset": 0.0,
+            "terms": []
+          },
+          "y": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "width",
+                "factor": 0.5
+              },
+              {
+                "param": "thickness",
+                "factor": -0.5
+              }
+            ]
+          },
+          "z": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "height",
+                "factor": -0.25
+              },
+              {
+                "param": "thickness",
+                "factor": 0.5
+              }
+            ]
+          }
+        },
+        "orientation": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 1.0
+        }
+      },
+      {
+        "id": "wall_l_front",
+        "primitive": {
+          "kind": "box",
+          "size_x": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "length",
+                "factor": 0.08
+              }
+            ]
+          },
+          "size_y": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "thickness",
+                "factor": 1.0
+              }
+            ]
+          },
+          "size_z": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "height",
+                "factor": 0.5
+              },
+              {
+                "param": "thickness",
+                "factor": -1.0
+              }
+            ]
+          }
+        },
+        "operation": "add",
+        "position": {
+          "x": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "length",
+                "factor": 0.46
+              }
+            ]
+          },
+          "y": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "width",
+                "factor": 0.5
+              },
+              {
+                "param": "thickness",
+                "factor": -0.5
+              }
+            ]
+          },
+          "z": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "height",
+                "factor": -0.25
+              },
+              {
+                "param": "thickness",
+                "factor": 0.5
+              }
+            ]
+          }
+        },
+        "orientation": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 1.0
+        }
+      },
+      {
+        "id": "arch_l_rear",
+        "primitive": {
+          "kind": "box",
+          "size_x": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "length",
+                "factor": 0.2
+              }
+            ]
+          },
+          "size_y": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "thickness",
+                "factor": 1.0
+              }
+            ]
+          },
+          "size_z": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "height",
+                "factor": 0.25
+              },
+              {
+                "param": "thickness",
+                "factor": -0.5
+              }
+            ]
+          }
+        },
+        "operation": "add",
+        "position": {
+          "x": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "length",
+                "factor": -0.32
+              }
+            ]
+          },
+          "y": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "width",
+                "factor": 0.5
+              },
+              {
+                "param": "thickness",
+                "factor": -0.5
+              }
+            ]
+          },
+          "z": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "height",
+                "factor": -0.125
+              },
+              {
+                "param": "thickness",
+                "factor": 0.25
+              }
+            ]
+          }
+        },
+        "orientation": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 1.0
+        }
+      },
+      {
+        "id": "arch_l_front",
+        "primitive": {
+          "kind": "box",
+          "size_x": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "length",
+                "factor": 0.2
+              }
+            ]
+          },
+          "size_y": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "thickness",
+                "factor": 1.0
+              }
+            ]
+          },
+          "size_z": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "height",
+                "factor": 0.25
+              },
+              {
+                "param": "thickness",
+                "factor": -0.5
+              }
+            ]
+          }
+        },
+        "operation": "add",
+        "position": {
+          "x": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "length",
+                "factor": 0.32
+              }
+            ]
+          },
+          "y": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "width",
+                "factor": 0.5
+              },
+              {
+                "param": "thickness",
+                "factor": -0.5
+              }
+            ]
+          },
+          "z": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "height",
+                "factor": -0.125
+              },
+              {
+                "param": "thickness",
+                "factor": 0.25
+              }
+            ]
+          }
+        },
+        "orientation": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 1.0
+        }
+      },
+      {
+        "id": "cabin_l",
+        "primitive": {
+          "kind": "box",
+          "size_x": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "length",
+                "factor": 0.25
+              }
+            ]
+          },
+          "size_y": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "thickness",
+                "factor": 1.0
+              }
+            ]
+          },
+          "size_z": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "height",
+                "factor": 0.5
+              },
+              {
+                "param": "thickness",
+                "factor": -1.0
+              }
+            ]
+          }
+        },
+        "operation": "add",
+        "position": {
+          "x": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "length",
+                "factor": -0.025
+              }
+            ]
+          },
+          "y": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "width",
+                "factor": 0.5
+              },
+              {
+                "param": "thickness",
+                "factor": -0.5
+              }
+            ]
+          },
+          "z": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "height",
+                "factor": 0.25
+              },
+              {
+                "param": "thickness",
+                "factor": -0.5
+              }
+            ]
+          }
+        },
+        "orientation": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 1.0
+        }
+      },
+      {
+        "id": "wall_r_rear",
+        "primitive": {
+          "kind": "box",
+          "size_x": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "length",
+                "factor": 0.08
+              }
+            ]
+          },
+          "size_y": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "thickness",
+                "factor": 1.0
+              }
+            ]
+          },
+          "size_z": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "height",
+                "factor": 0.5
+              },
+              {
+                "param": "thickness",
+                "factor": -1.0
+              }
+            ]
+          }
+        },
+        "operation": "add",
+        "position": {
+          "x": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "length",
+                "factor": -0.46
+              }
+            ]
+          },
+          "y": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "width",
+                "factor": -0.5
+              },
+              {
+                "param": "thickness",
+                "factor": 0.5
+              }
+            ]
+          },
+          "z": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "height",
+                "factor": -0.25
+              },
+              {
+                "param": "thickness",
+                "factor": 0.5
+              }
+            ]
+          }
+        },
+        "orientation": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 1.0
+        }
+      },
+      {
+        "id": "wall_r_mid",
+        "primitive": {
+          "kind": "box",
+          "size_x": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "length",
+                "factor": 0.44
+              }
+            ]
+          },
+          "size_y": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "thickness",
+                "factor": 1.0
+              }
+            ]
+          },
+          "size_z": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "height",
+                "factor": 0.5
+              },
+              {
+                "param": "thickness",
+                "factor": -1.0
+              }
+            ]
+          }
+        },
+        "operation": "add",
+        "position": {
+          "x": {
+            "offset": 0.0,
+            "terms": []
+          },
+          "y": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "width",
+                "factor": -0.5
+              },
+              {
+                "param": "thickness",
+                "factor": 0.5
+              }
+            ]
+          },
+          "z": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "height",
+                "factor": -0.25
+              },
+              {
+                "param": "thickness",
+                "factor": 0.5
+              }
+            ]
+          }
+        },
+        "orientation": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 1.0
+        }
+      },
+      {
+        "id": "wall_r_front",
+        "primitive": {
+          "kind": "box",
+          "size_x": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "length",
+                "factor": 0.08
+              }
+            ]
+          },
+          "size_y": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "thickness",
+                "factor": 1.0
+              }
+            ]
+          },
+          "size_z": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "height",
+                "factor": 0.5
+              },
+              {
+                "param": "thickness",
+                "factor": -1.0
+              }
+            ]
+          }
+        },
+        "operation": "add",
+        "position": {
+          "x": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "length",
+                "factor": 0.46
+              }
+            ]
+          },
+          "y": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "width",
+                "factor": -0.5
+              },
+              {
+                "param": "thickness",
+                "factor": 0.5
+              }
+            ]
+          },
+          "z": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "height",
+                "factor": -0.25
+              },
+              {
+                "param": "thickness",
+                "factor": 0.5
+              }
+            ]
+          }
+        },
+        "orientation": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 1.0
+        }
+      },
+      {
+        "id": "arch_r_rear",
+        "primitive": {
+          "kind": "box",
+          "size_x": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "length",
+                "factor": 0.2
+              }
+            ]
+          },
+          "size_y": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "thickness",
+                "factor": 1.0
+              }
+            ]
+          },
+          "size_z": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "height",
+                "factor": 0.25
+              },
+              {
+                "param": "thickness",
+                "factor": -0.5
+              }
+            ]
+          }
+        },
+        "operation": "add",
+        "position": {
+          "x": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "length",
+                "factor": -0.32
+              }
+            ]
+          },
+          "y": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "width",
+                "factor": -0.5
+              },
+              {
+                "param": "thickness",
+                "factor": 0.5
+              }
+            ]
+          },
+          "z": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "height",
+                "factor": -0.125
+              },
+              {
+                "param": "thickness",
+                "factor": 0.25
+              }
+            ]
+          }
+        },
+        "orientation": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 1.0
+        }
+      },
+      {
+        "id": "arch_r_front",
+        "primitive": {
+          "kind": "box",
+          "size_x": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "length",
+                "factor": 0.2
+              }
+            ]
+          },
+          "size_y": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "thickness",
+                "factor": 1.0
+              }
+            ]
+          },
+          "size_z": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "height",
+                "factor": 0.25
+              },
+              {
+                "param": "thickness",
+                "factor": -0.5
+              }
+            ]
+          }
+        },
+        "operation": "add",
+        "position": {
+          "x": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "length",
+                "factor": 0.32
+              }
+            ]
+          },
+          "y": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "width",
+                "factor": -0.5
+              },
+              {
+                "param": "thickness",
+                "factor": 0.5
+              }
+            ]
+          },
+          "z": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "height",
+                "factor": -0.125
+              },
+              {
+                "param": "thickness",
+                "factor": 0.25
+              }
+            ]
+          }
+        },
+        "orientation": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 1.0
+        }
+      },
+      {
+        "id": "cabin_r",
+        "primitive": {
+          "kind": "box",
+          "size_x": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "length",
+                "factor": 0.25
+              }
+            ]
+          },
+          "size_y": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "thickness",
+                "factor": 1.0
+              }
+            ]
+          },
+          "size_z": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "height",
+                "factor": 0.5
+              },
+              {
+                "param": "thickness",
+                "factor": -1.0
+              }
+            ]
+          }
+        },
+        "operation": "add",
+        "position": {
+          "x": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "length",
+                "factor": -0.025
+              }
+            ]
+          },
+          "y": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "width",
+                "factor": -0.5
+              },
+              {
+                "param": "thickness",
+                "factor": 0.5
+              }
+            ]
+          },
+          "z": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "height",
+                "factor": 0.25
+              },
+              {
+                "param": "thickness",
+                "factor": -0.5
+              }
+            ]
+          }
+        },
+        "orientation": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 1.0
+        }
+      },
+      {
+        "id": "nose",
+        "primitive": {
+          "kind": "box",
+          "size_x": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "thickness",
+                "factor": 1.0
+              }
+            ]
+          },
+          "size_y": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "width",
+                "factor": 1.0
+              },
+              {
+                "param": "thickness",
+                "factor": -2.0
+              }
+            ]
+          },
+          "size_z": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "height",
+                "factor": 0.5
+              },
+              {
+                "param": "thickness",
+                "factor": -1.0
+              }
+            ]
+          }
+        },
+        "operation": "add",
+        "position": {
+          "x": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "length",
+                "factor": 0.5
+              },
+              {
+                "param": "thickness",
+                "factor": -0.5
+              }
+            ]
+          },
+          "y": {
+            "offset": 0.0,
+            "terms": []
+          },
+          "z": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "height",
+                "factor": -0.25
+              },
+              {
+                "param": "thickness",
+                "factor": 0.5
+              }
+            ]
+          }
+        },
+        "orientation": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 1.0
+        }
+      },
+      {
+        "id": "tail",
+        "primitive": {
+          "kind": "box",
+          "size_x": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "thickness",
+                "factor": 1.0
+              }
+            ]
+          },
+          "size_y": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "width",
+                "factor": 1.0
+              },
+              {
+                "param": "thickness",
+                "factor": -2.0
+              }
+            ]
+          },
+          "size_z": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "height",
+                "factor": 0.5
+              },
+              {
+                "param": "thickness",
+                "factor": -1.0
+              }
+            ]
+          }
+        },
+        "operation": "add",
+        "position": {
+          "x": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "length",
+                "factor": -0.5
+              },
+              {
+                "param": "thickness",
+                "factor": 0.5
+              }
+            ]
+          },
+          "y": {
+            "offset": 0.0,
+            "terms": []
+          },
+          "z": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "height",
+                "factor": -0.25
+              },
+              {
+                "param": "thickness",
+                "factor": 0.5
+              }
+            ]
+          }
+        },
+        "orientation": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 1.0
+        }
+      },
+      {
+        "id": "hood",
+        "primitive": {
+          "kind": "box",
+          "size_x": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "length",
+                "factor": 0.4
+              },
+              {
+                "param": "thickness",
+                "factor": -1.0
+              }
+            ]
+          },
+          "size_y": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "width",
+                "factor": 1.0
+              },
+              {
+                "param": "thickness",
+                "factor": -2.0
+              }
+            ]
+          },
+          "size_z": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "thickness",
+                "factor": 1.0
+              }
+            ]
+          }
+        },
+        "operation": "add",
+        "position": {
+          "x": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "length",
+                "factor": 0.3
+              },
+              {
+                "param": "thickness",
+                "factor": -0.5
+              }
+            ]
+          },
+          "y": {
+            "offset": 0.0,
+            "terms": []
+          },
+          "z": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "thickness",
+                "factor": -0.5
+              }
+            ]
+          }
+        },
+        "orientation": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 1.0
+        }
+      },
+      {
+        "id": "windscreen",
+        "primitive": {
+          "kind": "box",
+          "size_x": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "thickness",
+                "factor": 1.0
+              }
+            ]
+          },
+          "size_y": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "width",
+                "factor": 1.0
+              },
+              {
+                "param": "thickness",
+                "factor": -2.0
+              }
+            ]
+          },
+          "size_z": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "height",
+                "factor": 0.5
+              },
+              {
+                "param": "thickness",
+                "factor": -1.0
+              }
+            ]
+          }
+        },
+        "operation": "add",
+        "position": {
+          "x": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "length",
+                "factor": 0.1
+              },
+              {
+                "param": "thickness",
+                "factor": -0.5
+              }
+            ]
+          },
+          "y": {
+            "offset": 0.0,
+            "terms": []
+          },
+          "z": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "height",
+                "factor": 0.25
+              },
+              {
+                "param": "thickness",
+                "factor": -0.5
+              }
+            ]
+          }
+        },
+        "orientation": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 1.0
+        }
+      },
+      {
+        "id": "cabin_back",
+        "primitive": {
+          "kind": "box",
+          "size_x": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "thickness",
+                "factor": 1.0
+              }
+            ]
+          },
+          "size_y": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "width",
+                "factor": 1.0
+              },
+              {
+                "param": "thickness",
+                "factor": -2.0
+              }
+            ]
+          },
+          "size_z": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "height",
+                "factor": 0.5
+              },
+              {
+                "param": "thickness",
+                "factor": -1.0
+              }
+            ]
+          }
+        },
+        "operation": "add",
+        "position": {
+          "x": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "length",
+                "factor": -0.15
+              },
+              {
+                "param": "thickness",
+                "factor": 0.5
+              }
+            ]
+          },
+          "y": {
+            "offset": 0.0,
+            "terms": []
+          },
+          "z": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "height",
+                "factor": 0.25
+              },
+              {
+                "param": "thickness",
+                "factor": -0.5
+              }
+            ]
+          }
+        },
+        "orientation": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 1.0
+        }
+      },
+      {
+        "id": "roof",
+        "primitive": {
+          "kind": "box",
+          "size_x": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "length",
+                "factor": 0.25
+              }
+            ]
+          },
+          "size_y": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "width",
+                "factor": 1.0
+              }
+            ]
+          },
+          "size_z": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "thickness",
+                "factor": 1.0
+              }
+            ]
+          }
+        },
+        "operation": "add",
+        "position": {
+          "x": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "length",
+                "factor": -0.025
+              }
+            ]
+          },
+          "y": {
+            "offset": 0.0,
+            "terms": []
+          },
+          "z": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "height",
+                "factor": 0.5
+              },
+              {
+                "param": "thickness",
+                "factor": -0.5
+              }
+            ]
+          }
+        },
+        "orientation": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 1.0
+        }
+      }
+    ]
+  },
+  "curves": []
+}

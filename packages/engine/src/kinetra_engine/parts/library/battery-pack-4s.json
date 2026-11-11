@@ -1,0 +1,509 @@
+{
+  "id": "battery-pack-4s",
+  "name": "Battery pack 4S1P (four 18650 cells in series)",
+  "parameters": [
+    {
+      "name": "mass",
+      "unit": "kg",
+      "default": {
+        "badge": "estimate",
+        "source": {
+          "ref": "Method: 4 x 48.5 g (datasheet 'Weight (max.)' of one NCR18650B) = 194 g. Cells only: a real pack adds holder, wiring and protection board. Panasonic NCR18650B datasheet v13.11 R1 (copy on batteryspace.com; 'For Reference Only'), accessed 2026-11-12",
+          "locator": "Specifications table, Weight (max.)",
+          "url": "https://www.batteryspace.com/prod-specs/NCR18650B.pdf"
+        },
+        "value": 0.194,
+        "unit": "kg"
+      },
+      "min": {
+        "badge": "estimate",
+        "source": {
+          "ref": "Method: 4 x 48.5 g (datasheet 'Weight (max.)' of one NCR18650B) = 194 g. Cells only: a real pack adds holder, wiring and protection board. Panasonic NCR18650B datasheet v13.11 R1 (copy on batteryspace.com; 'For Reference Only'), accessed 2026-11-12",
+          "locator": "Specifications table, Weight (max.)",
+          "url": "https://www.batteryspace.com/prod-specs/NCR18650B.pdf"
+        },
+        "value": 0.194,
+        "unit": "kg"
+      },
+      "max": {
+        "badge": "estimate",
+        "source": {
+          "ref": "Method: 4 x 48.5 g (datasheet 'Weight (max.)' of one NCR18650B) = 194 g. Cells only: a real pack adds holder, wiring and protection board. Panasonic NCR18650B datasheet v13.11 R1 (copy on batteryspace.com; 'For Reference Only'), accessed 2026-11-12",
+          "locator": "Specifications table, Weight (max.)",
+          "url": "https://www.batteryspace.com/prod-specs/NCR18650B.pdf"
+        },
+        "value": 0.194,
+        "unit": "kg"
+      }
+    },
+    {
+      "name": "initial_charge",
+      "unit": "1",
+      "default": {
+        "badge": "default",
+        "source": {
+          "ref": "B-03d: fraction of the capacity the pack starts with; 1 = full. A modelling choice"
+        },
+        "value": 1.0,
+        "unit": "1"
+      },
+      "min": {
+        "badge": "default",
+        "source": {
+          "ref": "B-03d: fraction of the capacity the pack starts with; 1 = full. A modelling choice"
+        },
+        "value": 0.0,
+        "unit": "1"
+      },
+      "max": {
+        "badge": "default",
+        "source": {
+          "ref": "B-03d: fraction of the capacity the pack starts with; 1 = full. A modelling choice"
+        },
+        "value": 1.0,
+        "unit": "1"
+      }
+    }
+  ],
+  "snap_points": [
+    {
+      "badge": "default",
+      "source": {
+        "ref": "B-03d: snap frame convention chosen by Kinetra: +Z of the snap frame points out of the part surface; tags are a first proposal for B-04b"
+      },
+      "id": "top",
+      "kind": "face",
+      "accepts": [
+        "face"
+      ],
+      "position": {
+        "x": {
+          "offset": 0.0,
+          "terms": []
+        },
+        "y": {
+          "offset": 0.0,
+          "terms": []
+        },
+        "z": {
+          "offset": 0.03315,
+          "terms": []
+        }
+      },
+      "orientation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0,
+        "w": 1.0
+      }
+    },
+    {
+      "badge": "default",
+      "source": {
+        "ref": "B-03d: snap frame convention chosen by Kinetra: +Z of the snap frame points out of the part surface; tags are a first proposal for B-04b"
+      },
+      "id": "bottom",
+      "kind": "face",
+      "accepts": [
+        "face"
+      ],
+      "position": {
+        "x": {
+          "offset": 0.0,
+          "terms": []
+        },
+        "y": {
+          "offset": 0.0,
+          "terms": []
+        },
+        "z": {
+          "offset": -0.03215,
+          "terms": []
+        }
+      },
+      "orientation": {
+        "x": 1.0,
+        "y": 0.0,
+        "z": 0.0,
+        "w": 0.0
+      }
+    },
+    {
+      "badge": "default",
+      "source": {
+        "ref": "B-03d: snap frame convention chosen by Kinetra: +Z of the snap frame points out of the part surface; tags are a first proposal for B-04b"
+      },
+      "id": "side-xp",
+      "kind": "face",
+      "accepts": [
+        "face"
+      ],
+      "position": {
+        "x": {
+          "offset": 0.0185,
+          "terms": []
+        },
+        "y": {
+          "offset": 0.0,
+          "terms": []
+        },
+        "z": {
+          "offset": 0.0,
+          "terms": []
+        }
+      },
+      "orientation": {
+        "x": 0.0,
+        "y": 0.7071067811865476,
+        "z": 0.0,
+        "w": 0.7071067811865476
+      }
+    },
+    {
+      "badge": "default",
+      "source": {
+        "ref": "B-03d: snap frame convention chosen by Kinetra: +Z of the snap frame points out of the part surface; tags are a first proposal for B-04b"
+      },
+      "id": "side-xn",
+      "kind": "face",
+      "accepts": [
+        "face"
+      ],
+      "position": {
+        "x": {
+          "offset": -0.0185,
+          "terms": []
+        },
+        "y": {
+          "offset": 0.0,
+          "terms": []
+        },
+        "z": {
+          "offset": 0.0,
+          "terms": []
+        }
+      },
+      "orientation": {
+        "x": 0.0,
+        "y": -0.7071067811865476,
+        "z": 0.0,
+        "w": 0.7071067811865476
+      }
+    }
+  ],
+  "specs": [
+    {
+      "badge": "estimate",
+      "source": {
+        "ref": "Method: 4 cells in series hold 4 x 42120 J (see battery-18650 energy_capacity: 3250 mAh x 3.6 V per cell, datasheet minimum capacity) = 168480 J (46.8 Wh = 3.25 Ah x 14.4 V). No balancing or protection losses. Panasonic NCR18650B datasheet v13.11 R1 (copy on batteryspace.com; 'For Reference Only'), accessed 2026-11-12",
+        "locator": "Specifications table: Capacity (2), Nominal voltage",
+        "url": "https://www.batteryspace.com/prod-specs/NCR18650B.pdf"
+      },
+      "value": 168480.0,
+      "unit": "J",
+      "name": "energy_capacity"
+    },
+    {
+      "badge": "estimate",
+      "source": {
+        "ref": "Method: 4 cells in series x 3.6 V (datasheet 'Nominal voltage' of one cell) = 14.4 V. Panasonic NCR18650B datasheet v13.11 R1 (copy on batteryspace.com; 'For Reference Only'), accessed 2026-11-12",
+        "locator": "Specifications table, Nominal voltage",
+        "url": "https://www.batteryspace.com/prod-specs/NCR18650B.pdf"
+      },
+      "value": 14.4,
+      "unit": "V",
+      "name": "nominal_voltage"
+    }
+  ],
+  "shape": {
+    "badge": "default",
+    "source": {
+      "ref": "B-03d: 4 NCR18650B cells in series (4S1P), 2 x 2, touching; no holder, wiring or protection board, so their mass is not in it. Cell values: Panasonic NCR18650B datasheet v13.11 R1 (copy on batteryspace.com; 'For Reference Only'), accessed 2026-11-12"
+    },
+    "components": [
+      {
+        "id": "cell_0",
+        "primitive": {
+          "kind": "cylinder",
+          "radius": {
+            "offset": 0.00925,
+            "terms": []
+          },
+          "length": {
+            "offset": 0.0643,
+            "terms": []
+          }
+        },
+        "operation": "add",
+        "position": {
+          "x": {
+            "offset": -0.00925,
+            "terms": []
+          },
+          "y": {
+            "offset": -0.00925,
+            "terms": []
+          },
+          "z": {
+            "offset": 0.0,
+            "terms": []
+          }
+        },
+        "orientation": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 1.0
+        }
+      },
+      {
+        "id": "button_0",
+        "primitive": {
+          "kind": "cylinder",
+          "radius": {
+            "offset": 0.0033,
+            "terms": []
+          },
+          "length": {
+            "offset": 0.001,
+            "terms": []
+          }
+        },
+        "operation": "add",
+        "position": {
+          "x": {
+            "offset": -0.00925,
+            "terms": []
+          },
+          "y": {
+            "offset": -0.00925,
+            "terms": []
+          },
+          "z": {
+            "offset": 0.03265,
+            "terms": []
+          }
+        },
+        "orientation": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 1.0
+        }
+      },
+      {
+        "id": "cell_1",
+        "primitive": {
+          "kind": "cylinder",
+          "radius": {
+            "offset": 0.00925,
+            "terms": []
+          },
+          "length": {
+            "offset": 0.0643,
+            "terms": []
+          }
+        },
+        "operation": "add",
+        "position": {
+          "x": {
+            "offset": 0.00925,
+            "terms": []
+          },
+          "y": {
+            "offset": -0.00925,
+            "terms": []
+          },
+          "z": {
+            "offset": 0.0,
+            "terms": []
+          }
+        },
+        "orientation": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 1.0
+        }
+      },
+      {
+        "id": "button_1",
+        "primitive": {
+          "kind": "cylinder",
+          "radius": {
+            "offset": 0.0033,
+            "terms": []
+          },
+          "length": {
+            "offset": 0.001,
+            "terms": []
+          }
+        },
+        "operation": "add",
+        "position": {
+          "x": {
+            "offset": 0.00925,
+            "terms": []
+          },
+          "y": {
+            "offset": -0.00925,
+            "terms": []
+          },
+          "z": {
+            "offset": 0.03265,
+            "terms": []
+          }
+        },
+        "orientation": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 1.0
+        }
+      },
+      {
+        "id": "cell_2",
+        "primitive": {
+          "kind": "cylinder",
+          "radius": {
+            "offset": 0.00925,
+            "terms": []
+          },
+          "length": {
+            "offset": 0.0643,
+            "terms": []
+          }
+        },
+        "operation": "add",
+        "position": {
+          "x": {
+            "offset": -0.00925,
+            "terms": []
+          },
+          "y": {
+            "offset": 0.00925,
+            "terms": []
+          },
+          "z": {
+            "offset": 0.0,
+            "terms": []
+          }
+        },
+        "orientation": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 1.0
+        }
+      },
+      {
+        "id": "button_2",
+        "primitive": {
+          "kind": "cylinder",
+          "radius": {
+            "offset": 0.0033,
+            "terms": []
+          },
+          "length": {
+            "offset": 0.001,
+            "terms": []
+          }
+        },
+        "operation": "add",
+        "position": {
+          "x": {
+            "offset": -0.00925,
+            "terms": []
+          },
+          "y": {
+            "offset": 0.00925,
+            "terms": []
+          },
+          "z": {
+            "offset": 0.03265,
+            "terms": []
+          }
+        },
+        "orientation": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 1.0
+        }
+      },
+      {
+        "id": "cell_3",
+        "primitive": {
+          "kind": "cylinder",
+          "radius": {
+            "offset": 0.00925,
+            "terms": []
+          },
+          "length": {
+            "offset": 0.0643,
+            "terms": []
+          }
+        },
+        "operation": "add",
+        "position": {
+          "x": {
+            "offset": 0.00925,
+            "terms": []
+          },
+          "y": {
+            "offset": 0.00925,
+            "terms": []
+          },
+          "z": {
+            "offset": 0.0,
+            "terms": []
+          }
+        },
+        "orientation": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 1.0
+        }
+      },
+      {
+        "id": "button_3",
+        "primitive": {
+          "kind": "cylinder",
+          "radius": {
+            "offset": 0.0033,
+            "terms": []
+          },
+          "length": {
+            "offset": 0.001,
+            "terms": []
+          }
+        },
+        "operation": "add",
+        "position": {
+          "x": {
+            "offset": 0.00925,
+            "terms": []
+          },
+          "y": {
+            "offset": 0.00925,
+            "terms": []
+          },
+          "z": {
+            "offset": 0.03265,
+            "terms": []
+          }
+        },
+        "orientation": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 1.0
+        }
+      }
+    ]
+  },
+  "role": "battery",
+  "curves": [],
+  "mass_parameter": "mass"
+}

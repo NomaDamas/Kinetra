@@ -330,9 +330,10 @@ def test_spring_damping_must_never_be_negative_but_may_be_zero():
     assert PartDef.model_validate(set_range(load(), "damping", min=0.0, default=0.0)).role is PartRole.SPRING_DAMPER
 
 
-def test_spring_other_roles_and_plain_parts_need_no_spring_parameters():
-    for role in ("wheel", "battery", "tank", None):
-        assert PartDef.model_validate(drop(drop({**load(), "role": role}, "stiffness"), "damping")).role == (None if role is None else PartRole(role))
+def test_spring_a_part_without_the_role_needs_no_spring_parameters():
+    # other roles have requirements of their own now (battery: specs, tank: an inside, ...): the spring parameters are only the
+    # spring_damper role's
+    assert PartDef.model_validate(drop(drop({**load(), "role": None}, "stiffness"), "damping")).role is None
 
 
 # ---- the definition: cited numbers, drawn envelope, mass ---------------------------------------------------------------
