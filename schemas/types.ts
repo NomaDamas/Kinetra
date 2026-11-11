@@ -10,12 +10,15 @@
  *
  * `command` is the fraction of the actuator's full command, in [-1, 1] for a motor (sign is direction) and
  * [0, 1] for a thruster. What full command means physically comes from the part (B-03b, B-03c, X-01b, X-01c).
- * One badge and source cover the entry.
+ * One badge and source cover the entry. `id` names the entry inside the schedule (unique there): commands
+ * that edit an entry name it by id, never by position, so a reordered or partly accepted batch cannot change
+ * a different entry than the one meant.
  */
 export interface ActuateEntry {
   badge: Badge;
   source: Source;
   type: "actuate";
+  id: string;
   actuator: string;
   start: number;
   end: number;
@@ -31,6 +34,63 @@ export interface Actuator {
 }
 
 export type ActuatorKind = "motor" | "thruster";
+
+export interface AddActuator {
+  type: "add_actuator";
+  actuator: Actuator;
+  index?: number | null;
+}
+
+/**
+ * Add an assumption. It must be `editable`: one that is not could never be changed or removed again, so its
+ * inverse would not apply.
+ */
+export interface AddAssumption {
+  type: "add_assumption";
+  assumption: Assumption;
+  index?: number | null;
+}
+
+/** Add a schedule entry. `index` is only where it goes in the list; the entry is known by its `id`. */
+export interface AddControlEntry {
+  type: "add_control_entry";
+  entry: ActuateEntry;
+  index?: number | null;
+}
+
+export interface AddInstance {
+  type: "add_instance";
+  instance: Instance;
+  index?: number | null;
+}
+
+export interface AddJoint {
+  type: "add_joint";
+  joint: Joint;
+  index?: number | null;
+}
+
+export interface AddMaterialDef {
+  type: "add_material_def";
+  material: Material;
+  index?: number | null;
+}
+
+/** Put a part definition into the project (`DesignSpec` carries the definitions it uses). */
+export interface AddPartDef {
+  type: "add_part_def";
+  part: PartDef;
+  index?: number | null;
+}
+
+/**
+ * The result of `apply_command`: the new project and the command that undoes the edit. Not the wire message
+ * `applied` of `client-adapter.md` 3.1 (revision number, issuer, changed parts): C-05a builds that from this.
+ */
+export interface ApplyResult {
+  project: Project;
+  inverse: AddPartDef | ReplacePartDef | RemovePartDef | AddMaterialDef | ReplaceMaterialDef | RemoveMaterialDef | AddInstance | RemoveInstance | MoveInstance | SetParameter | ClearParameter | SetInstanceMaterial | AddJoint | ReplaceJoint | RemoveJoint | AddActuator | RemoveActuator | AddControlEntry | RemoveControlEntry | ReplaceControlEntry | AddAssumption | SetAssumption | RemoveAssumption | SelectPlanet | CommandBatch;
+}
 
 /** One assumption of the verdict, as the human-review panel shows it. */
 export interface Assumption {
@@ -48,6 +108,14 @@ export interface AssumptionTable {
   assumptions?: Assumption[];
 }
 
+/** Air density at the surface, kg/m^3. 0 is a vacuum (the Moon). */
+export interface AtmosphereDensity {
+  badge: Badge;
+  source: Source;
+  value: number;
+  unit: "kg/m^3";
+}
+
 /**
  * A length in metres: `offset + sum(factor * param)`. A snap point coordinate in the part's local frame, or a
  * dimension of a shape component (`shape.py`). Every `param` is a length parameter of the part.
@@ -58,6 +126,16 @@ export interface AxisExpr {
 }
 
 export type Badge = "sim" | "cite" | "default" | "declared" | "estimate";
+
+export interface Body {
+  id: string;
+  name: string;
+  gravity: Gravity;
+  atmosphere_density: AtmosphereDensity;
+  insolation: Insolation;
+  ground_friction: Assumption;
+  unverified?: Unverified[];
+}
 
 /** Rectangular block. `size_*` are full extents [m] along the component's local x, y, z. */
 export interface Box {
@@ -78,6 +156,13 @@ export interface BreakThreshold {
 export interface CatalogEntry {
   material: Material;
   pbr: PbrSlots;
+}
+
+/** Unset a parameter of an instance: it takes the part's default again. */
+export interface ClearParameter {
+  type: "clear_parameter";
+  instance: string;
+  name: string;
 }
 
 /**
@@ -109,6 +194,15 @@ export interface CollisionProxy {
 }
 
 /**
+ * Edits applied in order as one: all of them or none (`client-adapter.md` C2). Every intermediate state
+ * must be a valid `Project` (see the module docstring).
+ */
+export interface CommandBatch {
+  type: "batch";
+  commands: (AddPartDef | ReplacePartDef | RemovePartDef | AddMaterialDef | ReplaceMaterialDef | RemoveMaterialDef | AddInstance | RemoveInstance | MoveInstance | SetParameter | ClearParameter | SetInstanceMaterial | AddJoint | ReplaceJoint | RemoveJoint | AddActuator | RemoveActuator | AddControlEntry | RemoveControlEntry | ReplaceControlEntry | AddAssumption | SetAssumption | RemoveAssumption | SelectPlanet)[];
+}
+
+/**
  * What one shape component added or removed, with the values it was evaluated at.
  *
  * `dimensions` are the primitive's resolved lengths in metres under the field names of `shape.py` (`size_x`, `radius`,
@@ -128,7 +222,10 @@ export interface ComponentContribution {
 
 export type Confidence = "low" | "med" | "high";
 
-/** The time-axis control program. Entries are kept in the order given; time order is not required. */
+/**
+ * The time-axis control program. Entries are kept in the order given; time order is not required. Entry ids
+ * are unique inside the schedule.
+ */
 export interface ControlSchedule {
   entries?: ActuateEntry[];
 }
@@ -215,6 +312,17 @@ export interface Dimension {
   value: number;
 }
 
+/**
+ * What `execute`, `undo` and `redo` return. `entry` is the entry that was added (`execute`), taken back
+ * (`undo`) or replayed (`redo`); it is `None` only when `execute` was given a command that changes nothing, in
+ * which case `project` equals the input and `history` is the input.
+ */
+export interface EditResult {
+  project: Project;
+  history: History;
+  entry: HistoryEntry | null;
+}
+
 export interface ElasticModulus {
   badge: Badge;
   source: Source;
@@ -245,12 +353,41 @@ export interface Friction {
   unit: "1";
 }
 
+/** Uniform surface gravitational acceleration, m/s^2, > 0. */
+export interface Gravity {
+  badge: Badge;
+  source: Source;
+  value: number;
+  unit: "m/s^2";
+}
+
+/** `entries[:cursor]` are applied, `entries[cursor:]` were undone and can be redone. */
+export interface History {
+  entries?: HistoryEntry[];
+  cursor?: number;
+}
+
+/** One undo step: `command` as it was applied, its `inverse`, and the `origin` it came from. */
+export interface HistoryEntry {
+  origin: Origin;
+  command: AddPartDef | ReplacePartDef | RemovePartDef | AddMaterialDef | ReplaceMaterialDef | RemoveMaterialDef | AddInstance | RemoveInstance | MoveInstance | SetParameter | ClearParameter | SetInstanceMaterial | AddJoint | ReplaceJoint | RemoveJoint | AddActuator | RemoveActuator | AddControlEntry | RemoveControlEntry | ReplaceControlEntry | AddAssumption | SetAssumption | RemoveAssumption | SelectPlanet | CommandBatch;
+  inverse: AddPartDef | ReplacePartDef | RemovePartDef | AddMaterialDef | ReplaceMaterialDef | RemoveMaterialDef | AddInstance | RemoveInstance | MoveInstance | SetParameter | ClearParameter | SetInstanceMaterial | AddJoint | ReplaceJoint | RemoveJoint | AddActuator | RemoveActuator | AddControlEntry | RemoveControlEntry | ReplaceControlEntry | AddAssumption | SetAssumption | RemoveAssumption | SelectPlanet | CommandBatch;
+}
+
 /** Slope angle above the ground in radians, strictly between 0 and pi/2. */
 export interface Incline {
   badge: Badge;
   source: Source;
   value: number;
   unit: "rad";
+}
+
+/** Solar irradiance at the planet's mean distance from the Sun, W/m^2 (above the atmosphere, not at the ground). */
+export interface Insolation {
+  badge: Badge;
+  source: Source;
+  value: number;
+  unit: "W/m^2";
 }
 
 /**
@@ -310,6 +447,13 @@ export interface MaterialCatalog {
   entries: CatalogEntry[];
 }
 
+/** Set the stored world pose of one instance. */
+export interface MoveInstance {
+  type: "move_instance";
+  id: string;
+  pose: Pose;
+}
+
 export interface NormalDistribution {
   badge: Badge;
   source: Source;
@@ -319,6 +463,12 @@ export interface NormalDistribution {
   clip_low?: number | null;
   clip_high?: number | null;
 }
+
+/**
+ * Which input path sent a command (`client-adapter.md` 3.5): the person's mouse or keyboard, the agent's
+ * accepted proposal, a confirmed voice sentence, an XR hand or controller, the MCP server.
+ */
+export type Origin = "mouse" | "agent" | "voice" | "xr" | "mcp";
 
 /** A named parameter of the part with its default and allowed range, all in `unit`. */
 export interface ParamDef {
@@ -407,6 +557,12 @@ export interface Position {
   z: AxisExpr;
 }
 
+export interface Project {
+  design?: DesignSpec;
+  world: World;
+  assumptions?: AssumptionTable;
+}
+
 /** A prop dimension in metres, > 0. */
 export interface PropSize {
   badge: Badge;
@@ -485,6 +641,137 @@ export interface RampProp {
   width: PropSize;
   kind: "ramp";
   incline: Incline;
+}
+
+/**
+ * Why a command was rejected: a stable `code`, a readable sentence and what it is about. `ids` are typed
+ * refs (`kind` and `id`) because an id is only unique inside its own collection: a part `wheel` and an instance
+ * `wheel` are different things.
+ */
+export interface Reason {
+  code: ReasonCode;
+  message: string;
+  ids?: Ref[];
+}
+
+export type ReasonCode = "unknown_id" | "duplicate_id" | "in_use" | "index_out_of_range" | "invalid_command" | "invalid_project" | "not_editable" | "nothing_to_undo" | "nothing_to_redo";
+
+/**
+ * `id` of a `kind`. A snap point is `<instance>/<snap point>`, a parameter `<instance>/<parameter>`:
+ * those two ids are only unique inside their owner.
+ */
+export interface Ref {
+  kind: RefKind;
+  id: string;
+}
+
+export type RefKind = "instance" | "joint" | "actuator" | "part" | "material" | "snap_point" | "schedule_entry" | "assumption" | "parameter" | "planet" | "prop";
+
+/** Remove an actuator with its schedule entries. */
+export interface RemoveActuator {
+  type: "remove_actuator";
+  id: string;
+}
+
+/** Remove the assumption with this key. Refused (`not_editable`) when it is not `editable`. */
+export interface RemoveAssumption {
+  type: "remove_assumption";
+  key: string;
+}
+
+/** Remove the schedule entry with this id. */
+export interface RemoveControlEntry {
+  type: "remove_control_entry";
+  id: string;
+}
+
+/** Delete an instance with its joints, the actuators on it or on those joints, and their schedule entries. */
+export interface RemoveInstance {
+  type: "remove_instance";
+  id: string;
+}
+
+/** Release a joint, with the actuators that drive it and their schedule entries. */
+export interface RemoveJoint {
+  type: "remove_joint";
+  id: string;
+}
+
+/** Take a material definition out. Rejected while an instance or a terrain prop uses it. */
+export interface RemoveMaterialDef {
+  type: "remove_material_def";
+  id: string;
+}
+
+/** Take a part definition out. Rejected while an instance uses it. */
+export interface RemovePartDef {
+  type: "remove_part_def";
+  id: string;
+}
+
+/** Replace the schedule entry with the same id (`entry.id`), in place. */
+export interface ReplaceControlEntry {
+  type: "replace_control_entry";
+  entry: ActuateEntry;
+}
+
+/**
+ * Replace the joint with the same id, in place: same position, and the actuators and schedule entries on it
+ * stay. Changes its limits, break threshold, kind or ends. Rejected if the new joint no longer suits what is on
+ * it (a motor on a joint that is fixed now, a motor whose instance is no longer at an end).
+ */
+export interface ReplaceJoint {
+  type: "replace_joint";
+  joint: Joint;
+}
+
+/** Replace the material definition with the same id, in place (instances and terrain props keep using it). */
+export interface ReplaceMaterialDef {
+  type: "replace_material_def";
+  material: Material;
+}
+
+/**
+ * Replace the part definition with the same id, in place. Instances keep using it, so the new definition
+ * must still suit every one of them (their parameters, their joints' snap points): else the command is
+ * rejected with the validator's sentence and the offending ref.
+ */
+export interface ReplacePartDef {
+  type: "replace_part_def";
+  part: PartDef;
+}
+
+/** Put the project on another planet, by id. The planet's constants are not part of any command. */
+export interface SelectPlanet {
+  type: "select_planet";
+  planet: string;
+}
+
+/**
+ * Replace the assumption with the same `key`, in place. Refused (`not_editable`) when the stored one is not
+ * `editable`, and when the new one would change `editable`.
+ */
+export interface SetAssumption {
+  type: "set_assumption";
+  assumption: Assumption;
+}
+
+/** Assign a material of the project to an instance; `None` assigns none. */
+export interface SetInstanceMaterial {
+  type: "set_instance_material";
+  id: string;
+  material: string | null;
+}
+
+/**
+ * Set a parameter of an instance (unit and range are the part's). `index` is where a parameter that is not
+ * set yet goes in the instance's list; for one that is set already it must be absent.
+ */
+export interface SetParameter {
+  type: "set_parameter";
+  instance: string;
+  parameter: ParamValue;
+  index?: number | null;
 }
 
 /**
@@ -588,7 +875,13 @@ export interface UniformDistribution {
 }
 
 /** Closed unit vocabulary (SI, written the way the JSON carries it). */
-export type Unit = "1" | "m" | "m^2" | "m^3" | "kg" | "s" | "rad" | "m/s" | "m/s^2" | "rad/s" | "N" | "N*m" | "N/m" | "N*s/m" | "N*m/rad" | "Pa" | "kg/m^3" | "kg*m^2" | "J" | "W";
+export type Unit = "1" | "m" | "m^2" | "m^3" | "kg" | "s" | "rad" | "m/s" | "m/s^2" | "rad/s" | "N" | "N*m" | "N/m" | "N*s/m" | "N*m/rad" | "Pa" | "kg/m^3" | "kg*m^2" | "J" | "W" | "W/m^2";
+
+/** A constant that is not a cited number, and why. */
+export interface Unverified {
+  item: "gravity" | "atmosphere_density" | "insolation" | "ground_friction";
+  reason: string;
+}
 
 /** `planet` is an ID (same pattern as every other ID); `terrain_props` sit on that planet's flat ground. */
 export interface World {
@@ -610,6 +903,10 @@ export interface YieldStrength {
   unit: "Pa";
 }
 
+export type Command = AddPartDef | ReplacePartDef | RemovePartDef | AddMaterialDef | ReplaceMaterialDef | RemoveMaterialDef | AddInstance | RemoveInstance | MoveInstance | SetParameter | ClearParameter | SetInstanceMaterial | AddJoint | ReplaceJoint | RemoveJoint | AddActuator | RemoveActuator | AddControlEntry | RemoveControlEntry | ReplaceControlEntry | AddAssumption | SetAssumption | RemoveAssumption | SelectPlanet | CommandBatch;
+
 export type Distribution = FixedDistribution | UniformDistribution | NormalDistribution;
+
+export type EditCommand = AddPartDef | ReplacePartDef | RemovePartDef | AddMaterialDef | ReplaceMaterialDef | RemoveMaterialDef | AddInstance | RemoveInstance | MoveInstance | SetParameter | ClearParameter | SetInstanceMaterial | AddJoint | ReplaceJoint | RemoveJoint | AddActuator | RemoveActuator | AddControlEntry | RemoveControlEntry | ReplaceControlEntry | AddAssumption | SetAssumption | RemoveAssumption | SelectPlanet;
 
 export type TerrainProp = RampProp | StepProp;

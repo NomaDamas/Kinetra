@@ -1,0 +1,41 @@
+{
+ "note": "FLEURS ko_kr test(CC-BY-4.0), 16 kHz mono FLAC. recognized = kinetra_engine.stt.Transcriber output on faster-whisper 1.2.1, small@536b0662, cpu int8, beam 5, temperature 0. max_cer is a regression bound, not an accuracy claim. recorded_on is the platform tag: the exact text match is asserted only on that platform (system, machine) with that ctranslate2 version; on any other platform only the CER bound is asserted (docs/decisions/engine.md 5.4: recorded values belong to the reference platform).",
+ "recorded_on": {
+  "platform": "Darwin-arm64",
+  "python": "3.12.11",
+  "faster_whisper": "1.2.1",
+  "ctranslate2": "4.9.0",
+  "device": "cpu",
+  "compute_type": "int8",
+  "os_release": "macOS 15.6.1 (Darwin 24.6.0)"
+ },
+ "cases": [
+  {
+   "file": "fleurs-ko-1701.flac",
+   "sha256": "3d8f812e33b2fc35e676b63101805f643725bfa0b2cb6da11768799ad9e48013",
+   "fleurs_id": 1701,
+   "reference": "염소 사육은 대략 일만 년 전에 이란의 자그로스산맥에서 시작한 것으로 보입니다",
+   "recognized": "염소사육은 대략 1만 년 전에 이란의 자그로스 산맥에서 시작한 것으로 보입니다.",
+   "cer": 0.0303,
+   "max_cer": 0.1
+  },
+  {
+   "file": "fleurs-ko-1929.flac",
+   "sha256": "0a50dc0482238e8a0f2973911200bc7e199752663a58d028ae6551e06b610340",
+   "fleurs_id": 1929,
+   "reference": "델 포트로가 2세트에서 먼저 어드밴티지를 얻었지만 6 대 6이 된 후 다시 타이 브레이크가 필요했다",
+   "recognized": "델포트로가 2세트에서 먼저 어드벤티즈를 얻었지만 6대6이 된 후 다시 타이브레이크가 필요했다.",
+   "cer": 0.0488,
+   "max_cer": 0.1
+  },
+  {
+   "file": "fleurs-ko-1883.flac",
+   "sha256": "1f291781f69f839cc656b38fef59e044cac1ab8cd527577cb970fa3f48c04ffd",
+   "fleurs_id": 1883,
+   "reference": "다리 밑 수직 간격은 15미터이며 공사는 2011년 8월에 마무리되었으며 해당 다리의 통행금지는 2017년 3월까지이다",
+   "recognized": "다리미 수직 간격은 15m이며 공사는 2011년 8월에 마무리되었으며 해당 다리의 통행 금지는 2017년 3월까지이다.",
+   "cer": 0.0566,
+   "max_cer": 0.1
+  }
+ ]
+}

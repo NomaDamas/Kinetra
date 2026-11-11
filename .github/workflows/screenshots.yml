@@ -1,7 +1,7 @@
 name: screenshots
 
 # P0-04d: Playwright (headless Chromium) screenshots of the pages listed in .github/screenshots.json, uploaded as the
-# `screenshots` artifact on every PR, plus a raw-WebGL empty scene whose PIXELS are asserted (proves WebGL renders headless).
+# `screenshots` artifact on every PR (the part glTF page of B-01c adds out/gltf-check), plus a raw-WebGL empty scene whose PIXELS are asserted (proves WebGL renders headless).
 # A listed path that does not exist is skipped with a log line. Rules: docs/process/screenshots.md.
 on:
   pull_request:
@@ -27,8 +27,20 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - name: Playwright version
+        id: playwright-version
+        run: echo "version=$(pnpm --filter @kinetra/screenshots exec playwright-core --version | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -n 1)" >> "$GITHUB_OUTPUT"
+      - name: Playwright browser cache (keyed by the exact playwright-core version)
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ runner.arch }}-${{ steps.playwright-version.outputs.version }}-chromium-headless-shell
+      - name: Playwright OS dependencies (apt only if something is missing; retries + timeout)
+        timeout-minutes: 8
+        run: node scripts/ci/playwright_deps.mjs @kinetra/screenshots chromium-headless-shell
       - name: Playwright browser
-        run: pnpm --filter @kinetra/screenshots exec playwright-core install --with-deps chromium-headless-shell
+        timeout-minutes: 5
+        run: pnpm --filter @kinetra/screenshots exec playwright-core install chromium-headless-shell
       - name: Screenshots of the listed pages
         run: pnpm --filter @kinetra/screenshots capture
       - name: WebGL empty scene (pixel assertion, headless)
@@ -39,16 +51,20 @@ jobs:
         run: pnpm --filter @kinetra/screenshots webgl --probe --out "$GITHUB_WORKSPACE/out/webgl-probe"
       - name: Browser tests of the tool
         run: pnpm --filter @kinetra/screenshots test:browser
+      - name: "Part glTF in three.js (B-01c: loader, linear material slot, screenshot in out/gltf-check)"
+        run: pnpm --filter @kinetra/gltf-check capture
+      - name: Browser tests of the part glTF page
+        run: pnpm --filter @kinetra/gltf-check test:browser
       - name: Artifact content check (screenshots, webgl and webgl-probe must all be there)
         if: always()
         run: |
-          for f in out/screenshots/manifest.json out/webgl/webgl-result.json out/webgl-probe/webgl-result.json; do
+          for f in out/screenshots/manifest.json out/webgl/webgl-result.json out/webgl-probe/webgl-result.json out/gltf-check/parts-gltf.png out/gltf-check/result.json; do
             test -s "$f" && echo "present: $f" || { echo "MISSING: $f"; exit 1; }
           done
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: screenshots
-          path: out/ # screenshots/ (pages + manifest), webgl/ (pixel-assertion run), webgl-probe/ (flag-set evidence)
+          path: out/ # screenshots/ (pages + manifest), webgl/ (pixel-assertion run), webgl-probe/ (flag-set evidence), gltf-check/ (B-01c part glTF page: PNG + result.json)
           if-no-files-found: error
           retention-days: 14

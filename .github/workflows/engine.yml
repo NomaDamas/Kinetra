@@ -31,8 +31,12 @@ jobs:
         run: uv run pytest packages -q -rs --junitxml=pytest-report.xml
       - name: Generated schemas are up to date (C-01d; drift fails, run packages/core/scripts/export_schemas.py)
         run: uv run python packages/core/scripts/export_schemas.py --check
+      - name: Example projects pass the JSON Schema and the model (C-01 epic, #60)
+        run: uv run python packages/core/scripts/validate_examples.py
       - name: pytest tools/dev (resource guard, fake measurements)
         run: uv run pytest tools/dev -q
+      - name: pytest tools/stt (I-01a, comparison tool key redaction, offline)
+        run: uv run pytest tools/stt -q
       - name: pytest tools/design/tests (D0-02e, design-system source rebuilds index.html)
         run: uv run pytest tools/design/tests -q
       - name: pytest tools/review (P0-06, offline with fake gh and curl)

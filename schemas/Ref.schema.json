@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "`id` of a `kind`. A snap point is `<instance>/<snap point>`, a parameter `<instance>/<parameter>`:\nthose two ids are only unique inside their owner.",
+  "properties": {
+    "kind": {
+      "$ref": "#/$defs/RefKind"
+    },
+    "id": {
+      "minLength": 1,
+      "title": "Id",
+      "type": "string"
+    }
+  },
+  "required": [
+    "kind",
+    "id"
+  ],
+  "title": "Ref",
+  "type": "object",
+  "$defs": {
+    "RefKind": {
+      "enum": [
+        "instance",
+        "joint",
+        "actuator",
+        "part",
+        "material",
+        "snap_point",
+        "schedule_entry",
+        "assumption",
+        "parameter",
+        "planet",
+        "prop"
+      ],
+      "title": "RefKind",
+      "type": "string"
+    }
+  }
+}

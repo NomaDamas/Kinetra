@@ -4,6 +4,7 @@ real part data (catalog parts come with B-02a, B-03a, B-03b, each with a source)
 from __future__ import annotations
 
 import copy
+import itertools
 
 import pytest
 from pydantic import ValidationError
@@ -107,8 +108,8 @@ def four_wheel_car():
         {"id": "drive-motor-r", "kind": "motor", "instance": "motor-r", "joint": "drive-r"},
     ]
     entries = [
-        {"type": "actuate", "actuator": a, "start": 0.0, "end": 5.0, "command": 1.0, "badge": "declared", "source": SRC}
-        for a in ("drive-motor-l", "drive-motor-r")
+        {"type": "actuate", "id": f"run-{n}", "actuator": a, "start": 0.0, "end": 5.0, "command": 1.0, "badge": "declared", "source": SRC}
+        for n, a in enumerate(("drive-motor-l", "drive-motor-r"))
     ]
     return {
         "materials": [material()],
@@ -445,8 +446,11 @@ def test_designspec_rejects_motor_on_fixed_joint():
 # --- control schedule ------------------------------------------------------------------------------------
 
 
-def entry(actuator="drive-motor-l", start=0.0, end=1.0, command=0.5):
-    return {"type": "actuate", "actuator": actuator, "start": start, "end": end, "command": command, "badge": "declared", "source": SRC}
+_entry_ids = itertools.count(1)
+
+
+def entry(actuator="drive-motor-l", start=0.0, end=1.0, command=0.5, id=None):
+    return {"type": "actuate", "id": id or f"e-{next(_entry_ids)}", "actuator": actuator, "start": start, "end": end, "command": command, "badge": "declared", "source": SRC}
 
 
 def test_designspec_schedule_accepts_back_to_back_and_thruster():
@@ -508,6 +512,18 @@ def test_designspec_rejects_schedule_entry_without_badge_or_source():
         del e[field]
         d["schedule"]["entries"] = [e]
         reject(d, field)
+
+
+def test_designspec_rejects_duplicate_and_missing_entry_ids():
+    d = four_wheel_car()
+    d["schedule"]["entries"] = [entry(id="same"), entry("drive-motor-r", id="same")]
+    reject(d, "duplicate schedule entry id: \\['same'\\]")
+    e = entry()
+    del e["id"]
+    d["schedule"]["entries"] = [e]
+    reject(d, "id")
+    d["schedule"]["entries"] = [entry(id="Not An Id")]
+    reject(d, "id")
 
 
 def test_designspec_rejects_unknown_entry_type():

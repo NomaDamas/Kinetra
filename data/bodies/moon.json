@@ -1,0 +1,70 @@
+{
+  "id": "moon",
+  "name": "Moon",
+  "gravity": {
+    "value": 1.62,
+    "unit": "m/s^2",
+    "badge": "cite",
+    "source": {
+      "ref": "NASA NSSDCA Moon Fact Sheet (updated 11 Jan 2024), accessed 2026-11-11. Surface gravity 1.62 m/s2, as printed (surface acceleration also 1.62). Cross-check: GM/R^2 with JPL SSD satellite GM 4902.800 km3/s2 (DE440) and mean radius 1737.4 km is 1.624. Not sampled.",
+      "locator": "Bulk parameters, 'Surface gravity (m/s2)'",
+      "url": "https://nssdc.gsfc.nasa.gov/planetary/factsheet/moonfact.html"
+    }
+  },
+  "atmosphere_density": {
+    "value": 0.0,
+    "unit": "kg/m^3",
+    "badge": "default",
+    "source": {
+      "ref": "Chosen 0: no drag on the Moon. NASA NSSDCA Moon Fact Sheet (updated 11 Jan 2024), accessed 2026-11-11, prints a tenuous exosphere: 3e-15 bar at night, 2e5 particles/cm3, composition 'poorly known and variable' (upper limits). By our arithmetic that is about 5e-15 kg/m^3, ~4e-15 of Earth's, below any effect the model shows. A modelling choice, not a measurement.",
+      "locator": "Lunar Atmosphere block: 'Surface pressure (night)', 'Abundance at surface', 'Estimated Composition'",
+      "url": "https://nssdc.gsfc.nasa.gov/planetary/factsheet/moonfact.html"
+    }
+  },
+  "insolation": {
+    "value": 1361.0,
+    "unit": "W/m^2",
+    "badge": "cite",
+    "source": {
+      "ref": "NASA NSSDCA Moon Fact Sheet (updated 11 Jan 2024), accessed 2026-11-11. Solar irradiance 1361.0 W/m2, ratio 1.000 to Earth: same mean Sun distance, no atmosphere, so also the surface value at normal incidence. The 29.5-day day and night is not modelled by this constant.",
+      "locator": "Bulk parameters, 'Solar irradiance (W/m2)'",
+      "url": "https://nssdc.gsfc.nasa.gov/planetary/factsheet/moonfact.html"
+    }
+  },
+  "ground_friction": {
+    "key": "ground_friction",
+    "label": "Ground friction (regolith)",
+    "value": {
+      "value": 0.6573,
+      "unit": "1",
+      "badge": "estimate",
+      "source": {
+        "ref": "Midpoint of the bounds: (0.4142 + 0.9004)/2 = 0.6573, the same rule on all three planets (docs/architecture/bodies.md). Bounds: tan(22.5 deg) = 0.4142, tan(42 deg) = 0.9004. tan(phi) of soil on soil is an upper bound for a smooth part: interface tan(delta) is 0.20 to 0.60 (NAVFAC DM 7.02 Table 1, p. 7.2-63). Grip is biased high. accessed 2026-11-11.",
+        "locator": "Rule: nominal = mean of the uniform distribution",
+        "url": "https://www.lpi.usra.edu/publications/books/lunar_sourcebook/pdf/Chapter09.pdf"
+      }
+    },
+    "distribution": {
+      "kind": "uniform",
+      "low": 0.4142,
+      "high": 0.9004,
+      "badge": "estimate",
+      "source": {
+        "ref": "Bounds tan(22.5 deg) = 0.4142, tan(42 deg) = 0.9004: lowest and highest representative angle (printed average or nominal; midpoint when only a range is printed) of the surface classes below, weakest included, none dropped. Luna 16/20 laboratory shear 20 to 25 (mid 22.5), Jaffe miniature shear 13 to 56 (mid 34.5), Apollo 12 vacuum direct shear 28 to 35 (mid 31.5), wheel/soil Table 9.14 35, in situ top 15 cm Table 9.12 42 (Lunar Sourcebook ch. 9). accessed 2026-11-11.",
+        "url": "https://www.lpi.usra.edu/publications/books/lunar_sourcebook/pdf/Chapter09.pdf"
+      }
+    },
+    "confidence": "low",
+    "editable": false
+  },
+  "unverified": [
+    {
+      "item": "atmosphere_density",
+      "reason": "The model uses 0 (default), not a measured density: the fact sheet prints only a number density of upper-limit species and no mass density."
+    },
+    {
+      "item": "ground_friction",
+      "reason": "No source gives the coefficient of a part on lunar regolith. Nominal and spread are soil friction angles (lab samples, Surveyor-based wheel parameter, in situ Apollo estimates) used as a proxy, so both badges are estimate, and the proxy is an upper bound for smooth parts (grip biased high). The lab values are flagged by the source as low because fragile grains crush at lab stress."
+    }
+  ]
+}
