@@ -39,7 +39,7 @@ jobs:
         run: pnpm --filter @kinetra/screenshots webgl --probe --out "$GITHUB_WORKSPACE/out/webgl-probe"
       - name: Browser tests of the tool
         run: pnpm --filter @kinetra/screenshots test:browser
-      - name: Part glTF in three.js (B-01c: loader, linear material slot, screenshot in out/gltf-check)
+      - name: "Part glTF in three.js (B-01c: loader, linear material slot, screenshot in out/gltf-check)"
         run: pnpm --filter @kinetra/gltf-check capture
       - name: Browser tests of the part glTF page
         run: pnpm --filter @kinetra/gltf-check test:browser
@@ -53,6 +53,6 @@ jobs:
         if: always()
         with:
           name: screenshots
-          path: out/ # screenshots/ (pages + manifest), webgl/ (pixel-assertion run), webgl-probe/ (flag-set evidence)
+          path: out/ # screenshots/ (pages + manifest), webgl/ (pixel-assertion run), webgl-probe/ (flag-set evidence), gltf-check/ (B-01c part glTF page: PNG + result.json)
           if-no-files-found: error
           retention-days: 14

@@ -281,13 +281,13 @@
 
 ### dep-gltf-validator-2.0.0-dev.3.10
 
-- 표기: glTF Validator, Copyright The Khronos Group Inc. Apache License 2.0. 컴파일된 코드에 Dart SDK, Copyright 2012 the Dart project authors, BSD-3-Clause.
+- 표기: glTF Validator, Copyright The Khronos Group Inc. Apache License 2.0. 컴파일된 코드에 Dart SDK(Copyright 2012 the Dart project authors, BSD-3-Clause), yaml(Kirill Simonov, MIT), node_preamble(Michael Bullington, MIT), PrismJS(Lea Verou, MIT), vector_math(Andrew Magill 외, Zlib).
 - 저작자: The Khronos Group Inc.
-- 라이선스: Apache-2.0 AND BSD-3-Clause
+- 라이선스: Apache-2.0 AND BSD-3-Clause AND MIT AND Zlib
 - 원본: https://www.npmjs.com/package/gltf-validator/v/2.0.0-dev.3.10 https://github.com/KhronosGroup/glTF-Validator https://github.com/KhronosGroup/glTF-Validator/blob/main/LICENSE
 - 경로: `tools/gltf-check/package.json`
 - 용도: 테스트 도구: B-01c 부품 glTF 를 Khronos 공식 검증기로 검증(tools/gltf-check validate). 제품 코드에 들어가지 않는다
-- 변경 내역: 없음(수정 없이 사용). 해시는 npm 배포 tarball 의 sha256. tools/gltf-check/package.json 의 devDependencies 와 pnpm-lock.yaml 에서 2.0.0-dev.3.10 으로 고정. 패키지 자신은 Apache-2.0, 동봉된 NOTICES 는 Dart SDK(BSD-3-Clause, Copyright 2012 the Dart project authors)가 컴파일된 JS 에 들어 있다고 적는다
+- 변경 내역: 없음(수정 없이 사용). 해시는 npm 배포 tarball 의 sha256. tools/gltf-check/package.json 의 devDependencies 와 pnpm-lock.yaml 에서 2.0.0-dev.3.10 으로 고정. 패키지 자신은 Apache-2.0, 동봉된 NOTICES 는 컴파일된 JS 에 들어 있는 Dart SDK(BSD-3-Clause, Copyright 2012 the Dart project authors), yaml(MIT, Kirill Simonov), node_preamble(MIT, Michael Bullington), PrismJS(MIT, Lea Verou), vector_math(Zlib, Andrew Magill 의 코드)를 적는다
 - 받은 날짜: 2026-11-11
 - 원본 해시: `sha256:4e03dbdc3bc0d1342afd5d2d7ae341a7e3474502ccb872b02dbbaddaee0fdec6`
 - 확인자: omp

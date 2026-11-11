@@ -12,7 +12,9 @@ read it. Details and limits are in `docs/architecture/part-visual.md`:
   carries the fixed rotation that turns that frame into glTF's +Y up, so the file stands upright in any glTF viewer; a
   client that works in the Project frame ignores the root rotation.
 - Voids (`operation: subtract`) are NOT cut out of the drawing. Without a CAD kernel a boolean is not available (B-01a,
-  `docs/architecture/part-mass.md`), so they are listed in `extras.kinetra.voids` and the file says `voids_cut: false`.
+  `docs/architecture/part-mass.md`; cutting them is #496), so they are listed in `extras.kinetra.voids` (centre and
+  orientation as `{x, y, z}` and `{x, y, z, w}` like the Project model). A client shows "voids not drawn" exactly when
+  that list is not empty (`docs/architecture/client-adapter.md`, A7).
 - The material slot is `materials[0]`: the four PBR slots of the catalog entry with this `Material.id` (B-07), or the
   neutral mid-grey fallback when the id is not in the catalog. `baseColorFactor` is linear RGB. A reflectance other than
   0.5 is written as `KHR_materials_ior`.
@@ -95,8 +97,8 @@ def ior_from_reflectance(r: float) -> float:
     return (1.0 + 0.4 * r) / (1.0 - 0.4 * r)
 
 
-def _material_entry(material: Material) -> tuple[dict[str, Any], bool]:
-    slots, from_catalog = pbr_for(material)
+def _material_entry(material: Material, pbr: PbrSlots | None) -> tuple[dict[str, Any], bool]:
+    slots, from_catalog = (pbr, False) if pbr is not None else pbr_for(material)
     entry: dict[str, Any] = {
         "name": material.id,
         "pbrMetallicRoughness": {
@@ -185,10 +187,13 @@ def part_gltf(
     part: PartDef,
     material: Material,
     parameters: Mapping[str, Quantity] | None = None,
+    pbr: PbrSlots | None = None,
 ) -> tuple[dict[str, Any], bytes]:
     """The glTF JSON document of `part` made of `material` and the BIN chunk it indexes (`buffers[0]`, no uri).
 
-    `parameters` overrides the part's defaults exactly as in `mass_properties`. Raises `ShapeError` for a part without
+    `parameters` overrides the part's defaults exactly as in `mass_properties`. `pbr` replaces the look: without it the
+    slots come from the catalog entry of `material.id` (or the neutral fallback); with it they are the caller's and the
+    file says `pbr_from_catalog: false`. Raises `ShapeError` for a part without
     a shape recipe, an unknown or out-of-range parameter, a dimension that is not above zero, or components that break
     the disjoint-sum rule (`kinetra_core.shape`): a recipe is drawn only if its mass can be computed.
     """
@@ -208,8 +213,8 @@ def part_gltf(
                     "id": comp.id,
                     "primitive": comp.primitive.kind,
                     "dimensions": dict(dims),
-                    "center": list(placed.center),
-                    "orientation": _unit_quaternion(comp.orientation),
+                    "center": dict(zip("xyz", placed.center)),
+                    "orientation": dict(zip("xyzw", _unit_quaternion(comp.orientation))),
                 }
             )
             continue
@@ -238,7 +243,7 @@ def part_gltf(
         children.append(len(nodes) - 1)
     quantities = resolved.quantities
 
-    material_entry, uses_ior = _material_entry(material)
+    material_entry, uses_ior = _material_entry(material, pbr)
     nodes[0] = {
         "name": part.id,
         "rotation": list(_ROOT_ROTATION),
@@ -250,7 +255,6 @@ def part_gltf(
                 "frame": FRAME_NOTE,
                 "parameters": {n: q.model_dump(mode="json", exclude_none=True) for n, q in quantities.items()},
                 "shape": {"badge": part.shape.badge.value, "source": part.shape.source.model_dump(mode="json", exclude_none=True)},
-                "voids_cut": False,
                 "voids": voids,
                 "tessellation": {
                     "cylinder_segments": tess.CYLINDER_SEGMENTS,
@@ -266,7 +270,7 @@ def part_gltf(
         "asset": {"version": "2.0", "generator": GENERATOR},
         **({"extensionsUsed": ["KHR_materials_ior"]} if uses_ior else {}),
         "scene": 0,
-        "scenes": [{"name": part.id, "nodes": [0]}],
+        "scenes": [{"name": f"{part.id}-scene", "nodes": [0]}],
         "nodes": nodes,
         "meshes": meshes,
         "materials": [material_entry],
@@ -284,9 +288,10 @@ def part_glb(
     part: PartDef,
     material: Material,
     parameters: Mapping[str, Quantity] | None = None,
+    pbr: PbrSlots | None = None,
 ) -> bytes:
     """`part_gltf` packed as one binary glTF (.glb): header, JSON chunk (space padded), BIN chunk (zero padded)."""
-    document, payload = part_gltf(part, material, parameters)
+    document, payload = part_gltf(part, material, parameters, pbr)
     text = _pad4(json.dumps(document, separators=(",", ":"), ensure_ascii=True, allow_nan=False).encode("ascii"), b" ")
     total = 12 + 8 + len(text) + 8 + len(payload)
     return b"".join(

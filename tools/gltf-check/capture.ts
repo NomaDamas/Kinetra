@@ -63,7 +63,12 @@ function serve(): Promise<{ url: string; close: () => void }> {
 }
 
 export interface PageResult {
-  results: { name: string; materials: number; color_linear: number[]; metalness: number; roughness: number; ior: number | null; size_m: number[] }[];
+  results: { name: string; materials: number; color_linear: number[]; metalness: number; roughness: number; ior: number | null; size_m: number[]; voids: number }[];
+  /** Voids the files list but do not cut (`extras.kinetra.voids`): the evidence page outlines them and says so. */
+  undrawn_voids: number;
+  /** Largest |x| or |y| of the bounding-box corners in normalised device coordinates; under 1 means nothing is cut off. */
+  max_ndc: number;
+  camera_distance_m: number;
   gl: string;
 }
 
@@ -100,7 +105,7 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
     process.exit(3);
   }
   const { page, drawn, png } = await run(process.argv[2] ? resolve(process.argv[2]) : DEFAULT_OUT);
-  console.log(`wrote ${png}; drawn pixels ${drawn}; GL ${page.gl}`);
-  for (const r of page.results) console.log(`${r.name}: colour(linear)=${r.color_linear.map((v) => v.toFixed(4))} metalness=${r.metalness} roughness=${r.roughness} ior=${r.ior} size=${r.size_m.map((v) => v.toFixed(3))}`);
-  process.exit(drawn > 10000 ? 0 : 1);
+  console.log(`wrote ${png}; drawn pixels ${drawn}; max |NDC| of the box corners ${page.max_ndc.toFixed(3)}; undrawn voids ${page.undrawn_voids}; GL ${page.gl}`);
+  for (const r of page.results) console.log(`${r.name}: colour(linear)=${r.color_linear.map((v) => v.toFixed(4))} metalness=${r.metalness} roughness=${r.roughness} ior=${r.ior} size=${r.size_m.map((v) => v.toFixed(3))} voids=${r.voids}`);
+  process.exit(drawn > 10000 && page.max_ndc < 1 ? 0 : 1);
 }

@@ -19,7 +19,7 @@
 
 ## 결과 받기
 
-PR의 Actions → `screenshots` 실행 → Artifacts: **`screenshots` 하나**. 안에 `screenshots/`(PNG들과 `manifest.json`: 이름, 경로, 크기, 바이트, sha256, 건너뜀 사유, 페이지 오류, 막은 외부 요청 목록 `blocked_requests`), `webgl/`(WebGL 확인 PNG와 `webgl-result.json`), `webgl-probe/`(플래그 묶음별 PNG와 `webgl-result.json`, `probe: true`: 어느 묶음이 통과했는지의 증거)가 들어 있다. 보관 14일. CLI: `gh run download <run-id> -n screenshots`.
+PR의 Actions → `screenshots` 실행 → Artifacts: **`screenshots` 하나**. 안에 `screenshots/`(PNG들과 `manifest.json`: 이름, 경로, 크기, 바이트, sha256, 건너뜀 사유, 페이지 오류, 막은 외부 요청 목록 `blocked_requests`), `webgl/`(WebGL 확인 PNG와 `webgl-result.json`), `webgl-probe/`(플래그 묶음별 PNG와 `webgl-result.json`, `probe: true`: 어느 묶음이 통과했는지의 증거), `gltf-check/`(B-01c: 부품 glTF를 three.js가 읽어 그린 `parts-gltf.png`와 재질·빈 곳·카메라 맞춤을 담은 `result.json`, `tools/gltf-check`)가 들어 있다. 보관 14일. CLI: `gh run download <run-id> -n screenshots`.
 
 ## WebGL 헤드리스 확인
 

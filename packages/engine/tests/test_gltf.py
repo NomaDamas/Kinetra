@@ -207,9 +207,13 @@ def test_gltf_voids_are_not_cut_and_say_so():
     glb = validate(glb_of(mounting_plate()))
     assert [m["name"] for m in glb.doc["meshes"]] == ["plate", "rib"]  # the bore is not a mesh
     extras = glb.doc["nodes"][0]["extras"]["kinetra"]
-    assert extras["voids_cut"] is False
+    assert "voids_cut" not in extras  # one signal only: the voids list (client-adapter.md A7)
     (void,) = extras["voids"]
     assert void["id"] == "bore" and void["primitive"] == "cylinder" and void["dimensions"] == {"radius": 0.02, "length": 0.01}
+    assert void["center"] == pytest.approx({"x": 0.035, "y": 0.0, "z": 0.005})
+    assert void["orientation"] == {"x": 0.0, "y": 0.0, "z": 0.0, "w": 1.0}  # Project's {x, y, z, w} form
+    for name in ("sensor-mast-user-material", "drive-shaft-steel"):  # no voids: the list is empty, nothing to show
+        assert parse_glb(sample_glb(name)).doc["nodes"][0]["extras"]["kinetra"]["voids"] == []
     assert extras["part_id"] == "mounting-plate" and extras["material_id"] == ALU
     assert extras["shape"]["badge"] == "declared"
     assert extras["parameters"]["width"]["value"] == 0.12 and extras["parameters"]["width"]["badge"] == "declared"
@@ -288,17 +292,32 @@ def test_gltf_unknown_material_gets_the_neutral_fallback_not_another_look():
     assert pbr_for(user_material("al6061-t6-custom"))[1] is False
 
 
-def test_gltf_reflectance_other_than_half_is_written_as_khr_materials_ior(monkeypatch):
-    base = load_material_catalog().get(ALU).pbr
-    odd = base.model_copy(update={"reflectance": base.reflectance.model_copy(update={"value": 0.35})})
-    monkeypatch.setattr("kinetra_engine.parts.visual.pbr_for", lambda m: (odd, True))
-    glb = validate(glb_of(mounting_plate()))
+def test_gltf_reflectance_other_than_half_is_written_as_khr_materials_ior():
+    glb = validate(sample_glb("reflectance-ior"))
     assert glb.doc["extensionsUsed"] == ["KHR_materials_ior"]
-    ior = glb.doc["materials"][0]["extensions"]["KHR_materials_ior"]["ior"]
+    mat = glb.doc["materials"][0]
+    ior = mat["extensions"]["KHR_materials_ior"]["ior"]
     assert ior == pytest.approx((1 + 0.4 * 0.35) / (1 - 0.4 * 0.35), rel=1e-6)  # 1.3256
     # round trip: the F0 that ior gives equals Filament's 0.16 r^2
     assert ((ior - 1) / (ior + 1)) ** 2 == pytest.approx(0.16 * 0.35**2, rel=1e-5)
     assert ior_from_reflectance(0.5) == pytest.approx(1.5)
+    # a caller-supplied look is not the catalog's, and the file does not claim it is
+    assert mat["name"] == "pom-delrin-150" and mat["pbrMetallicRoughness"]["metallicFactor"] == 0.0
+    k = mat["extras"]["kinetra"]
+    assert k["pbr_from_catalog"] is False and k["pbr"]["reflectance"]["value"] == 0.35
+    assert k["pbr"]["base_color"]["srgb"] == "#b03030"
+
+
+@pytest.mark.parametrize("name", sorted(SAMPLES))
+def test_gltf_every_sample_recipe_is_one_mass_properties_accepts(name):
+    # "From the same definition" means the same evaluable recipe: mass is computed for each fixture part.
+    result = mass_properties(SAMPLES[name][0](), sample_material(name))
+    assert result.mass.value > 0
+
+
+def test_gltf_scene_and_root_node_have_different_names():
+    doc = parse_glb(sample_glb("mounting-plate-al6061")).doc
+    assert doc["scenes"][0]["name"] != doc["nodes"][0]["name"] == "mounting-plate"
 
 
 def test_gltf_uses_no_texture_images_or_external_files():

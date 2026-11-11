@@ -10,9 +10,8 @@ from __future__ import annotations
 
 import math
 from pathlib import Path
-from unittest import mock
 
-from kinetra_core import Material, PartDef, load_material_catalog
+from kinetra_core import Material, PartDef, PbrSlots, load_material_catalog
 from kinetra_engine.parts import part_glb
 
 FIXTURES = Path(__file__).parent / "fixtures" / "gltf"
@@ -105,7 +104,7 @@ def mounting_plate() -> PartDef:
 
 
 def drive_shaft() -> PartDef:
-    """A shaft with a hub on each end: a cylinder lying along +x (rotated), a sphere cap and a block."""
+    """A shaft lying along y (a cylinder turned 90 degrees about x) with a sphere cap and a block touching its ends."""
     return part(
         "drive-shaft",
         [
@@ -123,21 +122,33 @@ def sensor_mast() -> PartDef:
     )
 
 
-def reflectance_ior_glb() -> bytes:
-    """Aluminium plate with the catalog look but reflectance 0.35, so the file carries `KHR_materials_ior`.
+def glossy_dielectric() -> PbrSlots:
+    """A caller-supplied look: a dielectric (metallic 0) with reflectance 0.35, so `KHR_materials_ior` shows in the render."""
+    why = "B-01c test fixture: a look chosen by the test, not a measurement"
+    scalar = lambda v: {"value": v, "unit": "1", "badge": "default", "source": {"ref": why}}
+    return PbrSlots.model_validate(
+        {
+            "base_color": {"srgb": "#b03030", "badge": "default", "source": {"ref": why}},
+            "metallic": scalar(0.0),
+            "roughness": scalar(0.25),
+            "reflectance": scalar(0.35),
+        }
+    )
 
-    No catalog entry has a reflectance other than 0.5, so the slot is replaced for this fixture only."""
-    base = load_material_catalog().get("al6061-t6").pbr
-    odd = base.model_copy(update={"reflectance": base.reflectance.model_copy(update={"value": 0.35})})
-    with mock.patch("kinetra_engine.parts.visual.pbr_for", lambda material: (odd, True)):
-        return part_glb(mounting_plate(), catalog_material("al6061-t6"))
+
+def reflectance_ior_glb() -> bytes:
+    """POM plate with a caller-supplied glossy dielectric look (reflectance 0.35): the file carries `KHR_materials_ior`.
+
+    No catalog entry has a reflectance other than 0.5, so the look is passed in (`pbr=`), and the file says it is not
+    the catalog's (`pbr_from_catalog: false`)."""
+    return part_glb(mounting_plate(), catalog_material("pom-delrin-150"), pbr=glossy_dielectric())
 
 
 SAMPLES = {
     "mounting-plate-al6061": (mounting_plate, "al6061-t6"),
     "drive-shaft-steel": (drive_shaft, "steel-a36"),
     "sensor-mast-user-material": (sensor_mast, None),
-    "reflectance-ior": (mounting_plate, "al6061-t6"),
+    "reflectance-ior": (mounting_plate, "pom-delrin-150"),
 }
 
 
