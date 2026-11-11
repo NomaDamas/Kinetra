@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Point an instance at another part definition of the project: the way back for an instance whose definition is\nmissing (C-06, `docs/architecture/missing-definitions.md`; the other ways are `add_part_def` with the missing id\nand `remove_instance`). The part must be one the project carries and must suit the instance (its parameters and\nits joints' snap points): else the command is rejected with the validator's sentence and the offending ref.",
+  "properties": {
+    "type": {
+      "const": "relink_instance",
+      "title": "Type",
+      "type": "string"
+    },
+    "id": {
+      "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+      "title": "Id",
+      "type": "string"
+    },
+    "part": {
+      "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+      "title": "Part",
+      "type": "string"
+    }
+  },
+  "required": [
+    "type",
+    "id",
+    "part"
+  ],
+  "title": "RelinkInstance",
+  "type": "object"
+}

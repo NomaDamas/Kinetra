@@ -59,8 +59,10 @@ export function drawnPixels(png: PNG): number {
   return n;
 }
 
-function serve(): Promise<{ url: string; close: () => void }> {
+/** `extra`: more URL prefix -> directory roots (B-02: the skeleton page serves its manifest and glb files from `/skeleton/`). */
+export function serve(extra: [string, string][] = []): Promise<{ url: string; close: () => void }> {
   const roots: [string, string][] = [
+    ...extra,
     ["/fixtures/", FIXTURES],
     ["/page/", join(HERE, "page")],
     ["/node_modules/three/", resolve(HERE, "node_modules", "three")],
