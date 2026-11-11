@@ -1,0 +1,423 @@
+{
+  "entries": [
+    {
+      "material": {
+        "id": "al6061-t6",
+        "name": "Aluminum 6061-T6",
+        "density": {
+          "value": 2700.0,
+          "unit": "kg/m^3",
+          "badge": "cite",
+          "source": {
+            "ref": "Kaiser Aluminum, Rod & Bar Alloy 6061 Technical Data (KA-RBH-6061-8.10), typical values; accessed 2026-11-11. Nominal Density (68 F / 20 C) 0.098 lb/in3 = 2.70 Mg/m3. Chosen 2700 kg/m^3 = the printed SI value; no range given.",
+            "locator": "Typical Physical Properties, Nominal Density (page 2)",
+            "url": "https://online.kaiseraluminum.com/depot/PublicProductInformation/Document/1025/Kaiser_Aluminum_6061_Rod_and_Bar.pdf"
+          }
+        },
+        "yield_strength": {
+          "value": 276000000.0,
+          "unit": "Pa",
+          "badge": "cite",
+          "source": {
+            "ref": "Kaiser Aluminum, Rod & Bar Alloy 6061 Technical Data (KA-RBH-6061-8.10), typical values; accessed 2026-11-11. Temper T6, T651: tensile yield 40 ksi = 276 MPa (ultimate 45 ksi = 310 MPa), typical, not a guaranteed minimum. Chosen 276 MPa = the printed SI value; the Kaiser Sheet, Coil & Plate 6061 sheet (Rev. 05/06) prints the same.",
+            "locator": "Typical Mechanical Properties, row T6, T651, Yield MPa (page 1)",
+            "url": "https://online.kaiseraluminum.com/depot/PublicProductInformation/Document/1025/Kaiser_Aluminum_6061_Rod_and_Bar.pdf"
+          }
+        },
+        "elastic_modulus": {
+          "value": 68950000000.0,
+          "unit": "Pa",
+          "badge": "cite",
+          "source": {
+            "ref": "Kaiser Aluminum, Rod & Bar Alloy 6061 Technical Data (KA-RBH-6061-8.10), typical values; accessed 2026-11-11. Modulus of Elasticity printed as 10.0 x 10^3 ksi (US column) and 68.3 GPa (metric column). The two disagree: 10.0 x 10^3 ksi x 6.894757 MPa/ksi = 68.95 GPa, 0.95% above the printed 68.3 GPa. Chosen 68.95 GPa, the exact conversion of the primary US value; range 68.3 to 68.95 GPa.",
+            "locator": "Typical Mechanical Properties, row T6, T651, Modulus KSI x 10^3 and GPa (page 1)",
+            "url": "https://online.kaiseraluminum.com/depot/PublicProductInformation/Document/1025/Kaiser_Aluminum_6061_Rod_and_Bar.pdf"
+          }
+        },
+        "friction": {
+          "value": 0.25,
+          "unit": "1",
+          "badge": "cite",
+          "source": {
+            "ref": "ASM Handbook Vol. 18 (1992), P.J. Blau, Appendix: Static and Kinetic Friction Coefficients (dry, room temp.). Al 6061-T6 on steel 1032: static 0.35, kinetic 0.25 (Magnaplate 1988, 1.96 N, 54% RH). Chosen kinetic 0.25. Range: Engineering ToolBox Al on mild steel kinetic 0.47 (https://www.engineeringtoolbox.com/friction-coefficients-d_778.html), so 0.25 to 0.47. accessed 2026-11-11.",
+            "locator": "Table 1, row Al alloy 6061-T6 / Steel 1032, Kinetic",
+            "url": "https://dl.asminternational.org/technical-books/edited-volume/50/Friction-Lubrication-and-Wear-Technology"
+          }
+        }
+      },
+      "pbr": {
+        "base_color": {
+          "srgb": "#e8eaea",
+          "badge": "cite",
+          "source": {
+            "ref": "Filament material guide, table of F0 colors in sRGB for metals, used as the base color; the pure-metal row stands in for the alloy, so the look is approximate (Aluminum); accessed 2026-11-11",
+            "locator": "Parameterization > Remapping > Reflectance remapping, Table fNormalMetals",
+            "url": "https://google.github.io/filament/Filament.html",
+            "license": "Apache-2.0"
+          }
+        },
+        "metallic": {
+          "value": 1.0,
+          "unit": "1",
+          "badge": "cite",
+          "source": {
+            "ref": "Filament material guide: Metallic is 0.0 for dielectrics and 1.0 for conductors; accessed 2026-11-11",
+            "locator": "Parameterization > Standard parameters, Metallic row",
+            "url": "https://google.github.io/filament/Filament.html",
+            "license": "Apache-2.0"
+          }
+        },
+        "roughness": {
+          "value": 0.4,
+          "unit": "1",
+          "badge": "default",
+          "source": {
+            "ref": "Our choice: satin machined-aluminum look; a look, not a measurement"
+          }
+        },
+        "reflectance": {
+          "value": 0.5,
+          "unit": "1",
+          "badge": "default",
+          "source": {
+            "ref": "Filament default reflectance 0.5; has no effect while Metallic is 1.0 (F0 = base color)"
+          }
+        }
+      }
+    },
+    {
+      "material": {
+        "id": "steel-a36",
+        "name": "Structural steel ASTM A36",
+        "density": {
+          "value": 7849.0,
+          "unit": "kg/m^3",
+          "badge": "cite",
+          "source": {
+            "ref": "FHWA LRFD for Highway Bridge Superstructures Reference Manual (NHI-15047), Table 3.2.1.2-1 (excerpt of AASHTO LRFD Table 3.5.1-1): Steel 0.490 kcf = 490 lb/ft3 = 7849 kg/m^3 (x 16.01846). A design unit weight for structural steel, not A36-specific; usually rounded to 7850. Chosen 7849; accessed 2026-11-11.",
+            "locator": "Table 3.2.1.2-1 Unit Weights, row Steel (PDF page 85)",
+            "url": "https://www.fhwa.dot.gov/bridge/pubs/nhi15047.pdf"
+          }
+        },
+        "yield_strength": {
+          "value": 248200000.0,
+          "unit": "Pa",
+          "badge": "cite",
+          "source": {
+            "ref": "SSAB ASTM A36 data sheet (2019-05-20): yield strength min 36 ksi, tensile 58 to 80 ksi; same in FHWA-HIF-16-002 Table 5 (A709 Grade 36, Fy 36, Fu 58 ksi). 36 ksi = 248.2 MPa. A specified MINIMUM, a floor not a typical value (FHWA: mill steel may be nearer 50 ksi). ASTM's metric A36M states 250 MPa. Chosen 248.2 MPa; accessed 2026-11-11.",
+            "locator": "Mechanical Properties table, Yield strength (min ksi), row A36",
+            "url": "https://www.ssab.com/en-us/brands-and-products/commercial-steel/structural-steel/astm-a36"
+          }
+        },
+        "elastic_modulus": {
+          "value": 199950000000.0,
+          "unit": "Pa",
+          "badge": "cite",
+          "source": {
+            "ref": "FHWA-HIF-16-002 Steel Bridge Design Handbook, Bridge Steels and Their Mechanical Properties, sec. 4.1: E = 29,000 ksi taken for all structural steels in bridge construction = 199.95 GPa (x 6.894757). Round-number SI usage is 200 GPa. Chosen 199.95 GPa; accessed 2026-11-11.",
+            "locator": "Section 4.1 Stress-Strain Behavior (PDF page 27)",
+            "url": "https://rosap.ntl.bts.gov/view/dot/42712/dot_42712_DS1.pdf"
+          }
+        },
+        "friction": {
+          "value": 0.23,
+          "unit": "1",
+          "badge": "estimate",
+          "source": {
+            "ref": "ASM Handbook Vol. 18 (1992), P.J. Blau, Appendix: Static and Kinetic Friction Coefficients (dry, room temp.). Estimate: Blau lists Steel 1032 on Steel 1032 (static 0.31, kinetic 0.23; Magnaplate 1988, same rig as the Al and Ti rows), not A36, so it is a proxy for A36 on steel. Range: 0.62 mild steel on mild steel (Table 1, ref 3); Engineering ToolBox steel/steel kinetic 0.42 (https://www.engineeringtoolbox.com/friction-coefficients-d_778.html). accessed 2026-11-11.",
+            "locator": "Table 1, row Steel 1032 / Steel 1032, Kinetic",
+            "url": "https://dl.asminternational.org/technical-books/edited-volume/50/Friction-Lubrication-and-Wear-Technology"
+          }
+        }
+      },
+      "pbr": {
+        "base_color": {
+          "srgb": "#c4c6c6",
+          "badge": "cite",
+          "source": {
+            "ref": "Filament material guide, table of F0 colors in sRGB for metals, used as the base color; the pure-metal row stands in for the alloy, so the look is approximate (Iron, used for carbon steel); accessed 2026-11-11",
+            "locator": "Parameterization > Remapping > Reflectance remapping, Table fNormalMetals",
+            "url": "https://google.github.io/filament/Filament.html",
+            "license": "Apache-2.0"
+          }
+        },
+        "metallic": {
+          "value": 1.0,
+          "unit": "1",
+          "badge": "cite",
+          "source": {
+            "ref": "Filament material guide: Metallic is 0.0 for dielectrics and 1.0 for conductors; accessed 2026-11-11",
+            "locator": "Parameterization > Standard parameters, Metallic row",
+            "url": "https://google.github.io/filament/Filament.html",
+            "license": "Apache-2.0"
+          }
+        },
+        "roughness": {
+          "value": 0.5,
+          "unit": "1",
+          "badge": "default",
+          "source": {
+            "ref": "Our choice: semi-matte mill-finish steel look; a look, not a measurement"
+          }
+        },
+        "reflectance": {
+          "value": 0.5,
+          "unit": "1",
+          "badge": "default",
+          "source": {
+            "ref": "Filament default reflectance 0.5; has no effect while Metallic is 1.0 (F0 = base color)"
+          }
+        }
+      }
+    },
+    {
+      "material": {
+        "id": "cfrp-8552-as4-pw",
+        "name": "CFRP (HexPly 8552 / AS4 plain-weave laminate)",
+        "density": {
+          "value": 1570.0,
+          "unit": "kg/m^3",
+          "badge": "cite",
+          "source": {
+            "ref": "Hexcel HexPly 8552 product data sheet (EU ed. 2023), p.3, woven carbon prepreg AGP193-PW (AS4 3K plain weave, 37% resin, fibre volume 55.29%); accessed 2026-11-11. Nominal Laminate Density 1.57 g/cm3 (0.057 lb/in3). Chosen 1570 kg/m^3; other HexPly 8552 rows: unidirectional AS4 1.58, IM7 woven 1.56 g/cm3.",
+            "locator": "Prepreg Properties - HexPly 8552 Woven Carbon Prepregs (AS4 Fibre), Physical Properties, Nominal Laminate Density",
+            "url": "https://www.hexcel.com/wp-content/uploads/2025/12/HexPly_8552_eu_DataSheet1.pdf"
+          }
+        },
+        "yield_strength": {
+          "value": 828000000.0,
+          "unit": "Pa",
+          "badge": "cite",
+          "source": {
+            "ref": "Hexcel HexPly 8552 product data sheet (EU ed. 2023), p.3, woven carbon prepreg AGP193-PW (AS4 3K plain weave, 37% resin, fibre volume 55.29%); accessed 2026-11-11. CFRP has no yield point (linear elastic to brittle fracture): this field holds the 0 deg tensile STRENGTH at fracture, 828 MPa (120 ksi); 90 deg 793 MPa. Plain weave chosen over unidirectional AS4 (2207 MPa along, 81 MPa across the fibre) because fibre direction is unknown. Off-axis strength is lower, not in this table.",
+            "locator": "Prepreg Properties - HexPly 8552 Woven Carbon Prepregs (AS4 Fibre), Mechanical Properties, 0 deg Tensile Strength, 25 C Dry, AGP193-PW",
+            "url": "https://www.hexcel.com/wp-content/uploads/2025/12/HexPly_8552_eu_DataSheet1.pdf"
+          }
+        },
+        "elastic_modulus": {
+          "value": 68000000000.0,
+          "unit": "Pa",
+          "badge": "cite",
+          "source": {
+            "ref": "Hexcel HexPly 8552 product data sheet (EU ed. 2023), p.3, woven carbon prepreg AGP193-PW (AS4 3K plain weave, 37% resin, fibre volume 55.29%); accessed 2026-11-11. 0 deg Tensile Modulus 68 GPa (9.8 msi), 90 deg 66 GPa. Chosen 68 GPa; unidirectional AS4 is 141 GPa along the fibre and 10 GPa across. In-plane, orthotropic data used as an isotropic scalar.",
+            "locator": "Prepreg Properties - HexPly 8552 Woven Carbon Prepregs (AS4 Fibre), Mechanical Properties, 0 deg Tensile Modulus, 25 C Dry, AGP193-PW",
+            "url": "https://www.hexcel.com/wp-content/uploads/2025/12/HexPly_8552_eu_DataSheet1.pdf"
+          }
+        },
+        "friction": {
+          "value": 0.44,
+          "unit": "1",
+          "badge": "estimate",
+          "source": {
+            "ref": "Midpoint 0.44 of the dry coefficient range 0.286 to 0.595 reported for unidirectional CFRP sheets sliding on three steels (strip drawing, 4.1 to 12.2 MPa): Trzepieciński et al., Int J Adv Manuf Technol 143 (2026) 2101-2113, DOI 10.1007/s00170-026-17653-1; abstract read, full text paywalled. Not measured for this laminate; depends on layup, surface, pressure. Accessed 2026-11-11.",
+            "locator": "Abstract, COF ranges of CFRP-CX, CFRP-20MnCr5, CFRP-15MnCr4",
+            "url": "https://link.springer.com/article/10.1007/s00170-026-17653-1"
+          }
+        }
+      },
+      "pbr": {
+        "base_color": {
+          "srgb": "#1c1d20",
+          "badge": "default",
+          "source": {
+            "ref": "Our choice: near-black carbon-weave look; no CC0 carbon texture in assets/LEDGER.csv, so a flat color; a look, not a measurement"
+          }
+        },
+        "metallic": {
+          "value": 0.0,
+          "unit": "1",
+          "badge": "default",
+          "source": {
+            "ref": "Our choice: epoxy-matrix carbon laminate is drawn as a dielectric (Filament: Metallic 0.0 = dielectric); a look, not a measurement"
+          }
+        },
+        "roughness": {
+          "value": 0.3,
+          "unit": "1",
+          "badge": "default",
+          "source": {
+            "ref": "Our choice: clear-coated composite look; a look, not a measurement"
+          }
+        },
+        "reflectance": {
+          "value": 0.5,
+          "unit": "1",
+          "badge": "cite",
+          "source": {
+            "ref": "Filament material guide, reflectance of common materials: plastics/glass 4% to 5% (linear 0.5 to 0.56), default 4% = 0.5; accessed 2026-11-11",
+            "locator": "Parameterization > Reflectance remapping, Table commonMatReflectance",
+            "url": "https://google.github.io/filament/Filament.html",
+            "license": "Apache-2.0"
+          }
+        }
+      }
+    },
+    {
+      "material": {
+        "id": "ti-6al-4v",
+        "name": "Titanium Ti-6Al-4V (Grade 5), annealed",
+        "density": {
+          "value": 4420.0,
+          "unit": "kg/m^3",
+          "badge": "cite",
+          "source": {
+            "ref": "TIMET TIMETAL 6-4 data sheet (TMC-0150, 2000), Table 2: Density at 72 F 0.160 lb/in3 = 4.42 g/cm3. Chosen 4420 kg/m^3; Rolled Alloys prints 0.160 lb/in3 (= 4429 kg/m^3). accessed 2026-11-11.",
+            "locator": "Table 2 Physical Properties, Density (page 1)",
+            "url": "https://www.timet.com/documents/datasheets/alpha-and-beta-alloys/timetal-6-4.pdf"
+          }
+        },
+        "yield_strength": {
+          "value": 828000000.0,
+          "unit": "Pa",
+          "badge": "cite",
+          "source": {
+            "ref": "TIMET TIMETAL 6-4 data sheet (TMC-0150, 2000), Table 3: MINIMUM 0.2% yield for annealed sheet/plate/bar to ASTM B265/B348 = 120 ksi (828 MPa), UTS 130 ksi (895 MPa); a floor, not typical. Typical annealed bar: 128 to 147 ksi (Rolled Alloys, Bulletin 1052USe 09/16); TIMET solution-treated-and-aged min 150 to 155 ksi (1034 to 1068 MPa). Chosen 828 MPa; accessed 2026-11-11.",
+            "locator": "Table 3 Minimum Tensile Properties, Annealed ASTM B348, 0.2% YS (page 2)",
+            "url": "https://www.timet.com/documents/datasheets/alpha-and-beta-alloys/timetal-6-4.pdf"
+          }
+        },
+        "elastic_modulus": {
+          "value": 115100000000.0,
+          "unit": "Pa",
+          "badge": "cite",
+          "source": {
+            "ref": "Rolled Alloys 6Al-4V Titanium data sheet (Bulletin 1052USe 09/16): Modulus of Elasticity 16.7 x 10^6 psi at 70 F, STA = 115.1 GPa. Range: TIMET Table 2 prints Young's modulus 15.5 to 17.7 Msi (107 to 122 GPa), dependent on texture and heat treatment. Chosen 115.1 GPa; accessed 2026-11-11.",
+            "locator": "Physical Properties, Modulus of Elasticity psi x 10^6 STA, 70 F (page 2)",
+            "url": "https://www.rolledalloys.com/wp-content/uploads/6AL4V_Data-sheet.pdf"
+          }
+        },
+        "friction": {
+          "value": 0.32,
+          "unit": "1",
+          "badge": "cite",
+          "source": {
+            "ref": "ASM Handbook Vol. 18 (1992), P.J. Blau, Appendix: Static and Kinetic Friction Coefficients (dry, room temp.). Steel 1032 on Ti-6Al-4V: static 0.36, kinetic 0.32, same rig as the Al and steel rows. Chosen kinetic 0.32. Range: kinetic 0.31 (17-4 PH) to 0.37 (440C) for Ti-6Al-4V on stainless (Table 1, Budinski 1991). Titanium galls; real contacts can differ. accessed 2026-11-11.",
+            "locator": "Table 1, row Steel 1032 / Ti-6Al-4V, Kinetic",
+            "url": "https://dl.asminternational.org/technical-books/edited-volume/50/Friction-Lubrication-and-Wear-Technology"
+          }
+        }
+      },
+      "pbr": {
+        "base_color": {
+          "srgb": "#c1baaf",
+          "badge": "cite",
+          "source": {
+            "ref": "Filament material guide, table of F0 colors in sRGB for metals, used as the base color; the pure-metal row stands in for the alloy, so the look is approximate (Titanium); accessed 2026-11-11",
+            "locator": "Parameterization > Remapping > Reflectance remapping, Table fNormalMetals",
+            "url": "https://google.github.io/filament/Filament.html",
+            "license": "Apache-2.0"
+          }
+        },
+        "metallic": {
+          "value": 1.0,
+          "unit": "1",
+          "badge": "cite",
+          "source": {
+            "ref": "Filament material guide: Metallic is 0.0 for dielectrics and 1.0 for conductors; accessed 2026-11-11",
+            "locator": "Parameterization > Standard parameters, Metallic row",
+            "url": "https://google.github.io/filament/Filament.html",
+            "license": "Apache-2.0"
+          }
+        },
+        "roughness": {
+          "value": 0.45,
+          "unit": "1",
+          "badge": "default",
+          "source": {
+            "ref": "Our choice: brushed titanium look; a look, not a measurement"
+          }
+        },
+        "reflectance": {
+          "value": 0.5,
+          "unit": "1",
+          "badge": "default",
+          "source": {
+            "ref": "Filament default reflectance 0.5; has no effect while Metallic is 1.0 (F0 = base color)"
+          }
+        }
+      }
+    },
+    {
+      "material": {
+        "id": "pom-delrin-150",
+        "name": "POM acetal homopolymer (Delrin 150)",
+        "density": {
+          "value": 1420.0,
+          "unit": "kg/m^3",
+          "badge": "cite",
+          "source": {
+            "ref": "Delrin 150 (acetal homopolymer) data sheet as published by Protolabs, typical values at 23 C, 'for reference and comparison only'; accessed 2026-11-11. Specific gravity 1.42 g/cc (0.0513 lb/in3, ASTM D792). Chosen 1420 kg/m^3; the HPC Europe Delrin 150 sheet prints the same 1.42.",
+            "locator": "Physical, Specific Gravity (g/cc)",
+            "url": "https://www.protolabs.com/media/1021509/acetal-homopolymer-derlin-150.pdf"
+          }
+        },
+        "yield_strength": {
+          "value": 76500000.0,
+          "unit": "Pa",
+          "badge": "cite",
+          "source": {
+            "ref": "Delrin 150 (acetal homopolymer) data sheet as published by Protolabs, typical values at 23 C, 'for reference and comparison only'; accessed 2026-11-11. Tensile Strength @ Yield 11,100 psi (ASTM D638) = 76.5 MPa. Range 69 to 76.5 MPa: the HPC Europe Delrin 150 sheet (hpceurope.com, 2016) prints tensile strength 69 N/mm2 at +23 C (D638). Chosen 76.5 MPa, the sheet this value comes from. Values shift with temperature and rate; not for design.",
+            "locator": "Mechanical, Tensile Strength @ Yield",
+            "url": "https://www.protolabs.com/media/1021509/acetal-homopolymer-derlin-150.pdf"
+          }
+        },
+        "elastic_modulus": {
+          "value": 3103000000.0,
+          "unit": "Pa",
+          "badge": "cite",
+          "source": {
+            "ref": "Delrin 150 (acetal homopolymer) data sheet as published by Protolabs, typical values at 23 C, 'for reference and comparison only'; accessed 2026-11-11. Tensile Modulus 450,000 psi (ASTM D639) = 3.103 GPa (x 6.894757 kPa/psi). Cross-check: the HPC Europe Delrin 150 sheet (hpceurope.com, 2016) prints 3100 N/mm2 (D638), the same within rounding. Chosen 3.103 GPa. Creep is not modelled.",
+            "locator": "Mechanical, Tensile Modulus",
+            "url": "https://www.protolabs.com/media/1021509/acetal-homopolymer-derlin-150.pdf"
+          }
+        },
+        "friction": {
+          "value": 0.2,
+          "unit": "1",
+          "badge": "cite",
+          "source": {
+            "ref": "Delrin 150 (acetal homopolymer) data sheet as published by Protolabs, typical values at 23 C, 'for reference and comparison only'; accessed 2026-11-11. Dynamic Coefficient of Friction 0.2 against steel, 40 psi, 50 fpm (ASTM D3702); static not given. Chosen 0.20. Range 0.20 to 0.45: acetal on mild steel 0.21, POM on steel 52100 0.45 (Blau, ASM Handbook Vol. 18 App., Table 3).",
+            "locator": "Mechanical, Dynamic Coefficient of Friction, 40 psi, 50 fpm",
+            "url": "https://www.protolabs.com/media/1021509/acetal-homopolymer-derlin-150.pdf"
+          }
+        }
+      },
+      "pbr": {
+        "base_color": {
+          "srgb": "#e9e7e0",
+          "badge": "default",
+          "source": {
+            "ref": "Our choice: off-white natural acetal look; no CC0 plastic texture in assets/LEDGER.csv, so a flat color; a look, not a measurement"
+          }
+        },
+        "metallic": {
+          "value": 0.0,
+          "unit": "1",
+          "badge": "default",
+          "source": {
+            "ref": "Our choice: acetal plastic is drawn as a dielectric (Filament: Metallic 0.0 = dielectric); a look, not a measurement"
+          }
+        },
+        "roughness": {
+          "value": 0.5,
+          "unit": "1",
+          "badge": "default",
+          "source": {
+            "ref": "Our choice: satin molded/machined plastic look; a look, not a measurement"
+          }
+        },
+        "reflectance": {
+          "value": 0.5,
+          "unit": "1",
+          "badge": "cite",
+          "source": {
+            "ref": "Filament material guide, reflectance of common materials: plastics/glass 4% to 5% (linear 0.5 to 0.56), default 4% = 0.5; accessed 2026-11-11",
+            "locator": "Parameterization > Reflectance remapping, Table commonMatReflectance",
+            "url": "https://google.github.io/filament/Filament.html",
+            "license": "Apache-2.0"
+          }
+        }
+      }
+    }
+  ]
+}
