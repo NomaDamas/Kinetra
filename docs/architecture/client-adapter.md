@@ -1,6 +1,6 @@
 # 클라이언트 어댑터 경계 (A0-04)
 
-- 상태: 설계. 구현은 C-05(#71: C-05a #72, C-05b #73, C-05c #74)가 한다. 프레임 형식의 스키마는 C-05b가 이 문서에 잇는다.
+- 상태: 설계. 3.1~3.2의 메시지(문서 구독과 명령 발행)는 C-05a(#72)에서 구현됐다(아래 "3.1~3.2 확정"). 나머지 구현은 C-05b(#73), C-05c(#74)가 한다. 프레임 형식의 스키마는 C-05b가 이 문서에 잇는다.
 - 근거: `docs/plan/studio-plan.md` 5.1~5.4절, `spikes/mujoco-limits/REPORT.md`의 A0-01a.
 - 표기는 계획과 같다. **[추정]** 근거 없는 판단, **[확인 필요]** 채택 전 검증할 사실, **[제안]** 이 문서가 새로 내는 기준.
 - 번호가 붙은 규칙(G·D·C·F·A·I·P)은 C-05c 적합성 테스트가 기준으로 삼을 문장이다. 계획이나 이슈 DoD에서 온 규칙에는 출처를 적었다. 출처가 없는 규칙, 메시지·필드 이름, 좌표 규약, 새 화면 문구는 이 문서의 [제안]이며 C-01, C-05의 스키마와 A0-05의 `engine.md`에서 확정한다.
@@ -92,6 +92,32 @@ S1 범위: 프로젝트 하나, 문서 전체 스냅샷. 발행자는 사용자 
 - **C7** 실행·판정 요청은 Project를 바꾸지 않는다. 결과로 실행 스트림(3.3)이나 판정 카드의 내용(J 에픽의 스키마)이 온다.
 
 S1 범위: 위 전부. 열어 둔 것: 여러 사용자의 동시 편집 충돌 정책(N-04 #265). 코어가 정하는 전순서와 발행자 ID는 그 바탕이 된다.
+
+#### 3.1~3.2 확정 (C-05a)
+
+코드: 메시지는 `packages/core/src/kinetra_core/protocol.py`(스키마 생성기가 `kinetra_core.__all__`만 읽기 때문에 코어에 둔다; `schemas/ClientMessage.schema.json`, `ServerMessage.schema.json`과 `types.ts`), 문서 소유자와 WebSocket 전송은 `packages/engine/src/kinetra_engine/protocol/`(`Document`, `Hub`), 테스트는 `packages/engine/tests/test_protocol_document.py`. 위 표의 [제안] 이름 중 확정된 것과 바뀐 것:
+
+| 메시지 | 방향 | 필드 | 3.1~3.2 [제안]과 다른 점 |
+|---|---|---|---|
+| `hello` | 양쪽 | `protocol`(정수) | G5의 "첫 메시지에서 프로토콜 버전"의 실체. 지금 `1`. 코어가 모르는 번호면 `error`(fatal) 후 닫는다 |
+| `subscribe` | → 코어 | `project`, `after_revision`(없을 수 있음) | |
+| `snapshot` | → 클라이언트 | `project_id`, `revision`, `verdict`(`none` `valid` `invalid`), `project` | 파생값과 정의 해시는 없다(D4: B-05, C-03이 선택 필드로 더한다) |
+| `resumed` | → 클라이언트 | `project_id`, `after_revision`, `revision` | 새 메시지. D6의 "이어 받기"를 알린다. 뒤에 놓친 `applied`가 순서대로 온다. 이어 줄 수 없으면(클라이언트가 코어보다 앞섰을 때) `snapshot`이 온다 |
+| `applied` | → 구독자 모두 | `revision`, `id`, `cause`(`publish` `undo` `redo`), `origin`, `command`, `changes`, `verdict` | `changes`는 바뀐 구역의 새 값 통째(`ProjectChanges`: `materials` `parts` `instances` `joints` `actuators` `schedule` `world` `assumptions`, 안 바뀐 구역은 `null`). 클라이언트는 `apply_changes`로 바꿔 끼우기만 하고 적용기를 다시 만들지 않는다(D3). 구역 단위이고 항목 단위가 아니다 |
+| `publish` | → 코어 | `id`, `base_revision`, `command`, `origin` | 발행자(`origin`)는 `mouse` `agent` `voice` `xr` `mcp`(`kinetra_core.Origin`, C-02b) |
+| `accepted` | → 발행자 | `id`, `revision` | 그 변경의 `applied` 뒤에 온다. 명령이 문서를 바꾸지 않았으면(같은 행성 선택 등) 개정 번호는 그대로이고 `applied`는 없다 |
+| `rejected` | → 발행자 | `id`, `reasons`(`Reason`: `code`, `message`, `ids` = `{kind, id}`; 비어 있을 수 없다) | C3. 읽을 수 없는 `publish`(id는 있고 명령이 틀림)도 `rejected`다 |
+| `request` | → 코어 | `id`, `action`(`undo` `redo`), `origin` | `publish`와 같은 답(`applied` + `accepted` 또는 `rejected`). 실행·판정·정지 요청은 X-02와 J 에픽이 `action`에 더한다 |
+| `error` | → 클라이언트 | `message`, `fatal` | 명령이 아니라 연결의 오류(JSON 아님, 모르는 `type`, `hello` 전의 메시지, 모르는 프로젝트, 모르는 프로토콜 번호). `fatal`이면 코어가 닫는다 |
+
+- 선로: WebSocket 텍스트 프레임 하나에 JSON 메시지 하나. 이진 프레임은 `error`다(실행 스트림의 이진 인코딩은 C-05b가 정한다). 메시지는 모르는 필드를 무시한다(G5). `command` 안은 반대로 엄격하다: 모르는 필드가 있으면 그 명령 전체가 거부된다(편집의 일부를 말없이 버리는 것보다 낫다).
+- **개정 번호(D2).** 0에서 시작해 `applied`마다 1씩 오른다. `applied`는 모든 구독자에게 개정 순서로 가고 발행자는 자기 `accepted` 앞에 그것을 받는다. 연결마다 보내기 대기열이 하나라서 한 연결이 느려도 순서가 바뀌지 않는다. 대기열에 상한을 두지 않았다(계획에 숫자가 없다).
+- **명령 ID(C6).** 발행자가 고른다(UUID 권장). 같은 ID를 다시 보내면 내용이 달라도 처음 답을 그대로 받고 적용은 한 번이다. ID는 문서 단위로 유일하다. 연결에 구독이 없을 때의 `publish`는 `rejected`이고 기억하지 않는다(구독한 뒤 같은 ID를 다시 보낼 수 있다).
+- **낡은 기준 개정(C5).** `base_revision`이 문서보다 뒤면 현재 문서에 대해 검증하고, 안 되면 적용기의 사유로 거부한다(병합 없음). 문서보다 앞서면 `invalid_command`로 거부한다.
+- **판정 상태(D5).** `valid`인 판정은 문서를 바꾸는 `applied`에서 `invalid`가 되고 그 사실이 같은 `applied`에 실린다. 판정을 만들고 `valid`로 바꾸는 쪽은 아직 없다(J 에픽). 지금 문서는 `none`으로 시작한다.
+- **되돌리기.** `request`의 `undo`와 `redo`는 문서 하나의 선형 이력(C-02b `History`)에 대해 한다. 누가 만든 항목이든 되돌린다(사용자별 되돌리기는 N-04). `applied.command`는 프로젝트에 실제로 적용된 명령이다(되돌리기면 역명령).
+- **보안.** 브라우저는 어느 웹 페이지든 `localhost`로 WebSocket을 열 수 있으므로 `Hub.serve`는 `allowed_origins`를 필수로 받고 다른 `Origin`은 403으로 거부한다(`None`은 헤더를 보내지 않는 클라이언트, 곧 브라우저가 아닌 클라이언트). 인증은 없다: S1의 코어는 로컬 프로세스다. 계정과 공유는 이 범위 밖이다.
+- **[확인 필요]** 문서 소유자의 프로젝트는 지금 서버를 만들 때 넘긴다(`Hub({id: Project})`). 저장소에서 열고 닫는 것은 C-03이다. 개정 기록(`applied` 전부)은 메모리에 두고 상한이 없다. 오래 열어 둔 프로젝트에서의 크기와 저장은 C-03이 정한다. 한 편집이 프로젝트 전체를 다시 검증하는 비용(C-02a)은 `publish`마다 든다.
 
 ### 3.3 실행 스트림 프레임
 

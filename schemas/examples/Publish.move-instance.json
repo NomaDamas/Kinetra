@@ -1,0 +1,29 @@
+{
+  "type": "publish",
+  "id": "3f2b8c1e-6d1a-4a57-9a2e-0c5f7d9b1a10",
+  "base_revision": 4,
+  "origin": "mouse",
+  "command": {
+    "type": "move_instance",
+    "id": "wheel-fl",
+    "pose": {
+      "position": {
+        "x": 0.2,
+        "y": 0.1,
+        "z": 0.05
+      },
+      "orientation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0,
+        "w": 1.0
+      },
+      "badge": "declared",
+      "source": {
+        "ref": "Kinetra schema example: illustrative value, not a measured part",
+        "declared_by": "kinetra-docs",
+        "declared_at": "2026-11-11T00:00:00Z"
+      }
+    }
+  }
+}

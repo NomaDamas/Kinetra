@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Follow a project. `after_revision` is the last revision the client holds (a reconnect), `None` for a first\nsubscription. One subscription per connection; a second `subscribe` replaces it.",
+  "properties": {
+    "type": {
+      "const": "subscribe",
+      "title": "Type",
+      "type": "string"
+    },
+    "project": {
+      "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+      "title": "Project",
+      "type": "string"
+    },
+    "after_revision": {
+      "anyOf": [
+        {
+          "minimum": 0,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "After Revision"
+    }
+  },
+  "required": [
+    "type",
+    "project"
+  ],
+  "title": "Subscribe",
+  "type": "object"
+}
