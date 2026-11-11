@@ -1,0 +1,271 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Replace the material definition with the same id, in place (instances and terrain props keep using it).",
+  "properties": {
+    "type": {
+      "const": "replace_material_def",
+      "title": "Type",
+      "type": "string"
+    },
+    "material": {
+      "$ref": "#/$defs/Material"
+    }
+  },
+  "required": [
+    "type",
+    "material"
+  ],
+  "title": "ReplaceMaterialDef",
+  "type": "object",
+  "$defs": {
+    "Badge": {
+      "enum": [
+        "sim",
+        "cite",
+        "default",
+        "declared",
+        "estimate"
+      ],
+      "title": "Badge",
+      "type": "string"
+    },
+    "Density": {
+      "additionalProperties": false,
+      "properties": {
+        "badge": {
+          "$ref": "#/$defs/Badge"
+        },
+        "source": {
+          "$ref": "#/$defs/Source"
+        },
+        "value": {
+          "exclusiveMinimum": 0,
+          "title": "Value",
+          "type": "number"
+        },
+        "unit": {
+          "const": "kg/m^3",
+          "title": "Unit",
+          "type": "string"
+        }
+      },
+      "required": [
+        "badge",
+        "source",
+        "value",
+        "unit"
+      ],
+      "title": "Density",
+      "type": "object"
+    },
+    "ElasticModulus": {
+      "additionalProperties": false,
+      "properties": {
+        "badge": {
+          "$ref": "#/$defs/Badge"
+        },
+        "source": {
+          "$ref": "#/$defs/Source"
+        },
+        "value": {
+          "exclusiveMinimum": 0,
+          "title": "Value",
+          "type": "number"
+        },
+        "unit": {
+          "const": "Pa",
+          "title": "Unit",
+          "type": "string"
+        }
+      },
+      "required": [
+        "badge",
+        "source",
+        "value",
+        "unit"
+      ],
+      "title": "ElasticModulus",
+      "type": "object"
+    },
+    "Friction": {
+      "additionalProperties": false,
+      "description": "Dimensionless Coulomb coefficient.",
+      "properties": {
+        "badge": {
+          "$ref": "#/$defs/Badge"
+        },
+        "source": {
+          "$ref": "#/$defs/Source"
+        },
+        "value": {
+          "minimum": 0,
+          "title": "Value",
+          "type": "number"
+        },
+        "unit": {
+          "const": "1",
+          "title": "Unit",
+          "type": "string"
+        }
+      },
+      "required": [
+        "badge",
+        "source",
+        "value",
+        "unit"
+      ],
+      "title": "Friction",
+      "type": "object"
+    },
+    "Material": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "name": {
+          "maxLength": 100,
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        },
+        "density": {
+          "$ref": "#/$defs/Density"
+        },
+        "yield_strength": {
+          "$ref": "#/$defs/YieldStrength"
+        },
+        "elastic_modulus": {
+          "$ref": "#/$defs/ElasticModulus"
+        },
+        "friction": {
+          "$ref": "#/$defs/Friction"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "density",
+        "yield_strength",
+        "elastic_modulus",
+        "friction"
+      ],
+      "title": "Material",
+      "type": "object"
+    },
+    "Source": {
+      "additionalProperties": false,
+      "description": "Where a value comes from.\n\n`ref` is what was cited, declared or run: a document, a datasheet, a run id, or the reason a default was chosen\n(for an estimate: the method and its inputs). `locator` is where inside it (table, page, section). `url` is a\nlink when there is one. `license` (SPDX expression over the repo allowlist, `spdx.py`) and `declared_by` / `declared_at` feed the badge popover\n(`ValueBadges`, 인용 and 사용자 선언); `Provenance` allows each only on its own badge.",
+      "properties": {
+        "ref": {
+          "maxLength": 500,
+          "minLength": 1,
+          "title": "Ref",
+          "type": "string"
+        },
+        "locator": {
+          "anyOf": [
+            {
+              "maxLength": 200,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Locator"
+        },
+        "url": {
+          "anyOf": [
+            {
+              "maxLength": 2000,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Url"
+        },
+        "license": {
+          "anyOf": [
+            {
+              "maxLength": 200,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "License"
+        },
+        "declared_by": {
+          "anyOf": [
+            {
+              "maxLength": 200,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Declared By"
+        },
+        "declared_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Declared At"
+        }
+      },
+      "required": [
+        "ref"
+      ],
+      "title": "Source",
+      "type": "object"
+    },
+    "YieldStrength": {
+      "additionalProperties": false,
+      "properties": {
+        "badge": {
+          "$ref": "#/$defs/Badge"
+        },
+        "source": {
+          "$ref": "#/$defs/Source"
+        },
+        "value": {
+          "exclusiveMinimum": 0,
+          "title": "Value",
+          "type": "number"
+        },
+        "unit": {
+          "const": "Pa",
+          "title": "Unit",
+          "type": "string"
+        }
+      },
+      "required": [
+        "badge",
+        "source",
+        "value",
+        "unit"
+      ],
+      "title": "YieldStrength",
+      "type": "object"
+    }
+  }
+}

@@ -1,16 +1,12 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "additionalProperties": false,
+  "description": "Replace the schedule entry with the same id (`entry.id`), in place.",
   "properties": {
     "type": {
       "const": "replace_control_entry",
       "title": "Type",
       "type": "string"
-    },
-    "index": {
-      "minimum": 0,
-      "title": "Index",
-      "type": "integer"
     },
     "entry": {
       "$ref": "#/$defs/ActuateEntry"
@@ -18,7 +14,6 @@
   },
   "required": [
     "type",
-    "index",
     "entry"
   ],
   "title": "ReplaceControlEntry",
@@ -26,7 +21,7 @@
   "$defs": {
     "ActuateEntry": {
       "additionalProperties": false,
-      "description": "Command `command` on `actuator` during `[start, end)` seconds of simulated time.\n\n`command` is the fraction of the actuator's full command, in [-1, 1] for a motor (sign is direction) and\n[0, 1] for a thruster. What full command means physically comes from the part (B-03b, B-03c, X-01b, X-01c).\nOne badge and source cover the entry.",
+      "description": "Command `command` on `actuator` during `[start, end)` seconds of simulated time.\n\n`command` is the fraction of the actuator's full command, in [-1, 1] for a motor (sign is direction) and\n[0, 1] for a thruster. What full command means physically comes from the part (B-03b, B-03c, X-01b, X-01c).\nOne badge and source cover the entry. `id` names the entry inside the schedule (unique there): commands\nthat edit an entry name it by id, never by position, so a reordered or partly accepted batch cannot change\na different entry than the one meant.",
       "properties": {
         "badge": {
           "$ref": "#/$defs/Badge"
@@ -37,6 +32,11 @@
         "type": {
           "const": "actuate",
           "title": "Type",
+          "type": "string"
+        },
+        "id": {
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+          "title": "Id",
           "type": "string"
         },
         "actuator": {
@@ -65,6 +65,7 @@
         "badge",
         "source",
         "type",
+        "id",
         "actuator",
         "start",
         "end",

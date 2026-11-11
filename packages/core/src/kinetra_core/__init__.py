@@ -18,7 +18,7 @@ from .commands import (
     AddJoint,
     AddMaterialDef,
     AddPartDef,
-    Applied,
+    ApplyResult,
     ClearParameter,
     Command,
     CommandBatch,
@@ -35,6 +35,9 @@ from .commands import (
     RemoveMaterialDef,
     RemovePartDef,
     ReplaceControlEntry,
+    ReplaceJoint,
+    ReplaceMaterialDef,
+    ReplacePartDef,
     SelectPlanet,
     SetAssumption,
     SetInstanceMaterial,
@@ -75,6 +78,7 @@ from .material_catalog import CatalogEntry, MaterialCatalog, load_material_catal
 from .partdef import ParamDef, PartDef, SnapPoint, SpecDef
 from .pbr import PbrColor, PbrScalar, PbrSlots
 from .project import Project
+from .refs import Ref, RefError, RefKind
 from .provenance import BADGE_LABEL_KO, Badge, Provenance, Quantity, Source
 from .shape import Box, Cylinder, Shape, ShapeComponent, Sphere
 from .world import PLANET_CONSTANT_NAMES, Incline, Placement, PropSize, RampProp, StepProp, TerrainProp, World
@@ -94,7 +98,7 @@ __all__ = [
     "AddJoint",
     "AddMaterialDef",
     "AddPartDef",
-    "Applied",
+    "ApplyResult",
     "Assumption",
     "AssumptionTable",
     "AxisExpr",
@@ -146,6 +150,9 @@ __all__ = [
     "Pose",
     "Position",
     "Project",
+    "Ref",
+    "RefError",
+    "RefKind",
     "PropSize",
     "Provenance",
     "ProxyDerivation",
@@ -163,6 +170,9 @@ __all__ = [
     "RemoveMaterialDef",
     "RemovePartDef",
     "ReplaceControlEntry",
+    "ReplaceJoint",
+    "ReplaceMaterialDef",
+    "ReplacePartDef",
     "SelectPlanet",
     "SetAssumption",
     "SetInstanceMaterial",

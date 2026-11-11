@@ -19,6 +19,7 @@ from pydantic import BaseModel, ConfigDict, model_validator
 
 from .assumption import AssumptionTable
 from .designspec import DesignSpec
+from .refs import Ref, RefError, RefKind
 from .world import World
 
 
@@ -34,5 +35,9 @@ class Project(BaseModel):
         materials = {m.id for m in self.design.materials}
         for prop in self.world.terrain_props:
             if prop.material is not None and prop.material not in materials:
-                raise ValueError(f"world.terrain_props ({prop.id!r}): unknown material {prop.material!r}")
+                raise RefError(
+                    f"world.terrain_props ({prop.id!r}): unknown material {prop.material!r}",
+                    Ref(kind=RefKind.MATERIAL, id=prop.material),
+                    Ref(kind=RefKind.PROP, id=prop.id),
+                )
         return self

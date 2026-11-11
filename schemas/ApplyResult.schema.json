@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "additionalProperties": false,
-  "description": "The result of `apply_command`: the new project and the command that undoes the edit.",
+  "description": "The result of `apply_command`: the new project and the command that undoes the edit. Not the wire message\n`applied` of `client-adapter.md` 3.1 (revision number, issuer, changed parts): C-05a builds that from this.",
   "properties": {
     "project": {
       "$ref": "#/$defs/Project"
@@ -27,6 +27,9 @@
           "remove_material_def": "#/$defs/RemoveMaterialDef",
           "remove_part_def": "#/$defs/RemovePartDef",
           "replace_control_entry": "#/$defs/ReplaceControlEntry",
+          "replace_joint": "#/$defs/ReplaceJoint",
+          "replace_material_def": "#/$defs/ReplaceMaterialDef",
+          "replace_part_def": "#/$defs/ReplacePartDef",
           "select_planet": "#/$defs/SelectPlanet",
           "set_assumption": "#/$defs/SetAssumption",
           "set_instance_material": "#/$defs/SetInstanceMaterial",
@@ -39,10 +42,16 @@
           "$ref": "#/$defs/AddPartDef"
         },
         {
+          "$ref": "#/$defs/ReplacePartDef"
+        },
+        {
           "$ref": "#/$defs/RemovePartDef"
         },
         {
           "$ref": "#/$defs/AddMaterialDef"
+        },
+        {
+          "$ref": "#/$defs/ReplaceMaterialDef"
         },
         {
           "$ref": "#/$defs/RemoveMaterialDef"
@@ -67,6 +76,9 @@
         },
         {
           "$ref": "#/$defs/AddJoint"
+        },
+        {
+          "$ref": "#/$defs/ReplaceJoint"
         },
         {
           "$ref": "#/$defs/RemoveJoint"
@@ -109,12 +121,12 @@
     "project",
     "inverse"
   ],
-  "title": "Applied",
+  "title": "ApplyResult",
   "type": "object",
   "$defs": {
     "ActuateEntry": {
       "additionalProperties": false,
-      "description": "Command `command` on `actuator` during `[start, end)` seconds of simulated time.\n\n`command` is the fraction of the actuator's full command, in [-1, 1] for a motor (sign is direction) and\n[0, 1] for a thruster. What full command means physically comes from the part (B-03b, B-03c, X-01b, X-01c).\nOne badge and source cover the entry.",
+      "description": "Command `command` on `actuator` during `[start, end)` seconds of simulated time.\n\n`command` is the fraction of the actuator's full command, in [-1, 1] for a motor (sign is direction) and\n[0, 1] for a thruster. What full command means physically comes from the part (B-03b, B-03c, X-01b, X-01c).\nOne badge and source cover the entry. `id` names the entry inside the schedule (unique there): commands\nthat edit an entry name it by id, never by position, so a reordered or partly accepted batch cannot change\na different entry than the one meant.",
       "properties": {
         "badge": {
           "$ref": "#/$defs/Badge"
@@ -125,6 +137,11 @@
         "type": {
           "const": "actuate",
           "title": "Type",
+          "type": "string"
+        },
+        "id": {
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+          "title": "Id",
           "type": "string"
         },
         "actuator": {
@@ -153,6 +170,7 @@
         "badge",
         "source",
         "type",
+        "id",
         "actuator",
         "start",
         "end",
@@ -242,6 +260,7 @@
     },
     "AddAssumption": {
       "additionalProperties": false,
+      "description": "Add an assumption. It must be `editable`: one that is not could never be changed or removed again, so its\ninverse would not apply.",
       "properties": {
         "type": {
           "const": "add_assumption",
@@ -274,6 +293,7 @@
     },
     "AddControlEntry": {
       "additionalProperties": false,
+      "description": "Add a schedule entry. `index` is only where it goes in the list; the entry is known by its `id`.",
       "properties": {
         "type": {
           "const": "add_control_entry",
@@ -630,7 +650,7 @@
     },
     "CommandBatch": {
       "additionalProperties": false,
-      "description": "Edits applied in order as one: all of them or none (`client-adapter.md` C2).",
+      "description": "Edits applied in order as one: all of them or none (`client-adapter.md` C2). Every intermediate state\nmust be a valid `Project` (see the module docstring).",
       "properties": {
         "type": {
           "const": "batch",
@@ -658,6 +678,9 @@
                 "remove_material_def": "#/$defs/RemoveMaterialDef",
                 "remove_part_def": "#/$defs/RemovePartDef",
                 "replace_control_entry": "#/$defs/ReplaceControlEntry",
+                "replace_joint": "#/$defs/ReplaceJoint",
+                "replace_material_def": "#/$defs/ReplaceMaterialDef",
+                "replace_part_def": "#/$defs/ReplacePartDef",
                 "select_planet": "#/$defs/SelectPlanet",
                 "set_assumption": "#/$defs/SetAssumption",
                 "set_instance_material": "#/$defs/SetInstanceMaterial",
@@ -670,10 +693,16 @@
                 "$ref": "#/$defs/AddPartDef"
               },
               {
+                "$ref": "#/$defs/ReplacePartDef"
+              },
+              {
                 "$ref": "#/$defs/RemovePartDef"
               },
               {
                 "$ref": "#/$defs/AddMaterialDef"
+              },
+              {
+                "$ref": "#/$defs/ReplaceMaterialDef"
               },
               {
                 "$ref": "#/$defs/RemoveMaterialDef"
@@ -698,6 +727,9 @@
               },
               {
                 "$ref": "#/$defs/AddJoint"
+              },
+              {
+                "$ref": "#/$defs/ReplaceJoint"
               },
               {
                 "$ref": "#/$defs/RemoveJoint"
@@ -754,7 +786,7 @@
     },
     "ControlSchedule": {
       "additionalProperties": false,
-      "description": "The time-axis control program. Entries are kept in the order given; time order is not required.",
+      "description": "The time-axis control program. Entries are kept in the order given; time order is not required. Entry ids\nare unique inside the schedule.",
       "properties": {
         "entries": {
           "default": [],
@@ -1644,6 +1676,7 @@
     },
     "RemoveAssumption": {
       "additionalProperties": false,
+      "description": "Remove the assumption with this key. Refused (`not_editable`) when it is not `editable`.",
       "properties": {
         "type": {
           "const": "remove_assumption",
@@ -1651,7 +1684,7 @@
           "type": "string"
         },
         "key": {
-          "minLength": 1,
+          "pattern": "^[a-z][a-z0-9_]{0,63}$",
           "title": "Key",
           "type": "string"
         }
@@ -1665,22 +1698,22 @@
     },
     "RemoveControlEntry": {
       "additionalProperties": false,
-      "description": "Remove the schedule entry at `index` (entries have no id; the position is the identity).",
+      "description": "Remove the schedule entry with this id.",
       "properties": {
         "type": {
           "const": "remove_control_entry",
           "title": "Type",
           "type": "string"
         },
-        "index": {
-          "minimum": 0,
-          "title": "Index",
-          "type": "integer"
+        "id": {
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+          "title": "Id",
+          "type": "string"
         }
       },
       "required": [
         "type",
-        "index"
+        "id"
       ],
       "title": "RemoveControlEntry",
       "type": "object"
@@ -1775,16 +1808,12 @@
     },
     "ReplaceControlEntry": {
       "additionalProperties": false,
+      "description": "Replace the schedule entry with the same id (`entry.id`), in place.",
       "properties": {
         "type": {
           "const": "replace_control_entry",
           "title": "Type",
           "type": "string"
-        },
-        "index": {
-          "minimum": 0,
-          "title": "Index",
-          "type": "integer"
         },
         "entry": {
           "$ref": "#/$defs/ActuateEntry"
@@ -1792,10 +1821,69 @@
       },
       "required": [
         "type",
-        "index",
         "entry"
       ],
       "title": "ReplaceControlEntry",
+      "type": "object"
+    },
+    "ReplaceJoint": {
+      "additionalProperties": false,
+      "description": "Replace the joint with the same id, in place: same position, and the actuators and schedule entries on it\nstay. Changes its limits, break threshold, kind or ends. Rejected if the new joint no longer suits what is on\nit (a motor on a joint that is fixed now, a motor whose instance is no longer at an end).",
+      "properties": {
+        "type": {
+          "const": "replace_joint",
+          "title": "Type",
+          "type": "string"
+        },
+        "joint": {
+          "$ref": "#/$defs/Joint"
+        }
+      },
+      "required": [
+        "type",
+        "joint"
+      ],
+      "title": "ReplaceJoint",
+      "type": "object"
+    },
+    "ReplaceMaterialDef": {
+      "additionalProperties": false,
+      "description": "Replace the material definition with the same id, in place (instances and terrain props keep using it).",
+      "properties": {
+        "type": {
+          "const": "replace_material_def",
+          "title": "Type",
+          "type": "string"
+        },
+        "material": {
+          "$ref": "#/$defs/Material"
+        }
+      },
+      "required": [
+        "type",
+        "material"
+      ],
+      "title": "ReplaceMaterialDef",
+      "type": "object"
+    },
+    "ReplacePartDef": {
+      "additionalProperties": false,
+      "description": "Replace the part definition with the same id, in place. Instances keep using it, so the new definition\nmust still suit every one of them (their parameters, their joints' snap points): else the command is\nrejected with the validator's sentence and the offending ref.",
+      "properties": {
+        "type": {
+          "const": "replace_part_def",
+          "title": "Type",
+          "type": "string"
+        },
+        "part": {
+          "$ref": "#/$defs/PartDef"
+        }
+      },
+      "required": [
+        "type",
+        "part"
+      ],
+      "title": "ReplacePartDef",
       "type": "object"
     },
     "SelectPlanet": {
@@ -1822,7 +1910,7 @@
     },
     "SetAssumption": {
       "additionalProperties": false,
-      "description": "Replace the assumption with the same `key`, in place.",
+      "description": "Replace the assumption with the same `key`, in place. Refused (`not_editable`) when the stored one is not\n`editable`, and when the new one would change `editable`.",
       "properties": {
         "type": {
           "const": "set_assumption",

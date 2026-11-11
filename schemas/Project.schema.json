@@ -33,7 +33,7 @@
   "$defs": {
     "ActuateEntry": {
       "additionalProperties": false,
-      "description": "Command `command` on `actuator` during `[start, end)` seconds of simulated time.\n\n`command` is the fraction of the actuator's full command, in [-1, 1] for a motor (sign is direction) and\n[0, 1] for a thruster. What full command means physically comes from the part (B-03b, B-03c, X-01b, X-01c).\nOne badge and source cover the entry.",
+      "description": "Command `command` on `actuator` during `[start, end)` seconds of simulated time.\n\n`command` is the fraction of the actuator's full command, in [-1, 1] for a motor (sign is direction) and\n[0, 1] for a thruster. What full command means physically comes from the part (B-03b, B-03c, X-01b, X-01c).\nOne badge and source cover the entry. `id` names the entry inside the schedule (unique there): commands\nthat edit an entry name it by id, never by position, so a reordered or partly accepted batch cannot change\na different entry than the one meant.",
       "properties": {
         "badge": {
           "$ref": "#/$defs/Badge"
@@ -44,6 +44,11 @@
         "type": {
           "const": "actuate",
           "title": "Type",
+          "type": "string"
+        },
+        "id": {
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+          "title": "Id",
           "type": "string"
         },
         "actuator": {
@@ -72,6 +77,7 @@
         "badge",
         "source",
         "type",
+        "id",
         "actuator",
         "start",
         "end",
@@ -305,7 +311,7 @@
     },
     "ControlSchedule": {
       "additionalProperties": false,
-      "description": "The time-axis control program. Entries are kept in the order given; time order is not required.",
+      "description": "The time-axis control program. Entries are kept in the order given; time order is not required. Entry ids\nare unique inside the schedule.",
       "properties": {
         "entries": {
           "default": [],

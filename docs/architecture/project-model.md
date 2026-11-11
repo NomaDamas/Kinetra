@@ -48,7 +48,7 @@
 | `Pose` | `position`(`WorldPosition`, m, 월드), `orientation`(`{x,y,z,w}` 단위 쿼터니언), `badge`, `source` | 부품 좌표계의 월드 자세. 인스턴스 위치의 저장된 권위는 이 자세다. 배지·출처 하나가 자세 전체를 덮는다(스냅 포인트와 같다) |
 | `Joint` | `id`, `kind`(`fixed` `hinge` `slider`), `a`, `b`(`SnapRef`: 인스턴스 ID + 스냅 포인트 ID), `limits`, `break_threshold` | 양끝은 서로 다른 인스턴스의 존재하는 스냅 포인트이고 한 스냅 포인트는 결합 하나에만 쓰인다. `a`가 부모, `b`가 자식이다. 결합 좌표의 0은 저장된 자세다(힌지 0 rad, 슬라이더 0 m). `limits`는 `Quantity` 두 개(`lower < upper`, 같은 단위): 힌지는 rad, 슬라이더는 m, 고정 결합에는 없다. `break_threshold`는 `Quantity`(N, > 0)이고 없으면 파단하지 않는다 |
 | `Actuator` | `id`, `kind`(`motor` `thruster`), `instance`, `joint` | 모터는 구동할 결합이 있어야 하고(고정 결합이 아니고, `instance`가 그 결합의 한쪽 끝), 추력기에는 결합이 없다. 같은 `kind`·`instance`·`joint`의 액추에이터 둘은 거부한다. 액추에이터 ID가 곧 조종 채널 ID다(`client-adapter.md` I5) |
-| `ControlSchedule` | `entries`: `ActuateEntry`(`actuator`, `start`, `end`[s], `command`, `badge`, `source`) | `0 <= start < end`. `command`는 완전 구동 대비 비율이고 모터는 [-1, 1], 추력기는 [0, 1]. 한 액추에이터의 구간은 겹치지 않는다(맞닿는 것은 된다). 배지·출처 하나가 항목을 덮는다 |
+| `ControlSchedule` | `entries`: `ActuateEntry`(`id`, `actuator`, `start`, `end`[s], `command`, `badge`, `source`) | `0 <= start < end`. `command`는 완전 구동 대비 비율이고 모터는 [-1, 1], 추력기는 [0, 1]. `id`는 스케줄 안에서 유일하다(명령이 항목을 위치가 아니라 ID로 가리킨다, C-02a). 한 액추에이터의 구간은 겹치지 않는다(맞닿는 것은 된다). 배지·출처 하나가 항목을 덮는다 |
 
 - `command`가 1일 때 몇 N·m, 몇 N인지는 부품의 사양(곡선)에서 온다(B-03b, B-03c, X-01b, X-01c). `DesignSpec`은 비율만 안다.
 - 자세가 권위다. 결합은 어느 두 스냅 포인트가 한 쌍인지만 말하고 아무것도 옮기지 않는다. 결합한 스냅 포인트가 저장된 자세에서 실제로 겹치는지, 부품이 공중에 떠 있는지는 배치 검사(C-02c 검증기, X-01d 컴파일 오류)이고 `DesignSpec` 검증이 아니다. 4륜차 예시는 조립된 차(바퀴 중심 z = 0.05 m, 오른쪽 모터는 Z축으로 180° 돌림, 맞닿는 스냅 포인트는 서로 `accepts`)이고 `test_designspec_four_wheel_car_is_assembled`가 결합한 모든 쌍이 월드에서 1e-9 안에 겹치는지 검사한다.
@@ -88,8 +88,9 @@ uv run python packages/core/scripts/export_schemas.py --check  # 쓰지 않고 �
 코드는 `kinetra_core/project.py`, `commands.py`, 테스트는 `packages/core/tests/test_commands.py`. 모든 편집은 `Command`다(계획 5.3절, `client-adapter.md` I1). 입력 수단(마우스, 에이전트, 음성, XR, MCP)마다 다른 Command는 없다.
 
 - `Project` = `design`(`DesignSpec`) + `world`(`World`, 필수) + `assumptions`(`AssumptionTable`). 명령이 적용되는 단위이고 클라이언트가 사본으로 쥐는 문서다(`client-adapter.md` D1). 각 부분의 검사는 그 부분에 있고, `Project`는 부분을 가로지르는 참조 하나만 더한다: 지형 소품의 `material`은 프로젝트의 재료여야 한다. 그래서 끊긴 참조(부품 없는 인스턴스, 스냅 포인트 없는 결합, 결합 없는 모터, 액추에이터 없는 스케줄 항목, 재료 없는 소품)를 가진 `Project`는 만들어지지 않는다.
-- `apply_command(project, command) -> Applied(project, inverse)`. 입력을 바꾸지 않고, 새 `Project`와 역명령을 돌려준다. 결과는 `Project.model_validate`로 통째로 다시 검증한다(`model_copy`는 검증을 건너뛰므로 쓰지 않는다). 거부되면 `CommandRejected`의 `reasons`(`Reason`: `code`, 읽을 수 있는 문장, 관련 ID)가 오고 프로젝트는 그대로다(`rejected` 메시지의 내용, `client-adapter.md` 3.2). 코드: `unknown_id`, `duplicate_id`, `in_use`, `index_out_of_range`, `invalid_command`, `invalid_project`(검증기 문장을 그대로 싣는다).
+- `apply_command(project, command) -> Applied(project, inverse)`. 입력을 바꾸지 않고, 새 `Project`와 역명령을 돌려준다. 결과는 `Project.model_validate`로 통째로 다시 검증한다(`model_copy`는 검증을 건너뛰므로 쓰지 않는다). 거부되면 `CommandRejected`의 `reasons`(`Reason`: `code`, 읽을 수 있는 문장, `ids`: `{kind, id}` 참조 목록)가 오고 프로젝트는 그대로다(`rejected` 메시지의 내용, `client-adapter.md` 3.2). 코드: `unknown_id`, `duplicate_id`, `in_use`, `index_out_of_range`, `invalid_command`, `invalid_project`(검증기 문장을 그대로 싣고, 끊긴 참조는 그 ID를 `ids`에 싣는다), `not_editable`. `ids`의 `kind`는 `instance`, `joint`, `actuator`, `part`, `material`, `snap_point`(`<인스턴스>/<스냅 포인트>`), `schedule_entry`, `assumption`, `parameter`(`<인스턴스>/<이름>`), `planet`, `prop`이다. ID는 자기 컬렉션 안에서만 유일해서 종류 없는 문자열은 부품 `wheel`과 인스턴스 `wheel`을 구분하지 못한다. 결과 타입은 `ApplyResult`다(`client-adapter.md` 3.1의 `applied` 메시지는 개정 번호와 발행자를 더해 C-05a가 만든다).
 - 역명령을 적용하면 원본과 같은 프로젝트가 된다(모든 컬렉션의 순서까지). 역명령의 역명령은 같은 편집을 다시 한다(다시 실행). 테스트가 명령마다 이를 본다.
+- 명령은 기존 항목을 ID로 가리킨다(위치로 가리키지 않는다). 부분 수락(C2)이나 낡은 기준 개정(C5)에서 위치로 가리키는 명령은 유효한 채로 다른 항목을 고친다. `index`는 `add_*`가 새 항목을 어디에 넣을지만 뜻한다.
 - `type` 태그가 필수인 판별 유니온 `Command`(`schemas/Command.schema.json`, `types.ts`의 `Command`). 명령은 문서의 말로 쓴다(ID, 파라미터 이름, SI 값과 배지·출처; I2). 누가 보냈는지는 명령에 없고 이력 기록(C-02b)이 갖는다.
 
 | 명령 | 효과 | 역명령 |
@@ -98,15 +99,18 @@ uv run python packages/core/scripts/export_schemas.py --check  # 쓰지 않고 �
 | `move_instance` | 인스턴스의 저장된 월드 자세를 바꾼다. 결합한 짝은 따라오지 않는다(자세가 권위). 짝이 따라오게 하려면 묶음으로 보낸다 | 이전 자세의 `move_instance` |
 | `set_parameter` / `clear_parameter` | 인스턴스의 파라미터 값을 정하거나(단위·범위는 `PartDef`의 것) 지워 기본값으로 되돌린다 | 이전 값의 `set_parameter`, 또는 `clear_parameter`(지운 자리에 `index`) |
 | `set_instance_material` | 인스턴스에 프로젝트의 재료를 지정(`None`이면 없음) | 이전 재료 |
-| `add_joint` / `remove_joint` | 결합·해제. 해제는 그 결합을 모터가 구동하던 액추에이터와 그 항목을 함께 지운다 | `remove_joint` / 묶음 |
+| `add_joint` / `replace_joint` / `remove_joint` | 결합·해제. `replace_joint`는 같은 ID의 결합을 제자리에서 통째로 바꾼다(한계, 파단 임계, 종류, 끝): 목록 위치와 그 결합의 액추에이터·항목이 그대로이고, 모터가 서 있던 결합이 고정 결합이 되는 식으로 달린 것을 깨면 거부된다. 해제는 그 결합을 모터가 구동하던 액추에이터와 그 항목을 함께 지운다 | `remove_joint` / 이전 결합의 `replace_joint` / 묶음 |
 | `add_actuator` / `remove_actuator` | 액추에이터. 삭제는 그 스케줄 항목도 지운다 | `remove_actuator` / 묶음 |
-| `add_control_entry`, `remove_control_entry`, `replace_control_entry` | 제어 스케줄 항목. 항목에는 ID가 없어 위치(`index`)가 곧 식별자다 | 서로의 역 |
-| `add_assumption`, `set_assumption`(같은 `key`를 제자리에서 교체), `remove_assumption` | 가정표 편집 | 서로의 역 |
+| `add_control_entry`, `remove_control_entry`(`id`), `replace_control_entry`(`entry.id`가 같은 항목을 제자리에서) | 제어 스케줄 항목. `add`의 `index`는 위치일 뿐이다 | `remove`의 역은 원래 위치에 `add` |
+| `add_assumption`, `set_assumption`(같은 `key`를 제자리에서 교체), `remove_assumption`(`key`) | 가정표 편집. `editable: false`인 가정은 바꾸거나 지울 수 없고(`not_editable`), `set_assumption`으로 `editable`을 뒤집을 수 없으며 `editable: false`인 가정을 새로 넣을 수도 없다(넣으면 다시 바꿀 수 없어 역명령이 성립하지 않는다) | 서로의 역 |
 | `select_planet` | `world.planet`을 ID로 바꾼다. 행성 상수는 어떤 명령에도 실리지 않는다(`client-adapter.md` C4) | 이전 행성 |
-| `add_part_def`, `remove_part_def`, `add_material_def`, `remove_material_def` | 프로젝트가 담는 정의(재료·부품). 삭제는 쓰는 곳이 있으면 `in_use`로 거부한다(사용자가 지우지 않은 것을 지우지 않는다). 재료의 값을 고치는 명령은 없다: 지우고 다시 넣는다 | 서로의 역 |
-| `batch` | 편집 명령을 순서대로 모두 적용하거나 모두 거부한다(C2). 중첩은 없다. 사유의 문장 앞에 `commands[n] (type):`이 붙는다 | 역명령들의 역순 묶음 |
+| `add_*_def`, `replace_part_def`, `replace_material_def`, `remove_*_def` | 프로젝트가 담는 정의(재료·부품). 삭제는 쓰는 곳이 있으면 `in_use`로 거부한다(사용자가 지우지 않은 것을 지우지 않는다). 쓰이는 정의는 삭제할 수 없으므로 명령으로 바꾸는 길은 `replace_*`(같은 ID, 제자리, 목록 위치 유지)뿐이다. 프로젝트 전체를 다시 검증하므로 쓰는 곳을 깨는 정의(인스턴스가 정한 파라미터가 없어짐, 범위 밖이 됨, 결합이 쓰는 스냅 포인트가 없어짐)는 그 사유와 깨진 대상의 참조와 함께 거부된다. 어느 출처가 정의 명령을 보낼 수 있는지는 C-02c | `add`↔`remove` / 이전 정의의 `replace` |
+| `batch` | 편집 명령을 순서대로 모두 적용하거나 모두 거부한다(C2). 중첩은 없다. 사유의 문장 앞에 `commands[n] (type):`이 붙는다. **최종 상태만이 아니라 모든 중간 상태가 유효한 `Project`여야 한다**: 한 액추에이터의 두 구간을 맞바꾸는 묶음은 첫 명령에서 겹침으로 거부된다. 줄이거나 지우는 명령을 먼저 두거나 `replace_*`를 쓴다(에이전트 재시도 G-03a, 대칭 복제 B-11이 알아야 한다) | 역명령들의 역순 묶음 |
 
 - 목록 순서는 값의 일부라서 `add_*`는 `index`(없으면 끝)를 받고, 역명령은 원래 자리로 되돌린다.
+- 같은 값을 다시 정하는 명령(같은 행성, 같은 재료, 같은 자세)은 수락되고 같은 프로젝트를 돌려준다. 빈 이력 칸과 불필요한 판정 무효화(D5)를 거르는 일은 C-02b가 `결과.project == project`로 판단한다.
+- 편집마다 프로젝트 전체를 JSON으로 덤프하고 다시 검증하므로 편집 하나는 프로젝트 크기에 비례하고 묶음은 n배다(리뷰 측정: 인스턴스 200개에서 단일 이동 약 11 ms, 200건 묶음 약 1.1 s; 1,000개에서 25 ms, 4 s). 명령의 모양과 무관한 내부 문제라서 별도 이슈로 추적한다.
+- 역명령은 목록의 절대 위치(`index`)를 담는다. 한 줄로 선형인 이력(S1)에서는 역명령이 늘 자기가 계산된 상태에 적용되므로 정확하다. 다른 편집이 끼어드는 사용자별 되돌리기(N-04)는 위치가 아니라 이웃을 가리키는 방식이 필요하다.
 - 삭제가 연쇄를 일으켜도 한 명령이고 한 역명령이다(#476 리뷰: 끊긴 상태를 만들지 않는다). 이력에서 한 칸이 되는 묶음 단위는 C-02b가 정한다.
 - 이 PR에 없는 것: 발행자와 되돌리기·다시 실행·이력(C-02b), 배치 검사(겹침, 뜬 부품, 스냅 호환)와 행성 상수·물성 DB·판정 결과를 바꾸려는 시도의 거부, `planet`이 `data/bodies`에 있는지, 어느 출처가 정의 명령을 보낼 수 있는지(C-02c), 저장 형식과 정의 해시(C-03), 선로의 메시지(C-05a), 지형 소품 편집(W-05), 수역(FL-02b), 분리 항목(X-08), 정의가 없는 인스턴스(C-06). 이 PR의 예시 수치는 모두 테스트가 선언한 값이다.
 

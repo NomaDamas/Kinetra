@@ -1,6 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "additionalProperties": false,
+  "description": "Remove the assumption with this key. Refused (`not_editable`) when it is not `editable`.",
   "properties": {
     "type": {
       "const": "remove_assumption",
@@ -8,7 +9,7 @@
       "type": "string"
     },
     "key": {
-      "minLength": 1,
+      "pattern": "^[a-z][a-z0-9_]{0,63}$",
       "title": "Key",
       "type": "string"
     }

@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "additionalProperties": false,
-  "description": "Replace the assumption with the same `key`, in place.",
+  "description": "Replace the assumption with the same `key`, in place. Refused (`not_editable`) when the stored one is not\n`editable`, and when the new one would change `editable`.",
   "properties": {
     "type": {
       "const": "set_assumption",

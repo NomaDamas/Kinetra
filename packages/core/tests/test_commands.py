@@ -17,6 +17,8 @@ from kinetra_core import (
     CommandRejected,
     Project,
     ReasonCode,
+    Ref,
+    RefKind,
     apply_command,
 )
 
@@ -52,6 +54,14 @@ def q(value, unit):
 
 def pose(x=0.0, y=0.0, z=0.0):
     return {"position": {"x": x, "y": y, "z": z}, "orientation": IDENTITY, "badge": "declared", "source": SRC}
+
+
+def entry(actuator, id, start, end, command):
+    return {"type": "actuate", "id": id, "actuator": actuator, "start": start, "end": end, "command": command, "badge": "declared", "source": SRC}
+
+
+def ref(kind, id):
+    return Ref(kind=RefKind(kind), id=id)
 
 
 def ids(items):
@@ -111,16 +121,27 @@ COMMANDS = {
     "remove_joint": lambda: dict(type="remove_joint", id="drive-l"),
     "remove_actuator": lambda: dict(type="remove_actuator", id="drive-motor-l"),
     "remove_instance": lambda: dict(type="remove_instance", id="motor-l"),
-    "remove_control_entry": lambda: dict(type="remove_control_entry", index=0),
+    "remove_control_entry": lambda: dict(type="remove_control_entry", id="run-l"),
     "replace_control_entry": lambda: dict(
-        type="replace_control_entry",
-        index=1,
-        entry={"type": "actuate", "actuator": "drive-motor-r", "start": 1.0, "end": 2.0, "command": -0.5, "badge": "declared", "source": SRC},
+        type="replace_control_entry", entry=entry("drive-motor-r", "run-r", 1.0, 2.0, -0.5)
     ),
     "add_control_entry": lambda: dict(
-        type="add_control_entry",
-        index=0,
-        entry={"type": "actuate", "actuator": "drive-motor-l", "start": 6.0, "end": 7.0, "command": 0.25, "badge": "declared", "source": SRC},
+        type="add_control_entry", index=0, entry=entry("drive-motor-l", "run-late", 6.0, 7.0, 0.25)
+    ),
+    "replace_material_def": lambda: dict(
+        type="replace_material_def",
+        material={**load("Material.example.json"), "id": "example-material", "name": "Example, edited"},
+    ),
+    "replace_part_def": lambda: dict(
+        type="replace_part_def",
+        part={**next(p for p in load("DesignSpec.four-wheel-car.json")["parts"] if p["id"] == "motor"), "name": "Motor, edited"},
+    ),
+    "replace_joint": lambda: dict(
+        type="replace_joint",
+        joint={
+            **next(j for j in load("DesignSpec.four-wheel-car.json")["joints"] if j["id"] == "drive-l"),
+            "break_threshold": {"value": 50.0, "unit": "N", "badge": "declared", "source": SRC},
+        },
     ),
     "set_assumption": lambda: dict(
         type="set_assumption",
@@ -258,11 +279,16 @@ def test_apply_removals_leave_no_dangling_reference_whatever_is_removed(project)
         dict(type="clear_parameter", instance="wheel-rr", name="diameter"),  # not set
         dict(type="set_instance_material", id="ghost", material=None),
         dict(type="remove_assumption", key="ghost"),
+        dict(type="remove_control_entry", id="ghost"),
+        dict(type="replace_control_entry", entry=entry("drive-motor-l", "ghost", 0.0, 1.0, 1.0)),
+        dict(type="replace_joint", joint={"id": "ghost", "kind": "fixed", "a": {"instance": "chassis-1", "snap_point": "motor-l"}, "b": {"instance": "motor-l", "snap_point": "mount"}}),
+        dict(type="replace_part_def", part={"id": "ghost", "name": "Ghost", "snap_points": []}),
+        dict(type="replace_material_def", material={**load("Material.example.json"), "id": "ghost"}),
     ],
 )
 def test_apply_rejects_unknown_ids(project, command):
     err = rejected(project, cmd(**command), ReasonCode.UNKNOWN_ID)
-    assert err.reasons[0].ids
+    assert err.reasons[0].ids and all(isinstance(r, Ref) for r in err.reasons[0].ids)
 
 
 def test_apply_rejects_duplicate_ids(project):
@@ -274,10 +300,21 @@ def test_apply_rejects_duplicate_ids(project):
 
 def test_apply_rejects_removing_a_definition_that_is_in_use(project):
     err = rejected(project, cmd(type="remove_part_def", id="wheel"), ReasonCode.IN_USE)
-    assert set(err.reasons[0].ids) >= {"wheel", "wheel-rl"}
+    assert set(err.reasons[0].ids) >= {ref("part", "wheel"), ref("instance", "wheel-rl")}
     # example-material is used by chassis-1 and by both terrain props
     err = rejected(project, cmd(type="remove_material_def", id="example-material"), ReasonCode.IN_USE)
-    assert set(err.reasons[0].ids) >= {"chassis-1", "prop-a", "prop-b"}
+    assert set(err.reasons[0].ids) >= {ref("instance", "chassis-1"), ref("prop", "prop-a"), ref("prop", "prop-b")}
+
+
+def test_apply_reason_refs_say_what_kind_an_id_is():
+    """A part and an instance can share an id: the reason keeps them apart."""
+    d = project_data()
+    wheel_part = next(p for p in d["design"]["parts"] if p["id"] == "wheel")
+    d["design"]["instances"].append({"id": "wheel", "part": "wheel", "pose": pose(0.0, 0.5, 0.05)})
+    err = rejected(Project.model_validate(d), cmd(type="remove_part_def", id=wheel_part["id"]), ReasonCode.IN_USE)
+    refs = err.reasons[0].ids
+    assert ref("part", "wheel") in refs and ref("instance", "wheel") in refs
+    assert len({(r.kind, r.id) for r in refs}) == len(refs)
 
 
 def test_apply_rejects_a_result_that_is_not_a_valid_project_and_says_where(project):
@@ -286,11 +323,13 @@ def test_apply_rejects_a_result_that_is_not_a_valid_project_and_says_where(proje
     too_wide = {"name": "diameter", **q(5.0, "m")}  # the wheel's range is 0.05 to 0.2 m
     err = rejected(project, cmd(type="set_parameter", instance="wheel-rl", parameter=too_wide), ReasonCode.INVALID_PROJECT)
     assert "outside" in err.reasons[0].message
-    entry = {"type": "actuate", "actuator": "drive-motor-l", "start": 1.0, "end": 2.0, "command": 1.0, "badge": "declared", "source": SRC}
-    err = rejected(project, cmd(type="add_control_entry", entry=entry), ReasonCode.INVALID_PROJECT)  # overlaps 0..5 s
+    assert err.reasons[0].ids == (ref("parameter", "wheel-rl/diameter"),)
+    overlap = entry("drive-motor-l", "run-x", 1.0, 2.0, 1.0)
+    err = rejected(project, cmd(type="add_control_entry", entry=overlap), ReasonCode.INVALID_PROJECT)  # overlaps 0..5 s
     assert "overlapping" in err.reasons[0].message
-    unknown = {**entry, "actuator": "nobody"}
-    rejected(project, cmd(type="add_control_entry", entry=unknown), ReasonCode.INVALID_PROJECT)
+    assert {ref("schedule_entry", "run-l"), ref("schedule_entry", "run-x")} <= set(err.reasons[0].ids)
+    err = rejected(project, cmd(type="add_control_entry", entry=entry("nobody", "run-y", 9.0, 10.0, 1.0)), ReasonCode.INVALID_PROJECT)
+    assert ref("actuator", "nobody") in err.reasons[0].ids
 
 
 def test_apply_rejects_dangling_joint_actuator_and_part_references(project):
@@ -300,16 +339,21 @@ def test_apply_rejects_dangling_joint_actuator_and_part_references(project):
         "a": {"instance": "ghost", "snap_point": "hub"},
         "b": {"instance": "wheel-fl", "snap_point": "hub"},
     }
-    rejected(project, cmd(type="add_joint", joint=bad_joint), ReasonCode.INVALID_PROJECT)
-    rejected(project, cmd(type="add_actuator", actuator={"id": "a-x", "kind": "thruster", "instance": "ghost"}), ReasonCode.INVALID_PROJECT)
+    err = rejected(project, cmd(type="add_joint", joint=bad_joint), ReasonCode.INVALID_PROJECT)
+    assert ref("instance", "ghost") in err.reasons[0].ids  # the dangling id, not only the joint's own
+    err = rejected(project, cmd(type="add_actuator", actuator={"id": "a-x", "kind": "thruster", "instance": "ghost"}), ReasonCode.INVALID_PROJECT)
+    assert ref("instance", "ghost") in err.reasons[0].ids
     wheel = new_wheel()
     wheel["part"] = "ghost"
-    rejected(project, cmd(type="add_instance", instance=wheel), ReasonCode.INVALID_PROJECT)
+    err = rejected(project, cmd(type="add_instance", instance=wheel), ReasonCode.INVALID_PROJECT)
+    assert ref("part", "ghost") in err.reasons[0].ids
+    err = rejected(project, cmd(type="set_instance_material", id="chassis-1", material="unobtainium"), ReasonCode.INVALID_PROJECT)
+    assert ref("material", "unobtainium") in err.reasons[0].ids
 
 
 def test_apply_rejects_indexes_out_of_range(project):
     rejected(project, cmd(type="add_instance", instance=new_wheel(), index=99), ReasonCode.INDEX_OUT_OF_RANGE)
-    rejected(project, cmd(type="remove_control_entry", index=2), ReasonCode.INDEX_OUT_OF_RANGE)
+    rejected(project, cmd(type="add_control_entry", entry=entry("drive-motor-l", "run-z", 6.0, 7.0, 1.0), index=3), ReasonCode.INDEX_OUT_OF_RANGE)
     rejected(project, cmd(type="set_parameter", instance="wheel-rl", parameter={"name": "diameter", **q(0.1, "m")}, index=0), ReasonCode.INVALID_COMMAND)
 
 
@@ -371,10 +415,7 @@ def test_apply_a_whole_session_and_back(project):
         cmd(type="move_instance", id="spare", pose=pose(0.1, 0.1, 0.05)),
         cmd(type="add_joint", joint=spare_joint),
         cmd(type="add_actuator", actuator={"id": "spare-motor", "kind": "motor", "instance": "chassis-1", "joint": "spare-hub"}),
-        cmd(
-            type="add_control_entry",
-            entry={"type": "actuate", "actuator": "spare-motor", "start": 0.0, "end": 1.0, "command": 1.0, "badge": "declared", "source": SRC},
-        ),
+        cmd(type="add_control_entry", entry=entry("spare-motor", "spare-run", 0.0, 1.0, 1.0)),
     ]
     current, undo = project, []
     for step in steps:
@@ -436,3 +477,155 @@ def test_project_rejects_a_terrain_prop_with_an_unknown_material():
 def test_actuate_entry_in_commands_is_the_designspec_one():
     entry = cmd(type="add_control_entry", entry=load("DesignSpec.four-wheel-car.json")["schedule"]["entries"][0]).entry
     assert isinstance(entry, ActuateEntry)
+
+
+# --- schedule entries are named by id, never by position (review of #497, P1) ------------------------------
+
+
+def two_entries_project(project):
+    """drive-motor-l: run-l (0..5 s) and a later run-l2 (6..7 s); drive-motor-r: run-r."""
+    return apply_command(project, cmd(type="add_control_entry", entry=entry("drive-motor-l", "run-l2", 6.0, 7.0, 0.5))).project
+
+
+def test_apply_partial_accept_of_a_removal_batch_removes_the_entry_meant(project):
+    """Plan: remove run-l, then remove run-r. Only the second is accepted: run-r goes, run-l stays."""
+    accepted = cmd(type="remove_control_entry", id="run-r")
+    result = apply_command(project, accepted).project
+    assert [e.id for e in result.design.schedule.entries] == ["run-l"]
+    # and the first one alone removes only run-l
+    assert [e.id for e in apply_command(project, cmd(type="remove_control_entry", id="run-l")).project.design.schedule.entries] == ["run-r"]
+
+
+def test_apply_stale_replace_does_not_overwrite_another_entry(project):
+    """A replace made against revision N, applied after someone inserted an entry at the front: it still edits the
+    entry it named (by id), or is rejected if that entry is gone; it never edits a different one."""
+    replace = cmd(type="replace_control_entry", entry=entry("drive-motor-r", "run-r", 0.0, 2.0, -1.0))
+    newer = apply_command(project, cmd(type="add_control_entry", index=0, entry=entry("drive-motor-l", "run-new", 6.0, 7.0, 1.0))).project
+    result = apply_command(newer, replace).project
+    by_id = {e.id: e for e in result.design.schedule.entries}
+    assert by_id["run-r"].command == -1.0 and by_id["run-r"].end == 2.0
+    assert by_id["run-new"].command == 1.0 and by_id["run-l"].command == 1.0  # untouched
+    gone = apply_command(newer, cmd(type="remove_control_entry", id="run-r")).project
+    rejected(gone, replace, ReasonCode.UNKNOWN_ID)
+
+
+def test_apply_add_control_entry_index_is_only_a_position(project):
+    done = roundtrip(project, cmd(type="add_control_entry", index=1, entry=entry("drive-motor-l", "run-mid", 6.0, 7.0, 0.1)))
+    assert [e.id for e in done.project.design.schedule.entries] == ["run-l", "run-mid", "run-r"]
+    assert done.inverse == cmd(type="remove_control_entry", id="run-mid")
+    rejected(project, cmd(type="add_control_entry", entry=entry("drive-motor-l", "run-l", 6.0, 7.0, 0.1)), ReasonCode.DUPLICATE_ID)
+
+
+def test_apply_remove_control_entry_inverse_restores_its_position(project):
+    project = two_entries_project(project)
+    done = roundtrip(project, cmd(type="remove_control_entry", id="run-l"))
+    assert [e.id for e in done.project.design.schedule.entries] == ["run-r", "run-l2"]
+
+
+# --- replace in place (review of #497, P2) -----------------------------------------------------------------
+
+
+def test_apply_replace_material_def_in_place_while_in_use(project):
+    done = roundtrip(project, cmd(**COMMANDS["replace_material_def"]()))
+    assert done.project.design.materials[0].name == "Example, edited"
+    # a material that instances and both terrain props use can be replaced, though it cannot be removed
+    rejected(project, cmd(type="remove_material_def", id="example-material"), ReasonCode.IN_USE)
+    assert [m.id for m in done.project.design.materials] == [m.id for m in project.design.materials]
+
+
+def test_apply_replace_part_def_in_place_while_in_use(project):
+    done = roundtrip(project, cmd(**COMMANDS["replace_part_def"]()))
+    assert next(p for p in done.project.design.parts if p.id == "motor").name == "Motor, edited"
+    assert [p.id for p in done.project.design.parts] == [p.id for p in project.design.parts]
+
+
+def test_apply_replace_part_def_that_breaks_its_users_is_rejected_with_the_refs(project):
+    wheel = next(p for p in load("DesignSpec.four-wheel-car.json")["parts"] if p["id"] == "wheel")
+    no_parameters = {**wheel, "parameters": []}  # wheel-rl sets `diameter`
+    err = rejected(project, cmd(type="replace_part_def", part=no_parameters), ReasonCode.INVALID_PROJECT)
+    assert "no parameter 'diameter'" in err.reasons[0].message
+    assert ref("parameter", "wheel-rl/diameter") in err.reasons[0].ids
+    no_hub = {**wheel, "snap_points": []}  # four joints end on the hub
+    err = rejected(project, cmd(type="replace_part_def", part=no_hub), ReasonCode.INVALID_PROJECT)
+    assert any(r.kind is RefKind.SNAP_POINT for r in err.reasons[0].ids)
+    narrow = {**wheel, "parameters": [{**wheel["parameters"][0], "max": q(0.09, "m"), "default": q(0.07, "m")}]}
+    rejected(project, cmd(type="replace_part_def", part=narrow), ReasonCode.INVALID_PROJECT)  # wheel-rl sets 0.1
+
+
+def test_apply_replace_joint_keeps_position_motor_and_schedule(project):
+    done = roundtrip(project, cmd(**COMMANDS["replace_joint"]()))
+    d = done.project.design
+    assert ids(d.joints) == ids(project.design.joints)  # same place in the list
+    assert d.joints[2].break_threshold.value == 50.0
+    assert ids(d.actuators) == ids(project.design.actuators)  # the motor on drive-l is still there
+    assert [e.id for e in d.schedule.entries] == ["run-l", "run-r"]
+
+
+def test_apply_replace_joint_that_strands_its_motor_is_rejected(project):
+    drive_l = next(j for j in load("DesignSpec.four-wheel-car.json")["joints"] if j["id"] == "drive-l")
+    err = rejected(project, cmd(type="replace_joint", joint={**drive_l, "kind": "fixed"}), ReasonCode.INVALID_PROJECT)
+    assert "fixed" in err.reasons[0].message
+    assert {ref("joint", "drive-l"), ref("actuator", "drive-motor-l")} <= set(err.reasons[0].ids)
+
+
+# --- assumptions that are not editable ---------------------------------------------------------------------
+
+
+def locked_project(project):
+    table = project_data()["assumptions"]["assumptions"][0]
+    data = project_data()
+    data["assumptions"]["assumptions"][0] = {**table, "editable": False}
+    return Project.model_validate(data), data["assumptions"]["assumptions"][0]
+
+
+def test_apply_refuses_to_change_or_remove_a_non_editable_assumption(project):
+    locked, assumption = locked_project(project)
+    rejected(locked, cmd(type="set_assumption", assumption={**assumption, "label": "x"}), ReasonCode.NOT_EDITABLE)
+    rejected(locked, cmd(type="set_assumption", assumption={**assumption, "editable": True}), ReasonCode.NOT_EDITABLE)
+    rejected(locked, cmd(type="remove_assumption", key=assumption["key"]), ReasonCode.NOT_EDITABLE)
+
+
+def test_apply_refuses_to_flip_editable_or_add_a_non_editable_assumption(project):
+    first = project_data()["assumptions"]["assumptions"][0]
+    rejected(project, cmd(type="set_assumption", assumption={**first, "editable": False}), ReasonCode.NOT_EDITABLE)
+    other = {**first, "key": "locked_one", "editable": False}
+    rejected(project, cmd(type="add_assumption", assumption=other), ReasonCode.NOT_EDITABLE)
+
+
+# --- batches: every intermediate state is valid; no-ops -----------------------------------------------------
+
+
+def test_apply_batch_swapping_two_slots_is_rejected_at_the_first_command_and_a_reordered_one_works(project):
+    project = two_entries_project(project)  # run-l 0..5 s and run-l2 6..7 s on drive-motor-l
+    swap = cmd(
+        type="batch",
+        commands=[
+            dict(type="replace_control_entry", entry=entry("drive-motor-l", "run-l", 6.0, 7.0, 1.0)),
+            dict(type="replace_control_entry", entry=entry("drive-motor-l", "run-l2", 0.0, 5.0, 0.5)),
+        ],
+    )
+    err = rejected(project, swap, ReasonCode.INVALID_PROJECT)
+    assert err.reasons[0].message.startswith("commands[0] (replace_control_entry):") and "overlapping" in err.reasons[0].message
+    ordered = cmd(
+        type="batch",
+        commands=[
+            dict(type="remove_control_entry", id="run-l2"),
+            dict(type="replace_control_entry", entry=entry("drive-motor-l", "run-l", 6.0, 7.0, 1.0)),
+            dict(type="add_control_entry", entry=entry("drive-motor-l", "run-l2", 0.0, 5.0, 0.5)),
+        ],
+    )
+    roundtrip(project, ordered)
+
+
+def test_apply_a_command_that_sets_what_is_there_is_accepted_and_changes_nothing(project):
+    done = apply_command(project, cmd(type="select_planet", planet=project.world.planet))
+    assert done.project == project and done.inverse == cmd(type="select_planet", planet=project.world.planet)
+    same = project.design.instances[1]
+    done = apply_command(project, cmd(type="move_instance", id=same.id, pose=same.pose.model_dump(mode="json")))
+    assert done.project == project
+
+
+def test_apply_result_is_not_the_wire_message_name():
+    import kinetra_core
+
+    assert hasattr(kinetra_core, "ApplyResult") and not hasattr(kinetra_core, "Applied")
