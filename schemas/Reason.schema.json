@@ -1,0 +1,81 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Why a command was rejected: a stable `code`, a readable sentence and what it is about. `ids` are typed\nrefs (`kind` and `id`) because an id is only unique inside its own collection: a part `wheel` and an instance\n`wheel` are different things.",
+  "properties": {
+    "code": {
+      "$ref": "#/$defs/ReasonCode"
+    },
+    "message": {
+      "minLength": 1,
+      "title": "Message",
+      "type": "string"
+    },
+    "ids": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/Ref"
+      },
+      "title": "Ids",
+      "type": "array"
+    }
+  },
+  "required": [
+    "code",
+    "message"
+  ],
+  "title": "Reason",
+  "type": "object",
+  "$defs": {
+    "ReasonCode": {
+      "enum": [
+        "unknown_id",
+        "duplicate_id",
+        "in_use",
+        "index_out_of_range",
+        "invalid_command",
+        "invalid_project",
+        "not_editable"
+      ],
+      "title": "ReasonCode",
+      "type": "string"
+    },
+    "Ref": {
+      "additionalProperties": false,
+      "description": "`id` of a `kind`. A snap point is `<instance>/<snap point>`, a parameter `<instance>/<parameter>`:\nthose two ids are only unique inside their owner.",
+      "properties": {
+        "kind": {
+          "$ref": "#/$defs/RefKind"
+        },
+        "id": {
+          "minLength": 1,
+          "title": "Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "id"
+      ],
+      "title": "Ref",
+      "type": "object"
+    },
+    "RefKind": {
+      "enum": [
+        "instance",
+        "joint",
+        "actuator",
+        "part",
+        "material",
+        "snap_point",
+        "schedule_entry",
+        "assumption",
+        "parameter",
+        "planet",
+        "prop"
+      ],
+      "title": "RefKind",
+      "type": "string"
+    }
+  }
+}

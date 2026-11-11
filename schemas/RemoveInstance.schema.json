@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Delete an instance with its joints, the actuators on it or on those joints, and their schedule entries.",
+  "properties": {
+    "type": {
+      "const": "remove_instance",
+      "title": "Type",
+      "type": "string"
+    },
+    "id": {
+      "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+      "title": "Id",
+      "type": "string"
+    }
+  },
+  "required": [
+    "type",
+    "id"
+  ],
+  "title": "RemoveInstance",
+  "type": "object"
+}

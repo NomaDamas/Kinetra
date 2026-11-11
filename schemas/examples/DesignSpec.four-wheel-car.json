@@ -636,6 +636,7 @@
     "entries": [
       {
         "type": "actuate",
+        "id": "run-l",
         "actuator": "drive-motor-l",
         "start": 0.0,
         "end": 5.0,
@@ -649,6 +650,7 @@
       },
       {
         "type": "actuate",
+        "id": "run-r",
         "actuator": "drive-motor-r",
         "start": 0.0,
         "end": 5.0,

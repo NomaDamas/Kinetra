@@ -1,0 +1,300 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Replace the joint with the same id, in place: same position, and the actuators and schedule entries on it\nstay. Changes its limits, break threshold, kind or ends. Rejected if the new joint no longer suits what is on\nit (a motor on a joint that is fixed now, a motor whose instance is no longer at an end).",
+  "properties": {
+    "type": {
+      "const": "replace_joint",
+      "title": "Type",
+      "type": "string"
+    },
+    "joint": {
+      "$ref": "#/$defs/Joint"
+    }
+  },
+  "required": [
+    "type",
+    "joint"
+  ],
+  "title": "ReplaceJoint",
+  "type": "object",
+  "$defs": {
+    "Badge": {
+      "enum": [
+        "sim",
+        "cite",
+        "default",
+        "declared",
+        "estimate"
+      ],
+      "title": "Badge",
+      "type": "string"
+    },
+    "BreakThreshold": {
+      "additionalProperties": false,
+      "description": "Joint load [N] above which the joint releases. A simplified model, not FEM (plan 4.6).",
+      "properties": {
+        "badge": {
+          "$ref": "#/$defs/Badge"
+        },
+        "source": {
+          "$ref": "#/$defs/Source"
+        },
+        "value": {
+          "exclusiveMinimum": 0,
+          "title": "Value",
+          "type": "number"
+        },
+        "unit": {
+          "const": "N",
+          "title": "Unit",
+          "type": "string"
+        }
+      },
+      "required": [
+        "badge",
+        "source",
+        "value",
+        "unit"
+      ],
+      "title": "BreakThreshold",
+      "type": "object"
+    },
+    "Joint": {
+      "additionalProperties": false,
+      "description": "A connection between two snap points of two different instances. `a` is the parent side by convention.\n\n`limits` are optional (`None`: unlimited, as a wheel axle) and not allowed on a fixed joint.\n`break_threshold` is optional (`None`: never breaks).",
+      "properties": {
+        "id": {
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "$ref": "#/$defs/JointKind"
+        },
+        "a": {
+          "$ref": "#/$defs/SnapRef"
+        },
+        "b": {
+          "$ref": "#/$defs/SnapRef"
+        },
+        "limits": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/JointLimits"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "break_threshold": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/BreakThreshold"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "id",
+        "kind",
+        "a",
+        "b"
+      ],
+      "title": "Joint",
+      "type": "object"
+    },
+    "JointKind": {
+      "enum": [
+        "fixed",
+        "hinge",
+        "slider"
+      ],
+      "title": "JointKind",
+      "type": "string"
+    },
+    "JointLimits": {
+      "additionalProperties": false,
+      "description": "Travel limits of the joint coordinate: rad for a hinge, m for a slider. `lower < upper`.",
+      "properties": {
+        "lower": {
+          "$ref": "#/$defs/Quantity"
+        },
+        "upper": {
+          "$ref": "#/$defs/Quantity"
+        }
+      },
+      "required": [
+        "lower",
+        "upper"
+      ],
+      "title": "JointLimits",
+      "type": "object"
+    },
+    "Quantity": {
+      "additionalProperties": false,
+      "description": "One physical number with its unit, badge and source.",
+      "properties": {
+        "badge": {
+          "$ref": "#/$defs/Badge"
+        },
+        "source": {
+          "$ref": "#/$defs/Source"
+        },
+        "value": {
+          "title": "Value",
+          "type": "number"
+        },
+        "unit": {
+          "$ref": "#/$defs/Unit"
+        }
+      },
+      "required": [
+        "badge",
+        "source",
+        "value",
+        "unit"
+      ],
+      "title": "Quantity",
+      "type": "object"
+    },
+    "SnapRef": {
+      "additionalProperties": false,
+      "description": "A snap point of a placed instance.",
+      "properties": {
+        "instance": {
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+          "title": "Instance",
+          "type": "string"
+        },
+        "snap_point": {
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+          "title": "Snap Point",
+          "type": "string"
+        }
+      },
+      "required": [
+        "instance",
+        "snap_point"
+      ],
+      "title": "SnapRef",
+      "type": "object"
+    },
+    "Source": {
+      "additionalProperties": false,
+      "description": "Where a value comes from.\n\n`ref` is what was cited, declared or run: a document, a datasheet, a run id, or the reason a default was chosen\n(for an estimate: the method and its inputs). `locator` is where inside it (table, page, section). `url` is a\nlink when there is one. `license` (SPDX expression over the repo allowlist, `spdx.py`) and `declared_by` / `declared_at` feed the badge popover\n(`ValueBadges`, 인용 and 사용자 선언); `Provenance` allows each only on its own badge.",
+      "properties": {
+        "ref": {
+          "maxLength": 500,
+          "minLength": 1,
+          "title": "Ref",
+          "type": "string"
+        },
+        "locator": {
+          "anyOf": [
+            {
+              "maxLength": 200,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Locator"
+        },
+        "url": {
+          "anyOf": [
+            {
+              "maxLength": 2000,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Url"
+        },
+        "license": {
+          "anyOf": [
+            {
+              "maxLength": 200,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "License"
+        },
+        "declared_by": {
+          "anyOf": [
+            {
+              "maxLength": 200,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Declared By"
+        },
+        "declared_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Declared At"
+        }
+      },
+      "required": [
+        "ref"
+      ],
+      "title": "Source",
+      "type": "object"
+    },
+    "Unit": {
+      "description": "Closed unit vocabulary (SI, written the way the JSON carries it).",
+      "enum": [
+        "1",
+        "m",
+        "m^2",
+        "m^3",
+        "kg",
+        "s",
+        "rad",
+        "m/s",
+        "m/s^2",
+        "rad/s",
+        "N",
+        "N*m",
+        "N/m",
+        "N*s/m",
+        "N*m/rad",
+        "Pa",
+        "kg/m^3",
+        "kg*m^2",
+        "J",
+        "W",
+        "W/m^2"
+      ],
+      "title": "Unit",
+      "type": "string"
+    }
+  }
+}

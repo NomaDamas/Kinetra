@@ -20,7 +20,7 @@ Joint graph: `a` is the parent side, `b` the child. This model only checks that 
 point is used twice. That the joints form a tree (no loop, one connected assembly) is the body-tree builder's
 rule, reported as a compile error (X-01a, X-01d).
 
-Stable ids (G3): instance, joint and actuator ids match `ID_PATTERN` and are unique inside their own collection.
+Stable ids (G3): instance, joint, actuator and schedule entry ids match `ID_PATTERN` and are unique inside their own collection.
 An actuator's id is also its control channel id (client-adapter I5): manual control (`control`) and schedule
 entries name the actuator. Two actuators with the same kind, instance and joint are rejected (a second channel
 to the same drive is ambiguous). Which part may carry which actuator kind (a motor on a motor part, a thruster
@@ -44,6 +44,7 @@ from .conventions import ID_PATTERN, Unit
 from .material import Material
 from .partdef import Name, PartDef, Quaternion
 from .provenance import Number, Provenance, Quantity
+from .refs import Ref, RefError, RefKind
 
 _Id = Annotated[str, Field(pattern=ID_PATTERN)]
 _NonNegative = Annotated[float, Field(strict=True, allow_inf_nan=False, ge=0)]
@@ -190,15 +191,22 @@ class Actuator(BaseModel):
         return self
 
 
+def _duplicates(ids: list[str]) -> list[str]:
+    return sorted(i for i, c in Counter(ids).items() if c > 1)
+
+
 class ActuateEntry(Provenance):
     """Command `command` on `actuator` during `[start, end)` seconds of simulated time.
 
     `command` is the fraction of the actuator's full command, in [-1, 1] for a motor (sign is direction) and
     [0, 1] for a thruster. What full command means physically comes from the part (B-03b, B-03c, X-01b, X-01c).
-    One badge and source cover the entry.
+    One badge and source cover the entry. `id` names the entry inside the schedule (unique there): commands
+    that edit an entry name it by id, never by position, so a reordered or partly accepted batch cannot change
+    a different entry than the one meant.
     """
 
     type: Literal["actuate"]
+    id: _Id
     actuator: _Id
     start: _NonNegative
     end: _NonNegative
@@ -212,15 +220,19 @@ class ActuateEntry(Provenance):
 
 
 class ControlSchedule(BaseModel):
-    """The time-axis control program. Entries are kept in the order given; time order is not required."""
+    """The time-axis control program. Entries are kept in the order given; time order is not required. Entry ids
+    are unique inside the schedule."""
 
     model_config = ConfigDict(extra="forbid", frozen=True)
 
     entries: tuple[ActuateEntry, ...] = ()
 
-
-def _duplicates(ids: list[str]) -> list[str]:
-    return sorted(i for i, c in Counter(ids).items() if c > 1)
+    @model_validator(mode="after")
+    def _unique_ids(self) -> "ControlSchedule":
+        dup = _duplicates([e.id for e in self.entries])
+        if dup:
+            raise RefError(f"duplicate schedule entry id: {dup}", *(Ref(kind=RefKind.SCHEDULE_ENTRY, id=i) for i in dup))
+        return self
 
 
 class DesignSpec(BaseModel):
@@ -244,7 +256,7 @@ class DesignSpec(BaseModel):
         ):
             dup = _duplicates(ids)
             if dup:
-                raise ValueError(f"duplicate {label} id: {dup}")
+                raise RefError(f"duplicate {label} id: {dup}", *(Ref(kind=RefKind(label), id=i) for i in dup))
 
         materials = {m.id for m in self.materials}
         parts = {p.id: p for p in self.parts}
@@ -256,19 +268,20 @@ class DesignSpec(BaseModel):
             where = f"instances[{n}] ({inst.id!r})"
             part = parts.get(inst.part)
             if part is None:
-                raise ValueError(f"{where}: unknown part {inst.part!r}")
+                raise RefError(f"{where}: unknown part {inst.part!r}", Ref(kind=RefKind.PART, id=inst.part), Ref(kind=RefKind.INSTANCE, id=inst.id))
             if inst.material is not None and inst.material not in materials:
-                raise ValueError(f"{where}: unknown material {inst.material!r}")
+                raise RefError(f"{where}: unknown material {inst.material!r}", Ref(kind=RefKind.MATERIAL, id=inst.material), Ref(kind=RefKind.INSTANCE, id=inst.id))
             defs = {p.name: p for p in part.parameters}
             for v in inst.parameters:
                 d = defs.get(v.name)
                 if d is None:
-                    raise ValueError(f"{where}: part {part.id!r} has no parameter {v.name!r}")
+                    raise RefError(f"{where}: part {part.id!r} has no parameter {v.name!r}", Ref(kind=RefKind.PARAMETER, id=f"{inst.id}/{v.name}"))
                 if v.unit is not d.unit:
-                    raise ValueError(f"{where}: parameter {v.name!r} is in {d.unit.value!r}, got {v.unit.value!r}")
+                    raise RefError(f"{where}: parameter {v.name!r} is in {d.unit.value!r}, got {v.unit.value!r}", Ref(kind=RefKind.PARAMETER, id=f"{inst.id}/{v.name}"))
                 if not d.min.value <= v.value <= d.max.value:
-                    raise ValueError(
-                        f"{where}: parameter {v.name!r} = {v.value} is outside the part's range [{d.min.value}, {d.max.value}]"
+                    raise RefError(
+                        f"{where}: parameter {v.name!r} = {v.value} is outside the part's range [{d.min.value}, {d.max.value}]",
+                        Ref(kind=RefKind.PARAMETER, id=f"{inst.id}/{v.name}"),
                     )
 
         used: dict[tuple[str, str], str] = {}
@@ -278,36 +291,50 @@ class DesignSpec(BaseModel):
                 where = f"joints[{n}] ({joint.id!r}).{side}"
                 inst = instances.get(ref.instance)
                 if inst is None:
-                    raise ValueError(f"{where}: unknown instance {ref.instance!r}")
+                    raise RefError(f"{where}: unknown instance {ref.instance!r}", Ref(kind=RefKind.INSTANCE, id=ref.instance), Ref(kind=RefKind.JOINT, id=joint.id))
                 if ref.snap_point not in {s.id for s in parts[inst.part].snap_points}:
-                    raise ValueError(
-                        f"{where}: part {inst.part!r} of instance {ref.instance!r} has no snap point {ref.snap_point!r}"
+                    raise RefError(
+                        f"{where}: part {inst.part!r} of instance {ref.instance!r} has no snap point {ref.snap_point!r}",
+                        Ref(kind=RefKind.SNAP_POINT, id=f"{ref.instance}/{ref.snap_point}"),
+                        Ref(kind=RefKind.JOINT, id=joint.id),
                     )
                 key = (ref.instance, ref.snap_point)
                 if key in used:
-                    raise ValueError(f"{where}: snap point {ref.snap_point!r} of {ref.instance!r} is already used by joint {used[key]!r}")
+                    raise RefError(
+                        f"{where}: snap point {ref.snap_point!r} of {ref.instance!r} is already used by joint {used[key]!r}",
+                        Ref(kind=RefKind.SNAP_POINT, id=f"{ref.instance}/{ref.snap_point}"),
+                        Ref(kind=RefKind.JOINT, id=used[key]),
+                        Ref(kind=RefKind.JOINT, id=joint.id),
+                    )
                 used[key] = joint.id
 
         for n, act in enumerate(self.actuators):
             where = f"actuators[{n}] ({act.id!r})"
             if act.instance not in instances:
-                raise ValueError(f"{where}: unknown instance {act.instance!r}")
+                raise RefError(f"{where}: unknown instance {act.instance!r}", Ref(kind=RefKind.INSTANCE, id=act.instance), Ref(kind=RefKind.ACTUATOR, id=act.id))
             if act.joint is not None:
                 joint = joints.get(act.joint)
                 if joint is None:
-                    raise ValueError(f"{where}: unknown joint {act.joint!r}")
+                    raise RefError(f"{where}: unknown joint {act.joint!r}", Ref(kind=RefKind.JOINT, id=act.joint), Ref(kind=RefKind.ACTUATOR, id=act.id))
                 if joint.kind is JointKind.FIXED:
-                    raise ValueError(f"{where}: joint {act.joint!r} is fixed, nothing to drive")
+                    raise RefError(f"{where}: joint {act.joint!r} is fixed, nothing to drive", Ref(kind=RefKind.JOINT, id=act.joint), Ref(kind=RefKind.ACTUATOR, id=act.id))
                 if act.instance not in (joint.a.instance, joint.b.instance):
-                    raise ValueError(f"{where}: instance {act.instance!r} is not at either end of joint {act.joint!r}")
+                    raise RefError(
+                        f"{where}: instance {act.instance!r} is not at either end of joint {act.joint!r}",
+                        Ref(kind=RefKind.INSTANCE, id=act.instance),
+                        Ref(kind=RefKind.JOINT, id=act.joint),
+                        Ref(kind=RefKind.ACTUATOR, id=act.id),
+                    )
 
         seen_drive: dict[tuple[ActuatorKind, str, str | None], str] = {}
         for n, act in enumerate(self.actuators):
             drive = (act.kind, act.instance, act.joint)
             if drive in seen_drive:
-                raise ValueError(
+                raise RefError(
                     f"actuators[{n}] ({act.id!r}): same {act.kind.value} on instance {act.instance!r}"
-                    f"{'' if act.joint is None else f' and joint {act.joint!r}'} as actuator {seen_drive[drive]!r}"
+                    f"{'' if act.joint is None else f' and joint {act.joint!r}'} as actuator {seen_drive[drive]!r}",
+                    Ref(kind=RefKind.ACTUATOR, id=act.id),
+                    Ref(kind=RefKind.ACTUATOR, id=seen_drive[drive]),
                 )
             seen_drive[drive] = act.id
 
@@ -316,15 +343,18 @@ class DesignSpec(BaseModel):
             where = f"schedule.entries[{n}]"
             act = actuators.get(entry.actuator)
             if act is None:
-                raise ValueError(f"{where}: unknown actuator {entry.actuator!r}")
+                raise RefError(f"{where}: unknown actuator {entry.actuator!r}", Ref(kind=RefKind.ACTUATOR, id=entry.actuator), Ref(kind=RefKind.SCHEDULE_ENTRY, id=entry.id))
             if act.kind is ActuatorKind.THRUSTER and entry.command < 0:
-                raise ValueError(f"{where}: thruster {act.id!r} takes a command in [0, 1], got {entry.command}")
+                raise RefError(f"{where}: thruster {act.id!r} takes a command in [0, 1], got {entry.command}", Ref(kind=RefKind.SCHEDULE_ENTRY, id=entry.id), Ref(kind=RefKind.ACTUATOR, id=act.id))
             by_actuator.setdefault(entry.actuator, []).append(entry)
         for actuator_id, entries in by_actuator.items():
             entries.sort(key=lambda e: e.start)
             for prev, nxt in zip(entries, entries[1:]):
                 if nxt.start < prev.end:
-                    raise ValueError(
-                        f"schedule: actuator {actuator_id!r} has overlapping entries [{prev.start}, {prev.end}) and [{nxt.start}, {nxt.end})"
+                    raise RefError(
+                        f"schedule: actuator {actuator_id!r} has overlapping entries [{prev.start}, {prev.end}) and [{nxt.start}, {nxt.end})",
+                        Ref(kind=RefKind.SCHEDULE_ENTRY, id=prev.id),
+                        Ref(kind=RefKind.SCHEDULE_ENTRY, id=nxt.id),
+                        Ref(kind=RefKind.ACTUATOR, id=actuator_id),
                     )
         return self
