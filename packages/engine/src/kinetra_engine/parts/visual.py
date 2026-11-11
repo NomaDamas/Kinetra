@@ -31,7 +31,7 @@ from typing import Any
 from kinetra_core import Material, PartDef, PbrSlots, Quantity, load_material_catalog
 
 from . import _tessellate as tess
-from .mass import ShapeError, _resolve_parameters
+from ._shape import ShapeError, resolve_shape
 
 GENERATOR = "kinetra_engine.parts.visual"
 FRAME_NOTE = (
@@ -189,31 +189,26 @@ def part_gltf(
     """The glTF JSON document of `part` made of `material` and the BIN chunk it indexes (`buffers[0]`, no uri).
 
     `parameters` overrides the part's defaults exactly as in `mass_properties`. Raises `ShapeError` for a part without
-    a shape recipe, an unknown or out-of-range parameter, or a dimension that is not above zero.
+    a shape recipe, an unknown or out-of-range parameter, a dimension that is not above zero, or components that break
+    the disjoint-sum rule (`kinetra_core.shape`): a recipe is drawn only if its mass can be computed.
     """
-    if part.shape is None:
-        raise ShapeError(f"part {part.id!r} has no shape recipe")
-    quantities = _resolve_parameters(part, parameters)
-    values = {n: q.value for n, q in quantities.items()}
+    resolved = resolve_shape(part, parameters)  # the same evaluation, and the same rejections, as mass and the proxy
+    assert part.shape is not None
 
     binary = _Binary()
     meshes: list[dict[str, Any]] = []
     children: list[int] = []
     nodes: list[dict[str, Any]] = [{}]  # node 0 is the root, filled in below
     voids: list[dict[str, Any]] = []
-    for comp in part.shape.components:
-        dims = {name: expr.evaluate(values) for name, expr in comp.primitive.dimensions()}
-        for name, v in dims.items():
-            if not v > 0.0:
-                raise ShapeError(f"component {comp.id!r}: {name} is {v} m, must be above zero")
-        center = comp.position.evaluate(values)
+    for placed in resolved.placed:
+        comp, dims = placed.component, placed.dims
         if comp.operation == "subtract":
             voids.append(
                 {
                     "id": comp.id,
                     "primitive": comp.primitive.kind,
-                    "dimensions": dims,
-                    "center": list(center),
+                    "dimensions": dict(dims),
+                    "center": list(placed.center),
                     "orientation": _unit_quaternion(comp.orientation),
                 }
             )
@@ -236,11 +231,12 @@ def part_gltf(
             {
                 "name": comp.id,
                 "mesh": len(meshes) - 1,
-                "translation": list(center),
+                "translation": list(placed.center),
                 "rotation": _unit_quaternion(comp.orientation),
             }
         )
         children.append(len(nodes) - 1)
+    quantities = resolved.quantities
 
     material_entry, uses_ior = _material_entry(material)
     nodes[0] = {

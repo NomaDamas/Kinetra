@@ -110,8 +110,8 @@ def drive_shaft() -> PartDef:
         "drive-shaft",
         [
             cyl("shaft", 0.015, 0.4, at=(0, 0, 0), quat=ROT_X90),
-            sphere("cap", 0.03, at=(0.0, 0.215, 0.0)),
-            box("hub", 0.05, 0.05, 0.05, at=(0.0, -0.225, 0.0)),
+            sphere("cap", 0.03, at=(0.0, 0.235, 0.0)),
+            box("hub", 0.05, 0.05, 0.05, at=(0.0, -0.23, 0.0)),
         ],
     )
 

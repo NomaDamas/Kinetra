@@ -40,7 +40,7 @@ class Box(BaseModel):
 
     model_config = ConfigDict(extra="forbid", frozen=True)
 
-    kind: Literal["box"] = "box"
+    kind: Literal["box"]
     size_x: AxisExpr
     size_y: AxisExpr
     size_z: AxisExpr
@@ -56,7 +56,7 @@ class Cylinder(BaseModel):
 
     model_config = ConfigDict(extra="forbid", frozen=True)
 
-    kind: Literal["cylinder"] = "cylinder"
+    kind: Literal["cylinder"]
     radius: AxisExpr
     length: AxisExpr
 
@@ -70,7 +70,7 @@ class Sphere(BaseModel):
 
     model_config = ConfigDict(extra="forbid", frozen=True)
 
-    kind: Literal["sphere"] = "sphere"
+    kind: Literal["sphere"]
     radius: AxisExpr
 
     def dimensions(self) -> Iterator[tuple[str, AxisExpr]]:

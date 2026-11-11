@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "A subtracted shape component the proxy could not keep: it is solid in the proxy. `volume` [m^3] is what the proxy\ngained from it.",
+  "properties": {
+    "id": {
+      "pattern": "^[a-z][a-z0-9_]{0,63}$",
+      "title": "Id",
+      "type": "string"
+    },
+    "primitive": {
+      "enum": [
+        "box",
+        "cylinder",
+        "sphere"
+      ],
+      "title": "Primitive",
+      "type": "string"
+    },
+    "volume": {
+      "exclusiveMinimum": 0.0,
+      "title": "Volume",
+      "type": "number"
+    }
+  },
+  "required": [
+    "id",
+    "primitive",
+    "volume"
+  ],
+  "title": "FilledVoid",
+  "type": "object"
+}

@@ -5,6 +5,7 @@
   "description": "Kinetra Studio web client (workbench, viewport, agent bar)",
   "type": "module",
   "dependencies": {
+    "@kinetra/schemas": "workspace:*",
     "@kinetra/ui": "workspace:*"
   }
 }

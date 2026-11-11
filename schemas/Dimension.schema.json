@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "One resolved length of a primitive, in metres, under the field name `shape.py` gives it.",
+  "properties": {
+    "name": {
+      "pattern": "^[a-z][a-z0-9_]{0,63}$",
+      "title": "Name",
+      "type": "string"
+    },
+    "value": {
+      "title": "Value",
+      "type": "number"
+    }
+  },
+  "required": [
+    "name",
+    "value"
+  ],
+  "title": "Dimension",
+  "type": "object"
+}

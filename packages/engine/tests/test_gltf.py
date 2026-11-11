@@ -189,8 +189,8 @@ def test_gltf_one_node_per_added_component_with_the_recipe_pose():
     root, kids = nodes[0], [nodes[i] for i in nodes[0]["children"]]
     assert [k["name"] for k in kids] == ["shaft", "cap", "hub"]
     assert kids[0]["translation"] == [0.0, 0.0, 0.0] and kids[0]["rotation"] == pytest.approx([ROT_X90["x"], 0, 0, ROT_X90["w"]])
-    assert kids[1]["translation"] == pytest.approx([0.0, 0.215, 0.0])
-    assert kids[2]["translation"] == pytest.approx([0.0, -0.225, 0.0])
+    assert kids[1]["translation"] == pytest.approx([0.0, 0.235, 0.0])
+    assert kids[2]["translation"] == pytest.approx([0.0, -0.23, 0.0])
     # root: the part-local frame (+Z up) turned into glTF +Y up: local +z maps to +y, local +y to -z.
     x, y, z, w = root["rotation"]
     rot = lambda v: (  # rotate v by the unit quaternion (x, y, z, w)
@@ -225,6 +225,14 @@ def test_gltf_rejects_what_mass_properties_rejects_for_one_part():
         glb_of(mounting_plate(), parameters={"width": Quantity.model_validate(q(0.5))})
     with pytest.raises(ShapeError, match="need unit"):
         glb_of(mounting_plate(), parameters={"width": Quantity.model_validate(q(0.15, "kg"))})
+
+
+def test_gltf_rejects_a_recipe_whose_components_overlap_like_mass_does():
+    overlapping = part("p", [box("a", 0.2, 0.2, 0.2), sphere("b", 0.1, at=(0.1, 0, 0))])
+    with pytest.raises(ShapeError, match="overlap"):
+        glb_of(overlapping)
+    with pytest.raises(ShapeError, match="overlap"):
+        mass_properties(overlapping, catalog_material(ALU))
 
 
 # --- the PBR material slot ----------------------------------------------------------------------------------------------

@@ -1,0 +1,344 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "The recipe: one or more components. At least one is `add`; ids are unique.\n\nThe offsets and factors inside the expressions are plain numbers; like a snap point's pose, the recipe carries\none badge and source for all of them (who drew these dimensions: `declared`, or `cite` with a drawing, ...).",
+  "properties": {
+    "badge": {
+      "$ref": "#/$defs/Badge"
+    },
+    "source": {
+      "$ref": "#/$defs/Source"
+    },
+    "components": {
+      "items": {
+        "$ref": "#/$defs/ShapeComponent"
+      },
+      "minItems": 1,
+      "title": "Components",
+      "type": "array"
+    }
+  },
+  "required": [
+    "badge",
+    "source",
+    "components"
+  ],
+  "title": "Shape",
+  "type": "object",
+  "$defs": {
+    "AxisExpr": {
+      "additionalProperties": false,
+      "description": "A length in metres: `offset + sum(factor * param)`. A snap point coordinate in the part's local frame, or a\ndimension of a shape component (`shape.py`). Every `param` is a length parameter of the part.",
+      "properties": {
+        "offset": {
+          "title": "Offset",
+          "type": "number"
+        },
+        "terms": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/ParamTerm"
+          },
+          "title": "Terms",
+          "type": "array"
+        }
+      },
+      "required": [
+        "offset"
+      ],
+      "title": "AxisExpr",
+      "type": "object"
+    },
+    "Badge": {
+      "enum": [
+        "sim",
+        "cite",
+        "default",
+        "declared",
+        "estimate"
+      ],
+      "title": "Badge",
+      "type": "string"
+    },
+    "Box": {
+      "additionalProperties": false,
+      "description": "Rectangular block. `size_*` are full extents [m] along the component's local x, y, z.",
+      "properties": {
+        "kind": {
+          "const": "box",
+          "title": "Kind",
+          "type": "string"
+        },
+        "size_x": {
+          "$ref": "#/$defs/AxisExpr"
+        },
+        "size_y": {
+          "$ref": "#/$defs/AxisExpr"
+        },
+        "size_z": {
+          "$ref": "#/$defs/AxisExpr"
+        }
+      },
+      "required": [
+        "kind",
+        "size_x",
+        "size_y",
+        "size_z"
+      ],
+      "title": "Box",
+      "type": "object"
+    },
+    "Cylinder": {
+      "additionalProperties": false,
+      "description": "Solid circular cylinder. `radius` and `length` [m]; the axis is the component's local z.",
+      "properties": {
+        "kind": {
+          "const": "cylinder",
+          "title": "Kind",
+          "type": "string"
+        },
+        "radius": {
+          "$ref": "#/$defs/AxisExpr"
+        },
+        "length": {
+          "$ref": "#/$defs/AxisExpr"
+        }
+      },
+      "required": [
+        "kind",
+        "radius",
+        "length"
+      ],
+      "title": "Cylinder",
+      "type": "object"
+    },
+    "ParamTerm": {
+      "additionalProperties": false,
+      "description": "`factor * <value of parameter param>`. The parameter must be a length.",
+      "properties": {
+        "param": {
+          "pattern": "^[a-z][a-z0-9_]{0,63}$",
+          "title": "Param",
+          "type": "string"
+        },
+        "factor": {
+          "title": "Factor",
+          "type": "number"
+        }
+      },
+      "required": [
+        "param",
+        "factor"
+      ],
+      "title": "ParamTerm",
+      "type": "object"
+    },
+    "Position": {
+      "additionalProperties": false,
+      "properties": {
+        "x": {
+          "$ref": "#/$defs/AxisExpr"
+        },
+        "y": {
+          "$ref": "#/$defs/AxisExpr"
+        },
+        "z": {
+          "$ref": "#/$defs/AxisExpr"
+        }
+      },
+      "required": [
+        "x",
+        "y",
+        "z"
+      ],
+      "title": "Position",
+      "type": "object"
+    },
+    "Quaternion": {
+      "additionalProperties": false,
+      "description": "Unit quaternion with named components (`conventions.py`).",
+      "properties": {
+        "x": {
+          "title": "X",
+          "type": "number"
+        },
+        "y": {
+          "title": "Y",
+          "type": "number"
+        },
+        "z": {
+          "title": "Z",
+          "type": "number"
+        },
+        "w": {
+          "title": "W",
+          "type": "number"
+        }
+      },
+      "required": [
+        "x",
+        "y",
+        "z",
+        "w"
+      ],
+      "title": "Quaternion",
+      "type": "object"
+    },
+    "ShapeComponent": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "pattern": "^[a-z][a-z0-9_]{0,63}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "primitive": {
+          "discriminator": {
+            "mapping": {
+              "box": "#/$defs/Box",
+              "cylinder": "#/$defs/Cylinder",
+              "sphere": "#/$defs/Sphere"
+            },
+            "propertyName": "kind"
+          },
+          "oneOf": [
+            {
+              "$ref": "#/$defs/Box"
+            },
+            {
+              "$ref": "#/$defs/Cylinder"
+            },
+            {
+              "$ref": "#/$defs/Sphere"
+            }
+          ],
+          "title": "Primitive"
+        },
+        "operation": {
+          "default": "add",
+          "enum": [
+            "add",
+            "subtract"
+          ],
+          "title": "Operation",
+          "type": "string"
+        },
+        "position": {
+          "$ref": "#/$defs/Position"
+        },
+        "orientation": {
+          "$ref": "#/$defs/Quaternion"
+        }
+      },
+      "required": [
+        "id",
+        "primitive",
+        "position"
+      ],
+      "title": "ShapeComponent",
+      "type": "object"
+    },
+    "Source": {
+      "additionalProperties": false,
+      "description": "Where a value comes from.\n\n`ref` is what was cited, declared or run: a document, a datasheet, a run id, or the reason a default was chosen\n(for an estimate: the method and its inputs). `locator` is where inside it (table, page, section). `url` is a\nlink when there is one. `license` (SPDX expression over the repo allowlist, `spdx.py`) and `declared_by` / `declared_at` feed the badge popover\n(`ValueBadges`, 인용 and 사용자 선언); `Provenance` allows each only on its own badge.",
+      "properties": {
+        "ref": {
+          "maxLength": 500,
+          "minLength": 1,
+          "title": "Ref",
+          "type": "string"
+        },
+        "locator": {
+          "anyOf": [
+            {
+              "maxLength": 200,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Locator"
+        },
+        "url": {
+          "anyOf": [
+            {
+              "maxLength": 2000,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Url"
+        },
+        "license": {
+          "anyOf": [
+            {
+              "maxLength": 200,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "License"
+        },
+        "declared_by": {
+          "anyOf": [
+            {
+              "maxLength": 200,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Declared By"
+        },
+        "declared_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Declared At"
+        }
+      },
+      "required": [
+        "ref"
+      ],
+      "title": "Source",
+      "type": "object"
+    },
+    "Sphere": {
+      "additionalProperties": false,
+      "description": "Solid sphere. `radius` [m].",
+      "properties": {
+        "kind": {
+          "const": "sphere",
+          "title": "Kind",
+          "type": "string"
+        },
+        "radius": {
+          "$ref": "#/$defs/AxisExpr"
+        }
+      },
+      "required": [
+        "kind",
+        "radius"
+      ],
+      "title": "Sphere",
+      "type": "object"
+    }
+  }
+}

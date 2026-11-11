@@ -11,6 +11,7 @@ import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from "no
 import { extname, join, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import { chromium } from "playwright-core";
+import type { Browser } from "playwright-core";
 import { PNG } from "pngjs";
 import { FIXTURES, REPO_ROOT } from "./validate.ts";
 
@@ -69,8 +70,9 @@ export interface PageResult {
 export async function run(outDir = DEFAULT_OUT): Promise<{ page: PageResult; drawn: number; png: string }> {
   mkdirSync(outDir, { recursive: true });
   const srv = await serve();
-  const browser = await chromium.launch({ args: [] });
+  let browser: Browser | undefined;
   try {
+    browser = await chromium.launch({ args: [] }); // inside the try: a failed launch still closes the server
     const page = await browser.newPage({ viewport: { width: 1280, height: 480 } });
     const errors: string[] = [];
     page.on("pageerror", (e) => errors.push(String(e)));
@@ -86,7 +88,7 @@ export async function run(outDir = DEFAULT_OUT): Promise<{ page: PageResult; dra
     writeFileSync(join(outDir, "result.json"), JSON.stringify({ ...result, drawn_pixels: drawn }, null, 2));
     return { page: result, drawn, png: file };
   } finally {
-    await browser.close();
+    await browser?.close();
     srv.close();
   }
 }
