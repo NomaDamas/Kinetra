@@ -60,13 +60,14 @@ uv run pytest tools/dev -q                                              # 가짜
 
 ## 진입점 목록
 
-무거운 실행은 아래 네 가지다. 진입점은 시작하기 **전에** 가드를 부른다. 이미 있는 것은 이 PR에서 연결했다. 아직 없는 것은 만드는 이슈가 같은 방식으로 연결한다(그 이슈의 본문은 여기서 고치지 않았다).
+무거운 실행은 아래 다섯 가지다. 진입점은 시작하기 **전에** 가드를 부른다. 이미 있는 것은 이 PR에서 연결했다. 아직 없는 것은 만드는 이슈가 같은 방식으로 연결한다(그 이슈의 본문은 여기서 고치지 않았다).
 
 | 무거운 실행 | 진입점 | 가드 | 이슈 |
 |---|---|---|---|
 | 강체 1,000개 이상 스케일 측정 | `spikes/mujoco-limits/scale.py` (`--bodies` 또는 `--break-pile`에 1,000 이상) | **연결됨.** 시작 전에 `guard_or_exit("heavy")`. 차단이면 종료 코드 2로 아무것도 재지 않고 끝난다. 테스트: `spikes/mujoco-limits/test_scale.py`의 `CliTest` | #43, #282 (A0-01a) |
 | XR 에뮬레이터 테스트 | `spikes/webxr/run-xr.mjs`(`pnpm --dir spikes/webxr xr`)와 `spikes/webxr/tests/browser-xr.test.mjs`(`test:browser`) | **연결됨.** `CI=true` 또는 `KINETRA_GUARD_PASSED=1`(가드가 `-- 명령`으로 감쌀 때 설정)이 아니면 시작하지 않는다(`run-xr.mjs`는 종료 코드 3, 브라우저 시험은 import 시점에 예외). 테스트: `spikes/webxr/tests/offline.test.mjs` | #48 (A0-02b). #205 (XR-01b)가 같은 방식으로 잇는다 |
 | 브라우저 렌더·스트림·공유 페이지 측정 | `spikes/web-client/measure-pose.mjs`(A0-02a), `measure-replay.mjs`(A0-02c) | **연결됨.** 가드 밖에서 시작하면 종료 코드 2로 거절한다(`KINETRA_GUARD_PASSED`). 실행: `resource_guard.py --profile heavy -- pnpm --dir spikes/web-client measure:pose` | #47 (A0-02a), #49 (A0-02c) |
+| 받아쓰기 모델 내려받기(462 MiB)와 인식 비교 | `python -m kinetra_engine.stt fetch`(모델), `tools/stt/compare.py`(비교) | **연결됨.** `fetch`는 `KINETRA_GUARD_PASSED=1`(또는 `CI=true`)이 아니면 종료 코드 2로 거절한다. `compare.py`는 시작 전에 `guard_or_exit("heavy")`. 테스트: `packages/engine/tests/test_stt.py` | #158 (I-01a) |
 | 영상 인코딩 | 아직 없음 | 프레임 캡처·mp4 내보내기 진입점이 시작 전에 부른다 | #190 (H-01b), #195 (H-02d) |
 | 유체 연구 실행 | 아직 없음. Genesis·Taichi는 가드를 통과할 때만 설치하고 돌린다 | 실행기가 시작 전에 부른다 | #305 (FL-06), #307 (FL-08) |
 
