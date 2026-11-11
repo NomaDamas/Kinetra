@@ -14,9 +14,15 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 KEY_ENV = "OPENROUTER_API_KEY"
 
+# Bearer 뒤는 비밀 모양(충분히 긴 토큰 문자열)일 때만 가린다. `{self._key}`, `$TOKEN`, `os.environ[...]` 같은 코드 표현식은
+# 문자 집합(`{`, `$`, `[` 가 없다)과 길이로 걸러지고, 길어도 숫자 없는 식별자·속성 체인(`self._openrouter_api_key`)은 _is_code 가 거른다.
+BEARER_MIN = 20
+_BEARER = re.compile(r"(?i)\bBearer\s+([A-Za-z0-9._~+/=\-]{%d,})" % BEARER_MIN)
+_IDENT_CHAIN = re.compile(r"[A-Za-z_]\w*(?:\.[A-Za-z_]\w*)*")
+
 _SECRET_PATTERNS = (
     re.compile(r"sk-[A-Za-z0-9_\-]{8,}"),  # OpenRouter / OpenAI 형태
-    re.compile(r"(?i)\bBearer\s+[^\s\"']+"),
+    _BEARER,
     re.compile(r"\bgh[pousr]_[A-Za-z0-9]{16,}"),  # GitHub 토큰(classic, OAuth, 앱 등)
     re.compile(r"\bgithub_pat_[A-Za-z0-9_]{20,}"),  # GitHub fine-grained PAT
 )
@@ -26,14 +32,54 @@ class ReviewError(Exception):
     """리뷰 봇이 사용자에게 보여 줄 오류. 메시지는 이미 마스킹돼 있다."""
 
 
-def redact(text: str) -> str:
-    """환경변수의 키 값과 키처럼 생긴 문자열을 가린다."""
+def _is_code(token: str) -> bool:
+    """숫자 없이 `_` 나 `.` 로 이어진 식별자 체인은 비밀이 아니라 소스 표현식이다."""
+    return not any(c.isdigit() for c in token) and ("." in token or "_" in token) and _IDENT_CHAIN.fullmatch(token) is not None
+
+
+def _spans(text: str) -> list[tuple[int, int]]:
+    """가릴 구간(겹치면 합친다). 원문 기준 오프셋이라 줄 번호가 정확하다."""
+    found: list[tuple[int, int]] = []
     key = os.environ.get(KEY_ENV, "")
     if len(key) >= 4:
-        text = text.replace(key, "***")
+        found += [(m.start(), m.end()) for m in re.finditer(re.escape(key), text)]
     for pat in _SECRET_PATTERNS:
-        text = pat.sub("***", text)
-    return text
+        for m in pat.finditer(text):
+            if pat is _BEARER and _is_code(m.group(1)):
+                continue
+            found.append((m.start(), m.end()))
+    found.sort()
+    merged: list[tuple[int, int]] = []
+    for a, b in found:
+        if merged and a < merged[-1][1]:
+            merged[-1] = (merged[-1][0], max(merged[-1][1], b))
+        else:
+            merged.append((a, b))
+    return merged
+
+
+def redact_report(text: str) -> tuple[str, int, list[int]]:
+    """(가린 글, 가린 곳 수, 가린 곳이 있는 줄 번호들(1부터, 원문 기준, 오름차순·중복 없음))."""
+    spans = _spans(text)
+    if not spans:
+        return text, 0, []
+    out: list[str] = []
+    lines: list[int] = []
+    pos = 0
+    for a, b in spans:
+        out += [text[pos:a], "***"]
+        pos = b
+        # 한 곳이 여러 줄에 걸쳐도(Bearer 와 토큰 사이 개행) 시작 줄만 센다
+        n = text.count("\n", 0, a) + 1
+        if not lines or lines[-1] != n:
+            lines.append(n)
+    out.append(text[pos:])
+    return "".join(out), len(spans), lines
+
+
+def redact(text: str) -> str:
+    """환경변수의 키 값과 키처럼 생긴 문자열을 가린다."""
+    return redact_report(text)[0]
 
 
 def redact_obj(obj):

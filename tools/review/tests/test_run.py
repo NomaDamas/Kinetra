@@ -109,7 +109,7 @@ def test_run_redacting_stream_masks_key_and_tokens(monkeypatch, capsys):
     monkeypatch.setenv("OPENROUTER_API_KEY", FAKE_KEY)
     buf = io.StringIO()
     w = run._Redacting(buf)
-    w.write(f"key={FAKE_KEY} Bearer abc.def sk-or-v1-zzzzzzzzzzzz ghp_{'a' * 20}\n")
+    w.write(f"key={FAKE_KEY} Bearer abc.def-LONGTOKENVALUE012345 sk-or-v1-zzzzzzzzzzzz ghp_{'a' * 20}\n")
     assert buf.getvalue() == "key=*** *** *** ***\n"
 
 
