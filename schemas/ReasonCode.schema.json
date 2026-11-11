@@ -7,7 +7,9 @@
     "index_out_of_range",
     "invalid_command",
     "invalid_project",
-    "not_editable"
+    "not_editable",
+    "nothing_to_undo",
+    "nothing_to_redo"
   ],
   "title": "ReasonCode",
   "type": "string"

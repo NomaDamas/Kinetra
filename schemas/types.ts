@@ -292,6 +292,17 @@ export interface Dimension {
   value: number;
 }
 
+/**
+ * What `execute`, `undo` and `redo` return. `entry` is the entry that was added (`execute`), taken back
+ * (`undo`) or replayed (`redo`); it is `None` only when `execute` was given a command that changes nothing, in
+ * which case `project` equals the input and `history` is the input.
+ */
+export interface EditResult {
+  project: Project;
+  history: History;
+  entry: HistoryEntry | null;
+}
+
 export interface ElasticModulus {
   badge: Badge;
   source: Source;
@@ -328,6 +339,19 @@ export interface Gravity {
   source: Source;
   value: number;
   unit: "m/s^2";
+}
+
+/** `entries[:cursor]` are applied, `entries[cursor:]` were undone and can be redone. */
+export interface History {
+  entries?: HistoryEntry[];
+  cursor?: number;
+}
+
+/** One undo step: `command` as it was applied, its `inverse`, and the `origin` it came from. */
+export interface HistoryEntry {
+  origin: Origin;
+  command: AddPartDef | ReplacePartDef | RemovePartDef | AddMaterialDef | ReplaceMaterialDef | RemoveMaterialDef | AddInstance | RemoveInstance | MoveInstance | SetParameter | ClearParameter | SetInstanceMaterial | AddJoint | ReplaceJoint | RemoveJoint | AddActuator | RemoveActuator | AddControlEntry | RemoveControlEntry | ReplaceControlEntry | AddAssumption | SetAssumption | RemoveAssumption | SelectPlanet | CommandBatch;
+  inverse: AddPartDef | ReplacePartDef | RemovePartDef | AddMaterialDef | ReplaceMaterialDef | RemoveMaterialDef | AddInstance | RemoveInstance | MoveInstance | SetParameter | ClearParameter | SetInstanceMaterial | AddJoint | ReplaceJoint | RemoveJoint | AddActuator | RemoveActuator | AddControlEntry | RemoveControlEntry | ReplaceControlEntry | AddAssumption | SetAssumption | RemoveAssumption | SelectPlanet | CommandBatch;
 }
 
 /** Slope angle above the ground in radians, strictly between 0 and pi/2. */
@@ -419,6 +443,12 @@ export interface NormalDistribution {
   clip_low?: number | null;
   clip_high?: number | null;
 }
+
+/**
+ * Which input path sent a command (`client-adapter.md` 3.5): the person's mouse or keyboard, the agent's
+ * accepted proposal, a confirmed voice sentence, an XR hand or controller, the MCP server.
+ */
+export type Origin = "mouse" | "agent" | "voice" | "xr" | "mcp";
 
 /** A named parameter of the part with its default and allowed range, all in `unit`. */
 export interface ParamDef {
@@ -596,7 +626,7 @@ export interface Reason {
   ids?: Ref[];
 }
 
-export type ReasonCode = "unknown_id" | "duplicate_id" | "in_use" | "index_out_of_range" | "invalid_command" | "invalid_project" | "not_editable";
+export type ReasonCode = "unknown_id" | "duplicate_id" | "in_use" | "index_out_of_range" | "invalid_command" | "invalid_project" | "not_editable" | "nothing_to_undo" | "nothing_to_redo";
 
 /**
  * `id` of a `kind`. A snap point is `<instance>/<snap point>`, a parameter `<instance>/<parameter>`:
