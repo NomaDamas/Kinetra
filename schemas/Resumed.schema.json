@@ -12,6 +12,11 @@
       "title": "Project Id",
       "type": "string"
     },
+    "epoch": {
+      "minLength": 1,
+      "title": "Epoch",
+      "type": "string"
+    },
     "after_revision": {
       "minimum": 0,
       "title": "After Revision",
@@ -26,6 +31,7 @@
   "required": [
     "type",
     "project_id",
+    "epoch",
     "after_revision",
     "revision"
   ],

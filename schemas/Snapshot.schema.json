@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "description": "The whole document at `revision`.",
+  "description": "The whole document at `revision`, of the document life `epoch`.",
   "properties": {
     "type": {
       "const": "snapshot",
@@ -10,6 +10,11 @@
     "project_id": {
       "pattern": "^[a-z][a-z0-9_-]{0,63}$",
       "title": "Project Id",
+      "type": "string"
+    },
+    "epoch": {
+      "minLength": 1,
+      "title": "Epoch",
       "type": "string"
     },
     "revision": {
@@ -27,6 +32,7 @@
   "required": [
     "type",
     "project_id",
+    "epoch",
     "revision",
     "verdict",
     "project"

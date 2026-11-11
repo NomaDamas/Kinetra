@@ -8,6 +8,7 @@
       "type": "string"
     },
     "id": {
+      "maxLength": 128,
       "minLength": 1,
       "title": "Id",
       "type": "string"

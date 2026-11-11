@@ -814,6 +814,7 @@ export type RequestAction = "undo" | "redo";
 export interface Resumed {
   type: "resumed";
   project_id: string;
+  epoch: string;
   after_revision: number;
   revision: number;
 }
@@ -899,10 +900,11 @@ export interface SnapRef {
   snap_point: string;
 }
 
-/** The whole document at `revision`. */
+/** The whole document at `revision`, of the document life `epoch`. */
 export interface Snapshot {
   type: "snapshot";
   project_id: string;
+  epoch: string;
   revision: number;
   verdict: VerdictState;
   project: Project;
@@ -953,13 +955,15 @@ export interface StepProp {
 }
 
 /**
- * Follow a project. `after_revision` is the last revision the client holds (a reconnect), `None` for a first
- * subscription. One subscription per connection; a second `subscribe` replaces it.
+ * Follow a project. `after_revision` and `epoch` are the last revision the client holds and the `epoch` it came
+ * with (a reconnect); `None` for a first subscription. Both are needed to be resumed: with only one the core
+ * answers a `snapshot`. One subscription per connection; a second `subscribe` replaces it.
  */
 export interface Subscribe {
   type: "subscribe";
   project: string;
   after_revision?: number | null;
+  epoch?: string | null;
 }
 
 export interface UniformDistribution {

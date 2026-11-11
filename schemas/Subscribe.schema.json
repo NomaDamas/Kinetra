@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "description": "Follow a project. `after_revision` is the last revision the client holds (a reconnect), `None` for a first\nsubscription. One subscription per connection; a second `subscribe` replaces it.",
+  "description": "Follow a project. `after_revision` and `epoch` are the last revision the client holds and the `epoch` it came\nwith (a reconnect); `None` for a first subscription. Both are needed to be resumed: with only one the core\nanswers a `snapshot`. One subscription per connection; a second `subscribe` replaces it.",
   "properties": {
     "type": {
       "const": "subscribe",
@@ -24,6 +24,19 @@
       ],
       "default": null,
       "title": "After Revision"
+    },
+    "epoch": {
+      "anyOf": [
+        {
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Epoch"
     }
   },
   "required": [

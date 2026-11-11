@@ -45,6 +45,7 @@
           "type": "string"
         },
         "id": {
+          "maxLength": 128,
           "minLength": 1,
           "title": "Id",
           "type": "string"
@@ -406,6 +407,7 @@
           "type": "integer"
         },
         "id": {
+          "maxLength": 128,
           "minLength": 1,
           "title": "Id",
           "type": "string"
@@ -2014,6 +2016,7 @@
           "type": "string"
         },
         "id": {
+          "maxLength": 128,
           "minLength": 1,
           "title": "Id",
           "type": "string"
@@ -2282,6 +2285,11 @@
           "title": "Project Id",
           "type": "string"
         },
+        "epoch": {
+          "minLength": 1,
+          "title": "Epoch",
+          "type": "string"
+        },
         "after_revision": {
           "minimum": 0,
           "title": "After Revision",
@@ -2296,6 +2304,7 @@
       "required": [
         "type",
         "project_id",
+        "epoch",
         "after_revision",
         "revision"
       ],
@@ -2569,7 +2578,7 @@
       "type": "object"
     },
     "Snapshot": {
-      "description": "The whole document at `revision`.",
+      "description": "The whole document at `revision`, of the document life `epoch`.",
       "properties": {
         "type": {
           "const": "snapshot",
@@ -2579,6 +2588,11 @@
         "project_id": {
           "pattern": "^[a-z][a-z0-9_-]{0,63}$",
           "title": "Project Id",
+          "type": "string"
+        },
+        "epoch": {
+          "minLength": 1,
+          "title": "Epoch",
           "type": "string"
         },
         "revision": {
@@ -2596,6 +2610,7 @@
       "required": [
         "type",
         "project_id",
+        "epoch",
         "revision",
         "verdict",
         "project"

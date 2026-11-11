@@ -33,8 +33,21 @@ Rules (read by C-05b, C-05c, B-05, B-05a, G-08):
   document: refused (`invalid_command`).
 - **Rejections (C3).** `rejected` always carries reasons: the `Reason` of C-02a (code, sentence, typed refs). A message
   the core cannot even read as a `publish` with an id is a connection-level `error`, not a `rejected`.
-- **Resuming (D6).** `subscribe.after_revision` is the last revision the client has. If the core can continue from
-  there it answers `resumed` and then the missed `applied` in order; else a fresh `snapshot`.
+- **Resuming (D6).** `subscribe.after_revision` and `subscribe.epoch` are the last revision the client has and the
+  `epoch` of the `snapshot` or `resumed` it got it from. The `epoch` names one life of one document: a random value the
+  core picks when it opens the document, so a core that was restarted (and may have a different history under the same
+  revision numbers) has another one. Only when the `epoch` matches and the core still holds every `applied` after
+  `after_revision` (it keeps a bounded number: `kinetra_engine.protocol.document`), and replaying them is smaller than a
+  snapshot, does it answer `resumed` and then the missed `applied` in order. In every other case, a first
+  subscription, a client that is ahead, an unknown or other `epoch`, a gap, it answers a fresh `snapshot`. The client
+  keeps whatever `snapshot` or `resumed` says: it replaces its copy by the snapshot and takes the new `epoch`.
+- **Unknown messages (G5).** A client ignores a message whose `type` it does not know, so the core can add messages
+  (C-05b's frames, for one) without a new `PROTOCOL_VERSION`. The core does not ignore: a message it cannot read is
+  answered with `error` (or `rejected` for a `publish` or `request` that has an id).
+- **Command ids are single-use.** An id names one command. The same id with the same content is the same command (the
+  answer is repeated, C6). The same id with other content is `rejected`, never silently accepted: the publisher
+  would otherwise believe an edit happened that did not. The core remembers a bounded number of recent ids
+  (`REMEMBERED_COMMANDS_MAX`), so a resend of a very old id is not guaranteed to be recognised.
 - The verdict (D5): `verdict` is `none` (no verdict yet), `valid`, or `invalid` (the document changed after it). It
   rides in `snapshot` and in every `applied`, so the client learns of an invalidation in the same message as the edit.
 
@@ -64,7 +77,10 @@ PROTOCOL_VERSION = 1
 """The one protocol number this code speaks. Raised when a message gains a required field or changes meaning."""
 
 _ProjectId = Annotated[str, Field(pattern=ID_PATTERN)]
-_CommandId = Annotated[str, Field(min_length=1)]
+MAX_COMMAND_ID_LENGTH = 128
+"""Longest command id (characters). A UUID is 36; the cap only keeps the core's memory of ids small."""
+
+_CommandId = Annotated[str, Field(min_length=1, max_length=MAX_COMMAND_ID_LENGTH)]
 _Revision = Annotated[int, Field(strict=True, ge=0)]
 
 
@@ -100,12 +116,14 @@ class Hello(_Msg):
 
 
 class Subscribe(_Msg):
-    """Follow a project. `after_revision` is the last revision the client holds (a reconnect), `None` for a first
-    subscription. One subscription per connection; a second `subscribe` replaces it."""
+    """Follow a project. `after_revision` and `epoch` are the last revision the client holds and the `epoch` it came
+    with (a reconnect); `None` for a first subscription. Both are needed to be resumed: with only one the core
+    answers a `snapshot`. One subscription per connection; a second `subscribe` replaces it."""
 
     type: Literal["subscribe"]
     project: _ProjectId
     after_revision: _Revision | None = None
+    epoch: Annotated[str, Field(min_length=1)] | None = None
 
 
 class Publish(_Msg):
@@ -137,10 +155,11 @@ ClientMessage = Annotated[Union[Hello, Subscribe, Publish, Request], Field(discr
 
 
 class Snapshot(_Msg):
-    """The whole document at `revision`."""
+    """The whole document at `revision`, of the document life `epoch`."""
 
     type: Literal["snapshot"]
     project_id: _ProjectId
+    epoch: Annotated[str, Field(min_length=1)]
     revision: _Revision
     verdict: VerdictState
     project: Project
@@ -152,6 +171,7 @@ class Resumed(_Msg):
 
     type: Literal["resumed"]
     project_id: _ProjectId
+    epoch: Annotated[str, Field(min_length=1)]
     after_revision: _Revision
     revision: _Revision
 

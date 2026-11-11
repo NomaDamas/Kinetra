@@ -93,6 +93,7 @@ from .pbr import PbrColor, PbrScalar, PbrSlots
 from .project import Project
 from .refs import Ref, RefError, RefKind
 from .protocol import (
+    MAX_COMMAND_ID_LENGTH,
     PROTOCOL_VERSION,
     Accepted,
     Applied,
@@ -125,6 +126,7 @@ __all__ = [
     "COORDINATE_FRAME",
     "ClientMessage",
     "Hello",
+    "MAX_COMMAND_ID_LENGTH",
     "PLANET_CONSTANT_NAMES",
     "PROTOCOL_VERSION",
     "ProjectChanges",

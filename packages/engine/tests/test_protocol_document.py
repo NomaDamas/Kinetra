@@ -99,10 +99,19 @@ def test_protocol_document_a_batch_is_all_or_nothing(project):
 def test_protocol_document_the_same_command_id_applies_once(project):
     doc = Document("car", project)
     first = doc.publish(publish("c1", move()))
-    again = doc.publish(publish("c1", move(x=0.9)))  # a resend, even with other content, is the same command (C6)
+    again = doc.publish(publish("c1", move()))  # a resend is the same command (C6)
     assert again.reply == first.reply and again.applied is None and doc.revision == 1
     bad = doc.publish(publish("c2", {"type": "remove_instance", "id": "nope"}, base=1))
-    assert doc.publish(publish("c2", move(), base=1)).reply == bad.reply and doc.revision == 1
+    assert doc.publish(publish("c2", {"type": "remove_instance", "id": "nope"}, base=1)).reply == bad.reply
+
+
+def test_protocol_document_an_id_reused_for_another_command_is_rejected_not_silently_accepted(project):
+    doc = Document("car", project)
+    doc.publish(publish("c1", move()))
+    other = doc.publish(publish("c1", move(x=0.9)))
+    assert other.reply.type == "rejected" and "already used" in other.reply.reasons[0].message and other.applied is None
+    assert doc.revision == 1
+    assert doc.publish(publish("c1", move())).reply.type == "accepted"  # the first command's id still answers it
 
 
 def test_protocol_document_a_stale_base_revision_is_checked_against_the_current_document(project):
@@ -152,10 +161,11 @@ def test_protocol_document_resume_replays_only_what_the_client_missed(project):
     doc = Document("car", project)
     doc.publish(publish("c1", move()))
     doc.publish(publish("c2", move("wheel-fr"), base=1))
-    resumed, missed = doc.resume(1)
-    assert (resumed.after_revision, resumed.revision) == (1, 2) and [a.revision for a in missed] == [2]
-    assert doc.resume(2)[1] == () and doc.resume(0)[1] != ()
-    assert doc.resume(3) is None  # the client is ahead of this core: a fresh snapshot
+    resumed, missed = doc.resume(1, doc.epoch)
+    assert (resumed.after_revision, resumed.revision, resumed.epoch) == (1, 2, doc.epoch)
+    assert [json.loads(t)["revision"] for t in missed] == [2]
+    assert doc.resume(2, doc.epoch)[1] == ()
+    assert doc.resume(3, doc.epoch) is None  # the client is ahead of this core: a fresh snapshot
 
 
 def test_protocol_document_a_client_following_applied_holds_the_same_document(project):
@@ -190,7 +200,7 @@ class Client:
         self.ws = ws
 
     async def send(self, message):
-        await self.ws.send(message if isinstance(message, str) else json.dumps(message))
+        await self.ws.send(message if isinstance(message, (str, bytes)) else json.dumps(message))
 
     async def recv(self):
         return SERVER.validate_json(await asyncio.wait_for(self.ws.recv(), 5))
@@ -198,7 +208,8 @@ class Client:
     async def open(self, project="car", after=None):
         await self.send({"type": "hello", "protocol": PROTOCOL_VERSION})
         assert (await self.recv()).type == "hello"
-        await self.send({"type": "subscribe", "project": project, **({} if after is None else {"after_revision": after})})
+        extra = {} if after is None else {"after_revision": after[0], "epoch": after[1]}
+        await self.send({"type": "subscribe", "project": project, **extra})
 
 
 def run_with_core(project, scenario):
@@ -293,13 +304,13 @@ def test_protocol_document_reconnect_resumes_after_the_last_revision(project):
                 await a.send(wire_publish(f"a{n}", move(who), base=n))
         async with dial() as wb:  # a client that saw revision 1 comes back
             b = Client(wb)
-            await b.open(after=1)
+            await b.open(after=(1, hub.documents["car"].epoch))
             resumed = await b.recv()
             assert resumed.type == "resumed" and (resumed.after_revision, resumed.revision) == (1, 3)
             assert [(await b.recv()).revision for _ in range(2)] == [2, 3]
         async with dial() as wc:  # one that is ahead of the core gets a fresh snapshot
             c = Client(wc)
-            await c.open(after=99)
+            await c.open(after=(99, hub.documents["car"].epoch))
             assert (await c.recv()).type == "snapshot"
 
     run_with_core(project, scenario)
@@ -315,6 +326,8 @@ def test_protocol_document_a_command_sent_twice_over_the_wire_applies_once(proje
                 await a.send(wire_publish("a1", move()))
             types = [(await a.recv()).type for _ in range(3)]
             assert types == ["applied", "accepted", "accepted"] and hub.documents["car"].revision == 1
+            await a.send(wire_publish("a1", move(x=0.9)))  # the same id for another command: refused
+            assert (await a.recv()).type == "rejected"
 
     run_with_core(project, scenario)
 
@@ -369,5 +382,266 @@ def test_protocol_document_a_browser_page_from_another_origin_is_refused(project
             with pytest.raises(Exception, match="403"):
                 async with connect(url, origin="http://evil.example"):
                     pass
+
+    asyncio.run(main())
+
+
+# --- review of #505: epochs, bounded memory, slow subscribers, in-process publishing, limits ---------------------
+
+
+def test_protocol_document_a_restarted_core_does_not_resume_a_client_of_its_earlier_life(project):
+    """Same revision numbers, other history: the client keeps moon from the first life, the second life never had it."""
+    first = Document("car", project)
+    first.publish(publish("c1", {"type": "select_planet", "planet": "moon"}))
+    held = (first.revision, first.epoch)  # what the client kept
+    second = Document("car", project)  # the core restarted from the original
+    second.publish(publish("x1", move()))
+    second.publish(publish("x2", move("wheel-fr"), base=1))
+    assert second.epoch != first.epoch
+    assert second.resume(held[0], held[1]) is None  # a snapshot, not "resumed 1 -> 2"
+    assert second.resume(held[0], None) is None  # a client that did not say which life it comes from
+    assert second.resume(1, second.epoch) is not None
+
+
+def test_protocol_document_over_the_wire_an_unknown_epoch_gets_a_snapshot(project):
+    async def scenario(hub, dial):
+        async with dial() as ws:
+            c = Client(ws)
+            await c.open()
+            snap = await c.recv()
+            assert snap.epoch == hub.documents["car"].epoch
+            await c.send(wire_publish("a1", move()))
+            await c.recv(), await c.recv()
+        async with dial() as ws:
+            c = Client(ws)
+            await c.open(after=(1, "0" * 32))  # an epoch of another life
+            m = await c.recv()
+            assert m.type == "snapshot" and m.revision == 1
+            await c.send({"type": "subscribe", "project": "car", "after_revision": 1})  # no epoch at all
+            assert (await c.recv()).type == "snapshot"
+
+    run_with_core(project, scenario)
+
+
+def test_protocol_document_the_log_is_bounded_and_resume_falls_back_to_a_snapshot(project, monkeypatch):
+    from kinetra_engine.protocol import document as document_module
+
+    monkeypatch.setattr(document_module, "LOG_MAX_REVISIONS", 3)
+    doc = Document("car", project)
+    for n in range(6):
+        doc.publish(publish(f"c{n}", move(x=0.1 * (n + 1)), base=n))
+    assert len(doc._log) == 3
+    assert doc.resume(6, doc.epoch)[1] == ()  # nothing missed
+    assert [json.loads(t)["revision"] for t in doc.resume(5, doc.epoch)[1]] == [6]  # inside the log
+    assert doc.resume(1, doc.epoch) is None  # revision 2 is no longer held: out of range
+    assert doc.resume(2, doc.epoch) is None  # revision 3 is the first missed one and it is gone too
+    assert [t for t in doc._log] and doc._log[0][0] == 4
+
+
+def test_protocol_document_a_replay_bigger_than_a_snapshot_is_not_sent(project):
+    doc = Document("car", project)
+    for n in range(8):
+        doc.publish(publish(f"c{n}", move(x=0.1 * (n + 1)), base=n))  # each applied carries the whole instances section
+    assert sum(len(t) for t in doc.resume(7, doc.epoch)[1]) < len(doc.snapshot().model_dump_json())
+    assert doc.resume(0, doc.epoch) is None  # 8 whole sections are more than one snapshot
+
+
+def test_protocol_document_the_log_is_also_bounded_by_bytes(project, monkeypatch):
+    from kinetra_engine.protocol import document as document_module
+
+    monkeypatch.setattr(document_module, "LOG_MAX_BYTES", 1)
+    doc = Document("car", project)
+    for n in range(4):
+        doc.publish(publish(f"c{n}", move(x=0.1 * (n + 1)), base=n))
+    assert len(doc._log) == 1  # the newest revision is always kept
+
+
+def test_protocol_document_remembered_command_ids_are_bounded(project, monkeypatch):
+    from kinetra_engine.protocol import document as document_module
+
+    monkeypatch.setattr(document_module, "REMEMBERED_COMMANDS_MAX", 2)
+    doc = Document("car", project)
+    for n in range(4):
+        doc.publish(publish(f"c{n}", move(x=0.1 * (n + 1)), base=n))
+    assert list(doc._replies) == ["c2", "c3"]
+
+
+def test_protocol_document_a_command_id_has_a_length_cap():
+    from kinetra_core import MAX_COMMAND_ID_LENGTH
+
+    CLIENT.validate_python(wire_publish("x" * MAX_COMMAND_ID_LENGTH, move()))
+    with pytest.raises(ValidationError):
+        CLIENT.validate_python(wire_publish("x" * (MAX_COMMAND_ID_LENGTH + 1), move()))
+
+
+def test_protocol_document_applied_is_serialized_once_for_everyone(project):
+    out = Document("car", project).publish(publish("c1", move()))
+    assert out.applied_text == out.applied.model_dump_json()
+
+
+@pytest.mark.filterwarnings("ignore:Pydantic serializer warnings")
+def test_protocol_document_an_action_the_core_does_not_handle_is_rejected_and_changes_nothing(project):
+    doc = Document("car", project)
+    # an action the enum does not have yet, as if X-02 added it to `RequestAction` and forgot the core's `match`
+    out = doc.request(Request.model_construct(type="request", id="r1", action="run", origin=Origin.MOUSE))
+    assert out.reply.type == "rejected" and out.applied is None and doc.revision == 0 and doc.project == project
+    assert doc._log_bytes == 0 and len(doc._log) == 0
+
+
+def test_protocol_document_a_failure_while_building_applied_leaves_the_document_untouched(project, monkeypatch):
+    from kinetra_engine.protocol import document as document_module
+
+    def boom(*a, **k):
+        raise RuntimeError("no")
+
+    monkeypatch.setattr(document_module, "changes_between", boom)
+    doc = Document("car", project)
+    with pytest.raises(RuntimeError):
+        doc.publish(publish("c1", move()))
+    assert doc.revision == 0 and doc.project == project and len(doc._log) == 0 and not doc._replies
+
+
+def test_protocol_document_hub_publish_reaches_every_subscriber_from_inside_the_process(project):
+    async def scenario(hub, dial):
+        async with dial() as wa:
+            a = Client(wa)
+            await a.open()
+            await a.recv()
+            out = hub.publish("car", publish("agent-1", move(), origin="agent"))  # no connection of its own
+            assert out.reply.type == "accepted"
+            m = await a.recv()
+            assert m.type == "applied" and m.origin is Origin.AGENT and m.id == "agent-1"
+            with pytest.raises(KeyError):
+                hub.publish("nowhere", publish("agent-2", move()))
+
+    run_with_core(project, scenario)
+
+
+def test_protocol_document_hub_project_ids_must_be_valid(project):
+    with pytest.raises(ValueError):
+        Hub({"Car": project})
+
+
+def test_protocol_document_serve_listens_on_loopback_only_unless_told_otherwise(project):
+    async def main():
+        hub = Hub({"car": project})
+        for host in ("0.0.0.0", "", "192.168.1.5", "example.com"):
+            with pytest.raises(ValueError, match="allow_remote"):
+                hub.serve(host, 0, allowed_origins=[None])
+        async with hub.serve(allowed_origins=[None]) as server:  # the default is the loopback address
+            assert server.sockets[0].getsockname()[0] == "127.0.0.1"
+        async with hub.serve("::1", 0, allowed_origins=[None]):
+            pass
+
+    asyncio.run(main())
+
+
+def test_protocol_document_an_oversized_frame_closes_the_connection_with_1009(project):
+    async def main():
+        hub = Hub({"car": project})
+        async with hub.serve("127.0.0.1", 0, allowed_origins=[None], max_size=2048) as server:
+            async with connect(f"ws://127.0.0.1:{server.sockets[0].getsockname()[1]}") as ws:
+                c = Client(ws)
+                await c.open()
+                await c.recv()
+                await ws.send("x" * 4096)
+                with pytest.raises(Exception) as info:
+                    await asyncio.wait_for(ws.recv(), 5)
+                assert getattr(info.value.rcvd, "code", None) == 1009
+
+    asyncio.run(main())
+
+
+def test_protocol_document_hostile_frames_get_an_error_not_a_crash(project):
+    async def scenario(hub, dial):
+        async with dial() as ws:
+            c = Client(ws)
+            await ws.send("[" * 200000)  # before hello: fatal, no traceback
+            e = await c.recv()
+            assert e.type == "error" and e.fatal
+        async with dial() as ws:
+            c = Client(ws)
+            await c.open()
+            await c.recv()
+            await ws.send("[" * 200000)
+            e = await c.recv()
+            assert e.type == "error" and not e.fatal
+            await c.send({"type": "t" * 5000})
+            e = await c.recv()
+            assert e.type == "error" and len(e.message) < 200  # the echo of an unknown type is cut
+            await c.send(wire_publish("x" * 129, move()))  # an id over the cap is no command id: error
+            assert (await c.recv()).type == "error"
+            await c.send({"type": "request", "id": "r1", "action": "run", "origin": "mouse"})  # unknown action
+            r = await c.recv()
+            assert r.type == "rejected" and r.id == "r1" and hub.documents["car"].revision == 0
+            await c.send(b"\x00\x01")
+            assert (await c.recv()).type == "error"
+
+    run_with_core(project, scenario)
+
+
+def test_protocol_document_an_unreadable_publish_keeps_its_id(project):
+    async def scenario(hub, dial):
+        async with dial() as ws:
+            c = Client(ws)
+            await c.open()
+            await c.recv()
+            await c.send({"type": "subscribe", "project": "car"})
+            await c.recv()
+            await c.send(wire_publish("u1", {"type": "move_instance", "id": "wheel-fl"}))  # unreadable
+            assert (await c.recv()).type == "rejected"
+            await c.send(wire_publish("u1", move()))  # the id is spent: not applied
+            r = await c.recv()
+            assert r.type == "rejected" and "already used" in r.reasons[0].message and hub.documents["car"].revision == 0
+            await c.send(wire_publish("u2", move()))
+            await c.recv(), await c.recv()  # applied, accepted
+            await c.send(wire_publish("u2", {"type": "move_instance", "id": "wheel-fl"}))  # broken resend of a done id
+            assert (await c.recv()).type == "rejected" and hub.documents["car"].revision == 1
+
+    run_with_core(project, scenario)
+
+
+def test_protocol_document_a_subscriber_that_does_not_read_is_dropped_and_shutdown_completes(project, monkeypatch):
+    """A client that stops reading must not grow the core's memory without bound or hold up its shutdown."""
+    import socket
+    import time
+
+    from kinetra_engine.protocol import server as server_module
+
+    monkeypatch.setattr(server_module, "QUEUE_MAX_MESSAGES", 8)
+    monkeypatch.setattr(server_module, "SEND_TIMEOUT_S", 1.0)
+
+    data = project.model_dump(mode="json")
+    wheel = next(i for i in data["design"]["instances"] if i["id"] == "wheel-fl")
+    data["design"]["instances"] += [{**wheel, "id": f"copy-{n}"} for n in range(300)]  # an applied is then ~100 KB
+    big = Project.model_validate(data)
+
+    async def main():
+        hub = Hub({"car": big})
+        async with hub.serve("127.0.0.1", 0, allowed_origins=[None]) as server:
+            port = server.sockets[0].getsockname()[1]
+            sock = socket.socket()
+            sock.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, 1024)
+            sock.setblocking(False)
+            await asyncio.get_running_loop().sock_connect(sock, ("127.0.0.1", port))
+            async with connect(sock=sock, uri=f"ws://127.0.0.1:{port}") as slow_ws:
+                slow = Client(slow_ws)
+                await slow.open()
+                await slow.recv()  # one read, then never again
+                async with connect(f"ws://127.0.0.1:{port}") as busy_ws:
+                    busy = Client(busy_ws)
+                    await busy.open()
+                    await busy.recv()
+                    document = hub.documents["car"]
+                    for n in range(400):
+                        await busy.send(wire_publish(f"b{n}", move(x=0.001 * (n + 1)), base=n))
+                        await busy.recv(), await busy.recv()  # the busy client keeps up the whole time
+                        if len(hub._subscribers["car"]) == 1:  # the slow one was dropped
+                            break
+                    assert len(hub._subscribers["car"]) == 1, "the client that does not read is still subscribed"
+                    assert document.revision >= 1
+                slow_ws.transport.abort()  # the test's own client: do not wait for its close handshake
+            started = time.monotonic()
+        assert time.monotonic() - started < 5  # leaving the server did not wait for any subscriber
 
     asyncio.run(main())

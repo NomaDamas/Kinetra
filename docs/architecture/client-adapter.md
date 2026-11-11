@@ -100,9 +100,9 @@ S1 범위: 위 전부. 열어 둔 것: 여러 사용자의 동시 편집 충돌 
 | 메시지 | 방향 | 필드 | 3.1~3.2 [제안]과 다른 점 |
 |---|---|---|---|
 | `hello` | 양쪽 | `protocol`(정수) | G5의 "첫 메시지에서 프로토콜 버전"의 실체. 지금 `1`. 코어가 모르는 번호면 `error`(fatal) 후 닫는다 |
-| `subscribe` | → 코어 | `project`, `after_revision`(없을 수 있음) | |
-| `snapshot` | → 클라이언트 | `project_id`, `revision`, `verdict`(`none` `valid` `invalid`), `project` | 파생값과 정의 해시는 없다(D4: B-05, C-03이 선택 필드로 더한다) |
-| `resumed` | → 클라이언트 | `project_id`, `after_revision`, `revision` | 새 메시지. D6의 "이어 받기"를 알린다. 뒤에 놓친 `applied`가 순서대로 온다. 이어 줄 수 없으면(클라이언트가 코어보다 앞섰을 때) `snapshot`이 온다 |
+| `subscribe` | → 코어 | `project`, `after_revision`과 `epoch`(재접속일 때 둘 다; 없을 수 있음) | |
+| `snapshot` | → 클라이언트 | `project_id`, `epoch`, `revision`, `verdict`(`none` `valid` `invalid`), `project` | 파생값과 정의 해시는 없다(D4: B-05, C-03이 선택 필드로 더한다) |
+| `resumed` | → 클라이언트 | `project_id`, `epoch`, `after_revision`, `revision` | 새 메시지. D6의 "이어 받기"를 알린다. 뒤에 놓친 `applied`가 순서대로 온다. 이어 줄 수 없으면 `snapshot`이 온다(아래 "재접속") |
 | `applied` | → 구독자 모두 | `revision`, `id`, `cause`(`publish` `undo` `redo`), `origin`, `command`, `changes`, `verdict` | `changes`는 바뀐 구역의 새 값 통째(`ProjectChanges`: `materials` `parts` `instances` `joints` `actuators` `schedule` `world` `assumptions`, 안 바뀐 구역은 `null`). 클라이언트는 `apply_changes`로 바꿔 끼우기만 하고 적용기를 다시 만들지 않는다(D3). 구역 단위이고 항목 단위가 아니다 |
 | `publish` | → 코어 | `id`, `base_revision`, `command`, `origin` | 발행자(`origin`)는 `mouse` `agent` `voice` `xr` `mcp`(`kinetra_core.Origin`, C-02b) |
 | `accepted` | → 발행자 | `id`, `revision` | 그 변경의 `applied` 뒤에 온다. 명령이 문서를 바꾸지 않았으면(같은 행성 선택 등) 개정 번호는 그대로이고 `applied`는 없다 |
@@ -110,14 +110,19 @@ S1 범위: 위 전부. 열어 둔 것: 여러 사용자의 동시 편집 충돌 
 | `request` | → 코어 | `id`, `action`(`undo` `redo`), `origin` | `publish`와 같은 답(`applied` + `accepted` 또는 `rejected`). 실행·판정·정지 요청은 X-02와 J 에픽이 `action`에 더한다 |
 | `error` | → 클라이언트 | `message`, `fatal` | 명령이 아니라 연결의 오류(JSON 아님, 모르는 `type`, `hello` 전의 메시지, 모르는 프로젝트, 모르는 프로토콜 번호). `fatal`이면 코어가 닫는다 |
 
+- **재접속(D6).** `epoch`는 문서 하나의 한 생애를 가리키는 무작위 값이다(코어가 문서를 열 때 정한다). 코어가 다시 뜨면 같은 개정 번호가 다른 이력을 뜻할 수 있으므로 `epoch`가 다르다. 코어는 `epoch`가 같고, 놓친 `applied`를 아직 갖고 있고, 그 재생이 `snapshot`보다 작을 때만 `resumed`로 잇고, 그 밖에는 모두(첫 구독, `epoch` 없음이나 다름, 클라이언트가 코어보다 앞섬, 기록이 모자람, 재생이 더 큼) `snapshot`을 준다. 클라이언트는 `snapshot`이 오면 사본을 통째로 바꾸고 새 `epoch`를 기억한다. 코어가 쥔 기록은 `LOG_MAX_REVISIONS`(256)개와 `LOG_MAX_BYTES`(8 MiB) 안의 최근 것이고, 기억하는 명령 ID는 `REMEMBERED_COMMANDS_MAX`(4096)개다. 이 상한은 측정이 아니라 고른 값(`기본값`)이며 `kinetra_engine.protocol.document`의 상수라서 C-03과 클라이언트 잎이 근거와 함께 옮길 수 있다. 동기: `applied`가 구역을 통째로 싣기 때문에(207개 인스턴스에서 277 B 명령에 76 KB, #505 리뷰 측정) 상한 없는 기록은 편집마다 수백 KiB씩 쌓인다.
+- **모르는 메시지(G5).** 클라이언트는 모르는 `type`의 메시지를 무시한다. 그래야 C-05b의 프레임 같은 메시지를 프로토콜 번호를 올리지 않고 더할 수 있다. 코어는 무시하지 않는다: 읽을 수 없는 메시지는 `error`(id가 있는 `publish`·`request`는 `rejected`)로 답한다.
+- **명령 ID는 한 번만 쓴다.** 같은 ID에 같은 내용은 같은 명령(C6: 같은 답, 적용은 한 번)이고, 같은 ID에 다른 내용은 `rejected`다(발행자가 일어나지 않은 편집을 일어났다고 믿지 않게). 길이는 `MAX_COMMAND_ID_LENGTH`(128)자까지. 읽을 수 없어 거부된 `publish`의 ID도 기억한다.
+- **느린 구독자.** 연결마다 보내기 대기열이 있고 `QUEUE_MAX_MESSAGES`(512)건, 또는 둘 이상이 쌓인 상태에서 `QUEUE_MAX_BYTES`(16 MiB)를 넘으면, 또는 한 번의 전송이 `SEND_TIMEOUT_S`(10 s) 안에 끝나지 않으면 그 연결을 구독에서 빼고 소켓을 끊는다(`transport.abort()`). 클라이언트는 다시 접속해 위 재접속 규칙으로 따라온다. 라이브러리의 keepalive는 이를 대신하지 못한다(쓰기 버퍼가 차면 ping도 같은 버퍼에서 멈춘다). 이 값들도 고른 값이다.
+- **프로세스 안의 발행자.** 에이전트(G-02)와 MCP 서버(G-08)는 `Hub.publish(project_id, message)`로 발행한다. 그것이 적용하고 모든 구독자에게 `applied`를 보낸다. `Document`를 직접 부르면 구독자가 모른다.
 - 선로: WebSocket 텍스트 프레임 하나에 JSON 메시지 하나. 이진 프레임은 `error`다(실행 스트림의 이진 인코딩은 C-05b가 정한다). 메시지는 모르는 필드를 무시한다(G5). `command` 안은 반대로 엄격하다: 모르는 필드가 있으면 그 명령 전체가 거부된다(편집의 일부를 말없이 버리는 것보다 낫다).
 - **개정 번호(D2).** 0에서 시작해 `applied`마다 1씩 오른다. `applied`는 모든 구독자에게 개정 순서로 가고 발행자는 자기 `accepted` 앞에 그것을 받는다. 연결마다 보내기 대기열이 하나라서 한 연결이 느려도 순서가 바뀌지 않는다. 대기열에 상한을 두지 않았다(계획에 숫자가 없다).
 - **명령 ID(C6).** 발행자가 고른다(UUID 권장). 같은 ID를 다시 보내면 내용이 달라도 처음 답을 그대로 받고 적용은 한 번이다. ID는 문서 단위로 유일하다. 연결에 구독이 없을 때의 `publish`는 `rejected`이고 기억하지 않는다(구독한 뒤 같은 ID를 다시 보낼 수 있다).
 - **낡은 기준 개정(C5).** `base_revision`이 문서보다 뒤면 현재 문서에 대해 검증하고, 안 되면 적용기의 사유로 거부한다(병합 없음). 문서보다 앞서면 `invalid_command`로 거부한다.
 - **판정 상태(D5).** `valid`인 판정은 문서를 바꾸는 `applied`에서 `invalid`가 되고 그 사실이 같은 `applied`에 실린다. 판정을 만들고 `valid`로 바꾸는 쪽은 아직 없다(J 에픽). 지금 문서는 `none`으로 시작한다.
 - **되돌리기.** `request`의 `undo`와 `redo`는 문서 하나의 선형 이력(C-02b `History`)에 대해 한다. 누가 만든 항목이든 되돌린다(사용자별 되돌리기는 N-04). `applied.command`는 프로젝트에 실제로 적용된 명령이다(되돌리기면 역명령).
-- **보안.** 브라우저는 어느 웹 페이지든 `localhost`로 WebSocket을 열 수 있으므로 `Hub.serve`는 `allowed_origins`를 필수로 받고 다른 `Origin`은 403으로 거부한다(`None`은 헤더를 보내지 않는 클라이언트, 곧 브라우저가 아닌 클라이언트). 인증은 없다: S1의 코어는 로컬 프로세스다. 계정과 공유는 이 범위 밖이다.
-- **[확인 필요]** 문서 소유자의 프로젝트는 지금 서버를 만들 때 넘긴다(`Hub({id: Project})`). 저장소에서 열고 닫는 것은 C-03이다. 개정 기록(`applied` 전부)은 메모리에 두고 상한이 없다. 오래 열어 둔 프로젝트에서의 크기와 저장은 C-03이 정한다. 한 편집이 프로젝트 전체를 다시 검증하는 비용(C-02a)은 `publish`마다 든다.
+- **보안과 한도.** 브라우저는 어느 웹 페이지든 `localhost`로 WebSocket을 열 수 있으므로 `Hub.serve`는 `allowed_origins`를 필수로 받고 다른 `Origin`은 403으로 거부한다(`None`은 헤더를 보내지 않는 클라이언트, 곧 브라우저가 아닌 클라이언트). 기본 `host`는 `127.0.0.1`이고 루프백이 아닌 주소는 `allow_remote=True` 없이는 `ValueError`다(인증이 없으므로). `ssl`(`wss`; 헤드셋 브라우저에 필요)과 `max_size`는 넘겨받는다. 받는 메시지는 `MAX_MESSAGE_BYTES`(1 MiB, 라이브러리 기본값을 적어 둔 것)까지이고 넘으면 라이브러리가 어떤 코드보다 먼저 1009로 연결을 닫는다(그래서 `error` 메시지를 보낼 수 없다). 압축(permessage-deflate)은 라이브러리 기본값 그대로 켜져 있다. 인증은 없다: S1의 코어는 로컬 프로세스다. 계정과 공유는 이 범위 밖이다. 여러 사용자를 구분하는 발행자 ID는 없다(`origin`은 입력 경로다): N-04가 선택 필드로 더한다.
+- **[확인 필요]** 문서 소유자의 프로젝트는 지금 서버를 만들 때 넘긴다(`Hub({id: Project})`; ID는 `ID_PATTERN`). 저장소에서 열고 닫는 것은 C-03이다. 구역 단위 변경분 대신 항목 단위(위치를 실어야 한다)는 별도 이슈다. 한 편집이 프로젝트 전체를 다시 검증하는 비용(C-02a)은 `publish`마다 들고 이벤트 루프에서 동기로 돈다(C-05b의 프레임 전송이 알아야 한다).
 
 ### 3.3 실행 스트림 프레임
 
