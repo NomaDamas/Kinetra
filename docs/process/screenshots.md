@@ -48,4 +48,6 @@ uv run python tools/dev/resource_guard.py --profile heavy -- pnpm --filter @kine
 pnpm --filter @kinetra/screenshots test          # 오프라인(브라우저 없음). web 잡의 `pnpm test`가 돈다
 ```
 
+**CI의 Playwright 설치(P0-08).** `playwright install --with-deps`는 재시도·시간 제한 없는 `apt-get update`를 돌려서, 러너가 `security.ubuntu.com`을 못 찾으면(`Temporary failure resolving`) 잡이 실패하거나 잡 제한(10분)까지 멈춘다. 그래서 `web`과 `screenshots` 워크플로는 브라우저를 `actions/cache`(키: OS, 아키텍처, `playwright-core --version`의 정확한 버전)로 받아 두고, OS 라이브러리는 `scripts/ci/playwright_deps.mjs`가 맡는다. 이 스크립트는 `playwright-core install-deps --dry-run`(로컬 `apt-get install -s`, 네트워크 불필요)으로 빠진 패키지를 보고, 없으면 apt를 부르지 않으며, 있으면 `-o Acquire::Retries=5 -o Acquire::http::Timeout=20`으로 설치한다(실패하면 인덱스를 갱신해 한 번 더). 설치 단계마다 `timeout-minutes`가 있어서 멈추면 잡 전체가 아니라 그 단계가 빨리 실패하고 원인(apt 미러 문제, 재실행)을 오류 메시지로 말한다. Playwright 설치 단계를 새로 넣는 워크플로는 같은 두 단계를 쓴다(`scripts/ci/tests/playwright_deps.test.mjs`가 `--with-deps`와 시간 제한 없는 설치 단계를 거절한다).
+
 범위 밖: 배포 파이프라인, 스크린샷 비교(대조는 `tools/design`, `docs/process/design-workflow.md`).
