@@ -36,7 +36,7 @@ jobs:
           path: ~/.cache/ms-playwright
           key: playwright-${{ runner.os }}-${{ runner.arch }}-${{ steps.playwright-version.outputs.version }}-chromium-headless-shell
       - name: Playwright OS dependencies (apt only if something is missing; retries + timeout)
-        timeout-minutes: 6
+        timeout-minutes: 8
         run: node scripts/ci/playwright_deps.mjs @kinetra/screenshots chromium-headless-shell
       - name: Playwright browser
         timeout-minutes: 5

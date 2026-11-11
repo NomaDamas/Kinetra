@@ -4,7 +4,7 @@
 // `Temporary failure resolving 'security.ubuntu.com'` fails the job and a hung mirror eats the whole job limit.
 // Here: (1) `install-deps --dry-run` (a local `apt-get install -s`, needs no network) lists what is really missing;
 // (2) nothing missing -> apt is never contacted; (3) otherwise apt-get runs with retries + a per-connection timeout and
-// a hard wall-clock limit, and the failure says which packages and which mirror step failed. Font packages are best effort.
+// a hard wall-clock limit, and the failure says which packages and which mirror step failed.
 // Usage: node scripts/ci/playwright_deps.mjs <pnpm-package-filter> [browser]   (default browser: chromium-headless-shell)
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
@@ -27,10 +27,15 @@ export function parseMissing(stdout) {
   return pkgs;
 }
 
-// Browser libraries are required; font packages (fonts-*, xfonts-*) are not: the browser starts without them.
-export function splitMissing(pkgs) {
-  const isFont = (p) => /^(fonts|xfonts)-/.test(p);
-  return { libs: pkgs.filter((p) => !isFont(p)), fonts: pkgs.filter(isFont) };
+export const FALLBACK_MIRROR = "http://archive.ubuntu.com/ubuntu/";
+
+// Points every apt source that uses the runner's default mirror at FALLBACK_MIRROR (the runner is ephemeral, so this is a throwaway edit).
+export function mirrorFallbackCommand() {
+  const sudo = process.getuid?.() === 0 ? [] : ["sudo"];
+  const script =
+    `for f in /etc/apt/sources.list /etc/apt/sources.list.d/*; do [ -f "$f" ] && ` +
+    `sed -i -E 's#(mirror\\+file:/etc/apt/apt-mirrors\\.txt|https?://azure\\.archive\\.ubuntu\\.com/ubuntu/?)#${FALLBACK_MIRROR}#g' "$f"; done; true`;
+  return [...sudo, "bash", "-c", script];
 }
 
 export function aptCommands(pkgs) {
@@ -70,27 +75,20 @@ export function main(argv) {
     console.error(`::error::'playwright-core install-deps --dry-run' failed (exit ${probe.status}) without a missing-package list.`);
     return 1;
   }
-  const { libs, fonts } = splitMissing(missing);
-  if (libs.length > 0) {
-    console.log(`Installing ${libs.length} missing library package(s) with apt retries: ${libs.join(" ")}`);
-    const cmds = aptCommands(libs);
-    // First try the package index baked into the runner image; on failure refresh it and retry once.
-    const ok = run(cmds.install, { timeout: APT_STEP_TIMEOUT_MS }) ||
-      (console.log("apt-get install failed; refreshing the package index and retrying once."),
-      run(cmds.update, { timeout: APT_STEP_TIMEOUT_MS }) && run(cmds.install, { timeout: APT_STEP_TIMEOUT_MS }));
-    if (!ok) {
-      console.error(`::error::Playwright OS library install failed after apt retries (Acquire::Retries=5, http timeout 20s). Missing: ${libs.join(" ")}. This is an apt mirror/network problem, not a test failure: re-run the job.`);
-      return 1;
-    }
-  }
-  if (fonts.length > 0) {
-    console.log(`Installing ${fonts.length} missing font package(s) (best effort): ${fonts.join(" ")}`);
-    if (!run(aptCommands(fonts).install, { timeout: APT_STEP_TIMEOUT_MS })) {
-      // Fonts only change which glyphs the headless browser draws; they never stop it from starting. A dead mirror must not fail the job.
-      console.log(`::warning::Playwright font packages not installed (apt mirror unreachable): ${fonts.join(" ")}. Pages render with the runner's system fonts.`);
-    }
-  }
-  return 0;
+  console.log(`Installing ${missing.length} missing package(s) with apt retries: ${missing.join(" ")}`);
+  const cmds = aptCommands(missing);
+  const step = (cmd) => run(cmd, { timeout: APT_STEP_TIMEOUT_MS });
+  // 1) the package index baked into the runner image, no `update` round trip.
+  if (step(cmds.install)) return 0;
+  // 2) refresh the index and retry.
+  console.log("apt-get install failed; refreshing the package index and retrying.");
+  if (step(cmds.update) && step(cmds.install)) return 0;
+  // 3) the runner's default mirror (azure.archive.ubuntu.com) can be the thing that is down: switch to the canonical one.
+  console.log(`default Ubuntu mirror unreachable; retrying through ${FALLBACK_MIRROR}.`);
+  if (step(mirrorFallbackCommand()) && step(cmds.update) && step(cmds.install)) return 0;
+  // The fonts matter too: tools/design's pixel comparison fails (a shifted copy no longer differs) when they are missing.
+  console.error(`::error::Playwright OS dependency install failed after apt retries on both Ubuntu mirrors (Acquire::Retries=5, http timeout 20s). Missing: ${missing.join(" ")}. This is an apt mirror/network problem, not a test failure: re-run the job.`);
+  return 1;
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) process.exit(main(process.argv.slice(2)));

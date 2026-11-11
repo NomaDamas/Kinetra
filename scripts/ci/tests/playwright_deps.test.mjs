@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { readdirSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { APT_OPTIONS, aptCommands, main, parseMissing, splitMissing } from "../playwright_deps.mjs";
+import { APT_OPTIONS, aptCommands, main, parseMissing, FALLBACK_MIRROR, mirrorFallbackCommand } from "../playwright_deps.mjs";
 
 test("nothing missing -> no packages", () => {
   assert.deepEqual(parseMissing("All system dependencies are installed.\n"), []);
@@ -25,11 +25,17 @@ test("apt commands carry retries and a connection timeout, install is non-intera
   assert.ok(install.includes("-y") && install.includes("--no-install-recommends") && install.at(-1) === "libnss3");
 });
 
-test("fonts are best effort, libraries are required", () => {
-  assert.deepEqual(splitMissing(["libnss3", "fonts-unifont", "xfonts-utils", "libasound2t64"]), {
-    libs: ["libnss3", "libasound2t64"],
-    fonts: ["fonts-unifont", "xfonts-utils"],
-  });
+test("mirror fallback rewrites the runner default mirror to archive.ubuntu.com", () => {
+  const cmd = mirrorFallbackCommand();
+  const script = cmd.at(-1);
+  assert.equal(cmd.at(-3), "bash");
+  assert.ok(script.includes("archive.ubuntu.com/ubuntu/") && script.includes("apt-mirrors"));
+  // the sed expression really rewrites both source styles
+  const sedExpr = /sed -i -E '([^']+)'/.exec(script)[1];
+  const [, re, to] = /^s#(.+)#([^#]+)#g$/.exec(sedExpr);
+  const rx = new RegExp(re, "g");
+  assert.equal("URIs: mirror+file:/etc/apt/apt-mirrors.txt".replace(rx, to), `URIs: ${FALLBACK_MIRROR}`);
+  assert.equal("deb http://azure.archive.ubuntu.com/ubuntu/ resolute main".replace(rx, to), `deb ${FALLBACK_MIRROR} resolute main`);
 });
 
 test("missing package filter argument is a usage error", () => {
