@@ -214,32 +214,37 @@ _ASSUMPTIONS = (
 def critical_load(
     material: Material,
     section: Section,
-    mode: LoadMode,
+    mode: LoadMode | str,
     *,
     shear_planes: int = 1,
 ) -> CriticalLoad:
     """Load [N] at which `section` of `material` fails under `mode`, by the simplified formulas in the module docstring.
 
+    `mode` is a `LoadMode` or its string value (`"tension"`, `"shear"`; anything else raises `BreakThresholdError`).
     `LoadMode.TENSION`: P = Sy * A. `LoadMode.SHEAR`: V = planes * 0.577 * Sy * A, where `shear_planes` is 1 (single shear)
     or 2 (double shear; `section` is the area of *one* shear plane). Sy is `material.yield_strength`.
 
     A material whose strength is a fracture strength (no yield point) has no shear yield strength: `LoadMode.SHEAR` for it
     raises `BreakThresholdError` instead of applying a ductile-metal ratio to a brittle composite.
     """
+    try:
+        mode = LoadMode(mode)
+    except ValueError:
+        raise BreakThresholdError(f"mode must be one of {[m.value for m in LoadMode]}, got {mode!r}") from None
     if shear_planes not in (1, 2):
         raise BreakThresholdError(f"shear_planes must be 1 (single shear) or 2 (double shear), got {shear_planes!r}")
-    if mode is LoadMode.TENSION and shear_planes != 1:
+    if mode == LoadMode.TENSION and shear_planes != 1:
         raise BreakThresholdError("shear_planes applies to LoadMode.SHEAR only")
     s = material.yield_strength
     fracture = is_fracture_strength(s)
-    if mode is LoadMode.SHEAR and fracture:
+    if mode == LoadMode.SHEAR and fracture:
         raise BreakThresholdError(
             f"material {material.id!r}: its strength is a fracture strength (no yield point), so there is no shear yield "
             f"strength 0.577 Sy to use; the shear strength of this material is not in the catalog"
         )
     area = section.area()
     basis = strength_basis(s)
-    if mode is LoadMode.TENSION:
+    if mode == LoadMode.TENSION:
         load = s.value * area
         citations = (CITATION_TENSION,)
         formula = "P = S*A"
@@ -277,7 +282,7 @@ def critical_load(
         strength_basis=basis,
         strength_is_fracture=fracture,
         area=area,
-        shear_planes=shear_planes if mode is LoadMode.SHEAR else 1,
+        shear_planes=shear_planes if mode == LoadMode.SHEAR else 1,
         model=SIMPLIFIED_MODEL_LABEL,
         citations=citations,
         labels=labels,

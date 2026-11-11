@@ -217,3 +217,18 @@ def test_break_threshold_every_catalog_material_gives_a_valid_threshold():
         r = critical_load(entry.material, SolidCircle(length(0.01)), LoadMode.TENSION)
         assert math.isfinite(r.value) and r.value > 0.0
         assert r.quantity.unit is Unit.N
+
+
+@pytest.mark.parametrize("mode", [LoadMode.TENSION, LoadMode.SHEAR])
+def test_break_threshold_string_mode_equals_enum_mode(mode):
+    m, s = material("steel-a36"), SolidCircle(length(0.010))
+    by_enum = critical_load(m, s, mode)
+    by_string = critical_load(m, s, mode.value)
+    assert by_string == by_enum
+    assert by_string.mode is mode
+
+
+@pytest.mark.parametrize("bad", ["Tension", "bending", "", "shear ", None, 1])
+def test_break_threshold_rejects_unknown_mode(bad):
+    with pytest.raises(BreakThresholdError, match="mode must be one of"):
+        critical_load(material("steel-a36"), SolidCircle(length(0.01)), bad)
