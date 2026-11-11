@@ -1,0 +1,16 @@
+{
+  "type": "rejected",
+  "id": "3f2b8c1e-6d1a-4a57-9a2e-0c5f7d9b1a11",
+  "reasons": [
+    {
+      "code": "unknown_id",
+      "message": "no instance 'wheel-zz'",
+      "ids": [
+        {
+          "kind": "instance",
+          "id": "wheel-zz"
+        }
+      ]
+    }
+  ]
+}
