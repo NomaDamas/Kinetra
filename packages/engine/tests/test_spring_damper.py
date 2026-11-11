@@ -200,6 +200,40 @@ def test_spring_oscillation_refuses_numbers_that_are_not_a_spring_a_damper_and_a
         oscillation(k, c, m)
 
 
+@pytest.mark.parametrize(
+    "k, c, m, w0, zeta, c_crit",
+    [
+        (1e200, 1e200, 1e200, 1.0, 0.5, 2e200),  # k * m = inf in the naive form: zeta came out 0
+        (1e-200, 1e-200, 1e-200, 1.0, 0.5, 2e-200),  # k * m = 0: ZeroDivisionError in the naive form
+        (1e300, 1e150, 1e-10, 1e155, 5e4, None),  # w0 = 1e150 / 1e-5; zeta = 1e150 / (2 x 1e150 x 1e-5) = 5e4: overdamped
+    ],
+)
+def test_spring_oscillation_is_exact_where_k_times_m_overflows_or_underflows(k, c, m, w0, zeta, c_crit):
+    # by hand: w0 = sqrt(k / m), zeta = c / (2 sqrt(k) sqrt(m)); with k = c = m = x both are 1 and 1/2
+    o = oscillation(k, c, m)
+    assert o.natural_angular_frequency == pytest.approx(w0, rel=1e-12)
+    assert o.damping_ratio == pytest.approx(zeta, rel=1e-12)
+    assert o.period == pytest.approx(2 * math.pi / w0, rel=1e-12)
+    if c_crit is not None:
+        assert o.critical_damping == pytest.approx(c_crit, rel=1e-12)
+        assert o.damped_period == pytest.approx(2 * math.pi / math.sqrt(0.75), rel=1e-12)  # T / sqrt(1 - 1/4)
+    else:
+        assert o.damped_period is None
+
+
+@pytest.mark.parametrize(
+    "k, c, m, what",
+    [
+        (1.7e308, 0.0, 5e-324, "natural angular frequency"),  # sqrt(k) / sqrt(m) = 6e315
+        (1e308, 0.0, 1e308, "critical damping"),  # 2 sqrt(k) sqrt(m) = 2e308
+        (5e-324, 0.0, 1.7e308, "period"),  # w0 is subnormal, 2 pi / w0 overflows
+    ],
+)
+def test_spring_oscillation_refuses_a_result_that_is_not_a_finite_float(k, c, m, what):
+    with pytest.raises(ValueError, match=f"{what}.*not a finite float"):
+        oscillation(k, c, m)
+
+
 # ---- stiffness and damping are parameters ------------------------------------------------------------------------------
 
 

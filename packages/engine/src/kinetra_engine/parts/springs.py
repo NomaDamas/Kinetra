@@ -65,8 +65,24 @@ def oscillation(stiffness: float, damping: float, mass: float) -> Oscillation:
         raise ValueError(f"damping must be a non-negative finite number, got {damping}")
     if not (math.isfinite(mass) and mass > 0.0):
         raise ValueError(f"mass must be a positive finite number, got {mass}")
-    w0 = math.sqrt(stiffness / mass)
-    c_crit = 2.0 * math.sqrt(stiffness * mass)
-    zeta = damping / c_crit
-    damped = 2.0 * math.pi / (w0 * math.sqrt(1.0 - zeta * zeta)) if zeta < 1.0 else None
-    return Oscillation(w0, 2.0 * math.pi / w0, zeta, c_crit, damped)
+    # Square roots first, then the quotient: k * m and k / m overflow or underflow for finite inputs (1e200 * 1e200 is inf,
+    # 1e-200 * 1e-200 is 0), sqrt(k) and sqrt(m) never do (a subnormal's root is a normal number).
+    sk, sm = math.sqrt(stiffness), math.sqrt(mass)
+    w0 = sk / sm
+    c_crit = 2.0 * sk * sm
+    zeta = (damping / (2.0 * sk)) / sm
+    period = 2.0 * math.pi / w0
+    damped = period / math.sqrt(1.0 - zeta * zeta) if zeta < 1.0 else None
+    result = Oscillation(w0, period, zeta, c_crit, damped)
+    for name, value in (
+        ("natural angular frequency", w0),
+        ("period", period),
+        ("damping ratio", zeta),
+        ("critical damping", c_crit),
+        ("damped period", 0.0 if damped is None else damped),
+    ):
+        if not math.isfinite(value):
+            raise ValueError(
+                f"the {name} of stiffness {stiffness!r} N/m, damping {damping!r} N*s/m, mass {mass!r} kg is not a finite float"
+            )
+    return result
