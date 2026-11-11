@@ -15,7 +15,6 @@ from kinetra_core import Material, PartDef, PbrSlots, load_material_catalog
 from kinetra_engine.parts import part_glb
 
 FIXTURES = Path(__file__).parent / "fixtures" / "gltf"
-LIBRARY = Path(__file__).resolve().parents[1] / "src" / "kinetra_engine" / "parts" / "library"
 NO_MATERIAL = "no-material"  # a part with a declared mass is drawn without a material: the neutral look
 SRC = {"ref": "B-01c test fixture: dimensions declared by the test", "locator": "gltf_samples.py"}
 S2 = math.sqrt(0.5)
@@ -162,24 +161,19 @@ def reflectance_ior_glb() -> bytes:
     return part_glb(mounting_plate(), catalog_material("pom-delrin-150"), pbr=glossy_dielectric())
 
 
-def library_part(part_id: str) -> PartDef:
-    """A part of the committed library (`kinetra_engine/parts/library/<id>.json`)."""
-    return PartDef.model_validate_json((LIBRARY / f"{part_id}.json").read_text(encoding="utf-8"))
-
-
 SAMPLES = {
     "mounting-plate-al6061": (mounting_plate, "al6061-t6"),
     "drive-shaft-steel": (drive_shaft, "steel-a36"),
     "sensor-mast-user-material": (sensor_mast, None),
     "reflectance-ior": (mounting_plate, "pom-delrin-150"),
+    "beam-al6061": (beam, "al6061-t6"),
+    "plate-al6061": (plate, "al6061-t6"),
     # B-02c: payload and ballast have a declared mass and no material; the mount is aluminium.
     "payload-declared-mass": (lambda: library_part("payload"), NO_MATERIAL),
     "ballast-weight-declared-mass": (lambda: library_part("ballast-weight"), NO_MATERIAL),
     "payload-mount-al6061": (lambda: library_part("payload-mount"), "al6061-t6"),
     # B-03b: a datasheet motor, mass declared by the datasheet weight, drawn without a material.
     "motor-37d-12v-50-1-declared-mass": (lambda: library_part("motor-37d-12v-50-1"), NO_MATERIAL),
-    "beam-al6061": (beam, "al6061-t6"),
-    "plate-al6061": (plate, "al6061-t6"),
 }
 
 

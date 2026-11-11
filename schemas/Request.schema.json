@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Ask the core to do something to the history. `undo` and `redo` take back and redo the document's last\nentry, whoever made it (one linear history in S1; per-user undo is N-04).",
+  "properties": {
+    "type": {
+      "const": "request",
+      "title": "Type",
+      "type": "string"
+    },
+    "id": {
+      "maxLength": 128,
+      "minLength": 1,
+      "title": "Id",
+      "type": "string"
+    },
+    "action": {
+      "$ref": "#/$defs/RequestAction"
+    },
+    "origin": {
+      "$ref": "#/$defs/Origin"
+    }
+  },
+  "required": [
+    "type",
+    "id",
+    "action",
+    "origin"
+  ],
+  "title": "Request",
+  "type": "object",
+  "$defs": {
+    "Origin": {
+      "description": "Which input path sent a command (`client-adapter.md` 3.5): the person's mouse or keyboard, the agent's\naccepted proposal, a confirmed voice sentence, an XR hand or controller, the MCP server.",
+      "enum": [
+        "mouse",
+        "agent",
+        "voice",
+        "xr",
+        "mcp"
+      ],
+      "title": "Origin",
+      "type": "string"
+    },
+    "RequestAction": {
+      "enum": [
+        "undo",
+        "redo"
+      ],
+      "title": "RequestAction",
+      "type": "string"
+    }
+  }
+}

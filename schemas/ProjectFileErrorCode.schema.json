@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "enum": [
+    "not_json",
+    "not_a_project_file",
+    "unsupported_version",
+    "invalid_project",
+    "hash_mismatch"
+  ],
+  "title": "ProjectFileErrorCode",
+  "type": "string"
+}
