@@ -179,7 +179,7 @@ uv run spikes/godot-jolt/test_scale.py
 - **4륜차 두 장면에서 Godot 4.7.2 + Jolt와 MuJoCo 4.0.0의 궤적은 같은 장면 수치(질량, 치수, 마찰, 시간 간격, 구동 토크)로 시작해도 갈린다.** 경사 주행(4 s, 이동 경로 8.14 m)에서 차체 위치 차이는 **끝에서 최대 49.4 mm**(경로의 0.61%), 자세 차이 최대 0.27 mrad. 낙하(3 s)에서 위치 차이는 **착지 직후(스텝 236, 0.472 s) 최대 22.7 mm**, 끝에서 20.5 mm, 자세 차이 최대 **0.0386 rad(2.2°)**. 값은 모두 시뮬(`시뮬` 배지)이고 엔진 둘의 접촉·바퀴 모델 차이를 합친 것이다. 어느 쪽이 "현실에 가깝다"는 뜻이 아니다.
 - **같은 빌드 반복은 비트 단위로 같다**: 두 장면 모두 Godot CSV의 sha256이 별도 프로세스 2회에서 같았다.
 - **이 차이를 어떻게 읽나(노이즈 바닥과 함께).** MuJoCo 쪽 설정만 바꿔도 같은 크기의 차이가 난다: 적분기를 `implicitfast`로 바꾸면 1e-8 m(무시), 시간 간격 2 ms → 1 ms면 경사 2.2 mm, 낙하 3.8 mm, 접촉 강성 `solref` 0.02 → 0.004면 경사 9.3 mm, 낙하 **118 mm**(낙하 3.4 m 경로의 3.5%). Godot 쪽도 시작 높이를 1 µm만 흔들면 경사 0.68 mm, 낙하 **6.8 mm**로 커진다(접촉 뒤 증폭). 즉 낙하의 22.7 mm는 "엔진이 다르다"와 "접촉이 있는 궤적은 작은 차이를 키운다"가 섞인 값이고, 경사의 49 mm는 같은 방향으로 쌓이는 체계 오차(Godot의 차가 더 멀리 간다)다 [추정: 바퀴·접촉의 마찰·감쇠 모델 차이가 원인 후보이고 이번에 분해하지 않았다].
-- **웹 내보내기는 되고, 헤드리스 Chromium에서 두 변형 모두 박스 200개 1,000스텝을 완주했다(수정 후 재측정).** 헤드리스로 `--export-release Web`이 두 변형(스레드 있음/없음)에서 끝났다. **번들 크기는 약 39 MB(gzip 약 10.3 MB, brotli 약 7.2 MB)이고 거의 전부 엔진 `.wasm`**이다. 내 장면 쪽(`.pck`)은 4 KB. 헤드리스 Chromium(SwiftShader), 가드 통과 후 각 1회: **탐색 시작부터 엔진 준비까지 스레드 있음 약 860 ms, 스레드 없음 약 580 ms**(`ready_since_navigation_ms_in_page`), 박스 200개 1,000스텝 완주(스레드 있음 `wall_ms=2233`, 없음 2159, `mean_z=0.1000` = 위층이 아래층 위에 쌓인 값과 일치). 이 측정은 로컬 서버·캐시 없음·소프트웨어 렌더러라 **실제 네트워크·GPU 로딩 시간이 아니다**. **이전 기록(수정 전 빌드): 스레드 있는 변형이 `PAGEERROR memory access out of bounds`로 죽어 결과를 못 냈다(120 s 후 `ran=false`).** 그 뒤 `web/main.gd`가 `World3D`를 `_ready()`의 지역 변수로 들고 있던 것을 멤버 변수로 바꿔 장면 수명 동안 붙잡았고, 같은 명령으로 다시 재니 크래시가 재현되지 않고 완주했다. **대조 실행**: 수정 전 `main.gd`(커밋 `ba87d47`의 것)를 같은 엔진·같은 템플릿으로 다시 내보내(`/tmp/godot-web-prefix`) 같은 가드 아래 같은 명령으로 재니 **다시 죽었다**: `ran=false`, 120 s 후 결과 없음, 이번 오류 문구는 `PAGEERROR null function`(처음 크래시의 `memory access out of bounds`와 문구가 다르다. 둘 다 wasm 안의 오류다)(`results/a0-03b-web-threads-prefix.json`). 즉 **같은 빌드 조건에서 `World3D`를 지역 변수로 두면 죽고 멤버로 두면 완주했다**(각 1회, 오류 문구는 실행마다 다름). 이것이 `World3D` 수명이 원인이라는 쪽의 증거이지만 각 1회라 확률적 차이를 배제하지 못한다 [추정]. 스레드 있는 변형 각 1회라 완주가 항상 됨을 보장하지 않는다.
+- **웹 내보내기는 되고, 헤드리스 Chromium에서 두 변형 모두 박스 200개 1,000번의 물리 콜백(999스텝 뒤 상태를 읽음, 아래)을 완주했다(수정 후 재측정).** 헤드리스로 `--export-release Web`이 두 변형(스레드 있음/없음)에서 끝났다. **번들 크기는 약 39 MB(gzip 약 10.3 MB, brotli 약 7.2 MB)이고 거의 전부 엔진 `.wasm`**이다. 내 장면 쪽(`.pck`)은 4.1 KB. 헤드리스 Chromium(SwiftShader), 가드 통과 후 각 1회: **탐색 시작부터 엔진 준비까지 스레드 있음 약 860 ms, 스레드 없음 약 580 ms**(`ready_since_navigation_ms_in_page`), 박스 200개 1,000스텝 완주(스레드 있음 `wall_ms=2233`, 없음 2159, `mean_z=0.1000` = 위층이 아래층 위에 쌓인 값과 일치). 이 측정은 로컬 서버·캐시 없음·소프트웨어 렌더러라 **실제 네트워크·GPU 로딩 시간이 아니다**. **이전 기록(수정 전 빌드): 스레드 있는 변형이 `PAGEERROR memory access out of bounds`로 죽어 결과를 못 냈다(120 s 후 `ran=false`).** 그 뒤 `web/main.gd`가 `World3D`를 `_ready()`의 지역 변수로 들고 있던 것을 멤버 변수로 바꿔 장면 수명 동안 붙잡았고, 같은 명령으로 다시 재니 크래시가 재현되지 않고 완주했다. **대조 실행**: 수정 전 `main.gd`(커밋 `ba87d47`의 것)를 같은 엔진·같은 템플릿으로 다시 내보내(`/tmp/godot-web-prefix`) 같은 가드 아래 같은 명령으로 재니 **다시 죽었다**: `ran=false`, 120 s 후 결과 없음, 이번 오류 문구는 `PAGEERROR null function`(처음 크래시의 `memory access out of bounds`와 문구가 다르다. 둘 다 wasm 안의 오류다)(`results/a0-03b-web-threads-prefix.json`). 즉 **같은 빌드 조건에서 `World3D`를 지역 변수로 두면 죽고 멤버로 두면 완주했다**(각 1회, 오류 문구는 실행마다 다름). 이것이 `World3D` 수명이 원인이라는 쪽의 증거이지만 각 1회라 확률적 차이를 배제하지 못한다 [추정]. 스레드 있는 변형 각 1회라 완주가 항상 됨을 보장하지 않는다.
 - **OpenXR: 이 머신에서 `initialize()`가 `false`를 돌려줬고, 설치된 OpenXR 런타임은 찾지 못했다 [추정: 다른 원인 미배제]**(헤드리스 실행, `xr/openxr/enabled=false` 등 다른 원인은 로더 오류 로그로 배제하지 않았다). macOS 바이너리에는 `OpenXRInterface`가 등록돼 있다(아래). 실기·에뮬레이터 프레임률은 이번 범위 밖이다.
 
 ### 방법: 4륜차 장면
@@ -229,18 +229,18 @@ uv run spikes/godot-jolt/test_scale.py
 
 | 항목 | 값 |
 |---|---|
-| 내보내기 | `godot --headless --path spikes/godot-jolt/web --export-release Web index.html`, Godot 4.7.2, 공식 웹 템플릿 `web_release.zip`(sha256 `02f0dca1…67a3`)과 `web_nothreads_release.zip`(`d3ee2f08…32a0`)(범위 요청으로 `.tpz` 1.19 GiB 전체를 받지 않고 이 둘만 꺼냄). 렌더러 `gl_compatibility`(웹은 WebGL 2만 가능, 공식 문서) |
+| 내보내기 | 프리셋 둘이 `web/export_presets.cfg`에 있다: `Web`(스레드 있음, `variant/thread_support=true`)과 `Web (no threads)`(`thread_support=false`). `godot --headless --path spikes/godot-jolt/web --export-release "Web" /tmp/godot-web-out/index.html`과 `... --export-release "Web (no threads)" /tmp/godot-web-nothreads/index.html`. 스레드 없음 프리셋으로 다시 내보낸 `.wasm`·`.js`·`.pck`가 측정에 쓴 폴더와 바이트 단위로 같음을 `cmp`로 확인했다. Godot 4.7.2, Godot 4.7.2, 공식 웹 템플릿 `web_release.zip`(sha256 `02f0dca1…67a3`)과 `web_nothreads_release.zip`(`d3ee2f08…32a0`)(범위 요청으로 `.tpz` 1.19 GiB 전체를 받지 않고 이 둘만 꺼냄). 렌더러 `gl_compatibility`(웹은 WebGL 2만 가능, 공식 문서) |
 | 내보낸 앱 | 장면 하나, 에셋 없음. 물리 서버 직접 호출로 박스 200개를 1,000스텝(500 Hz) 돌리고 `window.__godot_result`와 콘솔에 결과를 남긴다(`web/main.gd`). 내보내기 시간 약 70 s(부하 아래) |
 
-번들 크기(`/tmp`에 내보낸 두 폴더의 바이트). 압축 크기는 서버 설정에 따라 달라진다. **스레드 있음 열**은 `measure.mjs`가 Node `zlib`으로 잰 값이다(gzip 레벨 6, brotli 기본 품질 11, `results/a0-03b-web-threads.json`). **스레드 없음 열**의 압축 값은 측정 하니스가 아니라 이쪽에서 따로 계산한 값이다(Python gzip 레벨 6, `brotli -q 5`)이라 위 열과 직접 비교하지 않는다.
+번들 크기(`/tmp`에 내보낸 두 폴더의 바이트). 압축 크기는 서버 설정에 따라 달라진다. **두 열 모두** `measure.mjs`가 Node `zlib`으로 잰 값이다(gzip 레벨 6, brotli 기본 품질 11, 재측정 JSON `results/a0-03b-web-threads.json`, `results/a0-03b-web-nothreads.json`). 그래서 두 열은 직접 비교할 수 있다. `index.pck`는 `World3D` 수정 후 재내보낸 값이다.
 
 | 파일 | 스레드 있음(바이트) | 스레드 없음(바이트) |
 |---|---|---|
-| `index.wasm` | 38,820,072 (gzip 10,222,942 / brotli 7,082,995) | 39,514,754 (gzip 10,114,291 / brotli q5 8,326,654) |
-| `index.js` | 314,653 (gzip 75,003 / brotli 63,750) | 279,815 (gzip 68,740) |
-| `index.pck` (내 장면) | 3,944 | 3,944 |
-| `index.html` + 워크릿 2 + `index.png` | 약 37,000 | 약 37,000 |
-| **합계** | **39,175,688** (gzip 10,325,928 / brotli 7,173,257) | **39,835,533** (gzip 10,210,865) |
+| `index.wasm` | 38,820,072 (gzip 10,222,942 / brotli 7,082,995) | 39,514,754 (gzip 10,185,394 / brotli 7,095,787) |
+| `index.js` | 314,653 (gzip 75,003 / brotli 63,750) | 279,815 (gzip 69,148 / brotli 59,854) |
+| `index.pck` (내 장면) | 4,136 | 4,136 |
+| `index.html` + 워크릿 2 + `index.png` | 37,019 | 37,020 |
+| **합계** | **39,175,880** (gzip 10,326,130 / brotli 7,173,459) | **39,835,725** (gzip 10,282,729 / brotli 7,182,386) |
 
 - 번들의 99%가 엔진 `.wasm`이다. 에셋을 더해도 이 바닥(압축 후 약 7~10 MB)은 줄지 않는다. 엔진을 필요한 모듈만 넣어 다시 빌드하면 줄일 수 있다는 것은 공식 문서의 말이고(`optimizing_for_size`) **이번에 시험하지 않았다**.
 - 스레드 있는 변형은 `SharedArrayBuffer`가 필요해 **COOP/COEP 헤더**(`same-origin` / `require-corp`)를 서버가 보내야 한다(공식 문서). 스레드 없는 변형은 헤더가 필요 없지만 공식 문서가 "성능이 낮다"고 적는다. 우리 공유 링크가 정적 호스팅이면 헤더 제약이 걸린다.
@@ -255,6 +255,7 @@ uv run spikes/godot-jolt/test_scale.py
 | 스레드 없음 | 18 (DOMContentLoaded 18; 하니스 21) | **580.2** / 581 / 474 | **완주**: `KINETRA done steps=1000 wall_ms=2159 mean_z=0.1000`, 결과까지 2,762 ms | false / false(헤더 없음, SAB 없음) | "Emscripten 4.0.20, single-threaded", Jolt. 1회 |
 
 - **필드가 뜻하는 것(수정)**: `engine_clock_ready_ms`는 Godot `Time.get_ticks_msec()`, 곧 엔진이 시작한 시점부터 센 값이다. 다운로드·`.wasm` 컴파일이 끝난 **뒤**에 0이 되므로 로딩 시간이 아니다(이전 이름 `ready_ms`가 그렇게 읽혔다). 탐색 시작부터의 시간은 두 가지로 따로 잰다: `ready_since_navigation_ms_in_page` = 엔진이 준비된 순간 페이지 안에서 읽은 `performance.now()`(`performance.timeOrigin` = 탐색 시작 기준), `ready_since_navigation_ms_harness` = 하니스가 같은 로그 줄을 받은 `Date.now()`에서 `performance.timeOrigin`을 뺀 값(콘솔 전달 지연이 섞임). 위 표의 첫 두 열은 수정 후 값이고, 수정 전 크래시 행의 355 ms·1,092 ms는 수정 전 하니스 값(엔진 시계)이라 탐색 기준이 아니다. 탐색 기준 값은 위 두 행에서 처음 얻었다.
+- **완료 시점 표기**: `web/main.gd`의 `_physics_process`는 스텝 **전에** 불리므로 n번째 콜백은 n−1스텝 뒤의 상태를 본다. 결과는 1,000번째 콜백에서 읽으므로 **`mean_z`는 999스텝(1.998 s) 뒤의 값**이고, 로그의 `steps=1000`은 콜백 수다. 측정은 이 코드로 했고 값은 바꾸지 않았다(1스텝 차이는 `wall_ms`의 의미를 바꾸지 않는다).
 - 말할 수 있는 것: **두 변형 모두 헤드리스 Chromium(SwiftShader)에서 박스 200개 1,000스텝을 완주했고 위층이 아래층 위에 쌓인 값(`mean_z` 0.1000)이 나왔다**, 탐색 시작부터 준비까지 스레드 있음 약 0.86 s, 없음 약 0.58 s(각 1회, 로컬 서버라 다운로드 시간이 거의 없다). 말할 수 없는 것: 실제 네트워크 다운로드를 포함한 로딩 시간, 실제 GPU 브라우저에서의 프레임률, 크래시 크래시 원인의 확정(수정 전/후 각 1회 대조만 함), 스레드 있는 변형이 매번 완주하는지(1회). 박스 200개는 이번 스파이크의 최소 장면이고 1,000개·5,000개의 웹 성능은 재지 않았다 [확인 필요].
 - 자원 기록(가드 통과, 경고: 스왑 94%, 임계 배지 [기본값]): 스레드 있음 `resource_guard.py --profile heavy -- pnpm --dir spikes/godot-jolt measure -- --dir /tmp/godot-web-out --name threads --isolated --out results/a0-03b-web-threads.json` 75.7 s 종료 코드 0, SSD 여유 19.43 → 19.43 GiB(최악 19.41), 스왑 13.21 → 13.19 GiB, 메모리 압력 normal. 스레드 없음 `... --dir /tmp/godot-web-nothreads --name nothreads --out results/a0-03b-web-nothreads.json` 67.5 s 종료 코드 0, SSD 19.43 → 19.42 GiB, 스왑 13.19 GiB, 압력 normal. 한 번에 하나씩. 두 번의 재측정은 `World3D` 수정 후 재내보낸 폴더(`index.pck` 4,136 B)로 했다. 대조 실행(수정 전 `main.gd`, 스레드 있음, 가드 통과, 185.6 s, 종료 코드 0, SSD 19.38 → 18.83 GiB, 압력 normal)은 위 설명대로 죽었다. 수정 전 크래시 실행(가드 통과, 284.8 s, SSD 11.16 → 7.00 GiB, 스왑 13.88 → 16.79 GiB)의 JSON은 이 재측정이 덮어썼다.
 
@@ -269,7 +270,7 @@ uv run spikes/godot-jolt/test_scale.py
 | 웹 XR | `WebXRInterface` 클래스가 있다. 이번에 브라우저에서 실행하지 않았다 | 클래스 존재만 확인 |
 | 실기·에뮬레이터 프레임률 | **측정하지 않았다** (범위 밖. A0-02b는 WebXR 쪽) | |
 
-계획 5.2절의 "OpenXR, 더 강하다 [확인 필요]"에 대한 이번 답: **엔진 지원 문서는 웹 클라이언트(WebXR)보다 폭이 넓다(독립형 헤드셋 직접 지원)는 쪽이지만, 이 머신에서는 런타임이 없어 실제 구동을 확인하지 못했다.** 헤드셋에서의 성능 비교는 하지 않았다.
+계획 5.2절의 "OpenXR, 더 강하다 [확인 필요]"에 대한 이번 답: **엔진 지원 문서는 웹 클라이언트(WebXR)보다 폭이 넓다(독립형 헤드셋 직접 지원)는 쪽이지만, 이 머신에서는 `initialize()`가 `false`였고 설치된 OpenXR 런타임을 찾지 못해 [추정: 다른 원인 미배제] 실제 구동을 확인하지 못했다.** 헤드셋에서의 성능 비교는 하지 않았다.
 
 ### 재현 방법
 
@@ -279,8 +280,10 @@ uv run spikes/godot-jolt/test_scale.py
 uv run spikes/godot-jolt/car.py --json spikes/godot-jolt/results/a0-03b-car.json    # 4륜차 2장면 대 MuJoCo
 uv run spikes/godot-jolt/test_car.py                                                # 오프라인 점검(Godot 불필요)
 godot --headless --path spikes/godot-jolt --script xr_probe.gd                      # OpenXR 상태 한 줄(`XR {json}`)
-godot --headless --path spikes/godot-jolt/web --export-release Web /tmp/godot-web-out/index.html   # 웹 내보내기(웹 템플릿 필요)
+godot --headless --path spikes/godot-jolt/web --export-release "Web" /tmp/godot-web-out/index.html                      # 웹 내보내기, 스레드 있음(웹 템플릿 필요)
+godot --headless --path spikes/godot-jolt/web --export-release "Web (no threads)" /tmp/godot-web-nothreads/index.html   # 스레드 없음
 uv run python tools/dev/resource_guard.py --profile heavy -- pnpm --dir spikes/godot-jolt measure -- --dir /tmp/godot-web-out --name threads --isolated --out spikes/godot-jolt/results/a0-03b-web-threads.json
+uv run python tools/dev/resource_guard.py --profile heavy -- pnpm --dir spikes/godot-jolt measure -- --dir /tmp/godot-web-nothreads --name nothreads --out spikes/godot-jolt/results/a0-03b-web-nothreads.json
 pnpm --dir spikes/godot-jolt install --frozen-lockfile && pnpm --dir spikes/godot-jolt test   # 서버 단위 시험(CI가 돌린다)
 ```
 

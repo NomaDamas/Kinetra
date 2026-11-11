@@ -42,6 +42,9 @@ func _ready() -> void:
 func _physics_process(_d: float) -> void:
 	if steps == 0:
 		t_first = Time.get_ticks_msec()
+	# NOTE (measured as is): _physics_process runs BEFORE its step, so callback n sees the state after n-1 steps. `steps`
+	# counts callbacks; the result below is read in callback 1,000 = after 999 COMPLETED steps. The log text "steps=1000"
+	# is that callback count (REPORT.md labels the state as after 999 steps).
 	steps += 1
 	if steps == 1000:
 		var z := 0.0
