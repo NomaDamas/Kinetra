@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Which input path sent a command (`client-adapter.md` 3.5): the person's mouse or keyboard, the agent's\naccepted proposal, a confirmed voice sentence, an XR hand or controller, the MCP server.",
+  "enum": [
+    "mouse",
+    "agent",
+    "voice",
+    "xr",
+    "mcp"
+  ],
+  "title": "Origin",
+  "type": "string"
+}

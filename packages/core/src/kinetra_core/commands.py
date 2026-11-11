@@ -87,6 +87,8 @@ class ReasonCode(StrEnum):
     INVALID_COMMAND = "invalid_command"
     INVALID_PROJECT = "invalid_project"
     NOT_EDITABLE = "not_editable"
+    NOTHING_TO_UNDO = "nothing_to_undo"
+    NOTHING_TO_REDO = "nothing_to_redo"
 
 
 class Reason(BaseModel):

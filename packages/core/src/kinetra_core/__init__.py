@@ -74,6 +74,7 @@ from .designspec import (
     WorldPosition,
 )
 from .geometry import AxisExpr, ParamTerm, Position, Quaternion
+from .history import EditResult, History, HistoryEntry, Origin
 from .massprops import (
     ComponentContribution,
     Derivation,
@@ -140,11 +141,14 @@ __all__ = [
     "Dimension",
     "Distribution",
     "EditCommand",
+    "EditResult",
     "ElasticModulus",
     "FilledVoid",
     "FixedDistribution",
     "Friction",
     "Gravity",
+    "History",
+    "HistoryEntry",
     "Incline",
     "Insolation",
     "Instance",
@@ -156,6 +160,7 @@ __all__ = [
     "MaterialCatalog",
     "MoveInstance",
     "NormalDistribution",
+    "Origin",
     "ParamDef",
     "ParamTerm",
     "ParamValue",
