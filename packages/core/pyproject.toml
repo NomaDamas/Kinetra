@@ -3,7 +3,7 @@ name = "kinetra-core"
 version = "0.0.0"
 description = "Engine-independent Project model and command layer"
 requires-python = ">=3.11"
-dependencies = []
+dependencies = ["pydantic>=2.14,<3"]
 
 [build-system]
 requires = ["hatchling"]

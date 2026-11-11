@@ -162,6 +162,19 @@
 
 ## 의존성 (dependency)
 
+### annotated-types-0.8.0
+
+- 표기: annotated-types, Copyright (c) 2022 the contributors. MIT License.
+- 저작자: Adrian Garcia Badaracco; Samuel Colvin; Zac Hatfield-Dodds
+- 라이선스: MIT
+- 원본: https://pypi.org/project/annotated-types/0.8.0/ https://github.com/annotated-types/annotated-types
+- 경로: `packages/core/pyproject.toml`
+- 용도: pydantic 의 추이 의존성
+- 변경 내역: 없음(수정 없이 사용). packages/core/pyproject.toml 의 pydantic>=2.14,<3 과 uv.lock 에서 고정. 해시는 PyPI sdist 의 sha256
+- 받은 날짜: 2026-11-11
+- 원본 해시: `sha256:13b2beaad985e05e2d6407ee4c4f35590b11f8d693a258a561055cac8f64cab7`
+- 확인자: omp
+
 ### dep-@pmndrs/handle-6.6.32
 
 - 표기: @pmndrs/handle, Copyright 2024 Bela Bohlender; Copyright 2023 Coconut Capital. MIT License.
@@ -446,4 +459,56 @@
 - 변경 내역: 없음(수정 없이 사용). 해시는 `npm pack ws@8.22.2` tgz 의 sha256. spikes/web-client/package.json 의 dependencies 와 pnpm-lock.yaml 에서 8.22.2 로 고정
 - 받은 날짜: 2026-11-10
 - 원본 해시: `sha256:de7148fed079cf115faacda8118276839dc9ab377d6b9075cea3424fa1d758f2`
+- 확인자: omp
+
+### pydantic-2.14.3
+
+- 표기: pydantic, Copyright (c) 2017 to present Pydantic Services Inc. and individual contributors. MIT License.
+- 저작자: Samuel Colvin; Eric Jolibois; Hasan Ramezani; Adrian Garcia Badaracco; pydantic contributors
+- 라이선스: MIT
+- 원본: https://pypi.org/project/pydantic/2.14.3/ https://github.com/pydantic/pydantic
+- 경로: `packages/core/pyproject.toml`
+- 용도: 실행 의존성: kinetra-core 의 Project 모델(Material, PartDef)과 JSON Schema 내보내기
+- 변경 내역: 없음(수정 없이 사용). packages/core/pyproject.toml 의 pydantic>=2.14,<3 과 uv.lock 에서 고정. 해시는 PyPI sdist 의 sha256
+- 받은 날짜: 2026-11-11
+- 원본 해시: `sha256:1054f237f4d4733e5a30e1e2333bd33a2004ab9ab1510bd053a9a31bb48e232d`
+- 확인자: omp
+
+### pydantic-core-2.50.4
+
+- 표기: pydantic-core, Copyright (c) 2022 Samuel Colvin. MIT License.
+- 저작자: Samuel Colvin; Adrian Garcia Badaracco; David Montague; David Hewitt; Sydney Runkle; Victorien Plot
+- 라이선스: MIT
+- 원본: https://pypi.org/project/pydantic-core/2.50.4/ https://github.com/pydantic/pydantic/tree/main/pydantic-core
+- 경로: `packages/core/pyproject.toml`
+- 용도: pydantic 의 추이 의존성(Rust 확장)
+- 변경 내역: 없음(수정 없이 사용). packages/core/pyproject.toml 의 pydantic>=2.14,<3 과 uv.lock 에서 고정. 해시는 PyPI sdist 의 sha256
+- 받은 날짜: 2026-11-11
+- 원본 해시: `sha256:aead3b74b68396bf0feab5d57e050b730ded7df55853c1e048a87e00aaf033c6`
+- 확인자: omp
+
+### typing-extensions-4.16.0
+
+- 표기: typing_extensions, Copyright (c) Python Software Foundation. PSF License 2.0.
+- 저작자: Guido van Rossum; Jukka Lehtosalo; Łukasz Langa; Michael Lee
+- 라이선스: PSF-2.0
+- 원본: https://pypi.org/project/typing-extensions/4.16.0/ https://github.com/python/typing_extensions
+- 경로: `packages/core/pyproject.toml`
+- 용도: pydantic 의 추이 의존성
+- 변경 내역: 없음(수정 없이 사용). packages/core/pyproject.toml 의 pydantic>=2.14,<3 과 uv.lock 에서 고정. 해시는 PyPI sdist 의 sha256
+- 받은 날짜: 2026-11-11
+- 원본 해시: `sha256:dc983d19a509c94dba722ee6abd33940f7c05a89e243c47e907eb4db6f1a43e5`
+- 확인자: omp
+
+### typing-inspection-0.4.5
+
+- 표기: typing-inspection, Copyright (c) 2025 Victorien Plot. MIT License.
+- 저작자: Victorien Plot
+- 라이선스: MIT
+- 원본: https://pypi.org/project/typing-inspection/0.4.5/ https://github.com/pydantic/typing-inspection
+- 경로: `packages/core/pyproject.toml`
+- 용도: pydantic 의 추이 의존성
+- 변경 내역: 없음(수정 없이 사용). packages/core/pyproject.toml 의 pydantic>=2.14,<3 과 uv.lock 에서 고정. 해시는 PyPI sdist 의 sha256
+- 받은 날짜: 2026-11-11
+- 원본 해시: `sha256:7f16c411e7930dc79596d42ab44672a3fe5f60eb34b781a1647e7872363120c7`
 - 확인자: omp
