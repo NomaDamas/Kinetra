@@ -6,7 +6,8 @@ string, and `collision.py` fills that void or rejects the part (the caller choos
 
 - a **plate with a bore**: an added box and one subtracted cylinder whose axis is parallel to a box axis, whose length is the
   box's extent along it (a through-hole) and which lies inside the box. Layout `strips`.
-- a **tube**: an added cylinder and one subtracted cylinder on the same axis, the same length. Layout `ring`.
+- a **tube**: an added cylinder and one subtracted cylinder of the same length with an axis parallel to the tube's. Layout `ring`,
+  built around the bore's axis with the outer radius `R - e` for an off-centre bore (`e` = distance between the axes).
 
 Every piece lies inside (host minus bore): it never leaves the host and never enters the bore, so the union is a subset of
 the recipe, a body that fits in the real bore fits in the proxy's, and the error `(union - recipe) / recipe` of a host is
@@ -35,8 +36,8 @@ inner face on the bore's tangent line, outer corners on the outer circle: `b = s
 The pieces overlap at the neighbours' sides; that is allowed in a collision (only mass needs disjoint solids). For each `N`
 from 6 the width `w` is searched over `1.01 .. 1.90` times its lower bound; the smallest `N` with a closed `w` that is within
 the tolerance is used. The report carries the max radial deviation of the inner surface (`r / cos(pi / N) - r`) and of the
-outer surface (the radius of the notch between two staves, found by bisection on the two staves' reach `min(b / cos a,
-w / (2 sin a))`).
+outer surface (the radius of the notch between two staves, found by a fine scan of the two staves' reach `min(b / cos a,
+w / (2 sin a))`; for an off-centre bore `e` is added, an upper bound of how far the real outer wall is from the ring's).
 """
 
 from __future__ import annotations
@@ -53,7 +54,7 @@ MAX_STAVES = 96  # largest stave count tried for a tube
 MIN_STRIP_FRACTION = 0.02  # strips thinner than this fraction of the bore radius are merged into a neighbour
 _W_MULTIPLIERS = tuple(1.0 + 0.9 * (k + 1) / 90 for k in range(90))  # 1.01 .. 1.90 times 2 r tan(pi / N)
 _PARALLEL_DRIFT = 1e-9  # the bore's lateral drift over the host length, in bore radii, still treated as parallel
-_LEN_TOL = 1e-9  # relative: the bore spans the host along the axis, and sits on a tube's axis
+_LEN_TOL = 1e-9  # relative: the bore spans the host along the axis
 
 
 class Infeasible(Exception):
@@ -140,8 +141,6 @@ def plan_through_bore(host: Placed, void: Placed) -> BorePlan | str:
     if abs(length - sizes[k]) > _LEN_TOL * sizes[k] or abs(c[k]) > _LEN_TOL * sizes[k]:
         return "it does not go through the host (a blind pocket or a partial hole)"
     i, j = [a for a in range(3) if a != k]
-    if isinstance(hp, Cylinder) and math.hypot(c[i], c[j]) > _LEN_TOL * sizes[0]:
-        return "its axis is off the tube's axis (only a coaxial bore is decomposed)"
     return BorePlan(host, void, k, i, j, (c[i], c[j]), sizes, radius, isinstance(hp, Cylinder))
 
 
@@ -286,8 +285,16 @@ def _outer_reach_min(r: float, b: float, w: float, theta: float) -> float:
 
 
 def _ring(plan: BorePlan, tolerance: float) -> Decomposition:
-    r, big_r, length = plan.radius, plan.sizes[0] / 2.0, plan.sizes[2]
-    net = math.pi * (big_r * big_r - r * r) * length
+    """Ring of staves around the **bore's** axis. An off-centre bore (offset `e` from the tube's axis) is built with the outer
+    radius `R - e`, the largest circle about the bore's axis that lies inside the tube, so the ring never leaves the tube; the
+    thick side of the wall is then missed and the tolerance sees it."""
+    r, true_r, length = plan.radius, plan.sizes[0] / 2.0, plan.sizes[2]
+    ex, ey = plan.bore
+    offset = math.hypot(ex, ey)
+    big_r = true_r - offset
+    net = math.pi * (true_r * true_r - r * r) * length
+    if not big_r > r:
+        raise Infeasible("has its bore too close to the tube's outer wall for any ring around the bore's axis")
     worst, why = 1.0, "its wall is too thin for any ring of boxes that stays closed"
     for staves in range(6, MAX_STAVES + 1):
         theta = 2.0 * math.pi / staves
@@ -313,10 +320,10 @@ def _ring(plan: BorePlan, tolerance: float) -> Decomposition:
         if worst <= tolerance:
             rho = (r + b) / 2.0
             pieces = tuple(
-                Piece((rho * math.cos(a), rho * math.sin(a), 0.0), (b - r, w, length), a)
+                Piece((ex + rho * math.cos(a), ey + rho * math.sin(a), 0.0), (b - r, w, length), a)
                 for a in (theta * m for m in range(staves))
             )
-            stats = RingStats(staves, True, r / math.cos(theta / 2.0) - r, big_r - _outer_reach_min(r, b, w, theta))
+            stats = RingStats(staves, True, r / math.cos(theta / 2.0) - r, offset + big_r - _outer_reach_min(r, b, w, theta))
             return Decomposition(plan, "ring", pieces, union, net, stats)
         why = f"it still misses {worst:.3g} of its volume with {staves} boxes"
     raise Infeasible(f"cannot be made into a closed ring of at most {MAX_STAVES} boxes within {tolerance:.3g} of its volume ({why}); raise the tolerance")

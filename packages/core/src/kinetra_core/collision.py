@@ -174,6 +174,47 @@ class ProxyDerivation(BaseModel):
         return self
 
 
+def _spin(q: Quaternion) -> float:
+    """Angle of a rotation about the local z axis from a quaternion whose x and y are zero (any other rotation is not a ring's)."""
+    return 2.0 * math.atan2(q.z, q.w)
+
+
+def _check_ring(v: "DecomposedVoid", pieces: list["ProxyGeom"]) -> None:
+    """The boxes of a ring are `ring.staves` equal boxes, turned about the tube's axis by whole multiples of 2 pi / staves
+    from one another, on a circle: a ring with a box deleted or moved is not a closed wall, whatever `wall_closed` says."""
+    assert v.ring is not None
+    n = v.ring.staves
+    if len(pieces) != n:
+        raise ValueError(f"ring.staves is {n} but host {v.host!r} has {len(pieces)} boxes")
+    first = pieces[0]
+    q0 = first.orientation
+    step = 2.0 * math.pi / n
+    seen: set[int] = set()
+    for g in pieces:
+        if any(abs(a.value - b.value) > 1e-9 * a.value for a, b in zip(g.dimensions, first.dimensions)):
+            raise ValueError("the boxes of a ring are equal")
+        q = g.orientation
+        rel = Quaternion.model_construct(  # conj(q0) * q
+            x=q0.w * q.x - q0.x * q.w - q0.y * q.z + q0.z * q.y,
+            y=q0.w * q.y + q0.x * q.z - q0.y * q.w - q0.z * q.x,
+            z=q0.w * q.z - q0.x * q.y + q0.y * q.x - q0.z * q.w,
+            w=q0.w * q.w + q0.x * q.x + q0.y * q.y + q0.z * q.z,
+        )
+        if abs(rel.x) > 1e-6 or abs(rel.y) > 1e-6:
+            raise ValueError("the boxes of a ring are turned about one axis")
+        turns = _spin(rel) / step
+        m = round(turns)
+        if abs(turns - m) > 1e-6:
+            raise ValueError("the boxes of a ring are turned by whole multiples of 2 pi / staves")
+        seen.add(m % n)
+    if seen != set(range(n)):
+        raise ValueError("a ring has one box at every multiple of 2 pi / staves")
+    centre = tuple(sum(g.center[a] for g in pieces) / n for a in range(3))
+    radii = [math.dist(g.center, centre) for g in pieces]
+    if max(radii) - min(radii) > 1e-6 * max(radii):
+        raise ValueError("the boxes of a ring sit on one circle")
+
+
 class CollisionProxy(SimProvenance):
     """The collision proxy of one part.
 
@@ -240,8 +281,10 @@ class CollisionProxy(SimProvenance):
                 raise ValueError("the pieces of a decomposed host are boxes")
             if v.layout == "strips" and abs(v.union_volume - total) > _VOLUME_REL_TOL * max(v.union_volume, total):
                 raise ValueError("the strips of a host are disjoint: union_volume must be the sum of their volumes")
-            if v.layout == "ring" and v.union_volume > total * (1.0 + _VOLUME_REL_TOL):
-                raise ValueError("union_volume of a ring cannot exceed the sum of its boxes' volumes")
+            if v.layout == "ring":
+                _check_ring(v, pieces)
+                if v.union_volume > total * (1.0 + _VOLUME_REL_TOL):
+                    raise ValueError("union_volume of a ring cannot exceed the sum of its boxes' volumes")
             union += v.union_volume
             extra += v.union_volume - (v.host_volume - v.volume)
         if abs(proxy - (kept + union)) > _VOLUME_REL_TOL * max(proxy, kept + union):

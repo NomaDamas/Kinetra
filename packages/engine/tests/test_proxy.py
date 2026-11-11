@@ -171,14 +171,48 @@ def test_two_bores_in_one_plate_are_filled_with_the_reason_and_rejected_on_reque
 def test_unsupported_voids_name_their_reasons():
     skew = [box("blk", 0.3, 0.3, 0.3), cyl("h", 0.03, 0.3, op="subtract", quat={"x": 0.0, "y": math.sin(0.3), "z": 0.0, "w": math.cos(0.3)})]
     tilted = [box("blk", 0.2, 0.2, 1.0), cyl("h", 1e-4, 1.0, op="subtract", quat={"x": 0.0, "y": math.sin(5e-7), "z": 0.0, "w": math.cos(5e-7)})]
-    off_axis = [cyl("outer", 0.06, 0.4), cyl("bore", 0.02, 0.4, at=(0.02, 0.0, 0.0), op="subtract")]
     short = [box("blk", 0.3, 0.3, 0.3), cyl("h", 0.03, 0.2, at=(0.0, 0.0, 0.05), op="subtract")]
-    for comps, why in ((skew, "not parallel"), (tilted, "not parallel"), (off_axis, "off the tube's axis"), (short, "blind pocket")):
+    for comps, why in ((skew, "not parallel"), (tilted, "not parallel"), (short, "blind pocket")):
         r = collision_proxy(part(comps))
         assert r.derivation.method == "added-primitives" and len(r.filled_voids) == 1
         assert any(why in a for a in r.derivation.assumptions), (why, r.derivation.assumptions)
         with pytest.raises(ShapeError, match=why):
             collision_proxy(part(comps), on_unsupported="reject")
+
+
+def test_an_eccentric_tube_is_decomposed_around_the_bore_and_stays_inside_the_recipe():
+    # Tube R = 0.05, bore r = 0.03 whose axis is 0.004 off the tube's, along x and along a diagonal; inner approximation
+    # about the BORE's axis (outer radius R - e = 0.046), so the thick side of the wall is missed, and the tolerance sees it.
+    rng = random.Random(4860)
+    for off in ((0.004, 0.0), (-0.0024, 0.0032)):
+        comps = [cyl("outer", 0.05, 0.4), cyl("bore", 0.03, 0.4, at=(off[0], off[1], 0.0), op="subtract")]
+        r = collision_proxy(part(comps), tolerance=0.3)
+        d = r.decomposed_voids[0]
+        assert d.layout == "ring" and d.ring.wall_closed and -0.3 <= d.error < 0.0
+        net = math.pi * (0.05**2 - 0.03**2) * 0.4
+        assert d.host_volume - d.volume == pytest.approx(net, rel=1e-12)
+        outer, hole = comps[0], comps[1]
+        n, outside, in_recipe, missed = 60_000, 0, 0, 0
+        for _ in range(n):
+            pt = (rng.uniform(-0.05, 0.05), rng.uniform(-0.05, 0.05), rng.uniform(-0.19, 0.19))
+            rec = _geom_contains_component(outer, pt) and not _geom_contains_component(hole, pt)
+            prx = _any_geom(r, pt)
+            outside += prx and not rec  # zero is the claim
+            in_recipe += rec
+            missed += rec and not prx
+        assert outside == 0
+        fraction = missed / in_recipe
+        assert fraction == pytest.approx(-d.error, abs=5 * math.sqrt(fraction * (1 - fraction) / in_recipe) + 1e-3)
+        assert not _any_geom(r, (off[0], off[1], 0.0))  # the bore's own axis is empty
+        # an object of radius 0.0291 around the bore's axis fits
+        for k in range(24):
+            t = 2 * math.pi * k / 24
+            assert not _any_geom(r, (off[0] + 0.0291 * math.cos(t), off[1] + 0.0291 * math.sin(t), 0.0))
+    # a bore nearly touching the tube's wall cannot be a ring about its own axis within the tolerance: rejected with the reason
+    with pytest.raises(ShapeError, match="cannot be made into a closed ring"):
+        collision_proxy(part([cyl("outer", 0.06, 0.4), cyl("bore", 0.02, 0.4, at=(0.02, 0.0, 0.0), op="subtract")]))
+    with pytest.raises(ShapeError, match="too close to the tube's outer wall"):
+        collision_proxy(part([cyl("outer", 0.06, 0.4), cyl("bore", 0.03, 0.4, at=(0.03, 0.0, 0.0), op="subtract")]))
 
 
 def test_a_supported_bore_is_decomposed_even_when_another_void_is_filled():
@@ -695,6 +729,10 @@ def test_decomposed_proxy_cannot_be_forged():
     broken(lambda d: d["geoms"].pop(), "union_volume must be the sum")
     ring = collision_proxy(part(TUBE))
     broken_ring = _forger(ring)
+    broken_ring(lambda d: d["geoms"].pop(), "ring.staves is 16 but host 'outer' has 15 boxes")
+    broken_ring(lambda d: d["geoms"].__setitem__(3, {**d["geoms"][3], "orientation": d["geoms"][2]["orientation"], "id": "outer_p3", "center": d["geoms"][2]["center"]}), "one box at every multiple")
+    broken_ring(lambda d: d["geoms"][5].update(center=[0.0, 0.0, 0.0]), "sit on one circle")
+    broken_ring(lambda d: d["decomposed_voids"][0]["ring"].update(staves=15), "ring.staves is 15 but host 'outer' has 16 boxes")
     broken_ring(lambda d: d["decomposed_voids"][0]["ring"].update(wall_closed=False), "radial slit")
     broken_ring(lambda d: d["decomposed_voids"][0].update(ring=None), "ring layout carries")
     broken_ring(lambda d: d["decomposed_voids"][0].update(union_volume=d["decomposed_voids"][0]["union_volume"] * 1.5, error=0.0), None)
