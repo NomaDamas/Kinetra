@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "A constant that is not a cited number, and why.",
+  "properties": {
+    "item": {
+      "enum": [
+        "gravity",
+        "atmosphere_density",
+        "insolation",
+        "ground_friction"
+      ],
+      "title": "Item",
+      "type": "string"
+    },
+    "reason": {
+      "maxLength": 1000,
+      "minLength": 1,
+      "title": "Reason",
+      "type": "string"
+    }
+  },
+  "required": [
+    "item",
+    "reason"
+  ],
+  "title": "Unverified",
+  "type": "object"
+}

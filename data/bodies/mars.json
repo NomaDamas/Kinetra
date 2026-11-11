@@ -1,0 +1,66 @@
+{
+  "id": "mars",
+  "name": "Mars",
+  "gravity": {
+    "value": 3.73,
+    "unit": "m/s^2",
+    "badge": "cite",
+    "source": {
+      "ref": "NASA NSSDCA Mars Fact Sheet (updated 19 May 2025), accessed 2026-11-11. Surface gravity (mean) 3.73 m/s2: GM/R^2 without rotation, as defined on the sheet. Real surface range 3.69 (equator) to 3.73 (pole); 3.73 is the top of it. Cross-checks: JPL SSD equatorial 3.71; GM 0.042828e6 km3/s2 and R 3389.5 km give 3.728. Not sampled.",
+      "locator": "Bulk parameters, 'Surface gravity (mean) (m/s2)'",
+      "url": "https://nssdc.gsfc.nasa.gov/planetary/factsheet/marsfact.html"
+    }
+  },
+  "atmosphere_density": {
+    "value": 0.016,
+    "unit": "kg/m^3",
+    "badge": "cite",
+    "source": {
+      "ref": "NASA NSSDCA Mars Fact Sheet (updated 19 May 2025), accessed 2026-11-11. Surface density ~0.016 +/- 0.006 kg/m3 (6.36 mb mean, 4.0 to 8.7 mb by season, ~214 K), chosen 0.016, range 0.010 to 0.022. Cross-check: NASA Glenn Mars Atmosphere Model at 0 altitude gives 0.0150. A mean over season and site; density falls with altitude. Not sampled.",
+      "locator": "Martian Atmosphere, 'Surface density'",
+      "url": "https://nssdc.gsfc.nasa.gov/planetary/factsheet/marsfact.html"
+    }
+  },
+  "insolation": {
+    "value": 586.2,
+    "unit": "W/m^2",
+    "badge": "cite",
+    "source": {
+      "ref": "NASA NSSDCA Mars Fact Sheet (updated 19 May 2025), accessed 2026-11-11. Solar irradiance 586.2 W/m2 (ratio to Earth 0.431) at mean Sun-Mars distance, above the atmosphere; dust and air attenuate it at the ground. Eccentricity 0.0935 moves it from 490 at aphelion to 713 at perihelion over a Mars year (inverse square of the sheet distances, our arithmetic).",
+      "locator": "Bulk parameters, 'Solar irradiance (W/m2)'",
+      "url": "https://nssdc.gsfc.nasa.gov/planetary/factsheet/marsfact.html"
+    }
+  },
+  "ground_friction": {
+    "key": "ground_friction",
+    "label": "Ground friction (regolith)",
+    "value": {
+      "value": 0.5126,
+      "unit": "1",
+      "badge": "estimate",
+      "source": {
+        "ref": "Midpoint of the bounds: (0.3249 + 0.7002)/2 = 0.5126, the same rule on all three planets (docs/architecture/bodies.md). Bounds: tan(18 deg) = 0.3249, tan(35 deg) = 0.7002. tan(phi) of soil on soil is an upper bound for a smooth part: interface tan(delta) is 0.20 to 0.60 (NAVFAC DM 7.02 Table 1, p. 7.2-63). Grip is biased high. accessed 2026-11-11.",
+        "locator": "Rule: nominal = mean of the uniform distribution",
+        "url": "https://pubs.usgs.gov/pp/1389/report.pdf"
+      }
+    },
+    "distribution": {
+      "kind": "uniform",
+      "low": 0.3249,
+      "high": 0.7002,
+      "badge": "estimate",
+      "source": {
+        "ref": "Bounds tan(18 deg) = 0.3249, tan(35 deg) = 0.7002: lowest and highest representative angle (printed average or nominal; midpoint when only a range is printed) of the surface classes below, weakest included, none dropped. Viking Lander 1 and 2 (Moore et al. 1987, USGS PP 1389, Abstract): drift 18, blocky 30, mixed fines and crusts 31, crusty to cloddy 35; MER trenches (Sullivan et al., LPSC 2010, #1879) 30 to 37, midpoint 33.5. accessed 2026-11-11.",
+        "url": "https://pubs.usgs.gov/pp/1389/report.pdf"
+      }
+    },
+    "confidence": "low",
+    "editable": false
+  },
+  "unverified": [
+    {
+      "item": "ground_friction",
+      "reason": "No source gives the coefficient of a part on Martian ground. Nominal and spread are soil friction angles from landers (Viking) and rover wheel trenches (MER) used as a proxy, so both badges are estimate, and the proxy is an upper bound for smooth parts (grip biased high). The 2011 JGR paper behind the MER abstract was not read."
+    }
+  ]
+}
