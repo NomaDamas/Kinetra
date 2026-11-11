@@ -68,6 +68,7 @@
         "invalid_project",
         "not_editable",
         "forbidden",
+        "missing_definition",
         "invalid_snap",
         "overlap",
         "floating",

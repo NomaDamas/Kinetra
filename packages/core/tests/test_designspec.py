@@ -225,16 +225,14 @@ def test_designspec_rejects_unknown_instance_in_joint():
     reject(d, "unknown instance 'ghost'")
 
 
-def test_designspec_rejects_unknown_part():
+def test_designspec_keeps_an_instance_whose_part_or_material_is_not_carried():
+    """C-06: a definition the project does not carry is not a validation error, the instance is a placeholder
+    (`test_missing_definition.py` holds the rest of the rule)."""
     d = four_wheel_car()
     d["instances"][1]["part"] = "no-such-part"
-    reject(d, "unknown part 'no-such-part'")
-
-
-def test_designspec_rejects_unknown_material():
-    d = four_wheel_car()
     d["instances"][0]["material"] = "unobtainium"
-    reject(d, "unknown material 'unobtainium'")
+    spec = DesignSpec.model_validate(d)
+    assert spec.instances[1].part == "no-such-part" and spec.instances[0].material == "unobtainium"
 
 
 def test_designspec_rejects_snap_point_used_by_two_joints():

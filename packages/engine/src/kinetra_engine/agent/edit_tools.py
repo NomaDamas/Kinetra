@@ -36,6 +36,12 @@ Rules (the issue's DoD; read by G-03a proposals, G-04 guard, G-08 MCP server):
   material, so the catalog and the part definitions cannot be changed through these tools.
 - Ids the call leaves out are made deterministically: the first unused `<part>-<n>` for an instance, `joint-<n>`, `actuator-<n>`,
   `step-<n>`.
+- **No placeholders (C-06).** Every tool adds the definitions it needs in the same command (`add_part_def`, `add_material_def`), so
+  an accepted call never leaves an instance whose part or material the project lacks; and `validate_command` refuses a call whose
+  result has more missing definitions than before (`missing_definition`), whatever the call. A tool that must read the part of an
+  instance that is already a placeholder (a project opened with a missing definition) is refused with that same reason and names
+  the missing part; it makes up no mass, shape or snap point. Nor does a tool re-link placeholders by adding a library part or catalog
+  material under the id they use: that choice is the user's (`add_part_def`, `relink_instance`). `remove_part` is the one tool that works on a placeholder.
 - Same conventions as the gateway (G-01): tool specs are the OpenAI function-tool objects `Gateway.chat` sends as `tools`
   (`specs()`), a call is a tool name and the arguments as the JSON text of the model's `tool_calls`, and no text returned here
   contains anything from the environment (the tools never read it).
@@ -82,6 +88,7 @@ from kinetra_core import (
     JointKind,
     JointLimits,
     Material,
+    MissingDefinition,
     MoveInstance,
     Origin,
     ParamValue,
@@ -108,6 +115,7 @@ from kinetra_core import (
     Unit,
     WorldPosition,
     load_material_catalog,
+    missing_reasons,
     validate_command,
 )
 from kinetra_core import convex as cx
@@ -448,7 +456,14 @@ class EditTools:
 
     @staticmethod
     def _part_of(project: Project, inst: Instance) -> PartDef:
-        return next(p for p in project.design.parts if p.id == inst.part)
+        """The definition of `inst`'s part. A placeholder (C-06: the project does not carry the part) has none, and a tool never invents one
+        or works around it: the call is refused with the `missing_definition` reason of the core. (`remove_part` needs no definition and
+        is the way out, as are `relink_instance` and `add_part_def`, which are commands and not tools.)"""
+        for p in project.design.parts:
+            if p.id == inst.part:
+                return p
+        users = tuple(i.id for i in project.design.instances if i.part == inst.part)
+        raise CommandRejected(missing_reasons((MissingDefinition(kind="part", id=inst.part, instances=users),)))
 
     @staticmethod
     def _snap_ref(inst_id: str, snap_id: str) -> Ref:
@@ -496,10 +511,19 @@ class EditTools:
             n += 1
         return f"{prefix}-{n}"
 
+    @staticmethod
+    def _not_a_placeholder(project: Project, kind: str, ident: str) -> None:
+        """Adding a library or catalog definition under an id that placeholders already use would silently re-link them to a definition
+        the user never chose. That is the user's decision (`add_part_def`/`relink_instance`, C-06), not a tool's: refused."""
+        users = tuple(i.id for i in project.design.instances if (i.part if kind == "part" else i.material) == ident)
+        if users:
+            raise CommandRejected(missing_reasons((MissingDefinition(kind=kind, id=ident, instances=users),)))  # type: ignore[arg-type]
+
     def _definition(self, project: Project, part_id: str) -> tuple[PartDef, bool]:
         for p in project.design.parts:
             if p.id == part_id:
                 return p, False
+        self._not_a_placeholder(project, "part", part_id)
         if part_id in self._library:
             return self._library[part_id], True
         raise _refuse(
@@ -513,6 +537,7 @@ class EditTools:
         """(the material to add or None when the project has it, whether it must be added)."""
         if any(m.id == material_id for m in project.design.materials):
             return None, False
+        EditTools._not_a_placeholder(project, "material", material_id)
         catalog = load_material_catalog()
         try:
             return catalog.get(material_id).material, True

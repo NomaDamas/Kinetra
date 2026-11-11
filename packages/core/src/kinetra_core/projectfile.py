@@ -60,9 +60,9 @@ Decisions:
   build as `invalid_project` ("Extra inputs are not permitted") even though its `version` is 1. This is decided,
   not overlooked: adding a field is a model change, so it bumps `version` (above), and a file with a version
   this reader does not know is refused by `version` first, with the right reason. `client-adapter.md` G5 (unknown
-  optional fields are ignored) is a rule of the wire protocol, not of this file. C-06 (#455) changes `Project`
-  validation to let a project carry missing definitions; it must keep this rule (no silently ignored fields) and
-  carry the migration that its change of `Project` needs.
+  optional fields are ignored) is a rule of the wire protocol, not of this file. C-06 (#455) let a project carry
+  missing definitions without a new field or a new rule here: a placeholder is an instance whose part or material the
+  project does not carry (`missing.py`), `definitions` lists only what the project carries, and the version stays 1.
 
 Not here: cloud storage and accounts (out of scope), missing definitions (C-06), copying an assembly between
 projects (L-01b), publishing a bundle (H-03a).

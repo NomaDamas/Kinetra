@@ -27,6 +27,7 @@ from kinetra_core import (
     ReasonCode,
     apply_command,
     check_placement,
+    missing_definitions,
 )
 from kinetra_engine.agent import TOOL_NAMES, EditTools, HubEditTools, load_library, specs
 from kinetra_engine.protocol import Hub
@@ -542,3 +543,62 @@ def test_edit_tools_the_library_is_the_packaged_parts_and_a_call_cannot_define_a
     assert not r.ok and codes(r) == [ReasonCode.INVALID_COMMAND]
     p = ok(tools, empty(), "add_part", {"part": "plate", "place": GROUND}).project
     assert p.design.parts[0] == lib["plate"]  # the library's definition, exactly
+
+
+# --- placeholders (C-06) -----------------------------------------------------------------------------------------------
+
+
+@pytest.fixture
+def opened_with_a_missing_part(tower):
+    """The tower as a file that left the beam's definition out would open: the beam instance and its joint stay, as a placeholder."""
+    blob = json.loads(tower.model_dump_json())
+    blob["design"]["parts"] = [p for p in blob["design"]["parts"] if p["id"] != "beam"]
+    return Project.model_validate(blob)
+
+
+def test_edit_tools_a_tool_that_needs_a_missing_definition_surfaces_missing_definition(tools, opened_with_a_missing_part):
+    p = opened_with_a_missing_part
+    assert [m.id for m in missing_definitions(p)] == ["beam"]
+    for tool, args in (
+        ("set_parameter", {"instance": "beam-1", "name": "height", "value": 0.05}),
+        ("clear_parameter", {"instance": "beam-1", "name": "height"}),
+        ("add_part", {"part": "plate", "parameters": {"length": 0.1, "width": 0.1}, "place": snap("bottom", "beam-1", "top")}),
+        ("connect", {"a": {"instance": "plate-1", "snap_point": "edge-xp"}, "b": {"instance": "beam-1", "snap_point": "end-a"}, "facing": "opposed"}),
+    ):
+        r = run(tools, p, tool, args)
+        assert not r.ok and codes(r) == [ReasonCode.MISSING_DEFINITION], tool
+        assert [(x.kind.value, x.id) for x in r.reasons[0].ids] == [("part", "beam"), ("instance", "beam-1")]
+
+
+def test_edit_tools_a_tool_does_not_relink_placeholders_by_adding_a_library_definition(tools, opened_with_a_missing_part):
+    r = run(tools, opened_with_a_missing_part, "add_part", {"part": "beam", "parameters": {"length": 0.1}, "place": GROUND})
+    assert codes(r) == [ReasonCode.MISSING_DEFINITION]  # `beam` is in the library, but the user did not choose it for beam-1
+    blob = json.loads(opened_with_a_missing_part.model_dump_json())
+    blob["design"]["instances"][1]["material"] = "gone-material"
+    p = Project.model_validate(blob)
+    r = run(tools, p, "set_material", {"instance": "plate-1", "material": "gone-material"})
+    assert codes(r) == [ReasonCode.MISSING_DEFINITION]  # a placeholder already uses that id, and the catalog does not have it
+    blob["design"]["instances"][1]["material"] = "ti-6al-4v"
+    p = Project.model_validate(blob)
+    r = run(tools, p, "set_material", {"instance": "plate-1", "material": "ti-6al-4v"})
+    assert codes(r) == [ReasonCode.MISSING_DEFINITION]
+
+
+def test_edit_tools_a_placeholder_can_still_be_removed_and_the_rest_edited(tools, opened_with_a_missing_part):
+    p = opened_with_a_missing_part
+    r = ok(tools, p, "set_parameter", {"instance": "plate-1", "name": "thickness", "value": 0.004, "resnap": False})  # elsewhere: allowed
+    assert [m.id for m in missing_definitions(r.project)] == ["beam"]  # still missing, not more
+    gone = ok(tools, p, "remove_part", {"instance": "beam-1"})
+    assert missing_definitions(gone.project) == ()
+
+
+def test_edit_tools_no_accepted_call_leaves_a_placeholder(tools, tower):
+    p = tower
+    for tool, args in (
+        ("add_part", {"part": "thruster-vacco-48003040", "place": snap("mount", "beam-1", "top")}),
+        ("set_material", {"instance": "beam-1", "material": "ti-6al-4v"}),
+        ("set_parameter", {"instance": "beam-1", "name": "height", "value": 0.05}),
+        ("remove_part", {"instance": "thruster-vacco-48003040-1"}),
+    ):
+        p = ok(tools, p, tool, args).project
+        assert missing_definitions(p) == (), tool
