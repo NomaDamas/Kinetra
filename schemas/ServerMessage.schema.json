@@ -1526,6 +1526,19 @@
             }
           ],
           "default": null
+        },
+        "mass_parameter": {
+          "anyOf": [
+            {
+              "pattern": "^[a-z][a-z0-9_]{0,63}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Mass Parameter"
         }
       },
       "required": [
