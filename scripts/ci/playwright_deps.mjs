@@ -10,7 +10,7 @@ import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 
 export const APT_OPTIONS = ["-o", "Acquire::Retries=5", "-o", "Acquire::http::Timeout=20"];
-export const APT_STEP_TIMEOUT_MS = 90 * 1000;
+export const APT_STEP_TIMEOUT_MS = 60 * 1000;
 
 // Playwright prints `Missing system dependencies (N):` followed by `  <pkg>` lines; nothing missing prints
 // `All system dependencies are installed.`. Returns the package names, [] when none are missing.
@@ -27,14 +27,21 @@ export function parseMissing(stdout) {
   return pkgs;
 }
 
-export const FALLBACK_MIRROR = "http://archive.ubuntu.com/ubuntu/";
+// Independent of Canonical's own hosts: on 2026-11-11 both azure.archive.ubuntu.com and archive.ubuntu.com were unreachable.
+export const FALLBACK_MIRRORS = [
+  "https://mirrors.edge.kernel.org/ubuntu/",
+  "https://mirrors.xtom.com/ubuntu/",
+  "https://mirror.us.leaseweb.net/ubuntu/",
+];
+const DEFAULT_MIRROR_RE = "mirror\\+file:/etc/apt/apt-mirrors\\.txt|https?://(azure\\.)?archive\\.ubuntu\\.com/ubuntu/?";
 
-// Points every apt source that uses the runner's default mirror at FALLBACK_MIRROR (the runner is ephemeral, so this is a throwaway edit).
-export function mirrorFallbackCommand() {
+// Points every apt source at `mirror` (the runner is ephemeral, so this is a throwaway edit). `current` is the regex of the
+// mirror to replace: the runner default first, then the previous fallback.
+export function mirrorFallbackCommand(mirror, currentRe = DEFAULT_MIRROR_RE) {
   const sudo = process.getuid?.() === 0 ? [] : ["sudo"];
   const script =
     `for f in /etc/apt/sources.list /etc/apt/sources.list.d/*; do [ -f "$f" ] && ` +
-    `sed -i -E 's#(mirror\\+file:/etc/apt/apt-mirrors\\.txt|https?://azure\\.archive\\.ubuntu\\.com/ubuntu/?)#${FALLBACK_MIRROR}#g' "$f"; done; true`;
+    `sed -i -E 's#(${currentRe})#${mirror}#g' "$f"; done; true`;
   return [...sudo, "bash", "-c", script];
 }
 
@@ -80,14 +87,16 @@ export function main(argv) {
   const step = (cmd) => run(cmd, { timeout: APT_STEP_TIMEOUT_MS });
   // 1) the package index baked into the runner image, no `update` round trip.
   if (step(cmds.install)) return 0;
-  // 2) refresh the index and retry.
-  console.log("apt-get install failed; refreshing the package index and retrying.");
-  if (step(cmds.update) && step(cmds.install)) return 0;
-  // 3) the runner's default mirror (azure.archive.ubuntu.com) can be the thing that is down: switch to the canonical one.
-  console.log(`default Ubuntu mirror unreachable; retrying through ${FALLBACK_MIRROR}.`);
-  if (step(mirrorFallbackCommand()) && step(cmds.update) && step(cmds.install)) return 0;
+  // 2) the runner's default mirror can be the thing that is down: try independent mirrors one after another. Worst case
+  //    60s + 3 x (60s update + 60s install) = 7 min, inside the step's timeout-minutes: 8.
+  let current = DEFAULT_MIRROR_RE;
+  for (const mirror of FALLBACK_MIRRORS) {
+    console.log(`default Ubuntu mirror unreachable; retrying through ${mirror}.`);
+    if (step(mirrorFallbackCommand(mirror, current)) && step(cmds.update) && step(cmds.install)) return 0;
+    current = mirror.replace(/[.]/g, "\\.");
+  }
   // The fonts matter too: tools/design's pixel comparison fails (a shifted copy no longer differs) when they are missing.
-  console.error(`::error::Playwright OS dependency install failed after apt retries on both Ubuntu mirrors (Acquire::Retries=5, http timeout 20s). Missing: ${missing.join(" ")}. This is an apt mirror/network problem, not a test failure: re-run the job.`);
+  console.error(`::error::Playwright OS dependency install failed after apt retries on the default and every fallback mirror (Acquire::Retries=5, http timeout 20s). Missing: ${missing.join(" ")}. This is an apt mirror/network problem, not a test failure: re-run the job.`);
   return 1;
 }
 

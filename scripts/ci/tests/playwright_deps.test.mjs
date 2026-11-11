@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { readdirSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { APT_OPTIONS, aptCommands, main, parseMissing, FALLBACK_MIRROR, mirrorFallbackCommand } from "../playwright_deps.mjs";
+import { APT_OPTIONS, aptCommands, main, parseMissing, FALLBACK_MIRRORS, mirrorFallbackCommand } from "../playwright_deps.mjs";
 
 test("nothing missing -> no packages", () => {
   assert.deepEqual(parseMissing("All system dependencies are installed.\n"), []);
@@ -25,17 +25,21 @@ test("apt commands carry retries and a connection timeout, install is non-intera
   assert.ok(install.includes("-y") && install.includes("--no-install-recommends") && install.at(-1) === "libnss3");
 });
 
-test("mirror fallback rewrites the runner default mirror to archive.ubuntu.com", () => {
-  const cmd = mirrorFallbackCommand();
-  const script = cmd.at(-1);
-  assert.equal(cmd.at(-3), "bash");
-  assert.ok(script.includes("archive.ubuntu.com/ubuntu/") && script.includes("apt-mirrors"));
-  // the sed expression really rewrites both source styles
-  const sedExpr = /sed -i -E '([^']+)'/.exec(script)[1];
-  const [, re, to] = /^s#(.+)#([^#]+)#g$/.exec(sedExpr);
-  const rx = new RegExp(re, "g");
-  assert.equal("URIs: mirror+file:/etc/apt/apt-mirrors.txt".replace(rx, to), `URIs: ${FALLBACK_MIRROR}`);
-  assert.equal("deb http://azure.archive.ubuntu.com/ubuntu/ resolute main".replace(rx, to), `deb ${FALLBACK_MIRROR} resolute main`);
+test("mirror fallback rewrites the runner default mirror, then the previous fallback", () => {
+  const [first, second] = FALLBACK_MIRRORS;
+  const rewrite = (cmd, text) => {
+    const sedExpr = /sed -i -E '([^']+)'/.exec(cmd.at(-1))[1];
+    const [, re, to] = /^s#(.+)#([^#]+)#g$/.exec(sedExpr);
+    return text.replace(new RegExp(re, "g"), to);
+  };
+  const c1 = mirrorFallbackCommand(first);
+  assert.equal(c1.at(-3), "bash");
+  assert.equal(rewrite(c1, "URIs: mirror+file:/etc/apt/apt-mirrors.txt"), `URIs: ${first}`);
+  assert.equal(rewrite(c1, "deb http://azure.archive.ubuntu.com/ubuntu/ resolute main"), `deb ${first} resolute main`);
+  assert.equal(rewrite(c1, "deb http://archive.ubuntu.com/ubuntu resolute main"), `deb ${first} resolute main`);
+  const c2 = mirrorFallbackCommand(second, first.replace(/[.]/g, "\\."));
+  assert.equal(rewrite(c2, `deb ${first} resolute main`), `deb ${second} resolute main`);
+  assert.ok(FALLBACK_MIRRORS.every((m) => m.startsWith("https://") && !/ubuntu\.com/.test(m)));
 });
 
 test("missing package filter argument is a usage error", () => {
