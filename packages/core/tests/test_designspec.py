@@ -541,36 +541,56 @@ def test_designspec_rejects_unknown_fields():
 
 
 # --- part role and actuator kind (B-03b) --------------------------------------------------------------------------
+# These exercise the DesignSpec check only: every PartDef below is valid on its own (a motor part has its curve and
+# rated voltage; the other roles have no requirements of their own here), so a rejection is the role-actuator rule.
 
 
 def part(d, id):
     return next(p for p in d["parts"] if p["id"] == id)
 
 
+def make_motor_part(d, id="motor"):
+    p = part(d, id)
+    p["role"] = "motor"
+    p["specs"] = [{"name": "rated_voltage", **q(12.0, "V")}]
+    p["curves"] = [
+        {
+            "name": "torque_speed",
+            "curve": {
+                "badge": "declared",
+                "source": SRC,
+                "x_unit": "rad/s",
+                "y_unit": "N*m",
+                "points": [{"x": 0.0, "y": 2.0}, {"x": 20.0, "y": 0.0}],
+            },
+        }
+    ]
+
+
 def test_designspec_motor_actuator_on_a_motor_part_is_accepted():
     d = four_wheel_car()
-    part(d, "motor")["role"] = "motor"  # curve and rated voltage are checked in PartDef (test_motor.py in the engine tests)
-    with pytest.raises(ValidationError, match="needs the curve 'torque_speed'"):
-        DesignSpec.model_validate(d)
+    make_motor_part(d)
+    assert DesignSpec.model_validate(d).parts  # the definition alone is valid; both motor actuators sit on it
 
 
-def test_designspec_motor_actuator_on_a_part_with_another_role_is_rejected():
+@pytest.mark.parametrize("role", ["wheel", "battery", "tank", "spring_damper", "thruster"])
+def test_designspec_motor_actuator_on_a_part_with_another_role_is_rejected(role):
     d = four_wheel_car()
-    part(d, "motor")["role"] = "wheel"
-    reject(d, "a motor drives a part with role 'motor', but instance 'motor-l' is part 'motor' with role 'wheel'")
+    part(d, "motor")["role"] = role
+    reject(d, f"a motor drives a part with role 'motor', but instance 'motor-l' is part 'motor' with role '{role}'")
 
 
-def test_designspec_thruster_actuator_on_a_motor_role_part_is_rejected():
+def test_designspec_thruster_actuator_on_a_valid_motor_part_is_rejected():
     d = four_wheel_car()
-    part(d, "chassis")["role"] = "motor"
+    make_motor_part(d, "chassis")
     d["actuators"].append({"id": "thrust-1", "kind": "thruster", "instance": "chassis-1"})
-    with pytest.raises(ValidationError, match="needs the curve|a thruster drives a part with role 'thruster'"):
-        DesignSpec.model_validate(d)
+    reject(d, "a thruster drives a part with role 'thruster', but instance 'chassis-1' is part 'chassis' with role 'motor'")
 
 
 def test_designspec_part_without_role_takes_any_actuator_kind():
     d = four_wheel_car()
     assert all("role" not in p for p in d["parts"])
+    d["actuators"].append({"id": "thrust-1", "kind": "thruster", "instance": "chassis-1"})
     DesignSpec.model_validate(d)
 
 

@@ -13,27 +13,46 @@ regeneration quadrant. How a command between 0 and 1 scales it, and the sign of 
 from __future__ import annotations
 
 import bisect
+import math
 from dataclasses import dataclass
 
 from kinetra_core import MOTOR_CURVE, MOTOR_RATED_VOLTAGE, Curve, PartDef, PartRole
 
 
-class CurveRangeError(ValueError):
-    """`x` is outside the range the curve is defined on."""
+class CurveError(ValueError):
+    """A curve cannot be evaluated."""
+
+
+class CurveRangeError(CurveError):
+    """`x` is outside the range the curve is defined on (or is not a number)."""
+
+
+def _fraction(x: float, a: float, b: float) -> float:
+    """`(x - a) / (b - a)` for `a < x <= b`, all finite, without overflow: the span of two finite numbers can exceed the
+    largest float (`-1.7e308` to `1.7e308`), so then both are halved first (exact for normal numbers)."""
+    span = b - a
+    if math.isfinite(span):
+        return (x - a) / span
+    return (x / 2 - a / 2) / (b / 2 - a / 2)
 
 
 def evaluate(curve: Curve, x: float) -> float:
-    """`y(x)` by linear interpolation between the neighbouring points. Raises `CurveRangeError` outside `[x_first, x_last]`."""
+    """`y(x)` by linear interpolation between the neighbouring points. Raises `CurveRangeError` outside `[x_first, x_last]`.
+
+    Finite for every curve the model accepts, whatever the magnitudes: the interpolation is the convex combination
+    `a.y * (1 - t) + b.y * t` (no `b.y - a.y`, which overflows for `+-1.7e308`), clamped to the two ends' range so that
+    rounding cannot leave it."""
     pts = curve.points
     lo, hi = pts[0].x, pts[-1].x
-    if not lo <= x <= hi:
+    if not lo <= x <= hi:  # also False for NaN
         raise CurveRangeError(f"x = {x} {curve.x_unit.value} is outside the curve's range [{lo}, {hi}] {curve.x_unit.value}")
     i = bisect.bisect_right([p.x for p in pts], x)
     if i == len(pts):  # x == last point
         return pts[-1].y
     a, b = pts[i - 1], pts[i]
-    t = (x - a.x) / (b.x - a.x)
-    return a.y + t * (b.y - a.y)
+    t = _fraction(x, a.x, b.x)
+    y = a.y * (1.0 - t) + b.y * t
+    return min(max(y, min(a.y, b.y)), max(a.y, b.y))
 
 
 @dataclass(frozen=True)

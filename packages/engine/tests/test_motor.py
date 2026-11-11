@@ -315,3 +315,50 @@ def test_motor_schema_example_is_the_library_part():
     """`schemas/examples/PartDef.motor-37d-12v-50-1.json` (checked against the JSON Schema by validate_examples.py) is a copy."""
     example = Path(__file__).parents[3] / "schemas" / "examples" / "PartDef.motor-37d-12v-50-1.json"
     assert example.read_bytes() == PATH.read_bytes()
+
+
+# ---- evaluation stays finite for every curve the model accepts ---------------------------------------------------------
+
+BIG = 1.7e308  # near the largest float (1.797e308): spans and slopes of such curves overflow in the naive formula
+
+
+def big_curve(points):
+    from kinetra_core import Curve
+
+    return Curve.model_validate(
+        {"badge": "declared", "source": {"ref": "B-03b test"}, "x_unit": "rad/s", "y_unit": "N*m", "points": [{"x": x, "y": y} for x, y in points]}
+    )
+
+
+@pytest.mark.parametrize(
+    "points",
+    [
+        [(-BIG, -BIG), (BIG, BIG)],  # span 2*BIG and rise 2*BIG overflow
+        [(-BIG, BIG), (BIG, -BIG)],
+        [(0.0, BIG), (1e-300, -BIG)],  # slope = -2*BIG / 1e-300
+        [(0.0, 5e-324), (5e-324 * 2, 0.0)],  # subnormal x steps
+        [(0.0, 1.0), (1e308, 2.0), (1.7e308, -1.0)],
+    ],
+)
+def test_curve_evaluation_is_finite_and_between_the_neighbours_for_extreme_finite_curves(points):
+    curve = big_curve(points)
+    xs = [p[0] for p in points]
+    probes = [xs[0], xs[-1], (xs[0] / 2 + xs[-1] / 2), xs[0] + (xs[-1] / 4 - xs[0] / 4), xs[-1] - (xs[-1] / 8 - xs[0] / 8)]
+    for x in probes:
+        y = evaluate(curve, x)
+        assert math.isfinite(y), (points, x)
+        assert min(p[1] for p in points) <= y <= max(p[1] for p in points)
+
+
+def test_curve_evaluation_is_exact_at_the_points_and_midway_for_a_huge_span():
+    curve = big_curve([(-BIG, -BIG), (BIG, BIG)])
+    assert evaluate(curve, -BIG) == -BIG and evaluate(curve, BIG) == BIG
+    assert evaluate(curve, 0.0) == pytest.approx(0.0, abs=1e292)  # the line y = x: 0 at 0 within rounding of 1.7e308 * 1e-16
+    assert evaluate(curve, BIG / 2) == pytest.approx(BIG / 2, rel=1e-12)
+
+
+def test_curve_evaluation_refuses_nan_and_inf():
+    curve = big_curve([(0.0, 1.0), (1.0, 0.0)])
+    for x in (math.nan, math.inf, -math.inf):
+        with pytest.raises(CurveRangeError):
+            evaluate(curve, x)
