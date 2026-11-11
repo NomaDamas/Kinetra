@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { readdirSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { APT_OPTIONS, aptCommands, main, parseMissing } from "../playwright_deps.mjs";
+import { APT_OPTIONS, aptCommands, main, parseMissing, splitMissing } from "../playwright_deps.mjs";
 
 test("nothing missing -> no packages", () => {
   assert.deepEqual(parseMissing("All system dependencies are installed.\n"), []);
@@ -23,6 +23,13 @@ test("apt commands carry retries and a connection timeout, install is non-intera
   }
   assert.ok(APT_OPTIONS.includes("Acquire::Retries=5") && APT_OPTIONS.includes("Acquire::http::Timeout=20"));
   assert.ok(install.includes("-y") && install.includes("--no-install-recommends") && install.at(-1) === "libnss3");
+});
+
+test("fonts are best effort, libraries are required", () => {
+  assert.deepEqual(splitMissing(["libnss3", "fonts-unifont", "xfonts-utils", "libasound2t64"]), {
+    libs: ["libnss3", "libasound2t64"],
+    fonts: ["fonts-unifont", "xfonts-utils"],
+  });
 });
 
 test("missing package filter argument is a usage error", () => {
