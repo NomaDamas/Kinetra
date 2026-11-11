@@ -162,6 +162,45 @@
 
 ## 의존성 (dependency)
 
+### dep-@pmndrs/handle-6.6.32
+
+- 표기: @pmndrs/handle, Copyright 2024 Bela Bohlender; Copyright 2023 Coconut Capital. MIT License.
+- 저작자: Bela Bohlender; Coconut Capital
+- 라이선스: MIT
+- 원본: https://www.npmjs.com/package/@pmndrs/handle/v/6.6.32 https://github.com/pmndrs/xr https://github.com/pmndrs/xr/blob/main/LICENSE
+- 경로: `spikes/webxr/package.json`
+- 용도: 실행 의존성: WebXR 스파이크(A0-02b)의 잡고 옮기기(HandleStore). 부품 하나를 컨트롤러로 잡아 옮긴다
+- 변경 내역: 없음(수정 없이 사용). npm 배포 tarball 의 sha256. spikes/webxr/package.json 의 dependencies 와 pnpm-lock.yaml 에서 6.6.32 로 고정. package.json 의 license 필드는 'SEE LICENSE IN LICENSE' 이고 패키지에 든 LICENSE 파일 본문은 MIT 라이선스(Copyright 2024 Bela Bohlender; Copyright 2023 Coconut Capital)다
+- 받은 날짜: 2026-11-11
+- 원본 해시: `sha256:30f1aef478daa0baeee96289fe22f9d75fd94d0fff3f9ad3331b4ddde79b5a0c`
+- 확인자: omp
+
+### dep-@pmndrs/pointer-events-6.6.32
+
+- 표기: @pmndrs/pointer-events, Copyright 2024 Bela Bohlender; Copyright 2023 Coconut Capital. MIT License.
+- 저작자: Bela Bohlender; Coconut Capital
+- 라이선스: MIT
+- 원본: https://www.npmjs.com/package/@pmndrs/pointer-events/v/6.6.32 https://github.com/pmndrs/xr https://github.com/pmndrs/xr/blob/main/LICENSE
+- 경로: `spikes/webxr/package.json`
+- 용도: 실행 의존성: WebXR 스파이크(A0-02b)의 오프라인 테스트가 실제 grab 포인터를 쓴다. @pmndrs/xr 과 @pmndrs/handle 의 추이 의존성이기도 하다
+- 변경 내역: 없음(수정 없이 사용). npm 배포 tarball 의 sha256. spikes/webxr/package.json 의 dependencies 와 pnpm-lock.yaml 에서 6.6.32 로 고정. package.json 의 license 필드는 'SEE LICENSE IN LICENSE' 이고 패키지에 든 LICENSE 파일 본문은 MIT 라이선스(Copyright 2024 Bela Bohlender; Copyright 2023 Coconut Capital)다
+- 받은 날짜: 2026-11-11
+- 원본 해시: `sha256:abe6e4e612e621647cbeda56e82394b393573724dc258286baf7e5877bb3a634`
+- 확인자: omp
+
+### dep-@pmndrs/xr-6.6.32
+
+- 표기: @pmndrs/xr, Copyright 2024 Bela Bohlender; Copyright 2023 Coconut Capital. MIT License.
+- 저작자: Bela Bohlender; Coconut Capital
+- 라이선스: MIT
+- 원본: https://www.npmjs.com/package/@pmndrs/xr/v/6.6.32 https://github.com/pmndrs/xr https://github.com/pmndrs/xr/blob/main/LICENSE
+- 경로: `spikes/webxr/package.json`
+- 용도: 실행 의존성: WebXR 스파이크(A0-02b)의 three.js XR 입력(컨트롤러 포인터 이벤트)과 세션 진입. 추이 의존성 zustand 4.5.7, meshline 3.3.1, @iwer/devui 1.1.2, @iwer/sem 0.2.5(모두 MIT)는 이 패키지의 것이다
+- 변경 내역: 없음(수정 없이 사용). npm 배포 tarball 의 sha256. spikes/webxr/package.json 의 dependencies 와 pnpm-lock.yaml 에서 6.6.32 로 고정. package.json 의 license 필드는 'SEE LICENSE IN LICENSE' 이고 패키지에 든 LICENSE 파일 본문은 MIT 라이선스(Copyright 2024 Bela Bohlender; Copyright 2023 Coconut Capital)다
+- 받은 날짜: 2026-11-11
+- 원본 해시: `sha256:0ba098818d9442c9fdf9852c7e3ee59585d245e53842bedc061f03806e7f9bb6`
+- 확인자: omp
+
 ### dep-@types/node-26.6.6
 
 - 표기: @types/node, DefinitelyTyped contributors. MIT License.
@@ -188,6 +227,19 @@
 - 원본 해시: `sha256:db919544cdd5c9bd50928619fee0498341e4c0845b03d38752b510cff3994e07`
 - 확인자: omp
 
+### dep-esbuild-0.28.2
+
+- 표기: esbuild, Copyright (c) 2020 Evan Wallace. MIT License.
+- 저작자: Evan Wallace
+- 라이선스: MIT
+- 원본: https://www.npmjs.com/package/esbuild/v/0.28.2 https://github.com/evanw/esbuild https://github.com/evanw/esbuild/blob/main/LICENSE.md
+- 경로: `spikes/webxr/package.json`
+- 용도: 개발 도구: WebXR 스파이크(A0-02b)의 페이지 번들(build.mjs). 번들은 dist/ 에 만들어지고 저장소에 들어오지 않는다
+- 변경 내역: 없음(수정 없이 사용). npm 배포 tarball 의 sha256. spikes/webxr/package.json 의 devDependencies 와 pnpm-lock.yaml 에서 0.28.2 로 고정. 플랫폼 바이너리 @esbuild/darwin-arm64 0.28.2(MIT)는 이 패키지의 선택 의존성
+- 받은 날짜: 2026-11-11
+- 원본 해시: `sha256:e045f94c235c7adc50e77ba2a579c7bec41b496b6b47c3a7845f7c1e19959a88`
+- 확인자: omp
+
 ### dep-godot-4.7.2
 
 - 표기: Godot Engine, Copyright (c) 2014-present Godot Engine contributors, (c) 2007-2014 Juan Linietsky, Ariel Manzur. MIT License. Jolt Physics, Copyright (c) 2021 Jorrit Rouwe. MIT License.
@@ -199,6 +251,19 @@
 - 변경 내역: 없음(공식 macOS universal 빌드 Godot_v4.7.2-stable_macos.universal.zip 을 수정 없이 사용. 해시는 그 zip 의 sha256; 릴리스의 SHA512-SUMS.txt 와도 일치(sha512 38aa16e5…69ca). 바이너리는 저장소 밖 ~/.cache/kinetra-godot 에 둔다. 번들 Jolt Physics 5.5.0 (MIT, Jorrit Rouwe, thirdparty/jolt_physics)은 같은 바이너리에 들어 있어 별도 행이 없다)
 - 받은 날짜: 2026-11-10
 - 원본 해시: `sha256:c58a24e31d720be9d62f60cb5627c4e695fb72f21b0cfe1bc9ccaa9a3b3ba63e`
+- 확인자: omp
+
+### dep-iwer-2.8.0
+
+- 표기: IWER (Immersive Web Emulation Runtime), Copyright (c) Meta Platforms, Inc. and affiliates. MIT License.
+- 저작자: Meta Platforms, Inc. and affiliates (Felix Zhang)
+- 라이선스: MIT
+- 원본: https://www.npmjs.com/package/iwer/v/2.8.0 https://github.com/meta-quest/immersive-web-emulation-runtime https://github.com/meta-quest/immersive-web-emulation-runtime/blob/main/LICENSE
+- 경로: `spikes/webxr/package.json`
+- 용도: 실행 의존성: WebXR 스파이크(A0-02b)의 WebXR 에뮬레이터(Meta Quest 3 프로필). 헤드셋 없이 immersive-vr 세션과 컨트롤러를 스크립트로 구동한다
+- 변경 내역: 없음(수정 없이 사용). npm 배포 tarball 의 sha256. spikes/webxr/package.json 의 dependencies 와 pnpm-lock.yaml 에서 2.8.0 으로 고정. 추이 의존성 gl-matrix 3.4.4(MIT), webxr-layers-polyfill 1.1.0(Apache-2.0)
+- 받은 날짜: 2026-11-11
+- 원본 해시: `sha256:dd945dce10f8e8561615214a0015918296c93732d25c1fbd917b7de262cd977a`
 - 확인자: omp
 
 ### dep-mujoco-4.0.0
@@ -305,6 +370,19 @@
 - 원본 해시: `sha256:d76623373421df22fb4cf8817020cbb7ef15c725b9d5e45f17e189bfc384190f`
 - 확인자: omp
 
+### dep-three-0.187.0
+
+- 표기: three.js, Copyright 2010-2026 three.js authors. MIT License.
+- 저작자: three.js authors (mrdoob)
+- 라이선스: MIT
+- 원본: https://www.npmjs.com/package/three/v/0.187.0 https://github.com/mrdoob/three.js https://github.com/mrdoob/three.js/blob/dev/LICENSE
+- 경로: `spikes/webxr/package.json`
+- 용도: 실행 의존성: WebXR 스파이크(A0-02b)의 3D 장면과 WebXR 렌더러
+- 변경 내역: 없음(수정 없이 사용). npm 배포 tarball 의 sha256. spikes/webxr/package.json 의 dependencies 와 pnpm-lock.yaml 에서 0.187.0 으로 고정. @iwer/devui 와 @iwer/sem 이 추이 의존성으로 three 0.165.0 을 따로 끌어온다(MIT, 번들에는 지연 로딩 조각으로만 들어가고 emulate:false 라 실행되지 않는다)
+- 받은 날짜: 2026-11-11
+- 원본 해시: `sha256:ff540832ded0cfe919764d24a3d88f3e2a05f23303f876423e4f893841e90728`
+- 확인자: omp
+
 ### dep-typescript-7.0.2
 
 - 표기: TypeScript, Copyright (c) Microsoft Corporation. Apache License 2.0.
@@ -316,4 +394,17 @@
 - 변경 내역: 없음(수정 없이 사용). npm 배포 tarball 의 sha256. tools/design/package.json 의 devDependencies와 pnpm-lock.yaml 에서 7.0.2 로 고정.
 - 받은 날짜: 2026-11-10
 - 원본 해시: `sha256:da2513f4b95176d6dde8b51aab7afe8a927656c9d277369793f77f7e59371c08`
+- 확인자: omp
+
+### dep-webxr-input-profiles-assets-1.0.20
+
+- 표기: WebXR Input Profiles, Copyright (c) 2019 Amazon. MIT License.
+- 저작자: Amazon (immersive-web community)
+- 라이선스: MIT
+- 원본: https://www.npmjs.com/package/@webxr-input-profiles/assets/v/1.0.20 https://github.com/immersive-web/webxr-input-profiles https://github.com/immersive-web/webxr-input-profiles/blob/main/LICENSE.md
+- 경로: `spikes/webxr/fixtures/profiles`
+- 용도: 실행 의존성: WebXR 스파이크(A0-02b)가 컨트롤러 입력 매핑(squeeze = 버튼 1)을 읽는 입력 프로필 JSON. @pmndrs/xr 이 기본으로는 CDN 에서 받는 것을 오프라인 테스트용으로 로컬 서버가 준다
+- 변경 내역: 없음(수정 없이 복사). 이 패키지 tarball 의 dist/profiles/profilesList.json (sha256 fe0442d7b206e74d1d3d597ed5a28759e9f0a26d5814dabd179acdf1560b4ad4) 과 dist/profiles/meta-quest-touch-plus/profile.json (sha256 f69041753f555fb91c36d97fd4a58885f3ceb35e2273b179f59cedd464aec688) 두 파일만 spikes/webxr/fixtures/profiles/ 에 넣었다. 컨트롤러 3D 모델(.glb)은 넣지 않았다. 원본 해시는 tarball 의 sha256
+- 받은 날짜: 2026-11-11
+- 원본 해시: `sha256:30df2a2268220fc0d0e034bed1550aabdd7a2500573c5216f64fc70d59c3d91e`
 - 확인자: omp
