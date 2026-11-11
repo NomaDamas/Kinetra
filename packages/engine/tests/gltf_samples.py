@@ -189,6 +189,8 @@ SAMPLES = {
     # B-03e: a catalogue coil spring, mass an estimate declared by mass_parameter, drawn without a material.
     "spring-damper-lee-lc032b08-declared-mass": (lambda: library_part("spring-damper-lee-lc032b08"), NO_MATERIAL),
     "thruster-vacco-48003040-steel": (thruster, "steel-a36"),
+    # B-15: a separator has a declared mass, drawn without a material.
+    "separator-declared-mass": (lambda: library_part("separator"), NO_MATERIAL),
     "wheel-pom": (wheel, "pom-delrin-150"),
     # B-03d: the cell has a cited mass (no material); the tank is aluminium with an inside the proxy fills.
     "battery-18650-declared-mass": (lambda: library_part("battery-18650"), NO_MATERIAL),

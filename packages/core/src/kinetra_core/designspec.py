@@ -29,7 +29,7 @@ rule, reported as a compile error (X-01a, X-01d).
 Stable ids (G3): instance, joint, actuator and schedule entry ids match `ID_PATTERN` and are unique inside their own collection.
 An actuator's id is also its control channel id (client-adapter I5): manual control (`control`) and schedule
 entries name the actuator. Two actuators with the same kind, instance and joint are rejected (a second channel
-to the same drive is ambiguous). Which part may carry which actuator kind: a motor actuator on a part whose role is
+to the same drive is ambiguous). A joint at a separator part's snap point is fixed (B-15). Which part may carry which actuator kind: a motor actuator on a part whose role is
 `motor`, a thruster on `thruster` (`PartRole`, B-03b). A part with another role is rejected; a part with no role is
 accepted (a bare body, and the compiler reports that it has no curve).
 
@@ -51,7 +51,7 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from .conventions import AXIS_NORM_TOLERANCE, ID_PATTERN, Unit
 from .material import Material
-from .partdef import Name, PartDef, PartRole, Quaternion
+from .partdef import SEPARATOR_BADGES, Name, PartDef, PartRole, Quaternion
 from .provenance import Number, Provenance, Quantity
 from .refs import Ref, RefError, RefKind
 
@@ -406,6 +406,11 @@ class DesignSpec(BaseModel):
                     raise RefError(f"{where}: part {part.id!r} has no parameter {v.name!r}", Ref(kind=RefKind.PARAMETER, id=f"{inst.id}/{v.name}"))
                 if v.unit is not d.unit:
                     raise RefError(f"{where}: parameter {v.name!r} is in {d.unit.value!r}, got {v.unit.value!r}", Ref(kind=RefKind.PARAMETER, id=f"{inst.id}/{v.name}"))
+                if part.role is PartRole.SEPARATOR and v.badge not in SEPARATOR_BADGES:
+                    raise RefError(
+                        f"{where}: parameter {v.name!r} of a separator is declared or a default, not {v.badge.value!r} (B-15)",
+                        Ref(kind=RefKind.PARAMETER, id=f"{inst.id}/{v.name}"),
+                    )
                 if not d.min.value <= v.value <= d.max.value:
                     raise RefError(
                         f"{where}: parameter {v.name!r} = {v.value} is outside the part's range [{d.min.value}, {d.max.value}]",
@@ -435,6 +440,13 @@ class DesignSpec(BaseModel):
                         Ref(kind=RefKind.JOINT, id=joint.id),
                     )
                 used[key] = joint.id
+                held = parts.get(inst.part)  # a placeholder (C-06): its role is not known, not checked
+                if held is not None and held.role is PartRole.SEPARATOR and joint.kind is not JointKind.FIXED:
+                    raise RefError(
+                        f"{where}: a separator holds its two parts with fixed joints, but joint {joint.id!r} is a {joint.kind.value}",
+                        Ref(kind=RefKind.INSTANCE, id=ref.instance),
+                        Ref(kind=RefKind.JOINT, id=joint.id),
+                    )
 
         for n, act in enumerate(self.actuators):
             where = f"actuators[{n}] ({act.id!r})"
