@@ -7,6 +7,7 @@ import { dirname, extname, join, normalize, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import { WebSocketServer } from "ws";
 import { PoseStream } from "./stream.mjs";
+import { FLOWS, MAX_WINDOW } from "./flow.js";
 
 const HERE = dirname(fileURLToPath(import.meta.url)), ROOT = dirname(HERE);
 const MIME = { ".html": "text/html; charset=utf-8", ".js": "text/javascript; charset=utf-8", ".mjs": "text/javascript; charset=utf-8", ".json": "application/json", ".bin": "application/octet-stream" };
@@ -52,12 +53,13 @@ export function startServer(port = 5175, host = "127.0.0.1", { guardPassed = gua
     if (!allowedOrigins(server.address()).includes(req.headers.origin)) { socket.end("HTTP/1.1 403 Forbidden\r\ncontent-length: 0\r\nconnection: close\r\n\r\n"); return; }
     let u; try { u = new URL(req.url, "http://x"); } catch { socket.end("HTTP/1.1 400 Bad Request\r\ncontent-length: 0\r\nconnection: close\r\n\r\n"); return; }
     const n = Number(u.searchParams.get("n")), seed = Number(u.searchParams.get("seed") ?? 0);
+    const flow = u.searchParams.get("flow") ?? "none", win = Number(u.searchParams.get("win") ?? 2); // flow=none|ack, win = max unacked frames (flow=ack only)
     if (u.pathname === "/pose" && n >= HEAVY_BODIES && !guardPassed) {
       socket.end("HTTP/1.1 403 Forbidden\r\ncontent-length: 0\r\nconnection: close\r\n\r\n"); // 1,000+ bodies only through the resource guard
       return;
     }
-    if (u.pathname !== "/pose" || !Number.isInteger(n) || n < 2 || n > 20000 || !Number.isInteger(seed)) { socket.destroy(); return; }
-    wss.handleUpgrade(req, socket, head, (ws) => streams.push(new PoseStream(ws, { n, seed })));
+    if (u.pathname !== "/pose" || !Number.isInteger(n) || n < 2 || n > 20000 || !Number.isInteger(seed) || !FLOWS.includes(flow) || !Number.isInteger(win) || win < 1 || win > MAX_WINDOW) { socket.destroy(); return; }
+    wss.handleUpgrade(req, socket, head, (ws) => streams.push(new PoseStream(ws, { n, seed, flow, win })));
   });
   return new Promise((resolve, reject) => {
     server.once("error", reject);
