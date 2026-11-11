@@ -266,7 +266,7 @@ def test_motor_curve_units_must_be_speed_and_torque():
 @pytest.mark.parametrize(
     "points, message",
     [
-        ([{"x": 0.0, "y": 1.0}], "at least 2 points"),
+        ([{"x": 0.0, "y": 1.0}], "at least 2 items"),
         ([{"x": 0.0, "y": 1.0}, {"x": 0.0, "y": 0.0}], "strictly increasing"),
         ([{"x": 0.0, "y": 1.0}, {"x": 2.0, "y": 0.5}, {"x": 1.0, "y": 0.0}], "strictly increasing"),
         ([{"x": 0.0, "y": 1.0}, {"x": float("nan"), "y": 0.0}], "finite"),

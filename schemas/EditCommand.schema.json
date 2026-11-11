@@ -642,6 +642,7 @@
           "items": {
             "$ref": "#/$defs/CurvePoint"
           },
+          "minItems": 2,
           "title": "Points",
           "type": "array"
         }

@@ -14,7 +14,7 @@ Which curve names a part must have for its role, and what shape they have, is `p
 
 from __future__ import annotations
 
-from pydantic import BaseModel, ConfigDict, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from .conventions import Unit
 from .geometry import Name
@@ -33,13 +33,11 @@ class Curve(Provenance):
 
     x_unit: Unit
     y_unit: Unit
-    points: tuple[CurvePoint, ...]
+    points: tuple[CurvePoint, ...] = Field(min_length=2)
 
     @field_validator("points")
     @classmethod
     def _points(cls, v: tuple[CurvePoint, ...]) -> tuple[CurvePoint, ...]:
-        if len(v) < 2:
-            raise ValueError(f"a curve needs at least 2 points, got {len(v)}")
         for n, (a, b) in enumerate(zip(v, v[1:])):
             if not b.x > a.x:
                 raise ValueError(f"x must be strictly increasing: points[{n}].x = {a.x}, points[{n + 1}].x = {b.x}")

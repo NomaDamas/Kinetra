@@ -27,8 +27,8 @@ def test_curve_accepts_two_or_more_increasing_points():
 @pytest.mark.parametrize(
     "points, message",
     [
-        ([(0.0, 1.0)], "at least 2 points"),
-        ([], "at least 2 points"),
+        ([(0.0, 1.0)], "at least 2 items"),
+        ([], "at least 2 items"),
         ([(0.0, 1.0), (0.0, 2.0)], "strictly increasing"),
         ([(1.0, 1.0), (0.5, 2.0)], "strictly increasing"),
         ([(0.0, math.inf), (1.0, 0.0)], "finite"),
