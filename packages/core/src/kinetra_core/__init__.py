@@ -38,7 +38,9 @@ from .massprops import (
     ParameterUse,
 )
 from .material import Density, ElasticModulus, Friction, Material, YieldStrength
+from .material_catalog import CatalogEntry, MaterialCatalog, load_material_catalog
 from .partdef import ParamDef, PartDef, SnapPoint, SpecDef
+from .pbr import PbrColor, PbrScalar, PbrSlots
 from .provenance import BADGE_LABEL_KO, Badge, Provenance, Quantity, Source
 from .shape import Box, Cylinder, Shape, ShapeComponent, Sphere
 from .world import PLANET_CONSTANT_NAMES, Incline, Placement, PropSize, RampProp, StepProp, TerrainProp, World
@@ -56,6 +58,7 @@ __all__ = [
     "AxisExpr",
     "Badge",
     "Box",
+    "CatalogEntry",
     "BreakThreshold",
     "ComponentContribution",
     "Confidence",
@@ -79,10 +82,14 @@ __all__ = [
     "JointLimits",
     "MassProperties",
     "Material",
+    "MaterialCatalog",
     "NormalDistribution",
     "ParamDef",
     "ParamTerm",
     "ParamValue",
+    "PbrColor",
+    "PbrScalar",
+    "PbrSlots",
     "ParameterUse",
     "PartDef",
     "Placement",
@@ -107,4 +114,5 @@ __all__ = [
     "World",
     "WorldPosition",
     "YieldStrength",
+    "load_material_catalog",
 ]
