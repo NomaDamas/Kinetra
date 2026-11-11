@@ -103,7 +103,7 @@ export interface Applied {
   id: string;
   cause: "publish" | "undo" | "redo";
   origin: Origin;
-  command: AddPartDef | ReplacePartDef | RemovePartDef | AddMaterialDef | ReplaceMaterialDef | RemoveMaterialDef | AddInstance | RemoveInstance | MoveInstance | SetParameter | ClearParameter | SetInstanceMaterial | AddJoint | ReplaceJoint | RemoveJoint | AddActuator | RemoveActuator | AddControlEntry | RemoveControlEntry | ReplaceControlEntry | AddAssumption | SetAssumption | RemoveAssumption | SelectPlanet | CommandBatch;
+  command: AddPartDef | ReplacePartDef | RemovePartDef | AddMaterialDef | ReplaceMaterialDef | RemoveMaterialDef | AddInstance | RemoveInstance | MoveInstance | SetParameter | ClearParameter | SetInstanceMaterial | RelinkInstance | AddJoint | ReplaceJoint | RemoveJoint | AddActuator | RemoveActuator | AddControlEntry | RemoveControlEntry | ReplaceControlEntry | AddAssumption | SetAssumption | RemoveAssumption | SelectPlanet | CommandBatch;
   changes: ProjectChanges;
   verdict: VerdictState;
 }
@@ -114,7 +114,7 @@ export interface Applied {
  */
 export interface ApplyResult {
   project: Project;
-  inverse: AddPartDef | ReplacePartDef | RemovePartDef | AddMaterialDef | ReplaceMaterialDef | RemoveMaterialDef | AddInstance | RemoveInstance | MoveInstance | SetParameter | ClearParameter | SetInstanceMaterial | AddJoint | ReplaceJoint | RemoveJoint | AddActuator | RemoveActuator | AddControlEntry | RemoveControlEntry | ReplaceControlEntry | AddAssumption | SetAssumption | RemoveAssumption | SelectPlanet | CommandBatch;
+  inverse: AddPartDef | ReplacePartDef | RemovePartDef | AddMaterialDef | ReplaceMaterialDef | RemoveMaterialDef | AddInstance | RemoveInstance | MoveInstance | SetParameter | ClearParameter | SetInstanceMaterial | RelinkInstance | AddJoint | ReplaceJoint | RemoveJoint | AddActuator | RemoveActuator | AddControlEntry | RemoveControlEntry | ReplaceControlEntry | AddAssumption | SetAssumption | RemoveAssumption | SelectPlanet | CommandBatch;
 }
 
 /** One assumption of the verdict, as the human-review panel shows it. */
@@ -152,6 +152,9 @@ export interface AxisExpr {
 
 export type Badge = "sim" | "cite" | "default" | "declared" | "estimate";
 
+/** What a project with a missing definition cannot do. */
+export type BlockedOperation = "compile" | "run" | "verdict" | "export_halo";
+
 export interface Body {
   id: string;
   name: string;
@@ -176,6 +179,17 @@ export interface BreakThreshold {
   source: Source;
   value: number;
   unit: "N";
+}
+
+/**
+ * A definition the project carries that differs from the catalog's definition with the same id. The project's
+ * one is used.
+ */
+export interface CatalogDifference {
+  kind: "material" | "part";
+  id: string;
+  project_hash: string;
+  catalog_hash: string;
 }
 
 export interface CatalogEntry {
@@ -225,7 +239,7 @@ export interface CollisionProxy {
  */
 export interface CommandBatch {
   type: "batch";
-  commands: (AddPartDef | ReplacePartDef | RemovePartDef | AddMaterialDef | ReplaceMaterialDef | RemoveMaterialDef | AddInstance | RemoveInstance | MoveInstance | SetParameter | ClearParameter | SetInstanceMaterial | AddJoint | ReplaceJoint | RemoveJoint | AddActuator | RemoveActuator | AddControlEntry | RemoveControlEntry | ReplaceControlEntry | AddAssumption | SetAssumption | RemoveAssumption | SelectPlanet)[];
+  commands: (AddPartDef | ReplacePartDef | RemovePartDef | AddMaterialDef | ReplaceMaterialDef | RemoveMaterialDef | AddInstance | RemoveInstance | MoveInstance | SetParameter | ClearParameter | SetInstanceMaterial | RelinkInstance | AddJoint | ReplaceJoint | RemoveJoint | AddActuator | RemoveActuator | AddControlEntry | RemoveControlEntry | ReplaceControlEntry | AddAssumption | SetAssumption | RemoveAssumption | SelectPlanet)[];
 }
 
 /**
@@ -436,8 +450,8 @@ export interface History {
 /** One undo step: `command` as it was applied, its `inverse`, and the `origin` it came from. */
 export interface HistoryEntry {
   origin: Origin;
-  command: AddPartDef | ReplacePartDef | RemovePartDef | AddMaterialDef | ReplaceMaterialDef | RemoveMaterialDef | AddInstance | RemoveInstance | MoveInstance | SetParameter | ClearParameter | SetInstanceMaterial | AddJoint | ReplaceJoint | RemoveJoint | AddActuator | RemoveActuator | AddControlEntry | RemoveControlEntry | ReplaceControlEntry | AddAssumption | SetAssumption | RemoveAssumption | SelectPlanet | CommandBatch;
-  inverse: AddPartDef | ReplacePartDef | RemovePartDef | AddMaterialDef | ReplaceMaterialDef | RemoveMaterialDef | AddInstance | RemoveInstance | MoveInstance | SetParameter | ClearParameter | SetInstanceMaterial | AddJoint | ReplaceJoint | RemoveJoint | AddActuator | RemoveActuator | AddControlEntry | RemoveControlEntry | ReplaceControlEntry | AddAssumption | SetAssumption | RemoveAssumption | SelectPlanet | CommandBatch;
+  command: AddPartDef | ReplacePartDef | RemovePartDef | AddMaterialDef | ReplaceMaterialDef | RemoveMaterialDef | AddInstance | RemoveInstance | MoveInstance | SetParameter | ClearParameter | SetInstanceMaterial | RelinkInstance | AddJoint | ReplaceJoint | RemoveJoint | AddActuator | RemoveActuator | AddControlEntry | RemoveControlEntry | ReplaceControlEntry | AddAssumption | SetAssumption | RemoveAssumption | SelectPlanet | CommandBatch;
+  inverse: AddPartDef | ReplacePartDef | RemovePartDef | AddMaterialDef | ReplaceMaterialDef | RemoveMaterialDef | AddInstance | RemoveInstance | MoveInstance | SetParameter | ClearParameter | SetInstanceMaterial | RelinkInstance | AddJoint | ReplaceJoint | RemoveJoint | AddActuator | RemoveActuator | AddControlEntry | RemoveControlEntry | ReplaceControlEntry | AddAssumption | SetAssumption | RemoveAssumption | SelectPlanet | CommandBatch;
 }
 
 /** Slope angle above the ground in radians, strictly between 0 and pi/2. */
@@ -513,6 +527,13 @@ export interface MaterialCatalog {
   entries: CatalogEntry[];
 }
 
+/** A definition the project does not carry, and the instances that use it (in project order). */
+export interface MissingDefinition {
+  kind: "material" | "part";
+  id: string;
+  instances: string[];
+}
+
 /** Set the stored world pose of one instance. */
 export interface MoveInstance {
   type: "move_instance";
@@ -534,6 +555,12 @@ export interface NormalDistribution {
   std: number;
   clip_low?: number | null;
   clip_high?: number | null;
+}
+
+/** What to tell the user after a project is opened: what is missing and what differs from the catalog. */
+export interface OpenReport {
+  missing?: MissingDefinition[];
+  differs_from_catalog?: CatalogDifference[];
 }
 
 /**
@@ -749,7 +776,7 @@ export interface Publish {
   type: "publish";
   id: string;
   base_revision: number;
-  command: AddPartDef | ReplacePartDef | RemovePartDef | AddMaterialDef | ReplaceMaterialDef | RemoveMaterialDef | AddInstance | RemoveInstance | MoveInstance | SetParameter | ClearParameter | SetInstanceMaterial | AddJoint | ReplaceJoint | RemoveJoint | AddActuator | RemoveActuator | AddControlEntry | RemoveControlEntry | ReplaceControlEntry | AddAssumption | SetAssumption | RemoveAssumption | SelectPlanet | CommandBatch;
+  command: AddPartDef | ReplacePartDef | RemovePartDef | AddMaterialDef | ReplaceMaterialDef | RemoveMaterialDef | AddInstance | RemoveInstance | MoveInstance | SetParameter | ClearParameter | SetInstanceMaterial | RelinkInstance | AddJoint | ReplaceJoint | RemoveJoint | AddActuator | RemoveActuator | AddControlEntry | RemoveControlEntry | ReplaceControlEntry | AddAssumption | SetAssumption | RemoveAssumption | SelectPlanet | CommandBatch;
   origin: Origin;
 }
 
@@ -792,7 +819,7 @@ export interface Reason {
   ids?: Ref[];
 }
 
-export type ReasonCode = "unknown_id" | "duplicate_id" | "in_use" | "index_out_of_range" | "invalid_command" | "invalid_project" | "not_editable" | "forbidden" | "invalid_snap" | "overlap" | "floating" | "nothing_to_undo" | "nothing_to_redo";
+export type ReasonCode = "unknown_id" | "duplicate_id" | "in_use" | "index_out_of_range" | "invalid_command" | "invalid_project" | "not_editable" | "forbidden" | "missing_definition" | "invalid_snap" | "overlap" | "floating" | "nothing_to_undo" | "nothing_to_redo";
 
 /**
  * `id` of a `kind`. A snap point is `<instance>/<snap point>`, a parameter `<instance>/<parameter>`:
@@ -810,6 +837,18 @@ export interface Rejected {
   type: "rejected";
   id: string;
   reasons: Reason[];
+}
+
+/**
+ * Point an instance at another part definition of the project: the way back for an instance whose definition is
+ * missing (C-06, `docs/architecture/missing-definitions.md`; the other ways are `add_part_def` with the missing id
+ * and `remove_instance`). The part must be one the project carries and must suit the instance (its parameters and
+ * its joints' snap points): else the command is rejected with the validator's sentence and the offending ref.
+ */
+export interface RelinkInstance {
+  type: "relink_instance";
+  id: string;
+  part: string;
 }
 
 /** Remove an actuator with its schedule entries. */
@@ -842,16 +881,27 @@ export interface RemoveJoint {
   id: string;
 }
 
-/** Take a material definition out. Rejected while an instance or a terrain prop uses it. */
+/**
+ * Take a material definition out. Rejected while an instance or a terrain prop uses it, unless `unlink` is set:
+ * then the instances that use it stay without a definition (C-06; see `RemovePartDef`). A terrain prop that uses
+ * it still refuses.
+ */
 export interface RemoveMaterialDef {
   type: "remove_material_def";
   id: string;
+  unlink?: boolean;
 }
 
-/** Take a part definition out. Rejected while an instance uses it. */
+/**
+ * Take a part definition out. Rejected while an instance uses it, unless `unlink` is set: then the instances
+ * that use it stay as placeholders without a definition (C-06). `unlink` is what the inverse of an `add_part_def`
+ * that gave placeholders their definition says, so that undo can put the placeholders back; the validator refuses
+ * it from any sender (`missing_definition`: a command never creates a placeholder).
+ */
 export interface RemovePartDef {
   type: "remove_part_def";
   id: string;
+  unlink?: boolean;
 }
 
 /** Replace the schedule entry with the same id (`entry.id`), in place. */
@@ -1112,11 +1162,11 @@ export interface YieldStrength {
 
 export type ClientMessage = Hello | Subscribe | Publish | Request;
 
-export type Command = AddPartDef | ReplacePartDef | RemovePartDef | AddMaterialDef | ReplaceMaterialDef | RemoveMaterialDef | AddInstance | RemoveInstance | MoveInstance | SetParameter | ClearParameter | SetInstanceMaterial | AddJoint | ReplaceJoint | RemoveJoint | AddActuator | RemoveActuator | AddControlEntry | RemoveControlEntry | ReplaceControlEntry | AddAssumption | SetAssumption | RemoveAssumption | SelectPlanet | CommandBatch;
+export type Command = AddPartDef | ReplacePartDef | RemovePartDef | AddMaterialDef | ReplaceMaterialDef | RemoveMaterialDef | AddInstance | RemoveInstance | MoveInstance | SetParameter | ClearParameter | SetInstanceMaterial | RelinkInstance | AddJoint | ReplaceJoint | RemoveJoint | AddActuator | RemoveActuator | AddControlEntry | RemoveControlEntry | ReplaceControlEntry | AddAssumption | SetAssumption | RemoveAssumption | SelectPlanet | CommandBatch;
 
 export type Distribution = FixedDistribution | UniformDistribution | NormalDistribution;
 
-export type EditCommand = AddPartDef | ReplacePartDef | RemovePartDef | AddMaterialDef | ReplaceMaterialDef | RemoveMaterialDef | AddInstance | RemoveInstance | MoveInstance | SetParameter | ClearParameter | SetInstanceMaterial | AddJoint | ReplaceJoint | RemoveJoint | AddActuator | RemoveActuator | AddControlEntry | RemoveControlEntry | ReplaceControlEntry | AddAssumption | SetAssumption | RemoveAssumption | SelectPlanet;
+export type EditCommand = AddPartDef | ReplacePartDef | RemovePartDef | AddMaterialDef | ReplaceMaterialDef | RemoveMaterialDef | AddInstance | RemoveInstance | MoveInstance | SetParameter | ClearParameter | SetInstanceMaterial | RelinkInstance | AddJoint | ReplaceJoint | RemoveJoint | AddActuator | RemoveActuator | AddControlEntry | RemoveControlEntry | ReplaceControlEntry | AddAssumption | SetAssumption | RemoveAssumption | SelectPlanet;
 
 export type ServerMessage = Hello | Snapshot | Resumed | Applied | Accepted | Rejected | ProtocolError;
 

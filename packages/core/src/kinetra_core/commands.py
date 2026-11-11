@@ -71,6 +71,7 @@ from .conventions import ID_PATTERN
 from .designspec import ActuateEntry, Actuator, Instance, Joint, ParamValue, Pose
 from .geometry import Name
 from .material import Material
+from .missing import MissingDefinition
 from .partdef import PartDef
 from .project import Project
 from .refs import Ref, RefError, RefKind
@@ -88,6 +89,7 @@ class ReasonCode(StrEnum):
     INVALID_PROJECT = "invalid_project"
     NOT_EDITABLE = "not_editable"
     FORBIDDEN = "forbidden"  # C-02c: planet constants, the material catalog, verdicts
+    MISSING_DEFINITION = "missing_definition"  # C-06: a project with an instance whose part or material it does not carry
     INVALID_SNAP = "invalid_snap"  # C-02c: a joint whose snap points do not accept each other or do not meet
     OVERLAP = "overlap"  # C-02c: interpenetrating parts, or a part below the ground
     FLOATING = "floating"  # C-02c: nothing connects the part to the ground
@@ -140,10 +142,14 @@ class ReplacePartDef(_Cmd):
 
 
 class RemovePartDef(_Cmd):
-    """Take a part definition out. Rejected while an instance uses it."""
+    """Take a part definition out. Rejected while an instance uses it, unless `unlink` is set: then the instances
+    that use it stay as placeholders without a definition (C-06). `unlink` is what the inverse of an `add_part_def`
+    that gave placeholders their definition says, so that undo can put the placeholders back; the validator refuses
+    it from any sender (`missing_definition`: a command never creates a placeholder)."""
 
     type: Literal["remove_part_def"]
     id: _Id
+    unlink: bool = False
 
 
 class AddMaterialDef(_Cmd):
@@ -160,10 +166,13 @@ class ReplaceMaterialDef(_Cmd):
 
 
 class RemoveMaterialDef(_Cmd):
-    """Take a material definition out. Rejected while an instance or a terrain prop uses it."""
+    """Take a material definition out. Rejected while an instance or a terrain prop uses it, unless `unlink` is set:
+    then the instances that use it stay without a definition (C-06; see `RemovePartDef`). A terrain prop that uses
+    it still refuses."""
 
     type: Literal["remove_material_def"]
     id: _Id
+    unlink: bool = False
 
 
 # --- instances --------------------------------------------------------------------------------------------
@@ -214,6 +223,17 @@ class SetInstanceMaterial(_Cmd):
     type: Literal["set_instance_material"]
     id: _Id
     material: _Id | None
+
+
+class RelinkInstance(_Cmd):
+    """Point an instance at another part definition of the project: the way back for an instance whose definition is
+    missing (C-06, `docs/architecture/missing-definitions.md`; the other ways are `add_part_def` with the missing id
+    and `remove_instance`). The part must be one the project carries and must suit the instance (its parameters and
+    its joints' snap points): else the command is rejected with the validator's sentence and the offending ref."""
+
+    type: Literal["relink_instance"]
+    id: _Id
+    part: _Id
 
 
 # --- joints ------------------------------------------------------------------------------------------------
@@ -326,6 +346,7 @@ _EditCommands = Union[
     SetParameter,
     ClearParameter,
     SetInstanceMaterial,
+    RelinkInstance,
     AddJoint,
     ReplaceJoint,
     RemoveJoint,
@@ -474,6 +495,18 @@ def _replace_in_place(project, command_refs, collection, ident, model, key="id")
     return _rebuild(project, edit, command_refs)
 
 
+def missing_reasons(missing: tuple[MissingDefinition, ...]) -> tuple[Reason, ...]:
+    """One `missing_definition` reason per missing definition: its refs are the definition, then its instances."""
+    return tuple(
+        Reason(
+            code=ReasonCode.MISSING_DEFINITION,
+            message=f"{m.kind} {m.id!r} has no definition in the project (used by instances {list(m.instances)})",
+            ids=(Ref(kind=RefKind(m.kind), id=m.id), *(Ref(kind=RefKind.INSTANCE, id=i) for i in m.instances)),
+        )
+        for m in missing
+    )
+
+
 def _apply_edit(project: Project, c: EditCommand) -> tuple[Project, tuple[EditCommand, ...]]:
     """One edit. Returns the new project and the inverse as edits to apply in order."""
     d = project.design
@@ -483,7 +516,8 @@ def _apply_edit(project: Project, c: EditCommand) -> tuple[Project, tuple[EditCo
             _absent(d.parts, c.part.id, RefKind.PART, "part")
             at = _slot(c.index, len(d.parts), "parts", ref)
             new = _rebuild(project, lambda x: x["design"]["parts"].insert(at, _dump(c.part)), (ref,))
-            return new, (RemovePartDef(type="remove_part_def", id=c.part.id),)
+            relinks = any(i.part == c.part.id for i in d.instances)  # placeholders get their definition: undo makes them again
+            return new, (RemovePartDef(type="remove_part_def", id=c.part.id, unlink=relinks),)
 
         case ReplacePartDef():
             ref = _ref(RefKind.PART, c.part.id)
@@ -494,7 +528,7 @@ def _apply_edit(project: Project, c: EditCommand) -> tuple[Project, tuple[EditCo
         case RemovePartDef():
             at = _find(d.parts, c.id, RefKind.PART, "part definition")
             users = [i.id for i in d.instances if i.part == c.id]
-            if users:
+            if users and not c.unlink:
                 raise _reject(
                     ReasonCode.IN_USE,
                     f"part {c.id!r} is used by instances {users}",
@@ -509,7 +543,8 @@ def _apply_edit(project: Project, c: EditCommand) -> tuple[Project, tuple[EditCo
             _absent(d.materials, c.material.id, RefKind.MATERIAL, "material")
             at = _slot(c.index, len(d.materials), "materials", ref)
             new = _rebuild(project, lambda x: x["design"]["materials"].insert(at, _dump(c.material)), (ref,))
-            return new, (RemoveMaterialDef(type="remove_material_def", id=c.material.id),)
+            relinks = any(i.material == c.material.id for i in d.instances)
+            return new, (RemoveMaterialDef(type="remove_material_def", id=c.material.id, unlink=relinks),)
 
         case ReplaceMaterialDef():
             ref = _ref(RefKind.MATERIAL, c.material.id)
@@ -521,7 +556,7 @@ def _apply_edit(project: Project, c: EditCommand) -> tuple[Project, tuple[EditCo
             at = _find(d.materials, c.id, RefKind.MATERIAL, "material definition")
             users = [_ref(RefKind.INSTANCE, i.id) for i in d.instances if i.material == c.id]
             users += [_ref(RefKind.PROP, p.id) for p in project.world.terrain_props if p.material == c.id]
-            if users:
+            if any(u.kind is RefKind.PROP for u in users) or (users and not c.unlink):
                 raise _reject(
                     ReasonCode.IN_USE,
                     f"material {c.id!r} is used by {[u.id for u in users]}",
@@ -587,6 +622,12 @@ def _apply_edit(project: Project, c: EditCommand) -> tuple[Project, tuple[EditCo
             refs = (_ref(RefKind.INSTANCE, c.id), *(() if c.material is None else (_ref(RefKind.MATERIAL, c.material),)))
             new = _rebuild(project, lambda x: _instance_json(x, c.id).update(material=c.material), refs)
             return new, (SetInstanceMaterial(type="set_instance_material", id=c.id, material=d.instances[at].material),)
+
+        case RelinkInstance():
+            at = _find(d.instances, c.id, RefKind.INSTANCE, "instance")
+            refs = (_ref(RefKind.INSTANCE, c.id), _ref(RefKind.PART, c.part))
+            new = _rebuild(project, lambda x: _instance_json(x, c.id).update(part=c.part), refs)
+            return new, (RelinkInstance(type="relink_instance", id=c.id, part=d.instances[at].part),)
 
         case AddJoint():
             ref = _ref(RefKind.JOINT, c.joint.id)

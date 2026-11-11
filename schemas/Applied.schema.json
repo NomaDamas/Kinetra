@@ -43,6 +43,7 @@
           "batch": "#/$defs/CommandBatch",
           "clear_parameter": "#/$defs/ClearParameter",
           "move_instance": "#/$defs/MoveInstance",
+          "relink_instance": "#/$defs/RelinkInstance",
           "remove_actuator": "#/$defs/RemoveActuator",
           "remove_assumption": "#/$defs/RemoveAssumption",
           "remove_control_entry": "#/$defs/RemoveControlEntry",
@@ -97,6 +98,9 @@
         },
         {
           "$ref": "#/$defs/SetInstanceMaterial"
+        },
+        {
+          "$ref": "#/$defs/RelinkInstance"
         },
         {
           "$ref": "#/$defs/AddJoint"
@@ -706,6 +710,7 @@
                 "add_part_def": "#/$defs/AddPartDef",
                 "clear_parameter": "#/$defs/ClearParameter",
                 "move_instance": "#/$defs/MoveInstance",
+                "relink_instance": "#/$defs/RelinkInstance",
                 "remove_actuator": "#/$defs/RemoveActuator",
                 "remove_assumption": "#/$defs/RemoveAssumption",
                 "remove_control_entry": "#/$defs/RemoveControlEntry",
@@ -760,6 +765,9 @@
               },
               {
                 "$ref": "#/$defs/SetInstanceMaterial"
+              },
+              {
+                "$ref": "#/$defs/RelinkInstance"
               },
               {
                 "$ref": "#/$defs/AddJoint"
@@ -1849,6 +1857,34 @@
       "title": "RampProp",
       "type": "object"
     },
+    "RelinkInstance": {
+      "additionalProperties": false,
+      "description": "Point an instance at another part definition of the project: the way back for an instance whose definition is\nmissing (C-06, `docs/architecture/missing-definitions.md`; the other ways are `add_part_def` with the missing id\nand `remove_instance`). The part must be one the project carries and must suit the instance (its parameters and\nits joints' snap points): else the command is rejected with the validator's sentence and the offending ref.",
+      "properties": {
+        "type": {
+          "const": "relink_instance",
+          "title": "Type",
+          "type": "string"
+        },
+        "id": {
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "part": {
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+          "title": "Part",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "id",
+        "part"
+      ],
+      "title": "RelinkInstance",
+      "type": "object"
+    },
     "RemoveActuator": {
       "additionalProperties": false,
       "description": "Remove an actuator with its schedule entries.",
@@ -1961,7 +1997,7 @@
     },
     "RemoveMaterialDef": {
       "additionalProperties": false,
-      "description": "Take a material definition out. Rejected while an instance or a terrain prop uses it.",
+      "description": "Take a material definition out. Rejected while an instance or a terrain prop uses it, unless `unlink` is set:\nthen the instances that use it stay without a definition (C-06; see `RemovePartDef`). A terrain prop that uses\nit still refuses.",
       "properties": {
         "type": {
           "const": "remove_material_def",
@@ -1972,6 +2008,11 @@
           "pattern": "^[a-z][a-z0-9_-]{0,63}$",
           "title": "Id",
           "type": "string"
+        },
+        "unlink": {
+          "default": false,
+          "title": "Unlink",
+          "type": "boolean"
         }
       },
       "required": [
@@ -1983,7 +2024,7 @@
     },
     "RemovePartDef": {
       "additionalProperties": false,
-      "description": "Take a part definition out. Rejected while an instance uses it.",
+      "description": "Take a part definition out. Rejected while an instance uses it, unless `unlink` is set: then the instances\nthat use it stay as placeholders without a definition (C-06). `unlink` is what the inverse of an `add_part_def`\nthat gave placeholders their definition says, so that undo can put the placeholders back; the validator refuses\nit from any sender (`missing_definition`: a command never creates a placeholder).",
       "properties": {
         "type": {
           "const": "remove_part_def",
@@ -1994,6 +2035,11 @@
           "pattern": "^[a-z][a-z0-9_-]{0,63}$",
           "title": "Id",
           "type": "string"
+        },
+        "unlink": {
+          "default": false,
+          "title": "Unlink",
+          "type": "boolean"
         }
       },
       "required": [

@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "A definition the project carries that differs from the catalog's definition with the same id. The project's\none is used.",
+  "properties": {
+    "kind": {
+      "enum": [
+        "material",
+        "part"
+      ],
+      "title": "Kind",
+      "type": "string"
+    },
+    "id": {
+      "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+      "title": "Id",
+      "type": "string"
+    },
+    "project_hash": {
+      "title": "Project Hash",
+      "type": "string"
+    },
+    "catalog_hash": {
+      "title": "Catalog Hash",
+      "type": "string"
+    }
+  },
+  "required": [
+    "kind",
+    "id",
+    "project_hash",
+    "catalog_hash"
+  ],
+  "title": "CatalogDifference",
+  "type": "object"
+}

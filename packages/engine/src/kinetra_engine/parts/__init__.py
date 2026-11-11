@@ -4,6 +4,7 @@ from ._shape import ShapeError
 from .cache import CacheStats, PartCache, part_key, material_key
 from .collision import collision_proxy
 from .curves import CurveError, CurveRangeError, MotorCharacteristics, evaluate, motor_characteristics, motor_torque_limit
+from .library import library_hashes, library_parts
 from .mass import mass_properties
 from .thruster import Burn, CatalogFinding, Thruster, ThrusterError, burn, catalog_finding, thruster_from_part
 from .visual import part_glb, part_gltf, pbr_for
@@ -24,6 +25,8 @@ __all__ = [
     "ShapeError",
     "collision_proxy",
     "evaluate",
+    "library_hashes",
+    "library_parts",
     "motor_characteristics",
     "motor_torque_limit",
     "part_key",
