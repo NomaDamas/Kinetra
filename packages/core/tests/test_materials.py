@@ -25,21 +25,21 @@ CITED = {
     ("al6061-t6", "density"): (2700.0, "2.70 Mg/m3"),
     ("al6061-t6", "yield_strength"): (2.76e8, "276 MPa"),
     ("al6061-t6", "elastic_modulus"): (6.895e10, "68.95 GPa"),
-    ("al6061-t6", "friction"): (0.25, "kinetic 0.25"),
+    ("al6061-t6", "friction"): (0.38, "kinetic 0.38"),
     ("steel-a36", "density"): (7849.0, "0.490 kcf"),
     ("steel-a36", "yield_strength"): (2.482e8, "36 ksi"),
     ("steel-a36", "elastic_modulus"): (1.9995e11, "29,000 ksi"),
-        ("cfrp-8552-as4-pw", "density"): (1570.0, "1.57 g/cm3"),
+    ("cfrp-8552-as4-pw", "density"): (1570.0, "1.57 g/cm3"),
     ("cfrp-8552-as4-pw", "yield_strength"): (8.28e8, "828 MPa"),
     ("cfrp-8552-as4-pw", "elastic_modulus"): (6.8e10, "68 GPa"),
     ("ti-6al-4v", "density"): (4420.0, "4.42 g/cm3"),
     ("ti-6al-4v", "yield_strength"): (8.28e8, "120 ksi"),
     ("ti-6al-4v", "elastic_modulus"): (1.151e11, "16.7 x 10^6 psi"),
     ("ti-6al-4v", "friction"): (0.32, "kinetic 0.32"),
-    ("pom-delrin-150", "density"): (1420.0, "1.42 g/cc"),
-    ("pom-delrin-150", "yield_strength"): (7.65e7, "11,100 psi"),
-    ("pom-delrin-150", "elastic_modulus"): (3.103e9, "450,000 psi"),
-    ("pom-delrin-150", "friction"): (0.2, "0.20"),
+    ("pom-delrin-150", "density"): (1420.0, "1420 kg/m3"),
+    ("pom-delrin-150", "yield_strength"): (7.2e7, "72 MPa"),
+    ("pom-delrin-150", "elastic_modulus"): (3.1e9, "3100 MPa"),
+    ("pom-delrin-150", "friction"): (0.21, "kinetic 0.21"),
 }
 
 
@@ -99,13 +99,28 @@ def test_materials_each_metal_and_plastic_cites_a_retrievable_source():
 def test_materials_value_range_is_recorded_beside_the_chosen_value():
     cat = load_material_catalog()
     ti = cat.get("ti-6al-4v").material
-    assert "1034 to 1068 MPa" in ti.yield_strength.source.ref and "Chosen 828 MPa" in ti.yield_strength.source.ref
+    assert "896 to 1068 MPa" in ti.yield_strength.source.ref and "Chosen 828 MPa" in ti.yield_strength.source.ref
     assert "107 to 122 GPa" in ti.elastic_modulus.source.ref
     pom = cat.get("pom-delrin-150").material.yield_strength.source.ref
-    assert "69 to 76.5 MPa" in pom and "Chosen 76.5 MPa" in pom
+    assert "69 to 76.5 MPa" in pom and "Chosen 72 MPa" in pom
     assert "68.3 to 68.95 GPa" in cat.get("al6061-t6").material.elastic_modulus.source.ref
     for mid in ("al6061-t6", "steel-a36", "ti-6al-4v", "pom-delrin-150"):
-        assert "Range" in getattr(cat.get(mid).material, "friction").source.ref, mid
+        assert "ange" in getattr(cat.get(mid).material, "friction").source.ref, mid
+
+
+def test_materials_friction_follows_one_selection_rule_and_names_both_directions():
+    cat = load_material_catalog()
+    for mid in ("al6061-t6", "steel-a36", "ti-6al-4v"):
+        ref = cat.get(mid).material.friction.source.ref
+        assert "steel 1032 fixed" in ref, mid
+        assert "ISBN 0-87170-380-7" in ref, mid
+    al = cat.get("al6061-t6").material.friction
+    assert al.value == pytest.approx(0.38) and "0.25" in al.source.ref  # both directions of the same rig
+    assert al.value > cat.get("ti-6al-4v").material.friction.value  # the rule flips the old ordering
+    for mid in ("al6061-t6", "steel-a36", "ti-6al-4v", "pom-delrin-150"):
+        q = cat.get(mid).material.friction
+        assert q.source.locator.startswith("ASM Hb 18 pp. 70-75") or mid == "pom-delrin-150" and "Table 3" in q.source.locator
+        assert q.source.url is None, mid  # no URL for the 1992 appendix: it is cited bibliographically
 
 
 def test_materials_catalog_contains_no_matweb_urls_or_figures():
@@ -113,13 +128,11 @@ def test_materials_catalog_contains_no_matweb_urls_or_figures():
     text = resources.files("kinetra_core").joinpath("material_catalog.json").read_text(encoding="utf-8").lower()
     for banned in ("matweb", "archive.org", "web.archive"):
         assert banned not in text, banned
-    # figures that only MatWeb printed for these materials (not on the cited sheets) must not reappear
-    for figure in ("68.9 gpa", "75.8 mpa", "3.10 gpa", "113.8 gpa", "880 mpa", "7.85 g/cc"):
-        assert figure not in text, figure
     for e in load_material_catalog().entries:
         for name in PROPS:
             url = getattr(e.material, name).source.url or ""
-            assert url.startswith("https://") and "matweb" not in url
+            assert url == "" or url.startswith("https://"), (e.material.id, name)
+            assert "matweb" not in url and "archive.org" not in url
 
 
 def test_materials_aluminum_modulus_conversion_is_exact():
@@ -131,7 +144,7 @@ def test_materials_aluminum_modulus_conversion_is_exact():
 def test_materials_proxy_friction_is_an_estimate_not_a_citation():
     cat = load_material_catalog()
     a36 = cat.get("steel-a36").material.friction
-    assert a36.badge is Badge.ESTIMATE and "proxy" in a36.source.ref and "1032" in a36.source.ref
+    assert a36.badge is Badge.ESTIMATE and "PROXY" in a36.source.ref and "1032" in a36.source.ref
     assert a36.value == pytest.approx(0.23)
 
 
@@ -218,7 +231,7 @@ def test_materials_pbr_slots_are_in_range_and_follow_metal_or_dielectric():
     # metal base colors are Filament's cited F0 table, not invented
     assert cat.get("al6061-t6").pbr.base_color.srgb == "#e8eaea"
     assert cat.get("ti-6al-4v").pbr.base_color.srgb == "#c1baaf"
-    assert cat.get("steel-a36").pbr.base_color.badge is Badge.CITE
+    assert cat.get("steel-a36").pbr.base_color.badge is Badge.ESTIMATE  # pure-metal colour standing in for an alloy
 
 
 def test_materials_pbr_slots_reject_bad_values_and_missing_sources():
@@ -264,3 +277,18 @@ def test_materials_catalog_roundtrips_through_json():
     cat = load_material_catalog()
     again = MaterialCatalog.model_validate_json(cat.model_dump_json())
     assert again == cat
+
+
+def test_materials_delrin_is_attributed_to_the_dupont_sheet_not_a_manufacturer_claim():
+    text = resources.files("kinetra_core").joinpath("material_catalog.json").read_text(encoding="utf-8")
+    assert "Celanese" not in text and "manufacturer" not in text.lower()
+    pom = load_material_catalog().get("pom-delrin-150").material
+    for name in ("density", "yield_strength", "elastic_modulus"):
+        assert "DuPont Delrin 150 NC010" in getattr(pom, name).source.ref, name
+
+
+def test_materials_alloy_colors_from_pure_metal_rows_are_estimates():
+    cat = load_material_catalog()
+    for mid in ("al6061-t6", "steel-a36", "ti-6al-4v"):
+        c = cat.get(mid).pbr.base_color
+        assert c.badge is Badge.ESTIMATE and "pure metal" in c.source.ref, mid

@@ -5,9 +5,14 @@ The data is `material_catalog.json` next to this file: one entry per material, e
 property is a `Quantity` with a badge and a `Source`; the per-material choices, ranges and caveats are in
 `docs/architecture/materials.md`.
 
-`friction` is the dry kinetic Coulomb coefficient of the material sliding against steel. That convention is the
-same for all five, so the numbers are comparable; how two parts' coefficients combine at a contact is the
-compiler's decision (X-01).
+`friction` is a dry, room-temperature kinetic Coulomb coefficient of the material sliding on steel, chosen by one rule
+(steel fixed, the material moving; see `docs/architecture/materials.md`). The five values come from three different
+test setups (flat-on-flat 1.96 N, thrust washer 0.28 MPa, strip drawing 4 to 12 MPa), two of them estimates, and
+Blau calls such tables "very approximate guides"; they are not a ranked scale. How two parts' coefficients combine
+at a contact is the compiler's decision (X-01).
+
+Strength basis is mixed (typical for 6061-T6, CFRP and POM; specified minimum for A36 and Ti-6Al-4V): strengths of
+different materials must not be compared (`docs/architecture/materials.md`, issue #481).
 
 Out of scope: more materials (a material database, S2), pairwise friction tables, anisotropy.
 """
