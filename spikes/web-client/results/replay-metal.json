@@ -1,0 +1,3313 @@
+{
+ "issue": "A0-02c #49",
+ "gl_backend": "metal",
+ "launch_args": [
+  "--use-angle=metal"
+ ],
+ "repeat": 5,
+ "build": {
+  "outfile": "out/replay.js",
+  "inputs": 4,
+  "minified": true
+ },
+ "file_sizes_bytes": {
+  "out/replay.js": {
+   "identity": 542088,
+   "gzip9": 135987,
+   "brotli11": 112205
+  },
+  "replay.html": {
+   "identity": 487,
+   "gzip9": 388,
+   "brotli11": 238
+  },
+  "replay/bundle.json": {
+   "identity": 3063,
+   "gzip9": 1039,
+   "brotli11": 934
+  },
+  "replay/poses.bin": {
+   "identity": 157640,
+   "gzip9": 123064,
+   "brotli11": 119712
+  }
+ },
+ "totals_bytes": {
+  "identity": 703278,
+  "gzip9": 260478,
+  "brotli11": 233089
+ },
+ "profiles": {
+  "none": null,
+  "fast4g": {
+   "name": "Fast 4G",
+   "latency": 165,
+   "down": 1012500,
+   "up": 168750,
+   "down_kbit_s": 8100,
+   "up_kbit_s": 1350
+  },
+  "slow4g": {
+   "name": "Slow 4G (listed as 'Fast 3G' in older DevTools)",
+   "latency": 562.5,
+   "down": 180000,
+   "up": 84375,
+   "down_kbit_s": 1440,
+   "up_kbit_s": 675
+  },
+  "slow3g": {
+   "name": "Slow 3G",
+   "latency": 2000,
+   "down": 50000,
+   "up": 50000,
+   "down_kbit_s": 400,
+   "up_kbit_s": 400
+  }
+ },
+ "machine_before": {
+  "cpu": "Apple M2 Pro",
+  "ncpu": 10,
+  "platform": "Darwin 24.6.0 arm64",
+  "load_avg": [
+   25.9,
+   26.6,
+   25.6
+  ],
+  "swap": "total = 14336.00M  used = 13388.94M  free = 947.06M  (encrypted)",
+  "node": "v22.22.2"
+ },
+ "runs": [
+  {
+   "encoding": "identity",
+   "profile": "none",
+   "n": 5,
+   "first_frame_ms": {
+    "n_valid": 5,
+    "n_missing": 0,
+    "mean": 66.18,
+    "min": 51.1,
+    "p50": 56.9,
+    "p95": 112.1,
+    "p99": 112.1,
+    "max": 112.1
+   },
+   "wire_bytes": 703278,
+   "rows": [
+    {
+     "first_frame_ms": 112.10000014305115,
+     "script_start_ms": 27.40000009536743,
+     "fetched_ms": 59.60000014305115,
+     "verified_ms": 59.90000009536743,
+     "scene_built_ms": 86.70000004768372,
+     "runner_wall_ms": 118.57141699999966,
+     "html_response_start_ms": 4.200000047683716,
+     "load_event_end_ms": 36.60000014305115,
+     "wire_bytes_server_log": 703278,
+     "requests": 4,
+     "pixel_ok": true,
+     "first_frame_check": {
+      "ok": true,
+      "red_fraction": 1,
+      "corner_is_car_colored": false,
+      "corner_pixel": [
+       159,
+       164,
+       170,
+       255
+      ]
+     },
+     "load_avg_1m": 25.9,
+     "console_errors": [],
+     "resources": [
+      {
+       "url": "/out/replay.js",
+       "start": 7.7,
+       "response_end": 18.9,
+       "transfer_size": 542388,
+       "decoded": 542088
+      },
+      {
+       "url": "/replay/bundle.json",
+       "start": 36.3,
+       "response_end": 38.9,
+       "transfer_size": 3363,
+       "decoded": 3063
+      },
+      {
+       "url": "/replay/poses.bin",
+       "start": 36.4,
+       "response_end": 41.6,
+       "transfer_size": 157940,
+       "decoded": 157640
+      }
+     ],
+     "webgl_renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M2 Pro, Unspecified Version)"
+    },
+    {
+     "first_frame_ms": 56.90000009536743,
+     "script_start_ms": 20.799999952316284,
+     "fetched_ms": 32.60000014305115,
+     "verified_ms": 32.799999952316284,
+     "scene_built_ms": 47.200000047683716,
+     "runner_wall_ms": 60.909791999999925,
+     "html_response_start_ms": 1.2999999523162842,
+     "load_event_end_ms": 26.299999952316284,
+     "wire_bytes_server_log": 703278,
+     "requests": 4,
+     "pixel_ok": true,
+     "first_frame_check": {
+      "ok": true,
+      "red_fraction": 1,
+      "corner_is_car_colored": false,
+      "corner_pixel": [
+       159,
+       164,
+       170,
+       255
+      ]
+     },
+     "load_avg_1m": 25.9,
+     "console_errors": [],
+     "resources": [
+      {
+       "url": "/out/replay.js",
+       "start": 4.9,
+       "response_end": 7.4,
+       "transfer_size": 542388,
+       "decoded": 542088
+      },
+      {
+       "url": "/replay/bundle.json",
+       "start": 26.1,
+       "response_end": 31.9,
+       "transfer_size": 3363,
+       "decoded": 3063
+      },
+      {
+       "url": "/replay/poses.bin",
+       "start": 26.2,
+       "response_end": 32.1,
+       "transfer_size": 157940,
+       "decoded": 157640
+      }
+     ],
+     "webgl_renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M2 Pro, Unspecified Version)"
+    },
+    {
+     "first_frame_ms": 52.200000047683716,
+     "script_start_ms": 21.100000143051147,
+     "fetched_ms": 28.90000009536743,
+     "verified_ms": 29.200000047683716,
+     "scene_built_ms": 40.5,
+     "runner_wall_ms": 55.46424999999999,
+     "html_response_start_ms": 1.5,
+     "load_event_end_ms": 26.5,
+     "wire_bytes_server_log": 703278,
+     "requests": 4,
+     "pixel_ok": true,
+     "first_frame_check": {
+      "ok": true,
+      "red_fraction": 1,
+      "corner_is_car_colored": false,
+      "corner_pixel": [
+       159,
+       164,
+       170,
+       255
+      ]
+     },
+     "load_avg_1m": 25.9,
+     "console_errors": [],
+     "resources": [
+      {
+       "url": "/out/replay.js",
+       "start": 4.5,
+       "response_end": 8.1,
+       "transfer_size": 542388,
+       "decoded": 542088
+      },
+      {
+       "url": "/replay/bundle.json",
+       "start": 26.3,
+       "response_end": 28.2,
+       "transfer_size": 3363,
+       "decoded": 3063
+      },
+      {
+       "url": "/replay/poses.bin",
+       "start": 26.4,
+       "response_end": 28.2,
+       "transfer_size": 157940,
+       "decoded": 157640
+      }
+     ],
+     "webgl_renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M2 Pro, Unspecified Version)"
+    },
+    {
+     "first_frame_ms": 51.09999990463257,
+     "script_start_ms": 18.899999856948853,
+     "fetched_ms": 27.199999809265137,
+     "verified_ms": 27.59999990463257,
+     "scene_built_ms": 41.799999952316284,
+     "runner_wall_ms": 54.213250000000244,
+     "html_response_start_ms": 1.5,
+     "load_event_end_ms": 24.699999809265137,
+     "wire_bytes_server_log": 703278,
+     "requests": 4,
+     "pixel_ok": true,
+     "first_frame_check": {
+      "ok": true,
+      "red_fraction": 1,
+      "corner_is_car_colored": false,
+      "corner_pixel": [
+       159,
+       164,
+       170,
+       255
+      ]
+     },
+     "load_avg_1m": 25.9,
+     "console_errors": [],
+     "resources": [
+      {
+       "url": "/out/replay.js",
+       "start": 3.8,
+       "response_end": 5.2,
+       "transfer_size": 542388,
+       "decoded": 542088
+      },
+      {
+       "url": "/replay/bundle.json",
+       "start": 24.4,
+       "response_end": 26.1,
+       "transfer_size": 3363,
+       "decoded": 3063
+      },
+      {
+       "url": "/replay/poses.bin",
+       "start": 24.6,
+       "response_end": 26.7,
+       "transfer_size": 157940,
+       "decoded": 157640
+      }
+     ],
+     "webgl_renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M2 Pro, Unspecified Version)"
+    },
+    {
+     "first_frame_ms": 58.60000014305115,
+     "script_start_ms": 21.200000047683716,
+     "fetched_ms": 30.200000047683716,
+     "verified_ms": 30.90000009536743,
+     "scene_built_ms": 47.799999952316284,
+     "runner_wall_ms": 62.64916600000015,
+     "html_response_start_ms": 2.200000047683716,
+     "load_event_end_ms": 26.700000047683716,
+     "wire_bytes_server_log": 703278,
+     "requests": 4,
+     "pixel_ok": true,
+     "first_frame_check": {
+      "ok": true,
+      "red_fraction": 1,
+      "corner_is_car_colored": false,
+      "corner_pixel": [
+       159,
+       164,
+       170,
+       255
+      ]
+     },
+     "load_avg_1m": 25.9,
+     "console_errors": [],
+     "resources": [
+      {
+       "url": "/out/replay.js",
+       "start": 4.8,
+       "response_end": 7,
+       "transfer_size": 542388,
+       "decoded": 542088
+      },
+      {
+       "url": "/replay/bundle.json",
+       "start": 26.5,
+       "response_end": 29.2,
+       "transfer_size": 3363,
+       "decoded": 3063
+      },
+      {
+       "url": "/replay/poses.bin",
+       "start": 26.7,
+       "response_end": 29.8,
+       "transfer_size": 157940,
+       "decoded": 157640
+      }
+     ],
+     "webgl_renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M2 Pro, Unspecified Version)"
+    }
+   ]
+  },
+  {
+   "encoding": "identity",
+   "profile": "fast4g",
+   "n": 5,
+   "first_frame_ms": {
+    "n_valid": 5,
+    "n_missing": 0,
+    "mean": 1257.96,
+    "min": 1247.6,
+    "p50": 1258.7,
+    "p95": 1269.8,
+    "p99": 1269.8,
+    "max": 1269.8
+   },
+   "wire_bytes": 703278,
+   "rows": [
+    {
+     "first_frame_ms": 1247.6000001430511,
+     "script_start_ms": 887.4000000953674,
+     "fetched_ms": 1224.7000000476837,
+     "verified_ms": 1224.9000000953674,
+     "scene_built_ms": 1238.1000001430511,
+     "runner_wall_ms": 1252.680166,
+     "html_response_start_ms": 165.90000009536743,
+     "load_event_end_ms": 893.1000001430511,
+     "wire_bytes_server_log": 703278,
+     "requests": 4,
+     "pixel_ok": true,
+     "first_frame_check": {
+      "ok": true,
+      "red_fraction": 1,
+      "corner_is_car_colored": false,
+      "corner_pixel": [
+       159,
+       164,
+       170,
+       255
+      ]
+     },
+     "load_avg_1m": 25.9,
+     "console_errors": [],
+     "resources": [
+      {
+       "url": "/out/replay.js",
+       "start": 174.9,
+       "response_end": 882.1,
+       "transfer_size": 542388,
+       "decoded": 542088
+      },
+      {
+       "url": "/replay/bundle.json",
+       "start": 892.8,
+       "response_end": 1070.2,
+       "transfer_size": 3363,
+       "decoded": 3063
+      },
+      {
+       "url": "/replay/poses.bin",
+       "start": 893,
+       "response_end": 1224.2,
+       "transfer_size": 157940,
+       "decoded": 157640
+      }
+     ],
+     "webgl_renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M2 Pro, Unspecified Version)"
+    },
+    {
+     "first_frame_ms": 1258.7000000476837,
+     "script_start_ms": 898.1000001430511,
+     "fetched_ms": 1236,
+     "verified_ms": 1236.2000000476837,
+     "scene_built_ms": 1249.2000000476837,
+     "runner_wall_ms": 1269.3030829999998,
+     "html_response_start_ms": 165.90000009536743,
+     "load_event_end_ms": 903.7999999523163,
+     "wire_bytes_server_log": 703278,
+     "requests": 4,
+     "pixel_ok": true,
+     "first_frame_check": {
+      "ok": true,
+      "red_fraction": 1,
+      "corner_is_car_colored": false,
+      "corner_pixel": [
+       159,
+       164,
+       170,
+       255
+      ]
+     },
+     "load_avg_1m": 25.9,
+     "console_errors": [],
+     "resources": [
+      {
+       "url": "/out/replay.js",
+       "start": 174.5,
+       "response_end": 893.3,
+       "transfer_size": 542388,
+       "decoded": 542088
+      },
+      {
+       "url": "/replay/bundle.json",
+       "start": 903.5,
+       "response_end": 1079.7,
+       "transfer_size": 3363,
+       "decoded": 3063
+      },
+      {
+       "url": "/replay/poses.bin",
+       "start": 903.7,
+       "response_end": 1235.4,
+       "transfer_size": 157940,
+       "decoded": 157640
+      }
+     ],
+     "webgl_renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M2 Pro, Unspecified Version)"
+    },
+    {
+     "first_frame_ms": 1269.8000001907349,
+     "script_start_ms": 899.4000000953674,
+     "fetched_ms": 1242.2000000476837,
+     "verified_ms": 1243.7000000476837,
+     "scene_built_ms": 1258,
+     "runner_wall_ms": 1276.917958,
+     "html_response_start_ms": 166.20000004768372,
+     "load_event_end_ms": 910.3000001907349,
+     "wire_bytes_server_log": 703278,
+     "requests": 4,
+     "pixel_ok": true,
+     "first_frame_check": {
+      "ok": true,
+      "red_fraction": 1,
+      "corner_is_car_colored": false,
+      "corner_pixel": [
+       159,
+       164,
+       170,
+       255
+      ]
+     },
+     "load_avg_1m": 27.7,
+     "console_errors": [],
+     "resources": [
+      {
+       "url": "/out/replay.js",
+       "start": 178.1,
+       "response_end": 887.4,
+       "transfer_size": 542388,
+       "decoded": 542088
+      },
+      {
+       "url": "/replay/bundle.json",
+       "start": 910.1,
+       "response_end": 1087.5,
+       "transfer_size": 3363,
+       "decoded": 3063
+      },
+      {
+       "url": "/replay/poses.bin",
+       "start": 910.2,
+       "response_end": 1241.5,
+       "transfer_size": 157940,
+       "decoded": 157640
+      }
+     ],
+     "webgl_renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M2 Pro, Unspecified Version)"
+    },
+    {
+     "first_frame_ms": 1265.9000000953674,
+     "script_start_ms": 897.1000001430511,
+     "fetched_ms": 1238.2000000476837,
+     "verified_ms": 1239.1000001430511,
+     "scene_built_ms": 1253.3000001907349,
+     "runner_wall_ms": 1273.9034159999992,
+     "html_response_start_ms": 165.90000009536743,
+     "load_event_end_ms": 902.7000000476837,
+     "wire_bytes_server_log": 703278,
+     "requests": 4,
+     "pixel_ok": true,
+     "first_frame_check": {
+      "ok": true,
+      "red_fraction": 1,
+      "corner_is_car_colored": false,
+      "corner_pixel": [
+       159,
+       164,
+       170,
+       255
+      ]
+     },
+     "load_avg_1m": 27.7,
+     "console_errors": [],
+     "resources": [
+      {
+       "url": "/out/replay.js",
+       "start": 177.7,
+       "response_end": 891.4,
+       "transfer_size": 542388,
+       "decoded": 542088
+      },
+      {
+       "url": "/replay/bundle.json",
+       "start": 902.5,
+       "response_end": 1078.2,
+       "transfer_size": 3363,
+       "decoded": 3063
+      },
+      {
+       "url": "/replay/poses.bin",
+       "start": 902.6,
+       "response_end": 1237.6,
+       "transfer_size": 157940,
+       "decoded": 157640
+      }
+     ],
+     "webgl_renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M2 Pro, Unspecified Version)"
+    },
+    {
+     "first_frame_ms": 1247.7999999523163,
+     "script_start_ms": 887,
+     "fetched_ms": 1224.2000000476837,
+     "verified_ms": 1224.5999999046326,
+     "scene_built_ms": 1237.7000000476837,
+     "runner_wall_ms": 1251.761958000001,
+     "html_response_start_ms": 165.79999995231628,
+     "load_event_end_ms": 892.5999999046326,
+     "wire_bytes_server_log": 703278,
+     "requests": 4,
+     "pixel_ok": true,
+     "first_frame_check": {
+      "ok": true,
+      "red_fraction": 1,
+      "corner_is_car_colored": false,
+      "corner_pixel": [
+       159,
+       164,
+       170,
+       255
+      ]
+     },
+     "load_avg_1m": 27.7,
+     "console_errors": [],
+     "resources": [
+      {
+       "url": "/out/replay.js",
+       "start": 175.1,
+       "response_end": 881.6,
+       "transfer_size": 542388,
+       "decoded": 542088
+      },
+      {
+       "url": "/replay/bundle.json",
+       "start": 892.4,
+       "response_end": 1069.4,
+       "transfer_size": 3363,
+       "decoded": 3063
+      },
+      {
+       "url": "/replay/poses.bin",
+       "start": 892.6,
+       "response_end": 1223.7,
+       "transfer_size": 157940,
+       "decoded": 157640
+      }
+     ],
+     "webgl_renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M2 Pro, Unspecified Version)"
+    }
+   ]
+  },
+  {
+   "encoding": "identity",
+   "profile": "slow4g",
+   "n": 5,
+   "first_frame_ms": {
+    "n_valid": 5,
+    "n_missing": 0,
+    "mean": 5674.14,
+    "min": 5669.6,
+    "p50": 5675.5,
+    "p95": 5677.7,
+    "p99": 5677.7,
+    "max": 5677.7
+   },
+   "wire_bytes": 703278,
+   "rows": [
+    {
+     "first_frame_ms": 5675.599999904633,
+     "script_start_ms": 4160.799999952316,
+     "fetched_ms": 5639.599999904633,
+     "verified_ms": 5641.099999904633,
+     "scene_built_ms": 5664.599999904633,
+     "runner_wall_ms": 5680.289665999999,
+     "html_response_start_ms": 563.6999998092651,
+     "load_event_end_ms": 4166.299999952316,
+     "wire_bytes_server_log": 703278,
+     "requests": 4,
+     "pixel_ok": true,
+     "first_frame_check": {
+      "ok": true,
+      "red_fraction": 1,
+      "corner_is_car_colored": false,
+      "corner_pixel": [
+       159,
+       164,
+       170,
+       255
+      ]
+     },
+     "load_avg_1m": 27.7,
+     "console_errors": [],
+     "resources": [
+      {
+       "url": "/out/replay.js",
+       "start": 574.7,
+       "response_end": 4155.5,
+       "transfer_size": 542388,
+       "decoded": 542088
+      },
+      {
+       "url": "/replay/bundle.json",
+       "start": 4166,
+       "response_end": 4772.2,
+       "transfer_size": 3363,
+       "decoded": 3063
+      },
+      {
+       "url": "/replay/poses.bin",
+       "start": 4166.2,
+       "response_end": 5639.2,
+       "transfer_size": 157940,
+       "decoded": 157640
+      }
+     ],
+     "webgl_renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M2 Pro, Unspecified Version)"
+    },
+    {
+     "first_frame_ms": 5672.299999952316,
+     "script_start_ms": 4163.200000047684,
+     "fetched_ms": 5644.900000095367,
+     "verified_ms": 5645.799999952316,
+     "scene_built_ms": 5661.600000143051,
+     "runner_wall_ms": 5675.075125000003,
+     "html_response_start_ms": 563.6000001430511,
+     "load_event_end_ms": 4168.700000047684,
+     "wire_bytes_server_log": 703278,
+     "requests": 4,
+     "pixel_ok": true,
+     "first_frame_check": {
+      "ok": true,
+      "red_fraction": 1,
+      "corner_is_car_colored": false,
+      "corner_pixel": [
+       159,
+       164,
+       170,
+       255
+      ]
+     },
+     "load_avg_1m": 29.4,
+     "console_errors": [],
+     "resources": [
+      {
+       "url": "/out/replay.js",
+       "start": 579.2,
+       "response_end": 4157.4,
+       "transfer_size": 542388,
+       "decoded": 542088
+      },
+      {
+       "url": "/replay/bundle.json",
+       "start": 4168.5,
+       "response_end": 4775.9,
+       "transfer_size": 3363,
+       "decoded": 3063
+      },
+      {
+       "url": "/replay/poses.bin",
+       "start": 4168.6,
+       "response_end": 5642.2,
+       "transfer_size": 157940,
+       "decoded": 157640
+      }
+     ],
+     "webgl_renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M2 Pro, Unspecified Version)"
+    },
+    {
+     "first_frame_ms": 5669.599999904633,
+     "script_start_ms": 4162.299999952316,
+     "fetched_ms": 5641.299999952316,
+     "verified_ms": 5643.099999904633,
+     "scene_built_ms": 5660.099999904633,
+     "runner_wall_ms": 5674.381207999999,
+     "html_response_start_ms": 563.9000000953674,
+     "load_event_end_ms": 4167.900000095367,
+     "wire_bytes_server_log": 703278,
+     "requests": 4,
+     "pixel_ok": true,
+     "first_frame_check": {
+      "ok": true,
+      "red_fraction": 1,
+      "corner_is_car_colored": false,
+      "corner_pixel": [
+       159,
+       164,
+       170,
+       255
+      ]
+     },
+     "load_avg_1m": 30.5,
+     "console_errors": [],
+     "resources": [
+      {
+       "url": "/out/replay.js",
+       "start": 576.7,
+       "response_end": 4157.3,
+       "transfer_size": 542388,
+       "decoded": 542088
+      },
+      {
+       "url": "/replay/bundle.json",
+       "start": 4167.6,
+       "response_end": 4774.2,
+       "transfer_size": 3363,
+       "decoded": 3063
+      },
+      {
+       "url": "/replay/poses.bin",
+       "start": 4167.7,
+       "response_end": 5640.6,
+       "transfer_size": 157940,
+       "decoded": 157640
+      }
+     ],
+     "webgl_renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M2 Pro, Unspecified Version)"
+    },
+    {
+     "first_frame_ms": 5675.5,
+     "script_start_ms": 4155.599999904633,
+     "fetched_ms": 5634.099999904633,
+     "verified_ms": 5635,
+     "scene_built_ms": 5666.099999904633,
+     "runner_wall_ms": 5679.0373750000035,
+     "html_response_start_ms": 563.3999998569489,
+     "load_event_end_ms": 4161.099999904633,
+     "wire_bytes_server_log": 703278,
+     "requests": 4,
+     "pixel_ok": true,
+     "first_frame_check": {
+      "ok": true,
+      "red_fraction": 1,
+      "corner_is_car_colored": false,
+      "corner_pixel": [
+       159,
+       164,
+       170,
+       255
+      ]
+     },
+     "load_avg_1m": 30.8,
+     "console_errors": [],
+     "resources": [
+      {
+       "url": "/out/replay.js",
+       "start": 568.8,
+       "response_end": 4150.7,
+       "transfer_size": 542388,
+       "decoded": 542088
+      },
+      {
+       "url": "/replay/bundle.json",
+       "start": 4160.9,
+       "response_end": 4765.8,
+       "transfer_size": 3363,
+       "decoded": 3063
+      },
+      {
+       "url": "/replay/poses.bin",
+       "start": 4161,
+       "response_end": 5633.5,
+       "transfer_size": 157940,
+       "decoded": 157640
+      }
+     ],
+     "webgl_renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M2 Pro, Unspecified Version)"
+    },
+    {
+     "first_frame_ms": 5677.700000047684,
+     "script_start_ms": 4163,
+     "fetched_ms": 5643.299999952316,
+     "verified_ms": 5644.599999904633,
+     "scene_built_ms": 5666.099999904633,
+     "runner_wall_ms": 5680.500833999999,
+     "html_response_start_ms": 564.5999999046326,
+     "load_event_end_ms": 4168.5,
+     "wire_bytes_server_log": 703278,
+     "requests": 4,
+     "pixel_ok": true,
+     "first_frame_check": {
+      "ok": true,
+      "red_fraction": 1,
+      "corner_is_car_colored": false,
+      "corner_pixel": [
+       159,
+       164,
+       170,
+       255
+      ]
+     },
+     "load_avg_1m": 28.7,
+     "console_errors": [],
+     "resources": [
+      {
+       "url": "/out/replay.js",
+       "start": 577.5,
+       "response_end": 4158.1,
+       "transfer_size": 542388,
+       "decoded": 542088
+      },
+      {
+       "url": "/replay/bundle.json",
+       "start": 4168.2,
+       "response_end": 4775.7,
+       "transfer_size": 3363,
+       "decoded": 3063
+      },
+      {
+       "url": "/replay/poses.bin",
+       "start": 4168.3,
+       "response_end": 5642.5,
+       "transfer_size": 157940,
+       "decoded": 157640
+      }
+     ],
+     "webgl_renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M2 Pro, Unspecified Version)"
+    }
+   ]
+  },
+  {
+   "encoding": "identity",
+   "profile": "slow3g",
+   "n": 5,
+   "first_frame_ms": {
+    "n_valid": 5,
+    "n_missing": 0,
+    "mean": 20175.66,
+    "min": 20157.4,
+    "p50": 20165.6,
+    "p95": 20226.6,
+    "p99": 20226.6,
+    "max": 20226.6
+   },
+   "wire_bytes": 703278,
+   "rows": [
+    {
+     "first_frame_ms": 20157.39999985695,
+     "script_start_ms": 14857.399999856949,
+     "fetched_ms": 20131.39999985695,
+     "verified_ms": 20132.299999952316,
+     "scene_built_ms": 20147.39999985695,
+     "runner_wall_ms": 20160.743917,
+     "html_response_start_ms": 2001.0999999046326,
+     "load_event_end_ms": 14862.899999856949,
+     "wire_bytes_server_log": 703278,
+     "requests": 4,
+     "pixel_ok": true,
+     "first_frame_check": {
+      "ok": true,
+      "red_fraction": 1,
+      "corner_is_car_colored": false,
+      "corner_pixel": [
+       159,
+       164,
+       170,
+       255
+      ]
+     },
+     "load_avg_1m": 29.6,
+     "console_errors": [],
+     "resources": [
+      {
+       "url": "/out/replay.js",
+       "start": 2013.5,
+       "response_end": 14852.1,
+       "transfer_size": 542388,
+       "decoded": 542088
+      },
+      {
+       "url": "/replay/bundle.json",
+       "start": 14862.7,
+       "response_end": 17013.8,
+       "transfer_size": 3363,
+       "decoded": 3063
+      },
+      {
+       "url": "/replay/poses.bin",
+       "start": 14862.8,
+       "response_end": 20130.9,
+       "transfer_size": 157940,
+       "decoded": 157640
+      }
+     ],
+     "webgl_renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M2 Pro, Unspecified Version)"
+    },
+    {
+     "first_frame_ms": 20160.900000095367,
+     "script_start_ms": 14859.200000047684,
+     "fetched_ms": 20134.200000047684,
+     "verified_ms": 20135.10000014305,
+     "scene_built_ms": 20151,
+     "runner_wall_ms": 20166.210541000008,
+     "html_response_start_ms": 2000.9000000953674,
+     "load_event_end_ms": 14865.299999952316,
+     "wire_bytes_server_log": 703278,
+     "requests": 4,
+     "pixel_ok": true,
+     "first_frame_check": {
+      "ok": true,
+      "red_fraction": 1,
+      "corner_is_car_colored": false,
+      "corner_pixel": [
+       159,
+       164,
+       170,
+       255
+      ]
+     },
+     "load_avg_1m": 24.3,
+     "console_errors": [],
+     "resources": [
+      {
+       "url": "/out/replay.js",
+       "start": 2012.1,
+       "response_end": 14852.7,
+       "transfer_size": 542388,
+       "decoded": 542088
+      },
+      {
+       "url": "/replay/bundle.json",
+       "start": 14865,
+       "response_end": 17012.7,
+       "transfer_size": 3363,
+       "decoded": 3063
+      },
+      {
+       "url": "/replay/poses.bin",
+       "start": 14865.1,
+       "response_end": 20133.5,
+       "transfer_size": 157940,
+       "decoded": 157640
+      }
+     ],
+     "webgl_renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M2 Pro, Unspecified Version)"
+    },
+    {
+     "first_frame_ms": 20167.799999952316,
+     "script_start_ms": 14863,
+     "fetched_ms": 20132.799999952316,
+     "verified_ms": 20133.599999904633,
+     "scene_built_ms": 20156.199999809265,
+     "runner_wall_ms": 20178.671167000008,
+     "html_response_start_ms": 2001.1999998092651,
+     "load_event_end_ms": 14869.599999904633,
+     "wire_bytes_server_log": 703278,
+     "requests": 4,
+     "pixel_ok": true,
+     "first_frame_check": {
+      "ok": true,
+      "red_fraction": 1,
+      "corner_is_car_colored": false,
+      "corner_pixel": [
+       159,
+       164,
+       170,
+       255
+      ]
+     },
+     "load_avg_1m": 22.4,
+     "console_errors": [],
+     "resources": [
+      {
+       "url": "/out/replay.js",
+       "start": 2013.3,
+       "response_end": 14852.8,
+       "transfer_size": 542388,
+       "decoded": 542088
+      },
+      {
+       "url": "/replay/bundle.json",
+       "start": 14869.2,
+       "response_end": 17013.6,
+       "transfer_size": 3363,
+       "decoded": 3063
+      },
+      {
+       "url": "/replay/poses.bin",
+       "start": 14869.3,
+       "response_end": 20132.2,
+       "transfer_size": 157940,
+       "decoded": 157640
+      }
+     ],
+     "webgl_renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M2 Pro, Unspecified Version)"
+    },
+    {
+     "first_frame_ms": 20226.599999904633,
+     "script_start_ms": 14924.399999856949,
+     "fetched_ms": 20192.599999904633,
+     "verified_ms": 20194,
+     "scene_built_ms": 20216.599999904633,
+     "runner_wall_ms": 20233.180833000006,
+     "html_response_start_ms": 2003.5,
+     "load_event_end_ms": 14930.200000047684,
+     "wire_bytes_server_log": 703278,
+     "requests": 4,
+     "pixel_ok": true,
+     "first_frame_check": {
+      "ok": true,
+      "red_fraction": 1,
+      "corner_is_car_colored": false,
+      "corner_pixel": [
+       159,
+       164,
+       170,
+       255
+      ]
+     },
+     "load_avg_1m": 53.9,
+     "console_errors": [],
+     "resources": [
+      {
+       "url": "/out/replay.js",
+       "start": 2054.2,
+       "response_end": 14912.7,
+       "transfer_size": 542388,
+       "decoded": 542088
+      },
+      {
+       "url": "/replay/bundle.json",
+       "start": 14930,
+       "response_end": 17071,
+       "transfer_size": 3363,
+       "decoded": 3063
+      },
+      {
+       "url": "/replay/poses.bin",
+       "start": 14930.2,
+       "response_end": 20192,
+       "transfer_size": 157940,
+       "decoded": 157640
+      }
+     ],
+     "webgl_renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M2 Pro, Unspecified Version)"
+    },
+    {
+     "first_frame_ms": 20165.599999904633,
+     "script_start_ms": 14863.399999856949,
+     "fetched_ms": 20134.39999985695,
+     "verified_ms": 20135.699999809265,
+     "scene_built_ms": 20154.5,
+     "runner_wall_ms": 20177.64779199999,
+     "html_response_start_ms": 2001,
+     "load_event_end_ms": 14869.199999809265,
+     "wire_bytes_server_log": 703278,
+     "requests": 4,
+     "pixel_ok": true,
+     "first_frame_check": {
+      "ok": true,
+      "red_fraction": 1,
+      "corner_is_car_colored": false,
+      "corner_pixel": [
+       159,
+       164,
+       170,
+       255
+      ]
+     },
+     "load_avg_1m": 83.5,
+     "console_errors": [],
+     "resources": [
+      {
+       "url": "/out/replay.js",
+       "start": 2014.2,
+       "response_end": 14853.9,
+       "transfer_size": 542388,
+       "decoded": 542088
+      },
+      {
+       "url": "/replay/bundle.json",
+       "start": 14868.9,
+       "response_end": 17013,
+       "transfer_size": 3363,
+       "decoded": 3063
+      },
+      {
+       "url": "/replay/poses.bin",
+       "start": 14869,
+       "response_end": 20133.6,
+       "transfer_size": 157940,
+       "decoded": 157640
+      }
+     ],
+     "webgl_renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M2 Pro, Unspecified Version)"
+    }
+   ]
+  },
+  {
+   "encoding": "gzip",
+   "profile": "none",
+   "n": 5,
+   "first_frame_ms": {
+    "n_valid": 5,
+    "n_missing": 0,
+    "mean": 77.92,
+    "min": 59.7,
+    "p50": 70.5,
+    "p95": 121.2,
+    "p99": 121.2,
+    "max": 121.2
+   },
+   "wire_bytes": 260478,
+   "rows": [
+    {
+     "first_frame_ms": 63.30000019073486,
+     "script_start_ms": 25.100000143051147,
+     "fetched_ms": 35.10000014305115,
+     "verified_ms": 35.30000019073486,
+     "scene_built_ms": 48.60000014305115,
+     "runner_wall_ms": 67.99800000002142,
+     "html_response_start_ms": 2,
+     "load_event_end_ms": 30.800000190734863,
+     "wire_bytes_server_log": 260478,
+     "requests": 4,
+     "pixel_ok": true,
+     "first_frame_check": {
+      "ok": true,
+      "red_fraction": 1,
+      "corner_is_car_colored": false,
+      "corner_pixel": [
+       159,
+       164,
+       170,
+       255
+      ]
+     },
+     "load_avg_1m": 96.4,
+     "console_errors": [],
+     "resources": [
+      {
+       "url": "/out/replay.js",
+       "start": 5.6,
+       "response_end": 8.7,
+       "transfer_size": 136287,
+       "decoded": 542088
+      },
+      {
+       "url": "/replay/bundle.json",
+       "start": 30.6,
+       "response_end": 33.1,
+       "transfer_size": 1339,
+       "decoded": 3063
+      },
+      {
+       "url": "/replay/poses.bin",
+       "start": 30.7,
+       "response_end": 34.7,
+       "transfer_size": 123364,
+       "decoded": 157640
+      }
+     ],
+     "webgl_renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M2 Pro, Unspecified Version)"
+    },
+    {
+     "first_frame_ms": 59.700000047683716,
+     "script_start_ms": 18,
+     "fetched_ms": 32.200000047683716,
+     "verified_ms": 32.80000019073486,
+     "scene_built_ms": 49.700000047683716,
+     "runner_wall_ms": 64.52633299998706,
+     "html_response_start_ms": 1.8000001907348633,
+     "load_event_end_ms": 24.800000190734863,
+     "wire_bytes_server_log": 260478,
+     "requests": 4,
+     "pixel_ok": true,
+     "first_frame_check": {
+      "ok": true,
+      "red_fraction": 1,
+      "corner_is_car_colored": false,
+      "corner_pixel": [
+       159,
+       164,
+       170,
+       255
+      ]
+     },
+     "load_avg_1m": 96.4,
+     "console_errors": [],
+     "resources": [
+      {
+       "url": "/out/replay.js",
+       "start": 4.2,
+       "response_end": 8.9,
+       "transfer_size": 136287,
+       "decoded": 542088
+      },
+      {
+       "url": "/replay/bundle.json",
+       "start": 24.5,
+       "response_end": 26.2,
+       "transfer_size": 1339,
+       "decoded": 3063
+      },
+      {
+       "url": "/replay/poses.bin",
+       "start": 24.7,
+       "response_end": 26.7,
+       "transfer_size": 123364,
+       "decoded": 157640
+      }
+     ],
+     "webgl_renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M2 Pro, Unspecified Version)"
+    },
+    {
+     "first_frame_ms": 121.19999980926514,
+     "script_start_ms": 31.09999990463257,
+     "fetched_ms": 48.09999990463257,
+     "verified_ms": 48.5,
+     "scene_built_ms": 87.79999995231628,
+     "runner_wall_ms": 128.57608400000026,
+     "html_response_start_ms": 1.5999999046325684,
+     "load_event_end_ms": 39.5,
+     "wire_bytes_server_log": 260478,
+     "requests": 4,
+     "pixel_ok": true,
+     "first_frame_check": {
+      "ok": true,
+      "red_fraction": 1,
+      "corner_is_car_colored": false,
+      "corner_pixel": [
+       159,
+       164,
+       170,
+       255
+      ]
+     },
+     "load_avg_1m": 96.4,
+     "console_errors": [],
+     "resources": [
+      {
+       "url": "/out/replay.js",
+       "start": 4.5,
+       "response_end": 7.1,
+       "transfer_size": 136287,
+       "decoded": 542088
+      },
+      {
+       "url": "/replay/bundle.json",
+       "start": 39.3,
+       "response_end": 43.7,
+       "transfer_size": 1339,
+       "decoded": 3063
+      },
+      {
+       "url": "/replay/poses.bin",
+       "start": 39.5,
+       "response_end": 47.8,
+       "transfer_size": 123364,
+       "decoded": 157640
+      }
+     ],
+     "webgl_renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M2 Pro, Unspecified Version)"
+    },
+    {
+     "first_frame_ms": 74.90000009536743,
+     "script_start_ms": 37.90000009536743,
+     "fetched_ms": 49.80000019073486,
+     "verified_ms": 50.10000014305115,
+     "scene_built_ms": 63.90000009536743,
+     "runner_wall_ms": 217.03349999999045,
+     "html_response_start_ms": 2.3000001907348633,
+     "load_event_end_ms": 43.5,
+     "wire_bytes_server_log": 260478,
+     "requests": 4,
+     "pixel_ok": true,
+     "first_frame_check": {
+      "ok": true,
+      "red_fraction": 1,
+      "corner_is_car_colored": false,
+      "corner_pixel": [
+       159,
+       164,
+       170,
+       255
+      ]
+     },
+     "load_avg_1m": 100.1,
+     "console_errors": [],
+     "resources": [
+      {
+       "url": "/out/replay.js",
+       "start": 7.2,
+       "response_end": 27.9,
+       "transfer_size": 136287,
+       "decoded": 542088
+      },
+      {
+       "url": "/replay/bundle.json",
+       "start": 43.3,
+       "response_end": 45.5,
+       "transfer_size": 1339,
+       "decoded": 3063
+      },
+      {
+       "url": "/replay/poses.bin",
+       "start": 43.5,
+       "response_end": 46,
+       "transfer_size": 123364,
+       "decoded": 157640
+      }
+     ],
+     "webgl_renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M2 Pro, Unspecified Version)"
+    },
+    {
+     "first_frame_ms": 70.5,
+     "script_start_ms": 30.199999809265137,
+     "fetched_ms": 39.799999952316284,
+     "verified_ms": 40.19999980926514,
+     "scene_built_ms": 55,
+     "runner_wall_ms": 87.52954200000386,
+     "html_response_start_ms": 7.5,
+     "load_event_end_ms": 36.799999952316284,
+     "wire_bytes_server_log": 260478,
+     "requests": 4,
+     "pixel_ok": true,
+     "first_frame_check": {
+      "ok": true,
+      "red_fraction": 1,
+      "corner_is_car_colored": false,
+      "corner_pixel": [
+       159,
+       164,
+       170,
+       255
+      ]
+     },
+     "load_avg_1m": 100.1,
+     "console_errors": [],
+     "resources": [
+      {
+       "url": "/out/replay.js",
+       "start": 11.3,
+       "response_end": 17,
+       "transfer_size": 136287,
+       "decoded": 542088
+      },
+      {
+       "url": "/replay/bundle.json",
+       "start": 36.6,
+       "response_end": 38.7,
+       "transfer_size": 1339,
+       "decoded": 3063
+      },
+      {
+       "url": "/replay/poses.bin",
+       "start": 36.7,
+       "response_end": 39.1,
+       "transfer_size": 123364,
+       "decoded": 157640
+      }
+     ],
+     "webgl_renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M2 Pro, Unspecified Version)"
+    }
+   ]
+  },
+  {
+   "encoding": "gzip",
+   "profile": "fast4g",
+   "n": 5,
+   "first_frame_ms": {
+    "n_valid": 5,
+    "n_missing": 0,
+    "mean": 813.48,
+    "min": 805.6,
+    "p50": 811.2,
+    "p95": 820.8,
+    "p99": 820.8,
+    "max": 820.8
+   },
+   "wire_bytes": 260478,
+   "rows": [
+    {
+     "first_frame_ms": 811.2000000476837,
+     "script_start_ms": 482.7000000476837,
+     "fetched_ms": 785.2000000476837,
+     "verified_ms": 785.5999999046326,
+     "scene_built_ms": 800.7000000476837,
+     "runner_wall_ms": 814.6977919999918,
+     "html_response_start_ms": 165.89999985694885,
+     "load_event_end_ms": 488.5,
+     "wire_bytes_server_log": 260478,
+     "requests": 4,
+     "pixel_ok": true,
+     "first_frame_check": {
+      "ok": true,
+      "red_fraction": 1,
+      "corner_is_car_colored": false,
+      "corner_pixel": [
+       159,
+       164,
+       170,
+       255
+      ]
+     },
+     "load_avg_1m": 100.1,
+     "console_errors": [],
+     "resources": [
+      {
+       "url": "/out/replay.js",
+       "start": 173.6,
+       "response_end": 478.9,
+       "transfer_size": 136287,
+       "decoded": 542088
+      },
+      {
+       "url": "/replay/bundle.json",
+       "start": 488.3,
+       "response_end": 659.5,
+       "transfer_size": 1339,
+       "decoded": 3063
+      },
+      {
+       "url": "/replay/poses.bin",
+       "start": 488.4,
+       "response_end": 782.4,
+       "transfer_size": 123364,
+       "decoded": 157640
+      }
+     ],
+     "webgl_renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M2 Pro, Unspecified Version)"
+    },
+    {
+     "first_frame_ms": 805.6000001430511,
+     "script_start_ms": 483.60000014305115,
+     "fetched_ms": 783.2000000476837,
+     "verified_ms": 783.5,
+     "scene_built_ms": 796.1000001430511,
+     "runner_wall_ms": 810.0597919999855,
+     "html_response_start_ms": 166,
+     "load_event_end_ms": 489.10000014305115,
+     "wire_bytes_server_log": 260478,
+     "requests": 4,
+     "pixel_ok": true,
+     "first_frame_check": {
+      "ok": true,
+      "red_fraction": 1,
+      "corner_is_car_colored": false,
+      "corner_pixel": [
+       159,
+       164,
+       170,
+       255
+      ]
+     },
+     "load_avg_1m": 100.1,
+     "console_errors": [],
+     "resources": [
+      {
+       "url": "/out/replay.js",
+       "start": 174.2,
+       "response_end": 479.3,
+       "transfer_size": 136287,
+       "decoded": 542088
+      },
+      {
+       "url": "/replay/bundle.json",
+       "start": 488.9,
+       "response_end": 659.9,
+       "transfer_size": 1339,
+       "decoded": 3063
+      },
+      {
+       "url": "/replay/poses.bin",
+       "start": 488.9,
+       "response_end": 782.7,
+       "transfer_size": 123364,
+       "decoded": 157640
+      }
+     ],
+     "webgl_renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M2 Pro, Unspecified Version)"
+    },
+    {
+     "first_frame_ms": 819.3999998569489,
+     "script_start_ms": 482.69999980926514,
+     "fetched_ms": 783.2999999523163,
+     "verified_ms": 783.5999999046326,
+     "scene_built_ms": 809.1999998092651,
+     "runner_wall_ms": 827.4164170000004,
+     "html_response_start_ms": 165.79999995231628,
+     "load_event_end_ms": 488.39999985694885,
+     "wire_bytes_server_log": 260478,
+     "requests": 4,
+     "pixel_ok": true,
+     "first_frame_check": {
+      "ok": true,
+      "red_fraction": 1,
+      "corner_is_car_colored": false,
+      "corner_pixel": [
+       159,
+       164,
+       170,
+       255
+      ]
+     },
+     "load_avg_1m": 100.1,
+     "console_errors": [],
+     "resources": [
+      {
+       "url": "/out/replay.js",
+       "start": 173.5,
+       "response_end": 477.6,
+       "transfer_size": 136287,
+       "decoded": 542088
+      },
+      {
+       "url": "/replay/bundle.json",
+       "start": 488,
+       "response_end": 659.6,
+       "transfer_size": 1339,
+       "decoded": 3063
+      },
+      {
+       "url": "/replay/poses.bin",
+       "start": 488.3,
+       "response_end": 782.8,
+       "transfer_size": 123364,
+       "decoded": 157640
+      }
+     ],
+     "webgl_renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M2 Pro, Unspecified Version)"
+    },
+    {
+     "first_frame_ms": 820.7999999523163,
+     "script_start_ms": 487.90000009536743,
+     "fetched_ms": 791.2000000476837,
+     "verified_ms": 792.6000001430511,
+     "scene_built_ms": 809.2000000476837,
+     "runner_wall_ms": 824.209291999985,
+     "html_response_start_ms": 165.79999995231628,
+     "load_event_end_ms": 493.40000009536743,
+     "wire_bytes_server_log": 260478,
+     "requests": 4,
+     "pixel_ok": true,
+     "first_frame_check": {
+      "ok": true,
+      "red_fraction": 1,
+      "corner_is_car_colored": false,
+      "corner_pixel": [
+       159,
+       164,
+       170,
+       255
+      ]
+     },
+     "load_avg_1m": 100.1,
+     "console_errors": [],
+     "resources": [
+      {
+       "url": "/out/replay.js",
+       "start": 172.4,
+       "response_end": 483.7,
+       "transfer_size": 136287,
+       "decoded": 542088
+      },
+      {
+       "url": "/replay/bundle.json",
+       "start": 493.2,
+       "response_end": 664.5,
+       "transfer_size": 1339,
+       "decoded": 3063
+      },
+      {
+       "url": "/replay/poses.bin",
+       "start": 493.4,
+       "response_end": 790.5,
+       "transfer_size": 123364,
+       "decoded": 157640
+      }
+     ],
+     "webgl_renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M2 Pro, Unspecified Version)"
+    },
+    {
+     "first_frame_ms": 810.3999998569489,
+     "script_start_ms": 484.39999985694885,
+     "fetched_ms": 787.8999998569489,
+     "verified_ms": 788.1999998092651,
+     "scene_built_ms": 801.0999999046326,
+     "runner_wall_ms": 816.2522919999901,
+     "html_response_start_ms": 166.09999990463257,
+     "load_event_end_ms": 490.19999980926514,
+     "wire_bytes_server_log": 260478,
+     "requests": 4,
+     "pixel_ok": true,
+     "first_frame_check": {
+      "ok": true,
+      "red_fraction": 1,
+      "corner_is_car_colored": false,
+      "corner_pixel": [
+       159,
+       164,
+       170,
+       255
+      ]
+     },
+     "load_avg_1m": 100.1,
+     "console_errors": [],
+     "resources": [
+      {
+       "url": "/out/replay.js",
+       "start": 175.2,
+       "response_end": 479.8,
+       "transfer_size": 136287,
+       "decoded": 542088
+      },
+      {
+       "url": "/replay/bundle.json",
+       "start": 489.9,
+       "response_end": 661.8,
+       "transfer_size": 1339,
+       "decoded": 3063
+      },
+      {
+       "url": "/replay/poses.bin",
+       "start": 490,
+       "response_end": 787.4,
+       "transfer_size": 123364,
+       "decoded": 157640
+      }
+     ],
+     "webgl_renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M2 Pro, Unspecified Version)"
+    }
+   ]
+  },
+  {
+   "encoding": "gzip",
+   "profile": "slow4g",
+   "n": 5,
+   "first_frame_ms": {
+    "n_valid": 5,
+    "n_missing": 0,
+    "mean": 3208.08,
+    "min": 3200.3,
+    "p50": 3207.3,
+    "p95": 3215,
+    "p99": 3215,
+    "max": 3215
+   },
+   "wire_bytes": 260478,
+   "rows": [
+    {
+     "first_frame_ms": 3204.4000000953674,
+     "script_start_ms": 1904.1000001430511,
+     "fetched_ms": 3176.5,
+     "verified_ms": 3176.9000000953674,
+     "scene_built_ms": 3193.4000000953674,
+     "runner_wall_ms": 3209.1103329999896,
+     "html_response_start_ms": 563.7000000476837,
+     "load_event_end_ms": 1909.5,
+     "wire_bytes_server_log": 260478,
+     "requests": 4,
+     "pixel_ok": true,
+     "first_frame_check": {
+      "ok": true,
+      "red_fraction": 1,
+      "corner_is_car_colored": false,
+      "corner_pixel": [
+       159,
+       164,
+       170,
+       255
+      ]
+     },
+     "load_avg_1m": 97.8,
+     "console_errors": [],
+     "resources": [
+      {
+       "url": "/out/replay.js",
+       "start": 578.5,
+       "response_end": 1900.2,
+       "transfer_size": 136287,
+       "decoded": 542088
+      },
+      {
+       "url": "/replay/bundle.json",
+       "start": 1909.3,
+       "response_end": 2484.1,
+       "transfer_size": 1339,
+       "decoded": 3063
+      },
+      {
+       "url": "/replay/poses.bin",
+       "start": 1909.4,
+       "response_end": 3175.5,
+       "transfer_size": 123364,
+       "decoded": 157640
+      }
+     ],
+     "webgl_renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M2 Pro, Unspecified Version)"
+    },
+    {
+     "first_frame_ms": 3207.2999999523163,
+     "script_start_ms": 1903.7000000476837,
+     "fetched_ms": 3175.899999856949,
+     "verified_ms": 3176.5999999046326,
+     "scene_built_ms": 3195.399999856949,
+     "runner_wall_ms": 3211.604457999987,
+     "html_response_start_ms": 564.2000000476837,
+     "load_event_end_ms": 1909.5,
+     "wire_bytes_server_log": 260478,
+     "requests": 4,
+     "pixel_ok": true,
+     "first_frame_check": {
+      "ok": true,
+      "red_fraction": 1,
+      "corner_is_car_colored": false,
+      "corner_pixel": [
+       159,
+       164,
+       170,
+       255
+      ]
+     },
+     "load_avg_1m": 97.8,
+     "console_errors": [],
+     "resources": [
+      {
+       "url": "/out/replay.js",
+       "start": 578.2,
+       "response_end": 1898.9,
+       "transfer_size": 136287,
+       "decoded": 542088
+      },
+      {
+       "url": "/replay/bundle.json",
+       "start": 1909.3,
+       "response_end": 2482.3,
+       "transfer_size": 1339,
+       "decoded": 3063
+      },
+      {
+       "url": "/replay/poses.bin",
+       "start": 1909.4,
+       "response_end": 3175.4,
+       "transfer_size": 123364,
+       "decoded": 157640
+      }
+     ],
+     "webgl_renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M2 Pro, Unspecified Version)"
+    },
+    {
+     "first_frame_ms": 3200.2999999523163,
+     "script_start_ms": 1903.2000000476837,
+     "fetched_ms": 3175.2999999523163,
+     "verified_ms": 3175.7000000476837,
+     "scene_built_ms": 3190.7999999523163,
+     "runner_wall_ms": 3203.3333749999874,
+     "html_response_start_ms": 565.5,
+     "load_event_end_ms": 1908.8999998569489,
+     "wire_bytes_server_log": 260478,
+     "requests": 4,
+     "pixel_ok": true,
+     "first_frame_check": {
+      "ok": true,
+      "red_fraction": 1,
+      "corner_is_car_colored": false,
+      "corner_pixel": [
+       159,
+       164,
+       170,
+       255
+      ]
+     },
+     "load_avg_1m": 94.6,
+     "console_errors": [],
+     "resources": [
+      {
+       "url": "/out/replay.js",
+       "start": 578.1,
+       "response_end": 1899.2,
+       "transfer_size": 136287,
+       "decoded": 542088
+      },
+      {
+       "url": "/replay/bundle.json",
+       "start": 1908.6,
+       "response_end": 2482.5,
+       "transfer_size": 1339,
+       "decoded": 3063
+      },
+      {
+       "url": "/replay/poses.bin",
+       "start": 1908.8,
+       "response_end": 3174.7,
+       "transfer_size": 123364,
+       "decoded": 157640
+      }
+     ],
+     "webgl_renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M2 Pro, Unspecified Version)"
+    },
+    {
+     "first_frame_ms": 3215,
+     "script_start_ms": 1907.0999999046326,
+     "fetched_ms": 3188,
+     "verified_ms": 3188.899999856949,
+     "scene_built_ms": 3205,
+     "runner_wall_ms": 3218.91754200001,
+     "html_response_start_ms": 564.0999999046326,
+     "load_event_end_ms": 1914.2000000476837,
+     "wire_bytes_server_log": 260478,
+     "requests": 4,
+     "pixel_ok": true,
+     "first_frame_check": {
+      "ok": true,
+      "red_fraction": 1,
+      "corner_is_car_colored": false,
+      "corner_pixel": [
+       159,
+       164,
+       170,
+       255
+      ]
+     },
+     "load_avg_1m": 101.1,
+     "console_errors": [],
+     "resources": [
+      {
+       "url": "/out/replay.js",
+       "start": 578.2,
+       "response_end": 1900.1,
+       "transfer_size": 136287,
+       "decoded": 542088
+      },
+      {
+       "url": "/replay/bundle.json",
+       "start": 1913.6,
+       "response_end": 2492.1,
+       "transfer_size": 1339,
+       "decoded": 3063
+      },
+      {
+       "url": "/replay/poses.bin",
+       "start": 1914,
+       "response_end": 3183.4,
+       "transfer_size": 123364,
+       "decoded": 157640
+      }
+     ],
+     "webgl_renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M2 Pro, Unspecified Version)"
+    },
+    {
+     "first_frame_ms": 3213.4000000953674,
+     "script_start_ms": 1904.2000000476837,
+     "fetched_ms": 3175.5,
+     "verified_ms": 3175.9000000953674,
+     "scene_built_ms": 3202.2999999523163,
+     "runner_wall_ms": 3229.5219169999764,
+     "html_response_start_ms": 563.5999999046326,
+     "load_event_end_ms": 1909.7999999523163,
+     "wire_bytes_server_log": 260478,
+     "requests": 4,
+     "pixel_ok": true,
+     "first_frame_check": {
+      "ok": true,
+      "red_fraction": 1,
+      "corner_is_car_colored": false,
+      "corner_pixel": [
+       159,
+       164,
+       170,
+       255
+      ]
+     },
+     "load_avg_1m": 101.1,
+     "console_errors": [],
+     "resources": [
+      {
+       "url": "/out/replay.js",
+       "start": 577.7,
+       "response_end": 1899.4,
+       "transfer_size": 136287,
+       "decoded": 542088
+      },
+      {
+       "url": "/replay/bundle.json",
+       "start": 1909.6,
+       "response_end": 2482.3,
+       "transfer_size": 1339,
+       "decoded": 3063
+      },
+      {
+       "url": "/replay/poses.bin",
+       "start": 1909.7,
+       "response_end": 3174.9,
+       "transfer_size": 123364,
+       "decoded": 157640
+      }
+     ],
+     "webgl_renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M2 Pro, Unspecified Version)"
+    }
+   ]
+  },
+  {
+   "encoding": "gzip",
+   "profile": "slow3g",
+   "n": 5,
+   "first_frame_ms": {
+    "n_valid": 5,
+    "n_missing": 0,
+    "mean": 11303.8,
+    "min": 11287.6,
+    "p50": 11299.4,
+    "p95": 11319.1,
+    "p99": 11319.1,
+    "max": 11319.1
+   },
+   "wire_bytes": 260478,
+   "rows": [
+    {
+     "first_frame_ms": 11287.599999904633,
+     "script_start_ms": 6724.5,
+     "fetched_ms": 11249.799999952316,
+     "verified_ms": 11250.799999952316,
+     "scene_built_ms": 11275.099999904633,
+     "runner_wall_ms": 11292.622541000019,
+     "html_response_start_ms": 2001.2999999523163,
+     "load_event_end_ms": 6730.5,
+     "wire_bytes_server_log": 260478,
+     "requests": 4,
+     "pixel_ok": true,
+     "first_frame_check": {
+      "ok": true,
+      "red_fraction": 1,
+      "corner_is_car_colored": false,
+      "corner_pixel": [
+       159,
+       164,
+       170,
+       255
+      ]
+     },
+     "load_avg_1m": 96.3,
+     "console_errors": [],
+     "resources": [
+      {
+       "url": "/out/replay.js",
+       "start": 2010.1,
+       "response_end": 6719.2,
+       "transfer_size": 136287,
+       "decoded": 542088
+      },
+      {
+       "url": "/replay/bundle.json",
+       "start": 6730.3,
+       "response_end": 8759.4,
+       "transfer_size": 1339,
+       "decoded": 3063
+      },
+      {
+       "url": "/replay/poses.bin",
+       "start": 6730.4,
+       "response_end": 11249.2,
+       "transfer_size": 123364,
+       "decoded": 157640
+      }
+     ],
+     "webgl_renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M2 Pro, Unspecified Version)"
+    },
+    {
+     "first_frame_ms": 11299.399999856949,
+     "script_start_ms": 6728.599999904633,
+     "fetched_ms": 11255.099999904633,
+     "verified_ms": 11256.299999952316,
+     "scene_built_ms": 11287.199999809265,
+     "runner_wall_ms": 11310.14295899999,
+     "html_response_start_ms": 2001,
+     "load_event_end_ms": 6734.399999856949,
+     "wire_bytes_server_log": 260478,
+     "requests": 4,
+     "pixel_ok": true,
+     "first_frame_check": {
+      "ok": true,
+      "red_fraction": 1,
+      "corner_is_car_colored": false,
+      "corner_pixel": [
+       159,
+       164,
+       170,
+       255
+      ]
+     },
+     "load_avg_1m": 90.7,
+     "console_errors": [],
+     "resources": [
+      {
+       "url": "/out/replay.js",
+       "start": 2012.4,
+       "response_end": 6721.3,
+       "transfer_size": 136287,
+       "decoded": 542088
+      },
+      {
+       "url": "/replay/bundle.json",
+       "start": 6734.1,
+       "response_end": 8761.3,
+       "transfer_size": 1339,
+       "decoded": 3063
+      },
+      {
+       "url": "/replay/poses.bin",
+       "start": 6734.3,
+       "response_end": 11253.6,
+       "transfer_size": 123364,
+       "decoded": 157640
+      }
+     ],
+     "webgl_renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M2 Pro, Unspecified Version)"
+    },
+    {
+     "first_frame_ms": 11318.900000095367,
+     "script_start_ms": 6761.700000047684,
+     "fetched_ms": 11283.400000095367,
+     "verified_ms": 11284.400000095367,
+     "scene_built_ms": 11309,
+     "runner_wall_ms": 11327.871333999996,
+     "html_response_start_ms": 2001.5,
+     "load_event_end_ms": 6769.900000095367,
+     "wire_bytes_server_log": 260478,
+     "requests": 4,
+     "pixel_ok": true,
+     "first_frame_check": {
+      "ok": true,
+      "red_fraction": 1,
+      "corner_is_car_colored": false,
+      "corner_pixel": [
+       159,
+       164,
+       170,
+       255
+      ]
+     },
+     "load_avg_1m": 81.8,
+     "console_errors": [],
+     "resources": [
+      {
+       "url": "/out/replay.js",
+       "start": 2013.4,
+       "response_end": 6752.5,
+       "transfer_size": 136287,
+       "decoded": 542088
+      },
+      {
+       "url": "/replay/bundle.json",
+       "start": 6769.4,
+       "response_end": 8791.2,
+       "transfer_size": 1339,
+       "decoded": 3063
+      },
+      {
+       "url": "/replay/poses.bin",
+       "start": 6769.5,
+       "response_end": 11282.6,
+       "transfer_size": 123364,
+       "decoded": 157640
+      }
+     ],
+     "webgl_renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M2 Pro, Unspecified Version)"
+    },
+    {
+     "first_frame_ms": 11319.099999904633,
+     "script_start_ms": 6767.5,
+     "fetched_ms": 11281.700000047684,
+     "verified_ms": 11282.400000095367,
+     "scene_built_ms": 11307.200000047684,
+     "runner_wall_ms": 11324.798083000001,
+     "html_response_start_ms": 2001.4000000953674,
+     "load_event_end_ms": 6773.5,
+     "wire_bytes_server_log": 260478,
+     "requests": 4,
+     "pixel_ok": true,
+     "first_frame_check": {
+      "ok": true,
+      "red_fraction": 1,
+      "corner_is_car_colored": false,
+      "corner_pixel": [
+       159,
+       164,
+       170,
+       255
+      ]
+     },
+     "load_avg_1m": 84.8,
+     "console_errors": [],
+     "resources": [
+      {
+       "url": "/out/replay.js",
+       "start": 2014.9,
+       "response_end": 6752.2,
+       "transfer_size": 136287,
+       "decoded": 542088
+      },
+      {
+       "url": "/replay/bundle.json",
+       "start": 6773,
+       "response_end": 8790.2,
+       "transfer_size": 1339,
+       "decoded": 3063
+      },
+      {
+       "url": "/replay/poses.bin",
+       "start": 6773.2,
+       "response_end": 11281.1,
+       "transfer_size": 123364,
+       "decoded": 157640
+      }
+     ],
+     "webgl_renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M2 Pro, Unspecified Version)"
+    },
+    {
+     "first_frame_ms": 11294,
+     "script_start_ms": 6737.899999856949,
+     "fetched_ms": 11253.799999952316,
+     "verified_ms": 11255.799999952316,
+     "scene_built_ms": 11282.299999952316,
+     "runner_wall_ms": 11307.482667000004,
+     "html_response_start_ms": 2001.3999998569489,
+     "load_event_end_ms": 6745,
+     "wire_bytes_server_log": 260478,
+     "requests": 4,
+     "pixel_ok": true,
+     "first_frame_check": {
+      "ok": true,
+      "red_fraction": 1,
+      "corner_is_car_colored": false,
+      "corner_pixel": [
+       159,
+       164,
+       170,
+       255
+      ]
+     },
+     "load_avg_1m": 90.8,
+     "console_errors": [],
+     "resources": [
+      {
+       "url": "/out/replay.js",
+       "start": 2013.9,
+       "response_end": 6723.4,
+       "transfer_size": 136287,
+       "decoded": 542088
+      },
+      {
+       "url": "/replay/bundle.json",
+       "start": 6744.5,
+       "response_end": 8762.8,
+       "transfer_size": 1339,
+       "decoded": 3063
+      },
+      {
+       "url": "/replay/poses.bin",
+       "start": 6744.6,
+       "response_end": 11251.9,
+       "transfer_size": 123364,
+       "decoded": 157640
+      }
+     ],
+     "webgl_renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M2 Pro, Unspecified Version)"
+    }
+   ]
+  },
+  {
+   "encoding": "br",
+   "profile": "none",
+   "n": 5,
+   "first_frame_ms": {
+    "n_valid": 5,
+    "n_missing": 0,
+    "mean": 61.22,
+    "min": 54.3,
+    "p50": 59.1,
+    "p95": 75.5,
+    "p99": 75.5,
+    "max": 75.5
+   },
+   "wire_bytes": 233089,
+   "rows": [
+    {
+     "first_frame_ms": 75.5,
+     "script_start_ms": 29.799999952316284,
+     "fetched_ms": 50.90000009536743,
+     "verified_ms": 51.09999990463257,
+     "scene_built_ms": 65.40000009536743,
+     "runner_wall_ms": 81.10958300001221,
+     "html_response_start_ms": 5.299999952316284,
+     "load_event_end_ms": 35.40000009536743,
+     "wire_bytes_server_log": 233089,
+     "requests": 4,
+     "pixel_ok": true,
+     "first_frame_check": {
+      "ok": true,
+      "red_fraction": 1,
+      "corner_is_car_colored": false,
+      "corner_pixel": [
+       159,
+       164,
+       170,
+       255
+      ]
+     },
+     "load_avg_1m": 114,
+     "console_errors": [],
+     "resources": [
+      {
+       "url": "/out/replay.js",
+       "start": 8.4,
+       "response_end": 13.6,
+       "transfer_size": 112505,
+       "decoded": 542088
+      },
+      {
+       "url": "/replay/bundle.json",
+       "start": 35.1,
+       "response_end": 47.8,
+       "transfer_size": 1234,
+       "decoded": 3063
+      },
+      {
+       "url": "/replay/poses.bin",
+       "start": 35.2,
+       "response_end": 50.5,
+       "transfer_size": 120012,
+       "decoded": 157640
+      }
+     ],
+     "webgl_renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M2 Pro, Unspecified Version)"
+    },
+    {
+     "first_frame_ms": 60.200000047683716,
+     "script_start_ms": 20.899999856948853,
+     "fetched_ms": 31.299999952316284,
+     "verified_ms": 31.799999952316284,
+     "scene_built_ms": 49.39999985694885,
+     "runner_wall_ms": 63.86033300001873,
+     "html_response_start_ms": 1.8999998569488525,
+     "load_event_end_ms": 26.5,
+     "wire_bytes_server_log": 233089,
+     "requests": 4,
+     "pixel_ok": true,
+     "first_frame_check": {
+      "ok": true,
+      "red_fraction": 1,
+      "corner_is_car_colored": false,
+      "corner_pixel": [
+       159,
+       164,
+       170,
+       255
+      ]
+     },
+     "load_avg_1m": 114,
+     "console_errors": [],
+     "resources": [
+      {
+       "url": "/out/replay.js",
+       "start": 4.2,
+       "response_end": 7.5,
+       "transfer_size": 112505,
+       "decoded": 542088
+      },
+      {
+       "url": "/replay/bundle.json",
+       "start": 26.4,
+       "response_end": 27.6,
+       "transfer_size": 1234,
+       "decoded": 3063
+      },
+      {
+       "url": "/replay/poses.bin",
+       "start": 26.5,
+       "response_end": 30.8,
+       "transfer_size": 120012,
+       "decoded": 157640
+      }
+     ],
+     "webgl_renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M2 Pro, Unspecified Version)"
+    },
+    {
+     "first_frame_ms": 54.299999952316284,
+     "script_start_ms": 20.899999856948853,
+     "fetched_ms": 30.799999952316284,
+     "verified_ms": 31,
+     "scene_built_ms": 44.59999990463257,
+     "runner_wall_ms": 57.33137500000885,
+     "html_response_start_ms": 1.3999998569488525,
+     "load_event_end_ms": 26.5,
+     "wire_bytes_server_log": 233089,
+     "requests": 4,
+     "pixel_ok": true,
+     "first_frame_check": {
+      "ok": true,
+      "red_fraction": 1,
+      "corner_is_car_colored": false,
+      "corner_pixel": [
+       159,
+       164,
+       170,
+       255
+      ]
+     },
+     "load_avg_1m": 114,
+     "console_errors": [],
+     "resources": [
+      {
+       "url": "/out/replay.js",
+       "start": 3.7,
+       "response_end": 7.9,
+       "transfer_size": 112505,
+       "decoded": 542088
+      },
+      {
+       "url": "/replay/bundle.json",
+       "start": 26.3,
+       "response_end": 27.7,
+       "transfer_size": 1234,
+       "decoded": 3063
+      },
+      {
+       "url": "/replay/poses.bin",
+       "start": 26.4,
+       "response_end": 30.4,
+       "transfer_size": 120012,
+       "decoded": 157640
+      }
+     ],
+     "webgl_renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M2 Pro, Unspecified Version)"
+    },
+    {
+     "first_frame_ms": 57,
+     "script_start_ms": 25,
+     "fetched_ms": 34.299999952316284,
+     "verified_ms": 34.39999985694885,
+     "scene_built_ms": 47.39999985694885,
+     "runner_wall_ms": 59.902166999992914,
+     "html_response_start_ms": 3.5999999046325684,
+     "load_event_end_ms": 30.799999952316284,
+     "wire_bytes_server_log": 233089,
+     "requests": 4,
+     "pixel_ok": true,
+     "first_frame_check": {
+      "ok": true,
+      "red_fraction": 1,
+      "corner_is_car_colored": false,
+      "corner_pixel": [
+       159,
+       164,
+       170,
+       255
+      ]
+     },
+     "load_avg_1m": 114,
+     "console_errors": [],
+     "resources": [
+      {
+       "url": "/out/replay.js",
+       "start": 5.6,
+       "response_end": 8.3,
+       "transfer_size": 112505,
+       "decoded": 542088
+      },
+      {
+       "url": "/replay/bundle.json",
+       "start": 30.5,
+       "response_end": 32.6,
+       "transfer_size": 1234,
+       "decoded": 3063
+      },
+      {
+       "url": "/replay/poses.bin",
+       "start": 30.7,
+       "response_end": 33.9,
+       "transfer_size": 120012,
+       "decoded": 157640
+      }
+     ],
+     "webgl_renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M2 Pro, Unspecified Version)"
+    },
+    {
+     "first_frame_ms": 59.09999990463257,
+     "script_start_ms": 24,
+     "fetched_ms": 33.200000047683716,
+     "verified_ms": 33.5,
+     "scene_built_ms": 47,
+     "runner_wall_ms": 63.951957999990555,
+     "html_response_start_ms": 1.8999998569488525,
+     "load_event_end_ms": 29.700000047683716,
+     "wire_bytes_server_log": 233089,
+     "requests": 4,
+     "pixel_ok": true,
+     "first_frame_check": {
+      "ok": true,
+      "red_fraction": 1,
+      "corner_is_car_colored": false,
+      "corner_pixel": [
+       159,
+       164,
+       170,
+       255
+      ]
+     },
+     "load_avg_1m": 114,
+     "console_errors": [],
+     "resources": [
+      {
+       "url": "/out/replay.js",
+       "start": 4.5,
+       "response_end": 8.7,
+       "transfer_size": 112505,
+       "decoded": 542088
+      },
+      {
+       "url": "/replay/bundle.json",
+       "start": 29.4,
+       "response_end": 31.1,
+       "transfer_size": 1234,
+       "decoded": 3063
+      },
+      {
+       "url": "/replay/poses.bin",
+       "start": 29.6,
+       "response_end": 32.8,
+       "transfer_size": 120012,
+       "decoded": 157640
+      }
+     ],
+     "webgl_renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M2 Pro, Unspecified Version)"
+    }
+   ]
+  },
+  {
+   "encoding": "br",
+   "profile": "fast4g",
+   "n": 5,
+   "first_frame_ms": {
+    "n_valid": 5,
+    "n_missing": 0,
+    "mean": 790.72,
+    "min": 780.8,
+    "p50": 794.3,
+    "p95": 796.9,
+    "p99": 796.9,
+    "max": 796.9
+   },
+   "wire_bytes": 233089,
+   "rows": [
+    {
+     "first_frame_ms": 785,
+     "script_start_ms": 460.10000014305115,
+     "fetched_ms": 758.4000000953674,
+     "verified_ms": 758.8000001907349,
+     "scene_built_ms": 773,
+     "runner_wall_ms": 788.2725830000127,
+     "html_response_start_ms": 166,
+     "load_event_end_ms": 465.80000019073486,
+     "wire_bytes_server_log": 233089,
+     "requests": 4,
+     "pixel_ok": true,
+     "first_frame_check": {
+      "ok": true,
+      "red_fraction": 1,
+      "corner_is_car_colored": false,
+      "corner_pixel": [
+       159,
+       164,
+       170,
+       255
+      ]
+     },
+     "load_avg_1m": 114,
+     "console_errors": [],
+     "resources": [
+      {
+       "url": "/out/replay.js",
+       "start": 175.2,
+       "response_end": 455.3,
+       "transfer_size": 112505,
+       "decoded": 542088
+      },
+      {
+       "url": "/replay/bundle.json",
+       "start": 465.5,
+       "response_end": 637.6,
+       "transfer_size": 1234,
+       "decoded": 3063
+      },
+      {
+       "url": "/replay/poses.bin",
+       "start": 465.6,
+       "response_end": 757.4,
+       "transfer_size": 120012,
+       "decoded": 157640
+      }
+     ],
+     "webgl_renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M2 Pro, Unspecified Version)"
+    },
+    {
+     "first_frame_ms": 794.2999999523163,
+     "script_start_ms": 465.2000000476837,
+     "fetched_ms": 766.4000000953674,
+     "verified_ms": 766.7999999523163,
+     "scene_built_ms": 782.4000000953674,
+     "runner_wall_ms": 798.1637499999779,
+     "html_response_start_ms": 166.09999990463257,
+     "load_event_end_ms": 473.59999990463257,
+     "wire_bytes_server_log": 233089,
+     "requests": 4,
+     "pixel_ok": true,
+     "first_frame_check": {
+      "ok": true,
+      "red_fraction": 1,
+      "corner_is_car_colored": false,
+      "corner_pixel": [
+       159,
+       164,
+       170,
+       255
+      ]
+     },
+     "load_avg_1m": 117.6,
+     "console_errors": [],
+     "resources": [
+      {
+       "url": "/out/replay.js",
+       "start": 173,
+       "response_end": 461,
+       "transfer_size": 112505,
+       "decoded": 542088
+      },
+      {
+       "url": "/replay/bundle.json",
+       "start": 473.3,
+       "response_end": 644.3,
+       "transfer_size": 1234,
+       "decoded": 3063
+      },
+      {
+       "url": "/replay/poses.bin",
+       "start": 473.5,
+       "response_end": 765.8,
+       "transfer_size": 120012,
+       "decoded": 157640
+      }
+     ],
+     "webgl_renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M2 Pro, Unspecified Version)"
+    },
+    {
+     "first_frame_ms": 780.7999999523163,
+     "script_start_ms": 464.2000000476837,
+     "fetched_ms": 758.5999999046326,
+     "verified_ms": 758.8999998569489,
+     "scene_built_ms": 771.2000000476837,
+     "runner_wall_ms": 793.5606250000128,
+     "html_response_start_ms": 166,
+     "load_event_end_ms": 469.5,
+     "wire_bytes_server_log": 233089,
+     "requests": 4,
+     "pixel_ok": true,
+     "first_frame_check": {
+      "ok": true,
+      "red_fraction": 1,
+      "corner_is_car_colored": false,
+      "corner_pixel": [
+       159,
+       164,
+       170,
+       255
+      ]
+     },
+     "load_avg_1m": 117.6,
+     "console_errors": [],
+     "resources": [
+      {
+       "url": "/out/replay.js",
+       "start": 174.7,
+       "response_end": 460.2,
+       "transfer_size": 112505,
+       "decoded": 542088
+      },
+      {
+       "url": "/replay/bundle.json",
+       "start": 469.4,
+       "response_end": 640.6,
+       "transfer_size": 1234,
+       "decoded": 3063
+      },
+      {
+       "url": "/replay/poses.bin",
+       "start": 469.5,
+       "response_end": 758,
+       "transfer_size": 120012,
+       "decoded": 157640
+      }
+     ],
+     "webgl_renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M2 Pro, Unspecified Version)"
+    },
+    {
+     "first_frame_ms": 796.9000000953674,
+     "script_start_ms": 462,
+     "fetched_ms": 765,
+     "verified_ms": 765.4000000953674,
+     "scene_built_ms": 782,
+     "runner_wall_ms": 804.6032079999859,
+     "html_response_start_ms": 165.79999995231628,
+     "load_event_end_ms": 467.40000009536743,
+     "wire_bytes_server_log": 233089,
+     "requests": 4,
+     "pixel_ok": true,
+     "first_frame_check": {
+      "ok": true,
+      "red_fraction": 1,
+      "corner_is_car_colored": false,
+      "corner_pixel": [
+       159,
+       164,
+       170,
+       255
+      ]
+     },
+     "load_avg_1m": 117.6,
+     "console_errors": [],
+     "resources": [
+      {
+       "url": "/out/replay.js",
+       "start": 174.7,
+       "response_end": 457.9,
+       "transfer_size": 112505,
+       "decoded": 542088
+      },
+      {
+       "url": "/replay/bundle.json",
+       "start": 467.3,
+       "response_end": 638.7,
+       "transfer_size": 1234,
+       "decoded": 3063
+      },
+      {
+       "url": "/replay/poses.bin",
+       "start": 467.3,
+       "response_end": 764.4,
+       "transfer_size": 120012,
+       "decoded": 157640
+      }
+     ],
+     "webgl_renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M2 Pro, Unspecified Version)"
+    },
+    {
+     "first_frame_ms": 796.5999999046326,
+     "script_start_ms": 459.5,
+     "fetched_ms": 758.0999999046326,
+     "verified_ms": 758.5999999046326,
+     "scene_built_ms": 783.5,
+     "runner_wall_ms": 799.4496660000004,
+     "html_response_start_ms": 166,
+     "load_event_end_ms": 465.2000000476837,
+     "wire_bytes_server_log": 233089,
+     "requests": 4,
+     "pixel_ok": true,
+     "first_frame_check": {
+      "ok": true,
+      "red_fraction": 1,
+      "corner_is_car_colored": false,
+      "corner_pixel": [
+       159,
+       164,
+       170,
+       255
+      ]
+     },
+     "load_avg_1m": 117.6,
+     "console_errors": [],
+     "resources": [
+      {
+       "url": "/out/replay.js",
+       "start": 172,
+       "response_end": 454.2,
+       "transfer_size": 112505,
+       "decoded": 542088
+      },
+      {
+       "url": "/replay/bundle.json",
+       "start": 464.9,
+       "response_end": 635.8,
+       "transfer_size": 1234,
+       "decoded": 3063
+      },
+      {
+       "url": "/replay/poses.bin",
+       "start": 465.1,
+       "response_end": 757.5,
+       "transfer_size": 120012,
+       "decoded": 157640
+      }
+     ],
+     "webgl_renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M2 Pro, Unspecified Version)"
+    }
+   ]
+  },
+  {
+   "encoding": "br",
+   "profile": "slow4g",
+   "n": 5,
+   "first_frame_ms": {
+    "n_valid": 5,
+    "n_missing": 0,
+    "mean": 3048.78,
+    "min": 3040.3,
+    "p50": 3049.3,
+    "p95": 3064.4,
+    "p99": 3064.4,
+    "max": 3064.4
+   },
+   "wire_bytes": 233089,
+   "rows": [
+    {
+     "first_frame_ms": 3049.2999999523163,
+     "script_start_ms": 1772.5999999046326,
+     "fetched_ms": 3017.5999999046326,
+     "verified_ms": 3018.199999809265,
+     "scene_built_ms": 3037.5,
+     "runner_wall_ms": 3053.901582999999,
+     "html_response_start_ms": 563.3999998569489,
+     "load_event_end_ms": 1778.1999998092651,
+     "wire_bytes_server_log": 233089,
+     "requests": 4,
+     "pixel_ok": true,
+     "first_frame_check": {
+      "ok": true,
+      "red_fraction": 1,
+      "corner_is_car_colored": false,
+      "corner_pixel": [
+       159,
+       164,
+       170,
+       255
+      ]
+     },
+     "load_avg_1m": 117.6,
+     "console_errors": [],
+     "resources": [
+      {
+       "url": "/out/replay.js",
+       "start": 579.2,
+       "response_end": 1767.2,
+       "transfer_size": 112505,
+       "decoded": 542088
+      },
+      {
+       "url": "/replay/bundle.json",
+       "start": 1778,
+       "response_end": 2350.4,
+       "transfer_size": 1234,
+       "decoded": 3063
+      },
+      {
+       "url": "/replay/poses.bin",
+       "start": 1778.1,
+       "response_end": 3016.9,
+       "transfer_size": 120012,
+       "decoded": 157640
+      }
+     ],
+     "webgl_renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M2 Pro, Unspecified Version)"
+    },
+    {
+     "first_frame_ms": 3040.5,
+     "script_start_ms": 1771.4000000953674,
+     "fetched_ms": 3016.4000000953674,
+     "verified_ms": 3016.800000190735,
+     "scene_built_ms": 3030.800000190735,
+     "runner_wall_ms": 3043.6380000000063,
+     "html_response_start_ms": 563.7000000476837,
+     "load_event_end_ms": 1778,
+     "wire_bytes_server_log": 233089,
+     "requests": 4,
+     "pixel_ok": true,
+     "first_frame_check": {
+      "ok": true,
+      "red_fraction": 1,
+      "corner_is_car_colored": false,
+      "corner_pixel": [
+       159,
+       164,
+       170,
+       255
+      ]
+     },
+     "load_avg_1m": 120.2,
+     "console_errors": [],
+     "resources": [
+      {
+       "url": "/out/replay.js",
+       "start": 576.9,
+       "response_end": 1767,
+       "transfer_size": 112505,
+       "decoded": 542088
+      },
+      {
+       "url": "/replay/bundle.json",
+       "start": 1777.8,
+       "response_end": 2350.2,
+       "transfer_size": 1234,
+       "decoded": 3063
+      },
+      {
+       "url": "/replay/poses.bin",
+       "start": 1777.9,
+       "response_end": 3015.8,
+       "transfer_size": 120012,
+       "decoded": 157640
+      }
+     ],
+     "webgl_renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M2 Pro, Unspecified Version)"
+    },
+    {
+     "first_frame_ms": 3064.4000000953674,
+     "script_start_ms": 1780.5,
+     "fetched_ms": 3027.2000000476837,
+     "verified_ms": 3027.9000000953674,
+     "scene_built_ms": 3048.5999999046326,
+     "runner_wall_ms": 3067.914041000011,
+     "html_response_start_ms": 563.7000000476837,
+     "load_event_end_ms": 1786,
+     "wire_bytes_server_log": 233089,
+     "requests": 4,
+     "pixel_ok": true,
+     "first_frame_check": {
+      "ok": true,
+      "red_fraction": 1,
+      "corner_is_car_colored": false,
+      "corner_pixel": [
+       159,
+       164,
+       170,
+       255
+      ]
+     },
+     "load_avg_1m": 120.2,
+     "console_errors": [],
+     "resources": [
+      {
+       "url": "/out/replay.js",
+       "start": 583.8,
+       "response_end": 1775.1,
+       "transfer_size": 112505,
+       "decoded": 542088
+      },
+      {
+       "url": "/replay/bundle.json",
+       "start": 1785.8,
+       "response_end": 2357.7,
+       "transfer_size": 1234,
+       "decoded": 3063
+      },
+      {
+       "url": "/replay/poses.bin",
+       "start": 1786,
+       "response_end": 3026.5,
+       "transfer_size": 120012,
+       "decoded": 157640
+      }
+     ],
+     "webgl_renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M2 Pro, Unspecified Version)"
+    },
+    {
+     "first_frame_ms": 3049.399999856949,
+     "script_start_ms": 1780.2000000476837,
+     "fetched_ms": 3025.7000000476837,
+     "verified_ms": 3026.0999999046326,
+     "scene_built_ms": 3039.7000000476837,
+     "runner_wall_ms": 3052.481166999991,
+     "html_response_start_ms": 563.3999998569489,
+     "load_event_end_ms": 1786.0999999046326,
+     "wire_bytes_server_log": 233089,
+     "requests": 4,
+     "pixel_ok": true,
+     "first_frame_check": {
+      "ok": true,
+      "red_fraction": 1,
+      "corner_is_car_colored": false,
+      "corner_pixel": [
+       159,
+       164,
+       170,
+       255
+      ]
+     },
+     "load_avg_1m": 120.2,
+     "console_errors": [],
+     "resources": [
+      {
+       "url": "/out/replay.js",
+       "start": 585.5,
+       "response_end": 1775.2,
+       "transfer_size": 112505,
+       "decoded": 542088
+      },
+      {
+       "url": "/replay/bundle.json",
+       "start": 1785.9,
+       "response_end": 2357.4,
+       "transfer_size": 1234,
+       "decoded": 3063
+      },
+      {
+       "url": "/replay/poses.bin",
+       "start": 1786,
+       "response_end": 3025.2,
+       "transfer_size": 120012,
+       "decoded": 157640
+      }
+     ],
+     "webgl_renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M2 Pro, Unspecified Version)"
+    },
+    {
+     "first_frame_ms": 3040.300000190735,
+     "script_start_ms": 1771.3000001907349,
+     "fetched_ms": 3017.4000000953674,
+     "verified_ms": 3017.800000190735,
+     "scene_built_ms": 3031,
+     "runner_wall_ms": 3046.7651250000054,
+     "html_response_start_ms": 564.2000000476837,
+     "load_event_end_ms": 1776.9000000953674,
+     "wire_bytes_server_log": 233089,
+     "requests": 4,
+     "pixel_ok": true,
+     "first_frame_check": {
+      "ok": true,
+      "red_fraction": 1,
+      "corner_is_car_colored": false,
+      "corner_pixel": [
+       159,
+       164,
+       170,
+       255
+      ]
+     },
+     "load_avg_1m": 119.8,
+     "console_errors": [],
+     "resources": [
+      {
+       "url": "/out/replay.js",
+       "start": 578.9,
+       "response_end": 1766.9,
+       "transfer_size": 112505,
+       "decoded": 542088
+      },
+      {
+       "url": "/replay/bundle.json",
+       "start": 1776.6,
+       "response_end": 2349.7,
+       "transfer_size": 1234,
+       "decoded": 3063
+      },
+      {
+       "url": "/replay/poses.bin",
+       "start": 1776.7,
+       "response_end": 3016.9,
+       "transfer_size": 120012,
+       "decoded": 157640
+      }
+     ],
+     "webgl_renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M2 Pro, Unspecified Version)"
+    }
+   ]
+  },
+  {
+   "encoding": "br",
+   "profile": "slow3g",
+   "n": 5,
+   "first_frame_ms": {
+    "n_valid": 5,
+    "n_missing": 0,
+    "mean": 10712.26,
+    "min": 10710.8,
+    "p50": 10711.8,
+    "p95": 10714.7,
+    "p99": 10714.7,
+    "max": 10714.7
+   },
+   "wire_bytes": 233089,
+   "rows": [
+    {
+     "first_frame_ms": 10711.799999952316,
+     "script_start_ms": 6245.400000095367,
+     "fetched_ms": 10682.5,
+     "verified_ms": 10683.400000095367,
+     "scene_built_ms": 10700.299999952316,
+     "runner_wall_ms": 10719.203458000004,
+     "html_response_start_ms": 2000.9000000953674,
+     "load_event_end_ms": 6251.700000047684,
+     "wire_bytes_server_log": 233089,
+     "requests": 4,
+     "pixel_ok": true,
+     "first_frame_check": {
+      "ok": true,
+      "red_fraction": 1,
+      "corner_is_car_colored": false,
+      "corner_pixel": [
+       159,
+       164,
+       170,
+       255
+      ]
+     },
+     "load_avg_1m": 119.8,
+     "console_errors": [],
+     "resources": [
+      {
+       "url": "/out/replay.js",
+       "start": 2012,
+       "response_end": 6240.1,
+       "transfer_size": 112505,
+       "decoded": 542088
+      },
+      {
+       "url": "/replay/bundle.json",
+       "start": 6251.5,
+       "response_end": 8281.8,
+       "transfer_size": 1234,
+       "decoded": 3063
+      },
+      {
+       "url": "/replay/poses.bin",
+       "start": 6251.6,
+       "response_end": 10681.7,
+       "transfer_size": 120012,
+       "decoded": 157640
+      }
+     ],
+     "webgl_renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M2 Pro, Unspecified Version)"
+    },
+    {
+     "first_frame_ms": 10711.599999904633,
+     "script_start_ms": 6249.200000047684,
+     "fetched_ms": 10682.900000095367,
+     "verified_ms": 10683.700000047684,
+     "scene_built_ms": 10701.599999904633,
+     "runner_wall_ms": 10717.916625000013,
+     "html_response_start_ms": 2000.9000000953674,
+     "load_event_end_ms": 6254.900000095367,
+     "wire_bytes_server_log": 233089,
+     "requests": 4,
+     "pixel_ok": true,
+     "first_frame_check": {
+      "ok": true,
+      "red_fraction": 1,
+      "corner_is_car_colored": false,
+      "corner_pixel": [
+       159,
+       164,
+       170,
+       255
+      ]
+     },
+     "load_avg_1m": 105.3,
+     "console_errors": [],
+     "resources": [
+      {
+       "url": "/out/replay.js",
+       "start": 2013,
+       "response_end": 6241.9,
+       "transfer_size": 112505,
+       "decoded": 542088
+      },
+      {
+       "url": "/replay/bundle.json",
+       "start": 6254.7,
+       "response_end": 8282.5,
+       "transfer_size": 1234,
+       "decoded": 3063
+      },
+      {
+       "url": "/replay/poses.bin",
+       "start": 6254.9,
+       "response_end": 10681.7,
+       "transfer_size": 120012,
+       "decoded": 157640
+      }
+     ],
+     "webgl_renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M2 Pro, Unspecified Version)"
+    },
+    {
+     "first_frame_ms": 10712.399999856949,
+     "script_start_ms": 6247.5,
+     "fetched_ms": 10682,
+     "verified_ms": 10682.799999952316,
+     "scene_built_ms": 10701,
+     "runner_wall_ms": 10717.579792000004,
+     "html_response_start_ms": 2001.2000000476837,
+     "load_event_end_ms": 6253.399999856949,
+     "wire_bytes_server_log": 233089,
+     "requests": 4,
+     "pixel_ok": true,
+     "first_frame_check": {
+      "ok": true,
+      "red_fraction": 1,
+      "corner_is_car_colored": false,
+      "corner_pixel": [
+       159,
+       164,
+       170,
+       255
+      ]
+     },
+     "load_avg_1m": 91.6,
+     "console_errors": [],
+     "resources": [
+      {
+       "url": "/out/replay.js",
+       "start": 2012.6,
+       "response_end": 6242.4,
+       "transfer_size": 112505,
+       "decoded": 542088
+      },
+      {
+       "url": "/replay/bundle.json",
+       "start": 6253.1,
+       "response_end": 8282.2,
+       "transfer_size": 1234,
+       "decoded": 3063
+      },
+      {
+       "url": "/replay/poses.bin",
+       "start": 6253.3,
+       "response_end": 10681.4,
+       "transfer_size": 120012,
+       "decoded": 157640
+      }
+     ],
+     "webgl_renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M2 Pro, Unspecified Version)"
+    },
+    {
+     "first_frame_ms": 10710.799999952316,
+     "script_start_ms": 6248.600000143051,
+     "fetched_ms": 10683.900000095367,
+     "verified_ms": 10685.299999952316,
+     "scene_built_ms": 10701.100000143051,
+     "runner_wall_ms": 10715.539374999993,
+     "html_response_start_ms": 2001.1000001430511,
+     "load_event_end_ms": 6254.299999952316,
+     "wire_bytes_server_log": 233089,
+     "requests": 4,
+     "pixel_ok": true,
+     "first_frame_check": {
+      "ok": true,
+      "red_fraction": 1,
+      "corner_is_car_colored": false,
+      "corner_pixel": [
+       159,
+       164,
+       170,
+       255
+      ]
+     },
+     "load_avg_1m": 79.6,
+     "console_errors": [],
+     "resources": [
+      {
+       "url": "/out/replay.js",
+       "start": 2012.7,
+       "response_end": 6243.3,
+       "transfer_size": 112505,
+       "decoded": 542088
+      },
+      {
+       "url": "/replay/bundle.json",
+       "start": 6254,
+       "response_end": 8283.4,
+       "transfer_size": 1234,
+       "decoded": 3063
+      },
+      {
+       "url": "/replay/poses.bin",
+       "start": 6254.1,
+       "response_end": 10683.3,
+       "transfer_size": 120012,
+       "decoded": 157640
+      }
+     ],
+     "webgl_renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M2 Pro, Unspecified Version)"
+    },
+    {
+     "first_frame_ms": 10714.700000047684,
+     "script_start_ms": 6248.400000095367,
+     "fetched_ms": 10682.299999952316,
+     "verified_ms": 10683.599999904633,
+     "scene_built_ms": 10705.400000095367,
+     "runner_wall_ms": 10718.761916999996,
+     "html_response_start_ms": 2001.0999999046326,
+     "load_event_end_ms": 6254.200000047684,
+     "wire_bytes_server_log": 233089,
+     "requests": 4,
+     "pixel_ok": true,
+     "first_frame_check": {
+      "ok": true,
+      "red_fraction": 1,
+      "corner_is_car_colored": false,
+      "corner_pixel": [
+       159,
+       164,
+       170,
+       255
+      ]
+     },
+     "load_avg_1m": 68.8,
+     "console_errors": [],
+     "resources": [
+      {
+       "url": "/out/replay.js",
+       "start": 2012.4,
+       "response_end": 6243.8,
+       "transfer_size": 112505,
+       "decoded": 542088
+      },
+      {
+       "url": "/replay/bundle.json",
+       "start": 6253.9,
+       "response_end": 8283.7,
+       "transfer_size": 1234,
+       "decoded": 3063
+      },
+      {
+       "url": "/replay/poses.bin",
+       "start": 6254,
+       "response_end": 10681.8,
+       "transfer_size": 120012,
+       "decoded": 157640
+      }
+     ],
+     "webgl_renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M2 Pro, Unspecified Version)"
+    }
+   ]
+  }
+ ],
+ "browser": {
+  "name": "chromium-headless-shell (playwright-core 1.65.0)",
+  "version": "158.0.8127.18"
+ },
+ "machine_after": {
+  "cpu": "Apple M2 Pro",
+  "ncpu": 10,
+  "platform": "Darwin 24.6.0 arm64",
+  "load_avg": [
+   60,
+   59.3,
+   41.3
+  ],
+  "swap": "total = 14336.00M  used = 13348.94M  free = 987.06M  (encrypted)",
+  "node": "v22.22.2"
+ }
+}

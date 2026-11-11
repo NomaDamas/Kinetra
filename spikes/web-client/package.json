@@ -2,7 +2,7 @@
   "name": "kinetra-spike-web-client",
   "private": true,
   "version": "0.0.0",
-  "description": "A0-02a/A0-02c: three.js pose-stream scale (frame rate, bandwidth, input latency) and share-link loading. Standalone pnpm project, not part of the root workspace.",
+  "description": "A0-02a/A0-02c: three.js pose-stream scale (frame rate, bandwidth, input latency) and share-link loading (replay bundle size, link-open to first frame). Standalone pnpm project, not part of the root workspace.",
   "type": "module",
   "packageManager": "pnpm@10.18.3",
   "engines": {
@@ -11,13 +11,17 @@
   "scripts": {
     "dev": "node src/serve.mjs",
     "measure:pose": "node measure-pose.mjs",
-    "test": "node --test --test-name-pattern=. tests/frame.test.mjs tests/poses.test.mjs tests/stats.test.mjs tests/stream.test.mjs tests/latency.test.mjs"
+    "test": "node --test --test-name-pattern=. tests/frame.test.mjs tests/poses.test.mjs tests/stats.test.mjs tests/stream.test.mjs tests/latency.test.mjs tests/replay-serve.test.mjs tests/pixelcheck.test.mjs",
+    "dev:replay": "node src/replay-serve.mjs",
+    "build:replay": "node build-replay.mjs",
+    "measure:replay": "node measure-replay.mjs"
   },
   "dependencies": {
     "three": "0.187.0",
     "ws": "8.22.2"
   },
   "devDependencies": {
-    "playwright-core": "1.65.0"
+    "playwright-core": "1.65.0",
+    "esbuild": "0.28.2"
   }
 }

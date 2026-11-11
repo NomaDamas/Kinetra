@@ -1,0 +1,3311 @@
+{
+ "issue": "A0-02c #49",
+ "gl_backend": "swiftshader",
+ "launch_args": [],
+ "repeat": 5,
+ "build": {
+  "outfile": "out/replay.js",
+  "inputs": 4,
+  "minified": true
+ },
+ "file_sizes_bytes": {
+  "out/replay.js": {
+   "identity": 542088,
+   "gzip9": 135987,
+   "brotli11": 112205
+  },
+  "replay.html": {
+   "identity": 487,
+   "gzip9": 388,
+   "brotli11": 238
+  },
+  "replay/bundle.json": {
+   "identity": 3063,
+   "gzip9": 1039,
+   "brotli11": 934
+  },
+  "replay/poses.bin": {
+   "identity": 157640,
+   "gzip9": 123064,
+   "brotli11": 119712
+  }
+ },
+ "totals_bytes": {
+  "identity": 703278,
+  "gzip9": 260478,
+  "brotli11": 233089
+ },
+ "profiles": {
+  "none": null,
+  "fast4g": {
+   "name": "Fast 4G",
+   "latency": 165,
+   "down": 1012500,
+   "up": 168750,
+   "down_kbit_s": 8100,
+   "up_kbit_s": 1350
+  },
+  "slow4g": {
+   "name": "Slow 4G (listed as 'Fast 3G' in older DevTools)",
+   "latency": 562.5,
+   "down": 180000,
+   "up": 84375,
+   "down_kbit_s": 1440,
+   "up_kbit_s": 675
+  },
+  "slow3g": {
+   "name": "Slow 3G",
+   "latency": 2000,
+   "down": 50000,
+   "up": 50000,
+   "down_kbit_s": 400,
+   "up_kbit_s": 400
+  }
+ },
+ "machine_before": {
+  "cpu": "Apple M2 Pro",
+  "ncpu": 10,
+  "platform": "Darwin 24.6.0 arm64",
+  "load_avg": [
+   45.8,
+   33.8,
+   27.2
+  ],
+  "swap": "total = 14336.00M  used = 13412.94M  free = 923.06M  (encrypted)",
+  "node": "v22.22.2"
+ },
+ "runs": [
+  {
+   "encoding": "identity",
+   "profile": "none",
+   "n": 5,
+   "first_frame_ms": {
+    "n_valid": 5,
+    "n_missing": 0,
+    "mean": 179.3,
+    "min": 118,
+    "p50": 151.6,
+    "p95": 326,
+    "p99": 326,
+    "max": 326
+   },
+   "wire_bytes": 703278,
+   "rows": [
+    {
+     "first_frame_ms": 326,
+     "script_start_ms": 48.40000009536743,
+     "fetched_ms": 69.90000009536743,
+     "verified_ms": 75.10000014305115,
+     "scene_built_ms": 112.70000004768372,
+     "runner_wall_ms": 341.7360829999998,
+     "html_response_start_ms": 5.900000095367432,
+     "load_event_end_ms": 56.700000047683716,
+     "wire_bytes_server_log": 703278,
+     "requests": 4,
+     "pixel_ok": true,
+     "first_frame_check": {
+      "ok": true,
+      "red_fraction": 1,
+      "corner_is_car_colored": false,
+      "corner_pixel": [
+       159,
+       164,
+       170,
+       255
+      ]
+     },
+     "load_avg_1m": 45.8,
+     "console_errors": [],
+     "resources": [
+      {
+       "url": "/out/replay.js",
+       "start": 12.8,
+       "response_end": 17.2,
+       "transfer_size": 542388,
+       "decoded": 542088
+      },
+      {
+       "url": "/replay/bundle.json",
+       "start": 56.2,
+       "response_end": 65.3,
+       "transfer_size": 3363,
+       "decoded": 3063
+      },
+      {
+       "url": "/replay/poses.bin",
+       "start": 56.7,
+       "response_end": 67.3,
+       "transfer_size": 157940,
+       "decoded": 157640
+      }
+     ],
+     "webgl_renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (LLVM 10.0.0) (0x0000C0DE)), SwiftShader driver)"
+    },
+    {
+     "first_frame_ms": 118,
+     "script_start_ms": 19.700000047683716,
+     "fetched_ms": 29.899999856948853,
+     "verified_ms": 30.09999990463257,
+     "scene_built_ms": 42.09999990463257,
+     "runner_wall_ms": 133.5577919999996,
+     "html_response_start_ms": 1.7000000476837158,
+     "load_event_end_ms": 25.299999952316284,
+     "wire_bytes_server_log": 703278,
+     "requests": 4,
+     "pixel_ok": true,
+     "first_frame_check": {
+      "ok": true,
+      "red_fraction": 1,
+      "corner_is_car_colored": false,
+      "corner_pixel": [
+       159,
+       164,
+       170,
+       255
+      ]
+     },
+     "load_avg_1m": 45.8,
+     "console_errors": [],
+     "resources": [
+      {
+       "url": "/out/replay.js",
+       "start": 4.1,
+       "response_end": 6.3,
+       "transfer_size": 542388,
+       "decoded": 542088
+      },
+      {
+       "url": "/replay/bundle.json",
+       "start": 25.1,
+       "response_end": 28,
+       "transfer_size": 3363,
+       "decoded": 3063
+      },
+      {
+       "url": "/replay/poses.bin",
+       "start": 25.2,
+       "response_end": 29.5,
+       "transfer_size": 157940,
+       "decoded": 157640
+      }
+     ],
+     "webgl_renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (LLVM 10.0.0) (0x0000C0DE)), SwiftShader driver)"
+    },
+    {
+     "first_frame_ms": 141.20000004768372,
+     "script_start_ms": 19.700000047683716,
+     "fetched_ms": 28.200000047683716,
+     "verified_ms": 28.5,
+     "scene_built_ms": 40.89999985694885,
+     "runner_wall_ms": 187.242792,
+     "html_response_start_ms": 1.3999998569488525,
+     "load_event_end_ms": 25.299999952316284,
+     "wire_bytes_server_log": 703278,
+     "requests": 4,
+     "pixel_ok": true,
+     "first_frame_check": {
+      "ok": true,
+      "red_fraction": 1,
+      "corner_is_car_colored": false,
+      "corner_pixel": [
+       159,
+       164,
+       170,
+       255
+      ]
+     },
+     "load_avg_1m": 45.8,
+     "console_errors": [],
+     "resources": [
+      {
+       "url": "/out/replay.js",
+       "start": 3.6,
+       "response_end": 5.9,
+       "transfer_size": 542388,
+       "decoded": 542088
+      },
+      {
+       "url": "/replay/bundle.json",
+       "start": 25,
+       "response_end": 26.4,
+       "transfer_size": 3363,
+       "decoded": 3063
+      },
+      {
+       "url": "/replay/poses.bin",
+       "start": 25.2,
+       "response_end": 27.8,
+       "transfer_size": 157940,
+       "decoded": 157640
+      }
+     ],
+     "webgl_renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (LLVM 10.0.0) (0x0000C0DE)), SwiftShader driver)"
+    },
+    {
+     "first_frame_ms": 159.69999980926514,
+     "script_start_ms": 18.899999856948853,
+     "fetched_ms": 28.59999990463257,
+     "verified_ms": 28.899999856948853,
+     "scene_built_ms": 42.09999990463257,
+     "runner_wall_ms": 207.52949999999964,
+     "html_response_start_ms": 1,
+     "load_event_end_ms": 24.799999952316284,
+     "wire_bytes_server_log": 703278,
+     "requests": 4,
+     "pixel_ok": true,
+     "first_frame_check": {
+      "ok": true,
+      "red_fraction": 1,
+      "corner_is_car_colored": false,
+      "corner_pixel": [
+       159,
+       164,
+       170,
+       255
+      ]
+     },
+     "load_avg_1m": 45.8,
+     "console_errors": [],
+     "resources": [
+      {
+       "url": "/out/replay.js",
+       "start": 3,
+       "response_end": 5.3,
+       "transfer_size": 542388,
+       "decoded": 542088
+      },
+      {
+       "url": "/replay/bundle.json",
+       "start": 24.6,
+       "response_end": 26.7,
+       "transfer_size": 3363,
+       "decoded": 3063
+      },
+      {
+       "url": "/replay/poses.bin",
+       "start": 24.8,
+       "response_end": 28.1,
+       "transfer_size": 157940,
+       "decoded": 157640
+      }
+     ],
+     "webgl_renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (LLVM 10.0.0) (0x0000C0DE)), SwiftShader driver)"
+    },
+    {
+     "first_frame_ms": 151.60000014305115,
+     "script_start_ms": 21.90000009536743,
+     "fetched_ms": 32.799999952316284,
+     "verified_ms": 33.10000014305115,
+     "scene_built_ms": 46.10000014305115,
+     "runner_wall_ms": 211.30370800000037,
+     "html_response_start_ms": 1.5,
+     "load_event_end_ms": 28.100000143051147,
+     "wire_bytes_server_log": 703278,
+     "requests": 4,
+     "pixel_ok": true,
+     "first_frame_check": {
+      "ok": true,
+      "red_fraction": 1,
+      "corner_is_car_colored": false,
+      "corner_pixel": [
+       159,
+       164,
+       170,
+       255
+      ]
+     },
+     "load_avg_1m": 45.8,
+     "console_errors": [],
+     "resources": [
+      {
+       "url": "/out/replay.js",
+       "start": 4.2,
+       "response_end": 6.8,
+       "transfer_size": 542388,
+       "decoded": 542088
+      },
+      {
+       "url": "/replay/bundle.json",
+       "start": 27.9,
+       "response_end": 29.9,
+       "transfer_size": 3363,
+       "decoded": 3063
+      },
+      {
+       "url": "/replay/poses.bin",
+       "start": 28,
+       "response_end": 32.2,
+       "transfer_size": 157940,
+       "decoded": 157640
+      }
+     ],
+     "webgl_renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (LLVM 10.0.0) (0x0000C0DE)), SwiftShader driver)"
+    }
+   ]
+  },
+  {
+   "encoding": "identity",
+   "profile": "fast4g",
+   "n": 5,
+   "first_frame_ms": {
+    "n_valid": 5,
+    "n_missing": 0,
+    "mean": 1368.5,
+    "min": 1324.5,
+    "p50": 1361.2,
+    "p95": 1420.7,
+    "p99": 1420.7,
+    "max": 1420.7
+   },
+   "wire_bytes": 703278,
+   "rows": [
+    {
+     "first_frame_ms": 1350.5999999046326,
+     "script_start_ms": 887.2999999523163,
+     "fetched_ms": 1230.8999998569489,
+     "verified_ms": 1231.3999998569489,
+     "scene_built_ms": 1245.2999999523163,
+     "runner_wall_ms": 1358.6907919999994,
+     "html_response_start_ms": 166,
+     "load_event_end_ms": 893.2000000476837,
+     "wire_bytes_server_log": 703278,
+     "requests": 4,
+     "pixel_ok": true,
+     "first_frame_check": {
+      "ok": true,
+      "red_fraction": 1,
+      "corner_is_car_colored": false,
+      "corner_pixel": [
+       159,
+       164,
+       170,
+       255
+      ]
+     },
+     "load_avg_1m": 45.8,
+     "console_errors": [],
+     "resources": [
+      {
+       "url": "/out/replay.js",
+       "start": 173.3,
+       "response_end": 882,
+       "transfer_size": 542388,
+       "decoded": 542088
+      },
+      {
+       "url": "/replay/bundle.json",
+       "start": 893,
+       "response_end": 1070.4,
+       "transfer_size": 3363,
+       "decoded": 3063
+      },
+      {
+       "url": "/replay/poses.bin",
+       "start": 893.1,
+       "response_end": 1228.7,
+       "transfer_size": 157940,
+       "decoded": 157640
+      }
+     ],
+     "webgl_renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (LLVM 10.0.0) (0x0000C0DE)), SwiftShader driver)"
+    },
+    {
+     "first_frame_ms": 1361.2000000476837,
+     "script_start_ms": 885.2999999523163,
+     "fetched_ms": 1230.3999998569489,
+     "verified_ms": 1230.7000000476837,
+     "scene_built_ms": 1243.5999999046326,
+     "runner_wall_ms": 1391.0858339999995,
+     "html_response_start_ms": 165.89999985694885,
+     "load_event_end_ms": 890.7999999523163,
+     "wire_bytes_server_log": 703278,
+     "requests": 4,
+     "pixel_ok": true,
+     "first_frame_check": {
+      "ok": true,
+      "red_fraction": 1,
+      "corner_is_car_colored": false,
+      "corner_pixel": [
+       159,
+       164,
+       170,
+       255
+      ]
+     },
+     "load_avg_1m": 45.8,
+     "console_errors": [],
+     "resources": [
+      {
+       "url": "/out/replay.js",
+       "start": 173.4,
+       "response_end": 880.3,
+       "transfer_size": 542388,
+       "decoded": 542088
+      },
+      {
+       "url": "/replay/bundle.json",
+       "start": 890.7,
+       "response_end": 1068.4,
+       "transfer_size": 3363,
+       "decoded": 3063
+      },
+      {
+       "url": "/replay/poses.bin",
+       "start": 890.7,
+       "response_end": 1229.8,
+       "transfer_size": 157940,
+       "decoded": 157640
+      }
+     ],
+     "webgl_renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (LLVM 10.0.0) (0x0000C0DE)), SwiftShader driver)"
+    },
+    {
+     "first_frame_ms": 1385.5,
+     "script_start_ms": 899.5999999046326,
+     "fetched_ms": 1235.8999998569489,
+     "verified_ms": 1237.2999999523163,
+     "scene_built_ms": 1250.7999999523163,
+     "runner_wall_ms": 1394.1935830000002,
+     "html_response_start_ms": 166.09999990463257,
+     "load_event_end_ms": 905.5,
+     "wire_bytes_server_log": 703278,
+     "requests": 4,
+     "pixel_ok": true,
+     "first_frame_check": {
+      "ok": true,
+      "red_fraction": 1,
+      "corner_is_car_colored": false,
+      "corner_pixel": [
+       159,
+       164,
+       170,
+       255
+      ]
+     },
+     "load_avg_1m": 44.5,
+     "console_errors": [],
+     "resources": [
+      {
+       "url": "/out/replay.js",
+       "start": 175.8,
+       "response_end": 891.7,
+       "transfer_size": 542388,
+       "decoded": 542088
+      },
+      {
+       "url": "/replay/bundle.json",
+       "start": 905.3,
+       "response_end": 1080,
+       "transfer_size": 3363,
+       "decoded": 3063
+      },
+      {
+       "url": "/replay/poses.bin",
+       "start": 905.4,
+       "response_end": 1235.4,
+       "transfer_size": 157940,
+       "decoded": 157640
+      }
+     ],
+     "webgl_renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (LLVM 10.0.0) (0x0000C0DE)), SwiftShader driver)"
+    },
+    {
+     "first_frame_ms": 1420.7000000476837,
+     "script_start_ms": 895.2999999523163,
+     "fetched_ms": 1235.7999999523163,
+     "verified_ms": 1236.0999999046326,
+     "scene_built_ms": 1247.7999999523163,
+     "runner_wall_ms": 1434.6721670000006,
+     "html_response_start_ms": 167.59999990463257,
+     "load_event_end_ms": 901.5,
+     "wire_bytes_server_log": 703278,
+     "requests": 4,
+     "pixel_ok": true,
+     "first_frame_check": {
+      "ok": true,
+      "red_fraction": 1,
+      "corner_is_car_colored": false,
+      "corner_pixel": [
+       159,
+       164,
+       170,
+       255
+      ]
+     },
+     "load_avg_1m": 44.5,
+     "console_errors": [],
+     "resources": [
+      {
+       "url": "/out/replay.js",
+       "start": 177,
+       "response_end": 888.6,
+       "transfer_size": 542388,
+       "decoded": 542088
+      },
+      {
+       "url": "/replay/bundle.json",
+       "start": 901.3,
+       "response_end": 1079.7,
+       "transfer_size": 3363,
+       "decoded": 3063
+      },
+      {
+       "url": "/replay/poses.bin",
+       "start": 901.4,
+       "response_end": 1235.3,
+       "transfer_size": 157940,
+       "decoded": 157640
+      }
+     ],
+     "webgl_renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (LLVM 10.0.0) (0x0000C0DE)), SwiftShader driver)"
+    },
+    {
+     "first_frame_ms": 1324.5,
+     "script_start_ms": 891.3000001907349,
+     "fetched_ms": 1234.9000000953674,
+     "verified_ms": 1235.4000000953674,
+     "scene_built_ms": 1248.3000001907349,
+     "runner_wall_ms": 1336.352417,
+     "html_response_start_ms": 166.90000009536743,
+     "load_event_end_ms": 896.9000000953674,
+     "wire_bytes_server_log": 703278,
+     "requests": 4,
+     "pixel_ok": true,
+     "first_frame_check": {
+      "ok": true,
+      "red_fraction": 1,
+      "corner_is_car_colored": false,
+      "corner_pixel": [
+       159,
+       164,
+       170,
+       255
+      ]
+     },
+     "load_avg_1m": 44.5,
+     "console_errors": [],
+     "resources": [
+      {
+       "url": "/out/replay.js",
+       "start": 175.5,
+       "response_end": 886,
+       "transfer_size": 542388,
+       "decoded": 542088
+      },
+      {
+       "url": "/replay/bundle.json",
+       "start": 896.7,
+       "response_end": 1075.8,
+       "transfer_size": 3363,
+       "decoded": 3063
+      },
+      {
+       "url": "/replay/poses.bin",
+       "start": 896.8,
+       "response_end": 1233.9,
+       "transfer_size": 157940,
+       "decoded": 157640
+      }
+     ],
+     "webgl_renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (LLVM 10.0.0) (0x0000C0DE)), SwiftShader driver)"
+    }
+   ]
+  },
+  {
+   "encoding": "identity",
+   "profile": "slow4g",
+   "n": 5,
+   "first_frame_ms": {
+    "n_valid": 5,
+    "n_missing": 0,
+    "mean": 5775.92,
+    "min": 5756.8,
+    "p50": 5764.2,
+    "p95": 5813,
+    "p99": 5813,
+    "max": 5813
+   },
+   "wire_bytes": 703278,
+   "rows": [
+    {
+     "first_frame_ms": 5756.799999952316,
+     "script_start_ms": 4166.400000095367,
+     "fetched_ms": 5647.299999952316,
+     "verified_ms": 5648.400000095367,
+     "scene_built_ms": 5662.100000143051,
+     "runner_wall_ms": 5772.5179590000025,
+     "html_response_start_ms": 563.4000000953674,
+     "load_event_end_ms": 4172.100000143051,
+     "wire_bytes_server_log": 703278,
+     "requests": 4,
+     "pixel_ok": true,
+     "first_frame_check": {
+      "ok": true,
+      "red_fraction": 1,
+      "corner_is_car_colored": false,
+      "corner_pixel": [
+       159,
+       164,
+       170,
+       255
+      ]
+     },
+     "load_avg_1m": 42.5,
+     "console_errors": [],
+     "resources": [
+      {
+       "url": "/out/replay.js",
+       "start": 577.2,
+       "response_end": 4158.1,
+       "transfer_size": 542388,
+       "decoded": 542088
+      },
+      {
+       "url": "/replay/bundle.json",
+       "start": 4171.8,
+       "response_end": 4774.9,
+       "transfer_size": 3363,
+       "decoded": 3063
+      },
+      {
+       "url": "/replay/poses.bin",
+       "start": 4172,
+       "response_end": 5641.3,
+       "transfer_size": 157940,
+       "decoded": 157640
+      }
+     ],
+     "webgl_renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (LLVM 10.0.0) (0x0000C0DE)), SwiftShader driver)"
+    },
+    {
+     "first_frame_ms": 5784.5,
+     "script_start_ms": 4162.799999952316,
+     "fetched_ms": 5641.200000047684,
+     "verified_ms": 5641.399999856949,
+     "scene_built_ms": 5652.200000047684,
+     "runner_wall_ms": 5809.536208000001,
+     "html_response_start_ms": 563.5,
+     "load_event_end_ms": 4168.599999904633,
+     "wire_bytes_server_log": 703278,
+     "requests": 4,
+     "pixel_ok": true,
+     "first_frame_check": {
+      "ok": true,
+      "red_fraction": 1,
+      "corner_is_car_colored": false,
+      "corner_pixel": [
+       159,
+       164,
+       170,
+       255
+      ]
+     },
+     "load_avg_1m": 41.6,
+     "console_errors": [],
+     "resources": [
+      {
+       "url": "/out/replay.js",
+       "start": 578.2,
+       "response_end": 4156.9,
+       "transfer_size": 542388,
+       "decoded": 542088
+      },
+      {
+       "url": "/replay/bundle.json",
+       "start": 4168.4,
+       "response_end": 4774.3,
+       "transfer_size": 3363,
+       "decoded": 3063
+      },
+      {
+       "url": "/replay/poses.bin",
+       "start": 4168.5,
+       "response_end": 5640.5,
+       "transfer_size": 157940,
+       "decoded": 157640
+      }
+     ],
+     "webgl_renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (LLVM 10.0.0) (0x0000C0DE)), SwiftShader driver)"
+    },
+    {
+     "first_frame_ms": 5764.200000047684,
+     "script_start_ms": 4174.900000095367,
+     "fetched_ms": 5652.100000143051,
+     "verified_ms": 5653.200000047684,
+     "scene_built_ms": 5667.900000095367,
+     "runner_wall_ms": 5779.282833000001,
+     "html_response_start_ms": 563.5,
+     "load_event_end_ms": 4180.600000143051,
+     "wire_bytes_server_log": 703278,
+     "requests": 4,
+     "pixel_ok": true,
+     "first_frame_check": {
+      "ok": true,
+      "red_fraction": 1,
+      "corner_is_car_colored": false,
+      "corner_pixel": [
+       159,
+       164,
+       170,
+       255
+      ]
+     },
+     "load_avg_1m": 40.3,
+     "console_errors": [],
+     "resources": [
+      {
+       "url": "/out/replay.js",
+       "start": 582.3,
+       "response_end": 4167.6,
+       "transfer_size": 542388,
+       "decoded": 542088
+      },
+      {
+       "url": "/replay/bundle.json",
+       "start": 4180.4,
+       "response_end": 4784.5,
+       "transfer_size": 3363,
+       "decoded": 3063
+      },
+      {
+       "url": "/replay/poses.bin",
+       "start": 4180.5,
+       "response_end": 5650.9,
+       "transfer_size": 157940,
+       "decoded": 157640
+      }
+     ],
+     "webgl_renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (LLVM 10.0.0) (0x0000C0DE)), SwiftShader driver)"
+    },
+    {
+     "first_frame_ms": 5761.100000143051,
+     "script_start_ms": 4165.200000047684,
+     "fetched_ms": 5641.5,
+     "verified_ms": 5642.300000190735,
+     "scene_built_ms": 5654.900000095367,
+     "runner_wall_ms": 5780.700333000001,
+     "html_response_start_ms": 563.5,
+     "load_event_end_ms": 4171.300000190735,
+     "wire_bytes_server_log": 703278,
+     "requests": 4,
+     "pixel_ok": true,
+     "first_frame_check": {
+      "ok": true,
+      "red_fraction": 1,
+      "corner_is_car_colored": false,
+      "corner_pixel": [
+       159,
+       164,
+       170,
+       255
+      ]
+     },
+     "load_avg_1m": 38.3,
+     "console_errors": [],
+     "resources": [
+      {
+       "url": "/out/replay.js",
+       "start": 577.6,
+       "response_end": 4157.5,
+       "transfer_size": 542388,
+       "decoded": 542088
+      },
+      {
+       "url": "/replay/bundle.json",
+       "start": 4170.8,
+       "response_end": 4774.2,
+       "transfer_size": 3363,
+       "decoded": 3063
+      },
+      {
+       "url": "/replay/poses.bin",
+       "start": 4171,
+       "response_end": 5641,
+       "transfer_size": 157940,
+       "decoded": 157640
+      }
+     ],
+     "webgl_renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (LLVM 10.0.0) (0x0000C0DE)), SwiftShader driver)"
+    },
+    {
+     "first_frame_ms": 5813,
+     "script_start_ms": 4162.400000095367,
+     "fetched_ms": 5639,
+     "verified_ms": 5640.100000143051,
+     "scene_built_ms": 5659.5,
+     "runner_wall_ms": 5826.367624999999,
+     "html_response_start_ms": 563.5,
+     "load_event_end_ms": 4168,
+     "wire_bytes_server_log": 703278,
+     "requests": 4,
+     "pixel_ok": true,
+     "first_frame_check": {
+      "ok": true,
+      "red_fraction": 1,
+      "corner_is_car_colored": false,
+      "corner_pixel": [
+       159,
+       164,
+       170,
+       255
+      ]
+     },
+     "load_avg_1m": 44.6,
+     "console_errors": [],
+     "resources": [
+      {
+       "url": "/out/replay.js",
+       "start": 573.3,
+       "response_end": 4154.4,
+       "transfer_size": 542388,
+       "decoded": 542088
+      },
+      {
+       "url": "/replay/bundle.json",
+       "start": 4167.8,
+       "response_end": 4771,
+       "transfer_size": 3363,
+       "decoded": 3063
+      },
+      {
+       "url": "/replay/poses.bin",
+       "start": 4167.9,
+       "response_end": 5637.7,
+       "transfer_size": 157940,
+       "decoded": 157640
+      }
+     ],
+     "webgl_renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (LLVM 10.0.0) (0x0000C0DE)), SwiftShader driver)"
+    }
+   ]
+  },
+  {
+   "encoding": "identity",
+   "profile": "slow3g",
+   "n": 5,
+   "first_frame_ms": {
+    "n_valid": 5,
+    "n_missing": 0,
+    "mean": 20304.24,
+    "min": 20253.4,
+    "p50": 20259.6,
+    "p95": 20386.8,
+    "p99": 20386.8,
+    "max": 20386.8
+   },
+   "wire_bytes": 703278,
+   "rows": [
+    {
+     "first_frame_ms": 20259.300000190735,
+     "script_start_ms": 14889.600000143051,
+     "fetched_ms": 20162.400000095367,
+     "verified_ms": 20163.700000047684,
+     "scene_built_ms": 20179.300000190735,
+     "runner_wall_ms": 20271.195499999994,
+     "html_response_start_ms": 2001,
+     "load_event_end_ms": 14895.600000143051,
+     "wire_bytes_server_log": 703278,
+     "requests": 4,
+     "pixel_ok": true,
+     "first_frame_check": {
+      "ok": true,
+      "red_fraction": 1,
+      "corner_is_car_colored": false,
+      "corner_pixel": [
+       159,
+       164,
+       170,
+       255
+      ]
+     },
+     "load_avg_1m": 43.7,
+     "console_errors": [],
+     "resources": [
+      {
+       "url": "/out/replay.js",
+       "start": 2014.6,
+       "response_end": 14882.2,
+       "transfer_size": 542388,
+       "decoded": 542088
+      },
+      {
+       "url": "/replay/bundle.json",
+       "start": 14895.2,
+       "response_end": 17042.6,
+       "transfer_size": 3363,
+       "decoded": 3063
+      },
+      {
+       "url": "/replay/poses.bin",
+       "start": 14895.3,
+       "response_end": 20161.8,
+       "transfer_size": 157940,
+       "decoded": 157640
+      }
+     ],
+     "webgl_renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (LLVM 10.0.0) (0x0000C0DE)), SwiftShader driver)"
+    },
+    {
+     "first_frame_ms": 20253.400000095367,
+     "script_start_ms": 14860.099999904633,
+     "fetched_ms": 20133.5,
+     "verified_ms": 20135.099999904633,
+     "scene_built_ms": 20151.099999904633,
+     "runner_wall_ms": 20289.353833999994,
+     "html_response_start_ms": 2001.7000000476837,
+     "load_event_end_ms": 14866.400000095367,
+     "wire_bytes_server_log": 703278,
+     "requests": 4,
+     "pixel_ok": true,
+     "first_frame_check": {
+      "ok": true,
+      "red_fraction": 1,
+      "corner_is_car_colored": false,
+      "corner_pixel": [
+       159,
+       164,
+       170,
+       255
+      ]
+     },
+     "load_avg_1m": 32.1,
+     "console_errors": [],
+     "resources": [
+      {
+       "url": "/out/replay.js",
+       "start": 2012.8,
+       "response_end": 14853.2,
+       "transfer_size": 542388,
+       "decoded": 542088
+      },
+      {
+       "url": "/replay/bundle.json",
+       "start": 14866.1,
+       "response_end": 17012.9,
+       "transfer_size": 3363,
+       "decoded": 3063
+      },
+      {
+       "url": "/replay/poses.bin",
+       "start": 14866.2,
+       "response_end": 20132.9,
+       "transfer_size": 157940,
+       "decoded": 157640
+      }
+     ],
+     "webgl_renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (LLVM 10.0.0) (0x0000C0DE)), SwiftShader driver)"
+    },
+    {
+     "first_frame_ms": 20362.10000014305,
+     "script_start_ms": 14888.300000190735,
+     "fetched_ms": 20162.5,
+     "verified_ms": 20163.400000095367,
+     "scene_built_ms": 20179.200000047684,
+     "runner_wall_ms": 20392.008624999988,
+     "html_response_start_ms": 2001.2000000476837,
+     "load_event_end_ms": 14894.200000047684,
+     "wire_bytes_server_log": 703278,
+     "requests": 4,
+     "pixel_ok": true,
+     "first_frame_check": {
+      "ok": true,
+      "red_fraction": 1,
+      "corner_is_car_colored": false,
+      "corner_pixel": [
+       159,
+       164,
+       170,
+       255
+      ]
+     },
+     "load_avg_1m": 26,
+     "console_errors": [],
+     "resources": [
+      {
+       "url": "/out/replay.js",
+       "start": 2011.6,
+       "response_end": 14882.1,
+       "transfer_size": 542388,
+       "decoded": 542088
+      },
+      {
+       "url": "/replay/bundle.json",
+       "start": 14893.9,
+       "response_end": 17040.4,
+       "transfer_size": 3363,
+       "decoded": 3063
+      },
+      {
+       "url": "/replay/poses.bin",
+       "start": 14894,
+       "response_end": 20161.3,
+       "transfer_size": 157940,
+       "decoded": 157640
+      }
+     ],
+     "webgl_renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (LLVM 10.0.0) (0x0000C0DE)), SwiftShader driver)"
+    },
+    {
+     "first_frame_ms": 20259.60000014305,
+     "script_start_ms": 14894.299999952316,
+     "fetched_ms": 20164.10000014305,
+     "verified_ms": 20165.60000014305,
+     "scene_built_ms": 20177.900000095367,
+     "runner_wall_ms": 20272.529582999996,
+     "html_response_start_ms": 2001,
+     "load_event_end_ms": 14903,
+     "wire_bytes_server_log": 703278,
+     "requests": 4,
+     "pixel_ok": true,
+     "first_frame_check": {
+      "ok": true,
+      "red_fraction": 1,
+      "corner_is_car_colored": false,
+      "corner_pixel": [
+       159,
+       164,
+       170,
+       255
+      ]
+     },
+     "load_avg_1m": 21.7,
+     "console_errors": [],
+     "resources": [
+      {
+       "url": "/out/replay.js",
+       "start": 2015.3,
+       "response_end": 14884,
+       "transfer_size": 542388,
+       "decoded": 542088
+      },
+      {
+       "url": "/replay/bundle.json",
+       "start": 14902.2,
+       "response_end": 17042.3,
+       "transfer_size": 3363,
+       "decoded": 3063
+      },
+      {
+       "url": "/replay/poses.bin",
+       "start": 14902.3,
+       "response_end": 20163.6,
+       "transfer_size": 157940,
+       "decoded": 157640
+      }
+     ],
+     "webgl_renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (LLVM 10.0.0) (0x0000C0DE)), SwiftShader driver)"
+    },
+    {
+     "first_frame_ms": 20386.799999952316,
+     "script_start_ms": 14859.700000047684,
+     "fetched_ms": 20134.799999952316,
+     "verified_ms": 20135.89999985695,
+     "scene_built_ms": 20151.599999904633,
+     "runner_wall_ms": 20431.51950000001,
+     "html_response_start_ms": 2000.8999998569489,
+     "load_event_end_ms": 14865.700000047684,
+     "wire_bytes_server_log": 703278,
+     "requests": 4,
+     "pixel_ok": true,
+     "first_frame_check": {
+      "ok": true,
+      "red_fraction": 1,
+      "corner_is_car_colored": false,
+      "corner_pixel": [
+       159,
+       164,
+       170,
+       255
+      ]
+     },
+     "load_avg_1m": 19.4,
+     "console_errors": [],
+     "resources": [
+      {
+       "url": "/out/replay.js",
+       "start": 2012.9,
+       "response_end": 14853.2,
+       "transfer_size": 542388,
+       "decoded": 542088
+      },
+      {
+       "url": "/replay/bundle.json",
+       "start": 14865.4,
+       "response_end": 17013.7,
+       "transfer_size": 3363,
+       "decoded": 3063
+      },
+      {
+       "url": "/replay/poses.bin",
+       "start": 14865.5,
+       "response_end": 20133.7,
+       "transfer_size": 157940,
+       "decoded": 157640
+      }
+     ],
+     "webgl_renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (LLVM 10.0.0) (0x0000C0DE)), SwiftShader driver)"
+    }
+   ]
+  },
+  {
+   "encoding": "gzip",
+   "profile": "none",
+   "n": 5,
+   "first_frame_ms": {
+    "n_valid": 5,
+    "n_missing": 0,
+    "mean": 184.76,
+    "min": 123.2,
+    "p50": 144.7,
+    "p95": 343.3,
+    "p99": 343.3,
+    "max": 343.3
+   },
+   "wire_bytes": 260478,
+   "rows": [
+    {
+     "first_frame_ms": 170.09999990463257,
+     "script_start_ms": 31,
+     "fetched_ms": 45.09999990463257,
+     "verified_ms": 45.39999985694885,
+     "scene_built_ms": 57.799999952316284,
+     "runner_wall_ms": 193.24799999999232,
+     "html_response_start_ms": 4.3999998569488525,
+     "load_event_end_ms": 38.5,
+     "wire_bytes_server_log": 260478,
+     "requests": 4,
+     "pixel_ok": true,
+     "first_frame_check": {
+      "ok": true,
+      "red_fraction": 1,
+      "corner_is_car_colored": false,
+      "corner_pixel": [
+       159,
+       164,
+       170,
+       255
+      ]
+     },
+     "load_avg_1m": 18.8,
+     "console_errors": [],
+     "resources": [
+      {
+       "url": "/out/replay.js",
+       "start": 9.2,
+       "response_end": 16.9,
+       "transfer_size": 136287,
+       "decoded": 542088
+      },
+      {
+       "url": "/replay/bundle.json",
+       "start": 38.2,
+       "response_end": 41.5,
+       "transfer_size": 1339,
+       "decoded": 3063
+      },
+      {
+       "url": "/replay/poses.bin",
+       "start": 38.3,
+       "response_end": 43.7,
+       "transfer_size": 123364,
+       "decoded": 157640
+      }
+     ],
+     "webgl_renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (LLVM 10.0.0) (0x0000C0DE)), SwiftShader driver)"
+    },
+    {
+     "first_frame_ms": 144.70000004768372,
+     "script_start_ms": 20.09999990463257,
+     "fetched_ms": 28.90000009536743,
+     "verified_ms": 29.200000047683716,
+     "scene_built_ms": 42,
+     "runner_wall_ms": 170.93645899998955,
+     "html_response_start_ms": 1.7000000476837158,
+     "load_event_end_ms": 25.59999990463257,
+     "wire_bytes_server_log": 260478,
+     "requests": 4,
+     "pixel_ok": true,
+     "first_frame_check": {
+      "ok": true,
+      "red_fraction": 1,
+      "corner_is_car_colored": false,
+      "corner_pixel": [
+       159,
+       164,
+       170,
+       255
+      ]
+     },
+     "load_avg_1m": 18.8,
+     "console_errors": [],
+     "resources": [
+      {
+       "url": "/out/replay.js",
+       "start": 3.9,
+       "response_end": 8.3,
+       "transfer_size": 136287,
+       "decoded": 542088
+      },
+      {
+       "url": "/replay/bundle.json",
+       "start": 25.5,
+       "response_end": 27.2,
+       "transfer_size": 1339,
+       "decoded": 3063
+      },
+      {
+       "url": "/replay/poses.bin",
+       "start": 25.6,
+       "response_end": 28.6,
+       "transfer_size": 123364,
+       "decoded": 157640
+      }
+     ],
+     "webgl_renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (LLVM 10.0.0) (0x0000C0DE)), SwiftShader driver)"
+    },
+    {
+     "first_frame_ms": 123.20000004768372,
+     "script_start_ms": 21.5,
+     "fetched_ms": 30.40000009536743,
+     "verified_ms": 30.799999952316284,
+     "scene_built_ms": 42.59999990463257,
+     "runner_wall_ms": 147.28966700000456,
+     "html_response_start_ms": 2,
+     "load_event_end_ms": 26.90000009536743,
+     "wire_bytes_server_log": 260478,
+     "requests": 4,
+     "pixel_ok": true,
+     "first_frame_check": {
+      "ok": true,
+      "red_fraction": 1,
+      "corner_is_car_colored": false,
+      "corner_pixel": [
+       159,
+       164,
+       170,
+       255
+      ]
+     },
+     "load_avg_1m": 18.8,
+     "console_errors": [],
+     "resources": [
+      {
+       "url": "/out/replay.js",
+       "start": 4.8,
+       "response_end": 7.2,
+       "transfer_size": 136287,
+       "decoded": 542088
+      },
+      {
+       "url": "/replay/bundle.json",
+       "start": 26.7,
+       "response_end": 28.6,
+       "transfer_size": 1339,
+       "decoded": 3063
+      },
+      {
+       "url": "/replay/poses.bin",
+       "start": 26.9,
+       "response_end": 30.2,
+       "transfer_size": 123364,
+       "decoded": 157640
+      }
+     ],
+     "webgl_renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (LLVM 10.0.0) (0x0000C0DE)), SwiftShader driver)"
+    },
+    {
+     "first_frame_ms": 142.5,
+     "script_start_ms": 22.200000047683716,
+     "fetched_ms": 32,
+     "verified_ms": 32.200000047683716,
+     "scene_built_ms": 43.90000009536743,
+     "runner_wall_ms": 160.3263750000042,
+     "html_response_start_ms": 3,
+     "load_event_end_ms": 28,
+     "wire_bytes_server_log": 260478,
+     "requests": 4,
+     "pixel_ok": true,
+     "first_frame_check": {
+      "ok": true,
+      "red_fraction": 1,
+      "corner_is_car_colored": false,
+      "corner_pixel": [
+       159,
+       164,
+       170,
+       255
+      ]
+     },
+     "load_avg_1m": 18.8,
+     "console_errors": [],
+     "resources": [
+      {
+       "url": "/out/replay.js",
+       "start": 5.6,
+       "response_end": 8.9,
+       "transfer_size": 136287,
+       "decoded": 542088
+      },
+      {
+       "url": "/replay/bundle.json",
+       "start": 27.6,
+       "response_end": 29.9,
+       "transfer_size": 1339,
+       "decoded": 3063
+      },
+      {
+       "url": "/replay/poses.bin",
+       "start": 27.8,
+       "response_end": 31.6,
+       "transfer_size": 123364,
+       "decoded": 157640
+      }
+     ],
+     "webgl_renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (LLVM 10.0.0) (0x0000C0DE)), SwiftShader driver)"
+    },
+    {
+     "first_frame_ms": 343.2999999523163,
+     "script_start_ms": 23.299999952316284,
+     "fetched_ms": 38.09999990463257,
+     "verified_ms": 38.40000009536743,
+     "scene_built_ms": 53.90000009536743,
+     "runner_wall_ms": 362.9649170000048,
+     "html_response_start_ms": 2.799999952316284,
+     "load_event_end_ms": 28.90000009536743,
+     "wire_bytes_server_log": 260478,
+     "requests": 4,
+     "pixel_ok": true,
+     "first_frame_check": {
+      "ok": true,
+      "red_fraction": 1,
+      "corner_is_car_colored": false,
+      "corner_pixel": [
+       159,
+       164,
+       170,
+       255
+      ]
+     },
+     "load_avg_1m": 18.8,
+     "console_errors": [],
+     "resources": [
+      {
+       "url": "/out/replay.js",
+       "start": 5.9,
+       "response_end": 12.9,
+       "transfer_size": 136287,
+       "decoded": 542088
+      },
+      {
+       "url": "/replay/bundle.json",
+       "start": 28.7,
+       "response_end": 35,
+       "transfer_size": 1339,
+       "decoded": 3063
+      },
+      {
+       "url": "/replay/poses.bin",
+       "start": 28.7,
+       "response_end": 37,
+       "transfer_size": 123364,
+       "decoded": 157640
+      }
+     ],
+     "webgl_renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (LLVM 10.0.0) (0x0000C0DE)), SwiftShader driver)"
+    }
+   ]
+  },
+  {
+   "encoding": "gzip",
+   "profile": "fast4g",
+   "n": 5,
+   "first_frame_ms": {
+    "n_valid": 5,
+    "n_missing": 0,
+    "mean": 910.26,
+    "min": 888.5,
+    "p50": 914.1,
+    "p95": 922.6,
+    "p99": 922.6,
+    "max": 922.6
+   },
+   "wire_bytes": 260478,
+   "rows": [
+    {
+     "first_frame_ms": 922.5999999046326,
+     "script_start_ms": 485.7999999523163,
+     "fetched_ms": 786,
+     "verified_ms": 786.2999999523163,
+     "scene_built_ms": 802,
+     "runner_wall_ms": 934.3158750000002,
+     "html_response_start_ms": 166,
+     "load_event_end_ms": 491.5,
+     "wire_bytes_server_log": 260478,
+     "requests": 4,
+     "pixel_ok": true,
+     "first_frame_check": {
+      "ok": true,
+      "red_fraction": 1,
+      "corner_is_car_colored": false,
+      "corner_pixel": [
+       159,
+       164,
+       170,
+       255
+      ]
+     },
+     "load_avg_1m": 18.8,
+     "console_errors": [],
+     "resources": [
+      {
+       "url": "/out/replay.js",
+       "start": 175.5,
+       "response_end": 480.5,
+       "transfer_size": 136287,
+       "decoded": 542088
+      },
+      {
+       "url": "/replay/bundle.json",
+       "start": 491.3,
+       "response_end": 663.1,
+       "transfer_size": 1339,
+       "decoded": 3063
+      },
+      {
+       "url": "/replay/poses.bin",
+       "start": 491.4,
+       "response_end": 785.3,
+       "transfer_size": 123364,
+       "decoded": 157640
+      }
+     ],
+     "webgl_renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (LLVM 10.0.0) (0x0000C0DE)), SwiftShader driver)"
+    },
+    {
+     "first_frame_ms": 920.4000000953674,
+     "script_start_ms": 479.7999999523163,
+     "fetched_ms": 780,
+     "verified_ms": 780.2999999523163,
+     "scene_built_ms": 793.2999999523163,
+     "runner_wall_ms": 933.6603749999776,
+     "html_response_start_ms": 166.09999990463257,
+     "load_event_end_ms": 485.40000009536743,
+     "wire_bytes_server_log": 260478,
+     "requests": 4,
+     "pixel_ok": true,
+     "first_frame_check": {
+      "ok": true,
+      "red_fraction": 1,
+      "corner_is_car_colored": false,
+      "corner_pixel": [
+       159,
+       164,
+       170,
+       255
+      ]
+     },
+     "load_avg_1m": 18.8,
+     "console_errors": [],
+     "resources": [
+      {
+       "url": "/out/replay.js",
+       "start": 171.4,
+       "response_end": 475.3,
+       "transfer_size": 136287,
+       "decoded": 542088
+      },
+      {
+       "url": "/replay/bundle.json",
+       "start": 485.2,
+       "response_end": 656.1,
+       "transfer_size": 1339,
+       "decoded": 3063
+      },
+      {
+       "url": "/replay/poses.bin",
+       "start": 485.3,
+       "response_end": 779.4,
+       "transfer_size": 123364,
+       "decoded": 157640
+      }
+     ],
+     "webgl_renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (LLVM 10.0.0) (0x0000C0DE)), SwiftShader driver)"
+    },
+    {
+     "first_frame_ms": 888.5,
+     "script_start_ms": 483.2000000476837,
+     "fetched_ms": 781.9000000953674,
+     "verified_ms": 782.2000000476837,
+     "scene_built_ms": 794.3000001907349,
+     "runner_wall_ms": 894.3328329999931,
+     "html_response_start_ms": 166,
+     "load_event_end_ms": 488.60000014305115,
+     "wire_bytes_server_log": 260478,
+     "requests": 4,
+     "pixel_ok": true,
+     "first_frame_check": {
+      "ok": true,
+      "red_fraction": 1,
+      "corner_is_car_colored": false,
+      "corner_pixel": [
+       159,
+       164,
+       170,
+       255
+      ]
+     },
+     "load_avg_1m": 18.3,
+     "console_errors": [],
+     "resources": [
+      {
+       "url": "/out/replay.js",
+       "start": 173.6,
+       "response_end": 479.1,
+       "transfer_size": 136287,
+       "decoded": 542088
+      },
+      {
+       "url": "/replay/bundle.json",
+       "start": 488.3,
+       "response_end": 658.4,
+       "transfer_size": 1339,
+       "decoded": 3063
+      },
+      {
+       "url": "/replay/poses.bin",
+       "start": 488.5,
+       "response_end": 781.3,
+       "transfer_size": 123364,
+       "decoded": 157640
+      }
+     ],
+     "webgl_renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (LLVM 10.0.0) (0x0000C0DE)), SwiftShader driver)"
+    },
+    {
+     "first_frame_ms": 905.7000000476837,
+     "script_start_ms": 479.90000009536743,
+     "fetched_ms": 780.1000001430511,
+     "verified_ms": 781,
+     "scene_built_ms": 794,
+     "runner_wall_ms": 922.6407079999917,
+     "html_response_start_ms": 165.90000009536743,
+     "load_event_end_ms": 485.5,
+     "wire_bytes_server_log": 260478,
+     "requests": 4,
+     "pixel_ok": true,
+     "first_frame_check": {
+      "ok": true,
+      "red_fraction": 1,
+      "corner_is_car_colored": false,
+      "corner_pixel": [
+       159,
+       164,
+       170,
+       255
+      ]
+     },
+     "load_avg_1m": 18.3,
+     "console_errors": [],
+     "resources": [
+      {
+       "url": "/out/replay.js",
+       "start": 173.3,
+       "response_end": 476,
+       "transfer_size": 136287,
+       "decoded": 542088
+      },
+      {
+       "url": "/replay/bundle.json",
+       "start": 485.3,
+       "response_end": 657.1,
+       "transfer_size": 1339,
+       "decoded": 3063
+      },
+      {
+       "url": "/replay/poses.bin",
+       "start": 485.4,
+       "response_end": 779.6,
+       "transfer_size": 123364,
+       "decoded": 157640
+      }
+     ],
+     "webgl_renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (LLVM 10.0.0) (0x0000C0DE)), SwiftShader driver)"
+    },
+    {
+     "first_frame_ms": 914.0999999046326,
+     "script_start_ms": 505.5,
+     "fetched_ms": 807.5999999046326,
+     "verified_ms": 808,
+     "scene_built_ms": 820.2000000476837,
+     "runner_wall_ms": 932.1717500000086,
+     "html_response_start_ms": 166,
+     "load_event_end_ms": 513,
+     "wire_bytes_server_log": 260478,
+     "requests": 4,
+     "pixel_ok": true,
+     "first_frame_check": {
+      "ok": true,
+      "red_fraction": 1,
+      "corner_is_car_colored": false,
+      "corner_pixel": [
+       159,
+       164,
+       170,
+       255
+      ]
+     },
+     "load_avg_1m": 18.3,
+     "console_errors": [],
+     "resources": [
+      {
+       "url": "/out/replay.js",
+       "start": 175.2,
+       "response_end": 499.1,
+       "transfer_size": 136287,
+       "decoded": 542088
+      },
+      {
+       "url": "/replay/bundle.json",
+       "start": 512.8,
+       "response_end": 684.5,
+       "transfer_size": 1339,
+       "decoded": 3063
+      },
+      {
+       "url": "/replay/poses.bin",
+       "start": 512.9,
+       "response_end": 807.1,
+       "transfer_size": 123364,
+       "decoded": 157640
+      }
+     ],
+     "webgl_renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (LLVM 10.0.0) (0x0000C0DE)), SwiftShader driver)"
+    }
+   ]
+  },
+  {
+   "encoding": "gzip",
+   "profile": "slow4g",
+   "n": 5,
+   "first_frame_ms": {
+    "n_valid": 5,
+    "n_missing": 0,
+    "mean": 3284.32,
+    "min": 3260.4,
+    "p50": 3289.5,
+    "p95": 3306.9,
+    "p99": 3306.9,
+    "max": 3306.9
+   },
+   "wire_bytes": 260478,
+   "rows": [
+    {
+     "first_frame_ms": 3290.600000143051,
+     "script_start_ms": 1905.6000001430511,
+     "fetched_ms": 3175.7999999523163,
+     "verified_ms": 3176.100000143051,
+     "scene_built_ms": 3188.100000143051,
+     "runner_wall_ms": 3305.941583000007,
+     "html_response_start_ms": 563.5,
+     "load_event_end_ms": 1911.1000001430511,
+     "wire_bytes_server_log": 260478,
+     "requests": 4,
+     "pixel_ok": true,
+     "first_frame_check": {
+      "ok": true,
+      "red_fraction": 1,
+      "corner_is_car_colored": false,
+      "corner_pixel": [
+       159,
+       164,
+       170,
+       255
+      ]
+     },
+     "load_avg_1m": 18.3,
+     "console_errors": [],
+     "resources": [
+      {
+       "url": "/out/replay.js",
+       "start": 578.5,
+       "response_end": 1900.9,
+       "transfer_size": 136287,
+       "decoded": 542088
+      },
+      {
+       "url": "/replay/bundle.json",
+       "start": 1910.8,
+       "response_end": 2483.6,
+       "transfer_size": 1339,
+       "decoded": 3063
+      },
+      {
+       "url": "/replay/poses.bin",
+       "start": 1910.9,
+       "response_end": 3175.3,
+       "transfer_size": 123364,
+       "decoded": 157640
+      }
+     ],
+     "webgl_renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (LLVM 10.0.0) (0x0000C0DE)), SwiftShader driver)"
+    },
+    {
+     "first_frame_ms": 3274.2000000476837,
+     "script_start_ms": 1904.5999999046326,
+     "fetched_ms": 3175.899999856949,
+     "verified_ms": 3176.7000000476837,
+     "scene_built_ms": 3188,
+     "runner_wall_ms": 3291.9096250000002,
+     "html_response_start_ms": 563.5,
+     "load_event_end_ms": 1910.3999998569489,
+     "wire_bytes_server_log": 260478,
+     "requests": 4,
+     "pixel_ok": true,
+     "first_frame_check": {
+      "ok": true,
+      "red_fraction": 1,
+      "corner_is_car_colored": false,
+      "corner_pixel": [
+       159,
+       164,
+       170,
+       255
+      ]
+     },
+     "load_avg_1m": 17.5,
+     "console_errors": [],
+     "resources": [
+      {
+       "url": "/out/replay.js",
+       "start": 577.7,
+       "response_end": 1900.3,
+       "transfer_size": 136287,
+       "decoded": 542088
+      },
+      {
+       "url": "/replay/bundle.json",
+       "start": 1910.1,
+       "response_end": 2483.5,
+       "transfer_size": 1339,
+       "decoded": 3063
+      },
+      {
+       "url": "/replay/poses.bin",
+       "start": 1910.3,
+       "response_end": 3175.2,
+       "transfer_size": 123364,
+       "decoded": 157640
+      }
+     ],
+     "webgl_renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (LLVM 10.0.0) (0x0000C0DE)), SwiftShader driver)"
+    },
+    {
+     "first_frame_ms": 3306.9000000953674,
+     "script_start_ms": 1896.6000001430511,
+     "fetched_ms": 3167.9000000953674,
+     "verified_ms": 3168.2999999523163,
+     "scene_built_ms": 3180.5,
+     "runner_wall_ms": 3312.4647089999926,
+     "html_response_start_ms": 563.4000000953674,
+     "load_event_end_ms": 1902.2000000476837,
+     "wire_bytes_server_log": 260478,
+     "requests": 4,
+     "pixel_ok": true,
+     "first_frame_check": {
+      "ok": true,
+      "red_fraction": 1,
+      "corner_is_car_colored": false,
+      "corner_pixel": [
+       159,
+       164,
+       170,
+       255
+      ]
+     },
+     "load_avg_1m": 17.7,
+     "console_errors": [],
+     "resources": [
+      {
+       "url": "/out/replay.js",
+       "start": 569.6,
+       "response_end": 1892.1,
+       "transfer_size": 136287,
+       "decoded": 542088
+      },
+      {
+       "url": "/replay/bundle.json",
+       "start": 1901.9,
+       "response_end": 2475.2,
+       "transfer_size": 1339,
+       "decoded": 3063
+      },
+      {
+       "url": "/replay/poses.bin",
+       "start": 1902.1,
+       "response_end": 3167.5,
+       "transfer_size": 123364,
+       "decoded": 157640
+      }
+     ],
+     "webgl_renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (LLVM 10.0.0) (0x0000C0DE)), SwiftShader driver)"
+    },
+    {
+     "first_frame_ms": 3289.5,
+     "script_start_ms": 1904.2999999523163,
+     "fetched_ms": 3175.5999999046326,
+     "verified_ms": 3176.2999999523163,
+     "scene_built_ms": 3200.2999999523163,
+     "runner_wall_ms": 3295.894874999998,
+     "html_response_start_ms": 563.3999998569489,
+     "load_event_end_ms": 1910,
+     "wire_bytes_server_log": 260478,
+     "requests": 4,
+     "pixel_ok": true,
+     "first_frame_check": {
+      "ok": true,
+      "red_fraction": 1,
+      "corner_is_car_colored": false,
+      "corner_pixel": [
+       159,
+       164,
+       170,
+       255
+      ]
+     },
+     "load_avg_1m": 17.7,
+     "console_errors": [],
+     "resources": [
+      {
+       "url": "/out/replay.js",
+       "start": 578.1,
+       "response_end": 1899.1,
+       "transfer_size": 136287,
+       "decoded": 542088
+      },
+      {
+       "url": "/replay/bundle.json",
+       "start": 1909.7,
+       "response_end": 2482.8,
+       "transfer_size": 1339,
+       "decoded": 3063
+      },
+      {
+       "url": "/replay/poses.bin",
+       "start": 1909.9,
+       "response_end": 3175.1,
+       "transfer_size": 123364,
+       "decoded": 157640
+      }
+     ],
+     "webgl_renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (LLVM 10.0.0) (0x0000C0DE)), SwiftShader driver)"
+    },
+    {
+     "first_frame_ms": 3260.399999856949,
+     "script_start_ms": 1904.5999999046326,
+     "fetched_ms": 3176.0999999046326,
+     "verified_ms": 3176.399999856949,
+     "scene_built_ms": 3187.5,
+     "runner_wall_ms": 3266.216542000009,
+     "html_response_start_ms": 563.3999998569489,
+     "load_event_end_ms": 1911.7999999523163,
+     "wire_bytes_server_log": 260478,
+     "requests": 4,
+     "pixel_ok": true,
+     "first_frame_check": {
+      "ok": true,
+      "red_fraction": 1,
+      "corner_is_car_colored": false,
+      "corner_pixel": [
+       159,
+       164,
+       170,
+       255
+      ]
+     },
+     "load_avg_1m": 17.6,
+     "console_errors": [],
+     "resources": [
+      {
+       "url": "/out/replay.js",
+       "start": 578.7,
+       "response_end": 1900.2,
+       "transfer_size": 136287,
+       "decoded": 542088
+      },
+      {
+       "url": "/replay/bundle.json",
+       "start": 1911.5,
+       "response_end": 2483.1,
+       "transfer_size": 1339,
+       "decoded": 3063
+      },
+      {
+       "url": "/replay/poses.bin",
+       "start": 1911.7,
+       "response_end": 3175.4,
+       "transfer_size": 123364,
+       "decoded": 157640
+      }
+     ],
+     "webgl_renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (LLVM 10.0.0) (0x0000C0DE)), SwiftShader driver)"
+    }
+   ]
+  },
+  {
+   "encoding": "gzip",
+   "profile": "slow3g",
+   "n": 5,
+   "first_frame_ms": {
+    "n_valid": 5,
+    "n_missing": 0,
+    "mean": 11393.9,
+    "min": 11345.7,
+    "p50": 11399.2,
+    "p95": 11461.2,
+    "p99": 11461.2,
+    "max": 11461.2
+   },
+   "wire_bytes": 260478,
+   "rows": [
+    {
+     "first_frame_ms": 11345.700000047684,
+     "script_start_ms": 6727.300000190735,
+     "fetched_ms": 11254.700000047684,
+     "verified_ms": 11255.600000143051,
+     "scene_built_ms": 11267.900000095367,
+     "runner_wall_ms": 11352.921833999979,
+     "html_response_start_ms": 2001,
+     "load_event_end_ms": 6732.800000190735,
+     "wire_bytes_server_log": 260478,
+     "requests": 4,
+     "pixel_ok": true,
+     "first_frame_check": {
+      "ok": true,
+      "red_fraction": 1,
+      "corner_is_car_colored": false,
+      "corner_pixel": [
+       159,
+       164,
+       170,
+       255
+      ]
+     },
+     "load_avg_1m": 16.8,
+     "console_errors": [],
+     "resources": [
+      {
+       "url": "/out/replay.js",
+       "start": 2012.4,
+       "response_end": 6722.3,
+       "transfer_size": 136287,
+       "decoded": 542088
+      },
+      {
+       "url": "/replay/bundle.json",
+       "start": 6732.5,
+       "response_end": 8764.1,
+       "transfer_size": 1339,
+       "decoded": 3063
+      },
+      {
+       "url": "/replay/poses.bin",
+       "start": 6732.6,
+       "response_end": 11254.2,
+       "transfer_size": 123364,
+       "decoded": 157640
+      }
+     ],
+     "webgl_renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (LLVM 10.0.0) (0x0000C0DE)), SwiftShader driver)"
+    },
+    {
+     "first_frame_ms": 11356.5,
+     "script_start_ms": 6728.399999856949,
+     "fetched_ms": 11254.700000047684,
+     "verified_ms": 11255.899999856949,
+     "scene_built_ms": 11270.200000047684,
+     "runner_wall_ms": 11372.628167000017,
+     "html_response_start_ms": 2001.2000000476837,
+     "load_event_end_ms": 6734.099999904633,
+     "wire_bytes_server_log": 260478,
+     "requests": 4,
+     "pixel_ok": true,
+     "first_frame_check": {
+      "ok": true,
+      "red_fraction": 1,
+      "corner_is_car_colored": false,
+      "corner_pixel": [
+       159,
+       164,
+       170,
+       255
+      ]
+     },
+     "load_avg_1m": 17,
+     "console_errors": [],
+     "resources": [
+      {
+       "url": "/out/replay.js",
+       "start": 2012.6,
+       "response_end": 6723.7,
+       "transfer_size": 136287,
+       "decoded": 542088
+      },
+      {
+       "url": "/replay/bundle.json",
+       "start": 6733.9,
+       "response_end": 8763.5,
+       "transfer_size": 1339,
+       "decoded": 3063
+      },
+      {
+       "url": "/replay/poses.bin",
+       "start": 6734,
+       "response_end": 11253.8,
+       "transfer_size": 123364,
+       "decoded": 157640
+      }
+     ],
+     "webgl_renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (LLVM 10.0.0) (0x0000C0DE)), SwiftShader driver)"
+    },
+    {
+     "first_frame_ms": 11461.200000047684,
+     "script_start_ms": 6753.799999952316,
+     "fetched_ms": 11280.100000143051,
+     "verified_ms": 11281,
+     "scene_built_ms": 11298.799999952316,
+     "runner_wall_ms": 11470.663917000027,
+     "html_response_start_ms": 2001.4000000953674,
+     "load_event_end_ms": 6759.400000095367,
+     "wire_bytes_server_log": 260478,
+     "requests": 4,
+     "pixel_ok": true,
+     "first_frame_check": {
+      "ok": true,
+      "red_fraction": 1,
+      "corner_is_car_colored": false,
+      "corner_pixel": [
+       159,
+       164,
+       170,
+       255
+      ]
+     },
+     "load_avg_1m": 15.4,
+     "console_errors": [],
+     "resources": [
+      {
+       "url": "/out/replay.js",
+       "start": 2010.4,
+       "response_end": 6749.4,
+       "transfer_size": 136287,
+       "decoded": 542088
+      },
+      {
+       "url": "/replay/bundle.json",
+       "start": 6759.3,
+       "response_end": 8791,
+       "transfer_size": 1339,
+       "decoded": 3063
+      },
+      {
+       "url": "/replay/poses.bin",
+       "start": 6759.3,
+       "response_end": 11279.4,
+       "transfer_size": 123364,
+       "decoded": 157640
+      }
+     ],
+     "webgl_renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (LLVM 10.0.0) (0x0000C0DE)), SwiftShader driver)"
+    },
+    {
+     "first_frame_ms": 11406.900000095367,
+     "script_start_ms": 6769.200000047684,
+     "fetched_ms": 11281.200000047684,
+     "verified_ms": 11282.300000190735,
+     "scene_built_ms": 11298.100000143051,
+     "runner_wall_ms": 11442.731292000011,
+     "html_response_start_ms": 2002.5,
+     "load_event_end_ms": 6775,
+     "wire_bytes_server_log": 260478,
+     "requests": 4,
+     "pixel_ok": true,
+     "first_frame_check": {
+      "ok": true,
+      "red_fraction": 1,
+      "corner_is_car_colored": false,
+      "corner_pixel": [
+       159,
+       164,
+       170,
+       255
+      ]
+     },
+     "load_avg_1m": 16.6,
+     "console_errors": [],
+     "resources": [
+      {
+       "url": "/out/replay.js",
+       "start": 2011.7,
+       "response_end": 6752.3,
+       "transfer_size": 136287,
+       "decoded": 542088
+      },
+      {
+       "url": "/replay/bundle.json",
+       "start": 6774.7,
+       "response_end": 8788.5,
+       "transfer_size": 1339,
+       "decoded": 3063
+      },
+      {
+       "url": "/replay/poses.bin",
+       "start": 6774.8,
+       "response_end": 11280.4,
+       "transfer_size": 123364,
+       "decoded": 157640
+      }
+     ],
+     "webgl_renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (LLVM 10.0.0) (0x0000C0DE)), SwiftShader driver)"
+    },
+    {
+     "first_frame_ms": 11399.200000047684,
+     "script_start_ms": 6723.299999952316,
+     "fetched_ms": 11252.099999904633,
+     "verified_ms": 11252.799999952316,
+     "scene_built_ms": 11272.899999856949,
+     "runner_wall_ms": 11416.218792,
+     "html_response_start_ms": 2001.3999998569489,
+     "load_event_end_ms": 6729.099999904633,
+     "wire_bytes_server_log": 260478,
+     "requests": 4,
+     "pixel_ok": true,
+     "first_frame_check": {
+      "ok": true,
+      "red_fraction": 1,
+      "corner_is_car_colored": false,
+      "corner_pixel": [
+       159,
+       164,
+       170,
+       255
+      ]
+     },
+     "load_avg_1m": 19.7,
+     "console_errors": [],
+     "resources": [
+      {
+       "url": "/out/replay.js",
+       "start": 2010.1,
+       "response_end": 6718.4,
+       "transfer_size": 136287,
+       "decoded": 542088
+      },
+      {
+       "url": "/replay/bundle.json",
+       "start": 6728.8,
+       "response_end": 8760.5,
+       "transfer_size": 1339,
+       "decoded": 3063
+      },
+      {
+       "url": "/replay/poses.bin",
+       "start": 6728.9,
+       "response_end": 11251.3,
+       "transfer_size": 123364,
+       "decoded": 157640
+      }
+     ],
+     "webgl_renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (LLVM 10.0.0) (0x0000C0DE)), SwiftShader driver)"
+    }
+   ]
+  },
+  {
+   "encoding": "br",
+   "profile": "none",
+   "n": 5,
+   "first_frame_ms": {
+    "n_valid": 5,
+    "n_missing": 0,
+    "mean": 142.1,
+    "min": 119.2,
+    "p50": 143.3,
+    "p95": 173.3,
+    "p99": 173.3,
+    "max": 173.3
+   },
+   "wire_bytes": 233089,
+   "rows": [
+    {
+     "first_frame_ms": 147.59999990463257,
+     "script_start_ms": 27.299999952316284,
+     "fetched_ms": 37.700000047683716,
+     "verified_ms": 37.90000009536743,
+     "scene_built_ms": 50.59999990463257,
+     "runner_wall_ms": 184.05429200001527,
+     "html_response_start_ms": 1.5,
+     "load_event_end_ms": 32.799999952316284,
+     "wire_bytes_server_log": 233089,
+     "requests": 4,
+     "pixel_ok": true,
+     "first_frame_check": {
+      "ok": true,
+      "red_fraction": 1,
+      "corner_is_car_colored": false,
+      "corner_pixel": [
+       159,
+       164,
+       170,
+       255
+      ]
+     },
+     "load_avg_1m": 26.1,
+     "console_errors": [],
+     "resources": [
+      {
+       "url": "/out/replay.js",
+       "start": 5.3,
+       "response_end": 8.5,
+       "transfer_size": 112505,
+       "decoded": 542088
+      },
+      {
+       "url": "/replay/bundle.json",
+       "start": 32.7,
+       "response_end": 35.1,
+       "transfer_size": 1234,
+       "decoded": 3063
+      },
+      {
+       "url": "/replay/poses.bin",
+       "start": 32.8,
+       "response_end": 37.4,
+       "transfer_size": 120012,
+       "decoded": 157640
+      }
+     ],
+     "webgl_renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (LLVM 10.0.0) (0x0000C0DE)), SwiftShader driver)"
+    },
+    {
+     "first_frame_ms": 173.29999995231628,
+     "script_start_ms": 17.299999952316284,
+     "fetched_ms": 34.39999985694885,
+     "verified_ms": 34.700000047683716,
+     "scene_built_ms": 48.39999985694885,
+     "runner_wall_ms": 191.61733300000196,
+     "html_response_start_ms": 1.3999998569488525,
+     "load_event_end_ms": 23.200000047683716,
+     "wire_bytes_server_log": 233089,
+     "requests": 4,
+     "pixel_ok": true,
+     "first_frame_check": {
+      "ok": true,
+      "red_fraction": 1,
+      "corner_is_car_colored": false,
+      "corner_pixel": [
+       159,
+       164,
+       170,
+       255
+      ]
+     },
+     "load_avg_1m": 26.1,
+     "console_errors": [],
+     "resources": [
+      {
+       "url": "/out/replay.js",
+       "start": 3.9,
+       "response_end": 9,
+       "transfer_size": 112505,
+       "decoded": 542088
+      },
+      {
+       "url": "/replay/bundle.json",
+       "start": 22.9,
+       "response_end": 27.1,
+       "transfer_size": 1234,
+       "decoded": 3063
+      },
+      {
+       "url": "/replay/poses.bin",
+       "start": 23.1,
+       "response_end": 34,
+       "transfer_size": 120012,
+       "decoded": 157640
+      }
+     ],
+     "webgl_renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (LLVM 10.0.0) (0x0000C0DE)), SwiftShader driver)"
+    },
+    {
+     "first_frame_ms": 143.29999995231628,
+     "script_start_ms": 18.699999809265137,
+     "fetched_ms": 29.399999856948853,
+     "verified_ms": 29.699999809265137,
+     "scene_built_ms": 42,
+     "runner_wall_ms": 164.02758299998823,
+     "html_response_start_ms": 1.0999999046325684,
+     "load_event_end_ms": 24.5,
+     "wire_bytes_server_log": 233089,
+     "requests": 4,
+     "pixel_ok": true,
+     "first_frame_check": {
+      "ok": true,
+      "red_fraction": 1,
+      "corner_is_car_colored": false,
+      "corner_pixel": [
+       159,
+       164,
+       170,
+       255
+      ]
+     },
+     "load_avg_1m": 26.1,
+     "console_errors": [],
+     "resources": [
+      {
+       "url": "/out/replay.js",
+       "start": 3.3,
+       "response_end": 5.6,
+       "transfer_size": 112505,
+       "decoded": 542088
+      },
+      {
+       "url": "/replay/bundle.json",
+       "start": 24.2,
+       "response_end": 26.1,
+       "transfer_size": 1234,
+       "decoded": 3063
+      },
+      {
+       "url": "/replay/poses.bin",
+       "start": 24.4,
+       "response_end": 29,
+       "transfer_size": 120012,
+       "decoded": 157640
+      }
+     ],
+     "webgl_renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (LLVM 10.0.0) (0x0000C0DE)), SwiftShader driver)"
+    },
+    {
+     "first_frame_ms": 127.09999990463257,
+     "script_start_ms": 18.5,
+     "fetched_ms": 28,
+     "verified_ms": 28.200000047683716,
+     "scene_built_ms": 39.09999990463257,
+     "runner_wall_ms": 147.7062909999804,
+     "html_response_start_ms": 1.2000000476837158,
+     "load_event_end_ms": 24.200000047683716,
+     "wire_bytes_server_log": 233089,
+     "requests": 4,
+     "pixel_ok": true,
+     "first_frame_check": {
+      "ok": true,
+      "red_fraction": 1,
+      "corner_is_car_colored": false,
+      "corner_pixel": [
+       159,
+       164,
+       170,
+       255
+      ]
+     },
+     "load_avg_1m": 26.1,
+     "console_errors": [],
+     "resources": [
+      {
+       "url": "/out/replay.js",
+       "start": 3.2,
+       "response_end": 6.2,
+       "transfer_size": 112505,
+       "decoded": 542088
+      },
+      {
+       "url": "/replay/bundle.json",
+       "start": 24,
+       "response_end": 25.3,
+       "transfer_size": 1234,
+       "decoded": 3063
+      },
+      {
+       "url": "/replay/poses.bin",
+       "start": 24.1,
+       "response_end": 27.5,
+       "transfer_size": 120012,
+       "decoded": 157640
+      }
+     ],
+     "webgl_renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (LLVM 10.0.0) (0x0000C0DE)), SwiftShader driver)"
+    },
+    {
+     "first_frame_ms": 119.20000004768372,
+     "script_start_ms": 20.100000143051147,
+     "fetched_ms": 31.40000009536743,
+     "verified_ms": 31.600000143051147,
+     "scene_built_ms": 41.90000009536743,
+     "runner_wall_ms": 132.17108400000143,
+     "html_response_start_ms": 1.3000001907348633,
+     "load_event_end_ms": 25.90000009536743,
+     "wire_bytes_server_log": 233089,
+     "requests": 4,
+     "pixel_ok": true,
+     "first_frame_check": {
+      "ok": true,
+      "red_fraction": 1,
+      "corner_is_car_colored": false,
+      "corner_pixel": [
+       159,
+       164,
+       170,
+       255
+      ]
+     },
+     "load_avg_1m": 26.1,
+     "console_errors": [],
+     "resources": [
+      {
+       "url": "/out/replay.js",
+       "start": 3.4,
+       "response_end": 7,
+       "transfer_size": 112505,
+       "decoded": 542088
+      },
+      {
+       "url": "/replay/bundle.json",
+       "start": 25.6,
+       "response_end": 29.8,
+       "transfer_size": 1234,
+       "decoded": 3063
+      },
+      {
+       "url": "/replay/poses.bin",
+       "start": 25.8,
+       "response_end": 31,
+       "transfer_size": 120012,
+       "decoded": 157640
+      }
+     ],
+     "webgl_renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (LLVM 10.0.0) (0x0000C0DE)), SwiftShader driver)"
+    }
+   ]
+  },
+  {
+   "encoding": "br",
+   "profile": "fast4g",
+   "n": 5,
+   "first_frame_ms": {
+    "n_valid": 5,
+    "n_missing": 0,
+    "mean": 883.1,
+    "min": 863.4,
+    "p50": 890.1,
+    "p95": 901.4,
+    "p99": 901.4,
+    "max": 901.4
+   },
+   "wire_bytes": 233089,
+   "rows": [
+    {
+     "first_frame_ms": 893.5999999046326,
+     "script_start_ms": 464.89999985694885,
+     "fetched_ms": 763.2999999523163,
+     "verified_ms": 763.5999999046326,
+     "scene_built_ms": 776.5,
+     "runner_wall_ms": 928.304833000002,
+     "html_response_start_ms": 166,
+     "load_event_end_ms": 470.7999999523163,
+     "wire_bytes_server_log": 233089,
+     "requests": 4,
+     "pixel_ok": true,
+     "first_frame_check": {
+      "ok": true,
+      "red_fraction": 1,
+      "corner_is_car_colored": false,
+      "corner_pixel": [
+       159,
+       164,
+       170,
+       255
+      ]
+     },
+     "load_avg_1m": 26.1,
+     "console_errors": [],
+     "resources": [
+      {
+       "url": "/out/replay.js",
+       "start": 174.5,
+       "response_end": 460.8,
+       "transfer_size": 112505,
+       "decoded": 542088
+      },
+      {
+       "url": "/replay/bundle.json",
+       "start": 470.4,
+       "response_end": 643.3,
+       "transfer_size": 1234,
+       "decoded": 3063
+      },
+      {
+       "url": "/replay/poses.bin",
+       "start": 470.6,
+       "response_end": 762.7,
+       "transfer_size": 120012,
+       "decoded": 157640
+      }
+     ],
+     "webgl_renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (LLVM 10.0.0) (0x0000C0DE)), SwiftShader driver)"
+    },
+    {
+     "first_frame_ms": 901.4000000953674,
+     "script_start_ms": 462.80000019073486,
+     "fetched_ms": 762.4000000953674,
+     "verified_ms": 763.1000001430511,
+     "scene_built_ms": 777.7000000476837,
+     "runner_wall_ms": 919.7692919999827,
+     "html_response_start_ms": 166.5,
+     "load_event_end_ms": 468.30000019073486,
+     "wire_bytes_server_log": 233089,
+     "requests": 4,
+     "pixel_ok": true,
+     "first_frame_check": {
+      "ok": true,
+      "red_fraction": 1,
+      "corner_is_car_colored": false,
+      "corner_pixel": [
+       159,
+       164,
+       170,
+       255
+      ]
+     },
+     "load_avg_1m": 26.1,
+     "console_errors": [],
+     "resources": [
+      {
+       "url": "/out/replay.js",
+       "start": 173.4,
+       "response_end": 458.3,
+       "transfer_size": 112505,
+       "decoded": 542088
+      },
+      {
+       "url": "/replay/bundle.json",
+       "start": 468,
+       "response_end": 638.9,
+       "transfer_size": 1234,
+       "decoded": 3063
+      },
+      {
+       "url": "/replay/poses.bin",
+       "start": 468.2,
+       "response_end": 761.7,
+       "transfer_size": 120012,
+       "decoded": 157640
+      }
+     ],
+     "webgl_renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (LLVM 10.0.0) (0x0000C0DE)), SwiftShader driver)"
+    },
+    {
+     "first_frame_ms": 863.4000000953674,
+     "script_start_ms": 468.90000009536743,
+     "fetched_ms": 764.7000000476837,
+     "verified_ms": 765,
+     "scene_built_ms": 776,
+     "runner_wall_ms": 869.7010000000009,
+     "html_response_start_ms": 166.10000014305115,
+     "load_event_end_ms": 475.10000014305115,
+     "wire_bytes_server_log": 233089,
+     "requests": 4,
+     "pixel_ok": true,
+     "first_frame_check": {
+      "ok": true,
+      "red_fraction": 1,
+      "corner_is_car_colored": false,
+      "corner_pixel": [
+       159,
+       164,
+       170,
+       255
+      ]
+     },
+     "load_avg_1m": 26.1,
+     "console_errors": [],
+     "resources": [
+      {
+       "url": "/out/replay.js",
+       "start": 175.3,
+       "response_end": 463.2,
+       "transfer_size": 112505,
+       "decoded": 542088
+      },
+      {
+       "url": "/replay/bundle.json",
+       "start": 474.9,
+       "response_end": 645,
+       "transfer_size": 1234,
+       "decoded": 3063
+      },
+      {
+       "url": "/replay/poses.bin",
+       "start": 475,
+       "response_end": 763.4,
+       "transfer_size": 120012,
+       "decoded": 157640
+      }
+     ],
+     "webgl_renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (LLVM 10.0.0) (0x0000C0DE)), SwiftShader driver)"
+    },
+    {
+     "first_frame_ms": 867,
+     "script_start_ms": 457.60000014305115,
+     "fetched_ms": 763.6000001430511,
+     "verified_ms": 763.9000000953674,
+     "scene_built_ms": 776.3000001907349,
+     "runner_wall_ms": 892.7542090000061,
+     "html_response_start_ms": 165.90000009536743,
+     "load_event_end_ms": 463.2000000476837,
+     "wire_bytes_server_log": 233089,
+     "requests": 4,
+     "pixel_ok": true,
+     "first_frame_check": {
+      "ok": true,
+      "red_fraction": 1,
+      "corner_is_car_colored": false,
+      "corner_pixel": [
+       159,
+       164,
+       170,
+       255
+      ]
+     },
+     "load_avg_1m": 26.1,
+     "console_errors": [],
+     "resources": [
+      {
+       "url": "/out/replay.js",
+       "start": 173.2,
+       "response_end": 452.1,
+       "transfer_size": 112505,
+       "decoded": 542088
+      },
+      {
+       "url": "/replay/bundle.json",
+       "start": 463,
+       "response_end": 634.4,
+       "transfer_size": 1234,
+       "decoded": 3063
+      },
+      {
+       "url": "/replay/poses.bin",
+       "start": 463.1,
+       "response_end": 763.1,
+       "transfer_size": 120012,
+       "decoded": 157640
+      }
+     ],
+     "webgl_renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (LLVM 10.0.0) (0x0000C0DE)), SwiftShader driver)"
+    },
+    {
+     "first_frame_ms": 890.0999999046326,
+     "script_start_ms": 466.2999999523163,
+     "fetched_ms": 763.2999999523163,
+     "verified_ms": 763.5999999046326,
+     "scene_built_ms": 775.0999999046326,
+     "runner_wall_ms": 899.3848749999888,
+     "html_response_start_ms": 165.79999995231628,
+     "load_event_end_ms": 472.09999990463257,
+     "wire_bytes_server_log": 233089,
+     "requests": 4,
+     "pixel_ok": true,
+     "first_frame_check": {
+      "ok": true,
+      "red_fraction": 1,
+      "corner_is_car_colored": false,
+      "corner_pixel": [
+       159,
+       164,
+       170,
+       255
+      ]
+     },
+     "load_avg_1m": 29.8,
+     "console_errors": [],
+     "resources": [
+      {
+       "url": "/out/replay.js",
+       "start": 178.3,
+       "response_end": 462.3,
+       "transfer_size": 112505,
+       "decoded": 542088
+      },
+      {
+       "url": "/replay/bundle.json",
+       "start": 471.8,
+       "response_end": 644.6,
+       "transfer_size": 1234,
+       "decoded": 3063
+      },
+      {
+       "url": "/replay/poses.bin",
+       "start": 471.9,
+       "response_end": 762.8,
+       "transfer_size": 120012,
+       "decoded": 157640
+      }
+     ],
+     "webgl_renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (LLVM 10.0.0) (0x0000C0DE)), SwiftShader driver)"
+    }
+   ]
+  },
+  {
+   "encoding": "br",
+   "profile": "slow4g",
+   "n": 5,
+   "first_frame_ms": {
+    "n_valid": 5,
+    "n_missing": 0,
+    "mean": 3135.44,
+    "min": 3116.6,
+    "p50": 3122,
+    "p95": 3196,
+    "p99": 3196,
+    "max": 3196
+   },
+   "wire_bytes": 233089,
+   "rows": [
+    {
+     "first_frame_ms": 3122,
+     "script_start_ms": 1770.5,
+     "fetched_ms": 3014.9000000953674,
+     "verified_ms": 3015.300000190735,
+     "scene_built_ms": 3027.800000190735,
+     "runner_wall_ms": 3141.4495420000167,
+     "html_response_start_ms": 563.6000001430511,
+     "load_event_end_ms": 1775.8000001907349,
+     "wire_bytes_server_log": 233089,
+     "requests": 4,
+     "pixel_ok": true,
+     "first_frame_check": {
+      "ok": true,
+      "red_fraction": 1,
+      "corner_is_car_colored": false,
+      "corner_pixel": [
+       159,
+       164,
+       170,
+       255
+      ]
+     },
+     "load_avg_1m": 29.8,
+     "console_errors": [],
+     "resources": [
+      {
+       "url": "/out/replay.js",
+       "start": 575.3,
+       "response_end": 1765.8,
+       "transfer_size": 112505,
+       "decoded": 542088
+      },
+      {
+       "url": "/replay/bundle.json",
+       "start": 1775.6,
+       "response_end": 2347.8,
+       "transfer_size": 1234,
+       "decoded": 3063
+      },
+      {
+       "url": "/replay/poses.bin",
+       "start": 1775.7,
+       "response_end": 3014.3,
+       "transfer_size": 120012,
+       "decoded": 157640
+      }
+     ],
+     "webgl_renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (LLVM 10.0.0) (0x0000C0DE)), SwiftShader driver)"
+    },
+    {
+     "first_frame_ms": 3196,
+     "script_start_ms": 1770.5999999046326,
+     "fetched_ms": 3024.2999999523163,
+     "verified_ms": 3025.5999999046326,
+     "scene_built_ms": 3044.0999999046326,
+     "runner_wall_ms": 3204.2041249999893,
+     "html_response_start_ms": 563.5,
+     "load_event_end_ms": 1776.0999999046326,
+     "wire_bytes_server_log": 233089,
+     "requests": 4,
+     "pixel_ok": true,
+     "first_frame_check": {
+      "ok": true,
+      "red_fraction": 1,
+      "corner_is_car_colored": false,
+      "corner_pixel": [
+       159,
+       164,
+       170,
+       255
+      ]
+     },
+     "load_avg_1m": 28.1,
+     "console_errors": [],
+     "resources": [
+      {
+       "url": "/out/replay.js",
+       "start": 577.3,
+       "response_end": 1766.6,
+       "transfer_size": 112505,
+       "decoded": 542088
+      },
+      {
+       "url": "/replay/bundle.json",
+       "start": 1776,
+       "response_end": 2349.1,
+       "transfer_size": 1234,
+       "decoded": 3063
+      },
+      {
+       "url": "/replay/poses.bin",
+       "start": 1776.1,
+       "response_end": 3023.7,
+       "transfer_size": 120012,
+       "decoded": 157640
+      }
+     ],
+     "webgl_renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (LLVM 10.0.0) (0x0000C0DE)), SwiftShader driver)"
+    },
+    {
+     "first_frame_ms": 3122.2000000476837,
+     "script_start_ms": 1770.8999998569489,
+     "fetched_ms": 3017.2999999523163,
+     "verified_ms": 3017.5999999046326,
+     "scene_built_ms": 3029.899999856949,
+     "runner_wall_ms": 3164.8784999999916,
+     "html_response_start_ms": 563.5999999046326,
+     "load_event_end_ms": 1776.2999999523163,
+     "wire_bytes_server_log": 233089,
+     "requests": 4,
+     "pixel_ok": true,
+     "first_frame_check": {
+      "ok": true,
+      "red_fraction": 1,
+      "corner_is_car_colored": false,
+      "corner_pixel": [
+       159,
+       164,
+       170,
+       255
+      ]
+     },
+     "load_avg_1m": 28.1,
+     "console_errors": [],
+     "resources": [
+      {
+       "url": "/out/replay.js",
+       "start": 578.6,
+       "response_end": 1766.7,
+       "transfer_size": 112505,
+       "decoded": 542088
+      },
+      {
+       "url": "/replay/bundle.json",
+       "start": 1776.1,
+       "response_end": 2350.2,
+       "transfer_size": 1234,
+       "decoded": 3063
+      },
+      {
+       "url": "/replay/poses.bin",
+       "start": 1776.2,
+       "response_end": 3016.7,
+       "transfer_size": 120012,
+       "decoded": 157640
+      }
+     ],
+     "webgl_renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (LLVM 10.0.0) (0x0000C0DE)), SwiftShader driver)"
+    },
+    {
+     "first_frame_ms": 3120.399999856949,
+     "script_start_ms": 1770.5999999046326,
+     "fetched_ms": 3015.899999856949,
+     "verified_ms": 3016.7000000476837,
+     "scene_built_ms": 3030.7000000476837,
+     "runner_wall_ms": 3128.5444580000185,
+     "html_response_start_ms": 563.7000000476837,
+     "load_event_end_ms": 1776.0999999046326,
+     "wire_bytes_server_log": 233089,
+     "requests": 4,
+     "pixel_ok": true,
+     "first_frame_check": {
+      "ok": true,
+      "red_fraction": 1,
+      "corner_is_car_colored": false,
+      "corner_pixel": [
+       159,
+       164,
+       170,
+       255
+      ]
+     },
+     "load_avg_1m": 28.9,
+     "console_errors": [],
+     "resources": [
+      {
+       "url": "/out/replay.js",
+       "start": 575.9,
+       "response_end": 1766.7,
+       "transfer_size": 112505,
+       "decoded": 542088
+      },
+      {
+       "url": "/replay/bundle.json",
+       "start": 1775.8,
+       "response_end": 2348.4,
+       "transfer_size": 1234,
+       "decoded": 3063
+      },
+      {
+       "url": "/replay/poses.bin",
+       "start": 1775.9,
+       "response_end": 3015.4,
+       "transfer_size": 120012,
+       "decoded": 157640
+      }
+     ],
+     "webgl_renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (LLVM 10.0.0) (0x0000C0DE)), SwiftShader driver)"
+    },
+    {
+     "first_frame_ms": 3116.5999999046326,
+     "script_start_ms": 1771.2999999523163,
+     "fetched_ms": 3017.0999999046326,
+     "verified_ms": 3017.5,
+     "scene_built_ms": 3028,
+     "runner_wall_ms": 3123.0908749999944,
+     "html_response_start_ms": 563.8999998569489,
+     "load_event_end_ms": 1777,
+     "wire_bytes_server_log": 233089,
+     "requests": 4,
+     "pixel_ok": true,
+     "first_frame_check": {
+      "ok": true,
+      "red_fraction": 1,
+      "corner_is_car_colored": false,
+      "corner_pixel": [
+       159,
+       164,
+       170,
+       255
+      ]
+     },
+     "load_avg_1m": 28.9,
+     "console_errors": [],
+     "resources": [
+      {
+       "url": "/out/replay.js",
+       "start": 578,
+       "response_end": 1767,
+       "transfer_size": 112505,
+       "decoded": 542088
+      },
+      {
+       "url": "/replay/bundle.json",
+       "start": 1776.7,
+       "response_end": 2350.1,
+       "transfer_size": 1234,
+       "decoded": 3063
+      },
+      {
+       "url": "/replay/poses.bin",
+       "start": 1776.8,
+       "response_end": 3016.6,
+       "transfer_size": 120012,
+       "decoded": 157640
+      }
+     ],
+     "webgl_renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (LLVM 10.0.0) (0x0000C0DE)), SwiftShader driver)"
+    }
+   ]
+  },
+  {
+   "encoding": "br",
+   "profile": "slow3g",
+   "n": 5,
+   "first_frame_ms": {
+    "n_valid": 5,
+    "n_missing": 0,
+    "mean": 10827.34,
+    "min": 10780.2,
+    "p50": 10807.6,
+    "p95": 10889.2,
+    "p99": 10889.2,
+    "max": 10889.2
+   },
+   "wire_bytes": 233089,
+   "rows": [
+    {
+     "first_frame_ms": 10859.400000095367,
+     "script_start_ms": 6301.299999952316,
+     "fetched_ms": 10739.400000095367,
+     "verified_ms": 10740.200000047684,
+     "scene_built_ms": 10752.799999952316,
+     "runner_wall_ms": 10873.100542,
+     "html_response_start_ms": 2003.1000001430511,
+     "load_event_end_ms": 6307.200000047684,
+     "wire_bytes_server_log": 233089,
+     "requests": 4,
+     "pixel_ok": true,
+     "first_frame_check": {
+      "ok": true,
+      "red_fraction": 1,
+      "corner_is_car_colored": false,
+      "corner_pixel": [
+       159,
+       164,
+       170,
+       255
+      ]
+     },
+     "load_avg_1m": 27.3,
+     "console_errors": [],
+     "resources": [
+      {
+       "url": "/out/replay.js",
+       "start": 2043.1,
+       "response_end": 6296.8,
+       "transfer_size": 112505,
+       "decoded": 542088
+      },
+      {
+       "url": "/replay/bundle.json",
+       "start": 6306.9,
+       "response_end": 8338.6,
+       "transfer_size": 1234,
+       "decoded": 3063
+      },
+      {
+       "url": "/replay/poses.bin",
+       "start": 6307.1,
+       "response_end": 10738.9,
+       "transfer_size": 120012,
+       "decoded": 157640
+      }
+     ],
+     "webgl_renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (LLVM 10.0.0) (0x0000C0DE)), SwiftShader driver)"
+    },
+    {
+     "first_frame_ms": 10800.299999952316,
+     "script_start_ms": 6246.599999904633,
+     "fetched_ms": 10684.099999904633,
+     "verified_ms": 10685.099999904633,
+     "scene_built_ms": 10698.5,
+     "runner_wall_ms": 10811.983374999982,
+     "html_response_start_ms": 2001.2000000476837,
+     "load_event_end_ms": 6252.200000047684,
+     "wire_bytes_server_log": 233089,
+     "requests": 4,
+     "pixel_ok": true,
+     "first_frame_check": {
+      "ok": true,
+      "red_fraction": 1,
+      "corner_is_car_colored": false,
+      "corner_pixel": [
+       159,
+       164,
+       170,
+       255
+      ]
+     },
+     "load_avg_1m": 25.5,
+     "console_errors": [],
+     "resources": [
+      {
+       "url": "/out/replay.js",
+       "start": 2011.7,
+       "response_end": 6242,
+       "transfer_size": 112505,
+       "decoded": 542088
+      },
+      {
+       "url": "/replay/bundle.json",
+       "start": 6252,
+       "response_end": 8283.8,
+       "transfer_size": 1234,
+       "decoded": 3063
+      },
+      {
+       "url": "/replay/poses.bin",
+       "start": 6252.1,
+       "response_end": 10683.5,
+       "transfer_size": 120012,
+       "decoded": 157640
+      }
+     ],
+     "webgl_renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (LLVM 10.0.0) (0x0000C0DE)), SwiftShader driver)"
+    },
+    {
+     "first_frame_ms": 10780.200000047684,
+     "script_start_ms": 6248.100000143051,
+     "fetched_ms": 10684.400000095367,
+     "verified_ms": 10685.400000095367,
+     "scene_built_ms": 10700,
+     "runner_wall_ms": 10810.416958000045,
+     "html_response_start_ms": 2001.1000001430511,
+     "load_event_end_ms": 6253.900000095367,
+     "wire_bytes_server_log": 233089,
+     "requests": 4,
+     "pixel_ok": true,
+     "first_frame_check": {
+      "ok": true,
+      "red_fraction": 1,
+      "corner_is_car_colored": false,
+      "corner_pixel": [
+       159,
+       164,
+       170,
+       255
+      ]
+     },
+     "load_avg_1m": 23.3,
+     "console_errors": [],
+     "resources": [
+      {
+       "url": "/out/replay.js",
+       "start": 2011.6,
+       "response_end": 6242.9,
+       "transfer_size": 112505,
+       "decoded": 542088
+      },
+      {
+       "url": "/replay/bundle.json",
+       "start": 6253.7,
+       "response_end": 8284.1,
+       "transfer_size": 1234,
+       "decoded": 3063
+      },
+      {
+       "url": "/replay/poses.bin",
+       "start": 6253.8,
+       "response_end": 10683.8,
+       "transfer_size": 120012,
+       "decoded": 157640
+      }
+     ],
+     "webgl_renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (LLVM 10.0.0) (0x0000C0DE)), SwiftShader driver)"
+    },
+    {
+     "first_frame_ms": 10807.599999904633,
+     "script_start_ms": 6247,
+     "fetched_ms": 10683.200000047684,
+     "verified_ms": 10684.299999952316,
+     "scene_built_ms": 10699.400000095367,
+     "runner_wall_ms": 10819.87858400005,
+     "html_response_start_ms": 2001,
+     "load_event_end_ms": 6252.799999952316,
+     "wire_bytes_server_log": 233089,
+     "requests": 4,
+     "pixel_ok": true,
+     "first_frame_check": {
+      "ok": true,
+      "red_fraction": 1,
+      "corner_is_car_colored": false,
+      "corner_pixel": [
+       159,
+       164,
+       170,
+       255
+      ]
+     },
+     "load_avg_1m": 22.2,
+     "console_errors": [],
+     "resources": [
+      {
+       "url": "/out/replay.js",
+       "start": 2010.9,
+       "response_end": 6241.4,
+       "transfer_size": 112505,
+       "decoded": 542088
+      },
+      {
+       "url": "/replay/bundle.json",
+       "start": 6252.5,
+       "response_end": 8283.2,
+       "transfer_size": 1234,
+       "decoded": 3063
+      },
+      {
+       "url": "/replay/poses.bin",
+       "start": 6252.6,
+       "response_end": 10682.5,
+       "transfer_size": 120012,
+       "decoded": 157640
+      }
+     ],
+     "webgl_renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (LLVM 10.0.0) (0x0000C0DE)), SwiftShader driver)"
+    },
+    {
+     "first_frame_ms": 10889.200000047684,
+     "script_start_ms": 6250.600000143051,
+     "fetched_ms": 10681.900000095367,
+     "verified_ms": 10682.800000190735,
+     "scene_built_ms": 10702.5,
+     "runner_wall_ms": 10904.132417000015,
+     "html_response_start_ms": 2001.1000001430511,
+     "load_event_end_ms": 6256.800000190735,
+     "wire_bytes_server_log": 233089,
+     "requests": 4,
+     "pixel_ok": true,
+     "first_frame_check": {
+      "ok": true,
+      "red_fraction": 1,
+      "corner_is_car_colored": false,
+      "corner_pixel": [
+       159,
+       164,
+       170,
+       255
+      ]
+     },
+     "load_avg_1m": 23.8,
+     "console_errors": [],
+     "resources": [
+      {
+       "url": "/out/replay.js",
+       "start": 2013.1,
+       "response_end": 6243.3,
+       "transfer_size": 112505,
+       "decoded": 542088
+      },
+      {
+       "url": "/replay/bundle.json",
+       "start": 6256.5,
+       "response_end": 8281.2,
+       "transfer_size": 1234,
+       "decoded": 3063
+      },
+      {
+       "url": "/replay/poses.bin",
+       "start": 6256.7,
+       "response_end": 10681.2,
+       "transfer_size": 120012,
+       "decoded": 157640
+      }
+     ],
+     "webgl_renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (LLVM 10.0.0) (0x0000C0DE)), SwiftShader driver)"
+    }
+   ]
+  }
+ ],
+ "browser": {
+  "name": "chromium-headless-shell (playwright-core 1.65.0)",
+  "version": "158.0.8127.18"
+ },
+ "machine_after": {
+  "cpu": "Apple M2 Pro",
+  "ncpu": 10,
+  "platform": "Darwin 24.6.0 arm64",
+  "load_avg": [
+   26.5,
+   26.7,
+   25.6
+  ],
+  "swap": "total = 14336.00M  used = 13388.94M  free = 947.06M  (encrypted)",
+  "node": "v22.22.2"
+ }
+}

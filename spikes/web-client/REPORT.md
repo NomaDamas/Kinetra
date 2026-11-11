@@ -195,3 +195,108 @@ node spikes/web-client/summarize-pose.mjs swiftshader         # 표의 수치 (�
 | 스트림 시험 이름 | 연속 틱·크기·제어 반영만 단언(60 Hz 속도는 단언하지 않는다) | |
 | 스왑 총량 | | 가드와 JSON의 값(약 14 GiB 중 13.1~13.3 GiB 사용) |
 
+## A0-02c. 공유 링크 로딩 (이슈 #49)
+
+> 이 PR은 A0-02a PR(#415)의 브랜치 위에 쌓였다(같은 `spikes/web-client`). #415가 머지된 뒤 이 PR의 diff는 A0-02c 부분만 남는다.
+
+### 결론 먼저
+
+- **예시 리플레이 번들(로켓 자동차 1대 + 바퀴 4개, 4.5 s, 1,126프레임)의 데이터는 `poses.bin` 157,640 B + `bundle.json` 3,063 B = 160,703 B(원본)이고 gzip(9) 124,103 B, brotli(11) 120,646 B다.** 포즈는 float32 그대로라 압축이 거의 안 된다(brotli 75 %). 페이지 전체(HTML + three.js 일부를 포함해 줄인 스크립트 + 데이터 2개)는 원본 703,278 B → gzip 260,478 B → brotli 233,089 B이다. **전송량의 절반가량(brotli 기준 112,205 B)은 three.js를 포함한 스크립트이고 데이터가 아니다.**
+- **링크 열기 → 첫 프레임(첫 `render()` + `readPixels` 완료, 차체 픽셀 확인 통과) 중앙값(5회, 서버가 미리 압축한 gzip / brotli)**: 무제한 145 / 143 ms(SwiftShader), 71 / 59 ms(Metal GPU); Fast 4G 914 / 890 ms(SwiftShader), 811 / 794 ms(Metal); Slow 4G 3,290 / 3,122 ms(SwiftShader), 3,207 / 3,049 ms(Metal); Slow 3G 11,399 / 10,808 ms(SwiftShader), 11,299 / 10,712 ms(Metal). 압축이 없으면 Fast 4G 1,361(SwiftShader) / 1,259(Metal) ms, Slow 4G 5,764 / 5,676 ms, Slow 3G 20,260 / 20,166 ms.
+- **스로틀 아래 시간은 거의 전부 전송이다.** 첫 프레임 − 데이터 도착(`fetched`)은 SwiftShader 약 20~30 ms, Metal 약 13~25 ms다. 스로틀 칸의 두 경로 차이(약 50~100 ms)는 이 구간과 노이즈의 합이다. 무제한 칸은 두 경로 모두 수십~150 ms이고 이 칸에서 SwiftShader−Metal 차이(약 75~90 ms)가 소프트웨어 렌더의 비용으로 보인다 [추정].
+- 스로틀 값은 Chrome DevTools 프리셋의 대역폭·지연을 CDP `Network.emulateNetworkConditions`로 넣은 것이다. 실제 이동통신 망, TLS 핸드셰이크, DNS, CDN, HTTP/2 다중화는 없다(루프백 HTTP/1.1).
+- 이 절의 시간은 **서버가 모든 파일을 시작 전에 미리 압축한 뒤** 5회 쟀다. 처음 낸 값(3회, 커밋 `a50c1e2`)은 gzip·brotli 서버가 첫 요청에서 압축했다. 그 값에서 무제한 칸의 brotli 485 ms(3회 중 한 번 6.8 s)와 gzip 177 ms(SwiftShader)는 이 영향이 섞여 있었고, 지금 값(무제한 SwiftShader gzip 145 ms, brotli 143 ms, 위 표)이 대체한다. 지금 값은 Metal 실행 도중 부하가 올랐던 구간을 포함한다(아래).
+
+### 방법
+
+| 항목 | 값 |
+|---|---|
+| 번들 출처 | **레거시 로켓 자동차의 MuJoCo 네이티브 실행 기록.** `spikes/mujoco-wasm/reference/native_qpos.f64`의 `nominal`(레거시 영웅 8,000 N 시나리오, 4 ms × 1,125스텝, macOS arm64, MuJoCo 4.0.0, `qpos_sha256`은 `bundle.json`에 기록). 모델·제어의 출처와 해시는 `spikes/mujoco-wasm/REPORT.md` 2절. 이 스파이크는 다시 시뮬하지 않는다: 기록된 `qpos` 행마다 `mj_kinematics`로 5개 강체(차체, 바퀴 4)의 월드 자세를 얻어 저장한다 (`gen_replay.py`) |
+| 번들 인코딩 `KPR-spike-1` | `poses.bin` = little-endian float32, 프레임 우선, 프레임마다 강체 5개 × `x y z`[m] + `qx qy qz qw`(+Z 위) = 140 B/프레임 × 1,126프레임(4 ms마다, 250 Hz) = 157,640 B(머리 없음). `bundle.json` = 장면(지오메트리는 강체 국소 좌표, 크기는 컴파일된 모델에서 읽음), dt, 프레임 수, 출처 해시, `poses_sha256`, 표시 문구 `1회 실행. 판정이 아닙니다`(F6). **C-05b·H-03a의 스키마가 아니다** |
+| 페이지 | `replay.html` + `src/replay-client.js`: `bundle.json`·`poses.bin`을 병렬로 `fetch` → `poses.bin`의 SHA-256을 `crypto.subtle`로 검증(A2) → three.js 장면 → rAF 루프 1배속 반복. 물리 없음. 스크립트는 esbuild 0.28.2로 묶고 줄인다(`build-replay.mjs`, three.js는 쓰는 클래스만 트리 셰이킹: 542,088 B) |
+| 서버 | `src/replay-serve.mjs`: 정적 파일만, `cache-control: no-store`. **listen 전에 모든 파일을 identity·gzip(9)·brotli(11)로 미리 압축해 두고** `Accept-Encoding`(또는 러너가 강제한 인코딩)대로 보낸다. 요청마다 압축하지 않는다. 로그에 실제 전송 바이트를 남긴다 |
+| 측정 | `measure-replay.mjs`: 반복마다 새 브라우저 컨텍스트(빈 HTTP 캐시, 서비스 워커 차단) + `Network.setCacheDisabled`, CDP 스로틀, `page.goto(url, {waitUntil:"commit"})`부터 시작. 끝 = 페이지가 첫 `render()` 뒤 `readPixels`를 마친 `performance.now()`(내비게이션 시작 기준 ms). 인코딩 3 × 프로파일 4 × 5회 = 60회, 렌더 경로 2개 |
+| 첫 프레임 검증 | `src/pixelcheck.js`: 프레임 0에서 차체가 투영되는 화면 위치의 5×5 픽셀 블록의 50 % 이상이 **차체 빨강**(`r>60, r>1.8g, r>1.8b`)이어야 하고, 차에서 먼 땅의 한 픽셀이 빨강이면 안 된다(전부 빨갛게 칠한 캔버스 방지). 땅·하늘·빈 캔버스는 실패한다. 실패하면 러너가 종료 코드 1이다. 테스트 `tests/pixelcheck.test.mjs`(5건) |
+| 프로파일 | Chrome DevTools 프리셋(devtools-frontend `front_end/core/sdk/NetworkManager.ts`의 값): **Fast 4G** 9 Mbit/s × 0.9 = 1,012,500 B/s, 지연 165 ms(60 ms × 2.75); **Slow 4G** 1.6 Mbit/s × 0.9 = 180,000 B/s, 지연 562.5 ms(150 × 3.75); **Slow 3G** 0.5 Mbit/s × 0.8 = 50,000 B/s, 지연 2,000 ms(400 × 5). Slow 4G는 옛 DevTools에서 "Fast 3G"로 불렸다. 상향은 `measure-replay.mjs`의 `PROFILES` |
+| 가드 | `resource_guard.py --profile heavy -- pnpm --dir spikes/web-client measure:replay` (가드 밖에서는 종료 코드 2) |
+
+### 번들 크기 (바이트)
+
+| 파일 | 원본 | gzip(9) | brotli(11) |
+|---|---|---|---|
+| `replay/poses.bin` | 157,640 | 123,064 | 119,712 |
+| `replay/bundle.json` | 3,063 | 1,039 | 934 |
+| **예시 리플레이 번들(데이터) 합계** | **160,703** | **124,103** | **120,646** |
+| `out/replay.js` (three.js 일부 + 페이지) | 542,088 | 135,987 | 112,205 |
+| `replay.html` | 487 | 388 | 238 |
+| **페이지 전체** | **703,278** | **260,478** | **233,089** |
+
+- 번들 크기는 계산(결정론)이고 서버 로그의 실제 전송 바이트와 같다(gzip 260,478, brotli 233,089, 원본 703,278, 요청 4개).
+- 데이터 비용: 4.5 s 한 대의 리플레이가 프레임당 140 B, 초당 약 35 kB(250 프레임/s × 140 B)다. 강체가 늘면 선형이다: **5,000개를 같은 프레임 수로 저장하면 1,126프레임 × 5,000강체 × 28 B = 157,640,000 B ≈ 157.6 MB**(원본, 압축이 거의 안 되는 float32). 강체 수 5개 → 5,000개는 1,000배라 160,703 B가 약 160 MB가 된다(같은 계산: 5 강체의 157,640 B × 1,000). 이 방식 그대로는 큰 장면의 공유 번들로 무겁고 양자화나 변화분, 낮은 저장 프레임률이 필요하다 [추정, 재지 않음].
+
+### 결과: 링크 열기 → 첫 프레임 (ms, 중앙값 [최소 – 최대], n=5)
+
+| 프로파일 | 경로 | 압축 없음 (703,278 B) | gzip (260,478 B) | brotli (233,089 B) |
+|---|---|---|---|---|
+| 무제한 | SwiftShader | 152 [118 – 326] | 145 [123 – 343] | 143 [119 – 173] |
+| 무제한 | Metal GPU | 57 [51 – 112] | 71 [60 – 121] | 59 [54 – 76] |
+| Fast 4G | SwiftShader | 1,361 [1,325 – 1,421] | 914 [889 – 923] | 890 [863 – 901] |
+| Fast 4G | Metal GPU | 1,259 [1,248 – 1,270] | 811 [806 – 821] | 794 [781 – 797] |
+| Slow 4G | SwiftShader | 5,764 [5,757 – 5,813] | 3,290 [3,260 – 3,307] | 3,122 [3,117 – 3,196] |
+| Slow 4G | Metal GPU | 5,676 [5,670 – 5,678] | 3,207 [3,200 – 3,215] | 3,049 [3,040 – 3,064] |
+| Slow 3G | SwiftShader | 20,260 [20,253 – 20,387] | 11,399 [11,346 – 11,461] | 10,808 [10,780 – 10,889] |
+| Slow 3G | Metal GPU | 20,166 [20,157 – 20,227] | 11,299 [11,288 – 11,319] | 10,712 [10,711 – 10,715] |
+
+구간 중앙값(Metal, gzip, ms): HTML 첫 바이트 / 스크립트 실행 시작 / 데이터 2개 도착 / 장면 완성 / 첫 프레임 = 무제한 2 / 30 / 40 / 55 / 71; Fast 4G 166 / 484 / 785 / 801 / 811; Slow 4G 564 / 1,904 / 3,176 / 3,195 / 3,207; Slow 3G 2,001 / 6,738 / 11,255 / 11,287 / 11,299. 구간별 값은 `results/replay-*.json`.
+
+읽는 법:
+- 스로틀 아래에서는 대역폭이 지배한다. 첫 프레임 ≈ HTML 왕복 + 스크립트 전송 + (스크립트 실행 뒤에야 시작하는) 데이터 전송. **데이터 요청은 스크립트가 실행된 뒤에 시작하므로 왕복이 직렬로 쌓인다**(예: Slow 3G에서 HTML 2.0 s → 스크립트 6.7 s → 데이터 11.3 s). 데이터를 HTML에서 `preload`하거나 스크립트에 넣으면 직렬 구간이 줄 수 있다. 재지 않았다.
+- 압축 효과: gzip이 원본 대비 Fast 4G 첫 프레임을 약 33~36 %, Slow 3G를 약 44 % 줄였고 brotli는 gzip보다 Fast 4G 약 2~3 %, Slow 3G 약 5 % 더 줄였다(바이트 −10 %).
+- 무제한 칸은 인코딩 사이 차이(수 ms)가 노이즈(최소–최대 폭 50~200 ms)보다 작아 인코딩 비교에 쓰지 않는다.
+- **부하가 실행 중에 바뀌었다.** SwiftShader 5회 묶음은 부하 15~46, Metal은 처음 6개 칸이 부하 22~31이었다가 `gzip`부터 `br` 칸까지는 부하 82~120이었다(다른 에이전트 작업이 동시에 시작됨). 그 구간의 Metal 값(gzip 71 ms, br 59 ms 등)은 부하의 영향을 받았을 수 있다. 스로틀 칸은 전송이 지배해서 폭 1~3 %로 영향이 작았다. 칸별 부하는 JSON `rows[].load_avg_1m`에 있다.
+- 모든 실행에서 콘솔 오류 0, 요청 4개, 차체 픽셀 확인 통과(120회 모두 5×5 블록의 차체 빨강 비율 1.0, 먼 땅 픽셀은 차색 아님; 값은 JSON `rows[].first_frame_check`).
+- 화면: `results/replay-metal.png`, `results/replay-swiftshader.png`(첫 번째 인코딩·첫 번째 프로파일의 첫 반복 직후 캡처. 프레임 0이 아니라 캡처 시점의 재생 프레임이다). 차체가 빨갛고 바퀴가 회색이며 `1회 실행. 판정이 아닙니다`가 보인다. 판정 문구는 없다.
+
+### DoD 대조
+
+| DoD | 증거 |
+|---|---|
+| 예시 리플레이 번들의 크기와 링크 열기부터 첫 프레임까지 시간을 측정했다 | 위 두 표, 원자료 `results/replay-{swiftshader,metal}.json`(반복마다 구간별 시간, 리소스별 전송 크기) |
+| "100% 완료" 8항목 | PR 본문 |
+
+### 재현
+
+```
+pnpm --dir spikes/web-client install --frozen-lockfile
+uv run spikes/web-client/gen_replay.py --check                 # 커밋된 replay/가 기록된 네이티브 궤적에서 재생성한 것과 같은지
+uv run spikes/web-client/tests/test_gen_replay.py              # 번들 해시·크기·출처·시작 자세·유한성
+pnpm --dir spikes/web-client test                              # 서버(인코딩 선택, 경로 차단, 바이트 일치), 첫 프레임 픽셀 검사 포함 30건
+pnpm --dir spikes/web-client build:replay && pnpm --dir spikes/web-client dev:replay   # http://127.0.0.1:5176/ 에서 직접 보기
+REPEAT=5 RESULT_NAME=replay-swiftshader.json uv run python tools/dev/resource_guard.py --profile heavy -- pnpm --dir spikes/web-client measure:replay
+GL=metal REPEAT=5 RESULT_NAME=replay-metal.json uv run python tools/dev/resource_guard.py --profile heavy -- pnpm --dir spikes/web-client measure:replay
+```
+
+### 자원 기록
+
+- 실행: 위 두 명령, 2026-11-11. 가드: 통과(경고: 메모리 압력 warn, 스왑 사용률 90 % 이상), [기본값], heavy. 머신: macOS 24.6 arm64, SSD 여유 12.3~13.4 GiB, 스왑 13.0~13.1 GiB 사용(약 14 GiB 중).
+
+| 실행 | SSD 여유 GiB 전 → 후 | 스왑 사용 GiB 전 → 후 | 압력 | 부하(1분) 실행 전 → 후 (실행 중 칸별 범위) | 소요 |
+|---|---|---|---|---|---|
+| swiftshader | 13.38 → 12.78 (최악 12.78) | 13.10 → 13.08 | warn → warn | 45.8 → 26.5 (15~46) | 약 5분 |
+| metal | 12.78 → 12.31 (최악 12.28) | 13.08 → 13.04 | warn → warn | 25.9 → 60.0 (22~120) | 약 5분 |
+
+### 알려진 한계 (정직성)
+
+- 한 머신, 한 시점이고 부하가 15~120으로 실행 중에 크게 바뀌었다(위). 두 렌더 경로 모두 헤드리스 Chromium이다.
+- 스로틀은 CDP 에뮬레이션이라 패킷 손실·혼잡·TCP 느린 시작·TLS·DNS를 재현하지 않는다. 서버는 루프백 HTTP/1.1이다. 실제 호스팅(CDN, HTTP/2·3)에서는 다르다.
+- 콜드 로드만 쟀다(캐시 끔). 재방문(캐시), 서비스 워커, 모바일 CPU(스크립트 파싱 542 kB)는 재지 않았다.
+- 번들은 5개 강체의 4.5 s 한 건이다. 실제 공유 번들(glTF 메시, 텍스처, 이벤트)의 크기는 H-03a가 정한다. 포즈 압축(양자화, 변화분)은 재지 않았다.
+- 기록은 macOS arm64 MuJoCo 네이티브의 것이다. 플랫폼 간 비트 불일치(`spikes/mujoco-wasm/REPORT.md` 5.5절, #54)가 있으므로 이 번들은 "그 실행의 기록"이고 다른 플랫폼에서 재현 확인이 아니다. 화면에는 `1회 실행. 판정이 아닙니다`만 보이고 판정 문구는 없다.
+- `replay-client.js`의 카메라, 땅 평면(400 × 80 m)은 임의의 값이다(제품 아님).
+
+### 의존성 라이선스 (A0-02c 추가분)
+
+| 의존성 | 라이선스 | 출처 | 원장 행 |
+|---|---|---|---|
+| `esbuild` 0.28.2 | MIT | https://github.com/evanw/esbuild | `dep-esbuild-0.28.2-web-client` |
+| `mujoco` 4.0.0, `numpy` 2.5.4 (`gen_replay.py`) | Apache-2.0, BSD-3-Clause | A0-01a·A0-01b와 같다 | `dep-mujoco-4.0.0`, `dep-numpy-2.5.4` |
