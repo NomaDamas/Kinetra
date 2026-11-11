@@ -88,6 +88,7 @@ def main(argv: list[str] | None = None) -> int:
         "proxy_geoms": len(proxy.geoms),
         "proxy_volume_error": proxy.volume_error.value,
         "filled_voids": [v.id for v in proxy.filled_voids],
+        "decomposed_voids": [{"id": v.id, "host": v.host, "layout": v.layout, "error": v.error} for v in proxy.decomposed_voids],
         "undrawn_voids": [c.id for c in part.shape.components if c.operation == "subtract"] if part.shape else [],
         "glb_bytes": len(glb),
         "milliseconds": {"mass": round(t_mass, 3), "proxy": round(t_proxy, 3), "glb": round(t_glb, 3)},

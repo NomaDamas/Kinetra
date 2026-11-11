@@ -1,0 +1,34 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "How a tube's ring of boxes sits against the real tube. `wall_closed`: every ray from the axis enters the wall once\nand leaves once, so there is no radial slit (the model rejects `False`). `inner_deviation` [m] is the largest radial\ndistance the proxy's bore wall is from the real bore (towards the wall); `outer_deviation` [m] the largest the\nproxy's outer surface is inside the real outer cylinder (the notches between boxes).",
+  "properties": {
+    "staves": {
+      "minimum": 3,
+      "title": "Staves",
+      "type": "integer"
+    },
+    "wall_closed": {
+      "title": "Wall Closed",
+      "type": "boolean"
+    },
+    "inner_deviation": {
+      "minimum": 0.0,
+      "title": "Inner Deviation",
+      "type": "number"
+    },
+    "outer_deviation": {
+      "minimum": 0.0,
+      "title": "Outer Deviation",
+      "type": "number"
+    }
+  },
+  "required": [
+    "staves",
+    "wall_closed",
+    "inner_deviation",
+    "outer_deviation"
+  ],
+  "title": "RingReport",
+  "type": "object"
+}

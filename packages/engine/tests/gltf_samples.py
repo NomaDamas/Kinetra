@@ -117,6 +117,22 @@ def drive_shaft() -> PartDef:
     )
 
 
+LIBRARY = Path(__file__).parents[1] / "src" / "kinetra_engine" / "parts" / "library"
+
+
+def library_part(part_id: str) -> PartDef:
+    """A library part (B-02a): the shipped definition file, so the drawn fixture is the real part."""
+    return PartDef.model_validate_json((LIBRARY / f"{part_id}.json").read_text(encoding="utf-8"))
+
+
+def beam() -> PartDef:
+    return library_part("beam")
+
+
+def plate() -> PartDef:
+    return library_part("plate")
+
+
 def sensor_mast() -> PartDef:
     return part(
         "sensor-mast",
@@ -162,6 +178,8 @@ SAMPLES = {
     "payload-mount-al6061": (lambda: library_part("payload-mount"), "al6061-t6"),
     # B-03b: a datasheet motor, mass declared by the datasheet weight, drawn without a material.
     "motor-37d-12v-50-1-declared-mass": (lambda: library_part("motor-37d-12v-50-1"), NO_MATERIAL),
+    "beam-al6061": (beam, "al6061-t6"),
+    "plate-al6061": (plate, "al6061-t6"),
 }
 
 

@@ -11,13 +11,13 @@
 from kinetra_engine.parts import PartCache
 cache = PartCache(max_entries=256)               # 크기는 부르는 쪽이 정한다(기본값 없음)
 cache.mass_properties(part, material, params)    # MassProperties, 같은 입력이면 같은 객체
-cache.collision_proxy(part, params)              # CollisionProxy
+cache.collision_proxy(part, params)              # CollisionProxy (B-01f: 선택 인자 tolerance, on_unsupported)
 cache.part_glb(part, material, params, pbr=None) # bytes
 cache.stats()                                    # CacheStats(hits, misses, evictions, entries, max_entries)
 cache.clear()
 ```
 
-세 함수는 `mass_properties`, `collision_proxy`, `part_glb`와 인자와 예외가 같고 값도 같다(`test_cache_returns_the_same_results_as_compiling_directly`). 결과 객체는 불변이라 적중이면 처음 계산한 그 객체를 돌려준다.
+세 함수는 `mass_properties`, `collision_proxy`, `part_glb`와 인자와 예외가 같고 값도 같다(`test_cache_returns_the_same_results_as_compiling_directly`). `collision_proxy`의 `tolerance`(없음 / 숫자 / `Quantity`)와 `on_unsupported`는 결과를 바꾸므로 키에 들어간다(`test_cache_proxy_key_has_the_tolerance_and_on_unsupported_of_b01f`). 결과 객체는 불변이라 적중이면 처음 계산한 그 객체를 돌려준다.
 
 ## 키에 들어가는 것
 
