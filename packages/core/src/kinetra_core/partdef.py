@@ -22,7 +22,7 @@ from pydantic import BaseModel, ConfigDict, Field, ValidationInfo, field_validat
 from .conventions import ID_PATTERN, Unit
 from .curve import NamedCurve
 from .geometry import AxisExpr, Name, ParamTerm, Position, Quaternion  # noqa: F401  (AxisExpr, ParamTerm: re-exported)
-from .provenance import Provenance, Quantity
+from .provenance import Badge, Provenance, Quantity
 from .shape import Shape
 
 
@@ -86,7 +86,8 @@ class PartRole(StrEnum):
 
     The actuator on an instance must fit its part's role (`designspec.py`): a motor actuator drives a `motor` part, a
     thruster actuator a `thruster` part. What a role requires of the definition is checked by `PartDef` (the
-    required curves and specs), so a part that says `motor` always has the numbers a motor needs.
+    required curves, specs and parameters), so a part that says `motor` always has the numbers a motor needs and one that says
+    `spring_damper` has its stiffness and damping (B-03e).
     """
 
     MOTOR = "motor"
@@ -95,12 +96,17 @@ class PartRole(StrEnum):
     BATTERY = "battery"
     TANK = "tank"
     SPRING_DAMPER = "spring_damper"
+    SEPARATOR = "separator"
 
 
 MOTOR_CURVE = "torque_speed"
 """Name of a motor's torque-speed curve in `PartDef.curves`: x = shaft speed [rad/s], y = torque [N*m] at full command."""
 MOTOR_RATED_VOLTAGE = "rated_voltage"
 """Name of the spec a motor part must have: the supply voltage [V] the curve is for."""
+SPRING_STIFFNESS = "stiffness"
+"""Name of the parameter a spring-damper part must have: the spring rate [N/m] along its axis."""
+SPRING_DAMPING = "damping"
+"""Name of the parameter a spring-damper part must have: the viscous damping coefficient [N*s/m] along its axis."""
 
 THRUSTER_CURVE = "thrust"
 """Name of a thruster's thrust curve in `PartDef.curves` (B-03c): x = time since the command went on [s], y = thrust [N] at
@@ -114,6 +120,43 @@ THRUSTER_OPENING_RESPONSE = "opening_response"
 which the `thrust` curve first reaches the rated thrust, so the spec and the curve cannot tell two different rises."""
 THRUSTER_NOZZLE = "nozzle"
 """Snap point a thruster part must have: at the nozzle exit; its +Z is the exhaust direction, the thrust on the part is -Z."""
+BATTERY_ENERGY_CAPACITY = "energy_capacity"
+"""Name of the spec a battery part must have: the energy [J] it holds when full (B-03d)."""
+BATTERY_NOMINAL_VOLTAGE = "nominal_voltage"
+"""Name of the spec a battery part must have: its nominal terminal voltage [V], what a motor's `rated_voltage` is compared with."""
+BATTERY_INITIAL_CHARGE = "initial_charge"
+"""Optional parameter of a battery part: the fraction of the capacity it starts with, a dimensionless number in [0, 1]. Absent: full."""
+TANK_PROPELLANT_DENSITY = "propellant_density"
+"""Name of the parameter a tank part must have: the mean density [kg/m^3] of what it holds when full (B-03d). The capacity
+[kg] is this times the volume of the tank's inside, so resizing the tank resizes what it holds. The inside is the shape's
+`subtract` components. No propellant is named and no pressure or temperature is modelled: it is one number the user sets."""
+TANK_INITIAL_FILL = "initial_fill"
+"""Optional parameter of a tank part: the fraction of the capacity it starts with, dimensionless in [0, 1]. Absent: full."""
+
+SEPARATOR_IMPULSE = "separation_impulse"
+"""Name of the parameter a separator part must have (B-15): the declared separation impulse [N*s] the part gives each side when it
+lets go, 0 allowed. It is the only number about how the release pushes: no energy source is named or modelled. The value is
+the user's (`사용자 선언`) or the definition's placeholder (`기본값`); other badges are rejected."""
+SEPARATOR_FACE_A = "face_a"
+"""Snap point a separator part must have: the face of side `a`, at +Z of the part. The declared impulse pushes the body joined here
+along +Z of this frame (outward) and the body joined at `face_b` the opposite way."""
+SEPARATOR_FACE_B = "face_b"
+"""Snap point a separator part must have: the face of side `b`, at -Z of the part, its +Z (outward normal) pointing to -Z."""
+SEPARATOR_LENGTH = "length"
+"""Parameter a separator part must have: the distance [m] between its two faces. The face snap points sit this far apart along the
+outward normal of `face_a` (`PartDef._check_separator`)."""
+_FACE_TOLERANCE = 1e-9
+"""How far from antiparallel (normals) and from `length` (face distance, as expression terms) a separator's faces may be."""
+SEPARATOR_BADGES = frozenset({Badge.DECLARED, Badge.DEFAULT})
+"""The badges a separation impulse may carry: the user declared it or the definition's default stands in. A cited, estimated or
+simulated impulse would claim a source for a number no source exists for (V5)."""
+
+
+def _frame_z(q: Quaternion) -> tuple[float, float, float]:
+    """+Z of the snap frame given by unit quaternion `q`, in the part frame (the outward normal of the face)."""
+    n = (q.x * q.x + q.y * q.y + q.z * q.z + q.w * q.w) ** 0.5  # the model allows norm 1 +- 1e-6; use the exact rotation
+    x, y, z, w = q.x / n, q.y / n, q.z / n, q.w / n
+    return (2 * (x * z + y * w), 2 * (y * z - x * w), 1 - 2 * (x * x + y * y))
 
 
 class PartDef(BaseModel):
@@ -164,9 +207,83 @@ class PartDef(BaseModel):
             self._check_mass_parameter(self.mass_parameter, {p.name: p for p in self.parameters})
         if self.role is PartRole.MOTOR:
             self._check_motor()
+        if self.role is PartRole.SPRING_DAMPER:
+            self._check_spring_damper()
         if self.role is PartRole.THRUSTER:
             self._check_thruster()
+        if self.role is PartRole.SEPARATOR:
+            self._check_separator()
+        if self.role is PartRole.BATTERY:
+            self._check_battery()
+        if self.role is PartRole.TANK:
+            self._check_tank()
         return self
+
+    def _check_separator(self) -> None:
+        """A separator part is a declared-mass body that holds two parts together and lets go on command (B-15).
+
+        Its specification is a mass (`mass_parameter`), dimensions (length parameters) and the declared separation impulse
+        (`separation_impulse` [N*s], never negative, badge `declared` or `default`), and nothing else: no specs, no curves
+        and no other parameter, so no field can carry an energy source (what pushes, how). The release itself is an event of
+        the simulation (X-08). It needs the two faces the held parts are joined to.
+        """
+        if self.mass_parameter is None:
+            raise ValueError("a separator part declares its mass: it needs a mass_parameter (kg)")
+        if self.specs:
+            raise ValueError(f"a separator part has no specs, its specification is parameters: got {[s.name for s in self.specs]}")
+        if self.curves:
+            raise ValueError(f"a separator part has no curves: got {[c.name for c in self.curves]}")
+        by_name = {p.name: p for p in self.parameters}
+        impulse = by_name.get(SEPARATOR_IMPULSE)
+        if impulse is None:
+            raise ValueError(f"a separator part needs the parameter {SEPARATOR_IMPULSE!r} (N*s)")
+        if impulse.unit is not Unit.N_S:
+            raise ValueError(f"parameter {SEPARATOR_IMPULSE!r} is an impulse in 'N*s', got {impulse.unit.value!r}")
+        if not impulse.min.value >= 0.0:
+            raise ValueError(f"parameter {SEPARATOR_IMPULSE!r}: min must not be negative, got {impulse.min.value} N*s (0 is allowed)")
+        for p in self.parameters:
+            for label, q in (("default", p.default), ("min", p.min), ("max", p.max)):
+                if q.badge not in SEPARATOR_BADGES:
+                    raise ValueError(
+                        f"a separator part's parameter {p.name!r} {label}: badge must be 'declared' or 'default', got {q.badge.value!r}"
+                    )
+            if p.name == SEPARATOR_IMPULSE or p.name == self.mass_parameter:
+                continue
+            if p.unit is not Unit.M:
+                raise ValueError(
+                    f"a separator part's parameters are its mass, its dimensions (m) and {SEPARATOR_IMPULSE!r}; "
+                    f"{p.name!r} is in {p.unit.value!r}"
+                )
+        length = by_name.get(SEPARATOR_LENGTH)
+        if length is None or length.unit is not Unit.M:
+            raise ValueError(f"a separator part needs the length parameter {SEPARATOR_LENGTH!r} (m): the distance between its two faces")
+        snaps = {s.id: s for s in self.snap_points}
+        for need in (SEPARATOR_FACE_A, SEPARATOR_FACE_B):
+            if need not in snaps:
+                raise ValueError(f"a separator part needs the snap point {need!r} (the face one held part is joined to)")
+        a, b = snaps[SEPARATOR_FACE_A], snaps[SEPARATOR_FACE_B]
+        na, nb = _frame_z(a.orientation), _frame_z(b.orientation)
+        if any(abs(x + y) > _FACE_TOLERANCE for x, y in zip(na, nb)):
+            raise ValueError(
+                f"the faces {SEPARATOR_FACE_A!r} and {SEPARATOR_FACE_B!r} look opposite ways: their outward normals (+Z of the snap "
+                f"frames) must be antiparallel, got {tuple(round(x, 9) for x in na)} and {tuple(round(x, 9) for x in nb)}"
+            )
+        # The faces lie `length` apart along the outward normal of face_a, on one line (no sideways offset), as an expression
+        # of the parameters: (position_a - position_b) = length * n_a, term by term, so it holds over the whole parameter range.
+        for axis_name, n in zip(("x", "y", "z"), na):
+            ea, eb = getattr(a.position, axis_name), getattr(b.position, axis_name)
+            terms: dict[str, float] = {}
+            for t in ea.terms:
+                terms[t.param] = terms.get(t.param, 0.0) + t.factor
+            for t in eb.terms:
+                terms[t.param] = terms.get(t.param, 0.0) - t.factor
+            want = {SEPARATOR_LENGTH: n}
+            keys = set(terms) | set(want)
+            if abs(ea.offset - eb.offset) > _FACE_TOLERANCE or any(abs(terms.get(k, 0.0) - want.get(k, 0.0)) > _FACE_TOLERANCE for k in keys):
+                raise ValueError(
+                    f"the faces of a separator are {SEPARATOR_LENGTH!r} apart along the outward normal of {SEPARATOR_FACE_A!r}: "
+                    f"position of {SEPARATOR_FACE_A!r} minus {SEPARATOR_FACE_B!r} must be {SEPARATOR_LENGTH} x normal on axis {axis_name}"
+                )
 
     def _check_mass_parameter(self, name: str, params: dict[str, ParamDef]) -> None:
         p = params.get(name)
@@ -178,6 +295,39 @@ class PartDef(BaseModel):
             raise ValueError(f"mass_parameter {name!r}: min must be above zero over the whole range, got {p.min.value} kg")
         if self.shape is None:
             raise ValueError("mass_parameter needs a shape recipe: the mass is spread over the recipe's volume")
+
+    def _check_battery(self) -> None:
+        """A battery part says how much energy it holds and at what voltage (specs `energy_capacity` [J], `nominal_voltage` [V])."""
+        specs = {s.name: s for s in self.specs}
+        for name, unit in ((BATTERY_ENERGY_CAPACITY, Unit.J), (BATTERY_NOMINAL_VOLTAGE, Unit.V)):
+            spec = specs.get(name)
+            if spec is None:
+                raise ValueError(f"a battery part needs the spec {name!r} ({unit.value})")
+            if spec.unit is not unit or not spec.value > 0.0:
+                raise ValueError(f"spec {name!r} is a positive number in {unit.value!r}, got {spec.value} {spec.unit.value!r}")
+        self._check_fraction_param(BATTERY_INITIAL_CHARGE)
+
+    def _check_tank(self) -> None:
+        """A tank part has an inside (a shape with a `subtract` component) and the parameter `propellant_density` [kg/m^3],
+        positive over its whole range. Capacity = density x volume of the inside (`kinetra_engine.parts.tank_supply`)."""
+        if self.shape is None or not any(c.operation == "subtract" for c in self.shape.components):
+            raise ValueError("a tank part needs a shape with an inside: at least one 'subtract' component")
+        rho = next((p for p in self.parameters if p.name == TANK_PROPELLANT_DENSITY), None)
+        if rho is None:
+            raise ValueError(f"a tank part needs the parameter {TANK_PROPELLANT_DENSITY!r} (kg/m^3), the density of what it holds")
+        if rho.unit is not Unit.KG_PER_M3 or not rho.min.value > 0.0:
+            raise ValueError(
+                f"parameter {TANK_PROPELLANT_DENSITY!r} is a positive density in 'kg/m^3' over its whole range, "
+                f"got unit {rho.unit.value!r}, min {rho.min.value}"
+            )
+        self._check_fraction_param(TANK_INITIAL_FILL)
+
+    def _check_fraction_param(self, name: str) -> None:
+        p = next((p for p in self.parameters if p.name == name), None)
+        if p is not None and (p.unit is not Unit.ONE or p.min.value < 0.0 or p.max.value > 1.0):
+            raise ValueError(
+                f"parameter {name!r} is a fraction: unit '1' and range inside [0, 1], got {p.unit.value!r} [{p.min.value}, {p.max.value}]"
+            )
 
     def _check_motor(self) -> None:
         """A motor part has a rated voltage and a torque-speed curve of a motor: it starts at stall and ends at no load.
@@ -213,6 +363,25 @@ class PartDef(BaseModel):
         if spec.unit is not Unit.V or not spec.value > 0.0:
             raise ValueError(f"spec {MOTOR_RATED_VOLTAGE!r} is a positive voltage in 'V', got {spec.value} {spec.unit.value!r}")
 
+    def _check_spring_damper(self) -> None:
+        """A spring-damper part has the two parameters the user tunes: a stiffness [N/m] that stays above zero over the
+        whole range (a zero spring is not a spring) and a damping [N*s/m] that is never negative (negative damping
+        feeds energy into the motion). Zero damping is allowed: an undamped spring is a spring."""
+        by_name = {p.name: p for p in self.parameters}
+        k = by_name.get(SPRING_STIFFNESS)
+        if k is None:
+            raise ValueError(f"a spring-damper part needs the parameter {SPRING_STIFFNESS!r} (N/m)")
+        if k.unit is not Unit.N_PER_M:
+            raise ValueError(f"parameter {SPRING_STIFFNESS!r} is a spring rate in 'N/m', got {k.unit.value!r}")
+        if not k.min.value > 0.0:
+            raise ValueError(f"parameter {SPRING_STIFFNESS!r}: min must be above zero over the whole range, got {k.min.value} N/m")
+        c = by_name.get(SPRING_DAMPING)
+        if c is None:
+            raise ValueError(f"a spring-damper part needs the parameter {SPRING_DAMPING!r} (N*s/m)")
+        if c.unit is not Unit.N_S_PER_M:
+            raise ValueError(f"parameter {SPRING_DAMPING!r} is a damping coefficient in 'N*s/m', got {c.unit.value!r}")
+        if not c.min.value >= 0.0:
+            raise ValueError(f"parameter {SPRING_DAMPING!r}: min must not be negative, got {c.min.value} N*s/m")
     def _check_thruster(self) -> None:
         """A thruster part is a game-level thrust source: a thrust curve, a rated thrust, a propellant flow and a nozzle frame.
 

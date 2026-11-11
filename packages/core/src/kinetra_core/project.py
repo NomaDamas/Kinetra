@@ -10,7 +10,7 @@ schedule entry without its actuator, and no prop without its material.
 
 `world` is required: a project sits on a planet from the start (a planet is chosen with `SelectPlanet`, never
 absent). Not here: the file format and hashes (`projectfile.py`, `canonical.py`, C-03), a missing-definitions state
-(C-06), `planet` existing in `data/bodies` (W-01 data, validator C-02c).
+(C-06: `missing.py`; the definition references of `DesignSpec` are open, see there), `planet` existing in `data/bodies` (W-01 data, validator C-02c).
 """
 
 from __future__ import annotations
@@ -26,7 +26,7 @@ from .world import World
 class Project(BaseModel):
     # extra="forbid" is a decision of the project file format (`projectfile.py`, C-03): a field a build does not know
     # is refused, never ignored, and adding a field bumps the file version. C-06 (#455) relaxes the definition
-    # references of `DesignSpec`/`Project`, not this.
+    # references of `DesignSpec` (an instance may name a part or material the project does not carry), not this.
     model_config = ConfigDict(extra="forbid", frozen=True)
 
     design: DesignSpec = DesignSpec()

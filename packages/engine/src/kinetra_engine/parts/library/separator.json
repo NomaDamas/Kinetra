@@ -1,0 +1,349 @@
+{
+  "id": "separator",
+  "name": "Separator (declared separation impulse)",
+  "parameters": [
+    {
+      "name": "mass",
+      "unit": "kg",
+      "default": {
+        "badge": "default",
+        "source": {
+          "ref": "B-15 separator: PLACEHOLDER initial mass so a new separator has one; the user declares the real mass on the instance (then badge 사용자 선언). The range is a modelling limit, not a product limit"
+        },
+        "value": 0.5,
+        "unit": "kg"
+      },
+      "min": {
+        "badge": "default",
+        "source": {
+          "ref": "B-15 separator: PLACEHOLDER initial mass so a new separator has one; the user declares the real mass on the instance (then badge 사용자 선언). The range is a modelling limit, not a product limit"
+        },
+        "value": 0.01,
+        "unit": "kg"
+      },
+      "max": {
+        "badge": "default",
+        "source": {
+          "ref": "B-15 separator: PLACEHOLDER initial mass so a new separator has one; the user declares the real mass on the instance (then badge 사용자 선언). The range is a modelling limit, not a product limit"
+        },
+        "value": 200.0,
+        "unit": "kg"
+      }
+    },
+    {
+      "name": "radius",
+      "unit": "m",
+      "default": {
+        "badge": "default",
+        "source": {
+          "ref": "B-15 separator: dimension range chosen by Kinetra so the part stays a visible ring from a 4 cm adapter to a 60 cm stage coupling; not a real product"
+        },
+        "value": 0.05,
+        "unit": "m"
+      },
+      "min": {
+        "badge": "default",
+        "source": {
+          "ref": "B-15 separator: dimension range chosen by Kinetra so the part stays a visible ring from a 4 cm adapter to a 60 cm stage coupling; not a real product"
+        },
+        "value": 0.02,
+        "unit": "m"
+      },
+      "max": {
+        "badge": "default",
+        "source": {
+          "ref": "B-15 separator: dimension range chosen by Kinetra so the part stays a visible ring from a 4 cm adapter to a 60 cm stage coupling; not a real product"
+        },
+        "value": 0.3,
+        "unit": "m"
+      }
+    },
+    {
+      "name": "length",
+      "unit": "m",
+      "default": {
+        "badge": "default",
+        "source": {
+          "ref": "B-15 separator: dimension range chosen by Kinetra so the part stays a visible ring from a 4 cm adapter to a 60 cm stage coupling; not a real product"
+        },
+        "value": 0.04,
+        "unit": "m"
+      },
+      "min": {
+        "badge": "default",
+        "source": {
+          "ref": "B-15 separator: dimension range chosen by Kinetra so the part stays a visible ring from a 4 cm adapter to a 60 cm stage coupling; not a real product"
+        },
+        "value": 0.02,
+        "unit": "m"
+      },
+      "max": {
+        "badge": "default",
+        "source": {
+          "ref": "B-15 separator: dimension range chosen by Kinetra so the part stays a visible ring from a 4 cm adapter to a 60 cm stage coupling; not a real product"
+        },
+        "value": 0.2,
+        "unit": "m"
+      }
+    },
+    {
+      "name": "separation_impulse",
+      "unit": "N*s",
+      "default": {
+        "badge": "default",
+        "source": {
+          "ref": "B-15 separator: declared separation impulse, simplified model. 0 N*s = the joint lets go and gives no push. The user declares the value on the instance (then badge 사용자 선언); no energy source (what pushes, how) is modelled or named. The range is a modelling limit, not a product limit"
+        },
+        "value": 0.0,
+        "unit": "N*s"
+      },
+      "min": {
+        "badge": "default",
+        "source": {
+          "ref": "B-15 separator: declared separation impulse, simplified model. 0 N*s = the joint lets go and gives no push. The user declares the value on the instance (then badge 사용자 선언); no energy source (what pushes, how) is modelled or named. The range is a modelling limit, not a product limit"
+        },
+        "value": 0.0,
+        "unit": "N*s"
+      },
+      "max": {
+        "badge": "default",
+        "source": {
+          "ref": "B-15 separator: declared separation impulse, simplified model. 0 N*s = the joint lets go and gives no push. The user declares the value on the instance (then badge 사용자 선언); no energy source (what pushes, how) is modelled or named. The range is a modelling limit, not a product limit"
+        },
+        "value": 1000.0,
+        "unit": "N*s"
+      }
+    }
+  ],
+  "snap_points": [
+    {
+      "badge": "default",
+      "source": {
+        "ref": "B-15: snap frame convention chosen here: the snap frame's +z is the outward normal of the face the point sits on. face_a is the top face (+z), face_b the bottom face (its +z points down); the held parts are joined by fixed joints at these two faces"
+      },
+      "id": "face_a",
+      "kind": "surface",
+      "accepts": [
+        "surface"
+      ],
+      "position": {
+        "x": {
+          "offset": 0.0,
+          "terms": []
+        },
+        "y": {
+          "offset": 0.0,
+          "terms": []
+        },
+        "z": {
+          "offset": 0.0,
+          "terms": [
+            {
+              "param": "length",
+              "factor": 0.5
+            }
+          ]
+        }
+      },
+      "orientation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0,
+        "w": 1.0
+      }
+    },
+    {
+      "badge": "default",
+      "source": {
+        "ref": "B-15: snap frame convention chosen here: the snap frame's +z is the outward normal of the face the point sits on. face_a is the top face (+z), face_b the bottom face (its +z points down); the held parts are joined by fixed joints at these two faces"
+      },
+      "id": "face_b",
+      "kind": "surface",
+      "accepts": [
+        "surface"
+      ],
+      "position": {
+        "x": {
+          "offset": 0.0,
+          "terms": []
+        },
+        "y": {
+          "offset": 0.0,
+          "terms": []
+        },
+        "z": {
+          "offset": 0.0,
+          "terms": [
+            {
+              "param": "length",
+              "factor": -0.5
+            }
+          ]
+        }
+      },
+      "orientation": {
+        "x": 1.0,
+        "y": 0.0,
+        "z": 0.0,
+        "w": 0.0
+      }
+    }
+  ],
+  "specs": [],
+  "shape": {
+    "badge": "default",
+    "source": {
+      "ref": "B-15 separator: silhouette drawn by us from three coaxial cylinders (lower flange, waist, upper flange) of a separation ring; proportions are ours, not a real product"
+    },
+    "components": [
+      {
+        "id": "flange_lower",
+        "primitive": {
+          "kind": "cylinder",
+          "radius": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "radius",
+                "factor": 1.0
+              }
+            ]
+          },
+          "length": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "length",
+                "factor": 0.2
+              }
+            ]
+          }
+        },
+        "operation": "add",
+        "position": {
+          "x": {
+            "offset": 0.0,
+            "terms": []
+          },
+          "y": {
+            "offset": 0.0,
+            "terms": []
+          },
+          "z": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "length",
+                "factor": -0.4
+              }
+            ]
+          }
+        },
+        "orientation": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 1.0
+        }
+      },
+      {
+        "id": "waist",
+        "primitive": {
+          "kind": "cylinder",
+          "radius": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "radius",
+                "factor": 0.8
+              }
+            ]
+          },
+          "length": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "length",
+                "factor": 0.6
+              }
+            ]
+          }
+        },
+        "operation": "add",
+        "position": {
+          "x": {
+            "offset": 0.0,
+            "terms": []
+          },
+          "y": {
+            "offset": 0.0,
+            "terms": []
+          },
+          "z": {
+            "offset": 0.0,
+            "terms": []
+          }
+        },
+        "orientation": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 1.0
+        }
+      },
+      {
+        "id": "flange_upper",
+        "primitive": {
+          "kind": "cylinder",
+          "radius": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "radius",
+                "factor": 1.0
+              }
+            ]
+          },
+          "length": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "length",
+                "factor": 0.2
+              }
+            ]
+          }
+        },
+        "operation": "add",
+        "position": {
+          "x": {
+            "offset": 0.0,
+            "terms": []
+          },
+          "y": {
+            "offset": 0.0,
+            "terms": []
+          },
+          "z": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "length",
+                "factor": 0.4
+              }
+            ]
+          }
+        },
+        "orientation": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 1.0
+        }
+      }
+    ]
+  },
+  "mass_parameter": "mass",
+  "role": "separator",
+  "curves": []
+}

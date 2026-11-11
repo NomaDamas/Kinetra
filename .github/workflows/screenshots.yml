@@ -53,18 +53,20 @@ jobs:
         run: pnpm --filter @kinetra/screenshots test:browser
       - name: "Part glTF in three.js (B-01c: loader, linear material slot, screenshot in out/gltf-check)"
         run: pnpm --filter @kinetra/gltf-check capture
-      - name: Browser tests of the part glTF page
+      - name: "Structural skeleton (B-02: one glb per instance placed by pose, caption with per-part masses and the total, out/gltf-check/skeleton.png)"
+        run: pnpm --filter @kinetra/gltf-check capture:skeleton
+      - name: Browser tests of the part glTF page and the skeleton
         run: pnpm --filter @kinetra/gltf-check test:browser
       - name: Artifact content check (screenshots, webgl and webgl-probe must all be there)
         if: always()
         run: |
-          for f in out/screenshots/manifest.json out/webgl/webgl-result.json out/webgl-probe/webgl-result.json out/gltf-check/parts-gltf.png out/gltf-check/result.json; do
+          for f in out/screenshots/manifest.json out/webgl/webgl-result.json out/webgl-probe/webgl-result.json out/gltf-check/parts-gltf.png out/gltf-check/result.json out/gltf-check/skeleton.png out/gltf-check/skeleton-result.json; do
             test -s "$f" && echo "present: $f" || { echo "MISSING: $f"; exit 1; }
           done
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: screenshots
-          path: out/ # screenshots/ (pages + manifest), webgl/ (pixel-assertion run), webgl-probe/ (flag-set evidence), gltf-check/ (B-01c part glTF page: PNG + result.json)
+          path: out/ # screenshots/ (pages + manifest), webgl/ (pixel-assertion run), webgl-probe/ (flag-set evidence), gltf-check/ (B-01c part glTF page: PNG + result.json; B-02 skeleton.png + skeleton-result.json)
           if-no-files-found: error
           retention-days: 14

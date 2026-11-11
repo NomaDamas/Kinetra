@@ -225,16 +225,14 @@ def test_designspec_rejects_unknown_instance_in_joint():
     reject(d, "unknown instance 'ghost'")
 
 
-def test_designspec_rejects_unknown_part():
+def test_designspec_keeps_an_instance_whose_part_or_material_is_not_carried():
+    """C-06: a definition the project does not carry is not a validation error, the instance is a placeholder
+    (`test_missing_definition.py` holds the rest of the rule)."""
     d = four_wheel_car()
     d["instances"][1]["part"] = "no-such-part"
-    reject(d, "unknown part 'no-such-part'")
-
-
-def test_designspec_rejects_unknown_material():
-    d = four_wheel_car()
     d["instances"][0]["material"] = "unobtainium"
-    reject(d, "unknown material 'unobtainium'")
+    spec = DesignSpec.model_validate(d)
+    assert spec.instances[1].part == "no-such-part" and spec.instances[0].material == "unobtainium"
 
 
 def test_designspec_rejects_snap_point_used_by_two_joints():
@@ -573,12 +571,27 @@ def test_designspec_motor_actuator_on_a_motor_part_is_accepted():
     assert DesignSpec.model_validate(d).parts  # the definition alone is valid; both motor actuators sit on it
 
 
+def make_spring_damper_part(d, id="motor"):
+    p = part(d, id)
+    p["role"] = "spring_damper"
+    p["parameters"] = [
+        *p.get("parameters", []),
+        {"name": "stiffness", "unit": "N/m", "default": q(5000.0, "N/m"), "min": q(100.0, "N/m"), "max": q(1e5, "N/m")},
+        {"name": "damping", "unit": "N*s/m", "default": q(20.0, "N*s/m"), "min": q(0.0, "N*s/m"), "max": q(500.0, "N*s/m")},
+    ]
+
+
 # "thruster" is not here: a thruster part must itself be complete (curve, specs, nozzle; B-03c), so a bare one is
 # rejected before the actuator rule. `test_thruster_...` in packages/engine/tests/test_thruster.py covers that pairing.
-@pytest.mark.parametrize("role", ["wheel", "battery", "tank", "spring_damper"])
+# "battery" and "tank" are not here either (B-03d): they must be complete parts too (specs, an inside), so a bare one is
+# rejected first. `test_supply_motor_on_a_battery_part_is_rejected` in test_supply.py covers that pairing.
+@pytest.mark.parametrize("role", ["wheel", "spring_damper"])
 def test_designspec_motor_actuator_on_a_part_with_another_role_is_rejected(role):
     d = four_wheel_car()
-    part(d, "motor")["role"] = role
+    if role == "spring_damper":
+        make_spring_damper_part(d)  # a spring-damper part must be valid on its own for the role-actuator rule to be what rejects
+    else:
+        part(d, "motor")["role"] = role
     reject(d, f"a motor drives a part with role 'motor', but instance 'motor-l' is part 'motor' with role '{role}'")
 
 

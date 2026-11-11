@@ -27,8 +27,14 @@ export const FILES = [
   "payload-declared-mass",
   "ballast-weight-declared-mass",
   "motor-37d-12v-50-1-declared-mass",
+  "spring-damper-lee-lc032b08-declared-mass",
   "thruster-vacco-48003040-steel",
+  "separator-declared-mass",
   "wheel-pom",
+  "battery-18650-declared-mass",
+  "battery-pack-4s-declared-mass",
+  "tank-al6061",
+  "shell-al6061",
 ];
 export const DEFAULT_OUT = join(REPO_ROOT, "out", "gltf-check");
 const BACKGROUND = [0x14, 0x18, 0x1f];
@@ -53,8 +59,10 @@ export function drawnPixels(png: PNG): number {
   return n;
 }
 
-function serve(): Promise<{ url: string; close: () => void }> {
+/** `extra`: more URL prefix -> directory roots (B-02: the skeleton page serves its manifest and glb files from `/skeleton/`). */
+export function serve(extra: [string, string][] = []): Promise<{ url: string; close: () => void }> {
   const roots: [string, string][] = [
+    ...extra,
     ["/fixtures/", FIXTURES],
     ["/page/", join(HERE, "page")],
     ["/node_modules/three/", resolve(HERE, "node_modules", "three")],

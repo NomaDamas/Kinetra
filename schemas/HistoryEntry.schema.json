@@ -19,6 +19,7 @@
           "batch": "#/$defs/CommandBatch",
           "clear_parameter": "#/$defs/ClearParameter",
           "move_instance": "#/$defs/MoveInstance",
+          "relink_instance": "#/$defs/RelinkInstance",
           "remove_actuator": "#/$defs/RemoveActuator",
           "remove_assumption": "#/$defs/RemoveAssumption",
           "remove_control_entry": "#/$defs/RemoveControlEntry",
@@ -73,6 +74,9 @@
         },
         {
           "$ref": "#/$defs/SetInstanceMaterial"
+        },
+        {
+          "$ref": "#/$defs/RelinkInstance"
         },
         {
           "$ref": "#/$defs/AddJoint"
@@ -129,6 +133,7 @@
           "batch": "#/$defs/CommandBatch",
           "clear_parameter": "#/$defs/ClearParameter",
           "move_instance": "#/$defs/MoveInstance",
+          "relink_instance": "#/$defs/RelinkInstance",
           "remove_actuator": "#/$defs/RemoveActuator",
           "remove_assumption": "#/$defs/RemoveAssumption",
           "remove_control_entry": "#/$defs/RemoveControlEntry",
@@ -183,6 +188,9 @@
         },
         {
           "$ref": "#/$defs/SetInstanceMaterial"
+        },
+        {
+          "$ref": "#/$defs/RelinkInstance"
         },
         {
           "$ref": "#/$defs/AddJoint"
@@ -292,7 +300,7 @@
     },
     "Actuator": {
       "additionalProperties": false,
-      "description": "Something on `instance` that a command drives. A motor drives one joint (`joint`); a thruster has none.",
+      "description": "Something on `instance` that a command drives. A motor drives one joint (`joint`); a thruster has none.\n\n`supply` (B-03d) is the instance the actuator draws from: a motor from a `battery` part, a thruster from a `tank`\npart (`PartRole`). `None` means the actuator is not metered (nothing runs out). Several actuators may share one\nsupply; what it holds is spent by all of them (`kinetra_engine.parts.supply`).",
       "properties": {
         "id": {
           "pattern": "^[a-z][a-z0-9_-]{0,63}$",
@@ -319,6 +327,19 @@
           ],
           "default": null,
           "title": "Joint"
+        },
+        "supply": {
+          "anyOf": [
+            {
+              "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Supply"
         }
       },
       "required": [
@@ -766,6 +787,7 @@
                 "add_part_def": "#/$defs/AddPartDef",
                 "clear_parameter": "#/$defs/ClearParameter",
                 "move_instance": "#/$defs/MoveInstance",
+                "relink_instance": "#/$defs/RelinkInstance",
                 "remove_actuator": "#/$defs/RemoveActuator",
                 "remove_assumption": "#/$defs/RemoveAssumption",
                 "remove_control_entry": "#/$defs/RemoveControlEntry",
@@ -820,6 +842,9 @@
               },
               {
                 "$ref": "#/$defs/SetInstanceMaterial"
+              },
+              {
+                "$ref": "#/$defs/RelinkInstance"
               },
               {
                 "$ref": "#/$defs/AddJoint"
@@ -1111,7 +1136,7 @@
     },
     "Joint": {
       "additionalProperties": false,
-      "description": "A connection between two snap points of two different instances. `a` is the parent side by convention.\n\n`limits` are optional (`None`: unlimited, as a wheel axle) and not allowed on a fixed joint.\n`break_threshold` is optional (`None`: never breaks).",
+      "description": "A connection between two snap points of two different instances. `a` is the parent side by convention.\n\n`axis` (hinge and slider): the line the one free motion is about or along, in the frame of the `a` snap point\n(`JointAxis`). `None` is +Z of that frame (`DEFAULT_JOINT_AXIS`). A fixed joint has no motion and so no axis.\n`limits` are optional (`None`: unlimited, as a wheel axle) and not allowed on a fixed joint; they bound the joint\ncoordinate, which is 0 at the saved pose (`JointLimits`).\n`break_threshold` is optional (`None`: never breaks).",
       "properties": {
         "id": {
           "pattern": "^[a-z][a-z0-9_-]{0,63}$",
@@ -1126,6 +1151,17 @@
         },
         "b": {
           "$ref": "#/$defs/SnapRef"
+        },
+        "axis": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/JointAxis"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
         },
         "limits": {
           "anyOf": [
@@ -1159,6 +1195,39 @@
       "title": "Joint",
       "type": "object"
     },
+    "JointAxis": {
+      "additionalProperties": false,
+      "description": "The direction a hinge turns about or a slider moves along: a unit vector in the frame of the snap point of\nthe joint's `a` end (the parent side), the same frame a snap point's `orientation` gives. One badge and source\ncover the vector. The sense is right-handed for a hinge (positive angle turns `b` counter-clockwise seen from\nthe tip of the axis) and positive travel is along the vector for a slider. `-axis` describes the same line of\nmotion with the sign of the coordinate (and so of its limits and of a motor command) flipped.",
+      "properties": {
+        "badge": {
+          "$ref": "#/$defs/Badge"
+        },
+        "source": {
+          "$ref": "#/$defs/Source"
+        },
+        "x": {
+          "title": "X",
+          "type": "number"
+        },
+        "y": {
+          "title": "Y",
+          "type": "number"
+        },
+        "z": {
+          "title": "Z",
+          "type": "number"
+        }
+      },
+      "required": [
+        "badge",
+        "source",
+        "x",
+        "y",
+        "z"
+      ],
+      "title": "JointAxis",
+      "type": "object"
+    },
     "JointKind": {
       "enum": [
         "fixed",
@@ -1170,7 +1239,7 @@
     },
     "JointLimits": {
       "additionalProperties": false,
-      "description": "Travel limits of the joint coordinate: rad for a hinge, m for a slider. `lower < upper`.",
+      "description": "Travel limits of the joint coordinate: rad for a hinge, m for a slider. `lower < upper`.\n\nThe coordinate is 0 at the saved pose, so the saved pose must be inside its own limits: `lower <= 0 <= upper`\n(a joint saved outside its travel would start in violation of its own limit). Both ends are inclusive.",
       "properties": {
         "lower": {
           "$ref": "#/$defs/Quantity"
@@ -1516,14 +1585,15 @@
       "type": "object"
     },
     "PartRole": {
-      "description": "What a part is for, where the simulation needs to know (B-03b). A part without a role is only a body.\n\nThe actuator on an instance must fit its part's role (`designspec.py`): a motor actuator drives a `motor` part, a\nthruster actuator a `thruster` part. What a role requires of the definition is checked by `PartDef` (the\nrequired curves and specs), so a part that says `motor` always has the numbers a motor needs.",
+      "description": "What a part is for, where the simulation needs to know (B-03b). A part without a role is only a body.\n\nThe actuator on an instance must fit its part's role (`designspec.py`): a motor actuator drives a `motor` part, a\nthruster actuator a `thruster` part. What a role requires of the definition is checked by `PartDef` (the\nrequired curves, specs and parameters), so a part that says `motor` always has the numbers a motor needs and one that says\n`spring_damper` has its stiffness and damping (B-03e).",
       "enum": [
         "motor",
         "thruster",
         "wheel",
         "battery",
         "tank",
-        "spring_damper"
+        "spring_damper",
+        "separator"
       ],
       "title": "PartRole",
       "type": "string"
@@ -1632,6 +1702,34 @@
       "title": "Quaternion",
       "type": "object"
     },
+    "RelinkInstance": {
+      "additionalProperties": false,
+      "description": "Point an instance at another part definition of the project: the way back for an instance whose definition is\nmissing (C-06, `docs/architecture/missing-definitions.md`; the other ways are `add_part_def` with the missing id\nand `remove_instance`). The part must be one the project carries and must suit the instance (its parameters and\nits joints' snap points): else the command is rejected with the validator's sentence and the offending ref.",
+      "properties": {
+        "type": {
+          "const": "relink_instance",
+          "title": "Type",
+          "type": "string"
+        },
+        "id": {
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "part": {
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+          "title": "Part",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "id",
+        "part"
+      ],
+      "title": "RelinkInstance",
+      "type": "object"
+    },
     "RemoveActuator": {
       "additionalProperties": false,
       "description": "Remove an actuator with its schedule entries.",
@@ -1700,7 +1798,7 @@
     },
     "RemoveInstance": {
       "additionalProperties": false,
-      "description": "Delete an instance with its joints, the actuators on it or on those joints, and their schedule entries.",
+      "description": "Delete an instance with its joints, the actuators on it, on those joints or drawing from it (a battery or tank),\nand their schedule entries.",
       "properties": {
         "type": {
           "const": "remove_instance",
@@ -1744,7 +1842,7 @@
     },
     "RemoveMaterialDef": {
       "additionalProperties": false,
-      "description": "Take a material definition out. Rejected while an instance or a terrain prop uses it.",
+      "description": "Take a material definition out. Rejected while an instance or a terrain prop uses it, unless `unlink` is set:\nthen the instances that use it stay without a definition (C-06; see `RemovePartDef`). A terrain prop that uses\nit still refuses.",
       "properties": {
         "type": {
           "const": "remove_material_def",
@@ -1755,6 +1853,11 @@
           "pattern": "^[a-z][a-z0-9_-]{0,63}$",
           "title": "Id",
           "type": "string"
+        },
+        "unlink": {
+          "default": false,
+          "title": "Unlink",
+          "type": "boolean"
         }
       },
       "required": [
@@ -1766,7 +1869,7 @@
     },
     "RemovePartDef": {
       "additionalProperties": false,
-      "description": "Take a part definition out. Rejected while an instance uses it.",
+      "description": "Take a part definition out. Rejected while an instance uses it, unless `unlink` is set: then the instances\nthat use it stay as placeholders without a definition (C-06). `unlink` is what the inverse of an `add_part_def`\nthat gave placeholders their definition says, so that undo can put the placeholders back; the validator refuses\nit from any sender (`missing_definition`: a command never creates a placeholder).",
       "properties": {
         "type": {
           "const": "remove_part_def",
@@ -1777,6 +1880,11 @@
           "pattern": "^[a-z][a-z0-9_-]{0,63}$",
           "title": "Id",
           "type": "string"
+        },
+        "unlink": {
+          "default": false,
+          "title": "Unlink",
+          "type": "boolean"
         }
       },
       "required": [

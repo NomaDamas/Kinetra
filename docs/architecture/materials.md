@@ -2,7 +2,7 @@
 
 - 상태: 구현됨. 데이터는 `packages/core/src/kinetra_core/material_catalog.json`, 모델은 `material_catalog.py`(로더 `load_material_catalog()`), `pbr.py`(PBR 슬롯). 테스트는 `packages/core/tests/test_materials.py`(`uv run pytest packages/core -q -k materials`).
 - 근거: 이슈 #120, `docs/architecture/project-model.md`(`Material`, 값 배지와 출처), 핵심 가치 V5.
-- 범위 밖: 재료 DB 확장(S2; MatWeb 같은 재배포 금지 DB에서 대량으로 옮기는 일은 하지 않는다), 두 재료 쌍별 마찰표와 접촉 마찰 합성(X-01), 이방성·적층 이론, 온도·변형률 속도 의존, 파단 임계 계산(X-04a). CFRP의 `yield_strength` 뜻과 강도 기준 혼재는 #481, `Source`의 범위·접근일 필드는 B-07a.
+- 범위 밖: 재료 DB 확장(S2; MatWeb 같은 재배포 금지 DB에서 대량으로 옮기는 일은 하지 않는다), 두 재료 쌍별 마찰표와 접촉 마찰 합성(X-01), 이방성·적층 이론, 온도·변형률 속도 의존, 파단 임계 계산(X-04a, 구현됨: [`break-threshold.md`](break-threshold.md)). CFRP의 `yield_strength` 뜻과 강도 기준 혼재는 #481, `Source`의 범위·접근일 필드는 B-07a.
 
 ## 숫자는 코드에 없다
 

@@ -112,8 +112,8 @@ def test_hash_of_the_empty_project_is_pinned():
 
 
 def test_hash_of_the_example_projects_is_pinned():
-    assert project_hash(project_of(load(CAR))) == "sha256:89f684405667a3c2c09d890f9ac9d48bc93e7baba00318e76ddf778f73630c15"
-    assert project_hash(project_of(load(ROCKET))) == "sha256:89c8706101ce34a4601f7bd494b169a2848d25c9db5074ef29309be87333b9a1"
+    assert project_hash(project_of(load(CAR))) == "sha256:4c3283f83994dcb269b7fb6350aed31c841b60cc02ac3409de0e81e0ee30c66d"
+    assert project_hash(project_of(load(ROCKET))) == "sha256:5f6f172996fa79cc910c6d28aa44a892af7f9b0e0b46160c5ea4cafa3c5dec13"
 
 
 def test_hash_is_a_sha256_of_the_canonical_text(example):
@@ -614,8 +614,8 @@ def test_save_open_refuses_a_version_it_does_not_read(version):
 
 def test_save_open_refuses_an_invalid_project_with_the_validators_sentence():
     d = written()
-    d["project"]["design"]["instances"][0]["part"] = "no-such-part"
-    assert "no-such-part" in refused(json.dumps(d), ProjectFileErrorCode.INVALID_PROJECT)
+    d["project"]["design"]["joints"][0]["a"]["instance"] = "no-such-instance"
+    assert "no-such-instance" in refused(json.dumps(d), ProjectFileErrorCode.INVALID_PROJECT)
     d = written()
     d["project"]["design"]["instances"][0]["pose"].pop("source")
     refused(json.dumps(d), ProjectFileErrorCode.INVALID_PROJECT)
@@ -675,6 +675,7 @@ def test_save_open_the_hash_says_same_or_different_not_who_wrote_it():
 
 OMITTED_DEFAULTS = {
     "Actuator.joint": None,
+    "Actuator.supply": None,
     "Assumption.distribution": {"kind": "fixed"},
     "Assumption.editable": True,
     "AssumptionTable.assumptions": [],
@@ -688,6 +689,7 @@ OMITTED_DEFAULTS = {
     "DesignSpec.schedule": {"entries": []},
     "Instance.material": None,
     "Instance.parameters": [],
+    "Joint.axis": None,
     "Joint.break_threshold": None,
     "Joint.limits": None,
     "NormalDistribution.clip_high": None,

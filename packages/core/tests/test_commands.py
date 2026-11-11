@@ -319,8 +319,6 @@ def test_apply_reason_refs_say_what_kind_an_id_is():
 
 
 def test_apply_rejects_a_result_that_is_not_a_valid_project_and_says_where(project):
-    err = rejected(project, cmd(type="set_instance_material", id="chassis-1", material="unobtainium"), ReasonCode.INVALID_PROJECT)
-    assert "unobtainium" in err.reasons[0].message
     too_wide = {"name": "diameter", **q(5.0, "m")}  # the wheel's range is 0.05 to 0.2 m
     err = rejected(project, cmd(type="set_parameter", instance="wheel-rl", parameter=too_wide), ReasonCode.INVALID_PROJECT)
     assert "outside" in err.reasons[0].message
@@ -344,12 +342,8 @@ def test_apply_rejects_dangling_joint_actuator_and_part_references(project):
     assert ref("instance", "ghost") in err.reasons[0].ids  # the dangling id, not only the joint's own
     err = rejected(project, cmd(type="add_actuator", actuator={"id": "a-x", "kind": "thruster", "instance": "ghost"}), ReasonCode.INVALID_PROJECT)
     assert ref("instance", "ghost") in err.reasons[0].ids
-    wheel = new_wheel()
-    wheel["part"] = "ghost"
-    err = rejected(project, cmd(type="add_instance", instance=wheel), ReasonCode.INVALID_PROJECT)
-    assert ref("part", "ghost") in err.reasons[0].ids
-    err = rejected(project, cmd(type="set_instance_material", id="chassis-1", material="unobtainium"), ReasonCode.INVALID_PROJECT)
-    assert ref("material", "unobtainium") in err.reasons[0].ids
+    # a part or material the project does not carry is a placeholder, not a dangling reference (C-06): the applier
+    # takes it (undo needs that) and `validate_command` refuses a command that makes one (`test_missing_definition.py`)
 
 
 def test_apply_rejects_indexes_out_of_range(project):
@@ -564,7 +558,8 @@ def test_apply_replace_joint_keeps_position_motor_and_schedule(project):
 
 def test_apply_replace_joint_that_strands_its_motor_is_rejected(project):
     drive_l = next(j for j in load("DesignSpec.four-wheel-car.json")["joints"] if j["id"] == "drive-l")
-    err = rejected(project, cmd(type="replace_joint", joint={**drive_l, "kind": "fixed"}), ReasonCode.INVALID_PROJECT)
+    fixed = {k: v for k, v in drive_l.items() if k != "axis"} | {"kind": "fixed"}  # a fixed joint has no axis (B-04a)
+    err = rejected(project, cmd(type="replace_joint", joint=fixed), ReasonCode.INVALID_PROJECT)
     assert "fixed" in err.reasons[0].message
     assert {ref("joint", "drive-l"), ref("actuator", "drive-motor-l")} <= set(err.reasons[0].ids)
 
