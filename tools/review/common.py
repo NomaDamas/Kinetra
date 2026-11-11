@@ -14,9 +14,16 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 KEY_ENV = "OPENROUTER_API_KEY"
 
+# Bearer 뒤는 비밀 모양(충분히 긴 토큰 문자열)일 때만 가린다. `{self._key}`, `$TOKEN`, `os.environ[...]` 같은 코드 표현식은
+# 문자 집합(`{`, `$`, `[`, `(` 가 없다)과 길이로 걸러진다. 문자 집합에 맞는 20자 이상 토큰은 숫자가 없어도 가린다.
+# 예외는 `self.` 같은 객체 이름으로 시작하는 속성 접근 하나뿐이다(_is_code). 구분자는 같은 줄의 공백·탭이라 한 곳이 줄을 넘지 않는다.
+BEARER_MIN = 20
+_BEARER = re.compile(r"(?i)\bBearer[ \t]+([A-Za-z0-9._~+/=\-]{%d,})" % BEARER_MIN)
+_ATTR_ACCESS = re.compile(r"(?:self|cls|this|os|config|cfg|settings|secrets)(?:\.[A-Za-z_][A-Za-z0-9_]*)+")
+
 _SECRET_PATTERNS = (
     re.compile(r"sk-[A-Za-z0-9_\-]{8,}"),  # OpenRouter / OpenAI 형태
-    re.compile(r"(?i)\bBearer\s+[^\s\"']+"),
+    _BEARER,
     re.compile(r"\bgh[pousr]_[A-Za-z0-9]{16,}"),  # GitHub 토큰(classic, OAuth, 앱 등)
     re.compile(r"\bgithub_pat_[A-Za-z0-9_]{20,}"),  # GitHub fine-grained PAT
 )
@@ -26,14 +33,56 @@ class ReviewError(Exception):
     """리뷰 봇이 사용자에게 보여 줄 오류. 메시지는 이미 마스킹돼 있다."""
 
 
-def redact(text: str) -> str:
-    """환경변수의 키 값과 키처럼 생긴 문자열을 가린다."""
+def _is_code(token: str) -> bool:
+    """`self._openrouter_api_key` 처럼 알려진 객체 이름에서 시작하는 속성 접근 하나만 소스 표현식으로 본다."""
+    return _ATTR_ACCESS.fullmatch(token) is not None
+
+
+def _spans(text: str) -> list[tuple[int, int]]:
+    """가릴 구간(겹치면 합친다). 원문 기준 오프셋이라 줄 번호가 정확하다."""
+    found: list[tuple[int, int]] = []
     key = os.environ.get(KEY_ENV, "")
     if len(key) >= 4:
-        text = text.replace(key, "***")
+        found += [(m.start(), m.end()) for m in re.finditer(re.escape(key), text)]
     for pat in _SECRET_PATTERNS:
-        text = pat.sub("***", text)
-    return text
+        for m in pat.finditer(text):
+            if pat is _BEARER and _is_code(m.group(1)):
+                continue
+            found.append((m.start(), m.end()))
+    found.sort()
+    merged: list[tuple[int, int]] = []
+    for a, b in found:
+        if merged and a < merged[-1][1]:
+            merged[-1] = (merged[-1][0], max(merged[-1][1], b))
+        else:
+            merged.append((a, b))
+    return merged
+
+
+def redact_report(text: str) -> tuple[str, int, list[int]]:
+    """(가린 글, 가린 곳 수, 가린 곳이 있는 줄 번호들). 줄 번호는 **가린 글** 기준 1부터다(모델이 보는 글과 같다).
+    한 곳이 여러 줄에 걸쳐 `***` 하나로 줄어도 번호가 어긋나지 않게, 가린 글의 개행 수를 누적해 센다."""
+    spans = _spans(text)
+    if not spans:
+        return text, 0, []
+    out: list[str] = []
+    lines: list[int] = []
+    pos = 0
+    newlines = 0  # 지금까지 출력(out)에 쓴 개행 수
+    for a, b in spans:
+        chunk = text[pos:a]
+        out += [chunk, "***"]
+        newlines += chunk.count("\n")
+        pos = b
+        if not lines or lines[-1] != newlines + 1:
+            lines.append(newlines + 1)
+    out.append(text[pos:])
+    return "".join(out), len(spans), lines
+
+
+def redact(text: str) -> str:
+    """환경변수의 키 값과 키처럼 생긴 문자열을 가린다."""
+    return redact_report(text)[0]
 
 
 def redact_obj(obj):

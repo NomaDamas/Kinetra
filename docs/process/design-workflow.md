@@ -95,6 +95,8 @@
 
 내보낸 파일은 고치지 않고 그대로 커밋한다. 고쳐야 하면 고친 곳과 이유를 `README.md`에 전/후로 적는다(`design-system` 폴더의 "고친 정직성 문구" 절이 본보기).
 
+`source/`가 있으면 원본에서 `index.html`을 다시 만들 수 있어야 한다. `python3 source/tools/build_export.py source <out_dir>`의 `index.html`이 커밋된 `index.html`과 바이트가 같고(루트 높이는 `canvas.json`과 같다), `design-system.zip`은 `uv run python tools/design/pack_design_system.py`로 묶는다. 둘 다 `uv run pytest tools/design/tests -q`가 본다(D0-02e, #395).
+
 ## 승인 뒤: 구현과 대조 (D0-04)
 
 화면 구현 PR은 본문 "디자인 승인본" 칸에 `design/exports/<화면>/` 경로를 쓰고(`.github/pull_request_template.md`), 아래 대조를 통과시킨다.
