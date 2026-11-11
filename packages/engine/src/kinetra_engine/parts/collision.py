@@ -44,8 +44,8 @@ from kinetra_core import (
     Source,
     Unit,
 )
+from kinetra_core import convex as cx
 
-from . import _convex as cx
 from ._decompose import Decomposition, Infeasible, MIN_STRIP_FRACTION, BorePlan, decompose, plan_through_bore
 from ._shape import Placed, ShapeError, parameter_uses, resolve_shape, signed_volumes
 

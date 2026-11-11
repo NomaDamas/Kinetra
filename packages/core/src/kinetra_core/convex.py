@@ -1,4 +1,5 @@
-"""Convex primitives in the part frame: support functions, separation and containment (B-01a).
+"""Convex bodies (box, cylinder, sphere, ramp wedge) in a frame: support functions, separation and containment (B-01a; moved from `kinetra_engine.parts`
+so the placement check of the validator, C-02c, shares the exact tests the mass computation uses).
 
 The mass computation sums component volumes, so it is only right when added components do not overlap and voids sit
 inside the material. Two convex bodies have disjoint interiors exactly when a plane separates them; one convex body is
@@ -15,7 +16,11 @@ silent double count.
 from __future__ import annotations
 
 import math
+from collections.abc import Mapping
 from dataclasses import dataclass
+
+from .geometry import Quaternion
+from .shape import Box, Cylinder, Sphere
 
 Vec = tuple[float, float, float]
 Mat = tuple[Vec, Vec, Vec]  # rows
@@ -56,10 +61,10 @@ def unit(a: Vec) -> Vec | None:
 class Body:
     """A primitive placed in the part frame. `axes` are the body's local x, y, z as part-frame unit vectors."""
 
-    kind: str  # "box" | "cylinder" | "sphere"
+    kind: str  # "box" | "cylinder" | "sphere" | "wedge"
     center: Vec
     axes: tuple[Vec, Vec, Vec]
-    half: Vec  # box: half extents. cylinder: (radius, radius, half length). sphere: (r, r, r)
+    half: Vec  # box: half extents. cylinder: (radius, radius, half length). sphere: (r, r, r). wedge: see `wedge_vertices`
 
     @property
     def axis(self) -> Vec:
@@ -68,6 +73,8 @@ class Body:
 
     def support(self, n: Vec) -> float:
         c = dot(self.center, n)
+        if self.kind == "wedge":
+            return max(dot(v, n) for v in self.vertices())
         if self.kind == "box":
             return c + sum(self.half[i] * abs(dot(self.axes[i], n)) for i in range(3))
         if self.kind == "cylinder":
@@ -75,6 +82,31 @@ class Body:
             # The part of n perpendicular to the axis, computed directly: sqrt(1 - t^2) loses everything near t = 1.
             return c + self.half[2] * abs(dot(axis, n)) + self.half[0] * norm(sub(n, scale(axis, dot(axis, n))))
         return c + self.half[0]
+
+    def vertices(self) -> list[Vec]:
+        """Wedge (a ramp, `world.py`): `center` is the middle of its footprint on the ground, local x runs uphill,
+        `half` = (length / 2, width / 2, rise). The footprint is the rectangle at local z = 0; the top edge is above
+        local x = +length / 2. Six vertices of the triangular prism."""
+        lx, hy, rise = self.half
+        out = []
+        for sy in (-1.0, 1.0):
+            for x, z in ((-lx, 0.0), (lx, 0.0), (lx, rise)):
+                p = add(self.center, scale(self.axes[0], x))
+                p = add(p, scale(self.axes[1], sy * hy))
+                out.append(add(p, scale(self.axes[2], z)))
+        return out
+
+    def own_directions(self) -> list[Vec]:
+        """Directions that can separate this body from another: its axes, plus a wedge's slope normal and slope line."""
+        if self.kind == "sphere":
+            return []
+        out = list(self.axes)
+        if self.kind == "wedge":
+            lx, _, rise = self.half
+            h = math.hypot(2.0 * lx, rise)
+            out.append(unit(add(scale(self.axes[0], -rise / h), scale(self.axes[2], 2.0 * lx / h))))  # type: ignore[arg-type]
+            out.append(unit(add(scale(self.axes[0], 2.0 * lx / h), scale(self.axes[2], rise / h))))  # type: ignore[arg-type]
+        return out
 
     def corners(self) -> list[Vec]:
         out = []
@@ -89,7 +121,9 @@ class Body:
         return out
 
     def nearest_to(self, p: Vec) -> Vec:
-        """The point of a box or cylinder closest to `p`."""
+        """The point of a box or cylinder closest to `p` (a wedge: its closest vertex, only used to pick a direction)."""
+        if self.kind == "wedge":
+            return min(self.vertices(), key=lambda v: norm(sub(v, p)))
         d = sub(p, self.center)
         if self.kind == "box":
             q = self.center
@@ -108,6 +142,8 @@ class Body:
         """The largest distance from `p` to any point of the body."""
         if self.kind == "box":
             return max(norm(sub(q, p)) for q in self.corners())
+        if self.kind == "wedge":
+            return max(norm(sub(q, p)) for q in self.vertices())
         d = sub(p, self.center)
         if self.kind == "sphere":
             return norm(d) + self.half[0]
@@ -129,8 +165,7 @@ _FIB = [
 
 def _candidate_directions(a: Body, b: Body) -> list[Vec]:
     out: list[Vec] = []
-    own_a = list(a.axes) if a.kind != "sphere" else []
-    own_b = list(b.axes) if b.kind != "sphere" else []
+    own_a, own_b = a.own_directions(), b.own_directions()
     out.extend(own_a)
     out.extend(own_b)
     for x in own_a:
@@ -257,3 +292,25 @@ def contained(inner: Body, outer: Body, tol: float) -> bool:
         if inner.support(n) > dot(outer.center, n) + outer.half[2] + tol:
             return False
     return _within_radius(inner, outer, tol)
+
+
+def rotation(q: Quaternion) -> Mat:
+    """Rotation matrix (rows) of a unit quaternion {x, y, z, w}."""
+    x, y, z, w = q.x, q.y, q.z, q.w
+    n = math.sqrt(x * x + y * y + z * z + w * w)
+    x, y, z, w = x / n, y / n, z / n, w / n  # the model allows norm 1 +- 1e-6; use the exact rotation
+    return (
+        (1 - 2 * (y * y + z * z), 2 * (x * y - z * w), 2 * (x * z + y * w)),
+        (2 * (x * y + z * w), 1 - 2 * (x * x + z * z), 2 * (y * z - x * w)),
+        (2 * (x * z - y * w), 2 * (y * z + x * w), 1 - 2 * (x * x + y * y)),
+    )
+
+
+def make_body(p: Box | Cylinder | Sphere, dims: Mapping[str, float], center: Vec, r: Mat) -> Body:
+    """The primitive `p` with resolved `dims` [m], centred at `center`, turned by the rotation matrix `r` (rows)."""
+    axes = tuple((r[0][j], r[1][j], r[2][j]) for j in range(3))
+    if isinstance(p, Box):
+        return Body("box", center, axes, (dims["size_x"] / 2, dims["size_y"] / 2, dims["size_z"] / 2))  # type: ignore[arg-type]
+    if isinstance(p, Cylinder):
+        return Body("cylinder", center, axes, (dims["radius"], dims["radius"], dims["length"] / 2))  # type: ignore[arg-type]
+    return Body("sphere", center, axes, (dims["radius"],) * 3)  # type: ignore[arg-type]

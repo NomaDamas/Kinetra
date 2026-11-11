@@ -4,7 +4,7 @@ Every number is a `Quantity` (badge and source required) except a snap point's p
 it carries one badge and source for the whole pose.
 
 Collections are tuples, so a `PartDef` is immutable and hashable. Order is part of the value and is preserved;
-the canonical form for definition hashes (C-03) is C-03's to fix.
+the canonical order that definition hashes use is `canonical.py` (C-03).
 
 The optional `shape` (B-01a, `shape.py`) is the recipe mass, centre of mass and inertia are computed from. The
 optional `mass_parameter` (B-02c) names a kg parameter that fixes the mass itself; the recipe then only places it.
@@ -15,9 +15,12 @@ and joints (C-01b), MJCF (X-01).
 
 from __future__ import annotations
 
+from enum import StrEnum
+
 from pydantic import BaseModel, ConfigDict, Field, ValidationInfo, field_validator, model_validator
 
 from .conventions import ID_PATTERN, Unit
+from .curve import NamedCurve
 from .geometry import AxisExpr, Name, ParamTerm, Position, Quaternion  # noqa: F401  (AxisExpr, ParamTerm: re-exported)
 from .provenance import Provenance, Quantity
 from .shape import Shape
@@ -78,6 +81,28 @@ class SnapPoint(Provenance):
         return v
 
 
+class PartRole(StrEnum):
+    """What a part is for, where the simulation needs to know (B-03b). A part without a role is only a body.
+
+    The actuator on an instance must fit its part's role (`designspec.py`): a motor actuator drives a `motor` part, a
+    thruster actuator a `thruster` part. What a role requires of the definition is checked by `PartDef` (the
+    required curves and specs), so a part that says `motor` always has the numbers a motor needs.
+    """
+
+    MOTOR = "motor"
+    THRUSTER = "thruster"
+    WHEEL = "wheel"
+    BATTERY = "battery"
+    TANK = "tank"
+    SPRING_DAMPER = "spring_damper"
+
+
+MOTOR_CURVE = "torque_speed"
+"""Name of a motor's torque-speed curve in `PartDef.curves`: x = shaft speed [rad/s], y = torque [N*m] at full command."""
+MOTOR_RATED_VOLTAGE = "rated_voltage"
+"""Name of the spec a motor part must have: the supply voltage [V] the curve is for."""
+
+
 class PartDef(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
 
@@ -92,6 +117,8 @@ class PartDef(BaseModel):
     The shape recipe then only says where that mass sits: it is spread uniformly over the recipe's net volume. A part
     without it gets its mass from the instance's material density times the shape volume. The value is the instance's
     (`Instance.parameters`) or this definition's default, with its own badge and source."""
+    role: PartRole | None = None
+    curves: tuple[NamedCurve, ...] = ()
 
     @model_validator(mode="after")
     def _consistent(self) -> "PartDef":
@@ -99,6 +126,7 @@ class PartDef(BaseModel):
             ("parameter name", [p.name for p in self.parameters]),
             ("snap point id", [s.id for s in self.snap_points]),
             ("spec name", [s.name for s in self.specs]),
+            ("curve name", [c.name for c in self.curves]),
         ):
             if len(set(names)) != len(names):
                 raise ValueError(f"duplicate {label}")
@@ -121,6 +149,8 @@ class PartDef(BaseModel):
             self._check_shape(self.shape, {p.name: p for p in self.parameters})
         if self.mass_parameter is not None:
             self._check_mass_parameter(self.mass_parameter, {p.name: p for p in self.parameters})
+        if self.role is PartRole.MOTOR:
+            self._check_motor()
         return self
 
     def _check_mass_parameter(self, name: str, params: dict[str, ParamDef]) -> None:
@@ -133,6 +163,40 @@ class PartDef(BaseModel):
             raise ValueError(f"mass_parameter {name!r}: min must be above zero over the whole range, got {p.min.value} kg")
         if self.shape is None:
             raise ValueError("mass_parameter needs a shape recipe: the mass is spread over the recipe's volume")
+
+    def _check_motor(self) -> None:
+        """A motor part has a rated voltage and a torque-speed curve of a motor: it starts at stall and ends at no load.
+
+        The curve is `(speed [rad/s], torque [N*m])`. It starts at speed 0 with a positive stall torque, ends at a
+        positive no-load speed with torque 0, and the torque never rises with speed. A motor that can push harder
+        while it spins faster is not a motor this model knows (a DC motor's torque falls with speed).
+        """
+        by_name = {c.name: c.curve for c in self.curves}
+        curve = by_name.get(MOTOR_CURVE)
+        if curve is None:
+            raise ValueError(f"a motor part needs the curve {MOTOR_CURVE!r} (speed [rad/s] -> torque [N*m])")
+        if (curve.x_unit, curve.y_unit) != (Unit.RAD_PER_S, Unit.N_M):
+            raise ValueError(
+                f"curve {MOTOR_CURVE!r} is speed [rad/s] -> torque [N*m], got {curve.x_unit.value!r} -> {curve.y_unit.value!r}"
+            )
+        pts = curve.points
+        if pts[0].x != 0.0:
+            raise ValueError(f"curve {MOTOR_CURVE!r} starts at speed 0 (stall), got {pts[0].x}")
+        if not pts[0].y > 0.0:
+            raise ValueError(f"curve {MOTOR_CURVE!r}: stall torque must be positive, got {pts[0].y}")
+        if pts[-1].y != 0.0:
+            raise ValueError(f"curve {MOTOR_CURVE!r} ends at no load (torque 0), got {pts[-1].y} N*m at {pts[-1].x} rad/s")
+        for a, b in zip(pts, pts[1:]):
+            if b.y > a.y:
+                raise ValueError(
+                    f"curve {MOTOR_CURVE!r}: torque must not rise with speed, but goes {a.y} -> {b.y} N*m "
+                    f"between {a.x} and {b.x} rad/s"
+                )
+        spec = next((s for s in self.specs if s.name == MOTOR_RATED_VOLTAGE), None)
+        if spec is None:
+            raise ValueError(f"a motor part needs the spec {MOTOR_RATED_VOLTAGE!r} (V)")
+        if spec.unit is not Unit.V or not spec.value > 0.0:
+            raise ValueError(f"spec {MOTOR_RATED_VOLTAGE!r} is a positive voltage in 'V', got {spec.value} {spec.unit.value!r}")
 
     @staticmethod
     def _check_shape(shape: Shape, params: dict[str, ParamDef]) -> None:

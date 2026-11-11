@@ -21,6 +21,7 @@ from .bodies import (
     load_bodies,
     load_body,
 )
+from .canonical import CanonicalError, canonical_json, definition_hash, project_hash
 from .collision import CollisionProxy, DecomposedVoid, FilledVoid, ProxyDerivation, ProxyGeom, RingReport
 from .commands import (
     AddActuator,
@@ -88,9 +89,25 @@ from .massprops import (
 )
 from .material import Density, ElasticModulus, Friction, Material, YieldStrength
 from .material_catalog import CatalogEntry, MaterialCatalog, load_material_catalog
-from .partdef import ParamDef, PartDef, SnapPoint, SpecDef
+from .curve import Curve, CurvePoint, NamedCurve
+from .partdef import MOTOR_CURVE, MOTOR_RATED_VOLTAGE, ParamDef, PartDef, PartRole, SnapPoint, SpecDef
 from .pbr import PbrColor, PbrScalar, PbrSlots
 from .project import Project
+from .projectfile import (
+    FORMAT as PROJECT_FILE_FORMAT,
+    PROJECT_FILE_SUFFIX,
+    VERSION as PROJECT_FILE_VERSION,
+    DefinitionHash,
+    ProjectFile,
+    ProjectFileError,
+    ProjectFileErrorCode,
+    dump_project,
+    export_json,
+    open_project,
+    parse_project,
+    project_file,
+    save_project,
+)
 from .refs import Ref, RefError, RefKind
 from .protocol import (
     MAX_COMMAND_ID_LENGTH,
@@ -115,19 +132,26 @@ from .protocol import (
 )
 from .provenance import BADGE_LABEL_KO, Badge, Provenance, Quantity, Source
 from .shape import Box, Cylinder, Shape, ShapeComponent, Sphere
+from .validator import PLACEMENT_TOLERANCE, check_placement, parse_command, validate_command
 from .world import PLANET_CONSTANT_NAMES, Incline, Placement, PropSize, RampProp, StepProp, TerrainProp, World
 
 __all__ = [
     "Accepted",
     "Applied",
     "BADGE_LABEL_KO",
+    "PLACEMENT_TOLERANCE",
     "BODIES_DIR",
     "BODY_IDS",
     "COORDINATE_FRAME",
+    "MOTOR_CURVE",
+    "MOTOR_RATED_VOLTAGE",
     "ClientMessage",
     "Hello",
     "MAX_COMMAND_ID_LENGTH",
     "PLANET_CONSTANT_NAMES",
+    "PROJECT_FILE_FORMAT",
+    "PROJECT_FILE_SUFFIX",
+    "PROJECT_FILE_VERSION",
     "PROTOCOL_VERSION",
     "ProjectChanges",
     "ProtocolError",
@@ -152,6 +176,7 @@ __all__ = [
     "Body",
     "Box",
     "BreakThreshold",
+    "CanonicalError",
     "CatalogEntry",
     "ClearParameter",
     "CollisionProxy",
@@ -161,7 +186,10 @@ __all__ = [
     "ComponentContribution",
     "Confidence",
     "ControlSchedule",
+    "Curve",
+    "CurvePoint",
     "Cylinder",
+    "DefinitionHash",
     "Density",
     "Derivation",
     "DerivedInertia",
@@ -192,11 +220,13 @@ __all__ = [
     "MoveInstance",
     "NormalDistribution",
     "Origin",
+    "NamedCurve",
     "ParamDef",
     "ParamTerm",
     "ParamValue",
     "ParameterUse",
     "PartDef",
+    "PartRole",
     "PbrColor",
     "PbrScalar",
     "PbrSlots",
@@ -204,6 +234,9 @@ __all__ = [
     "Pose",
     "Position",
     "Project",
+    "ProjectFile",
+    "ProjectFileError",
+    "ProjectFileErrorCode",
     "Ref",
     "RefError",
     "RefKind",
@@ -258,9 +291,21 @@ __all__ = [
     "YieldStrength",
     "apply_changes",
     "apply_command",
+    "check_placement",
+    "canonical_json",
     "changes_between",
     "check_world_references",
+    "definition_hash",
+    "dump_project",
+    "export_json",
     "load_bodies",
     "load_body",
     "load_material_catalog",
+    "parse_command",
+    "validate_command",
+    "open_project",
+    "parse_project",
+    "project_file",
+    "project_hash",
+    "save_project",
 ]

@@ -46,3 +46,5 @@ class Unit(StrEnum):
     J = "J"
     W = "W"
     W_PER_M2 = "W/m^2"  # irradiance (planet insolation, W-01)
+    V = "V"  # electrical: motor rated voltage (B-03b)
+    A = "A"  # electrical: motor current (B-03b)

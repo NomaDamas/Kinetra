@@ -13,9 +13,8 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 
 from kinetra_core import ParameterUse, PartDef, Quantity
+from kinetra_core import convex as cx
 from kinetra_core.shape import Box, Cylinder, ShapeComponent, Sphere
-
-from . import _convex as cx
 
 # Relative tolerance of the overlap and containment tests, times the larger size of the two elements compared.
 # It does not depend on where the elements sit or on any other element.
@@ -26,40 +25,12 @@ class ShapeError(ValueError):
     """The part cannot be evaluated: missing shape, bad parameter value, or a recipe that breaks the disjoint-sum rule."""
 
 
-Mat3 = tuple[cx.Vec, cx.Vec, cx.Vec]
-
-
-def rotation(q) -> Mat3:
-    """Rotation matrix (rows) of a unit quaternion {x, y, z, w}."""
-    x, y, z, w = q.x, q.y, q.z, q.w
-    n = math.sqrt(x * x + y * y + z * z + w * w)
-    x, y, z, w = x / n, y / n, z / n, w / n  # the model allows norm 1 +- 1e-6; use the exact rotation
-    return (
-        (1 - 2 * (y * y + z * z), 2 * (x * y - z * w), 2 * (x * z + y * w)),
-        (2 * (x * y + z * w), 1 - 2 * (x * x + z * z), 2 * (y * z - x * w)),
-        (2 * (x * z - y * w), 2 * (y * z + x * w), 1 - 2 * (x * x + y * y)),
-    )
-
-
-def _columns(r: Mat3) -> tuple[cx.Vec, cx.Vec, cx.Vec]:
-    return tuple((r[0][j], r[1][j], r[2][j]) for j in range(3))  # type: ignore[return-value]
-
-
 def primitive_volume(p: Box | Cylinder | Sphere, dims: Mapping[str, float]) -> float:
     if isinstance(p, Box):
         return dims["size_x"] * dims["size_y"] * dims["size_z"]
     if isinstance(p, Cylinder):
         return math.pi * dims["radius"] ** 2 * dims["length"]
     return 4.0 / 3.0 * math.pi * dims["radius"] ** 3
-
-
-def _body(p: Box | Cylinder | Sphere, dims: Mapping[str, float], center: cx.Vec, r: Mat3) -> cx.Body:
-    axes = _columns(r)
-    if isinstance(p, Box):
-        return cx.Body("box", center, axes, (dims["size_x"] / 2, dims["size_y"] / 2, dims["size_z"] / 2))
-    if isinstance(p, Cylinder):
-        return cx.Body("cylinder", center, axes, (dims["radius"], dims["radius"], dims["length"] / 2))
-    return cx.Body("sphere", center, axes, (dims["radius"],) * 3)
 
 
 def _resolve_parameters(part: PartDef, overrides: Mapping[str, Quantity] | None) -> dict[str, Quantity]:
@@ -112,7 +83,7 @@ class Placed:
     dims: Mapping[str, float]  # metres, under the field names of `kinetra_core.shape`
     volume: float  # m^3, positive
     center: cx.Vec
-    rotation: Mat3
+    rotation: cx.Mat
     body: cx.Body
 
 
@@ -136,8 +107,8 @@ def resolve_shape(part: PartDef, parameters: Mapping[str, Quantity] | None = Non
             if not v > 0.0:  # also catches NaN; a part-range check already ran, this guards the override path
                 raise ShapeError(f"component {comp.id!r}: {name} is {v} m, must be above zero")
         center = comp.position.evaluate(values)
-        r = rotation(comp.orientation)
-        placed.append(Placed(comp, dims, primitive_volume(comp.primitive, dims), center, r, _body(comp.primitive, dims, center, r)))
+        r = cx.rotation(comp.orientation)
+        placed.append(Placed(comp, dims, primitive_volume(comp.primitive, dims), center, r, cx.make_body(comp.primitive, dims, center, r)))
 
     _check_disjoint_sum([(p.component, p.body) for p in placed])
     return Resolved(quantities, tuple(placed))

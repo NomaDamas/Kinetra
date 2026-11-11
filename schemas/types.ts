@@ -256,6 +256,20 @@ export interface ControlSchedule {
   entries?: ActuateEntry[];
 }
 
+/** Piecewise-linear `y(x)`: at least two points, `x` strictly increasing, in `x_unit` and `y_unit`. */
+export interface Curve {
+  badge: Badge;
+  source: Source;
+  x_unit: Unit;
+  y_unit: Unit;
+  points: CurvePoint[];
+}
+
+export interface CurvePoint {
+  x: number;
+  y: number;
+}
+
 /** Solid circular cylinder. `radius` and `length` [m]; the axis is the component's local z. */
 export interface Cylinder {
   kind: "cylinder";
@@ -282,6 +296,13 @@ export interface DecomposedVoid {
   error: number;
   layout: "strips" | "ring";
   ring?: RingReport | null;
+}
+
+/** The hash of one definition the project carries (a `PartDef` or a `Material`). */
+export interface DefinitionHash {
+  kind: "material" | "part";
+  id: string;
+  hash: string;
 }
 
 export interface Density {
@@ -499,6 +520,12 @@ export interface MoveInstance {
   pose: Pose;
 }
 
+/** A curve a part defines under a name (`torque_speed` for a motor, `thrust` for a thruster). */
+export interface NamedCurve {
+  name: string;
+  curve: Curve;
+}
+
 export interface NormalDistribution {
   badge: Badge;
   source: Source;
@@ -553,7 +580,18 @@ export interface PartDef {
   specs?: SpecDef[];
   shape?: Shape | null;
   mass_parameter?: string | null;
+  role?: PartRole | null;
+  curves?: NamedCurve[];
 }
+
+/**
+ * What a part is for, where the simulation needs to know (B-03b). A part without a role is only a body.
+ *
+ * The actuator on an instance must fit its part's role (`designspec.py`): a motor actuator drives a `motor` part, a
+ * thruster actuator a `thruster` part. What a role requires of the definition is checked by `PartDef` (the
+ * required curves and specs), so a part that says `motor` always has the numbers a motor needs.
+ */
+export type PartRole = "motor" | "thruster" | "wheel" | "battery" | "tank" | "spring_damper";
 
 /** Base color as sRGB hex. */
 export interface PbrColor {
@@ -625,6 +663,20 @@ export interface ProjectChanges {
   world?: World | null;
   assumptions?: AssumptionTable | null;
 }
+
+/**
+ * What is in a project file. Building one with `project_file` gives hashes that match `project`; reading one
+ * with `parse_project` checks that they do.
+ */
+export interface ProjectFile {
+  format: "kinetra-project";
+  version: 1;
+  project: Project;
+  project_hash: string;
+  definitions: DefinitionHash[];
+}
+
+export type ProjectFileErrorCode = "not_json" | "not_a_project_file" | "unsupported_version" | "invalid_project" | "hash_mismatch";
 
 /** A prop dimension in metres, > 0. */
 export interface PropSize {
@@ -740,7 +792,7 @@ export interface Reason {
   ids?: Ref[];
 }
 
-export type ReasonCode = "unknown_id" | "duplicate_id" | "in_use" | "index_out_of_range" | "invalid_command" | "invalid_project" | "not_editable" | "nothing_to_undo" | "nothing_to_redo";
+export type ReasonCode = "unknown_id" | "duplicate_id" | "in_use" | "index_out_of_range" | "invalid_command" | "invalid_project" | "not_editable" | "forbidden" | "invalid_snap" | "overlap" | "floating" | "nothing_to_undo" | "nothing_to_redo";
 
 /**
  * `id` of a `kind`. A snap point is `<instance>/<snap point>`, a parameter `<instance>/<parameter>`:
@@ -1028,7 +1080,7 @@ export interface UniformDistribution {
 }
 
 /** Closed unit vocabulary (SI, written the way the JSON carries it). */
-export type Unit = "1" | "m" | "m^2" | "m^3" | "kg" | "s" | "rad" | "m/s" | "m/s^2" | "rad/s" | "N" | "N*m" | "N/m" | "N*s/m" | "N*m/rad" | "Pa" | "kg/m^3" | "kg*m^2" | "J" | "W" | "W/m^2";
+export type Unit = "1" | "m" | "m^2" | "m^3" | "kg" | "s" | "rad" | "m/s" | "m/s^2" | "rad/s" | "N" | "N*m" | "N/m" | "N*s/m" | "N*m/rad" | "Pa" | "kg/m^3" | "kg*m^2" | "J" | "W" | "W/m^2" | "V" | "A";
 
 /** A constant that is not a cited number, and why. */
 export interface Unverified {

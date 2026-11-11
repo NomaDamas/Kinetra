@@ -310,6 +310,7 @@ def test_wheel_no_slip_slope_limit_from_the_cited_static_friction(wheel):
 
 
 def test_wheel_file_is_named_after_its_id_and_has_no_voids(wheel):
+    assert wheel.role is not None and wheel.role.value == "wheel"  # B-03b PartRole: a wheel actuator or joint check can find it
     assert wheel.id == "wheel" and (LIBRARY / "wheel.json").exists()
     assert all(c.operation == "add" for c in wheel.shape.components)  # no hole: nothing is filled or left undrawn
 

@@ -26,6 +26,7 @@ export const FILES = [
   "payload-mount-al6061",
   "payload-declared-mass",
   "ballast-weight-declared-mass",
+  "motor-37d-12v-50-1-declared-mass",
   "wheel-pom",
 ];
 export const DEFAULT_OUT = join(REPO_ROOT, "out", "gltf-check");

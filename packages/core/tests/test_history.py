@@ -31,15 +31,26 @@ def load(name):
     return json.loads((EXAMPLES / name).read_text(encoding="utf-8"))
 
 
+def car():
+    return {
+        "design": load("DesignSpec.four-wheel-car.json"),
+        "world": load("World.ramp-and-step.json"),
+        "assumptions": load("AssumptionTable.vehicle-mass.json"),
+    }
+
+
 @pytest.fixture
 def project():
-    return Project.model_validate(
-        {
-            "design": load("DesignSpec.four-wheel-car.json"),
-            "world": load("World.ramp-and-step.json"),
-            "assumptions": load("AssumptionTable.vehicle-mass.json"),
-        }
-    )
+    """The car's parts without their joints: the history tests move single instances, and the validator (C-02c,
+    which `History.execute` goes through) refuses to tear a joined pair apart."""
+    data = car()
+    data["design"] = {**data["design"], "joints": [], "actuators": [], "schedule": {"entries": []}}
+    return Project.model_validate(data)
+
+
+@pytest.fixture
+def jointed_car():
+    return Project.model_validate(car())
 
 
 def cmd(**d):
@@ -236,13 +247,13 @@ def test_history_execute_undo_redo_do_not_mutate_their_inputs(project):
     assert (u.project, u.history) == before
 
 
-def test_history_cascading_removal_is_one_step(project):
+def test_history_cascading_removal_is_one_step(jointed_car):
     """`remove_instance` takes joints, actuators and schedule entries with it (C-02a): still one history step."""
-    r = History().execute(project, cmd(type="remove_instance", id="motor-l"), Origin.XR)
+    r = History().execute(jointed_car, cmd(type="remove_instance", id="motor-l"), Origin.XR)
     assert len(r.history.entries) == 1
-    assert len(r.project.design.joints) < len(project.design.joints)
+    assert len(r.project.design.joints) < len(jointed_car.design.joints)
     u = r.history.undo(r.project)
-    assert u.project == project
+    assert u.project == jointed_car
 
 
 def test_history_cursor_must_be_inside_the_entries():

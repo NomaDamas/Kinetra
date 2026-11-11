@@ -32,9 +32,9 @@ from kinetra_core import (
     Source,
     Unit,
 )
+from kinetra_core import convex as cx
 from kinetra_core.shape import Box, Cylinder, Sphere
 
-from . import _convex as cx
 from ._shape import Resolved, ShapeError, parameter_uses, resolve_shape, signed_volumes
 
 _COMPUTED_BY = "kinetra_engine.parts.mass_properties (analytic primitives, parallel-axis composition)"
