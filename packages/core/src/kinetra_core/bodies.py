@@ -1,6 +1,8 @@
 """Planet data (W-01): gravity, atmosphere density, ground friction and insolation of Earth, Mars and the Moon.
 
-The numbers live in `data/bodies/{earth,mars,moon}.json`, one file per planet, never in code. Every constant is a
+The numbers live in `data/bodies/{earth,mars,moon}.json`, one file per planet, never in code. A wheel carries the same
+files as package data (`kinetra_core/bodies_data/`, hatch `force-include` in `packages/core/pyproject.toml`), so a
+non-editable install finds them; a source checkout reads `data/bodies` itself. Every constant is a
 `Quantity` (value, unit, badge, `Source`), so a reviewer reads each number next to where it came from and the day it
 was read (`accessed 2026-11-11` in `source.ref`). The engine reads planet constants only through `load_body`
 (`docs/architecture/client-adapter.md` rule C4, P2); `tests/test_bodies.py` fails when engine or client code carries a
@@ -8,7 +10,11 @@ literal that looks like one of the three gravities.
 
 Ground friction is not one number. It is an `Assumption` (C-01c): a nominal for the deterministic search and a
 distribution Monte-Carlo samples. Both carry their own badge and source, and `confidence` says how much to trust
-them. The distribution's bounds are an `estimate` unless a source prints a distribution; none does.
+them. The distribution's bounds are an `estimate` unless a source prints a distribution; none does. The loader holds
+the files to the same rules the tests state: badges only `cite`, `default` or `estimate` (a planet constant is never
+`sim` or `declared`), the friction distribution is `uniform` or `normal`, and `editable` is `False` (the user does not
+edit a planet; `docs/architecture/client-adapter.md` rule C4). That `Assumption` is not a row of the project's
+`AssumptionTable`, which rejects planet keys; see `docs/architecture/bodies.md`, "Gravity and the verdict's table".
 
 `unverified` lists the constants whose value is not a cited number (badge `estimate` or `default`): a value that is a
 modelling choice, or a proxy for something no source measured. The loader requires the list to match the badges, so a
@@ -26,12 +32,14 @@ from __future__ import annotations
 import json
 from collections.abc import Iterable, Mapping
 from functools import cache
+from importlib import resources
+from importlib.resources.abc import Traversable
 from pathlib import Path
 from typing import Annotated, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
-from .assumption import Assumption, UniformDistribution
+from .assumption import Assumption
 from .conventions import ID_PATTERN, Unit
 from .provenance import Badge, Quantity
 from .world import World
@@ -40,13 +48,17 @@ BODY_IDS = ("earth", "mars", "moon")
 """The three planets of S1, in the order the studio shows them."""
 
 BODIES_DIR = Path(__file__).resolve().parents[4] / "data" / "bodies"
-"""`data/bodies` of this checkout. `packages/core/src/kinetra_core/bodies.py` sits four levels under the repo root."""
+"""`data/bodies` of a source checkout. `packages/core/src/kinetra_core/bodies.py` sits four levels under the repo root."""
+
+PACKAGED_DIR = "bodies_data"
+"""Where an installed wheel keeps the same files (`kinetra_core/bodies_data/`)."""
 
 _Positive = Annotated[float, Field(strict=True, allow_inf_nan=False, gt=0)]
 _NonNegative = Annotated[float, Field(strict=True, allow_inf_nan=False, ge=0)]
 
 BodyItem = Literal["gravity", "atmosphere_density", "insolation", "ground_friction"]
 _WEAK = frozenset({Badge.ESTIMATE, Badge.DEFAULT})
+_ALLOWED_BADGES = frozenset({Badge.CITE, Badge.DEFAULT, Badge.ESTIMATE})
 
 
 class Gravity(Quantity):
@@ -64,7 +76,7 @@ class AtmosphereDensity(Quantity):
 
 
 class Insolation(Quantity):
-    """Solar irradiance on a surface facing the Sun, W/m^2."""
+    """Solar irradiance at the planet's mean distance from the Sun, W/m^2 (above the atmosphere, not at the ground)."""
 
     value: _NonNegative
     unit: Literal[Unit.W_PER_M2]
@@ -91,15 +103,37 @@ class Body(BaseModel):
     unverified: tuple[Unverified, ...] = ()
 
     @model_validator(mode="after")
+    def _badges_are_cite_default_or_estimate(self) -> "Body":
+        """A planet constant is read from a source (`cite`), chosen by us with a reason (`default`) or weakly
+        grounded (`estimate`). `sim` (computed by the engine) and `declared` (typed by the user) have no place here."""
+        d = self.ground_friction.distribution
+        items = {
+            "gravity": self.gravity.badge,
+            "atmosphere_density": self.atmosphere_density.badge,
+            "insolation": self.insolation.badge,
+            "ground_friction.value": self.ground_friction.value.badge,
+        }
+        if d.kind != "fixed":
+            items["ground_friction.distribution"] = d.badge
+        for name, badge in items.items():
+            if badge not in _ALLOWED_BADGES:
+                raise ValueError(f"{name}: a planet constant is cite, default or estimate, not {badge.value!r}")
+        return self
+
+    @model_validator(mode="after")
     def _ground_friction_is_a_coefficient(self) -> "Body":
         a = self.ground_friction
         if a.key != "ground_friction":
             raise ValueError(f"ground_friction.key must be 'ground_friction', got {a.key!r}")
+        if a.editable:
+            raise ValueError("ground_friction.editable must be false: the user does not edit a planet (rule C4)")
         if a.value.unit is not Unit.ONE:
             raise ValueError("ground_friction is a dimensionless coefficient: value.unit must be '1'")
         if a.value.value < 0:
             raise ValueError("ground_friction.value must be >= 0")
         d = a.distribution
+        if d.kind == "fixed":
+            raise ValueError("ground_friction needs a distribution (uniform or normal): a fixed one hides the spread")
         if d.kind == "uniform" and d.low < 0:
             raise ValueError("ground_friction distribution must not reach below 0")
         if d.kind == "normal" and (d.mean < 0 or d.clip_low is None or d.clip_low < 0):
@@ -117,8 +151,7 @@ class Body(BaseModel):
             "atmosphere_density": self.atmosphere_density.badge in _WEAK,
             "insolation": self.insolation.badge in _WEAK,
             "ground_friction": self.ground_friction.value.badge in _WEAK
-            or (isinstance(d, UniformDistribution) and d.badge in _WEAK)
-            or (d.kind == "normal" and d.badge in _WEAK),
+            or (d.kind != "fixed" and d.badge in _WEAK),
         }
         for item, is_weak in weak.items():
             if is_weak and item not in listed:
@@ -128,23 +161,27 @@ class Body(BaseModel):
         return self
 
 
-def _read(path: Path) -> Body:
+def _read(path: Path | Traversable) -> Body:
     try:
-        body = Body.model_validate(json.loads(path.read_text(encoding="utf-8")))
+        text = path.read_text(encoding="utf-8")
     except FileNotFoundError:
         raise FileNotFoundError(f"planet data file not found: {path}") from None
-    if body.id != path.stem:
-        raise ValueError(f"{path.name}: id {body.id!r} must equal the file name {path.stem!r}")
+    body = Body.model_validate(json.loads(text))
+    if f"{body.id}.json" != path.name:
+        raise ValueError(f"{path.name}: id {body.id!r} must equal the file name {body.id + '.json'!r}")
     return body
 
 
 @cache
 def _load_default(body_id: str) -> Body:
-    return _read(BODIES_DIR / f"{body_id}.json")
+    if BODIES_DIR.is_dir():
+        return _read(BODIES_DIR / f"{body_id}.json")
+    return _read(resources.files(__package__).joinpath(PACKAGED_DIR, f"{body_id}.json"))
 
 
 def load_body(body_id: str, *, directory: Path | None = None) -> Body:
-    """Read and validate `<directory>/<body_id>.json` (default `data/bodies`). Any value without badge and source fails here."""
+    """Read and validate `<directory>/<body_id>.json`; default `data/bodies`, or the wheel's package data when this
+    is an installed copy. Any value without badge and source fails here."""
     if directory is None:
         if body_id not in BODY_IDS:
             raise KeyError(f"unknown planet {body_id!r}; known: {', '.join(BODY_IDS)}")

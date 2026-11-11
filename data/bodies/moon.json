@@ -35,26 +35,26 @@
     "key": "ground_friction",
     "label": "Ground friction (regolith)",
     "value": {
-      "value": 0.7002,
+      "value": 0.6573,
       "unit": "1",
-      "badge": "cite",
+      "badge": "estimate",
       "source": {
-        "ref": "tan(35 deg) = 0.7002. Lunar Sourcebook (Heiken, Vaniman, French 1991) ch. 9 (Carrier, Olhoeft, Mendell), Table 9.14: soil/wheel friction angle 35 deg, trafficability parameter recommended for LRV planning (Costes 1972; Mitchell 1973a, 1974; Surveyor data); accessed 2026-11-11. The tangent is our arithmetic. One printed value, no range.",
-        "locator": "Table 9.14, row phi_b (book p. 529; PDF p. 55 of the chapter file)",
+        "ref": "Midpoint of the bounds: (0.4142 + 0.9004)/2 = 0.6573, the same rule on all three planets (docs/architecture/bodies.md). Bounds: tan(22.5 deg) = 0.4142, tan(42 deg) = 0.9004. tan(phi) of soil on soil is an upper bound for a smooth part: interface tan(delta) is 0.20 to 0.60 (NAVFAC DM 7.02 Table 1, p. 7.2-63). Grip is biased high. accessed 2026-11-11.",
+        "locator": "Rule: nominal = mean of the uniform distribution",
         "url": "https://www.lpi.usra.edu/publications/books/lunar_sourcebook/pdf/Chapter09.pdf"
       }
     },
     "distribution": {
       "kind": "uniform",
-      "low": 0.5317,
-      "high": 0.9325,
+      "low": 0.4142,
+      "high": 0.9004,
       "badge": "estimate",
       "source": {
-        "ref": "tan(28 deg) = 0.5317 to tan(43 deg) = 0.9325. 28 deg: bottom of 28 to 35 deg from vacuum direct shear of Apollo 12 soil (Sourcebook 9.1.7). 43 deg: top of 41 to 43 deg for 0-15 cm intercrater soil (Table 9.12). Apollo estimates overall run 30 to 50 deg (Connolly and Carrier 2023, NTRS 20220014634). Uniform: bounds from different methods, not one population. accessed 2026-11-11.",
+        "ref": "Bounds tan(22.5 deg) = 0.4142, tan(42 deg) = 0.9004: lowest and highest representative angle (printed average or nominal; midpoint when only a range is printed) of the surface classes below, weakest included, none dropped. Luna 16/20 laboratory shear 20 to 25 (mid 22.5), Jaffe miniature shear 13 to 56 (mid 34.5), Apollo 12 vacuum direct shear 28 to 35 (mid 31.5), wheel/soil Table 9.14 35, in situ top 15 cm Table 9.12 42 (Lunar Sourcebook ch. 9). accessed 2026-11-11.",
         "url": "https://www.lpi.usra.edu/publications/books/lunar_sourcebook/pdf/Chapter09.pdf"
       }
     },
-    "confidence": "med",
+    "confidence": "low",
     "editable": false
   },
   "unverified": [
@@ -64,7 +64,7 @@
     },
     {
       "item": "ground_friction",
-      "reason": "The nominal is a cited soil/wheel friction angle (Lunar Sourcebook Table 9.14) but not the coefficient of any part material on regolith, and the spread is our estimate from other soil-mechanics ranges; no source gives a distribution."
+      "reason": "No source gives the coefficient of a part on lunar regolith. Nominal and spread are soil friction angles (lab samples, Surveyor-based wheel parameter, in situ Apollo estimates) used as a proxy, so both badges are estimate, and the proxy is an upper bound for smooth parts (grip biased high). The lab values are flagged by the source as low because fragile grains crush at lab stress."
     }
   ]
 }

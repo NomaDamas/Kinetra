@@ -6,7 +6,7 @@
     "unit": "m/s^2",
     "badge": "cite",
     "source": {
-      "ref": "NASA NSSDCA Earth Fact Sheet (updated 15 Nov 2024), accessed 2026-11-11. Standard acceleration of gravity, CODATA 2018, 9.80665 m/s2 (exact). Surface values printed: mean 9.820, equator 9.780, pole 9.832. Chosen the defined standard. One uniform g per planet; the range is not sampled.",
+      "ref": "NASA NSSDCA Earth Fact Sheet (updated 15 Nov 2024), accessed 2026-11-11. Standard acceleration of gravity, CODATA 2018, 9.80665 m/s2 (exact, a defined convention that includes rotation). The sheet's mean 9.820 is GM/R^2 without rotation; real surface range 9.780 (equator) to 9.832 (pole). Chosen the standard value, inside that range. One uniform g; not sampled.",
       "locator": "Note below the Terrestrial Atmosphere block; Bulk parameters 'Surface gravity', 'Surface acceleration (eq/pole)'",
       "url": "https://nssdc.gsfc.nasa.gov/planetary/factsheet/earthfact.html"
     }
@@ -16,7 +16,7 @@
     "unit": "kg/m^3",
     "badge": "cite",
     "source": {
-      "ref": "NASA NSSDCA Earth Fact Sheet (updated 15 Nov 2024), accessed 2026-11-11. Surface density 1.217 kg/m3 (1014 mb, 288 K), chosen as printed. Cross-check: NASA Glenn Earth Atmosphere Model, sea level, 101.29 kPa, 15.04 C gives 1.225 (0.7% higher). Not sampled.",
+      "ref": "NASA NSSDCA Earth Fact Sheet (updated 15 Nov 2024), accessed 2026-11-11. Surface density 1.217 kg/m3 (1014 mb, 288 K), chosen as printed. Cross-check, our calculation (not on the sheet): NASA Glenn Earth Atmosphere Model formula at h = 0 (p = 101.29 [(T+273.1)/288.08]^5.256 kPa, T = 15.04 C, r = p/(0.2869 (T+273.1))) gives 1.227, 0.8% higher. Not sampled.",
       "locator": "Terrestrial Atmosphere, 'Surface density'",
       "url": "https://nssdc.gsfc.nasa.gov/planetary/factsheet/earthfact.html"
     }
@@ -35,22 +35,22 @@
     "key": "ground_friction",
     "label": "Ground friction (soil)",
     "value": {
-      "value": 0.6494,
+      "value": 0.5628,
       "unit": "1",
       "badge": "estimate",
       "source": {
-        "ref": "tan(33 deg) = 0.6494. 33 deg is the effective friction angle of SM-SC soil (33 +/- 4, 90% limits), mid of FHWA Table 5-15 (USBR 1960, compacted inorganic soils, standard Proctor, CU triaxial); accessed 2026-11-11. Soil internal friction used as a proxy for a part sliding on ground; no source measures that. Hard surfaces (concrete, asphalt) not covered.",
-        "locator": "FHWA NHI-06-088 vol. I, Table 5-15, manual p. 5-82 (PDF p. 332): SW 38, SP 37, SM 34, SM-SC 33, SC 31, ML 32, CL 28, CH 19 deg",
+        "ref": "Midpoint of the bounds: (0.3443 + 0.7813)/2 = 0.5628, the same rule on all three planets (docs/architecture/bodies.md). Bounds: tan(19 deg) = 0.3443, tan(38 deg) = 0.7813. tan(phi) of soil on soil is an upper bound for a smooth part: interface tan(delta) is 0.20 to 0.60 (NAVFAC DM 7.02 Table 1, p. 7.2-63). Grip is biased high. accessed 2026-11-11.",
+        "locator": "Rule: nominal = mean of the uniform distribution",
         "url": "https://www.fhwa.dot.gov/engineering/geotech/pubs/nhi06088.pdf"
       }
     },
     "distribution": {
       "kind": "uniform",
-      "low": 0.5317,
+      "low": 0.3443,
       "high": 0.7813,
       "badge": "estimate",
       "source": {
-        "ref": "tan(28 deg) = 0.5317 (CL clay, 28 +/- 2) to tan(38 deg) = 0.7813 (SW well-graded sand, 38 +/- 1), FHWA Table 5-15. Uniform: two bounds from different soils, not a measured population. CH clay (19 deg), wet or frozen ground excluded. accessed 2026-11-11.",
+        "ref": "Bounds tan(19 deg) = 0.3443, tan(38 deg) = 0.7813: lowest and highest representative angle (printed average or nominal; midpoint when only a range is printed) of the surface classes below, weakest included, none dropped. FHWA NHI-06-088 Table 5-15 (p. 5-82), USCS means: SW 38, SP 37, SM 34, SM-SC 33, SC 31, ML 32, ML-CL 32, CL 28, MH 25, CH 19; GW/GP/GM/GC are printed only as '>' bounds and are left out. accessed 2026-11-11.",
         "url": "https://www.fhwa.dot.gov/engineering/geotech/pubs/nhi06088.pdf"
       }
     },
@@ -60,7 +60,7 @@
   "unverified": [
     {
       "item": "ground_friction",
-      "reason": "No source measures a part or wheel on Earth's ground. Nominal and spread are tan of soil friction angles (FHWA/USBR table) used as a proxy, so both badges are estimate. Which ground the user stands on (grass, sand, clay, pavement) is unknown to the model."
+      "reason": "No source gives the coefficient of a part on the ground (NAVFAC DM 7.02 Table 1 gives 0.20 to 0.60 for steel and concrete against soils, but not for the parts the user builds). Nominal and spread are soil friction angles used as a proxy, so both badges are estimate, and the proxy is an upper bound for smooth parts (grip biased high). Which ground the user stands on (grass, sand, clay, pavement) is unknown to the model."
     }
   ]
 }

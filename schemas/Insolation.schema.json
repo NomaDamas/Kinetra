@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "additionalProperties": false,
-  "description": "Solar irradiance on a surface facing the Sun, W/m^2.",
+  "description": "Solar irradiance at the planet's mean distance from the Sun, W/m^2 (above the atmosphere, not at the ground).",
   "properties": {
     "badge": {
       "$ref": "#/$defs/Badge"

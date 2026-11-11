@@ -6,32 +6,61 @@
 
 ## 규칙
 
-- 수치는 데이터 파일에만 있다. 코드와 클라이언트에는 중력 값이 없고, 테스트 `test_bodies_no_gravity_literal_in_engine_or_client_code`가 `packages/{core,engine,judge}/src`, `packages/ui`, `apps`, `scripts`의 코드 파일에서 세 행성의 중력과 흔한 반올림값(9.81, 9.8, 3.7, 1.62 …)이 숫자로 나오면 실패한다(주석, 식별자, 더 긴 수는 거른다). 검사기가 정말 잡는지는 심은 리터럴로 따로 시험한다. 이 검사는 문자 그대로의 리터럴만 본다. 계산해서 만든 값(`GM / r**2`)이나 다른 이름은 못 잡는다. 그 경우의 보장은 구조(엔진은 `load_body`로만 읽는다, W-03a)와 검증기(C-02c)다.
-- 항목마다 `Quantity`(값, 단위, 배지, 출처). 출처는 `source.ref`(고른 값, 출처가 적은 값, 범위, 교차 확인, 받은 날짜 `accessed 2026-11-11`), `locator`(표·절), `url`이다. `인용`은 위치와 url이 있어야 한다.
-- `unverified`: 인용한 숫자가 아닌 항목(`추정` 또는 `기본값`)을 이유와 함께 적는다. 목록이 배지와 어긋나면 로딩이 실패한다(약한 값을 말없이 두거나, 인용한 값을 약하다고 적는 일을 막는다).
-- 지면 마찰은 C-01c의 `Assumption`: 공칭값(결정론 탐색)과 분포(몬테카를로), 분포의 수치는 자기 배지와 출처를 가지고, `confidence`로 신뢰를 적는다. 출처가 분포를 주는 경우는 없어서 분포는 모두 `uniform`(출처가 준 두 끝값 사이)이고 배지는 `추정`이다. `high`는 쓰지 않는다.
+- 수치는 데이터 파일에만 있다. 코드와 클라이언트에는 중력 값이 없다. 테스트 `test_bodies_no_gravity_literal_in_engine_or_client_code`가 `packages`, `apps`, `scripts`, `tools`의 코드 파일(`.py`, `.json`, C 계열 `.ts .tsx .js .mjs .wgsl .glsl` 등, 마크업 `.html .vue .xml`)에서 세 행성의 중력에 1.5% 안으로 가까운 숫자를 값으로 비교해 찾는다(`9.810`, `981e-2`, `0.981e1`, `9.806_65`, `9.81f`, 반올림 9.8, 3.7, 1.6 모두). 주석과 문자열은 파일 종류별 문법으로 먼저 걷어 낸다(`#`은 Python에서만 주석, `//`와 `/* */`는 C 계열에서만; `"#ffffff"`, URL, TS `#private`, GLSL `#define`은 주석이 아니다. JSON은 문자열 값을 걷어 낸다). `tests/`, `node_modules`, `spikes/`, `schemas/`(생성물), `out/`은 건너뛴다. 못 보는 것: 문자열 안의 수(TS의 `"0 0 -9.81"`), 계산해서 만든 값(`GM / r**2`), 같은 상수의 다른 이름. 그 보장은 구조(엔진은 `load_body`로만 읽는다, W-03a)와 검증기(C-02c)다. **예외 표식:** 행의 주석에 `gravity-scan: ok <이유>`가 있으면 그 행은 넘어간다(CSS `lineHeight: 1.62`, 3.7 V 셀 전압 등). 이유가 없으면 예외가 아니다. 검사기 자체는 위 모든 철자와 오탐 사례를 심은 테스트로 시험한다.
+- 항목마다 `Quantity`(값, 단위, 배지, 출처). 출처는 `source.ref`(고른 값, 출처가 적은 값, 범위, 교차 확인, 받은 날짜 `accessed YYYY-MM-DD`), `locator`(표·절), `url`이다. `인용`은 위치와 url이 있어야 한다.
+- 로더가 지키는 것: 배지는 `cite`, `default`, `estimate`만(행성 상수는 `sim`도 `declared`도 아니다), 지면 마찰 분포는 `uniform` 또는 `normal`(`fixed`나 누락은 퍼짐을 숨기므로 거부), `editable`은 `False`(사용자가 행성을 고치지 않는다, 규칙 C4), `id`는 파일 이름과 같다.
+- `unverified`: 인용한 숫자가 아닌 항목(`추정` 또는 `기본값`)을 이유와 함께 적는다. 목록이 배지와 어긋나면 로딩이 실패한다.
 - 새 단위 `W/m^2`(`Unit.W_PER_M2`)를 더했다(일사). `kinetra_core.Unit`이 닫힌 어휘이기 때문이다.
-- 균일 중력과 표면 대기 밀도 하나씩이 모델이다. 지구의 위도별 중력(9.780 ~ 9.832), 화성의 계절별 밀도 범위, 달의 낮밤은 값으로 들어가지 않고 출처 칸에 범위만 적는다.
+- **데이터 위치.** 소스 체크아웃은 `data/bodies`를 읽고, 휠은 같은 파일을 `kinetra_core/bodies_data/`로 싣는다(`packages/core/pyproject.toml`의 hatch `force-include`; 휠을 만들어 파일이 들어간 것을 확인했다). 편집 설치가 아니어도 `load_body`가 찾는다.
+- 균일 중력과 표면 대기 밀도 하나씩이 모델이다. 지구의 위도별 중력, 화성의 계절별 밀도, 달의 낮밤은 값으로 들어가지 않고 출처 칸에 범위만 적는다.
 
-## 값과 출처 (2026-11-11에 읽음)
+## 중력의 기준
+
+- 지구 9.80665: CODATA 2018이 정한 **표준값**(자전 포함, 정의라서 측정 평균이 아니다). 팩트시트의 "Surface gravity (mean) 9.820"은 자전을 뺀 GM/R²이고(`fact_notes.html`의 정의), 지면의 물체가 받는 실제 값은 9.780(적도) ~ 9.832(극)다. 표준값은 그 범위 안에 있고 시트에 인쇄돼 있어 `인용`이다.
+- 화성 3.73: 시트의 "mean"은 자전을 뺀 GM/R²이고 실제 지면 범위는 3.69(적도) ~ 3.73(극)이다. 3.73은 그 범위의 위쪽 끝이다(지구와 기준이 다르다). 적도 값 3.69는 0.5% 낮고 낙하 시간으로는 0.27% 차이다. JPL의 3.71은 적도 값을 다시 계산한 것이다.
+- 달 1.62: 시트의 단일 값. GM/R²는 1.624.
+- 세 값 모두 한 행성에 균일한 g 하나로 쓴다(W-06의 라벨). 범위는 샘플링하지 않는다.
+
+## 값과 출처
 
 | | 지구 | 화성 | 달 |
 |---|---|---|---|
-| 중력 m/s² | 9.80665 `인용` (NSSDCA 지구, CODATA 2018 표준값, 정확값) | 3.73 `인용` (NSSDCA 화성, 평균) | 1.62 `인용` (NSSDCA 달) |
-| 대기 밀도 kg/m³ | 1.217 `인용` (NSSDCA 지구, 표면) | 0.016 `인용` (NSSDCA 화성, ~0.016 ± 0.006) | 0 `기본값`(NSSDCA 달: 희박한 외기권, 질량 밀도는 적혀 있지 않음) |
+| 중력 m/s² | 9.80665 `인용` (표준 정의값) | 3.73 `인용` (자전 뺀 GM/R², 범위 3.69~3.73의 위 끝) | 1.62 `인용` |
+| 대기 밀도 kg/m³ | 1.217 `인용` | 0.016 `인용` (시트 ~0.016 ± 0.006, 출처가 인쇄한 불확실도) | 0 `기본값`(질량 밀도는 시트에 없음) |
 | 일사 W/m² | 1361.0 `인용` | 586.2 `인용` | 1361.0 `인용` |
-| 지면 마찰 공칭 | 0.6494 `추정` = tan 33°(FHWA NHI-06-088 표 5-15, SM-SC) | 0.6619 `추정` = tan 33.5°(MER 바퀴 도랑 30~37°의 가운데, Sullivan 외 LPSC 2010) | 0.7002 `인용` = tan 35°(Lunar Sourcebook 표 9.14, 흙-바퀴 마찰각) |
-| 지면 마찰 분포 | uniform 0.5317 ~ 0.7813 `추정` (CL 28° ~ SW 38°) | uniform 0.3249 ~ 0.7536 `추정` (Viking 표류물질 약 18° ~ MER 최대 37°) | uniform 0.5317 ~ 0.9325 `추정` (Apollo 12 진공 직접 전단 28° ~ 윗 15 cm 43°) |
-| 지면 마찰 신뢰도 | `low` | `low` | `med` |
+| 지면 마찰 하한 ~ 상한 | 0.3443 ~ 0.7813 (tan 19° ~ 38°) | 0.3249 ~ 0.7002 (tan 18° ~ 35°) | 0.4142 ~ 0.9004 (tan 22.5° ~ 42°) |
+| 지면 마찰 공칭(평균) | 0.5628 | 0.5126 | 0.6573 |
+| 모두 `추정`, 신뢰도 | `low` | `low` | `low` |
 
-출처: NASA NSSDCA 행성 팩트시트 [지구](https://nssdc.gsfc.nasa.gov/planetary/factsheet/earthfact.html)(2024-11-15 갱신), [화성](https://nssdc.gsfc.nasa.gov/planetary/factsheet/marsfact.html)(2025-05-19), [달](https://nssdc.gsfc.nasa.gov/planetary/factsheet/moonfact.html)(2024-01-11). 교차 확인: JPL SSD [Planetary Physical Parameters](https://ssd.jpl.nasa.gov/planets/phys_par.html)(화성 적도 중력 3.71)와 [위성 GM](https://ssd.jpl.nasa.gov/sats/phys_par/)(달 GM 4902.800 km³/s², DE440)로 GM/R² 계산, NASA Glenn 대기 모델([지구](https://www.grc.nasa.gov/www/k-12/airplane/atmosmet.html) 1.225, [화성](https://www.grc.nasa.gov/www/k-12/airplane/atmosmrm.html) 0.0150 kg/m³). 지면 마찰: [FHWA NHI-06-088](https://www.fhwa.dot.gov/engineering/geotech/pubs/nhi06088.pdf)(정부 간행물), [Sullivan 외 2010](https://www.lpi.usra.edu/meetings/lpsc2010/pdf/1879.pdf), [Moore 외 1987, USGS PP 1389](https://pubs.usgs.gov/pp/1389/report.pdf), [Lunar Sourcebook 9장](https://www.lpi.usra.edu/publications/books/lunar_sourcebook/pdf/Chapter09.pdf), [Connolly·Carrier 2023](https://ntrs.nasa.gov/api/citations/20220014634/downloads/Final%20IEEE%20paper%20formatted%20footnote%20added.pdf). NASA 문서의 사실 수치를 쪽·표 위치와 함께 적었고 문서를 복제하지 않았다(NASA 콘텐츠는 미국에서 일반적으로 저작권 대상이 아니다. https://www.nasa.gov/nasa-brand-center/images-and-media/).
+출처: NASA NSSDCA 행성 팩트시트 [지구](https://nssdc.gsfc.nasa.gov/planetary/factsheet/earthfact.html)(2024-11-15 갱신), [화성](https://nssdc.gsfc.nasa.gov/planetary/factsheet/marsfact.html)(2025-05-19), [달](https://nssdc.gsfc.nasa.gov/planetary/factsheet/moonfact.html)(2024-01-11), 모두 2026-11-11에 읽음. 교차 확인: JPL SSD [Planetary Physical Parameters](https://ssd.jpl.nasa.gov/planets/phys_par.html)와 [위성 GM](https://ssd.jpl.nasa.gov/sats/phys_par/)(달 GM 4902.800, DE440), NASA Glenn 대기 모델([지구](https://www.grc.nasa.gov/www/k-12/airplane/atmosmet.html): h = 0에서 식으로 1.227, 우리 계산; [화성](https://www.grc.nasa.gov/www/k-12/airplane/atmosmrm.html) 0.0150). 지면 마찰: [FHWA NHI-06-088](https://www.fhwa.dot.gov/engineering/geotech/pubs/nhi06088.pdf) 표 5-15, [Sullivan 외 2010](https://www.lpi.usra.edu/meetings/lpsc2010/pdf/1879.pdf), [Moore 외 1987, USGS PP 1389](https://pubs.usgs.gov/pp/1389/report.pdf), [Lunar Sourcebook 9장](https://www.lpi.usra.edu/publications/books/lunar_sourcebook/pdf/Chapter09.pdf), 계면 마찰 [NAVFAC DM 7.02 표 1](https://www.tugraz.at/fileadmin/user_upload/Institute/IAG/Files/24_NAVFAC_DM_7_02.pdf)(p. 7.2-63, 정부 간행물). NASA 콘텐츠는 미국에서 일반적으로 저작권 대상이 아니다(https://www.nasa.gov/nasa-brand-center/images-and-media/). 값과 위치만 인용했고 문서를 복제하지 않았다.
+
+## 지면 마찰: 규칙 하나, 세 행성
+
+**끝값 규칙.** 그 행성의 대표 표면 물질 분류마다 출처가 인쇄한 대표 각(평균 또는 공칭; 범위만 있으면 그 범위의 중점)을 모으고, 가장 약한 분류를 포함해 **버리는 것 없이** 최솟값과 최댓값의 tan을 끝값으로 한다. 규칙은 모두 `distribution.source.ref`에 분류와 각을 적었다.
+
+| 행성 | 모은 분류와 각(°) | 하한 ~ 상한 |
+|---|---|---|
+| 지구 | FHWA 표 5-15 USCS 평균: SW 38, SP 37, SM 34, SM-SC 33, SC 31, ML 32, ML-CL 32, CL 28, MH 25, CH 19(GW·GP·GM·GC는 `>`로만 인쇄돼 뺐다) | 19 ~ 38 |
+| 화성 | Viking 표류물질 18, 덩어리 30, 혼합 31, 딱지 35(Moore 외 1987 초록); MER 도랑 30~37의 중점 33.5(Sullivan 외 2010) | 18 ~ 35 |
+| 달 | Luna 16·20 실험실 20~25의 중점 22.5, Jaffe 13~56의 중점 34.5, Apollo 12 진공 직접 전단 28~35의 중점 31.5, 흙-바퀴 표 9.14의 35, 현장 윗 15 cm 표 9.12의 42 | 22.5 ~ 42 |
+
+이전 판은 행성마다 규칙이 달랐다(지구는 가장 무른 두 분류를 빼고, 화성은 가장 무른 값을 넣고, 달은 범위의 끝을 썼다). 그 차이는 물리가 아니라 고른 방식에서 나왔으므로 한 규칙으로 맞췄다. 달의 하한이 내려간 것은 같은 규칙을 적용한 결과이고, 출처가 "실험실 응력에서 약한 입자가 부서져 낮게 나왔다"고 한 값이 포함된 것도 같은 이유다(그 설명은 `unverified`에 적었다).
+
+**공칭 규칙.** 세 행성 모두 공칭값은 **끝값의 평균**이다(`value.source.ref`에 "Midpoint of the bounds"). 이전 판은 화성 공칭이 분포의 79% 지점이었다. 평균이면 결정론 탐색의 값과 몬테카를로의 평균이 같다. 공칭이 평균인 것은 그 값이 가장 그럴듯하다는 뜻이 아니다. 어느 출처도 가장 그럴듯한 값을 주지 않았다.
+
+**대용 값이며 높은 쪽으로 치우쳐 있다.** 출처들은 흙의 내부 마찰각(Mohr-Coulomb, tan φ)이고 부품이 지면 위에서 미끄러지는 쿨롱 계수가 아니다. 서로 다른 재료의 계면에서는 마찰각 δ가 φ보다 작다(FHWA p. 2-39). NAVFAC DM 7.02 표 1의 계면 계수는 강판 말뚝 대 흙 0.20 ~ 0.40, 거푸집 콘크리트 대 흙 0.25 ~ 0.50, 매스 콘크리트 대 흙 0.30 ~ 0.60이다(미끄러지는 부품이 흙에 닿는 경우의 값이 아니라 구조물 벽면 값이다). 따라서 tan φ는 매끈한 부품에게 **상한**이고, 세 행성 분포는 모두 그 상한 쪽에 있다. 예: 지구 분포의 중간 0.56은 미끄럼 임계각 약 29°이고 계면 값 0.20 ~ 0.60은 11° ~ 31°다. 판정은 접지력을 **과대평가**하는 방향으로 치우친다. 하한을 계면 값까지 넓히지 않은 이유는 이 모델이 계면 재료(사용자 부품의 재질)를 모르기 때문이다. 부품 재질과 지면의 쌍별 마찰은 X-01의 접촉 합성이 맡는다. 이 치우침은 `source.ref`, `unverified`, 이 문서에 적었다. 이전 판의 "어떤 출처도 측정하지 않았다"는 말은 사실이 아니었다(NAVFAC에 계면 계수가 있다). 맞는 말은 "사용자가 만드는 부품과 지면의 계수를 준 출처가 없다"이다.
+
+**분포는 측정된 모집단이 아니다.** 서로 다른 현장·방법에서 나온 대표 각의 최솟값과 최댓값 사이 uniform이다. 어느 출처도 분포를 주지 않았다. 신뢰도는 세 행성 모두 `low`다.
+
+## 가정표에서의 자리 (W-03c의 계약)
+
+프로젝트에 저장되는 `AssumptionTable`은 행성 키(`PLANET_CONSTANT_NAMES`: `ground_friction`, `gravity` …)를 계속 거부한다. 행성 상수는 프로젝트의 가정이 아니라 `data/bodies`의 것이고, 사용자가 프로젝트를 통해 바꿀 수 없어야 한다(규칙 C4). 그래서 `load_body(id).ground_friction`(`Assumption`)은 프로젝트의 표에 들어가지 않는다. **판정에 붙는 가정표는 판정 시점에 만든다:** 프로젝트의 행들에 `data/bodies`에서 읽은 행성의 행들(마찰 분포, 그리고 W-06이 붙이는 "근사: 균일 중력" 라벨)을 더해 합성한다. 합성은 W-03c의 일이다. 행성 행은 읽기 전용(`editable` False)이고 출처 배지는 이 파일의 것을 그대로 보인다. `test_bodies_planet_friction_is_not_a_row_of_the_projects_assumption_table`가 현재의 거부를 고정한다. 이 결정을 바꾸려면 테스트와 이 절을 함께 바꿔야 한다.
 
 ## 정직성: 이 값들이 말하지 않는 것
 
-- **지면 마찰은 세 행성 모두 대용 값이다.** 출처들은 흙의 내부 마찰각(Mohr-Coulomb)을 재거나 추정한 것이지 부품이나 바퀴가 지면 위에서 미끄러지는 쿨롱 계수가 아니다. tan φ는 같은 흙끼리의 마찰이고, 바퀴와 흙 사이 마찰각(달 표 9.14의 φb)조차 Costes 외의 Surveyor 자료 기반 계획값이다. 그래서 지구·화성은 공칭도 `추정`이고, 달은 공칭만 `인용`이며 분포는 `추정`이다. 단단한 지면(콘크리트, 아스팔트)은 지구 값에 들어 있지 않다.
-- **분포는 측정된 모집단이 아니다.** 서로 다른 현장·방법의 두 값을 끝값으로 잡은 uniform이다. 몬테카를로의 마찰 분포가 이 폭이라는 사실이 판정 카드의 가정표에 보여야 한다(J-04b). 평균과 표준편차를 주는 출처는 찾지 못했다.
 - **화성 마찰은 학회 초록까지만 읽었다.** Sullivan 외 2011(JGR, doi:10.1029/2010JE003625)은 출판사가 자동 접근을 막아 읽지 못했다. 30~37° 범위는 2010 LPSC 초록(표 1과 본문)에서 확인했다. [확인 필요: 2011 논문 본문]
 - 달 대기 밀도 0은 모델의 선택이다. 팩트시트의 수 밀도(2×10⁵ 개/cm³)를 입자 질량으로 환산하면 약 5×10⁻¹⁵ kg/m³(우리 계산이고 출처가 적은 값이 아니다)로 지구의 약 4×10⁻¹⁵배이며, 항력이 보이지 않는다.
+- **화성 대기 밀도는 고정값이지만 출처가 불확실도를 인쇄했다(±0.006, ±37.5%).** 종단속도로는 약 -15% ~ +26%다. 판정에는 아직 반영되지 않는다. 가정표의 분포로 만드는 일은 후속 이슈다.
 - 일사는 대기 밖 값이다. 지구·화성의 지면 일사는 대기, 구름, 먼지로 줄고, 화성은 이심률(0.0935) 때문에 근일점과 원일점에서 490 ~ 713 W/m²로 달라진다(역제곱 환산, 우리 계산). 일사는 지금 판정에 쓰이지 않고 하늘·조명(W-02)의 입력으로 둔다.
 - 중력 교차 확인: 화성 3.73(NSSDCA) 대 3.71(JPL 적도) 대 GM/R² 3.728, 달 1.62 대 GM/R² 1.624. 0.6% 안에서 일치한다.
 

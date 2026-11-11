@@ -259,7 +259,7 @@ export interface Incline {
   unit: "rad";
 }
 
-/** Solar irradiance on a surface facing the Sun, W/m^2. */
+/** Solar irradiance at the planet's mean distance from the Sun, W/m^2 (above the atmosphere, not at the ground). */
 export interface Insolation {
   badge: Badge;
   source: Source;
