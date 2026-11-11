@@ -2,7 +2,7 @@
 
 - 상태: 구현됨. 모델은 `packages/core/src/kinetra_core/collision.py`(`CollisionProxy`), 계산은 `packages/engine/src/kinetra_engine/parts/collision.py`(`collision_proxy`), 형상 레시피를 값으로 풀고 검사하는 공통 부분은 `parts/_shape.py`(B-01a의 `mass_properties`와 같이 쓴다). 테스트는 `packages/engine/tests/test_proxy.py`. `uv run pytest packages/engine -q -k proxy`. B-01f(#486)가 관통 보어(관, 구멍 난 판)를 비운 채 상자 조각으로 분해하는 경로를 더했다(`parts/_decompose.py`).
 - 근거: `docs/architecture/part-mass.md`(레시피와 겹치지 않는 합), `docs/architecture/client-adapter.md` A1(물리에 쓰는 충돌 프록시의 형상은 엔진 중립 데이터로 온다, MJCF 조각이 아니다), `docs/decisions/engine.md`(MuJoCo 코어), 이슈 #93.
-- 범위 밖: MJCF 매핑(X-01a), 시각 glTF(B-01c), 캐시(B-01d), 가져온 메시의 프록시(L-02b), 부품 종류(B-02, B-03).
+- 범위 밖: MJCF 매핑(X-01a), 시각 glTF(B-01c), 캐시(B-01d, `part-cache.md`), 가져온 메시의 프록시(L-02b), 부품 종류(B-02, B-03).
 
 ## 쓰는 법
 
