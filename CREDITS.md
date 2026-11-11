@@ -76,7 +76,7 @@
 - 라이선스: CC0-1.0
 - 원본: https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/moon_01/moon_01_diff_1k.jpg https://polyhaven.com/a/moon_01 https://api.polyhaven.com/files/moon_01 https://polyhaven.com/license
 - 경로: `assets/scene/moon/moon_01_diff_1k.jpg`
-- 용도: 시각(지면 재질): 달 평지 지면 albedo(색). 달 레골리스(Spaceport Rostock 실험실 촬영). W-02c 가 쓴다
+- 용도: 시각(지면 재질): 달 평지 지면 albedo(색). 달 레골리스 모사토(simulant, Spaceport Rostock 실험실에서 지구 암석 분말을 촬영). 달 표면의 측정 사진이 아니다(시각 대용). W-02c 가 쓴다
 - 변경 내역: 없음(Poly Haven 1k jpg 를 수정 없이 사용). Poly Haven 은 모든 에셋을 CC0 로 배포한다(https://polyhaven.com/license). 받은 파일의 md5 는 Poly Haven files API 가 알려 준 값과 일치
 - 받은 날짜: 2026-11-11
 - 원본 해시: `sha256:ebe99635c8babc05620fb532eba8459b9168b5b09f9704e320938c231900ed62`
@@ -89,7 +89,7 @@
 - 라이선스: CC0-1.0
 - 원본: https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/moon_01/moon_01_nor_gl_1k.jpg https://polyhaven.com/a/moon_01 https://api.polyhaven.com/files/moon_01 https://polyhaven.com/license
 - 경로: `assets/scene/moon/moon_01_nor_gl_1k.jpg`
-- 용도: 시각(지면 재질): 달 평지 지면 법선(OpenGL, Y+). 달 레골리스(Spaceport Rostock 실험실 촬영). W-02c 가 쓴다
+- 용도: 시각(지면 재질): 달 평지 지면 법선(OpenGL, Y+). 달 레골리스 모사토(simulant, Spaceport Rostock 실험실에서 지구 암석 분말을 촬영). 달 표면의 측정 사진이 아니다(시각 대용). W-02c 가 쓴다
 - 변경 내역: 없음(Poly Haven 1k jpg 를 수정 없이 사용). Poly Haven 은 모든 에셋을 CC0 로 배포한다(https://polyhaven.com/license). 받은 파일의 md5 는 Poly Haven files API 가 알려 준 값과 일치
 - 받은 날짜: 2026-11-11
 - 원본 해시: `sha256:cd0f110d7a5079fa2ae3739f91cad85480b5314fd2b414998a08f1f444c6a110`
@@ -102,7 +102,7 @@
 - 라이선스: CC0-1.0
 - 원본: https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/moon_01/moon_01_rough_1k.jpg https://polyhaven.com/a/moon_01 https://api.polyhaven.com/files/moon_01 https://polyhaven.com/license
 - 경로: `assets/scene/moon/moon_01_rough_1k.jpg`
-- 용도: 시각(지면 재질): 달 평지 지면 거칠기. 달 레골리스(Spaceport Rostock 실험실 촬영). W-02c 가 쓴다
+- 용도: 시각(지면 재질): 달 평지 지면 거칠기. 달 레골리스 모사토(simulant, Spaceport Rostock 실험실에서 지구 암석 분말을 촬영). 달 표면의 측정 사진이 아니다(시각 대용). W-02c 가 쓴다
 - 변경 내역: 없음(Poly Haven 1k jpg 를 수정 없이 사용). Poly Haven 은 모든 에셋을 CC0 로 배포한다(https://polyhaven.com/license). 받은 파일의 md5 는 Poly Haven files API 가 알려 준 값과 일치
 - 받은 날짜: 2026-11-11
 - 원본 해시: `sha256:483d2254502ddfd8a2310ec623418477e8a55e4d150717aef049ab3588506ba6`

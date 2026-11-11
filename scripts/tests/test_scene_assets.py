@@ -5,6 +5,7 @@ W-02d: `assets/scene/` 의 지면 재질과 하늘은 Poly Haven·ambientCG 의 
 표준 라이브러리만 쓴다.
 """
 
+import re
 import struct
 import sys
 import unittest
@@ -20,6 +21,12 @@ PLANETS = ("earth", "mars", "moon")
 CC0_HOSTS = {"polyhaven.com", "api.polyhaven.com", "dl.polyhaven.org", "ambientcg.com", "docs.ambientcg.com"}
 MAX_SIDE = 2048
 MAX_BYTES = 4 * 1024 * 1024
+# 지면 맵의 역할은 파일 이름 접미사(`_1k.jpg`)가 아니라 맵 이름으로 가른다: Poly Haven `_diff_ _nor_gl_ _rough_`, ambientCG `_Color. _NormalGL. _Roughness.`
+ROLE_RE = {
+    "albedo": re.compile(r"_diff[_.]|_Color[_.]"),
+    "normal_gl": re.compile(r"_nor_gl[_.]|_NormalGL[_.]"),
+    "roughness": re.compile(r"_rough[_.]|_Roughness[_.]"),
+}
 
 
 def jpeg_size(data: bytes) -> tuple[int, int]:
@@ -66,8 +73,8 @@ class SceneAssetTests(unittest.TestCase):
     def test_every_planet_has_ground_maps_and_a_sky(self):
         for planet in PLANETS:
             paths = [r["경로"] for r in self.rows if r["경로"].startswith(f"{SCENE}{planet}/")]
-            for suffix in ("_diff_1k.jpg", "_nor_gl_1k.jpg", "_rough_1k.jpg"):
-                self.assertEqual(sum(p.endswith(suffix) for p in paths), 1, f"{planet}: {suffix}")
+            for role, rx in ROLE_RE.items():
+                self.assertEqual(sum(bool(rx.search(Path(p).name)) for p in paths), 1, f"{planet}: {role}")
             self.assertEqual(sum(p.endswith((".hdr", ".exr")) for p in paths), 1, f"{planet}: HDRI")
 
     def test_only_cc0_from_polyhaven_or_ambientcg(self):
