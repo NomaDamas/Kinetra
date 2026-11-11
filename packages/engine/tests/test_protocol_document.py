@@ -604,48 +604,91 @@ def test_protocol_document_an_unreadable_publish_keeps_its_id(project):
     run_with_core(project, scenario)
 
 
-def test_protocol_document_a_subscriber_that_does_not_read_is_dropped_and_shutdown_completes(project, monkeypatch):
-    """A client that stops reading must not grow the core's memory without bound or hold up its shutdown."""
-    import socket
-    import time
-
+def test_protocol_document_a_queue_that_overflows_drops_the_subscriber_whatever_the_socket_buffers_are(project, monkeypatch):
+    """The bound is on the core's own queue, so it does not depend on the kernel: a burst of `applied` published in
+    one event-loop tick cannot be drained by the writer task in between, however much the socket would accept."""
     from kinetra_engine.protocol import server as server_module
 
     monkeypatch.setattr(server_module, "QUEUE_MAX_MESSAGES", 8)
-    monkeypatch.setattr(server_module, "SEND_TIMEOUT_S", 1.0)
 
-    data = project.model_dump(mode="json")
-    wheel = next(i for i in data["design"]["instances"] if i["id"] == "wheel-fl")
-    data["design"]["instances"] += [{**wheel, "id": f"copy-{n}"} for n in range(300)]  # an applied is then ~100 KB
-    big = Project.model_validate(data)
+    async def scenario(hub, dial):
+        async with dial() as slow_ws, dial() as busy_ws:
+            slow, busy = Client(slow_ws), Client(busy_ws)
+            await slow.open()
+            await busy.open()
+            await slow.recv(), await busy.recv()
+            assert len(hub._subscribers["car"]) == 2
+            for n in range(20):  # no await: nothing is written to any socket until the burst is queued
+                hub.publish("car", publish(f"burst-{n}", move(x=0.001 * (n + 1)), base=n, origin="mcp"))
+            assert hub.documents["car"].revision == 20  # the document took all of them: a subscriber never slows it
+            assert len(hub._subscribers["car"]) == 0  # both queues held 8; the 9th message dropped each
+            for ws in (slow_ws, busy_ws):
+                await asyncio.wait_for(ws.wait_closed(), 5)  # the core aborted the sockets
+            async with dial() as again:  # a dropped client reconnects and is brought up to date (D6)
+                c = Client(again)
+                await c.open(after=(0, hub.documents["car"].epoch))
+                m = await c.recv()
+                assert m.type == "snapshot" and m.revision == 20  # 20 big replays are more than one snapshot
+                assert len(hub._subscribers["car"]) == 1
+
+    run_with_core(project, scenario)
+
+
+def test_protocol_document_the_queue_bound_counts_bytes_once_there_is_a_message_waiting(monkeypatch):
+    from kinetra_engine.protocol import server as server_module
+
+    monkeypatch.setattr(server_module, "QUEUE_MAX_BYTES", 100)
+
+    class FakeWs:
+        pass
+
+    conn = server_module._Connection(FakeWs())
+    assert conn.enqueue("x" * 500)  # an empty queue takes one message however big (a snapshot)
+    assert not conn.enqueue("y")  # but then nothing more fits
+    assert conn.queue.qsize() == 1
+
+
+def test_protocol_document_a_send_that_does_not_finish_drops_the_connection(monkeypatch):
+    from kinetra_engine.protocol import server as server_module
+
+    monkeypatch.setattr(server_module, "SEND_TIMEOUT_S", 0.05)
+
+    class Transport:
+        aborted = False
+
+        def abort(self):
+            self.aborted = True
+
+    class StuckWs:
+        transport = Transport()
+
+        async def send(self, text):
+            await asyncio.Event().wait()  # the peer is not reading: the write never finishes
 
     async def main():
-        hub = Hub({"car": big})
+        ws = StuckWs()
+        conn = server_module._Connection(ws)
+        conn.enqueue("{}")
+        await asyncio.wait_for(conn.pump(), 5)  # returns by itself once the send times out
+        assert ws.transport.aborted and conn.dropped
+
+    asyncio.run(main())
+
+
+def test_protocol_document_shutdown_does_not_wait_for_a_subscriber_that_never_reads(project):
+    import time
+
+    async def main():
+        hub = Hub({"car": project})
         async with hub.serve("127.0.0.1", 0, allowed_origins=[None]) as server:
             port = server.sockets[0].getsockname()[1]
-            sock = socket.socket()
-            sock.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, 1024)
-            sock.setblocking(False)
-            await asyncio.get_running_loop().sock_connect(sock, ("127.0.0.1", port))
-            async with connect(sock=sock, uri=f"ws://127.0.0.1:{port}") as slow_ws:
-                slow = Client(slow_ws)
-                await slow.open()
-                await slow.recv()  # one read, then never again
-                async with connect(f"ws://127.0.0.1:{port}") as busy_ws:
-                    busy = Client(busy_ws)
-                    await busy.open()
-                    await busy.recv()
-                    document = hub.documents["car"]
-                    for n in range(400):
-                        await busy.send(wire_publish(f"b{n}", move(x=0.001 * (n + 1)), base=n))
-                        await busy.recv(), await busy.recv()  # the busy client keeps up the whole time
-                        if len(hub._subscribers["car"]) == 1:  # the slow one was dropped
-                            break
-                    assert len(hub._subscribers["car"]) == 1, "the client that does not read is still subscribed"
-                    assert document.revision >= 1
-                slow_ws.transport.abort()  # the test's own client: do not wait for its close handshake
-            started = time.monotonic()
-        assert time.monotonic() - started < 5  # leaving the server did not wait for any subscriber
+            async with connect(f"ws://127.0.0.1:{port}") as ws:
+                c = Client(ws)
+                await c.open()
+                await c.recv()  # one read, then never again
+                started = time.monotonic()
+        # leaving the server (it closes its connections) is quick: the idle subscriber has nothing queued
+        assert time.monotonic() - started < 5
 
     asyncio.run(main())
 
