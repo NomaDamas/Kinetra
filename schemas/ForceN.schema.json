@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "A force in newtons (`unit` is always `N`, so a client never guesses).",
+  "properties": {
+    "value": {
+      "minimum": 0,
+      "title": "Value",
+      "type": "number"
+    },
+    "unit": {
+      "const": "N",
+      "title": "Unit",
+      "type": "string"
+    }
+  },
+  "required": [
+    "value",
+    "unit"
+  ],
+  "title": "ForceN",
+  "type": "object"
+}

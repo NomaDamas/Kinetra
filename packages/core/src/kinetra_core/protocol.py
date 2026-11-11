@@ -7,7 +7,7 @@ client sees.
 
 Messages carry a literal `type` tag (required, so a union of them is a discriminated union; see the exporter's check).
 Client to core: `hello`, `subscribe`, `publish`, `request`. Core to client: `hello`, `snapshot`, `resumed`, `applied`,
-`accepted`, `rejected`, `error`. `ClientMessage` and `ServerMessage` are the two unions.
+`accepted`, `rejected`, `error`, and the run stream `run_started`, `frame`, `run_ended` (`frames.py`, C-05b). `ClientMessage` and `ServerMessage` are the two unions.
 
 Rules (read by C-05b, C-05c, B-05, B-05a, G-08):
 
@@ -53,7 +53,7 @@ Rules (read by C-05b, C-05c, B-05, B-05a, G-08):
 
 Not here: derived values and the definition hash in `snapshot` and `applied` (D4; the model-label and derived-value
 leaves B-05 and C-03 add optional fields, G5), run and judge requests (`request.action` gains them with X-02 and the J
-epic), the run stream frames (C-05b), the asset channel (3.4).
+epic), the asset channel (3.4).
 """
 
 from __future__ import annotations
@@ -67,6 +67,7 @@ from .assumption import AssumptionTable
 from .commands import Command, Reason
 from .conventions import ID_PATTERN
 from .designspec import ActuateEntry, Actuator, ControlSchedule, DesignSpec, Instance, Joint
+from .frames import Frame, RunEnded, RunStarted
 from .history import Origin
 from .material import Material
 from .partdef import PartDef
@@ -234,7 +235,8 @@ class ProtocolError(_Msg):
 
 
 ServerMessage = Annotated[
-    Union[Hello, Snapshot, Resumed, Applied, Accepted, Rejected, ProtocolError], Field(discriminator="type")
+    Union[Hello, Snapshot, Resumed, Applied, Accepted, Rejected, ProtocolError, RunStarted, Frame, RunEnded],
+    Field(discriminator="type"),
 ]
 """Anything the core sends."""
 

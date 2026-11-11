@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "⑥ The core build: its commit (the force-applying paths and their order are in it).",
+  "properties": {
+    "commit": {
+      "pattern": "^([0-9a-f]{40}|[0-9a-f]{64})$",
+      "title": "Commit",
+      "type": "string"
+    }
+  },
+  "required": [
+    "commit"
+  ],
+  "title": "CoreBuildTag",
+  "type": "object"
+}

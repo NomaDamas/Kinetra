@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "⑧ Thread counts of the physics step and of the solver.",
+  "properties": {
+    "physics": {
+      "minimum": 1,
+      "title": "Physics",
+      "type": "integer"
+    },
+    "solver": {
+      "minimum": 1,
+      "title": "Solver",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "physics",
+    "solver"
+  ],
+  "title": "ThreadTag",
+  "type": "object"
+}

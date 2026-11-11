@@ -16,7 +16,7 @@ Mapping:
 | `type: object` with `properties` | `interface` (named, from `$defs`) or inline `{ ... }`; a property absent from `required` is `?:` |
 | `type: object` with `additionalProperties: <schema>` only | `Record<string, T>` |
 
-Validation-only keywords (`pattern`, `minimum`, `minLength`, ...) do not change a TypeScript type and are ignored.
+Validation-only keywords (`pattern`, `minimum`, `minLength`, `propertyNames`, ...) do not change a TypeScript type and are ignored.
 """
 
 from __future__ import annotations
@@ -31,6 +31,7 @@ _IGNORED = frozenset(
         "title", "description", "default", "examples", "$comment", "discriminator", "deprecated", "readOnly",
         "writeOnly", "format", "pattern", "minLength", "maxLength", "minimum", "maximum", "exclusiveMinimum",
         "exclusiveMaximum", "multipleOf", "minItems", "maxItems", "uniqueItems", "minProperties", "maxProperties",
+        "propertyNames",
     }
 )
 _PRIMITIVE = {"string": "string", "number": "number", "integer": "number", "boolean": "boolean", "null": "null"}
