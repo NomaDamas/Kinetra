@@ -507,3 +507,17 @@ def test_mask_note_does_not_index_past_the_end_and_never_leaks(monkeypatch):
     out = "one\ntwo"
     note = collect.mask_note(out, 1, [99])
     assert "줄 99" not in note and "목록에 없는 줄" in note
+
+
+def test_mask_note_lists_every_masked_line_number_beyond_the_snippet_cap(monkeypatch):
+    monkeypatch.delenv("OPENROUTER_API_KEY", raising=False)
+    rows = [f"row{i} Bearer {'q' * 24}" if i % 2 else f"row{i} plain" for i in range(1, 51)]
+    out, n, lines = common.redact_report("\n".join(rows))
+    assert n == 25 and len(lines) == 25 and lines == list(range(1, 50, 2))
+    note = collect.mask_note(out, n, lines)
+    assert note.count("- 줄 ") == collect.NOTE_MAX_LINES  # 발췌는 상한까지만
+    tail = note.split("줄 번호만(")[1]
+    assert tail.startswith("5줄): ") and tail.split(": ")[1].strip() == ", ".join(map(str, lines[collect.NOTE_MAX_LINES :]))
+    listed = {int(x) for x in __import__("re").findall(r"- 줄 (\d+):", note)} | {int(x) for x in tail.split(": ")[1].split(", ")}
+    assert listed == set(lines)  # 25줄 전부 나온다
+    assert "q" * 24 not in note
