@@ -3114,6 +3114,7 @@ items:
       ## 완료 정의 (DoD)
       - [ ] 궤도·팬·줌, 그리드, 단일·다중 선택
       - [ ] 선택이 인스펙터와 에이전트 문맥으로 전달된다
+      - [ ] MCP로 낸 편집(Claude Code)이 Studio 화면에 반영되는 녹화/스크린샷 (G-08 #155에서 이월: 그때 웹 Studio 화면이 없어 문서 채널 구독자가 받은 `applied`(`origin: "mcp"`)까지만 증거로 남겼다)
       - [ ] "100% 완료" 8항목 충족(`docs/process/done-definition.md`, issues.yaml `done_definition`)
       ## 범위 밖
       XR 조작(XR 에픽).
