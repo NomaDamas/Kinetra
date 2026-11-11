@@ -55,18 +55,20 @@ jobs:
         run: pnpm --filter @kinetra/gltf-check capture
       - name: "Structural skeleton (B-02: one glb per instance placed by pose, caption with per-part masses and the total, out/gltf-check/skeleton.png)"
         run: pnpm --filter @kinetra/gltf-check capture:skeleton
-      - name: Browser tests of the part glTF page and the skeleton
+      - name: "Drive car (B-03: one glb per instance placed by pose, side table of each drive part's key specs, badges and sources, out/gltf-check/drive-car.png)"
+        run: pnpm --filter @kinetra/gltf-check capture:drive-car
+      - name: Browser tests of the part glTF page, the skeleton and the drive car
         run: pnpm --filter @kinetra/gltf-check test:browser
       - name: Artifact content check (screenshots, webgl and webgl-probe must all be there)
         if: always()
         run: |
-          for f in out/screenshots/manifest.json out/webgl/webgl-result.json out/webgl-probe/webgl-result.json out/gltf-check/parts-gltf.png out/gltf-check/result.json out/gltf-check/skeleton.png out/gltf-check/skeleton-result.json; do
+          for f in out/screenshots/manifest.json out/webgl/webgl-result.json out/webgl-probe/webgl-result.json out/gltf-check/parts-gltf.png out/gltf-check/result.json out/gltf-check/skeleton.png out/gltf-check/skeleton-result.json out/gltf-check/drive-car.png out/gltf-check/drive-car-result.json; do
             test -s "$f" && echo "present: $f" || { echo "MISSING: $f"; exit 1; }
           done
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: screenshots
-          path: out/ # screenshots/ (pages + manifest), webgl/ (pixel-assertion run), webgl-probe/ (flag-set evidence), gltf-check/ (B-01c part glTF page: PNG + result.json; B-02 skeleton.png + skeleton-result.json)
+          path: out/ # screenshots/ (pages + manifest), webgl/ (pixel-assertion run), webgl-probe/ (flag-set evidence), gltf-check/ (B-01c part glTF page: PNG + result.json; B-02 skeleton.png + skeleton-result.json; B-03 drive-car.png + drive-car-result.json)
           if-no-files-found: error
           retention-days: 14
