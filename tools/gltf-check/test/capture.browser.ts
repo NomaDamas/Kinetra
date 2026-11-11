@@ -13,7 +13,8 @@ if (problem) throw new Error(problem);
 const SRGB: Record<string, string> = { "mounting-plate-al6061": "#e8eaea", "drive-shaft-steel": "#c4c6c6", "sensor-mast-user-material": "#808080", "reflectance-ior": "#b03030", "beam-al6061": "#e8eaea", "plate-al6061": "#e8eaea",
   "payload-mount-al6061": "#e8eaea", "payload-declared-mass": "#808080", "ballast-weight-declared-mass": "#808080", "motor-37d-12v-50-1-declared-mass": "#808080",
   "wheel-pom": "#e9e7e0", "thruster-vacco-48003040-steel": "#c4c6c6",
-  "battery-18650-declared-mass": "#808080", "battery-pack-4s-declared-mass": "#808080", "tank-al6061": "#e8eaea", "shell-al6061": "#e8eaea" };
+  "battery-18650-declared-mass": "#808080", "battery-pack-4s-declared-mass": "#808080", "tank-al6061": "#e8eaea", "shell-al6061": "#e8eaea",
+  "spring-damper-lee-lc032b08-declared-mass": "#808080" };
 const hex = (s: string) => [1, 3, 5].map((i) => parseInt(s.slice(i, i + 2), 16) / 255);
 
 test("three.js loads each fixture and its colour is the linear value of the slot's sRGB", async () => {

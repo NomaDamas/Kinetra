@@ -27,6 +27,7 @@ export const FILES = [
   "payload-declared-mass",
   "ballast-weight-declared-mass",
   "motor-37d-12v-50-1-declared-mass",
+  "spring-damper-lee-lc032b08-declared-mass",
   "thruster-vacco-48003040-steel",
   "wheel-pom",
   "battery-18650-declared-mass",

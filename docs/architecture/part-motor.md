@@ -15,7 +15,7 @@
 
 ## 부품 역할 (`PartDef.role`)
 
-`PartRole`: `motor`, `thruster`, `wheel`, `battery`, `tank`, `spring_damper`(없을 수 있다. 기본 `None` = 그냥 몸체). 이 PR이 정하는 것은 역할 이름 전체와 `motor`의 요구뿐이다. 다른 역할의 요구는 그 부품 이슈(B-03a, c, d, e)가 `PartDef`의 같은 검증기에 더한다.
+`PartRole`: `motor`, `thruster`, `wheel`, `battery`, `tank`, `spring_damper`(없을 수 있다. 기본 `None` = 그냥 몸체). 이 PR이 정하는 것은 역할 이름 전체와 `motor`의 요구뿐이다. 다른 역할의 요구는 그 부품 이슈(B-03a, c, d)가 `PartDef`의 같은 검증기에 더한다. `spring_damper`의 요구(파라미터 `stiffness`, `damping`)는 B-03e가 더했다: [`part-spring-damper.md`](part-spring-damper.md).
 
 **`role: "motor"` 인 `PartDef`는 아래를 만족해야 한다**(어기면 `PartDef` 검증이 거절한다):
 
