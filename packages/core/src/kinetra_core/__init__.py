@@ -9,6 +9,18 @@ from .assumption import (
     NormalDistribution,
     UniformDistribution,
 )
+from .bodies import (
+    BODIES_DIR,
+    BODY_IDS,
+    AtmosphereDensity,
+    Body,
+    Gravity,
+    Insolation,
+    Unverified,
+    check_world_references,
+    load_bodies,
+    load_body,
+)
 from .collision import CollisionProxy, FilledVoid, ProxyDerivation, ProxyGeom
 from .conventions import COORDINATE_FRAME, QUATERNION_COMPONENTS, Unit
 from .designspec import (
@@ -49,6 +61,8 @@ from .world import PLANET_CONSTANT_NAMES, Incline, Placement, PropSize, RampProp
 
 __all__ = [
     "BADGE_LABEL_KO",
+    "BODIES_DIR",
+    "BODY_IDS",
     "COORDINATE_FRAME",
     "PLANET_CONSTANT_NAMES",
     "QUATERNION_COMPONENTS",
@@ -57,8 +71,10 @@ __all__ = [
     "ActuatorKind",
     "Assumption",
     "AssumptionTable",
+    "AtmosphereDensity",
     "AxisExpr",
     "Badge",
+    "Body",
     "Box",
     "CatalogEntry",
     "BreakThreshold",
@@ -79,7 +95,9 @@ __all__ = [
     "FilledVoid",
     "FixedDistribution",
     "Friction",
+    "Gravity",
     "Incline",
+    "Insolation",
     "Instance",
     "Joint",
     "JointKind",
@@ -118,8 +136,12 @@ __all__ = [
     "TerrainProp",
     "UniformDistribution",
     "Unit",
+    "Unverified",
     "World",
     "WorldPosition",
     "YieldStrength",
+    "check_world_references",
+    "load_bodies",
+    "load_body",
     "load_material_catalog",
 ]

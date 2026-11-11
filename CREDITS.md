@@ -17,6 +17,45 @@
 - 원본 해시: `sha256:6ef147a43547248fca1954e82dea8744e35477c49c7dd768a0362bc224f856e2`
 - 확인자: omp
 
+### asset-fleurs-ko-1701
+
+- 표기: FLEURS (Google), Copyright Google LLC, CC BY 4.0, https://creativecommons.org/licenses/by/4.0/ . 변경: 16 kHz mono FLAC 로 변환.
+- 저작자: Alexis Conneau et al. (Google)
+- 라이선스: CC-BY-4.0
+- 원본: https://huggingface.co/datasets/google/fleurs https://arxiv.org/abs/2205.12446 https://creativecommons.org/licenses/by/4.0/
+- 경로: `packages/engine/tests/fixtures/stt/fleurs-ko-1701.flac`
+- 용도: 테스트 픽스처: 한국어 받아쓰기(I-01a) 고정 음성의 인식 결과 단언. packages/engine/tests/test_stt.py
+- 변경 내역: 16 kHz mono 16-bit FLAC 로 변환(ffmpeg -ar 16000 -ac 1 -sample_fmt s16). 내용은 자르거나 고치지 않았다. 원본은 google/fleurs ko_kr test 의 id 1701 음성(float WAV 16 kHz)이고 원본 해시는 그 WAV 의 sha256 이라 저장소 파일과 비교하지 않는다. 창업자 승인(approved_by: founder, 2026-11-11, CC0 가 아닌 에셋): https://github.com/NomaDamas/Kinetra/pull/483 의 승인 코멘트
+- 받은 날짜: 2026-11-11
+- 원본 해시: `sha256:989020dedbda7fa529b0b4e876f236e79b25a2915d093e23de94c8456e72b7b4`
+- 확인자: omp
+
+### asset-fleurs-ko-1883
+
+- 표기: FLEURS (Google), Copyright Google LLC, CC BY 4.0, https://creativecommons.org/licenses/by/4.0/ . 변경: 16 kHz mono FLAC 로 변환.
+- 저작자: Alexis Conneau et al. (Google)
+- 라이선스: CC-BY-4.0
+- 원본: https://huggingface.co/datasets/google/fleurs https://arxiv.org/abs/2205.12446 https://creativecommons.org/licenses/by/4.0/
+- 경로: `packages/engine/tests/fixtures/stt/fleurs-ko-1883.flac`
+- 용도: 테스트 픽스처: 한국어 받아쓰기(I-01a) 고정 음성의 인식 결과 단언. packages/engine/tests/test_stt.py
+- 변경 내역: 16 kHz mono 16-bit FLAC 로 변환(ffmpeg -ar 16000 -ac 1 -sample_fmt s16). 내용은 자르거나 고치지 않았다. 원본은 google/fleurs ko_kr test 의 id 1883 음성(float WAV 16 kHz)이고 원본 해시는 그 WAV 의 sha256 이라 저장소 파일과 비교하지 않는다. 창업자 승인(approved_by: founder, 2026-11-11, CC0 가 아닌 에셋): https://github.com/NomaDamas/Kinetra/pull/483 의 승인 코멘트
+- 받은 날짜: 2026-11-11
+- 원본 해시: `sha256:e6bc095e55046de927d7c937f036f96ebb506570648ad9ae7c6576febfc4746a`
+- 확인자: omp
+
+### asset-fleurs-ko-1929
+
+- 표기: FLEURS (Google), Copyright Google LLC, CC BY 4.0, https://creativecommons.org/licenses/by/4.0/ . 변경: 16 kHz mono FLAC 로 변환.
+- 저작자: Alexis Conneau et al. (Google)
+- 라이선스: CC-BY-4.0
+- 원본: https://huggingface.co/datasets/google/fleurs https://arxiv.org/abs/2205.12446 https://creativecommons.org/licenses/by/4.0/
+- 경로: `packages/engine/tests/fixtures/stt/fleurs-ko-1929.flac`
+- 용도: 테스트 픽스처: 한국어 받아쓰기(I-01a) 고정 음성의 인식 결과 단언. packages/engine/tests/test_stt.py
+- 변경 내역: 16 kHz mono 16-bit FLAC 로 변환(ffmpeg -ar 16000 -ac 1 -sample_fmt s16). 내용은 자르거나 고치지 않았다. 원본은 google/fleurs ko_kr test 의 id 1929 음성(float WAV 16 kHz)이고 원본 해시는 그 WAV 의 sha256 이라 저장소 파일과 비교하지 않는다. 창업자 승인(approved_by: founder, 2026-11-11, CC0 가 아닌 에셋): https://github.com/NomaDamas/Kinetra/pull/483 의 승인 코멘트
+- 받은 날짜: 2026-11-11
+- 원본 해시: `sha256:a5a400dda19a17f0ceb0c4a2542387ae376e3f0518ba0f9769564402df55affd`
+- 확인자: omp
+
 ### asset-ph-grass_ground-diff-1k
 
 - 표기: grass_ground (albedo(색)), Charlotte Baglioni, Poly Haven. CC0 1.0.
@@ -240,6 +279,19 @@
 - 원본 해시: `sha256:13b2beaad985e05e2d6407ee4c4f35590b11f8d693a258a561055cac8f64cab7`
 - 확인자: omp
 
+### dep-anyio-4.16.0
+
+- 표기: anyio, MIT.
+- 저작자: Alex Grönholm
+- 라이선스: MIT
+- 원본: https://pypi.org/project/anyio/4.16.0/ https://github.com/agronholm/anyio
+- 경로: `packages/engine/pyproject.toml`
+- 용도: 실행 의존성: 로컬 받아쓰기(I-01a)의 추이 의존성
+- 변경 내역: 없음(수정 없이 사용). 추이 의존성: httpx2 이(가) 요구하며 uv.lock 에서 4.16.0 로 고정(루트는 faster-whisper). 해시는 sdist
+- 받은 날짜: 2026-11-11
+- 원본 해시: `sha256:59bb03251907983d1603d27c3087ddb1e93299ea2163adcdba37899a4fb12ffb`
+- 확인자: omp
+
 ### dep-attrs-26.1.0
 
 - 표기: attrs, Copyright (c) 2015 Hynek Schlawack and the attrs contributors. MIT License.
@@ -251,6 +303,45 @@
 - 변경 내역: 없음(수정 없이 사용). 루트 pyproject.toml 의 dev 그룹(jsonschema>=4.26)과 uv.lock 에서 26.1.0 로 고정. 해시는 PyPI sdist 의 sha256
 - 받은 날짜: 2026-11-11
 - 원본 해시: `sha256:d03ceb89cb322a8fd706d4fb91940737b6642aa36998fe130a9bc96c985eff32`
+- 확인자: omp
+
+### dep-av-18.1.0
+
+- 표기: PyAV, Copyright (c) 2008-2023 Mike Boers, Jeremy Lainé and contributors. BSD-3-Clause License. 휠에 번들된 FFmpeg, libx264, libx265 는 각각 LGPL/GPL 이다(결정 대기: I-01c).
+- 저작자: PyAV contributors
+- 라이선스: BSD-3-Clause AND LGPL-2.1-or-later AND GPL-2.0-or-later
+- 원본: https://pypi.org/project/av/18.1.0/ https://github.com/PyAV-Org/PyAV https://github.com/PyAV-Org/PyAV/blob/main/LICENSE.txt
+- 경로: `packages/engine/pyproject.toml`
+- 용도: 실행 의존성: 받아쓰기 입력 오디오 디코딩(wav, mp3, ogg, webm/opus, m4a)
+- 변경 내역: 없음(수정 없이 사용). faster-whisper 1.2.1 의 의존성이며 packages/engine/pyproject.toml 의 `av>=11,<19` 와 uv.lock 에서 18.1.0 으로 고정(faster-whisper 1.2.1 이 av 19 가 없앤 av.open(metadata_errors=...)를 부른다). 해시는 sdist. **휠은 실제로 배포되는 묶음 기준으로 GPL-2.0-or-later 다.** 위 표현식은 그 묶음의 구성요소를 모두 적은 것이다(PyAV 코드 BSD-3-Clause, FFmpeg 계열 LGPL, libx264/libx265 GPL-2.0-or-later). libx264 와 libx265 가 같은 휠 안에서 libavcodec 에 링크되므로 휠 전체를 받는 쪽에 유효한 조건은 GPL 쪽이다. PyAV 코드는 BSD-3-Clause 이고 번들 FFmpeg 는 `--enable-version3`(LGPL-3.0-or-later 로 구성, avcodec_license() 가 `LGPL version 3 or later`, `--enable-gpl` 없음)이지만 같은 휠에 별도 공유 라이브러리로 libx264 와 libx265(둘 다 GPL-2.0-or-later 로 배포)가 들어 있고 libavcodec 이 링크한다(macOS arm64 휠 `otool -L` 과 Linux x86-64 휠 av.libs 목록에서 확인). 상류 유지보수자는 휠을 "LGPLv2.1+ OR GPLv2+"로 설명한다(PyAV-Org/PyAV#2270). `import av` 하면 GPL 라이브러리가 프로세스에 올라온다. 배포(설치 프로그램, 이미지, 호스팅 빌드) 전에 창업자 결정이 필요하다: 이슈 [I-01c] PyAV 휠의 GPL 구성요소 배포 결정. 그 전까지 개발 환경(uv sync)에서만 쓴다. LicenseRef 가 아니라 SPDX 표현식으로 적었다
+- 받은 날짜: 2026-11-11
+- 원본 해시: `sha256:47bfc286e1bc9de7ab4681fc2b575cd2460a66919d31ffe1bd5aa54fae531a28`
+- 확인자: omp
+
+### dep-click-8.5.1
+
+- 표기: click, BSD-3-Clause.
+- 저작자: Pallets
+- 라이선스: BSD-3-Clause
+- 원본: https://pypi.org/project/click/8.5.1/ https://github.com/pallets/click
+- 경로: `packages/engine/pyproject.toml`
+- 용도: 실행 의존성: 로컬 받아쓰기(I-01a)의 추이 의존성
+- 변경 내역: 없음(수정 없이 사용). 추이 의존성: huggingface-hub 이(가) 요구하며 uv.lock 에서 8.5.1 로 고정(루트는 faster-whisper). 해시는 sdist
+- 받은 날짜: 2026-11-11
+- 원본 해시: `sha256:9bbfada76703fd1d784b83eea012e3e8c6a001a876543ef104fa56aaaeb072b4`
+- 확인자: omp
+
+### dep-ctranslate2-4.9.0
+
+- 표기: CTranslate2, Copyright (c) 2018 OpenNMT. MIT License. Linux 휠: Intel oneMKL (Intel Simplified Software License), oneDNN (Apache-2.0), libgomp (GPL-3.0-or-later WITH GCC-exception-3.1).
+- 저작자: OpenNMT / SYSTRAN
+- 라이선스: MIT AND Apache-2.0 AND LicenseRef-Intel-ISSL AND GPL-3.0-or-later WITH GCC-exception-3.1
+- 원본: https://pypi.org/project/ctranslate2/4.9.0/ https://github.com/OpenNMT/CTranslate2 https://github.com/OpenNMT/CTranslate2/blob/master/LICENSE
+- 경로: `packages/engine/pyproject.toml`
+- 용도: 실행 의존성: Whisper 모델 추론 엔진(CPU int8). 로컬 받아쓰기(I-01a)
+- 변경 내역: 없음(수정 없이 사용). faster-whisper 1.2.1 의 의존성(ctranslate2<5,>=4.0)이며 uv.lock 에서 4.9.0 으로 고정. 해시는 macOS arm64 cp312 휠(sdist 없음). 다른 플랫폼의 휠 해시는 uv.lock. LicenseRef 사유: ctranslate2 자체는 MIT 이다. **Linux x86-64 휠(CI 와 배포가 설치하는 것, sha256 5d9b3edd73ba665f16a19cd3a498ce74fbfb6204bc0ac321f00f2600a41e8810)의 libctranslate2 에는 Intel oneMKL(바이너리로 정적 포함, 문자열 `Intel oneMKL …`)과 oneDNN(Apache-2.0)이 들어 있고 libgomp(GPL-3.0-or-later WITH GCC-exception-3.1, SBOM: almalinux libgomp 8.5.0)가 함께 온다.** oneMKL 은 Intel Simplified Software License(October 2022, https://www.intel.com/content/www/us/en/developer/articles/license/end-user-license-agreement.html)이다: 바이너리 재배포를 허용하되 저작권 고지와 약관을 배포물과 문서에 재현해야 하고(휠에는 그 라이선스 파일이 없다 [확인 필요]), 이름을 홍보에 쓸 수 없으며, 역공학·수정이 금지된다. 로열티와 재배포 수 제한은 없다(Intel oneMKL License FAQ 2019, `인용`). macOS arm64 휠에는 MKL 이 없다(Accelerate/Ruy 경로, libctranslate2.4.9.0.dylib 만 번들). 재배포하는 순간(S1 에는 없음) 고지문을 만들어야 한다
+- 받은 날짜: 2026-11-11
+- 원본 해시: `sha256:ca2cc29f5d561e231c15e9e97b13dcbd1913d6615b727fafa1eeffcb0c1f242a`
 - 확인자: omp
 
 ### dep-esbuild-0.28.2
@@ -279,6 +370,58 @@
 - 원본 해시: `sha256:e045f94c235c7adc50e77ba2a579c7bec41b496b6b47c3a7845f7c1e19959a88`
 - 확인자: omp
 
+### dep-faster-whisper-1.2.1
+
+- 표기: faster-whisper, Copyright (c) 2023 SYSTRAN. MIT License.
+- 저작자: SYSTRAN
+- 라이선스: MIT
+- 원본: https://pypi.org/project/faster-whisper/1.2.1/ https://github.com/SYSTRAN/faster-whisper https://github.com/SYSTRAN/faster-whisper/blob/master/LICENSE
+- 경로: `packages/engine/pyproject.toml`
+- 용도: 실행 의존성: 로컬 한국어 받아쓰기(I-01a) kinetra_engine.stt. 결정과 근거는 docs/decisions/stt.md
+- 변경 내역: 없음(수정 없이 사용). packages/engine/pyproject.toml 의 dependencies(faster-whisper==1.2.1)와 uv.lock 에서 고정. 해시는 PyPI 의 py3-none-any 휠(sdist 없음). 휠에 Silero VAD v6 ONNX(MIT)가 들어 있다
+- 받은 날짜: 2026-11-11
+- 원본 해시: `sha256:79a66ad50688c0b794dd501dc340a736992a6342f7f95e5811be60b5224a26a7`
+- 확인자: omp
+
+### dep-filelock-4.2.10
+
+- 표기: filelock, MIT.
+- 저작자: Bernát Gábor and contributors
+- 라이선스: MIT
+- 원본: https://pypi.org/project/filelock/4.2.10/ https://github.com/tox-dev/filelock
+- 경로: `packages/engine/pyproject.toml`
+- 용도: 실행 의존성: 로컬 받아쓰기(I-01a)의 추이 의존성
+- 변경 내역: 없음(수정 없이 사용). 추이 의존성: huggingface-hub 이(가) 요구하며 uv.lock 에서 4.2.10 로 고정(루트는 faster-whisper). 해시는 sdist
+- 받은 날짜: 2026-11-11
+- 원본 해시: `sha256:fcc3c0cb8bfe7f4b3bb0e231c04b15dbad068cb3c2515f343d8fde4dce93bd5d`
+- 확인자: omp
+
+### dep-flatbuffers-25.12.19
+
+- 표기: flatbuffers, Apache-2.0.
+- 저작자: Google (Derek Bailey)
+- 라이선스: Apache-2.0
+- 원본: https://pypi.org/project/flatbuffers/25.12.19/ https://github.com/google/flatbuffers
+- 경로: `packages/engine/pyproject.toml`
+- 용도: 실행 의존성: 로컬 받아쓰기(I-01a)의 추이 의존성
+- 변경 내역: 없음(수정 없이 사용). 추이 의존성: onnxruntime 이(가) 요구하며 uv.lock 에서 25.12.19 로 고정(루트는 faster-whisper). 해시는 PyPI 휠 flatbuffers-25.12.19-py2.py3-none-any.whl(sdist 없음)
+- 받은 날짜: 2026-11-11
+- 원본 해시: `sha256:7634f50c427838bb021c2d66a3d1168e9d199b0607e6329399f04846d42e20b4`
+- 확인자: omp
+
+### dep-fsspec-2026.9.0
+
+- 표기: fsspec, BSD-3-Clause.
+- 저작자: Martin Durant and contributors
+- 라이선스: BSD-3-Clause
+- 원본: https://pypi.org/project/fsspec/2026.9.0/ https://github.com/fsspec/filesystem_spec
+- 경로: `packages/engine/pyproject.toml`
+- 용도: 실행 의존성: 로컬 받아쓰기(I-01a)의 추이 의존성
+- 변경 내역: 없음(수정 없이 사용). 추이 의존성: huggingface-hub 이(가) 요구하며 uv.lock 에서 2026.9.0 로 고정(루트는 faster-whisper). 해시는 sdist
+- 받은 날짜: 2026-11-11
+- 원본 해시: `sha256:0f08147951c8cb31d844c3547d631053b127863b60be04cf06e121333ee0e2fe`
+- 확인자: omp
+
 ### dep-gltf-validator-2.0.0-dev.3.10
 
 - 표기: glTF Validator, Copyright The Khronos Group Inc. Apache License 2.0. 컴파일된 코드에 Dart SDK(Copyright 2012 the Dart project authors, BSD-3-Clause), yaml(Kirill Simonov, MIT), node_preamble(Michael Bullington, MIT), PrismJS(Lea Verou, MIT), vector_math(Andrew Magill 외, Zlib).
@@ -303,6 +446,97 @@
 - 변경 내역: 없음(공식 macOS universal 빌드 Godot_v4.7.2-stable_macos.universal.zip 을 수정 없이 사용. 해시는 그 zip 의 sha256; 릴리스의 SHA512-SUMS.txt 와도 일치(sha512 38aa16e5…69ca). 바이너리는 저장소 밖 ~/.cache/kinetra-godot 에 둔다. 번들 Jolt Physics 5.5.0 (MIT, Jorrit Rouwe, thirdparty/jolt_physics)은 같은 바이너리에 들어 있어 별도 행이 없다)
 - 받은 날짜: 2026-11-10
 - 원본 해시: `sha256:c58a24e31d720be9d62f60cb5627c4e695fb72f21b0cfe1bc9ccaa9a3b3ba63e`
+- 확인자: omp
+
+### dep-h11-0.16.0
+
+- 표기: h11, MIT.
+- 저작자: Nathaniel J. Smith
+- 라이선스: MIT
+- 원본: https://pypi.org/project/h11/0.16.0/ https://github.com/python-hyper/h11
+- 경로: `packages/engine/pyproject.toml`
+- 용도: 실행 의존성: 로컬 받아쓰기(I-01a)의 추이 의존성
+- 변경 내역: 없음(수정 없이 사용). 추이 의존성: httpcore2 이(가) 요구하며 uv.lock 에서 0.16.0 로 고정(루트는 faster-whisper). 해시는 sdist
+- 받은 날짜: 2026-11-11
+- 원본 해시: `sha256:4e35b956cf45792e4caa5885e69fba00bdbc6ffafbfa020300e549b208ee5ff1`
+- 확인자: omp
+
+### dep-hf-xet-1.8.0
+
+- 표기: hf-xet, Apache-2.0.
+- 저작자: Hugging Face
+- 라이선스: Apache-2.0
+- 원본: https://pypi.org/project/hf-xet/1.8.0/ https://github.com/huggingface/xet-core
+- 경로: `packages/engine/pyproject.toml`
+- 용도: 실행 의존성: 로컬 받아쓰기(I-01a)의 추이 의존성
+- 변경 내역: 없음(수정 없이 사용). 추이 의존성: huggingface-hub 이(가) 요구하며 uv.lock 에서 1.8.0 로 고정(루트는 faster-whisper). 해시는 sdist
+- 받은 날짜: 2026-11-11
+- 원본 해시: `sha256:10ed23b51dacf7917d64f335c25048deb470efa755e9989b218fc0531386138e`
+- 확인자: omp
+
+### dep-httpcore2-2.16.0
+
+- 표기: httpcore2, BSD-3-Clause.
+- 저작자: Tom Christie
+- 라이선스: BSD-3-Clause
+- 원본: https://pypi.org/project/httpcore2/2.16.0/ https://github.com/pydantic/httpx2
+- 경로: `packages/engine/pyproject.toml`
+- 용도: 실행 의존성: 로컬 받아쓰기(I-01a)의 추이 의존성
+- 변경 내역: 없음(수정 없이 사용). 추이 의존성: httpx2 이(가) 요구하며 uv.lock 에서 2.16.0 로 고정(루트는 faster-whisper). 해시는 sdist
+- 받은 날짜: 2026-11-11
+- 원본 해시: `sha256:c72cd0413563b17e1cd8354677dff887466f8ec2551679759e93126534428643`
+- 확인자: omp
+
+### dep-httpx2-2.16.0
+
+- 표기: httpx2, BSD-3-Clause.
+- 저작자: Tom Christie
+- 라이선스: BSD-3-Clause
+- 원본: https://pypi.org/project/httpx2/2.16.0/ https://github.com/pydantic/httpx2
+- 경로: `packages/engine/pyproject.toml`
+- 용도: 실행 의존성: 로컬 받아쓰기(I-01a)의 추이 의존성
+- 변경 내역: 없음(수정 없이 사용). 추이 의존성: huggingface-hub 이(가) 요구하며 uv.lock 에서 2.16.0 로 고정(루트는 faster-whisper). 해시는 sdist
+- 받은 날짜: 2026-11-11
+- 원본 해시: `sha256:0d54c98128e8f2ff7fbbde0fca8c359e5f032edeaaaac443cdb7f31f685bcd7f`
+- 확인자: omp
+
+### dep-httpx2-jsfetch-1.0
+
+- 표기: httpx2-jsfetch, BSD-3-Clause.
+- 저작자: Hood Chatham
+- 라이선스: BSD-3-Clause
+- 원본: https://pypi.org/project/httpx2-jsfetch/1.0/ https://pypi.org/project/httpx2-jsfetch/1.0/
+- 경로: `packages/engine/pyproject.toml`
+- 용도: 실행 의존성: 로컬 받아쓰기(I-01a)의 추이 의존성
+- 변경 내역: 없음(수정 없이 사용). 추이 의존성: httpx2 이(가) 요구하며 uv.lock 에서 1.0 로 고정(루트는 faster-whisper). 해시는 sdist
+- 받은 날짜: 2026-11-11
+- 원본 해시: `sha256:70a0e3eabfef7cce5ad9c629f7d01ca05e418f586646f4ddf14782e4c1454c60`
+- 확인자: omp
+
+### dep-huggingface-hub-2.4.0
+
+- 표기: huggingface_hub, Copyright Hugging Face Inc. Apache License 2.0.
+- 저작자: Hugging Face
+- 라이선스: Apache-2.0
+- 원본: https://pypi.org/project/huggingface-hub/2.4.0/ https://github.com/huggingface/huggingface_hub https://github.com/huggingface/huggingface_hub/blob/main/LICENSE
+- 경로: `packages/engine/pyproject.toml`
+- 용도: 실행 의존성: 고정 리비전의 모델 내려받기와 로컬 캐시 조회(I-01a)
+- 변경 내역: 없음(수정 없이 사용). faster-whisper 1.2.1 의 의존성(huggingface-hub>=0.21)이며 uv.lock 에서 고정. 해시는 sdist. `python -m kinetra_engine.stt fetch` 만 네트워크로 모델을 받고, Transcriber 는 local_files_only 로 읽는다
+- 받은 날짜: 2026-11-11
+- 원본 해시: `sha256:13a6158b9e3393d9d3f248ce99074d50c2a0a1449fb9d8e2f710751e2084c188`
+- 확인자: omp
+
+### dep-idna-3.20
+
+- 표기: idna, BSD-3-Clause.
+- 저작자: Kim Davies
+- 라이선스: BSD-3-Clause
+- 원본: https://pypi.org/project/idna/3.20/ https://github.com/kjd/idna
+- 경로: `packages/engine/pyproject.toml`
+- 용도: 실행 의존성: 로컬 받아쓰기(I-01a)의 추이 의존성
+- 변경 내역: 없음(수정 없이 사용). 추이 의존성: anyio, httpx2 이(가) 요구하며 uv.lock 에서 3.20 로 고정(루트는 faster-whisper). 해시는 sdist
+- 받은 날짜: 2026-11-11
+- 원본 해시: `sha256:a7db850025b95ded1eae8a46181a1a6c56c92c96f0e2b005d9ff8dc0210cab44`
 - 확인자: omp
 
 ### dep-iwer-2.8.0
@@ -344,6 +578,19 @@
 - 원본 해시: `sha256:b540987f239e745613c7a9176f3edb72b832a4ac465cf02712288397832b5e8d`
 - 확인자: omp
 
+### dep-model-faster-whisper-small-536b0662
+
+- 표기: Whisper small (CTranslate2 변환: Systran/faster-whisper-small), Copyright (c) 2022 OpenAI. MIT License.
+- 저작자: OpenAI (원 모델), SYSTRAN (CTranslate2 변환)
+- 라이선스: MIT
+- 원본: https://huggingface.co/Systran/faster-whisper-small/tree/536b0662742c02347bc0e980a01041f333bce120 https://github.com/openai/whisper https://github.com/openai/whisper/blob/main/LICENSE
+- 경로: `packages/engine/src/kinetra_engine/stt/transcriber.py`
+- 용도: 실행 의존성: 로컬 한국어 받아쓰기 모델(I-01a). 선택 근거와 정확도 한계는 docs/decisions/stt.md
+- 변경 내역: 없음(수정 없이 사용). model.bin 의 sha256(483,546,902 B, Hugging Face LFS oid 와 내려받은 파일의 shasum 이 일치). 저장소에 넣지 않고 사용자 캐시(~/.cache/huggingface 또는 KINETRA_STT_MODEL_DIR)에 `python -m kinetra_engine.stt fetch` 로 받는다. 리비전과 해시는 transcriber.py 의 MODEL_REVISION, MODEL_SHA256 이 고정하고 불일치하면 ModelMissing
+- 받은 날짜: 2026-11-11
+- 원본 해시: `sha256:3e305921506d8872816023e4c273e75d2419fb89b24da97b4fe7bce14170d671`
+- 확인자: omp
+
 ### dep-mujoco-4.0.0
 
 - 표기: MuJoCo, Copyright Google DeepMind. Apache License 2.0.
@@ -370,6 +617,19 @@
 - 원본 해시: `sha256:66b97038b28d323dee676cf6c696074ef57e5e6f62521a5f48045ebaebdd27a0`
 - 확인자: omp
 
+### dep-numpy-2.4.6
+
+- 표기: numpy, BSD-3-Clause AND 0BSD AND MIT AND Zlib AND CC0-1.0.
+- 저작자: NumPy Developers
+- 라이선스: BSD-3-Clause AND 0BSD AND MIT AND Zlib AND CC0-1.0
+- 원본: https://pypi.org/project/numpy/2.4.6/ https://github.com/numpy/numpy
+- 경로: `packages/engine/pyproject.toml`
+- 용도: 실행 의존성: 로컬 받아쓰기(I-01a)의 추이 의존성
+- 변경 내역: 없음(수정 없이 사용). 추이 의존성(Python 3.12 미만에서만 이 버전, 이상은 numpy 2.5.4 행): ctranslate2, onnxruntime 이(가) 요구하며 uv.lock 에서 2.4.6 로 고정(루트는 faster-whisper). 해시는 sdist
+- 받은 날짜: 2026-11-11
+- 원본 해시: `sha256:f3a3570c4a2a16746ac2c31a7c7c7b0c186b95ce902e33db6f28094ed7387dda`
+- 확인자: omp
+
 ### dep-numpy-2.5.4
 
 - 표기: NumPy, Copyright (c) 2005-2026, NumPy Developers. BSD 3-Clause License.
@@ -381,6 +641,19 @@
 - 변경 내역: 없음(PEP 723 헤더에서 numpy==2.5.4 고정, 수정 없이 사용). NumPy 자체의 라이선스는 BSD-3-Clause(저장소 LICENSE.txt). PyPI 메타데이터 license_expression은 휠에 번들된 구성요소까지 합쳐 'BSD-3-Clause AND 0BSD AND MIT AND Zlib AND CC0-1.0'이다
 - 받은 날짜: 2026-11-10
 - 원본 해시: `sha256:9a94cf751c9ad8ebaa835bcd3d40dacf8534ad086b88c38029b65123c7999d2a`
+- 확인자: omp
+
+### dep-onnxruntime-1.31.1
+
+- 표기: ONNX Runtime, Copyright (c) Microsoft Corporation. MIT License.
+- 저작자: Microsoft
+- 라이선스: MIT
+- 원본: https://pypi.org/project/onnxruntime/1.31.1/ https://github.com/microsoft/onnxruntime https://github.com/microsoft/onnxruntime/blob/main/LICENSE
+- 경로: `packages/engine/pyproject.toml`
+- 용도: 실행 의존성: 음성 구간 검출(Silero VAD) 추론. 로컬 받아쓰기(I-01a)
+- 변경 내역: 없음(수정 없이 사용). faster-whisper 1.2.1 의 의존성(onnxruntime<2,>=1.14)이며 uv.lock 에서 고정. 해시는 macOS arm64 cp312 휠(sdist 없음)
+- 받은 날짜: 2026-11-11
+- 원본 해시: `sha256:96dd2564b10ea7153ad9c207e7cd8e5917cb3ba521e0e0a62ac03486fdc8d56c`
 - 확인자: omp
 
 ### dep-pixelmatch-8.0.0
@@ -433,6 +706,19 @@
 - 변경 내역: 없음(수정 없이 사용). npm 배포 tarball 의 sha256. tools/design/package.json 의 devDependencies와 pnpm-lock.yaml 에서 7.0.0 로 고정.
 - 받은 날짜: 2026-11-10
 - 원본 해시: `sha256:c4b71873d48a692dd5eeb1dcb62185c7aafe40f2180c7cc7f30ec71e89a080be`
+- 확인자: omp
+
+### dep-protobuf-7.36.2
+
+- 표기: protobuf, BSD-3-Clause.
+- 저작자: Google
+- 라이선스: BSD-3-Clause
+- 원본: https://pypi.org/project/protobuf/7.36.2/ https://github.com/protocolbuffers/protobuf
+- 경로: `packages/engine/pyproject.toml`
+- 용도: 실행 의존성: 로컬 받아쓰기(I-01a)의 추이 의존성
+- 변경 내역: 없음(수정 없이 사용). 추이 의존성: onnxruntime 이(가) 요구하며 uv.lock 에서 7.36.2 로 고정(루트는 faster-whisper). 해시는 sdist
+- 받은 날짜: 2026-11-11
+- 원본 해시: `sha256:497d0463ff3316681da6c0b9e8d06cb465d61abce00b613ab42226175644d1bb`
 - 확인자: omp
 
 ### dep-pydantic-2.14.3
@@ -537,6 +823,45 @@
 - 변경 내역: 없음(수정 없이 사용). 해시는 `npm pack three@0.187.0` tgz 의 sha256. spikes/web-client/package.json 의 dependencies 와 pnpm-lock.yaml 에서 0.187.0 으로 고정
 - 받은 날짜: 2026-11-10
 - 원본 해시: `sha256:ff540832ded0cfe919764d24a3d88f3e2a05f23303f876423e4f893841e90728`
+- 확인자: omp
+
+### dep-tokenizers-0.23.3
+
+- 표기: tokenizers, Copyright Hugging Face Inc. Apache License 2.0.
+- 저작자: Hugging Face
+- 라이선스: Apache-2.0
+- 원본: https://pypi.org/project/tokenizers/0.23.3/ https://github.com/huggingface/tokenizers https://github.com/huggingface/tokenizers/blob/main/LICENSE
+- 경로: `packages/engine/pyproject.toml`
+- 용도: 실행 의존성: Whisper 토크나이저(tokenizer.json). 로컬 받아쓰기(I-01a)
+- 변경 내역: 없음(수정 없이 사용). faster-whisper 1.2.1 의 의존성(tokenizers<1,>=0.13)이며 uv.lock 에서 고정. 해시는 sdist
+- 받은 날짜: 2026-11-11
+- 원본 해시: `sha256:cded33237c77caeef62944d32aa9a7ef42bdce2b3497e18d137e072a8c4be438`
+- 확인자: omp
+
+### dep-tqdm-4.70.1
+
+- 표기: tqdm, MPL-2.0 AND MIT.
+- 저작자: tqdm developers
+- 라이선스: MPL-2.0 AND MIT
+- 원본: https://pypi.org/project/tqdm/4.70.1/ https://github.com/tqdm/tqdm
+- 경로: `packages/engine/pyproject.toml`
+- 용도: 실행 의존성: 로컬 받아쓰기(I-01a)의 추이 의존성
+- 변경 내역: 없음(수정 없이 사용). 추이 의존성: faster-whisper, huggingface-hub 이(가) 요구하며 uv.lock 에서 4.70.1 로 고정(루트는 faster-whisper). 해시는 sdist
+- 받은 날짜: 2026-11-11
+- 원본 해시: `sha256:cefd0eca11b2a37a3aee776544d4f4ae913f02688135b5556b8788dfa474afc4`
+- 확인자: omp
+
+### dep-truststore-0.10.5
+
+- 표기: truststore, MIT.
+- 저작자: Seth Michael Larson
+- 라이선스: MIT
+- 원본: https://pypi.org/project/truststore/0.10.5/ https://github.com/sethmlarson/truststore
+- 경로: `packages/engine/pyproject.toml`
+- 용도: 실행 의존성: 로컬 받아쓰기(I-01a)의 추이 의존성
+- 변경 내역: 없음(수정 없이 사용). 추이 의존성: httpcore2, httpx2 이(가) 요구하며 uv.lock 에서 0.10.5 로 고정(루트는 faster-whisper). 해시는 sdist
+- 받은 날짜: 2026-11-11
+- 원본 해시: `sha256:30d36967ccaded5cbb38d602c433f53600036c79d502f4533a49b60a03bbefcd`
 - 확인자: omp
 
 ### dep-typescript-7.0.2

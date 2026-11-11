@@ -48,6 +48,14 @@ export interface AssumptionTable {
   assumptions?: Assumption[];
 }
 
+/** Air density at the surface, kg/m^3. 0 is a vacuum (the Moon). */
+export interface AtmosphereDensity {
+  badge: Badge;
+  source: Source;
+  value: number;
+  unit: "kg/m^3";
+}
+
 /**
  * A length in metres: `offset + sum(factor * param)`. A snap point coordinate in the part's local frame, or a
  * dimension of a shape component (`shape.py`). Every `param` is a length parameter of the part.
@@ -58,6 +66,16 @@ export interface AxisExpr {
 }
 
 export type Badge = "sim" | "cite" | "default" | "declared" | "estimate";
+
+export interface Body {
+  id: string;
+  name: string;
+  gravity: Gravity;
+  atmosphere_density: AtmosphereDensity;
+  insolation: Insolation;
+  ground_friction: Assumption;
+  unverified?: Unverified[];
+}
 
 /** Rectangular block. `size_*` are full extents [m] along the component's local x, y, z. */
 export interface Box {
@@ -225,12 +243,28 @@ export interface Friction {
   unit: "1";
 }
 
+/** Uniform surface gravitational acceleration, m/s^2, > 0. */
+export interface Gravity {
+  badge: Badge;
+  source: Source;
+  value: number;
+  unit: "m/s^2";
+}
+
 /** Slope angle above the ground in radians, strictly between 0 and pi/2. */
 export interface Incline {
   badge: Badge;
   source: Source;
   value: number;
   unit: "rad";
+}
+
+/** Solar irradiance at the planet's mean distance from the Sun, W/m^2 (above the atmosphere, not at the ground). */
+export interface Insolation {
+  badge: Badge;
+  source: Source;
+  value: number;
+  unit: "W/m^2";
 }
 
 /**
@@ -560,7 +594,13 @@ export interface UniformDistribution {
 }
 
 /** Closed unit vocabulary (SI, written the way the JSON carries it). */
-export type Unit = "1" | "m" | "m^2" | "m^3" | "kg" | "s" | "rad" | "m/s" | "m/s^2" | "rad/s" | "N" | "N*m" | "N/m" | "N*s/m" | "N*m/rad" | "Pa" | "kg/m^3" | "kg*m^2" | "J" | "W";
+export type Unit = "1" | "m" | "m^2" | "m^3" | "kg" | "s" | "rad" | "m/s" | "m/s^2" | "rad/s" | "N" | "N*m" | "N/m" | "N*s/m" | "N*m/rad" | "Pa" | "kg/m^3" | "kg*m^2" | "J" | "W" | "W/m^2";
+
+/** A constant that is not a cited number, and why. */
+export interface Unverified {
+  item: "gravity" | "atmosphere_density" | "insolation" | "ground_friction";
+  reason: string;
+}
 
 /** `planet` is an ID (same pattern as every other ID); `terrain_props` sit on that planet's flat ground. */
 export interface World {

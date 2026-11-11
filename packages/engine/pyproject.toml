@@ -3,7 +3,11 @@ name = "kinetra-engine"
 version = "0.0.0"
 description = "Physics engine adapters (compile Project to engine, run)"
 requires-python = ">=3.11"
-dependencies = []
+dependencies = [
+    "faster-whisper==1.2.1",
+    # faster-whisper 1.2.1 calls av.open(metadata_errors=...), which av 19 removed; it declares only av>=11
+    "av>=11,<19",
+]
 
 [build-system]
 requires = ["hatchling"]

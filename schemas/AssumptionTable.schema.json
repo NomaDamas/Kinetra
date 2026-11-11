@@ -332,7 +332,8 @@
         "kg/m^3",
         "kg*m^2",
         "J",
-        "W"
+        "W",
+        "W/m^2"
       ],
       "title": "Unit",
       "type": "string"
