@@ -5,7 +5,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
-import type { ContactEvent, Frame, PlatformTag, RunCompleted, RunEnded, RunFailed, RunStarted, ServerMessage, TrajectoryEvidence } from "../types.ts";
+import type { BodyPose, ContactEvent, Frame, PlatformTag, RunCompleted, RunEnded, RunFailed, RunStarted, ServerMessage, TrajectoryEvidence } from "../types.ts";
 
 const here = (p: string) => fileURLToPath(new URL(p, import.meta.url));
 const fixtures = "../../packages/engine/tests/fixtures/frames/";
@@ -63,15 +63,16 @@ test("run_started carries all eight platform tag components, and run_ended pairs
   assert.ok(ended);
   const components: (keyof PlatformTag)[] = ["os", "cpu", "image_digest", "engine", "runtime", "core_build", "compute", "threads"];
   assert.deepEqual(Object.keys(started.platform), components);
-  assert.equal(ended.end.reason, "completed"); // narrows `end` to RunCompleted: the trajectory is there
-  assert.deepEqual(ended.end.trajectory.platform, started.platform);
+  const end = ended.end;
+  assert.ok(end.reason === "completed", "a completed run"); // narrows `end` to RunCompleted: the trajectory is there
+  assert.deepEqual(end.trajectory.platform, started.platform);
   // @ts-expect-error a trajectory is the hash and its tag; the hash alone is not a TrajectoryEvidence
-  const bare: TrajectoryEvidence = { hash: ended.end.trajectory.hash };
+  const bare: TrajectoryEvidence = { hash: end.trajectory.hash };
   // @ts-expect-error a completed run requires its trajectory
   const noTrajectory: RunCompleted = { reason: "completed" };
   const failed: RunFailed = { reason: "failed" }; // only a failed run has none
   // @ts-expect-error a failed run has no trajectory to claim
-  const claimed: RunFailed = { reason: "failed", trajectory: ended.end.trajectory };
+  const claimed: RunFailed = { reason: "failed", trajectory: end.trajectory };
   void [bare, noTrajectory, failed, claimed];
 });
 
