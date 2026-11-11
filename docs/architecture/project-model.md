@@ -70,7 +70,7 @@
 
 - 곡선(토크-속도, 추력 곡선): B-03b, B-03c.
 - 단위 `kg/s`(추진제 소모율), `N*s`(충격량): 쓰는 잎이 `Unit`에 더한다.
-- 형상 레시피와 파생값의 입력: B-01a에서 들어왔다. `PartDef.shape`, `MassProperties.derivation`. `docs/architecture/part-mass.md`.
+- 형상 레시피와 파생값의 입력: B-01a에서 들어왔다. `PartDef.shape`, `MassProperties.derivation`. `docs/architecture/part-mass.md`. 같은 레시피에서 시각 glTF와 재질 슬롯: B-01c, `docs/architecture/part-visual.md`.
 - 바인딩 안 된 가정(가정이 설계의 어느 값을 흔드는지)과 가정 단위의 의미 검사: J-01a, L-02.
 - PBR 재질 슬롯: B-07(구현됨, [`materials.md`](materials.md)).
 - `export_policy`: HW-02a.

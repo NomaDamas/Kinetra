@@ -3,3 +3,4 @@ packages:
   - packages/ui
   - tools/design
   - tools/screenshots
+  - tools/gltf-check
