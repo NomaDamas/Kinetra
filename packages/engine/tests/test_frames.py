@@ -96,7 +96,7 @@ def test_the_recorded_run_is_internally_consistent():
     kinds = {e.kind for f in frames for e in f.events}
     assert kinds == {"contact", "condition_met", "break"}  # the three event kinds of the DoD
     ended = RunEnded.model_validate(recorded()[-1])
-    assert ended.last_tick == frames[-1].tick and ended.trajectory.platform == run.platform
+    assert ended.last_tick == frames[-1].tick and ended.end.trajectory.platform == run.platform
 
 
 def test_an_event_is_in_the_frame_that_follows_it_and_never_in_two():
@@ -140,7 +140,7 @@ def test_no_engine_term_in_the_frame_schemas_or_the_recorded_messages():
         walk(m)
         assert not [k for k in keys if ENGINE_WORDS.search(k)], keys
     # the field names of the models, too
-    for cls in (RunStarted, Frame, RunEnded, PlatformTag, kinetra_core.EngineTag):
+    for cls in (RunStarted, Frame, RunEnded, PlatformTag, kinetra_core.WheelEngine, kinetra_core.WasmEngine, kinetra_core.CustomBuildEngine):
         assert not [n for n in cls.model_fields if ENGINE_WORDS.search(n)], cls
 
 
@@ -203,19 +203,66 @@ def test_the_tag_refuses_a_component_it_does_not_know_and_a_false_tag_equality()
     assert RunStarted.model_validate(other).platform != a.platform  # one component differs: another tag (H1)
 
 
-def test_the_engine_is_named_by_value_and_a_wheel_names_its_file_hash():
+ENGINES = {
+    "wheel": {"name": "any-engine", "version": "1.2.3", "distribution": "wheel", "artifact_hash": "sha256:" + "b" * 64},
+    "wasm_package": {"name": "any-engine", "version": "1.2.3", "distribution": "wasm_package", "artifact_hash": "sha256:" + "b" * 64},
+    "custom_build": {"name": "any-engine", "version": "1.2.3", "distribution": "custom_build", "compiler": "cc 1", "build_flags": ""},
+}
+
+
+def with_engine(engine: dict) -> dict:
+    data = started()
+    data["platform"]["engine"] = engine
+    return data
+
+
+def test_the_engine_is_named_by_value():
     engine = started()["platform"]["engine"]
     assert set(engine) >= {"name", "version", "distribution"}
-    data = started()
-    data["platform"]["engine"] = {"name": "any-engine", "version": "1.2.3", "distribution": "wheel"}
-    # the schema cannot say "a wheel needs a hash"; the model does
-    with pytest.raises(ValidationError, match="artifact_hash"):
+    for distribution, engine in ENGINES.items():
+        assert schema_ok("RunStarted", with_engine(engine)), distribution
+        assert RunStarted.model_validate(with_engine(engine)).platform.engine.distribution == distribution
+
+
+@pytest.mark.parametrize(
+    ("distribution", "change"),
+    [
+        ("wheel", {"artifact_hash": KeyError}),
+        ("wheel", {"artifact_hash": None}),
+        ("wasm_package", {"artifact_hash": KeyError}),
+        ("wasm_package", {"artifact_hash": None}),
+        ("custom_build", {"compiler": KeyError}),
+        ("custom_build", {"compiler": None}),
+        ("custom_build", {"build_flags": KeyError}),
+        ("custom_build", {"build_flags": None}),
+        ("wheel", {"distribution": "docker"}),
+        ("wheel", {"artifact_hash": "latest"}),
+    ],
+)
+def test_the_engine_tag_conditional_rule_is_in_the_schema_and_the_model_alike(distribution, change):
+    """What the model refuses the JSON Schema refuses too (a schema-only client checks the same rule)."""
+    engine = dict(ENGINES[distribution])
+    for key, value in change.items():
+        if value is KeyError:
+            del engine[key]
+        else:
+            engine[key] = value
+    data = with_engine(engine)
+    assert not schema_ok("RunStarted", data)
+    assert not schema_ok("PlatformTag", data["platform"])
+    with pytest.raises(ValidationError):
         RunStarted.model_validate(data)
-    data["platform"]["engine"]["artifact_hash"] = "sha256:" + "b" * 64
-    RunStarted.model_validate(data)
-    data["platform"]["engine"] = {"name": "x", "version": "1", "distribution": "custom_build"}
-    with pytest.raises(ValidationError, match="compiler"):
-        RunStarted.model_validate(data)
+
+
+def test_the_fields_of_another_distribution_do_not_substitute():
+    """A wheel with a compiler and flags but no file hash is not identified; a custom build with a hash but no
+    compiler is not either."""
+    wheel = {k: v for k, v in ENGINES["custom_build"].items() if k != "distribution"} | {"distribution": "wheel"}
+    custom = {k: v for k, v in ENGINES["wheel"].items() if k != "distribution"} | {"distribution": "custom_build"}
+    for engine in (wheel, custom):
+        assert not schema_ok("RunStarted", with_engine(engine))
+        with pytest.raises(ValidationError):
+            RunStarted.model_validate(with_engine(engine))
 
 
 def test_the_time_step_is_said_once_in_effect():
@@ -225,24 +272,48 @@ def test_the_time_step_is_said_once_in_effect():
         RunStarted.model_validate(data)
 
 
+def ended_with(**end) -> dict:
+    data = copy.deepcopy(recorded()[-1])
+    data["end"] = end
+    return data
+
+
 def test_a_trajectory_hash_is_only_evidence_with_its_platform_tag():
     ended = recorded()[-1]
     assert schema_ok("RunEnded", ended)
-    assert not schema_ok("RunEnded", without(ended, "trajectory", "platform"))
-    assert not schema_ok("RunEnded", without(ended, "trajectory", "hash"))
+    assert not schema_ok("RunEnded", without(ended, "end", "trajectory", "platform"))
+    assert not schema_ok("RunEnded", without(ended, "end", "trajectory", "hash"))
     with pytest.raises(ValidationError):
-        RunEnded.model_validate(without(ended, "trajectory", "platform"))
-    bare = {**ended, "trajectory": {"hash": ended["trajectory"]["hash"]}}  # a hash with no tag
+        RunEnded.model_validate(without(ended, "end", "trajectory", "platform"))
+    bare = ended_with(reason="completed", trajectory={"hash": ended["end"]["trajectory"]["hash"]})  # a hash with no tag
     assert not schema_ok("RunEnded", bare)
     with pytest.raises(ValidationError):
         RunEnded.model_validate(bare)
-    no_hash = {k: v for k, v in ended.items() if k != "trajectory"}  # a completed run with nothing
-    with pytest.raises(ValidationError, match="trajectory hash"):
-        RunEnded.model_validate(no_hash)
-    failed = {**no_hash, "reason": "failed"}
-    assert RunEnded.model_validate(failed).trajectory is None and schema_ok("RunEnded", failed)
+
+
+@pytest.mark.parametrize("reason", ["completed", "stopped"])
+def test_a_run_that_ended_with_a_trajectory_requires_it_in_schema_and_model(reason):
+    trajectory = recorded()[-1]["end"]["trajectory"]
+    good = ended_with(reason=reason, trajectory=trajectory)
+    assert schema_ok("RunEnded", good) and schema_ok("ServerMessage", good)
+    assert RunEnded.model_validate(good).end.reason == reason
+    for bad in (ended_with(reason=reason), ended_with(reason=reason, trajectory=None)):
+        assert not schema_ok("RunEnded", bad) and not schema_ok("ServerMessage", bad)
+        with pytest.raises(ValidationError):
+            RunEnded.model_validate(bad)
+
+
+def test_a_failed_run_has_no_trajectory_and_may_not_claim_one():
+    trajectory = recorded()[-1]["end"]["trajectory"]
+    failed = ended_with(reason="failed")
+    assert schema_ok("RunEnded", failed) and RunEnded.model_validate(failed).end.reason == "failed"
+    claimed = ended_with(reason="failed", trajectory=trajectory)
+    assert not schema_ok("RunEnded", claimed)
     with pytest.raises(ValidationError):
-        RunEnded.model_validate({**ended, "reason": "failed"})  # a failed run has no hash
+        RunEnded.model_validate(claimed)
+    assert not schema_ok("RunEnded", ended_with(reason="exploded"))
+    with pytest.raises(ValidationError):
+        RunEnded.model_validate(ended_with(reason="exploded"))
 
 
 # --- frames: poses, quaternion order, events ----------------------------------------------------------------
@@ -269,7 +340,7 @@ def test_a_pose_is_a_named_position_and_a_named_quaternion_in_project_order():
 
 
 def test_events_validate_by_kind_and_carry_si_units():
-    contact = {"kind": "contact", "tick": 3, "phase": "begin", "body": "wheel-fl", "other_kind": "prop", "other": "prop-a",
+    contact = {"kind": "contact", "tick": 3, "phase": "begin", "body": "wheel-fl", "other": {"kind": "prop", "id": "prop-a"},
                "force": {"value": 12.5, "unit": "N"}}
     brk = {"kind": "break", "tick": 3, "joint": "axle-fl", "load": {"value": 150.0, "unit": "N"}, "threshold": {"value": 120.0, "unit": "N"}}
     met = {"kind": "condition_met", "tick": 3, "condition": "landed"}
@@ -282,9 +353,39 @@ def test_events_validate_by_kind_and_carry_si_units():
         Frame.model_validate(frame_with_event(wrong_unit))
     unknown_kind = {"kind": "explosion", "tick": 3}
     assert not schema_ok("Frame", frame_with_event(unknown_kind))
-    ground_with_id = {**contact, "other_kind": "ground"}
-    with pytest.raises(ValidationError, match="ground"):
-        Frame.model_validate(frame_with_event(ground_with_id))
+
+
+def contact_with(other) -> dict:
+    event = {"kind": "contact", "tick": 3, "phase": "begin", "body": "wheel-fl"}
+    if other is not KeyError:
+        event["other"] = other
+    return frame_with_event(event)
+
+
+@pytest.mark.parametrize(
+    ("other", "ok"),
+    [
+        ({"kind": "ground"}, True),
+        ({"kind": "body", "id": "wheel-fr"}, True),
+        ({"kind": "prop", "id": "prop-a"}, True),
+        ({"kind": "ground", "id": "ground-1"}, False),  # the ground has no id
+        ({"kind": "body"}, False),
+        ({"kind": "prop"}, False),
+        ({"kind": "body", "id": None}, False),
+        ({"kind": "prop", "id": "Not An Id"}, False),
+        ({"kind": "wall", "id": "x"}, False),
+        (KeyError, False),
+        (None, False),
+    ],
+)
+def test_a_contact_names_its_other_side_by_kind_in_schema_and_model_alike(other, ok):
+    data = contact_with(other)
+    assert schema_ok("Frame", data) is ok
+    if ok:
+        Frame.model_validate(data)
+    else:
+        with pytest.raises(ValidationError):
+            Frame.model_validate(data)
 
 
 def test_an_event_after_its_frame_or_a_body_twice_is_refused():
@@ -309,7 +410,7 @@ def test_check_frame_catches_what_one_message_cannot():
     ):
         with pytest.raises(ValueError, match=text):
             check_frame(run, good.model_copy(update=change))
-    stranger = good.model_copy(update={"events": (kinetra_core.ContactEvent(kind="contact", tick=1, phase="end", body="ghost", other_kind="ground"),)})
+    stranger = good.model_copy(update={"events": (kinetra_core.ContactEvent(kind="contact", tick=1, phase="end", body="ghost", other=kinetra_core.GroundTarget(kind="ground")),)})
     with pytest.raises(ValueError, match="not in the run"):
         check_frame(run, stranger)
 

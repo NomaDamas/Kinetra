@@ -81,8 +81,9 @@
       "tick": 101,
       "phase": "begin",
       "body": "wheel-rl",
-      "other_kind": "ground",
-      "other": null,
+      "other": {
+        "kind": "ground"
+      },
       "force": null
     },
     {
@@ -90,8 +91,9 @@
       "tick": 101,
       "phase": "begin",
       "body": "wheel-rr",
-      "other_kind": "ground",
-      "other": null,
+      "other": {
+        "kind": "ground"
+      },
       "force": null
     },
     {
@@ -99,8 +101,9 @@
       "tick": 101,
       "phase": "begin",
       "body": "wheel-fl",
-      "other_kind": "ground",
-      "other": null,
+      "other": {
+        "kind": "ground"
+      },
       "force": null
     },
     {
@@ -108,8 +111,9 @@
       "tick": 101,
       "phase": "begin",
       "body": "wheel-fr",
-      "other_kind": "ground",
-      "other": null,
+      "other": {
+        "kind": "ground"
+      },
       "force": null
     },
     {

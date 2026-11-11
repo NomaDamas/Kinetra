@@ -723,6 +723,27 @@
       "title": "BodyRef",
       "type": "object"
     },
+    "BodyTarget": {
+      "description": "What a body touched: another body of the run.",
+      "properties": {
+        "kind": {
+          "const": "body",
+          "title": "Kind",
+          "type": "string"
+        },
+        "id": {
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+          "title": "Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "id"
+      ],
+      "title": "BodyTarget",
+      "type": "object"
+    },
     "Box": {
       "additionalProperties": false,
       "description": "Rectangular block. `size_*` are full extents [m] along the component's local x, y, z.",
@@ -1051,7 +1072,7 @@
       "type": "string"
     },
     "ContactEvent": {
-      "description": "`body` touches (`phase` `begin`) or stops touching (`end`) `other`: another body, a terrain prop (by its id in\nthe project's world) or the ground (`other` is `None`). `force` is the contact force at `begin`, if known.",
+      "description": "`body` touches (`phase` `begin`) or stops touching (`end`) `other`. `force` is the contact force at `begin`,\nif known.",
       "properties": {
         "kind": {
           "const": "contact",
@@ -1077,20 +1098,26 @@
           "title": "Body",
           "type": "string"
         },
-        "other_kind": {
-          "$ref": "#/$defs/GroundOrProp"
-        },
         "other": {
-          "anyOf": [
+          "discriminator": {
+            "mapping": {
+              "body": "#/$defs/BodyTarget",
+              "ground": "#/$defs/GroundTarget",
+              "prop": "#/$defs/PropTarget"
+            },
+            "propertyName": "kind"
+          },
+          "oneOf": [
             {
-              "pattern": "^[a-z][a-z0-9_-]{0,63}$",
-              "type": "string"
+              "$ref": "#/$defs/BodyTarget"
             },
             {
-              "type": "null"
+              "$ref": "#/$defs/PropTarget"
+            },
+            {
+              "$ref": "#/$defs/GroundTarget"
             }
           ],
-          "default": null,
           "title": "Other"
         },
         "force": {
@@ -1110,7 +1137,7 @@
         "tick",
         "phase",
         "body",
-        "other_kind"
+        "other"
       ],
       "title": "ContactEvent",
       "type": "object"
@@ -1223,6 +1250,49 @@
         "y"
       ],
       "title": "CurvePoint",
+      "type": "object"
+    },
+    "CustomBuildEngine": {
+      "additionalProperties": false,
+      "description": "Built by us: the compiler and the build flags identify the binary (`build_flags` may be an empty string).",
+      "properties": {
+        "name": {
+          "maxLength": 200,
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        },
+        "version": {
+          "maxLength": 200,
+          "minLength": 1,
+          "title": "Version",
+          "type": "string"
+        },
+        "distribution": {
+          "const": "custom_build",
+          "title": "Distribution",
+          "type": "string"
+        },
+        "compiler": {
+          "maxLength": 200,
+          "minLength": 1,
+          "title": "Compiler",
+          "type": "string"
+        },
+        "build_flags": {
+          "maxLength": 2000,
+          "title": "Build Flags",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "version",
+        "distribution",
+        "compiler",
+        "build_flags"
+      ],
+      "title": "CustomBuildEngine",
       "type": "object"
     },
     "Cylinder": {
@@ -1358,83 +1428,6 @@
         "unit"
       ],
       "title": "ElasticModulus",
-      "type": "object"
-    },
-    "EngineDistribution": {
-      "enum": [
-        "wheel",
-        "wasm_package",
-        "custom_build"
-      ],
-      "title": "EngineDistribution",
-      "type": "string"
-    },
-    "EngineTag": {
-      "additionalProperties": false,
-      "description": "④ The physics engine: its name and version as values, how it was distributed, the hash of the distributed\nfile, and for a custom build the compiler and build flags.",
-      "properties": {
-        "name": {
-          "maxLength": 200,
-          "minLength": 1,
-          "title": "Name",
-          "type": "string"
-        },
-        "version": {
-          "maxLength": 200,
-          "minLength": 1,
-          "title": "Version",
-          "type": "string"
-        },
-        "distribution": {
-          "$ref": "#/$defs/EngineDistribution"
-        },
-        "artifact_hash": {
-          "anyOf": [
-            {
-              "pattern": "^sha256:[0-9a-f]{64}$",
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "default": null,
-          "title": "Artifact Hash"
-        },
-        "compiler": {
-          "anyOf": [
-            {
-              "maxLength": 200,
-              "minLength": 1,
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "default": null,
-          "title": "Compiler"
-        },
-        "build_flags": {
-          "anyOf": [
-            {
-              "maxLength": 2000,
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "default": null,
-          "title": "Build Flags"
-        }
-      },
-      "required": [
-        "name",
-        "version",
-        "distribution"
-      ],
-      "title": "EngineTag",
       "type": "object"
     },
     "FixedDistribution": {
@@ -1574,14 +1567,21 @@
       "title": "Friction",
       "type": "object"
     },
-    "GroundOrProp": {
-      "enum": [
-        "body",
-        "prop",
-        "ground"
+    "GroundTarget": {
+      "additionalProperties": false,
+      "description": "What a body touched: the ground. It has no id (the ground of the planet is one thing), so an `id` is refused.",
+      "properties": {
+        "kind": {
+          "const": "ground",
+          "title": "Kind",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind"
       ],
-      "title": "GroundOrProp",
-      "type": "string"
+      "title": "GroundTarget",
+      "type": "object"
     },
     "Hello": {
       "description": "First message of each side: the protocol number it speaks. The core answers a `hello` it can serve with its\nown; with a number it cannot serve it answers `error` and closes.",
@@ -2181,7 +2181,26 @@
           "title": "Image Digest"
         },
         "engine": {
-          "$ref": "#/$defs/EngineTag"
+          "discriminator": {
+            "mapping": {
+              "custom_build": "#/$defs/CustomBuildEngine",
+              "wasm_package": "#/$defs/WasmEngine",
+              "wheel": "#/$defs/WheelEngine"
+            },
+            "propertyName": "distribution"
+          },
+          "oneOf": [
+            {
+              "$ref": "#/$defs/WheelEngine"
+            },
+            {
+              "$ref": "#/$defs/WasmEngine"
+            },
+            {
+              "$ref": "#/$defs/CustomBuildEngine"
+            }
+          ],
+          "title": "Engine"
         },
         "runtime": {
           "$ref": "#/$defs/RuntimeTag"
@@ -2431,6 +2450,27 @@
         "unit"
       ],
       "title": "PropSize",
+      "type": "object"
+    },
+    "PropTarget": {
+      "description": "What a body touched: a terrain prop, by its id in the project's world.",
+      "properties": {
+        "kind": {
+          "const": "prop",
+          "title": "Kind",
+          "type": "string"
+        },
+        "id": {
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+          "title": "Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "id"
+      ],
+      "title": "PropTarget",
       "type": "object"
     },
     "ProtocolError": {
@@ -2956,17 +2996,27 @@
       "title": "Resumed",
       "type": "object"
     },
-    "RunEndReason": {
-      "enum": [
-        "completed",
-        "stopped",
-        "failed"
+    "RunCompleted": {
+      "description": "The planned duration was reached. The trajectory hash and its tag are required.",
+      "properties": {
+        "reason": {
+          "const": "completed",
+          "title": "Reason",
+          "type": "string"
+        },
+        "trajectory": {
+          "$ref": "#/$defs/TrajectoryEvidence"
+        }
+      },
+      "required": [
+        "reason",
+        "trajectory"
       ],
-      "title": "RunEndReason",
-      "type": "string"
+      "title": "RunCompleted",
+      "type": "object"
     },
     "RunEnded": {
-      "description": "The run is over. `trajectory` is absent only when the run `failed`.",
+      "description": "The run is over after `last_tick`; `end` says how and carries the trajectory evidence.",
       "properties": {
         "type": {
           "const": "run_ended",
@@ -2979,34 +3029,58 @@
           "title": "Run Id",
           "type": "string"
         },
-        "reason": {
-          "$ref": "#/$defs/RunEndReason"
-        },
         "last_tick": {
           "maximum": 4294967295,
           "minimum": 0,
           "title": "Last Tick",
           "type": "integer"
         },
-        "trajectory": {
-          "anyOf": [
+        "end": {
+          "discriminator": {
+            "mapping": {
+              "completed": "#/$defs/RunCompleted",
+              "failed": "#/$defs/RunFailed",
+              "stopped": "#/$defs/RunStopped"
+            },
+            "propertyName": "reason"
+          },
+          "oneOf": [
             {
-              "$ref": "#/$defs/TrajectoryEvidence"
+              "$ref": "#/$defs/RunCompleted"
             },
             {
-              "type": "null"
+              "$ref": "#/$defs/RunStopped"
+            },
+            {
+              "$ref": "#/$defs/RunFailed"
             }
           ],
-          "default": null
+          "title": "End"
         }
       },
       "required": [
         "type",
         "run_id",
-        "reason",
-        "last_tick"
+        "last_tick",
+        "end"
       ],
       "title": "RunEnded",
+      "type": "object"
+    },
+    "RunFailed": {
+      "additionalProperties": false,
+      "description": "The engine could not go on: there is no trajectory to hash, so a `trajectory` is refused.",
+      "properties": {
+        "reason": {
+          "const": "failed",
+          "title": "Reason",
+          "type": "string"
+        }
+      },
+      "required": [
+        "reason"
+      ],
+      "title": "RunFailed",
       "type": "object"
     },
     "RunKind": {
@@ -3113,6 +3187,25 @@
         "platform"
       ],
       "title": "RunStarted",
+      "type": "object"
+    },
+    "RunStopped": {
+      "description": "A stop was requested and the run ended at `last_tick`. The trajectory up to there has a hash, with its tag.",
+      "properties": {
+        "reason": {
+          "const": "stopped",
+          "title": "Reason",
+          "type": "string"
+        },
+        "trajectory": {
+          "$ref": "#/$defs/TrajectoryEvidence"
+        }
+      },
+      "required": [
+        "reason",
+        "trajectory"
+      ],
+      "title": "RunStopped",
       "type": "object"
     },
     "RuntimeTag": {
@@ -3747,6 +3840,78 @@
       ],
       "title": "VerdictState",
       "type": "string"
+    },
+    "WasmEngine": {
+      "additionalProperties": false,
+      "description": "Distributed as a WASM package: the hash of the distributed file identifies the binary.",
+      "properties": {
+        "name": {
+          "maxLength": 200,
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        },
+        "version": {
+          "maxLength": 200,
+          "minLength": 1,
+          "title": "Version",
+          "type": "string"
+        },
+        "distribution": {
+          "const": "wasm_package",
+          "title": "Distribution",
+          "type": "string"
+        },
+        "artifact_hash": {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "title": "Artifact Hash",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "version",
+        "distribution",
+        "artifact_hash"
+      ],
+      "title": "WasmEngine",
+      "type": "object"
+    },
+    "WheelEngine": {
+      "additionalProperties": false,
+      "description": "Distributed as a package wheel (PyPI): the hash of the distributed file identifies the binary.",
+      "properties": {
+        "name": {
+          "maxLength": 200,
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        },
+        "version": {
+          "maxLength": 200,
+          "minLength": 1,
+          "title": "Version",
+          "type": "string"
+        },
+        "distribution": {
+          "const": "wheel",
+          "title": "Distribution",
+          "type": "string"
+        },
+        "artifact_hash": {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "title": "Artifact Hash",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "version",
+        "distribution",
+        "artifact_hash"
+      ],
+      "title": "WheelEngine",
+      "type": "object"
     },
     "World": {
       "additionalProperties": false,

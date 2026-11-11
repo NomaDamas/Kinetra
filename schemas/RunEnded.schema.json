@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "description": "The run is over. `trajectory` is absent only when the run `failed`.",
+  "description": "The run is over after `last_tick`; `end` says how and carries the trajectory evidence.",
   "properties": {
     "type": {
       "const": "run_ended",
@@ -13,32 +13,40 @@
       "title": "Run Id",
       "type": "string"
     },
-    "reason": {
-      "$ref": "#/$defs/RunEndReason"
-    },
     "last_tick": {
       "maximum": 4294967295,
       "minimum": 0,
       "title": "Last Tick",
       "type": "integer"
     },
-    "trajectory": {
-      "anyOf": [
+    "end": {
+      "discriminator": {
+        "mapping": {
+          "completed": "#/$defs/RunCompleted",
+          "failed": "#/$defs/RunFailed",
+          "stopped": "#/$defs/RunStopped"
+        },
+        "propertyName": "reason"
+      },
+      "oneOf": [
         {
-          "$ref": "#/$defs/TrajectoryEvidence"
+          "$ref": "#/$defs/RunCompleted"
         },
         {
-          "type": "null"
+          "$ref": "#/$defs/RunStopped"
+        },
+        {
+          "$ref": "#/$defs/RunFailed"
         }
       ],
-      "default": null
+      "title": "End"
     }
   },
   "required": [
     "type",
     "run_id",
-    "reason",
-    "last_tick"
+    "last_tick",
+    "end"
   ],
   "title": "RunEnded",
   "type": "object",
@@ -124,18 +132,9 @@
       "title": "CpuTag",
       "type": "object"
     },
-    "EngineDistribution": {
-      "enum": [
-        "wheel",
-        "wasm_package",
-        "custom_build"
-      ],
-      "title": "EngineDistribution",
-      "type": "string"
-    },
-    "EngineTag": {
+    "CustomBuildEngine": {
       "additionalProperties": false,
-      "description": "④ The physics engine: its name and version as values, how it was distributed, the hash of the distributed\nfile, and for a custom build the compiler and build flags.",
+      "description": "Built by us: the compiler and the build flags identify the binary (`build_flags` may be an empty string).",
       "properties": {
         "name": {
           "maxLength": 200,
@@ -150,55 +149,30 @@
           "type": "string"
         },
         "distribution": {
-          "$ref": "#/$defs/EngineDistribution"
-        },
-        "artifact_hash": {
-          "anyOf": [
-            {
-              "pattern": "^sha256:[0-9a-f]{64}$",
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "default": null,
-          "title": "Artifact Hash"
+          "const": "custom_build",
+          "title": "Distribution",
+          "type": "string"
         },
         "compiler": {
-          "anyOf": [
-            {
-              "maxLength": 200,
-              "minLength": 1,
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "default": null,
-          "title": "Compiler"
+          "maxLength": 200,
+          "minLength": 1,
+          "title": "Compiler",
+          "type": "string"
         },
         "build_flags": {
-          "anyOf": [
-            {
-              "maxLength": 2000,
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "default": null,
-          "title": "Build Flags"
+          "maxLength": 2000,
+          "title": "Build Flags",
+          "type": "string"
         }
       },
       "required": [
         "name",
         "version",
-        "distribution"
+        "distribution",
+        "compiler",
+        "build_flags"
       ],
-      "title": "EngineTag",
+      "title": "CustomBuildEngine",
       "type": "object"
     },
     "OsTag": {
@@ -248,7 +222,26 @@
           "title": "Image Digest"
         },
         "engine": {
-          "$ref": "#/$defs/EngineTag"
+          "discriminator": {
+            "mapping": {
+              "custom_build": "#/$defs/CustomBuildEngine",
+              "wasm_package": "#/$defs/WasmEngine",
+              "wheel": "#/$defs/WheelEngine"
+            },
+            "propertyName": "distribution"
+          },
+          "oneOf": [
+            {
+              "$ref": "#/$defs/WheelEngine"
+            },
+            {
+              "$ref": "#/$defs/WasmEngine"
+            },
+            {
+              "$ref": "#/$defs/CustomBuildEngine"
+            }
+          ],
+          "title": "Engine"
         },
         "runtime": {
           "$ref": "#/$defs/RuntimeTag"
@@ -276,14 +269,59 @@
       "title": "PlatformTag",
       "type": "object"
     },
-    "RunEndReason": {
-      "enum": [
-        "completed",
-        "stopped",
-        "failed"
+    "RunCompleted": {
+      "description": "The planned duration was reached. The trajectory hash and its tag are required.",
+      "properties": {
+        "reason": {
+          "const": "completed",
+          "title": "Reason",
+          "type": "string"
+        },
+        "trajectory": {
+          "$ref": "#/$defs/TrajectoryEvidence"
+        }
+      },
+      "required": [
+        "reason",
+        "trajectory"
       ],
-      "title": "RunEndReason",
-      "type": "string"
+      "title": "RunCompleted",
+      "type": "object"
+    },
+    "RunFailed": {
+      "additionalProperties": false,
+      "description": "The engine could not go on: there is no trajectory to hash, so a `trajectory` is refused.",
+      "properties": {
+        "reason": {
+          "const": "failed",
+          "title": "Reason",
+          "type": "string"
+        }
+      },
+      "required": [
+        "reason"
+      ],
+      "title": "RunFailed",
+      "type": "object"
+    },
+    "RunStopped": {
+      "description": "A stop was requested and the run ended at `last_tick`. The trajectory up to there has a hash, with its tag.",
+      "properties": {
+        "reason": {
+          "const": "stopped",
+          "title": "Reason",
+          "type": "string"
+        },
+        "trajectory": {
+          "$ref": "#/$defs/TrajectoryEvidence"
+        }
+      },
+      "required": [
+        "reason",
+        "trajectory"
+      ],
+      "title": "RunStopped",
+      "type": "object"
     },
     "RuntimeTag": {
       "additionalProperties": false,
@@ -348,6 +386,78 @@
         "platform"
       ],
       "title": "TrajectoryEvidence",
+      "type": "object"
+    },
+    "WasmEngine": {
+      "additionalProperties": false,
+      "description": "Distributed as a WASM package: the hash of the distributed file identifies the binary.",
+      "properties": {
+        "name": {
+          "maxLength": 200,
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        },
+        "version": {
+          "maxLength": 200,
+          "minLength": 1,
+          "title": "Version",
+          "type": "string"
+        },
+        "distribution": {
+          "const": "wasm_package",
+          "title": "Distribution",
+          "type": "string"
+        },
+        "artifact_hash": {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "title": "Artifact Hash",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "version",
+        "distribution",
+        "artifact_hash"
+      ],
+      "title": "WasmEngine",
+      "type": "object"
+    },
+    "WheelEngine": {
+      "additionalProperties": false,
+      "description": "Distributed as a package wheel (PyPI): the hash of the distributed file identifies the binary.",
+      "properties": {
+        "name": {
+          "maxLength": 200,
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        },
+        "version": {
+          "maxLength": 200,
+          "minLength": 1,
+          "title": "Version",
+          "type": "string"
+        },
+        "distribution": {
+          "const": "wheel",
+          "title": "Distribution",
+          "type": "string"
+        },
+        "artifact_hash": {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "title": "Artifact Hash",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "version",
+        "distribution",
+        "artifact_hash"
+      ],
+      "title": "WheelEngine",
       "type": "object"
     }
   }

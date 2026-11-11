@@ -28,7 +28,12 @@ may call it a preview (F6).
 The platform tag (A0-05, `docs/decisions/engine.md` 5.4, H1) is the eight run conditions that can change a trajectory
 hash. `PlatformTag` forbids unknown fields on purpose: a ninth component changes what "same tag" means, so it is a new
 protocol number and not a field a client silently ignores. The trajectory hash is only evidence together with its tag:
-`RunEnded.trajectory` holds both or neither.
+`RunCompleted.trajectory` and `RunStopped.trajectory` hold both or neither (the JSON Schema says so: those variants
+require it, `RunFailed` has none).
+
+A conditional rule is a discriminated union, never an after-validator, so the generated JSON Schema (and a client built from
+it) enforces what the model enforces: `PlatformTag.engine` by `distribution`, `ContactEvent.other` by its `kind`,
+`RunEnded.end` by `reason`.
 
 Messages ignore fields they do not know (G5), like the document messages; a client ignores a `type` it does not know.
 Not here: the real trajectory hash computation (X-02d), `control` and acknowledgement messages (X-02c, flow control
@@ -77,7 +82,8 @@ class _Obj(BaseModel):
 
 
 class _Strict(BaseModel):
-    """Part of the platform tag: unknown fields are an error (see the module docstring)."""
+    """Unknown fields are an error: the platform tag (a ninth component changes what "same tag" means), and the two
+    variants that must lack something, `GroundTarget` (no id) and `RunFailed` (no trajectory)."""
 
     model_config = ConfigDict(extra="forbid", frozen=True)
 
@@ -99,31 +105,39 @@ class CpuTag(_Strict):
     model: _Text
 
 
-class EngineDistribution(StrEnum):
-    WHEEL = "wheel"  # a package wheel (PyPI)
-    WASM_PACKAGE = "wasm_package"
-    CUSTOM_BUILD = "custom_build"  # built by us: compiler and flags are part of the tag
-
-
-class EngineTag(_Strict):
-    """④ The physics engine: its name and version as values, how it was distributed, the hash of the distributed
-    file, and for a custom build the compiler and build flags."""
+class _EngineBase(_Strict):
+    """④ The physics engine: its name and version are values, never field names."""
 
     name: _Text
     version: _Text
-    distribution: EngineDistribution
-    artifact_hash: _Hash | None = None
-    compiler: _Text | None = None
-    build_flags: Annotated[str, Field(max_length=2000)] | None = None
 
-    @model_validator(mode="after")
-    def _identified(self) -> "EngineTag":
-        if self.distribution is EngineDistribution.CUSTOM_BUILD:
-            if self.compiler is None or self.build_flags is None:
-                raise ValueError("a custom build names its compiler and build_flags")
-        elif self.artifact_hash is None:
-            raise ValueError(f"a {self.distribution.value} names the hash of the distributed file (artifact_hash)")
-        return self
+
+class WheelEngine(_EngineBase):
+    """Distributed as a package wheel (PyPI): the hash of the distributed file identifies the binary."""
+
+    distribution: Literal["wheel"]
+    artifact_hash: _Hash
+
+
+class WasmEngine(_EngineBase):
+    """Distributed as a WASM package: the hash of the distributed file identifies the binary."""
+
+    distribution: Literal["wasm_package"]
+    artifact_hash: _Hash
+
+
+class CustomBuildEngine(_EngineBase):
+    """Built by us: the compiler and the build flags identify the binary (`build_flags` may be an empty string)."""
+
+    distribution: Literal["custom_build"]
+    compiler: _Text
+    build_flags: Annotated[str, Field(max_length=2000)]
+
+
+EngineTag = Annotated[Union[WheelEngine, WasmEngine, CustomBuildEngine], Field(discriminator="distribution")]
+"""Which fields identify the engine binary depends on how it was distributed, so the JSON Schema says it: a wheel or a
+WASM package requires `artifact_hash`, a custom build requires `compiler` and `build_flags`, and none of them may be
+`null` or missing."""
 
 
 class RuntimeTag(_Strict):
@@ -248,29 +262,40 @@ class ForceN(_Obj):
     unit: Literal[Unit.N]
 
 
-class GroundOrProp(StrEnum):
-    BODY = "body"
-    PROP = "prop"
-    GROUND = "ground"
+class BodyTarget(_Obj):
+    """What a body touched: another body of the run."""
+
+    kind: Literal["body"]
+    id: _Id
+
+
+class PropTarget(_Obj):
+    """What a body touched: a terrain prop, by its id in the project's world."""
+
+    kind: Literal["prop"]
+    id: _Id
+
+
+class GroundTarget(_Strict):
+    """What a body touched: the ground. It has no id (the ground of the planet is one thing), so an `id` is refused."""
+
+    kind: Literal["ground"]
+
+
+ContactTarget = Annotated[Union[BodyTarget, PropTarget, GroundTarget], Field(discriminator="kind")]
+"""The other side of a contact. A body or a prop requires an `id`; the ground has none."""
 
 
 class ContactEvent(_Obj):
-    """`body` touches (`phase` `begin`) or stops touching (`end`) `other`: another body, a terrain prop (by its id in
-    the project's world) or the ground (`other` is `None`). `force` is the contact force at `begin`, if known."""
+    """`body` touches (`phase` `begin`) or stops touching (`end`) `other`. `force` is the contact force at `begin`,
+    if known."""
 
     kind: Literal["contact"]
     tick: _Tick
     phase: Literal["begin", "end"]
     body: _Id
-    other_kind: GroundOrProp
-    other: _Id | None = None
+    other: ContactTarget
     force: ForceN | None = None
-
-    @model_validator(mode="after")
-    def _other(self) -> "ContactEvent":
-        if (self.other_kind is GroundOrProp.GROUND) != (self.other is None):
-            raise ValueError("`other` is an id for a body or a prop and absent for the ground")
-        return self
 
 
 class BreakEvent(_Obj):
@@ -334,20 +359,14 @@ def check_frame(run: RunStarted, frame: Frame) -> None:
         raise ValueError(f"sim_time_s {frame.sim_time_s} is not tick {frame.tick} x timestep_s {run.timestep_s}")
     for e in frame.events:
         named = [e.body] if isinstance(e, ContactEvent) else []
-        if isinstance(e, ContactEvent) and e.other_kind is GroundOrProp.BODY and e.other is not None:
-            named.append(e.other)
+        if isinstance(e, ContactEvent) and isinstance(e.other, BodyTarget):
+            named.append(e.other.id)
         unknown = [b for b in named if b not in ids]
         if unknown:
             raise ValueError(f"an event names a body that is not in the run: {unknown}")
 
 
 # --- run_ended ------------------------------------------------------------------------------------------------
-
-
-class RunEndReason(StrEnum):
-    COMPLETED = "completed"  # the planned duration was reached
-    STOPPED = "stopped"  # a stop was requested
-    FAILED = "failed"  # the engine could not go on: there is no trajectory to hash
 
 
 class TrajectoryEvidence(_Obj):
@@ -358,20 +377,37 @@ class TrajectoryEvidence(_Obj):
     platform: PlatformTag
 
 
+class RunCompleted(_Obj):
+    """The planned duration was reached. The trajectory hash and its tag are required."""
+
+    reason: Literal["completed"]
+    trajectory: TrajectoryEvidence
+
+
+class RunStopped(_Obj):
+    """A stop was requested and the run ended at `last_tick`. The trajectory up to there has a hash, with its tag."""
+
+    reason: Literal["stopped"]
+    trajectory: TrajectoryEvidence
+
+
+class RunFailed(_Strict):
+    """The engine could not go on: there is no trajectory to hash, so a `trajectory` is refused."""
+
+    reason: Literal["failed"]
+
+
+RunEnd = Annotated[Union[RunCompleted, RunStopped, RunFailed], Field(discriminator="reason")]
+"""How a run ended. Only a failed run lacks a trajectory: the JSON Schema requires one for the other two."""
+
+
 class RunEnded(_Obj):
-    """The run is over. `trajectory` is absent only when the run `failed`."""
+    """The run is over after `last_tick`; `end` says how and carries the trajectory evidence."""
 
     type: Literal["run_ended"]
     run_id: _RunId
-    reason: RunEndReason
     last_tick: _Tick
-    trajectory: TrajectoryEvidence | None = None
-
-    @model_validator(mode="after")
-    def _evidence(self) -> "RunEnded":
-        if (self.reason is RunEndReason.FAILED) != (self.trajectory is None):
-            raise ValueError("a failed run has no trajectory hash, every other run has one with its platform tag")
-        return self
+    end: RunEnd
 
 
 # --- binary frame ---------------------------------------------------------------------------------------------

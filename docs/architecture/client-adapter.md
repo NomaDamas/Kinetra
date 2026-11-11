@@ -154,8 +154,8 @@ S1 범위: 매 프레임에 모든 강체. 조종은 키보드(X-02c).
 |---|---|---|---|
 | `run_started` | → 클라이언트 | `run_id`, `kind`(`preview` `verdict_sample`), `badge`(항상 `sim`), `project_id`, `revision`, `definition_hash`, `planet`, `seed`, `timestep_s` [s], `frame_every_ticks`, `bodies`(`{id, instances}` 목록; 이진 포즈 블록의 순서), `model_labels`, **`platform`** | 프레임 간격은 `timestep_s × frame_every_ticks`다(초가 아니라 틱 단위로 정해서 시각이 틱에서 정확히 나온다). 강체 ID가 부품 ID가 아니라 인스턴스 목록을 갖는다(용접된 인스턴스는 한 강체로 움직인다). `model_labels`는 선택이고 B-05·W-06이 채운다 |
 | `frame` | → 클라이언트 | `run_id`, `tick`, `sim_time_s` [s], `poses`(강체 ID, `position` {x,y,z} [m], `orientation` {x,y,z,w}), `events` | 시각은 `tick × timestep_s`와 같고 `check_frame`이 확인한다 |
-| 이벤트 | `frame.events` | `kind`로 구분: `contact`(`tick`, `phase` `begin`/`end`, `body`, `other_kind` `body`/`prop`/`ground`, `other`, 선택 `force` [N]), `break`(`tick`, `joint`, `load` [N], `threshold` [N]), `condition_met`(`tick`, `condition`) | 이벤트의 `tick`은 프레임 틱 사이에 있을 수 있다. 프레임에는 이전 프레임 뒤 ~ 이 프레임까지의 이벤트가 실린다. 힘의 `unit`은 항상 `N`이다 |
-| `run_ended` | → 클라이언트 | `run_id`, `reason`(`completed` `stopped` `failed`), `last_tick`, `trajectory`(`{hash, platform}`) | `trajectory`는 해시와 플랫폼 태그가 한 객체라서 태그 없는 해시를 만들 수 없다(H1). `failed`일 때만 없다 |
+| 이벤트 | `frame.events` | `kind`로 구분: `contact`(`tick`, `phase` `begin`/`end`, `body`, `other`, 선택 `force` [N]. `other`는 `kind`로 구분: `{kind: "body", id}`, `{kind: "prop", id}`, `{kind: "ground"}`; 몸과 소품은 `id`가 필수이고 땅에는 `id`가 없으며 있으면 거부된다), `break`(`tick`, `joint`, `load` [N], `threshold` [N]), `condition_met`(`tick`, `condition`) | 이벤트의 `tick`은 프레임 틱 사이에 있을 수 있다. 프레임에는 이전 프레임 뒤 ~ 이 프레임까지의 이벤트가 실린다. 힘의 `unit`은 항상 `N`이다 |
+| `run_ended` | → 클라이언트 | `run_id`, `last_tick`, `end`(`reason`으로 구분: `completed`와 `stopped`는 `trajectory`(`{hash, platform}`)가 필수, `failed`는 `trajectory`가 없고 있으면 거부된다) | `trajectory`는 해시와 플랫폼 태그가 한 객체라서 태그 없는 해시를 만들 수 없다(H1). 조건부 규칙(`reason`별 필수 필드)을 JSON Schema가 직접 강제하려고 `reason`과 `trajectory`를 `end` 객체에 묶었다 |
 
 `control`은 X-02c가, 수신 확인과 실행 요청은 X-02와 #420이 더한다. 모르는 `type`은 클라이언트가 무시하므로 프로토콜 번호를 올리지 않는다(G5).
 
@@ -166,7 +166,7 @@ S1 범위: 매 프레임에 모든 강체. 조종은 키보드(X-02c).
   | ① OS | `os` | `kind`, `kernel_release` |
   | ② CPU | `cpu` | `architecture`, `model` |
   | ③ 실행 환경 이미지 | `image_digest` | `sha256:` 다이제스트, 컨테이너가 아니면 **`null`**(필드는 필수라서 빼먹어서 "이미지 없음"이 되지 않는다) |
-  | ④ 엔진 | `engine` | `name`, `version`, `distribution`(`wheel` `wasm_package` `custom_build`), `artifact_hash`(휠·WASM은 필수), `compiler`와 `build_flags`(자체 빌드는 필수) |
+  | ④ 엔진 | `engine` | `name`, `version`, `distribution`으로 구분: `wheel`과 `wasm_package`는 `artifact_hash` 필수, `custom_build`는 `compiler`와 `build_flags` 필수(`build_flags`는 빈 문자열일 수 있다). 해당 필드가 없거나 `null`이면 거부 |
   | ⑤ Python·NumPy | `runtime` | `python`, `numpy` |
   | ⑥ 코어 빌드 | `core_build` | `commit` |
   | ⑦ 계산 설정 | `compute` | `integrator`, `timestep_s`, `solver`(이름 → 값) |
@@ -190,6 +190,7 @@ S1 범위: 매 프레임에 모든 강체. 조종은 키보드(X-02c).
   - *양자화, 변화분, 관심 영역*: A0-02a가 재지 않았고(위 "열어 둔 것"의 [확인 필요]) 코어에 실제 궤적이 아직 없다. 재지 않은 이득을 위해 형식을 복잡하게 하지 않는다. 부분 프레임은 `body_count`가 `run_started.bodies`와 같아야 한다는 규칙을 풀어야 하므로 프레임 형식 번호(`version`)를 올리는 변경이다. 강체가 많아져 대역폭이 문제가 되면 이 형식에 새 `version`으로 더한다.
   - *float64*: 포즈가 두 배(56 B)가 된다. float32는 1,000 m에서 약 6e-5 m의 분해능이라 **그리기 값**이고, 코어의 궤적 해시가 되는 값이 아니다(F7). 기록에서 완전한 정밀도가 필요하면 JSON 프레임(float64)을 쓴다.
   - *흐름 제어(#420)*: **#420(포즈 스트림 흐름 제어)은 이 PR 시점에 열려 있다**(OPEN, S0). 그 결과(수신 확인 필드의 유무, 최신 프레임 우선)에 기대는 결정은 [확인 필요]로 남기고 형식에 넣지 않았다: 수신 확인은 클라이언트 → 코어 메시지(`ack`)이고 클라이언트 → 코어 메시지를 더하는 것은 `hello`의 프로토콜 번호를 올리지 않는 선택 메시지 추가가 아니다(코어는 모르는 메시지를 `error`로 거절한다, 3.2절). 따라서 #420이 ack를 요구하면 X-02가 `ClientMessage`에 더하고 코어가 쓰는 `PROTOCOL_VERSION`과 함께 정한다. 형식(`tick`은 이미 모든 프레임에 있다)은 ack가 마지막으로 그린 `tick`을 가리키는 데 그대로 쓸 수 있다. 받는 쪽의 적체는 지금 C-05a의 연결별 대기열 한도(`QUEUE_MAX_MESSAGES`, `QUEUE_MAX_BYTES`)가 연결을 끊는 것으로만 막는다. 프레임이 같은 대기열에 얹히면 그 한도를 프레임 크기로 다시 정해야 한다 [확인 필요, X-02].
+- **조건부 규칙은 스키마가 강제한다.** `engine`(`distribution`별), `contact.other`(`kind`별), `run_ended.end`(`reason`별)는 판별 합집합이라서 생성된 JSON Schema와 TS 타입(좁혀지는 합집합)이 모델과 같은 규칙을 갖는다. 사후 검증기로 쓰지 않았다: 스키마만 읽는 클라이언트(헤드리스 참조 클라이언트, GD)가 규칙을 놓치기 때문이다. 테스트가 규칙마다 스키마와 모델이 같은 입력을 받고 같은 입력을 거부함을 단언한다. 없어야 하는 필드(땅의 `id`, 실패한 실행의 `trajectory`)는 그 변형이 모르는 필드를 거부해서 강제한다.
 - **프레임의 보증.** `Frame`은 한 메시지 안에서 알 수 있는 것을 검사한다(강체당 포즈 하나, 이벤트의 `tick` ≤ 프레임의 `tick`, 단위 쿼터니언, 유한한 수). `run_started`와 맞아야 하는 것(그 실행의 강체 전부가 정확히 한 번, `sim_time_s = tick × timestep_s`, 틱이 `frame_every_ticks`의 배수, 이벤트가 아는 강체만 가리킴)은 두 메시지를 함께 가진 쪽이 `check_frame(run, frame)`으로 확인한다. 전송 계층(X-02)이 보내기 전에 부르고 C-05c 참조 클라이언트가 받을 때 부른다.
 - **이벤트와 판정.** `condition_met`은 판정이 아니다(P4). 프레임 스트림에서 판정이 만들어지지 않는다(F6). `break`의 `load`와 `threshold`는 N이고 단순화 모델의 값이다(계획 4.6절). `contact`의 `force`는 엔진이 알려 줄 때만 있다.
 - **MuJoCo 용어가 없다(F1).** 필드와 타입 이름에 엔진 내부 용어가 없다. 테스트가 생성된 스키마의 글과 기록된 메시지의 모든 키를 검사한다(`qpos`, `geom`, `mjcf` 등과 엔진 이름). 엔진 이름은 `platform.engine.name`의 값으로만 나온다.

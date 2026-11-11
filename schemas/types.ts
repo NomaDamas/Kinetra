@@ -178,6 +178,12 @@ export interface BodyRef {
   instances: string[];
 }
 
+/** What a body touched: another body of the run. */
+export interface BodyTarget {
+  kind: "body";
+  id: string;
+}
+
 /** Rectangular block. `size_*` are full extents [m] along the component's local x, y, z. */
 export interface Box {
   kind: "box";
@@ -288,16 +294,15 @@ export interface ConditionMetEvent {
 export type Confidence = "low" | "med" | "high";
 
 /**
- * `body` touches (`phase` `begin`) or stops touching (`end`) `other`: another body, a terrain prop (by its id in
- * the project's world) or the ground (`other` is `None`). `force` is the contact force at `begin`, if known.
+ * `body` touches (`phase` `begin`) or stops touching (`end`) `other`. `force` is the contact force at `begin`,
+ * if known.
  */
 export interface ContactEvent {
   kind: "contact";
   tick: number;
   phase: "begin" | "end";
   body: string;
-  other_kind: GroundOrProp;
-  other?: string | null;
+  other: BodyTarget | PropTarget | GroundTarget;
   force?: ForceN | null;
 }
 
@@ -332,6 +337,15 @@ export interface Curve {
 export interface CurvePoint {
   x: number;
   y: number;
+}
+
+/** Built by us: the compiler and the build flags identify the binary (`build_flags` may be an empty string). */
+export interface CustomBuildEngine {
+  name: string;
+  version: string;
+  distribution: "custom_build";
+  compiler: string;
+  build_flags: string;
 }
 
 /** Solid circular cylinder. `radius` and `length` [m]; the axis is the component's local z. */
@@ -451,21 +465,6 @@ export interface ElasticModulus {
   unit: "Pa";
 }
 
-export type EngineDistribution = "wheel" | "wasm_package" | "custom_build";
-
-/**
- * ④ The physics engine: its name and version as values, how it was distributed, the hash of the distributed
- * file, and for a custom build the compiler and build flags.
- */
-export interface EngineTag {
-  name: string;
-  version: string;
-  distribution: EngineDistribution;
-  artifact_hash?: string | null;
-  compiler?: string | null;
-  build_flags?: string | null;
-}
-
 /**
  * A subtracted shape component the proxy could not keep: it is solid in the proxy. `volume` [m^3] is what the proxy
  * gained from it.
@@ -516,7 +515,10 @@ export interface Gravity {
   unit: "m/s^2";
 }
 
-export type GroundOrProp = "body" | "prop" | "ground";
+/** What a body touched: the ground. It has no id (the ground of the planet is one thing), so an `id` is refused. */
+export interface GroundTarget {
+  kind: "ground";
+}
 
 /**
  * First message of each side: the protocol number it speaks. The core answers a `hello` it can serve with its
@@ -742,7 +744,7 @@ export interface PlatformTag {
   os: OsTag;
   cpu: CpuTag;
   image_digest: string | null;
-  engine: EngineTag;
+  engine: WheelEngine | WasmEngine | CustomBuildEngine;
   runtime: RuntimeTag;
   core_build: CoreBuildTag;
   compute: ComputeTag;
@@ -806,6 +808,12 @@ export interface PropSize {
   source: Source;
   value: number;
   unit: "m";
+}
+
+/** What a body touched: a terrain prop, by its id in the project's world. */
+export interface PropTarget {
+  kind: "prop";
+  id: string;
 }
 
 /**
@@ -1046,15 +1054,23 @@ export interface RingReport {
   outer_deviation: number;
 }
 
-export type RunEndReason = "completed" | "stopped" | "failed";
+/** The planned duration was reached. The trajectory hash and its tag are required. */
+export interface RunCompleted {
+  reason: "completed";
+  trajectory: TrajectoryEvidence;
+}
 
-/** The run is over. `trajectory` is absent only when the run `failed`. */
+/** The run is over after `last_tick`; `end` says how and carries the trajectory evidence. */
 export interface RunEnded {
   type: "run_ended";
   run_id: string;
-  reason: RunEndReason;
   last_tick: number;
-  trajectory?: TrajectoryEvidence | null;
+  end: RunCompleted | RunStopped | RunFailed;
+}
+
+/** The engine could not go on: there is no trajectory to hash, so a `trajectory` is refused. */
+export interface RunFailed {
+  reason: "failed";
 }
 
 export type RunKind = "preview" | "verdict_sample";
@@ -1079,6 +1095,12 @@ export interface RunStarted {
   bodies: BodyRef[];
   model_labels?: string[];
   platform: PlatformTag;
+}
+
+/** A stop was requested and the run ended at `last_tick`. The trajectory up to there has a hash, with its tag. */
+export interface RunStopped {
+  reason: "stopped";
+  trajectory: TrajectoryEvidence;
 }
 
 /** ⑤ Python and NumPy versions. */
@@ -1268,6 +1290,22 @@ export interface Unverified {
 
 export type VerdictState = "none" | "valid" | "invalid";
 
+/** Distributed as a WASM package: the hash of the distributed file identifies the binary. */
+export interface WasmEngine {
+  name: string;
+  version: string;
+  distribution: "wasm_package";
+  artifact_hash: string;
+}
+
+/** Distributed as a package wheel (PyPI): the hash of the distributed file identifies the binary. */
+export interface WheelEngine {
+  name: string;
+  version: string;
+  distribution: "wheel";
+  artifact_hash: string;
+}
+
 /** `planet` is an ID (same pattern as every other ID); `terrain_props` sit on that planet's flat ground. */
 export interface World {
   planet: string;
@@ -1292,11 +1330,17 @@ export type ClientMessage = Hello | Subscribe | Publish | Request;
 
 export type Command = AddPartDef | ReplacePartDef | RemovePartDef | AddMaterialDef | ReplaceMaterialDef | RemoveMaterialDef | AddInstance | RemoveInstance | MoveInstance | SetParameter | ClearParameter | SetInstanceMaterial | AddJoint | ReplaceJoint | RemoveJoint | AddActuator | RemoveActuator | AddControlEntry | RemoveControlEntry | ReplaceControlEntry | AddAssumption | SetAssumption | RemoveAssumption | SelectPlanet | CommandBatch;
 
+export type ContactTarget = BodyTarget | PropTarget | GroundTarget;
+
 export type Distribution = FixedDistribution | UniformDistribution | NormalDistribution;
 
 export type EditCommand = AddPartDef | ReplacePartDef | RemovePartDef | AddMaterialDef | ReplaceMaterialDef | RemoveMaterialDef | AddInstance | RemoveInstance | MoveInstance | SetParameter | ClearParameter | SetInstanceMaterial | AddJoint | ReplaceJoint | RemoveJoint | AddActuator | RemoveActuator | AddControlEntry | RemoveControlEntry | ReplaceControlEntry | AddAssumption | SetAssumption | RemoveAssumption | SelectPlanet;
 
+export type EngineTag = WheelEngine | WasmEngine | CustomBuildEngine;
+
 export type FrameEvent = ContactEvent | BreakEvent | ConditionMetEvent;
+
+export type RunEnd = RunCompleted | RunStopped | RunFailed;
 
 export type ServerMessage = Hello | Snapshot | Resumed | Applied | Accepted | Rejected | ProtocolError | RunStarted | Frame | RunEnded;
 

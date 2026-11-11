@@ -59,9 +59,8 @@
       "name": "analytic-fixture",
       "version": "0",
       "distribution": "custom_build",
-      "artifact_hash": null,
       "compiler": "none (pure Python)",
-      "build_flags": "none"
+      "build_flags": ""
     },
     "runtime": {
       "python": "3.12.11",

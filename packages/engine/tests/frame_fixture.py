@@ -80,7 +80,7 @@ def run_started() -> dict:
                 "version": "0",
                 "distribution": "custom_build",
                 "compiler": "none (pure Python)",
-                "build_flags": "none",
+                "build_flags": "",
             },
             "runtime": {"python": "3.12.11", "numpy": "2.5.4"},
             "core_build": {"commit": "8371a65c9bae8f9ba6831ae1eb88473feb2aa4cc"},
@@ -95,7 +95,7 @@ def frame(tick: int) -> dict:
     previous = tick - FRAME_EVERY
     events = []
     if previous < CONTACT_TICK <= tick:
-        events += [{"kind": "contact", "tick": CONTACT_TICK, "phase": "begin", "body": w, "other_kind": "ground"} for w in WHEELS]
+        events += [{"kind": "contact", "tick": CONTACT_TICK, "phase": "begin", "body": w, "other": {"kind": "ground"}} for w in WHEELS]
         events.append({"kind": "condition_met", "tick": CONTACT_TICK, "condition": "landed"})
     if previous < BREAK_TICK <= tick:
         events.append(
@@ -133,9 +133,11 @@ def build() -> dict[str, bytes]:
         {
             "type": "run_ended",
             "run_id": "fixture-run-1",
-            "reason": "completed",
             "last_tick": frames[-1].tick,
-            "trajectory": {"hash": "sha256:" + digest, "platform": run_started()["platform"]},
+            "end": {
+                "reason": "completed",
+                "trajectory": {"hash": "sha256:" + digest, "platform": run_started()["platform"]},
+            },
         }
     )
     lines = [m.model_dump(mode="json") for m in (started, *frames, ended)]

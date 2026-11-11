@@ -20,6 +20,27 @@
     }
   ],
   "$defs": {
+    "BodyTarget": {
+      "description": "What a body touched: another body of the run.",
+      "properties": {
+        "kind": {
+          "const": "body",
+          "title": "Kind",
+          "type": "string"
+        },
+        "id": {
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+          "title": "Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "id"
+      ],
+      "title": "BodyTarget",
+      "type": "object"
+    },
     "BreakEvent": {
       "description": "Joint `joint` released: the load on it reached its break threshold (both in N; plan 4.6, a simplified model).",
       "properties": {
@@ -85,7 +106,7 @@
       "type": "object"
     },
     "ContactEvent": {
-      "description": "`body` touches (`phase` `begin`) or stops touching (`end`) `other`: another body, a terrain prop (by its id in\nthe project's world) or the ground (`other` is `None`). `force` is the contact force at `begin`, if known.",
+      "description": "`body` touches (`phase` `begin`) or stops touching (`end`) `other`. `force` is the contact force at `begin`,\nif known.",
       "properties": {
         "kind": {
           "const": "contact",
@@ -111,20 +132,26 @@
           "title": "Body",
           "type": "string"
         },
-        "other_kind": {
-          "$ref": "#/$defs/GroundOrProp"
-        },
         "other": {
-          "anyOf": [
+          "discriminator": {
+            "mapping": {
+              "body": "#/$defs/BodyTarget",
+              "ground": "#/$defs/GroundTarget",
+              "prop": "#/$defs/PropTarget"
+            },
+            "propertyName": "kind"
+          },
+          "oneOf": [
             {
-              "pattern": "^[a-z][a-z0-9_-]{0,63}$",
-              "type": "string"
+              "$ref": "#/$defs/BodyTarget"
             },
             {
-              "type": "null"
+              "$ref": "#/$defs/PropTarget"
+            },
+            {
+              "$ref": "#/$defs/GroundTarget"
             }
           ],
-          "default": null,
           "title": "Other"
         },
         "force": {
@@ -144,7 +171,7 @@
         "tick",
         "phase",
         "body",
-        "other_kind"
+        "other"
       ],
       "title": "ContactEvent",
       "type": "object"
@@ -170,14 +197,42 @@
       "title": "ForceN",
       "type": "object"
     },
-    "GroundOrProp": {
-      "enum": [
-        "body",
-        "prop",
-        "ground"
+    "GroundTarget": {
+      "additionalProperties": false,
+      "description": "What a body touched: the ground. It has no id (the ground of the planet is one thing), so an `id` is refused.",
+      "properties": {
+        "kind": {
+          "const": "ground",
+          "title": "Kind",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind"
       ],
-      "title": "GroundOrProp",
-      "type": "string"
+      "title": "GroundTarget",
+      "type": "object"
+    },
+    "PropTarget": {
+      "description": "What a body touched: a terrain prop, by its id in the project's world.",
+      "properties": {
+        "kind": {
+          "const": "prop",
+          "title": "Kind",
+          "type": "string"
+        },
+        "id": {
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+          "title": "Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "id"
+      ],
+      "title": "PropTarget",
+      "type": "object"
     }
   }
 }

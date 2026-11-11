@@ -5,7 +5,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
-import type { Frame, PlatformTag, RunEnded, RunStarted, ServerMessage } from "../types.ts";
+import type { ContactEvent, Frame, PlatformTag, RunCompleted, RunEnded, RunFailed, RunStarted, ServerMessage, TrajectoryEvidence } from "../types.ts";
 
 const here = (p: string) => fileURLToPath(new URL(p, import.meta.url));
 const fixtures = "../../packages/engine/tests/fixtures/frames/";
@@ -63,11 +63,17 @@ test("run_started carries all eight platform tag components, and run_ended pairs
   assert.ok(ended);
   const components: (keyof PlatformTag)[] = ["os", "cpu", "image_digest", "engine", "runtime", "core_build", "compute", "threads"];
   assert.deepEqual(Object.keys(started.platform), components);
-  assert.ok(ended.trajectory, "a completed run has a trajectory");
-  assert.deepEqual(ended.trajectory.platform, started.platform);
+  assert.equal(ended.end.reason, "completed");
+  if (ended.end.reason === "failed") assert.fail("a completed run");
+  assert.deepEqual(ended.end.trajectory.platform, started.platform); // narrowed by `reason`: the trajectory is there
   // @ts-expect-error a trajectory is the hash and its tag; the hash alone is not a TrajectoryEvidence
-  const bare: RunEnded["trajectory"] = { hash: ended.trajectory.hash };
-  void bare;
+  const bare: TrajectoryEvidence = { hash: ended.end.trajectory.hash };
+  // @ts-expect-error a completed run requires its trajectory
+  const noTrajectory: RunCompleted = { reason: "completed" };
+  const failed: RunFailed = { reason: "failed" }; // only a failed run has none
+  // @ts-expect-error a failed run has no trajectory to claim
+  const claimed: RunFailed = { reason: "failed", trajectory: ended.end.trajectory };
+  void [bare, noTrajectory, failed, claimed];
 });
 
 test("events are told apart by kind and the three kinds of the DoD occur", () => {
@@ -80,6 +86,28 @@ test("events are told apart by kind and the three kinds of the DoD occur", () =>
     }
   }
   assert.deepEqual([...kinds].sort(), ["break", "condition_met", "contact"]);
+});
+
+test("a contact's other side is told apart by kind; a body or a prop has an id, the ground has none", () => {
+  const ground: ContactEvent = { kind: "contact", tick: 1, phase: "begin", body: "wheel-fl", other: { kind: "ground" } };
+  const prop: ContactEvent = { kind: "contact", tick: 1, phase: "begin", body: "wheel-fl", other: { kind: "prop", id: "prop-a" } };
+  // @ts-expect-error a prop needs an id
+  const noId: ContactEvent = { kind: "contact", tick: 1, phase: "begin", body: "wheel-fl", other: { kind: "prop" } };
+  // @ts-expect-error the ground has no id
+  const groundId: ContactEvent = { kind: "contact", tick: 1, phase: "begin", body: "wheel-fl", other: { kind: "ground", id: "g" } };
+  void [noId, groundId];
+  assert.equal(ground.other.kind, "ground");
+  if (prop.other.kind !== "ground") assert.equal(prop.other.id, "prop-a"); // narrowed by `kind`
+});
+
+test("an engine tag requires what its distribution identifies it by", () => {
+  const started = startedOf();
+  const engine = started.platform.engine;
+  if (engine.distribution === "custom_build") assert.equal(typeof engine.compiler, "string");
+  else assert.match(engine.artifact_hash, /^sha256:/); // narrowed by `distribution`
+  // @ts-expect-error a wheel is identified by the hash of its file
+  const noHash: PlatformTag["engine"] = { name: "e", version: "1", distribution: "wheel" };
+  void noHash;
 });
 
 test("the binary frame reads with the documented layout; the quaternion is x, y, z, w", () => {

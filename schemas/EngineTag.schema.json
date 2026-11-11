@@ -1,80 +1,139 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "additionalProperties": false,
-  "description": "④ The physics engine: its name and version as values, how it was distributed, the hash of the distributed\nfile, and for a custom build the compiler and build flags.",
-  "properties": {
-    "name": {
-      "maxLength": 200,
-      "minLength": 1,
-      "title": "Name",
-      "type": "string"
+  "discriminator": {
+    "mapping": {
+      "custom_build": "#/$defs/CustomBuildEngine",
+      "wasm_package": "#/$defs/WasmEngine",
+      "wheel": "#/$defs/WheelEngine"
     },
-    "version": {
-      "maxLength": 200,
-      "minLength": 1,
-      "title": "Version",
-      "type": "string"
+    "propertyName": "distribution"
+  },
+  "oneOf": [
+    {
+      "$ref": "#/$defs/WheelEngine"
     },
-    "distribution": {
-      "$ref": "#/$defs/EngineDistribution"
+    {
+      "$ref": "#/$defs/WasmEngine"
     },
-    "artifact_hash": {
-      "anyOf": [
-        {
-          "pattern": "^sha256:[0-9a-f]{64}$",
-          "type": "string"
-        },
-        {
-          "type": "null"
-        }
-      ],
-      "default": null,
-      "title": "Artifact Hash"
-    },
-    "compiler": {
-      "anyOf": [
-        {
+    {
+      "$ref": "#/$defs/CustomBuildEngine"
+    }
+  ],
+  "$defs": {
+    "CustomBuildEngine": {
+      "additionalProperties": false,
+      "description": "Built by us: the compiler and the build flags identify the binary (`build_flags` may be an empty string).",
+      "properties": {
+        "name": {
           "maxLength": 200,
           "minLength": 1,
+          "title": "Name",
           "type": "string"
         },
-        {
-          "type": "null"
-        }
-      ],
-      "default": null,
-      "title": "Compiler"
-    },
-    "build_flags": {
-      "anyOf": [
-        {
+        "version": {
+          "maxLength": 200,
+          "minLength": 1,
+          "title": "Version",
+          "type": "string"
+        },
+        "distribution": {
+          "const": "custom_build",
+          "title": "Distribution",
+          "type": "string"
+        },
+        "compiler": {
+          "maxLength": 200,
+          "minLength": 1,
+          "title": "Compiler",
+          "type": "string"
+        },
+        "build_flags": {
           "maxLength": 2000,
+          "title": "Build Flags",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "version",
+        "distribution",
+        "compiler",
+        "build_flags"
+      ],
+      "title": "CustomBuildEngine",
+      "type": "object"
+    },
+    "WasmEngine": {
+      "additionalProperties": false,
+      "description": "Distributed as a WASM package: the hash of the distributed file identifies the binary.",
+      "properties": {
+        "name": {
+          "maxLength": 200,
+          "minLength": 1,
+          "title": "Name",
           "type": "string"
         },
-        {
-          "type": "null"
+        "version": {
+          "maxLength": 200,
+          "minLength": 1,
+          "title": "Version",
+          "type": "string"
+        },
+        "distribution": {
+          "const": "wasm_package",
+          "title": "Distribution",
+          "type": "string"
+        },
+        "artifact_hash": {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "title": "Artifact Hash",
+          "type": "string"
         }
+      },
+      "required": [
+        "name",
+        "version",
+        "distribution",
+        "artifact_hash"
       ],
-      "default": null,
-      "title": "Build Flags"
-    }
-  },
-  "required": [
-    "name",
-    "version",
-    "distribution"
-  ],
-  "title": "EngineTag",
-  "type": "object",
-  "$defs": {
-    "EngineDistribution": {
-      "enum": [
-        "wheel",
-        "wasm_package",
-        "custom_build"
+      "title": "WasmEngine",
+      "type": "object"
+    },
+    "WheelEngine": {
+      "additionalProperties": false,
+      "description": "Distributed as a package wheel (PyPI): the hash of the distributed file identifies the binary.",
+      "properties": {
+        "name": {
+          "maxLength": 200,
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        },
+        "version": {
+          "maxLength": 200,
+          "minLength": 1,
+          "title": "Version",
+          "type": "string"
+        },
+        "distribution": {
+          "const": "wheel",
+          "title": "Distribution",
+          "type": "string"
+        },
+        "artifact_hash": {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "title": "Artifact Hash",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "version",
+        "distribution",
+        "artifact_hash"
       ],
-      "title": "EngineDistribution",
-      "type": "string"
+      "title": "WheelEngine",
+      "type": "object"
     }
   }
 }
