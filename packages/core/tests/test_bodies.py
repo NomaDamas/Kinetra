@@ -106,11 +106,23 @@ def test_bodies_ground_friction_is_a_c01c_assumption_with_an_honest_distribution
 
 
 def test_bodies_friction_values_are_tangents_of_the_angles_in_their_sources():
-    """Each nominal is tan(angle in degrees) where the angle is written in `source.ref`."""
+    """The stored nominal and bounds are tan(angle) of the angles `source.ref` names, in order (low then high)."""
+    tan_re = r"tan\((\d+(?:\.\d+)?) deg\) = (\d+\.\d+)"
     for b in load_bodies().values():
-        for q in (b.ground_friction.value, b.ground_friction.distribution):
-            for ang, val in re.findall(r"tan\((\d+(?:\.\d+)?) deg\) = (\d+\.\d+)", q.source.ref):
-                assert math.tan(math.radians(float(ang))) == pytest.approx(float(val), abs=5e-5), (b.id, ang)
+        a = b.ground_friction
+        d = a.distribution
+        nominal = re.findall(tan_re, a.value.source.ref)
+        assert len(nominal) == 1, (b.id, "nominal ref names one angle")
+        ang, printed = nominal[0]
+        assert a.value.value == pytest.approx(math.tan(math.radians(float(ang))), abs=5e-5), (b.id, "nominal")
+        assert a.value.value == pytest.approx(float(printed), abs=1e-12), (b.id, "nominal differs from its ref text")
+        bounds = re.findall(tan_re, d.source.ref)
+        assert len(bounds) == 2, (b.id, "distribution ref names two angles")
+        (lo_ang, lo_txt), (hi_ang, hi_txt) = bounds
+        assert float(lo_ang) < float(ang) <= float(hi_ang), (b.id, "nominal angle inside the bounds")
+        assert d.low == pytest.approx(math.tan(math.radians(float(lo_ang))), abs=5e-5), (b.id, "low")
+        assert d.high == pytest.approx(math.tan(math.radians(float(hi_ang))), abs=5e-5), (b.id, "high")
+        assert (d.low, d.high) == (float(lo_txt), float(hi_txt)), (b.id, "bounds differ from their ref text")
     moon = load_body("moon")
     assert moon.ground_friction.value.badge is Badge.CITE and moon.ground_friction.confidence.value == "med"
     assert load_body("earth").ground_friction.confidence.value == "low"
@@ -232,18 +244,23 @@ def test_bodies_world_rejects_planet_constants_so_the_data_files_are_their_only_
 CODE_SUFFIXES = {".py", ".ts", ".tsx", ".js", ".jsx", ".mjs", ".cjs", ".vue", ".svelte", ".html", ".wgsl", ".glsl"}
 CODE_ROOTS = ["packages/core/src", "packages/engine/src", "packages/judge/src", "packages/ui", "apps", "scripts"]
 SKIP_DIRS = {"node_modules", ".venv", "dist", "build", "__pycache__", ".next", ".svelte-kit", "coverage", "tests", "test"}
-NUMBER = re.compile(r"(?<![\w.])(\d+\.\d+|\d+)(?:[eE][+-]?\d+)?(?![\w.])")
-GRAVITY_ROUNDINGS = (9.80665, 9.8067, 9.807, 9.81, 9.8, 9.82, 9.78, 9.832, 3.73, 3.72, 3.71, 3.69, 3.7, 1.62, 1.622, 1.625, 1.63)
+NUMBER = re.compile(r"(?<![\w.])(\d[\d_]*(?:\.\d*)?(?:[eE][+-]?\d+)?|\.\d+(?:[eE][+-]?\d+)?)(?![\w.])")
+GRAVITY_RELATIVE_TOLERANCE = 0.015
+"""A literal within 1.5% of a planet's gravity is flagged. That covers the usual roundings of each one (9.8, 9.81, 3.7,
+3.71, 1.6, 1.62) and the spread of the sheets' own surface values (Earth 9.780 to 9.832, Mars 3.69 to 3.73)."""
 
 
-def gravity_literals():
-    """Numbers a gravity could be written as: the three data-file values and their usual roundings."""
-    vals = {b.gravity.value for b in load_bodies().values()} | set(GRAVITY_ROUNDINGS)
-    return {f"{v:g}" for v in vals} | {repr(v) for v in vals}
+def gravity_values():
+    return sorted(b.gravity.value for b in load_bodies().values())
+
+
+def is_gravity_like(x: float, gravities=None) -> bool:
+    return any(abs(x - g) <= GRAVITY_RELATIVE_TOLERANCE * g for g in (gravities or gravity_values()))
 
 
 def scan_for_gravity_literals(root: Path, roots=CODE_ROOTS):
-    bad = gravity_literals()
+    """Numeric literals, compared by value (so `9.81`, `9.810`, `981e-2`, `9.8E0` and `3.7` are all caught)."""
+    gravities = gravity_values()
     hits = []
     for r in roots:
         base = root / r
@@ -255,7 +272,11 @@ def scan_for_gravity_literals(root: Path, roots=CODE_ROOTS):
             for n, line in enumerate(p.read_text(encoding="utf-8", errors="replace").splitlines(), 1):
                 code = re.sub(r"(#|//).*$", "", line)  # numbers in comments are prose
                 for m in NUMBER.finditer(code):
-                    if m.group(0) in bad:
+                    try:
+                        value = float(m.group(0).replace("_", ""))
+                    except ValueError:
+                        continue
+                    if is_gravity_like(value, gravities):
                         hits.append(f"{p.relative_to(root)}:{n}: {m.group(0)}")
     return hits
 
@@ -264,7 +285,9 @@ def test_bodies_no_gravity_literal_in_engine_or_client_code():
     assert scan_for_gravity_literals(REPO) == []
 
 
-@pytest.mark.parametrize("literal", ["9.81", "9.80665", "3.73", "3.71", "1.62", "9.8"])
+@pytest.mark.parametrize(
+    "literal", ["9.81", "9.80665", "9.810", "981e-2", "9.8E0", "9.78", "3.73", "3.71", "3.7", "1.62", "1.620", "162e-2", "9.8"]
+)
 def test_bodies_gravity_literal_scan_detects_a_planted_literal(tmp_path, literal):
     (tmp_path / "packages" / "engine" / "src").mkdir(parents=True)
     (tmp_path / "apps" / "studio" / "src").mkdir(parents=True)
@@ -277,6 +300,6 @@ def test_bodies_gravity_literal_scan_detects_a_planted_literal(tmp_path, literal
 def test_bodies_gravity_literal_scan_ignores_comments_identifiers_and_longer_numbers(tmp_path):
     (tmp_path / "packages" / "engine" / "src").mkdir(parents=True)
     (tmp_path / "packages" / "engine" / "src" / "ok.py").write_text(
-        "x = 1  # g = 9.81 on Earth\nv1_62 = 19.81 + 3.7301 + 21.62\n", encoding="utf-8"
+        "x = 1  # g = 9.81 on Earth\nv1_62 = 19.81 + 3.9 + 21.62 + 5 + 100\nname9_81 = 2\n", encoding="utf-8"
     )
     assert scan_for_gravity_literals(tmp_path) == []
