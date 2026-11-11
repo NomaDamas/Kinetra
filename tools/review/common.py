@@ -15,10 +15,11 @@ ROOT = Path(__file__).resolve().parents[2]
 KEY_ENV = "OPENROUTER_API_KEY"
 
 # Bearer 뒤는 비밀 모양(충분히 긴 토큰 문자열)일 때만 가린다. `{self._key}`, `$TOKEN`, `os.environ[...]` 같은 코드 표현식은
-# 문자 집합(`{`, `$`, `[` 가 없다)과 길이로 걸러지고, 길어도 숫자 없는 식별자·속성 체인(`self._openrouter_api_key`)은 _is_code 가 거른다.
+# 문자 집합(`{`, `$`, `[`, `(` 가 없다)과 길이로 걸러진다. 문자 집합에 맞는 20자 이상 토큰은 숫자가 없어도 가린다.
+# 예외는 `self.` 같은 객체 이름으로 시작하는 속성 접근 하나뿐이다(_is_code). 구분자는 같은 줄의 공백·탭이라 한 곳이 줄을 넘지 않는다.
 BEARER_MIN = 20
-_BEARER = re.compile(r"(?i)\bBearer\s+([A-Za-z0-9._~+/=\-]{%d,})" % BEARER_MIN)
-_IDENT_CHAIN = re.compile(r"[A-Za-z_]\w*(?:\.[A-Za-z_]\w*)*")
+_BEARER = re.compile(r"(?i)\bBearer[ \t]+([A-Za-z0-9._~+/=\-]{%d,})" % BEARER_MIN)
+_ATTR_ACCESS = re.compile(r"(?:self|cls|this|os|config|cfg|settings|secrets)(?:\.[A-Za-z_][A-Za-z0-9_]*)+")
 
 _SECRET_PATTERNS = (
     re.compile(r"sk-[A-Za-z0-9_\-]{8,}"),  # OpenRouter / OpenAI 형태
@@ -33,8 +34,8 @@ class ReviewError(Exception):
 
 
 def _is_code(token: str) -> bool:
-    """숫자 없이 `_` 나 `.` 로 이어진 식별자 체인은 비밀이 아니라 소스 표현식이다."""
-    return not any(c.isdigit() for c in token) and ("." in token or "_" in token) and _IDENT_CHAIN.fullmatch(token) is not None
+    """`self._openrouter_api_key` 처럼 알려진 객체 이름에서 시작하는 속성 접근 하나만 소스 표현식으로 본다."""
+    return _ATTR_ACCESS.fullmatch(token) is not None
 
 
 def _spans(text: str) -> list[tuple[int, int]]:
@@ -59,20 +60,22 @@ def _spans(text: str) -> list[tuple[int, int]]:
 
 
 def redact_report(text: str) -> tuple[str, int, list[int]]:
-    """(가린 글, 가린 곳 수, 가린 곳이 있는 줄 번호들(1부터, 원문 기준, 오름차순·중복 없음))."""
+    """(가린 글, 가린 곳 수, 가린 곳이 있는 줄 번호들). 줄 번호는 **가린 글** 기준 1부터다(모델이 보는 글과 같다).
+    한 곳이 여러 줄에 걸쳐 `***` 하나로 줄어도 번호가 어긋나지 않게, 가린 글의 개행 수를 누적해 센다."""
     spans = _spans(text)
     if not spans:
         return text, 0, []
     out: list[str] = []
     lines: list[int] = []
     pos = 0
+    newlines = 0  # 지금까지 출력(out)에 쓴 개행 수
     for a, b in spans:
-        out += [text[pos:a], "***"]
+        chunk = text[pos:a]
+        out += [chunk, "***"]
+        newlines += chunk.count("\n")
         pos = b
-        # 한 곳이 여러 줄에 걸쳐도(Bearer 와 토큰 사이 개행) 시작 줄만 센다
-        n = text.count("\n", 0, a) + 1
-        if not lines or lines[-1] != n:
-            lines.append(n)
+        if not lines or lines[-1] != newlines + 1:
+            lines.append(newlines + 1)
     out.append(text[pos:])
     return "".join(out), len(spans), lines
 

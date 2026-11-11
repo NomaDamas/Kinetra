@@ -402,7 +402,7 @@ CODE_EXPRESSIONS = [
     'h = "Bearer %s" % self._key',
     "curl -H 'Authorization: Bearer $OPENROUTER_API_KEY'",
     'h = f"Bearer {self._openrouter_api_key}"',
-    "Authorization: Bearer self._openrouter_api_key_value",
+    "Authorization: Bearer self._openrouter_api_key",
     "Bearer token",
 ]
 
@@ -474,3 +474,36 @@ def test_system_prompt_explains_masking_note():
     from review import call
 
     assert "마스킹 안내" in call.INSTRUCTIONS
+
+
+@pytest.mark.parametrize(
+    "secret",
+    [
+        "abc_def.ghi_jkl.mno_pqr_stu",  # 숫자 없이 `_`·`.` 만 있어도 20자 이상이면 비밀 모양이다
+        "abcdefghijklmnopqrstuvwxyz",
+        "a.b.c.d.e.f.g.h.i.j.k.l",
+        "selfish.openrouter_api_key_value",  # `self.` 로 시작하는 척하는 값
+    ],
+)
+def test_redact_masks_long_bearer_tokens_even_without_digits(secret, monkeypatch):
+    monkeypatch.delenv("OPENROUTER_API_KEY", raising=False)
+    assert common.redact(f"Authorization: Bearer {secret}") == "Authorization: ***"
+
+
+def test_redact_report_lines_are_in_masked_text_even_for_multiline_matches(monkeypatch):
+    multi = "line1\nline2"
+    monkeypatch.setenv("OPENROUTER_API_KEY", multi)
+    text = f"a\nb\nk = {multi} end\nc\nBearer {'x' * 24}\n"
+    out, n, lines = common.redact_report(text)
+    assert n == 2 and lines == [3, 5]
+    rows = out.split("\n")
+    assert rows[2] == "k = *** end" and rows[4] == "***"
+    note = collect.mask_note(out, n, lines)
+    assert "- 줄 3: k = *** end" in note and "- 줄 5: ***" in note
+    assert "line1" not in note and "x" * 24 not in note
+
+
+def test_mask_note_does_not_index_past_the_end_and_never_leaks(monkeypatch):
+    out = "one\ntwo"
+    note = collect.mask_note(out, 1, [99])
+    assert "줄 99" not in note and "목록에 없는 줄" in note
