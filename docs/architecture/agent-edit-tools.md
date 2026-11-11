@@ -2,7 +2,7 @@
 
 - 상태: 구현됨. 코드는 `packages/engine/src/kinetra_engine/agent/`(`edit_tools.py`, `snapmath.py`), 테스트는 `packages/engine/tests/test_edit_tools.py`(`uv run pytest packages/engine -q -k edit_tools`).
 - 근거: `docs/plan/studio-plan.md` 4.4절(에이전트와의 협업)과 위험 3("에이전트가 3D 편집을 망친다": 자유 좌표가 아닌 스냅 포인트 기반 명령), `docs/architecture/client-adapter.md` C1·C4, 이슈 #144.
-- 범위 밖: 조회 도구(G-02b), 실행·판정 요청 도구(G-02c), 변경안과 재시도(G-03a), 권한 가드와 카탈로그 밖 표시(G-04), MCP 서버(G-08), UI.
+- 범위 밖: 조회 도구(G-02b), 실행·판정 요청 도구(G-02c), 변경안과 재시도(G-03a), 권한 가드와 카탈로그 밖 표시(G-04), MCP 서버(G-08: 이 도구들을 그대로 MCP로 내보낸다, `mcp-server.md`), UI.
 
 ## 규칙
 
