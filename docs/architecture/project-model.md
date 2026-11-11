@@ -102,7 +102,7 @@ uv run python packages/core/scripts/export_schemas.py --check  # 쓰지 않고 �
 코드는 `kinetra_core/project.py`, `commands.py`, 테스트는 `packages/core/tests/test_commands.py`. 모든 편집은 `Command`다(계획 5.3절, `client-adapter.md` I1). 입력 수단(마우스, 에이전트, 음성, XR, MCP)마다 다른 Command는 없다.
 
 - `Project` = `design`(`DesignSpec`) + `world`(`World`, 필수) + `assumptions`(`AssumptionTable`). 명령이 적용되는 단위이고 클라이언트가 사본으로 쥐는 문서다(`client-adapter.md` D1). 각 부분의 검사는 그 부분에 있고, `Project`는 부분을 가로지르는 참조 하나만 더한다: 지형 소품의 `material`은 프로젝트의 재료여야 한다. `bodies.check_world_references`(W-01)의 재료 쪽 규칙과 같은 것이고(`world`와 `design.materials`의 ID를 받는다), 행성에 데이터가 있는지는 그 함수와 검증기(C-02c)의 몫으로 `Project`가 검사하지 않는다. 그래서 끊긴 참조(부품 없는 인스턴스, 스냅 포인트 없는 결합, 결합 없는 모터, 액추에이터 없는 스케줄 항목, 재료 없는 소품)를 가진 `Project`는 만들어지지 않는다.
-- `apply_command(project, command) -> ApplyResult(project, inverse)`. 입력을 바꾸지 않고, 새 `Project`와 역명령을 돌려준다. 결과는 `Project.model_validate`로 통째로 다시 검증한다(`model_copy`는 검증을 건너뛰므로 쓰지 않는다). 거부되면 `CommandRejected`의 `reasons`(`Reason`: `code`, 읽을 수 있는 문장, `ids`: `{kind, id}` 참조 목록)가 오고 프로젝트는 그대로다(`rejected` 메시지의 내용, `client-adapter.md` 3.2). 코드: `unknown_id`, `duplicate_id`, `in_use`, `index_out_of_range`, `invalid_command`, `invalid_project`(검증기 문장을 그대로 싣고, 끊긴 참조는 그 ID를 `ids`에 싣는다), `not_editable`. `ids`의 `kind`는 `instance`, `joint`, `actuator`, `part`, `material`, `snap_point`(`<인스턴스>/<스냅 포인트>`), `schedule_entry`, `assumption`, `parameter`(`<인스턴스>/<이름>`), `planet`, `prop`이다. ID는 자기 컬렉션 안에서만 유일해서 종류 없는 문자열은 부품 `wheel`과 인스턴스 `wheel`을 구분하지 못한다. 결과 타입은 `ApplyResult`다(`client-adapter.md` 3.1의 `applied` 메시지는 개정 번호와 발행자를 더해 C-05a가 만든다).
+- `apply_command(project, command) -> ApplyResult(project, inverse)`. 입력을 바꾸지 않고, 새 `Project`와 역명령을 돌려준다. 결과는 `Project.model_validate`로 통째로 다시 검증한다(`model_copy`는 검증을 건너뛰므로 쓰지 않는다). 거부되면 `CommandRejected`의 `reasons`(`Reason`: `code`, 읽을 수 있는 문장, `ids`: `{kind, id}` 참조 목록)가 오고 프로젝트는 그대로다(`rejected` 메시지의 내용, `client-adapter.md` 3.2). 코드: `unknown_id`, `duplicate_id`, `in_use`, `index_out_of_range`, `invalid_command`, `invalid_project`(검증기 문장을 그대로 싣고, 끊긴 참조는 그 ID를 `ids`에 싣는다), `not_editable`, 그리고 검증기(C-02c)의 `forbidden`, `invalid_snap`, `overlap`, `floating`. `ids`의 `kind`는 `instance`, `joint`, `actuator`, `part`, `material`, `snap_point`(`<인스턴스>/<스냅 포인트>`), `schedule_entry`, `assumption`, `parameter`(`<인스턴스>/<이름>`), `planet`, `prop`이다. ID는 자기 컬렉션 안에서만 유일해서 종류 없는 문자열은 부품 `wheel`과 인스턴스 `wheel`을 구분하지 못한다. 결과 타입은 `ApplyResult`다(`client-adapter.md` 3.1의 `applied` 메시지는 개정 번호와 발행자를 더해 C-05a가 만든다).
 - 역명령을 적용하면 원본과 같은 프로젝트가 된다(모든 컬렉션의 순서까지). 역명령의 역명령은 같은 편집을 다시 한다(다시 실행). 테스트가 명령마다 이를 본다.
 - 명령은 기존 항목을 ID로 가리킨다(위치로 가리키지 않는다). 부분 수락(C2)이나 낡은 기준 개정(C5)에서 위치로 가리키는 명령은 유효한 채로 다른 항목을 고친다. `index`는 `add_*`가 새 항목을 어디에 넣을지만 뜻한다.
 - `type` 태그가 필수인 판별 유니온 `Command`(`schemas/Command.schema.json`, `types.ts`의 `Command`). 명령은 문서의 말로 쓴다(ID, 파라미터 이름, SI 값과 배지·출처; I2). 누가 보냈는지는 명령에 없고 이력 기록(C-02b)이 갖는다.
@@ -118,7 +118,7 @@ uv run python packages/core/scripts/export_schemas.py --check  # 쓰지 않고 �
 | `add_control_entry`, `remove_control_entry`(`id`), `replace_control_entry`(`entry.id`가 같은 항목을 제자리에서) | 제어 스케줄 항목. `add`의 `index`는 위치일 뿐이다 | `remove`의 역은 원래 위치에 `add` |
 | `add_assumption`, `set_assumption`(같은 `key`를 제자리에서 교체), `remove_assumption`(`key`) | 가정표 편집. `editable: false`인 가정은 바꾸거나 지울 수 없고(`not_editable`), `set_assumption`으로 `editable`을 뒤집을 수 없으며 `editable: false`인 가정을 새로 넣을 수도 없다(넣으면 다시 바꿀 수 없어 역명령이 성립하지 않는다) | 서로의 역 |
 | `select_planet` | `world.planet`을 ID로 바꾼다. 행성 상수는 어떤 명령에도 실리지 않는다(`client-adapter.md` C4) | 이전 행성 |
-| `add_*_def`, `replace_part_def`, `replace_material_def`, `remove_*_def` | 프로젝트가 담는 정의(재료·부품). 삭제는 쓰는 곳이 있으면 `in_use`로 거부한다(사용자가 지우지 않은 것을 지우지 않는다). 쓰이는 정의는 삭제할 수 없으므로 명령으로 바꾸는 길은 `replace_*`(같은 ID, 제자리, 목록 위치 유지)뿐이다. 프로젝트 전체를 다시 검증하므로 쓰는 곳을 깨는 정의(인스턴스가 정한 파라미터가 없어짐, 범위 밖이 됨, 결합이 쓰는 스냅 포인트가 없어짐)는 그 사유와 깨진 대상의 참조와 함께 거부된다. 어느 출처가 정의 명령을 보낼 수 있는지는 C-02c | `add`↔`remove` / 이전 정의의 `replace` |
+| `add_*_def`, `replace_part_def`, `replace_material_def`, `remove_*_def` | 프로젝트가 담는 정의(재료·부품). 삭제는 쓰는 곳이 있으면 `in_use`로 거부한다(사용자가 지우지 않은 것을 지우지 않는다). 쓰이는 정의는 삭제할 수 없으므로 명령으로 바꾸는 길은 `replace_*`(같은 ID, 제자리, 목록 위치 유지)뿐이다. 프로젝트 전체를 다시 검증하므로 쓰는 곳을 깨는 정의(인스턴스가 정한 파라미터가 없어짐, 범위 밖이 됨, 결합이 쓰는 스냅 포인트가 없어짐)는 그 사유와 깨진 대상의 참조와 함께 거부된다. 출처(발행자)로 허용을 나누지 않는다: 검증기는 발행자를 받지 않는다(C-02c) | `add`↔`remove` / 이전 정의의 `replace` |
 | `batch` | 편집 명령을 순서대로 모두 적용하거나 모두 거부한다(C2). 중첩은 없다. 사유의 문장 앞에 `commands[n] (type):`이 붙는다. **최종 상태만이 아니라 모든 중간 상태가 유효한 `Project`여야 한다**: 한 액추에이터의 두 구간을 맞바꾸는 묶음은 첫 명령에서 겹침으로 거부된다. 줄이거나 지우는 명령을 먼저 두거나 `replace_*`를 쓴다(에이전트 재시도 G-03a, 대칭 복제 B-11이 알아야 한다) | 역명령들의 역순 묶음 |
 
 - 목록 순서는 값의 일부라서 `add_*`는 `index`(없으면 끝)를 받고, 역명령은 원래 자리로 되돌린다.
@@ -126,7 +126,7 @@ uv run python packages/core/scripts/export_schemas.py --check  # 쓰지 않고 �
 - 편집마다 프로젝트 전체를 JSON으로 덤프하고 다시 검증하므로 편집 하나는 프로젝트 크기에 비례하고 묶음은 n배다(리뷰 측정: 인스턴스 200개에서 단일 이동 약 11 ms, 200건 묶음 약 1.1 s; 1,000개에서 25 ms, 4 s). 명령의 모양과 무관한 내부 문제라서 별도 이슈로 추적한다.
 - 역명령은 목록의 절대 위치(`index`)를 담는다. 한 줄로 선형인 이력(S1)에서는 역명령이 늘 자기가 계산된 상태에 적용되므로 정확하다. 다른 편집이 끼어드는 사용자별 되돌리기(N-04)는 위치가 아니라 이웃을 가리키는 방식이 필요하다.
 - 삭제가 연쇄를 일으켜도 한 명령이고 한 역명령이다(#476 리뷰: 끊긴 상태를 만들지 않는다). 이력에서 한 칸이 되는 단위는 아래 "되돌리기와 이력"이 정한다.
-- 이 PR에 없는 것: 배치 검사(겹침, 뜬 부품, 스냅 호환)와 행성 상수·물성 DB·판정 결과를 바꾸려는 시도의 거부, `planet`이 `data/bodies`에 있는지, 어느 출처가 정의 명령을 보낼 수 있는지(C-02c), 선로의 메시지(C-05a), 지형 소품 편집(W-05), 수역(FL-02b), 분리 항목(X-08), 정의가 없는 인스턴스(C-06). 이 PR의 예시 수치는 모두 테스트가 선언한 값이다.
+- 이 PR에 없는 것: 배치 검사와 행성 상수·물성 DB·판정 결과를 바꾸려는 시도의 거부(C-02c, 아래 "검증기"), 지형 소품 편집(W-05), 수역(FL-02b), 분리 항목(X-08), 정의가 없는 인스턴스(C-06). 이 PR의 예시 수치는 모두 테스트가 선언한 값이다.
 
 ## 되돌리기와 이력 (C-02b)
 
@@ -182,6 +182,35 @@ uv run python packages/core/scripts/export_schemas.py --check  # 쓰지 않고 �
 ## 선로의 메시지 (C-05a)
 
 `Command`와 `ApplyResult`를 선로에 올리는 메시지(`hello` `subscribe` `snapshot` `resumed` `applied` `publish` `accepted` `rejected` `request` `error`)는 `kinetra_core/protocol.py`에 있고 `schemas/`에 `ClientMessage`, `ServerMessage`로 생성된다. `ApplyResult`(프로젝트 + 역명령)는 그대로 적용기의 값이고, 선로의 `applied`(개정 번호, 발행자, 바뀐 구역)는 `Applied`로 이름이 다르다. 규칙과 필드는 [`client-adapter.md`](client-adapter.md) 3.1~3.2 확정.
+
+- 이력 길이의 상한은 없다. 계획과 이슈 어디에도 숫자가 없어서 만들어 쓰지 않았다. 칸당 명령 둘을 쥔다. 상한이나 저장 여부는 보관하는 C-03, C-05a가 정한다.
+- 이 PR에 없는 것: 개정 번호와 `applied` 메시지(C-05a), 이력의 저장 형식과 해시(C-03), 여러 사용자의 사용자별 되돌리기(N-04), 출처별 허용 정책(없다: 검증기는 발행자를 받지 않는다, C-02c), 시각(벽시계 시각은 결정론 문서에 두지 않는다).
+
+## 검증기 (C-02c)
+
+코드는 `kinetra_core/validator.py`(충돌 도형 검사는 `convex.py`, B-01a에서 엔진에서 옮겨 옴), 테스트는 `packages/core/tests/test_validator.py`. 모든 편집이 지나는 한 문이다(`client-adapter.md` C1, C4). **발행자를 받지 않는다**: 마우스, 에이전트, 음성, XR, MCP가 같은 답을 받는다(발행자는 이력의 기록이다, C-02b).
+
+- `parse_command(json) -> Command`: 어느 클라이언트의 JSON이든 명령 하나가 되거나 `CommandRejected`. 스키마 위반은 `invalid_command`(문제마다 사유 하나). 행성 상수(`PLANET_CONSTANT_NAMES`)나 판정(`verdict`, `p_success`, `ci`)을 싣거나 그런 이름의 `type`(`set_gravity`, `set_verdict` ...)은 `forbidden`이고 이유를 말한다. 보장은 구조에서 나온다(명령 유니온이 닫혀 있고 `extra="forbid"`라서 상수를 실을 필드가 없다). 이름 목록은 사유를 정확히 쓰기 위한 것이다.
+- `validate_command(project, command) -> ApplyResult`: `apply_command`에 정책과 배치 검사를 더한다. C-02b 이력, C-05a 선로, G-02a 도구가 `apply_command` 대신 이것을 부른다.
+- `check_placement(project) -> tuple[Reason, ...]`: 프로젝트가 가진 배치 문제 전부.
+
+| 코드 | 거부하는 경우 |
+|---|---|
+| `forbidden` | 위의 행성 상수·판정 시도, 행성 상수 이름의 가정 키, 재료 카탈로그(`load_material_catalog`)의 ID를 쓰면서 카탈로그 정의와 다른 재료, 또는 카탈로그에 없는 ID인데 `cite` 속성이 카탈로그가 인용한 출처를 다른 수치로 쓰는 재료(`add_material_def`, `replace_material_def`). 사용자 자신의 재료는 `declared`(또는 자기 출처의 `cite`)로 얼마든지 쓸 수 있다 |
+| `unknown_id`(ref `planet`) | `world.planet`이 `data/bodies`의 행성이 아님(`check_world_references`, C-01c 이월 1). 지형 소품의 `material`이 프로젝트의 재료인지(이월 2)는 `Project`가 이미 닫는다 |
+| `invalid_snap` | 결합한 두 스냅 포인트가 서로의 `kind`를 받아들이지 않음, 또는 저장된 자세에서 만나지 않음(결합은 아무것도 옮기지 않는다) |
+| `overlap` | 두 인스턴스의 충돌 도형이 파고듦, 또는 지면(z = 0) 아래로 내려감 |
+| `floating` | 결합이나 접촉으로 이어진 한 덩어리가 지면이나 지형 소품에 닿지 않음 |
+
+배치 규칙과 한계(숨기지 않는다):
+
+- 인스턴스의 도형은 부품 형상 레시피의 `add` 요소를 인스턴스의 파라미터와 월드 자세에 놓은 것이다(충돌 프록시가 복사하는 것과 같은 기본형, 빈 곳은 메운다). **형상 레시피가 없는 부품은 도형이 없어** `overlap`, `floating`으로 판단하지 않고, 도형 없는 인스턴스와 결합한 덩어리는 뜬 것으로 부르지 않는다. 통과가 아니라 모르는 것이다. 4륜차 예시(형상 없음)는 스냅 검사만 받는다.
+- 겹침은 `convex.separated`(질량 계산이 쓰는 같은 분리 평면 검사)다. 맞닿음은 겹침이 아니다. 기울어진 두 원기둥이 모서리끼리 거의 닿는 경우는 겹침으로 거부될 수 있다(거부이지 조용한 통과가 아니다).
+- 지형 소품은 월드 규약 그대로의 볼록 도형이다(경사로: `length` 진행 × `width` × 높이 `length*tan(incline)`인 쐐기, 턱: 상자, 둘 다 `yaw`로 돌림). 부품이 소품을 파고들면(턱 안, 경사면 아래) `overlap`(ref: 인스턴스와 `prop`)이고 받침이 아니다. 닿기만 하면 받침이다. 지면 높이를 가진 시작 자세(낙하 시나리오)는 J-02의 몫이라 이 검사에는 없고, 공중에 놓인 조립 전체는 `floating`이다.
+- **되돌리기와 다시 실행은 배치 검사를 다시 하지 않는다.** `History.undo/redo`(C-02b)는 `apply_command`만 부른다. 되돌리기는 이전에 받아들여진 상태로, 다시 실행은 받아들여진 명령으로 돌아가는 것이라서(선형 이력, 역명령은 계산된 바로 그 상태에 적용된다) 배치 규칙이 그 사이에 바뀌지 않는 한 같은 답이다. 이미 겹친 프로젝트를 고친 편집을 되돌리면 겹친 상태가 돌아오는데, 그 상태는 사용자가 가졌던 것이다("새로 만든 문제만 거부한다"의 같은 근거). 새 편집은 문을 지난다: `History.execute`가 `validate_command`를 부르므로 거부된 명령(`forbidden`, `overlap` ...)은 프로젝트도 이력도 바꾸지 못한다(`test_history_execute_*`).
+- 허용 오차 `PLACEMENT_TOLERANCE` = 1 µm는 저장된 double을 위한 수치 허용치이지 물리적 주장이 아니다.
+- **명령이 새로 만든 문제만 거부한다.** 이미 겹침이 있는 프로젝트(파일에서 연 것)도 다른 곳은 고칠 수 있다. 묶음은 구조(`apply_command`)를 단계마다, 배치는 **끝 상태**로 본다: `add_instance` 뒤 `add_joint`, 조립 전체의 이동이 중간 상태가 헐거워도 된다.
+- 스냅의 방향(쿼터니언)과 결합 축은 비교하지 않는다(B-04a, B-04b). 컴파일 오류는 X-01d, 지형 소품 편집은 W-05.
 
 ## 알려진 확장 (이 PR 범위 밖, 뒤 잎이 더한다)
 

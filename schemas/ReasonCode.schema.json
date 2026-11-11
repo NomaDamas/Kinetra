@@ -8,6 +8,10 @@
     "invalid_command",
     "invalid_project",
     "not_editable",
+    "forbidden",
+    "invalid_snap",
+    "overlap",
+    "floating",
     "nothing_to_undo",
     "nothing_to_redo"
   ],

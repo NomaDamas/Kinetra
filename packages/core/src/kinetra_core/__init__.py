@@ -132,12 +132,14 @@ from .protocol import (
 )
 from .provenance import BADGE_LABEL_KO, Badge, Provenance, Quantity, Source
 from .shape import Box, Cylinder, Shape, ShapeComponent, Sphere
+from .validator import PLACEMENT_TOLERANCE, check_placement, parse_command, validate_command
 from .world import PLANET_CONSTANT_NAMES, Incline, Placement, PropSize, RampProp, StepProp, TerrainProp, World
 
 __all__ = [
     "Accepted",
     "Applied",
     "BADGE_LABEL_KO",
+    "PLACEMENT_TOLERANCE",
     "BODIES_DIR",
     "BODY_IDS",
     "COORDINATE_FRAME",
@@ -289,6 +291,7 @@ __all__ = [
     "YieldStrength",
     "apply_changes",
     "apply_command",
+    "check_placement",
     "canonical_json",
     "changes_between",
     "check_world_references",
@@ -298,6 +301,8 @@ __all__ = [
     "load_bodies",
     "load_body",
     "load_material_catalog",
+    "parse_command",
+    "validate_command",
     "open_project",
     "parse_project",
     "project_file",
