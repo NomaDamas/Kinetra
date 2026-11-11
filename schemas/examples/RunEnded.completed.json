@@ -1,11 +1,11 @@
 {
   "type": "run_ended",
   "run_id": "fixture-run-1",
-  "last_tick": 128,
+  "last_tick": 130,
   "end": {
     "reason": "completed",
     "trajectory": {
-      "hash": "sha256:09b95d472f8b6a1365ea17eaf3e4384cbf35432e715a18a586b8d638166e17ea",
+      "hash": "sha256:c10174ad6504511aefe162b51fbbd5532f8438907fae023e30b24eafea9c1e9a",
       "platform": {
         "os": {
           "kind": "macos",

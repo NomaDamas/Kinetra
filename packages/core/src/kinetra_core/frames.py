@@ -44,13 +44,12 @@ from __future__ import annotations
 
 import json
 import math
-import re
 import struct
 from collections.abc import Sequence
 from enum import StrEnum
 from typing import Annotated, Literal, Union
 
-from pydantic import BaseModel, ConfigDict, Field, TypeAdapter, ValidationError, field_validator, model_validator
+from pydantic import BaseModel, ConfigDict, Field, TypeAdapter, ValidationError, model_validator
 
 from .conventions import ID_PATTERN, NAME_PATTERN, Unit
 from .designspec import WorldPosition
@@ -68,8 +67,8 @@ _NonNegative = Annotated[float, Field(strict=True, allow_inf_nan=False, ge=0)]
 
 MAX_TICK = 2**32 - 1
 """Largest tick and body count: the binary header stores both as an unsigned 32-bit integer."""
-MAX_SEED = 2**53
-"""Largest seed: the canonical JSON form (C-03) holds integers up to this exactly."""
+MAX_SEED = 2**53 - 1
+"""Largest seed: `Number.MAX_SAFE_INTEGER`, the largest integer a JavaScript client reads exactly from JSON."""
 
 _Tick = Annotated[int, Field(strict=True, ge=0, le=MAX_TICK)]
 _Count = Annotated[int, Field(strict=True, ge=1, le=MAX_TICK)]
@@ -157,20 +156,22 @@ SolverValue = Union[Number, bool, str]
 """One solver setting's value."""
 
 
+def _solver_names_schema(schema: dict) -> None:
+    """pydantic writes a constrained dict key as `patternProperties`, which lets a non-matching key through in JSON
+    Schema. Rewrite it as `propertyNames` (same pattern, from the same `Field`) and `additionalProperties` (the value
+    schema), so the schema refuses exactly the names the model refuses."""
+    ((pattern, value),) = schema.pop("patternProperties").items()
+    schema["propertyNames"] = {"pattern": pattern}
+    schema["additionalProperties"] = value
+
+
 class ComputeTag(_Strict):
-    """⑦ The settings the run actually used: integrator, `timestep_s` [s] and the solver's settings by name."""
+    """⑦ The settings the run actually used: integrator, `timestep_s` [s] and the solver's settings by name
+    (`NAME_PATTERN`)."""
 
     integrator: _Text
     timestep_s: _Positive
-    solver: dict[str, SolverValue]
-
-    @field_validator("solver")
-    @classmethod
-    def _names(cls, v: dict[str, SolverValue]) -> dict[str, SolverValue]:
-        bad = [k for k in v if not re.fullmatch(NAME_PATTERN, k)]
-        if bad:
-            raise ValueError(f"solver setting names must match {NAME_PATTERN}: {bad}")
-        return v
+    solver: Annotated[dict[_Name, SolverValue], Field(json_schema_extra=_solver_names_schema)]
 
 
 class ThreadTag(_Strict):
@@ -205,7 +206,8 @@ class RunKind(StrEnum):
 
 class BodyRef(_Obj):
     """A rigid body of the run and the project instances it consists of (welded instances move as one body). `id` is
-    the body's stable id (G3) and the id every pose, contact and break event uses."""
+    the body's stable id (G3): a pose's `body`, a contact's `body` and a body `other` name it. A break names a joint
+    (`Joint.id` of the project), not a body."""
 
     id: _Id
     instances: Annotated[tuple[_Id, ...], Field(min_length=1)]
@@ -344,16 +346,17 @@ class Frame(_Obj):
         return self
 
 
-def check_frame(run: RunStarted, frame: Frame) -> None:
+def check_frame(run: RunStarted, frame: Frame, *, final: bool = False) -> None:
     """Raise `ValueError` unless `frame` is a full frame of `run`: the run's id, exactly the run's bodies, the events
     only name the run's bodies, `sim_time_s == tick * timestep_s` (within float64 rounding), and the tick is a multiple
-    of `frame_every_ticks`. A client or a test that holds both messages can call this; `Frame` alone cannot know."""
+    of `frame_every_ticks` unless it is the `final` frame (the end tick, which may lie between two intervals). A client
+    or a test that holds both messages can call this; `Frame` alone cannot know."""
     if frame.run_id != run.run_id:
         raise ValueError(f"frame of run {frame.run_id!r}, the run is {run.run_id!r}")
     ids = {b.id for b in run.bodies}
     if {p.body for p in frame.poses} != ids:
         raise ValueError("a frame carries exactly the bodies of its run (S1: full frames)")
-    if frame.tick % run.frame_every_ticks:
+    if not final and frame.tick % run.frame_every_ticks:
         raise ValueError(f"tick {frame.tick} is not a multiple of frame_every_ticks {run.frame_every_ticks}")
     if not math.isclose(frame.sim_time_s, frame.tick * run.timestep_s, rel_tol=1e-9, abs_tol=1e-12):
         raise ValueError(f"sim_time_s {frame.sim_time_s} is not tick {frame.tick} x timestep_s {run.timestep_s}")
@@ -402,12 +405,41 @@ RunEnd = Annotated[Union[RunCompleted, RunStopped, RunFailed], Field(discriminat
 
 
 class RunEnded(_Obj):
-    """The run is over after `last_tick`; `end` says how and carries the trajectory evidence."""
+    """The run is over. `last_tick` is the tick of the run's last `frame`: the core always sends a frame at the end
+    tick before `run_ended`, even when the end falls between two frame intervals, so the final poses and every event
+    after the previous frame reach the client (`check_run`). `end` says how the run ended and carries the trajectory
+    evidence."""
 
     type: Literal["run_ended"]
     run_id: _RunId
     last_tick: _Tick
     end: RunEnd
+
+
+def check_run(run: RunStarted, frames: Sequence[Frame], ended: RunEnded) -> None:
+    """Raise `ValueError` unless `frames` and `ended` are a whole stream of `run` (a recording, or what a client got):
+    at least one frame; ticks strictly increasing; every frame a full frame of the run (`check_frame`), on the
+    `frame_every_ticks` grid except the last; every event in the first frame after it (`previous.tick < event.tick`);
+    the last frame at `ended.last_tick`; the trajectory evidence under the run's platform tag. Frames between may be
+    missing (a sender that skips a frame moves its events to the next one); the last one may not."""
+    if ended.run_id != run.run_id:
+        raise ValueError(f"run_ended of run {ended.run_id!r}, the run is {run.run_id!r}")
+    if not frames:
+        raise ValueError("a run sends at least one frame: the one at its end tick")
+    previous = -1
+    for i, frame in enumerate(frames):
+        check_frame(run, frame, final=i == len(frames) - 1)
+        if frame.tick <= previous:
+            raise ValueError(f"frame ticks must increase: {frame.tick} after {previous}")
+        early = [e for e in frame.events if e.tick <= previous]
+        if early:
+            raise ValueError(f"an event of tick {early[0].tick} belongs to an earlier frame than tick {frame.tick}")
+        previous = frame.tick
+    if ended.last_tick != frames[-1].tick:
+        raise ValueError(f"last_tick {ended.last_tick} is not the tick of the last frame ({frames[-1].tick})")
+    trajectory = getattr(ended.end, "trajectory", None)
+    if trajectory is not None and trajectory.platform != run.platform:
+        raise ValueError("the trajectory hash is under another platform tag than the run's")
 
 
 # --- binary frame ---------------------------------------------------------------------------------------------

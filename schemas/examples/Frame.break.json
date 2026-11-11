@@ -1,8 +1,8 @@
 {
   "type": "frame",
   "run_id": "fixture-run-1",
-  "tick": 120,
-  "sim_time_s": 0.24,
+  "tick": 130,
+  "sim_time_s": 0.26,
   "poses": [
     {
       "body": "chassis-1",
@@ -78,7 +78,7 @@
   "events": [
     {
       "kind": "break",
-      "tick": 120,
+      "tick": 129,
       "joint": "axle-fl",
       "load": {
         "value": 150.0,

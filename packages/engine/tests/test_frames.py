@@ -27,6 +27,7 @@ from kinetra_core import (
     ServerMessage,
     binary_frame_size,
     check_frame,
+    check_run,
     decode_frame,
     encode_frame,
 )
@@ -87,16 +88,71 @@ def test_every_recorded_message_validates_against_the_schema_and_the_model():
         assert SERVER.validate_python(m).type == m["type"]
 
 
+def stream():
+    messages = recorded()
+    return (
+        RunStarted.model_validate(messages[0]),
+        [Frame.model_validate(m) for m in messages[1:-1]],
+        RunEnded.model_validate(messages[-1]),
+    )
+
+
 def test_the_recorded_run_is_internally_consistent():
-    run = RunStarted.model_validate(recorded()[0])
-    frames = [Frame.model_validate(m) for m in recorded()[1:-1]]
-    for f in frames:
-        check_frame(run, f)
-    assert [f.tick for f in frames] == list(range(0, frames[-1].tick + 1, run.frame_every_ticks))
+    run, frames, ended = stream()
+    check_run(run, frames, ended)
+    grid = [f.tick for f in frames[:-1]]
+    assert grid == list(range(0, grid[-1] + 1, run.frame_every_ticks))
     kinds = {e.kind for f in frames for e in f.events}
     assert kinds == {"contact", "condition_met", "break"}  # the three event kinds of the DoD
-    ended = RunEnded.model_validate(recorded()[-1])
     assert ended.last_tick == frames[-1].tick and ended.end.trajectory.platform == run.platform
+
+
+def test_a_run_that_ends_between_intervals_sends_a_last_frame_with_the_rest_of_its_events():
+    """The fixture ends at tick 130, between the frames of 128 and 136: the core sends a frame at 130, off the grid,
+    and the break of tick 129 is in it. Without that frame the client would never see the break or the end pose."""
+    run, frames, ended = stream()
+    last = frames[-1]
+    assert last.tick % run.frame_every_ticks and last.tick == ended.last_tick
+    assert [e.kind for e in last.events] == ["break"] and frames[-2].tick < last.events[0].tick <= last.tick
+    with pytest.raises(ValueError, match="multiple"):
+        check_frame(run, last)  # off the grid: only the final frame may be
+    check_frame(run, last, final=True)
+
+
+@pytest.mark.parametrize(
+    ("change", "message"),
+    [
+        (lambda f, e: (f[:-1], e), "last_tick"),  # the final frame was not sent
+        (lambda f, e: (f, e.model_copy(update={"last_tick": e.last_tick + 1})), "last_tick"),
+        (lambda f, e: ([], e), "at least one frame"),
+        (lambda f, e: (f[:3] + [f[5]] + f[3:5] + f[6:], e), "increase"),
+        (lambda f, e: (f, e.model_copy(update={"run_id": "other"})), "run_ended of run"),
+    ],
+)
+def test_check_run_refuses_a_stream_without_its_end_frame_or_out_of_order(change, message):
+    run, frames, ended = stream()
+    frames, ended = change(frames, ended)
+    with pytest.raises(ValueError, match=message):
+        check_run(run, frames, ended)
+
+
+def test_check_run_accepts_a_skipped_frame_whose_events_move_to_the_next():
+    """A sender may skip a frame under load (frames are full states); the skipped frame's events go in the next one."""
+    run, frames, ended = stream()
+    contact = next(i for i, f in enumerate(frames) if any(e.kind == "contact" for e in f.events))
+    moved = frames[contact + 1].model_copy(update={"events": frames[contact].events + frames[contact + 1].events})
+    check_run(run, frames[:contact] + [moved] + frames[contact + 2 :], ended)
+
+
+def test_check_run_refuses_an_event_sent_twice_or_a_middle_frame_off_the_grid():
+    run, frames, ended = stream()
+    contact = next(i for i, f in enumerate(frames) if any(e.kind == "contact" for e in f.events))
+    again = frames[contact + 1].model_copy(update={"events": frames[contact].events})
+    with pytest.raises(ValueError, match="earlier frame"):
+        check_run(run, frames[: contact + 1] + [again] + frames[contact + 2 :], ended)
+    off = frames[2].model_copy(update={"tick": frames[2].tick + 1, "sim_time_s": (frames[2].tick + 1) * run.timestep_s})
+    with pytest.raises(ValueError, match="multiple"):
+        check_run(run, frames[:2] + [off] + frames[3:], ended)
 
 
 def test_an_event_is_in_the_frame_that_follows_it_and_never_in_two():
@@ -270,6 +326,41 @@ def test_the_time_step_is_said_once_in_effect():
     data["timestep_s"] = 0.004
     with pytest.raises(ValidationError, match="timestep_s"):
         RunStarted.model_validate(data)
+
+
+@pytest.mark.parametrize(
+    ("name", "ok"),
+    [("iterations", True), ("cone_type", True), ("Bad-Key", False), ("1st", False), ("", False), ("a" * 65, False)],
+)
+def test_a_solver_setting_name_follows_one_rule_in_schema_and_model(name, ok):
+    data = started()
+    data["platform"]["compute"]["solver"] = {name: 1}
+    assert schema_ok("RunStarted", data) is ok
+    assert schema_ok("ComputeTag", data["platform"]["compute"]) is ok
+    if ok:
+        RunStarted.model_validate(data)
+    else:
+        with pytest.raises(ValidationError):
+            RunStarted.model_validate(data)
+
+
+def test_the_solver_name_pattern_is_the_conventions_name_pattern():
+    schema = json.loads((SCHEMAS / "ComputeTag.schema.json").read_text(encoding="utf-8"))
+    assert schema["properties"]["solver"]["propertyNames"] == {"pattern": kinetra_core.conventions.NAME_PATTERN}
+    assert "patternProperties" not in schema["properties"]["solver"]
+
+
+@pytest.mark.parametrize(("seed", "ok"), [(0, True), (2**53 - 1, True), (2**53, False), (-1, False)])
+def test_the_seed_fits_a_javascript_safe_integer(seed, ok):
+    assert kinetra_core.MAX_SEED == 2**53 - 1  # Number.MAX_SAFE_INTEGER
+    data = started()
+    data["seed"] = seed
+    assert schema_ok("RunStarted", data) is ok
+    if ok:
+        assert RunStarted.model_validate(data).seed == seed
+    else:
+        with pytest.raises(ValidationError):
+            RunStarted.model_validate(data)
 
 
 def ended_with(**end) -> dict:
@@ -448,7 +539,8 @@ def binary_context():
 
 def test_the_binary_frame_round_trips_to_float32_and_has_the_stated_size():
     run, ids = binary_context()
-    for message in recorded()[1:-1]:
+    messages = recorded()[1:-1]
+    for i, message in enumerate(messages):
         frame = Frame.model_validate(message)
         data = encode_frame(frame, ids)
         assert len(data) == BINARY_HEADER_BYTES + BINARY_BODY_BYTES * len(ids) + len(_events_json(frame))
@@ -459,7 +551,7 @@ def test_the_binary_frame_round_trips_to_float32_and_has_the_stated_size():
             assert a.body == b.body
             assert a.position.z == pytest.approx(b.position.z, abs=1e-6)
             assert a.orientation.w == pytest.approx(b.orientation.w, abs=1e-6)
-        check_frame(run, back)
+        check_frame(run, back, final=i == len(messages) - 1)
 
 
 def _events_json(frame: Frame) -> bytes:

@@ -22,7 +22,7 @@
   "$defs": {
     "ComputeTag": {
       "additionalProperties": false,
-      "description": "⑦ The settings the run actually used: integrator, `timestep_s` [s] and the solver's settings by name.",
+      "description": "⑦ The settings the run actually used: integrator, `timestep_s` [s] and the solver's settings by name\n(`NAME_PATTERN`).",
       "properties": {
         "integrator": {
           "maxLength": 200,
@@ -48,6 +48,9 @@
                 "type": "string"
               }
             ]
+          },
+          "propertyNames": {
+            "pattern": "^[a-z][a-z0-9_]{0,63}$"
           },
           "title": "Solver",
           "type": "object"

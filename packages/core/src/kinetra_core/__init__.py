@@ -115,6 +115,7 @@ from .frames import (
     TrajectoryEvidence,
     binary_frame_size,
     check_frame,
+    check_run,
     decode_frame,
     encode_frame,
 )
@@ -412,4 +413,5 @@ __all__ = [
     "RunStopped",
     "WasmEngine",
     "WheelEngine",
+    "check_run",
 ]

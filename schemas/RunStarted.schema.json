@@ -42,7 +42,7 @@
       "type": "string"
     },
     "seed": {
-      "maximum": 9007199254740992,
+      "maximum": 9007199254740991,
       "minimum": 0,
       "title": "Seed",
       "type": "integer"
@@ -98,7 +98,7 @@
   "type": "object",
   "$defs": {
     "BodyRef": {
-      "description": "A rigid body of the run and the project instances it consists of (welded instances move as one body). `id` is\nthe body's stable id (G3) and the id every pose, contact and break event uses.",
+      "description": "A rigid body of the run and the project instances it consists of (welded instances move as one body). `id` is\nthe body's stable id (G3): a pose's `body`, a contact's `body` and a body `other` name it. A break names a joint\n(`Joint.id` of the project), not a body.",
       "properties": {
         "id": {
           "pattern": "^[a-z][a-z0-9_-]{0,63}$",
@@ -124,7 +124,7 @@
     },
     "ComputeTag": {
       "additionalProperties": false,
-      "description": "⑦ The settings the run actually used: integrator, `timestep_s` [s] and the solver's settings by name.",
+      "description": "⑦ The settings the run actually used: integrator, `timestep_s` [s] and the solver's settings by name\n(`NAME_PATTERN`).",
       "properties": {
         "integrator": {
           "maxLength": 200,
@@ -150,6 +150,9 @@
                 "type": "string"
               }
             ]
+          },
+          "propertyNames": {
+            "pattern": "^[a-z][a-z0-9_]{0,63}$"
           },
           "title": "Solver",
           "type": "object"

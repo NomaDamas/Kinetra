@@ -699,7 +699,7 @@
       "type": "object"
     },
     "BodyRef": {
-      "description": "A rigid body of the run and the project instances it consists of (welded instances move as one body). `id` is\nthe body's stable id (G3) and the id every pose, contact and break event uses.",
+      "description": "A rigid body of the run and the project instances it consists of (welded instances move as one body). `id` is\nthe body's stable id (G3): a pose's `body`, a contact's `body` and a body `other` name it. A break names a joint\n(`Joint.id` of the project), not a body.",
       "properties": {
         "id": {
           "pattern": "^[a-z][a-z0-9_-]{0,63}$",
@@ -995,7 +995,7 @@
     },
     "ComputeTag": {
       "additionalProperties": false,
-      "description": "⑦ The settings the run actually used: integrator, `timestep_s` [s] and the solver's settings by name.",
+      "description": "⑦ The settings the run actually used: integrator, `timestep_s` [s] and the solver's settings by name\n(`NAME_PATTERN`).",
       "properties": {
         "integrator": {
           "maxLength": 200,
@@ -1021,6 +1021,9 @@
                 "type": "string"
               }
             ]
+          },
+          "propertyNames": {
+            "pattern": "^[a-z][a-z0-9_]{0,63}$"
           },
           "title": "Solver",
           "type": "object"
@@ -3016,7 +3019,7 @@
       "type": "object"
     },
     "RunEnded": {
-      "description": "The run is over after `last_tick`; `end` says how and carries the trajectory evidence.",
+      "description": "The run is over. `last_tick` is the tick of the run's last `frame`: the core always sends a frame at the end\ntick before `run_ended`, even when the end falls between two frame intervals, so the final poses and every event\nafter the previous frame reach the client (`check_run`). `end` says how the run ended and carries the trajectory\nevidence.",
       "properties": {
         "type": {
           "const": "run_ended",
@@ -3134,7 +3137,7 @@
           "type": "string"
         },
         "seed": {
-          "maximum": 9007199254740992,
+          "maximum": 9007199254740991,
           "minimum": 0,
           "title": "Seed",
           "type": "integer"

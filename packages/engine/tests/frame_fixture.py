@@ -9,7 +9,8 @@ It has the shape of what X-02 will record, so the schemas, the codec and the cli
 exists. The numbers are fixture values, not simulation results: the platform tag names the generator, the contact has no
 force (an engine reports it), the `break` event is an example of the form (its load and threshold are made up and the
 example car's joints have no threshold), and the trajectory hash is the fixture's own: `sha256` over the binary
-frames in order (X-02d defines the real one).
+frames in order (X-02d defines the real one). The run ends at tick 130, between two frame intervals (every 8 ticks): the last
+frame is at 130 and alone carries the `break` of tick 129, as `client-adapter.md` 3.3 requires of the core.
 
 Files:
     run.jsonl   one JSON message per line (keys in model order, so a quaternion reads x, y, z, w): `run_started`, every `frame`, `run_ended`
@@ -31,7 +32,7 @@ OUT = HERE / "fixtures" / "frames"
 G = 9.80665  # m/s^2, data/bodies/earth.json
 TIMESTEP = 0.002
 FRAME_EVERY = 8
-LAST_TICK = 128
+LAST_TICK = 130  # not a multiple of FRAME_EVERY: the run ends between two intervals and still sends a frame there
 DROP = 0.2
 REST_Z = 0.05  # the example car's instance z
 
@@ -54,7 +55,8 @@ WHEEL_Q = {"x": S, "y": 0.0, "z": 0.0, "w": S}
 IDENTITY = {"x": 0.0, "y": 0.0, "z": 0.0, "w": 1.0}
 WHEELS = [b for b in BODIES if b.startswith("wheel")]
 CONTACT_TICK = next(t for t in range(LAST_TICK + 1) if REST_Z + DROP - G * (t * TIMESTEP) ** 2 / 2 <= REST_Z)
-BREAK_TICK = 120
+BREAK_TICK = 129  # after the last regular frame (128): only the final frame at LAST_TICK carries it
+TICKS = [*range(0, LAST_TICK + 1, FRAME_EVERY), *([LAST_TICK] if LAST_TICK % FRAME_EVERY else [])]
 
 
 def run_started() -> dict:
@@ -91,8 +93,8 @@ def run_started() -> dict:
 
 
 def frame(tick: int) -> dict:
+    previous = TICKS[TICKS.index(tick) - 1] if tick else -1
     z = max(REST_Z, REST_Z + DROP - G * (tick * TIMESTEP) ** 2 / 2)
-    previous = tick - FRAME_EVERY
     events = []
     if previous < CONTACT_TICK <= tick:
         events += [{"kind": "contact", "tick": CONTACT_TICK, "phase": "begin", "body": w, "other": {"kind": "ground"}} for w in WHEELS]
@@ -127,7 +129,7 @@ def frame(tick: int) -> dict:
 def build() -> dict[str, bytes]:
     started = RunStarted.model_validate(run_started())
     ids = [b.id for b in started.bodies]
-    frames = [Frame.model_validate(frame(t)) for t in range(0, LAST_TICK + 1, FRAME_EVERY)]
+    frames = [Frame.model_validate(frame(t)) for t in TICKS]
     digest = hashlib.sha256(b"".join(encode_frame(f, ids) for f in frames)).hexdigest()
     ended = RunEnded.model_validate(
         {

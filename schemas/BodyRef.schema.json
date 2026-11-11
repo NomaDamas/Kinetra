@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "description": "A rigid body of the run and the project instances it consists of (welded instances move as one body). `id` is\nthe body's stable id (G3) and the id every pose, contact and break event uses.",
+  "description": "A rigid body of the run and the project instances it consists of (welded instances move as one body). `id` is\nthe body's stable id (G3): a pose's `body`, a contact's `body` and a body `other` name it. A break names a joint\n(`Joint.id` of the project), not a body.",
   "properties": {
     "id": {
       "pattern": "^[a-z][a-z0-9_-]{0,63}$",

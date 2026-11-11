@@ -171,7 +171,8 @@ export interface BodyPose {
 
 /**
  * A rigid body of the run and the project instances it consists of (welded instances move as one body). `id` is
- * the body's stable id (G3) and the id every pose, contact and break event uses.
+ * the body's stable id (G3): a pose's `body`, a contact's `body` and a body `other` name it. A break names a joint
+ * (`Joint.id` of the project), not a body.
  */
 export interface BodyRef {
   id: string;
@@ -277,7 +278,10 @@ export interface ComponentContribution {
   orientation: Quaternion;
 }
 
-/** ⑦ The settings the run actually used: integrator, `timestep_s` [s] and the solver's settings by name. */
+/**
+ * ⑦ The settings the run actually used: integrator, `timestep_s` [s] and the solver's settings by name
+ * (`NAME_PATTERN`).
+ */
 export interface ComputeTag {
   integrator: string;
   timestep_s: number;
@@ -1060,7 +1064,12 @@ export interface RunCompleted {
   trajectory: TrajectoryEvidence;
 }
 
-/** The run is over after `last_tick`; `end` says how and carries the trajectory evidence. */
+/**
+ * The run is over. `last_tick` is the tick of the run's last `frame`: the core always sends a frame at the end
+ * tick before `run_ended`, even when the end falls between two frame intervals, so the final poses and every event
+ * after the previous frame reach the client (`check_run`). `end` says how the run ended and carries the trajectory
+ * evidence.
+ */
 export interface RunEnded {
   type: "run_ended";
   run_id: string;
