@@ -234,20 +234,33 @@ def _flush_to_device(fd: int) -> None:
     os.fsync(fd)
 
 
+def _default_mode() -> int:
+    """0666 minus the umask: what `open(path, "w")` would give a new file."""
+    umask = os.umask(0)
+    os.umask(umask)
+    return 0o666 & ~umask
+
+
 def save_project(project: Project, path: str | os.PathLike[str]) -> ProjectFile:
     """Write the project file to `path`, replacing it whole or not at all. Returns what was written."""
     target = Path(os.path.realpath(path))
     file = project_file(project)
     data = _dumps(file.model_dump(mode="json"))
     tmp = target.with_name(f".kinetra-{secrets.token_hex(8)}.tmp")
-    fd = os.open(tmp, os.O_WRONLY | os.O_CREAT | os.O_EXCL | getattr(os, "O_BINARY", 0), 0o666)
+    # Created owner-only, so the data is never readable by more than the target allows at any moment; the target's
+    # own permission bits (wider or equal) are applied only after the content is written, and a new file gets the
+    # usual default (0666 minus the umask) the same way.
+    fd = os.open(tmp, os.O_WRONLY | os.O_CREAT | os.O_EXCL | getattr(os, "O_BINARY", 0), 0o600)
     try:
         with os.fdopen(fd, "wb") as out:
             out.write(data)
             out.flush()
             _flush_to_device(out.fileno())
-        with contextlib.suppress(FileNotFoundError):
-            os.chmod(tmp, stat.S_IMODE(target.stat().st_mode))
+            try:
+                mode = stat.S_IMODE(target.stat().st_mode)
+            except FileNotFoundError:
+                mode = _default_mode()
+            os.chmod(tmp, mode)
         os.replace(tmp, target)
     except BaseException:
         tmp.unlink(missing_ok=True)

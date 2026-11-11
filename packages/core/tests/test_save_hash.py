@@ -888,3 +888,44 @@ def test_save_open_refuses_json_nested_too_deeply_as_not_json():
         assert msg
     nested = '{"format":"kinetra-project","version":1,"project":' + "[" * 200_000 + "]" * 200_000 + "}"
     refused(nested, ProjectFileErrorCode.NOT_JSON)
+
+
+@pytest.mark.skipif(os.name != "posix", reason="permission bits")
+def test_save_the_temporary_file_is_never_more_permissive_than_the_target(car, tmp_path, monkeypatch):
+    """Check the mode of the temporary file right after it is created and at every `chmod`, for a 0600 target."""
+    path = tmp_path / "p.kinetra.json"
+    save_project(project_of({"world": {"planet": "earth"}}), path)
+    os.chmod(path, 0o600)
+    modes = []
+    real_open, real_chmod = os.open, os.chmod
+
+    def spy_open(p, flags, mode=0o777, **kw):
+        fd = real_open(p, flags, mode, **kw)
+        if str(p).endswith(".tmp"):
+            modes.append(("created", os.fstat(fd).st_mode & 0o777))
+        return fd
+
+    def spy_chmod(p, mode, **kw):
+        modes.append(("chmod", mode & 0o777))
+        return real_chmod(p, mode, **kw)
+
+    monkeypatch.setattr(os, "open", spy_open)
+    monkeypatch.setattr(os, "chmod", spy_chmod)
+    old = os.umask(0)  # the loosest umask: only the explicit mode can keep the temporary file private
+    try:
+        save_project(car, path)
+    finally:
+        os.umask(old)
+    assert modes and modes[0] == ("created", 0o600)
+    assert all(m & ~0o600 == 0 for _, m in modes)
+    assert (path.stat().st_mode & 0o777) == 0o600
+
+
+@pytest.mark.skipif(os.name != "posix", reason="permission bits")
+def test_save_a_new_file_gets_the_default_mode_of_the_umask(car, tmp_path):
+    old = os.umask(0o027)
+    try:
+        save_project(car, tmp_path / "new.kinetra.json")
+    finally:
+        os.umask(old)
+    assert ((tmp_path / "new.kinetra.json").stat().st_mode & 0o777) == 0o640
