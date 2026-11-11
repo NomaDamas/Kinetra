@@ -22,7 +22,7 @@ What is refused beyond `apply_command`:
 | `forbidden` | the payload names a planet constant or a verdict; an assumption keyed like a planet constant; a material definition that uses the id of a catalog material (`load_material_catalog`) but is not that material exactly |
 | `unknown_id` (ref kind `planet`) | `world.planet` is not a planet of `data/bodies` (W-01). Material references of terrain props are checked by `Project` itself |
 | `invalid_snap` | a joint whose two snap points do not accept each other's `kind`, or do not coincide in the world |
-| `overlap` | two instances whose collision shapes interpenetrate, or one that goes below the ground |
+| `overlap` | two instances whose collision shapes interpenetrate, or one that goes below the ground or into a terrain prop |
 | `floating` | a group of instances (joined or touching) that touches neither the ground nor a terrain prop |
 
 Placement rules (frame and units are `conventions.py`; ground is the plane z = 0, `world.py`):
@@ -35,13 +35,13 @@ Placement rules (frame and units are `conventions.py`; ground is the plane z = 0
   b.accepts`) and must be at the same world point (the joint does not move anything, `project-model.md`). The
   orientation of the two snap frames is not compared: which frames may mate is B-04a/B-04b's rule.
 - **Overlap**: separation is `convex.separated` (the test the mass computation uses for its disjoint sum). Touching
-  is fine; penetration deeper than the tolerance is not. The ground and terrain props are not obstacles for parts
-  other than the ground plane itself: a ramp or step is only a support (below).
+  is fine; penetration deeper than the tolerance is not. That holds against the ground plane (z = 0), against other
+  instances and against terrain props: a part inside a step or under a ramp's slope overlaps it (`overlap`, refs the
+  instance and the `prop`), it is not supported by it.
 - **Floating**: instances are grouped by joints and by contact (gap within the tolerance). A group is supported when
   one of its geometries touches the ground (lowest point within the tolerance of z = 0) or a terrain prop. A ramp
-  or step is represented by its bounding box (ramp: `length x width x rise`, rise = `length * tan(incline)`), which
-  is a superset of the real prop, so a part hovering just beside a ramp's slope can pass: the check errs towards
-  accepting. A project has no launch height yet (the scenario is J-02's), so a whole assembly in the air is floating.
+  is a wedge (a triangular prism: `length` run, `width`, rise = `length * tan(incline)`) and a step a box, both exact
+  to the `world.py` description, turned by `yaw`. A project has no launch height yet (the scenario is J-02's), so a whole assembly in the air is floating.
 - **Tolerance** `PLACEMENT_TOLERANCE` is a numerical tolerance for stored doubles, not a physical claim: a client
   snaps before it sends, so a pose that meets within 1 micrometre is a pose that was meant to meet.
 - **Only what the command introduces is refused.** A project that already has an overlap (opened from a file, or an
@@ -227,20 +227,21 @@ def _instance_bodies(part: PartDef, inst: Instance) -> list[cx.Body]:
     return out
 
 
-def _prop_bodies(project: Project) -> list[cx.Body]:
-    """Terrain props as bounding boxes (see the module docstring)."""
+def _prop_bodies(project: Project) -> list[tuple[str, cx.Body]]:
+    """Terrain props as convex bodies (`world.py` frame): a ramp is a wedge rising along its local +x from z = 0, a
+    step a box `height` tall. Exact for both, so a part lying on a ramp's slope touches it and one inside it overlaps."""
     out = []
     for prop in project.world.terrain_props:
-        rise = prop.length.value * math.tan(prop.incline.value) if isinstance(prop, RampProp) else prop.height.value
         c, s = math.cos(prop.placement.yaw), math.sin(prop.placement.yaw)
-        out.append(
-            cx.Body(
-                "box",
-                (prop.placement.x, prop.placement.y, rise / 2),
-                ((c, s, 0.0), (-s, c, 0.0), (0.0, 0.0, 1.0)),
-                (prop.length.value / 2, prop.width.value / 2, rise / 2),
-            )
-        )
+        axes = ((c, s, 0.0), (-s, c, 0.0), (0.0, 0.0, 1.0))
+        x, y = prop.placement.x, prop.placement.y
+        if isinstance(prop, RampProp):
+            rise = prop.length.value * math.tan(prop.incline.value)
+            body = cx.Body("wedge", (x, y, 0.0), axes, (prop.length.value / 2, prop.width.value / 2, rise))
+        else:
+            h = prop.height.value
+            body = cx.Body("box", (x, y, h / 2), axes, (prop.length.value / 2, prop.width.value / 2, h / 2))
+        out.append((prop.id, body))
     return out
 
 
@@ -276,7 +277,7 @@ def _snap_findings(project: Project, tol: float) -> list[_Finding]:
             Ref(kind=RefKind.SNAP_POINT, id=f"{ra.instance}/{ra.snap_point}"),
             Ref(kind=RefKind.SNAP_POINT, id=f"{rb.instance}/{rb.snap_point}"),
         )
-        key = frozenset({(ReasonCode.INVALID_SNAP, joint.id)})
+        key = frozenset({("snap", joint.id)})
         if sb.kind not in sa.accepts or sa.kind not in sb.accepts:
             out.append(
                 (
@@ -324,7 +325,7 @@ def _body_findings(project: Project, tol: float) -> list[_Finding]:
         if z_min[inst.id] < -tol:
             out.append(
                 (
-                    frozenset({(ReasonCode.OVERLAP, inst.id, "ground")}),
+                    frozenset({("ground", inst.id)}),
                     Reason(
                         code=ReasonCode.OVERLAP,
                         message=f"instance {inst.id!r} goes {-z_min[inst.id]:.6g} m below the ground (z = 0)",
@@ -356,7 +357,7 @@ def _body_findings(project: Project, tol: float) -> list[_Finding]:
             if overlap:
                 out.append(
                     (
-                        frozenset({(ReasonCode.OVERLAP, *sorted((a.id, b.id)))}),
+                        frozenset({("pair", *sorted((a.id, b.id)))}),
                         Reason(
                             code=ReasonCode.OVERLAP,
                             message=(
@@ -382,17 +383,39 @@ def _body_findings(project: Project, tol: float) -> list[_Finding]:
 
     props = _prop_bodies(project)
     supported = {find(i) for i in unknown_partner}
+    penetrating: set[str] = set()  # reported as `overlap` already: not also called floating
     for inst in shaped:
-        if z_min[inst.id] <= tol or any(_touch(b, p, tol) for b in bodies[inst.id] for p in props):
+        on_prop = False
+        for prop_id, prop in props:
+            hit = {"overlap": False, "touch": False}
+            for body in bodies[inst.id]:
+                if not cx.separated(body, prop, tol):
+                    hit["overlap"] = True
+                elif _touch(body, prop, tol):
+                    hit["touch"] = True
+            if hit["overlap"]:
+                penetrating.add(find(inst.id))
+                out.append(
+                    (
+                        frozenset({("prop", inst.id, prop_id)}),
+                        Reason(
+                            code=ReasonCode.OVERLAP,
+                            message=f"instance {inst.id!r} penetrates terrain prop {prop_id!r} by more than {tol:g} m",
+                            ids=(Ref(kind=RefKind.INSTANCE, id=inst.id), Ref(kind=RefKind.PROP, id=prop_id)),
+                        ),
+                    )
+                )
+            on_prop = on_prop or hit["touch"]
+        if z_min[inst.id] <= tol or on_prop:
             supported.add(find(inst.id))
     groups: dict[str, list[str]] = {}
     for inst in shaped:
         groups.setdefault(find(inst.id), []).append(inst.id)
     for root, members in groups.items():
-        if root not in supported:
+        if root not in supported and root not in penetrating:
             out.append(
                 (
-                    frozenset((ReasonCode.FLOATING, m) for m in members),
+                    frozenset(("floating", m) for m in members),
                     Reason(
                         code=ReasonCode.FLOATING,
                         message=(
@@ -417,7 +440,7 @@ def _world_findings(project: Project) -> list[_Finding]:
             refs.append(Ref(kind=RefKind.PLANET, id=project.world.planet))
         return [
             (
-                frozenset({(ReasonCode.UNKNOWN_ID, "world", project.world.planet)}),
+                frozenset({("planet", project.world.planet)}),
                 Reason(code=ReasonCode.UNKNOWN_ID, message=str(e), ids=tuple(refs)),
             )
         ]

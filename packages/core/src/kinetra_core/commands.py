@@ -91,6 +91,8 @@ class ReasonCode(StrEnum):
     INVALID_SNAP = "invalid_snap"  # C-02c: a joint whose snap points do not accept each other or do not meet
     OVERLAP = "overlap"  # C-02c: interpenetrating parts, or a part below the ground
     FLOATING = "floating"  # C-02c: nothing connects the part to the ground
+    NOTHING_TO_UNDO = "nothing_to_undo"
+    NOTHING_TO_REDO = "nothing_to_redo"
 
 
 class Reason(BaseModel):

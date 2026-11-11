@@ -1,4 +1,4 @@
-# Project 모델과 명령: 단위·좌표·값 배지, 재료·부품·DesignSpec·World·가정표, Command (C-01a, C-01b, C-01c, C-01d, C-02a)
+# Project 모델과 명령: 단위·좌표·값 배지, 재료·부품·DesignSpec·World·가정표, Command, 되돌리기와 이력 (C-01a, C-01b, C-01c, C-01d, C-02a, C-02b)
 
 - 상태: 구현됨. 코드는 `packages/core/src/kinetra_core/`(`conventions.py`, `provenance.py`, `material.py`, `partdef.py`, `designspec.py`, `world.py`, `assumption.py`, `project.py`, `commands.py`), 테스트는 `packages/core/tests/test_material_partdef.py`와 `test_designspec.py`, `test_world_assumption.py`, `test_commands.py`.
 - 근거: `docs/plan/studio-plan.md` 5절, `docs/architecture/client-adapter.md` G4·G6, 이슈 #60의 A0-04 이월 코멘트.
@@ -83,6 +83,20 @@ uv run python packages/core/scripts/export_schemas.py --check  # 쓰지 않고 �
 - `schemas/examples/<Name>.<설명>.json`은 손으로 쓴 예시다(`DesignSpec.four-wheel-car`, `Material.example`, `PartDef.block-with-hole`(형상 포함), `World.ramp-and-step`, `AssumptionTable.vehicle-mass`, `CommandBatch.move-and-select-planet`). `packages/core/tests/test_schema_export.py`가 예시마다 JSON Schema(`jsonschema`)와 모델 둘 다 통과하는지 보고, 잘못된 입력(출처 없음, 모르는 배지, 틀린 단위, 범위 밖, 배열 쿼터니언, 모르는 필드)을 둘 다 거부하는지 본다. 예시의 수치는 실부품 데이터가 아니다. 대부분 `사용자 선언`이고 일부는 `기본값`(`Material.example`과 4륜차 예시의 재료 마찰)과 `추정`(가정표의 퍼짐)이며 출처 문구에 "예시"라고 적었다.
 - 새 모델을 더한 PR은 `export_schemas.py`를 돌려 `schemas/`를 같이 커밋한다. 안 하면 CI의 `--check`와 `test_committed_schemas_match_the_models`가 실패한다.
 
+## 예시 프로젝트 (C-01 에픽 통합, #60)
+
+`schemas/examples/Project.<설명>.json` 셋이 에픽의 통합 시연이다. `Project`는 `design`과 `assumptions`(둘 다 생략하면 빈 값)와 필수인 `world`를 가진다.
+
+| 파일 | 내용 |
+|---|---|
+| `Project.four-wheel-car.json` | 4륜차(`DesignSpec.four-wheel-car`의 조립된 차) + 지구 + 경사로 하나 + 차량 질량 가정. 모터 둘이 힌지 둘을 구동한다 |
+| `Project.rocket-car-skeleton.json` | 섀시 + 바퀴 넷(액슬 힌지 넷) + 로켓 부품 하나(고정 결합) + 달. 추력기 액추에이터 하나(`kind: thruster`, 결합 없음, C-01b)와 그 스케줄 항목(`command` = 1, 0~2 s). 로켓의 `rated_thrust` 사양(`SpecDef`)은 선언값이다. 뼈대라서 성능을 주장하지 않는다 |
+| `Project.empty.json` | `{"world": {"planet": "earth"}}`. 부품·결합·가정이 없는 프로젝트 |
+
+- 검증: `uv run python packages/core/scripts/validate_examples.py`. `schemas/examples/*.json`을 모두 JSON Schema(`jsonschema`)와 Pydantic 모델 둘 다로 검사하고, `Project`는 `world.planet`이 `data/bodies`에 있는지와 지형 소품의 재료가 프로젝트의 것인지도 `check_world_references`로 본다. 필수 예시 셋이 하나라도 없거나 로켓 자동차에 스케줄된 추력기가 없으면 실패한다. CI는 `engine` 워크플로에서 돈다. `packages/core/tests/test_examples.py`가 같은 스크립트와 예시의 내용(조립 일치, 되돌리기 가능한 명령 적용, 배지)을 시험한다.
+- TS: `schemas/test/examples.test.ts`가 세 예시를 `@kinetra/schemas`의 `Project` 타입으로 읽는다(`pnpm build`가 타입을, `pnpm test`가 값을 본다). 타입은 모양만 안다. 유효성 판정은 위 스크립트가 한다.
+- 예시의 수치는 모두 `사용자 선언`(`kinetra-docs`)이거나 `기본값`/`추정`이고 출처 문구에 "illustrative"가 있다. 실부품 수치도 성능 주장도 아니다.
+
 ## `Project`와 `Command` (C-02a)
 
 코드는 `kinetra_core/project.py`, `commands.py`, 테스트는 `packages/core/tests/test_commands.py`. 모든 편집은 `Command`다(계획 5.3절, `client-adapter.md` I1). 입력 수단(마우스, 에이전트, 음성, XR, MCP)마다 다른 Command는 없다.
@@ -108,11 +122,25 @@ uv run python packages/core/scripts/export_schemas.py --check  # 쓰지 않고 �
 | `batch` | 편집 명령을 순서대로 모두 적용하거나 모두 거부한다(C2). 중첩은 없다. 사유의 문장 앞에 `commands[n] (type):`이 붙는다. **최종 상태만이 아니라 모든 중간 상태가 유효한 `Project`여야 한다**: 한 액추에이터의 두 구간을 맞바꾸는 묶음은 첫 명령에서 겹침으로 거부된다. 줄이거나 지우는 명령을 먼저 두거나 `replace_*`를 쓴다(에이전트 재시도 G-03a, 대칭 복제 B-11이 알아야 한다) | 역명령들의 역순 묶음 |
 
 - 목록 순서는 값의 일부라서 `add_*`는 `index`(없으면 끝)를 받고, 역명령은 원래 자리로 되돌린다.
-- 같은 값을 다시 정하는 명령(같은 행성, 같은 재료, 같은 자세)은 수락되고 같은 프로젝트를 돌려준다. 빈 이력 칸과 불필요한 판정 무효화(D5)를 거르는 일은 C-02b가 `결과.project == project`로 판단한다.
+- 같은 값을 다시 정하는 명령(같은 행성, 같은 재료, 같은 자세)은 수락되고 같은 프로젝트를 돌려준다. 빈 이력 칸과 불필요한 판정 무효화(D5)를 거르는 일은 C-02b가 `결과.project == project`로 판단하고, 그 판단은 아래 "되돌리기와 이력"에 있다.
 - 편집마다 프로젝트 전체를 JSON으로 덤프하고 다시 검증하므로 편집 하나는 프로젝트 크기에 비례하고 묶음은 n배다(리뷰 측정: 인스턴스 200개에서 단일 이동 약 11 ms, 200건 묶음 약 1.1 s; 1,000개에서 25 ms, 4 s). 명령의 모양과 무관한 내부 문제라서 별도 이슈로 추적한다.
 - 역명령은 목록의 절대 위치(`index`)를 담는다. 한 줄로 선형인 이력(S1)에서는 역명령이 늘 자기가 계산된 상태에 적용되므로 정확하다. 다른 편집이 끼어드는 사용자별 되돌리기(N-04)는 위치가 아니라 이웃을 가리키는 방식이 필요하다.
-- 삭제가 연쇄를 일으켜도 한 명령이고 한 역명령이다(#476 리뷰: 끊긴 상태를 만들지 않는다). 이력에서 한 칸이 되는 묶음 단위는 C-02b가 정한다.
-- 이 PR에 없는 것: 발행자와 되돌리기·다시 실행·이력(C-02b), 배치 검사와 행성 상수·물성 DB·판정 결과를 바꾸려는 시도의 거부(C-02c, 아래 "검증기"), 저장 형식과 정의 해시(C-03), 선로의 메시지(C-05a), 지형 소품 편집(W-05), 수역(FL-02b), 분리 항목(X-08), 정의가 없는 인스턴스(C-06). 이 PR의 예시 수치는 모두 테스트가 선언한 값이다.
+- 삭제가 연쇄를 일으켜도 한 명령이고 한 역명령이다(#476 리뷰: 끊긴 상태를 만들지 않는다). 이력에서 한 칸이 되는 단위는 아래 "되돌리기와 이력"이 정한다.
+- 이 PR에 없는 것: 배치 검사와 행성 상수·물성 DB·판정 결과를 바꾸려는 시도의 거부(C-02c, 아래 "검증기"), 저장 형식과 정의 해시(C-03), 선로의 메시지(C-05a), 지형 소품 편집(W-05), 수역(FL-02b), 분리 항목(X-08), 정의가 없는 인스턴스(C-06). 이 PR의 예시 수치는 모두 테스트가 선언한 값이다.
+
+## 되돌리기와 이력 (C-02b)
+
+코드는 `kinetra_core/history.py`, 테스트는 `packages/core/tests/test_history.py`(`uv run pytest packages/core -q -k history`). `apply_command`가 돌려주는 `(project, inverse)` 위에 선 값 객체 하나다. 모든 메서드가 입력을 바꾸지 않고 새 값을 돌려준다.
+
+- `History`(`entries`, `cursor`): `entries[:cursor]`가 적용된 칸, 그 뒤가 되돌려서 다시 실행할 수 있는 칸이다. `execute(project, command, origin)`, `undo(project)`, `redo(project)`는 `EditResult(project, history, entry)`를 돌려준다. 프로젝트와 이력은 한 쌍이다: 이력은 자기가 실행해 온 프로젝트에만 맞는다(보관은 문서의 주인인 C-05a가 한 몸으로 한다).
+- **한 칸 = 명령 하나.** 편집 하나는 한 칸이고 `batch`는 안에 몇 개가 있든 한 칸이라서 되돌리기 한 번에 묶음 전체가 돌아오고 다시 실행 한 번에 전체가 다시 된다(`client-adapter.md` C2, I4: 이력의 한 칸은 사용자가 확정한 동작 하나). 기즈모로 조립체를 옮기는 일, 방사 대칭 복제, 수락한 에이전트 변경안은 보내는 쪽이 묶음 한 건으로 만든다. 칸을 나중에 합치는 호출은 없다.
+- **출처는 명령이 아니라 기록에 있다.** `HistoryEntry`(`origin`, `command`, `inverse`)의 `origin`은 `Origin`(`mouse`, `agent`, `voice`, `xr`, `mcp`; `client-adapter.md` 3.5의 입력 수단)이다. 같은 명령은 어느 출처에서 와도 같은 편집이고 같은 적용기를 거친다(I1, C1). 이력은 출처로 무엇을 허용할지 정하지 않는다(C-02c). 되돌리기와 다시 실행은 새 칸이 아니고 되돌리거나 다시 한 칸의 출처를 그대로 가진다.
+- 칸은 보낸 명령과 적용기가 계산한 역명령을 함께 쥔다. 되돌리기는 저장된 역명령을, 다시 실행은 저장된 명령을 적용한다. 둘 다 계산된 바로 그 상태에 적용되므로(선형 이력) 위치 `index`가 어긋나지 않는다.
+- **바꾸는 것이 없는 명령은 칸을 만들지 않는다.** 적용 결과가 입력과 같으면(같은 행성, 같은 자세, 옮겼다 되돌리는 묶음) 명령은 수락되지만 이력은 그대로이고 `EditResult.entry`는 `None`이다. 아무것도 하지 않는 되돌리기 단계를 막고, 되돌려 둔 칸(다시 실행할 칸)을 잃지 않으며, C-05a가 개정 번호와 판정 상태(D5)를 건드리지 않을 근거가 된다.
+- 되돌린 뒤 문서를 실제로 바꾸는 새 명령이 오면 다시 실행할 칸은 버려진다(새 상태에 맞지 않는다).
+- 거부된 명령은 아무것도 바꾸지 않는다(`CommandRejected`). 되돌릴 것이 없을 때의 `undo`와 다시 할 것이 없을 때의 `redo`도 같은 길로 거부한다(`nothing_to_undo`, `nothing_to_redo`).
+- 이력 길이의 상한은 없다. 계획과 이슈 어디에도 숫자가 없어서 만들어 쓰지 않았다. 칸당 명령 둘을 쥔다. 상한이나 저장 여부는 보관하는 C-03, C-05a가 정한다.
+- 이 PR에 없는 것: 개정 번호와 `applied` 메시지(C-05a), 이력의 저장 형식과 해시(C-03), 여러 사용자의 사용자별 되돌리기(N-04), 출처별 허용 정책(없다: 검증기는 발행자를 받지 않는다, C-02c), 시각(벽시계 시각은 결정론 문서에 두지 않는다).
 
 ## 검증기 (C-02c)
 
@@ -134,7 +162,8 @@ uv run python packages/core/scripts/export_schemas.py --check  # 쓰지 않고 �
 
 - 인스턴스의 도형은 부품 형상 레시피의 `add` 요소를 인스턴스의 파라미터와 월드 자세에 놓은 것이다(충돌 프록시가 복사하는 것과 같은 기본형, 빈 곳은 메운다). **형상 레시피가 없는 부품은 도형이 없어** `overlap`, `floating`으로 판단하지 않고, 도형 없는 인스턴스와 결합한 덩어리는 뜬 것으로 부르지 않는다. 통과가 아니라 모르는 것이다. 4륜차 예시(형상 없음)는 스냅 검사만 받는다.
 - 겹침은 `convex.separated`(질량 계산이 쓰는 같은 분리 평면 검사)다. 맞닿음은 겹침이 아니다. 기울어진 두 원기둥이 모서리끼리 거의 닿는 경우는 겹침으로 거부될 수 있다(거부이지 조용한 통과가 아니다).
-- 지형 소품은 경계 상자로 본다(경사로: `length x width x length*tan(incline)`). 실제 소품보다 크므로 경사면 바로 옆에 뜬 부품이 통과할 수 있다(받아들이는 쪽으로 틀린다). 지면 높이를 가진 시작 자세(낙하 시나리오)는 J-02의 몫이라 이 검사에는 없고, 공중에 놓인 조립 전체는 `floating`이다.
+- 지형 소품은 월드 규약 그대로의 볼록 도형이다(경사로: `length` 진행 × `width` × 높이 `length*tan(incline)`인 쐐기, 턱: 상자, 둘 다 `yaw`로 돌림). 부품이 소품을 파고들면(턱 안, 경사면 아래) `overlap`(ref: 인스턴스와 `prop`)이고 받침이 아니다. 닿기만 하면 받침이다. 지면 높이를 가진 시작 자세(낙하 시나리오)는 J-02의 몫이라 이 검사에는 없고, 공중에 놓인 조립 전체는 `floating`이다.
+- **되돌리기와 다시 실행은 배치 검사를 다시 하지 않는다.** `History.undo/redo`(C-02b)는 `apply_command`만 부른다. 되돌리기는 이전에 받아들여진 상태로, 다시 실행은 받아들여진 명령으로 돌아가는 것이라서(선형 이력, 역명령은 계산된 바로 그 상태에 적용된다) 배치 규칙이 그 사이에 바뀌지 않는 한 같은 답이다. 이미 겹친 프로젝트를 고친 편집을 되돌리면 겹친 상태가 돌아오는데, 그 상태는 사용자가 가졌던 것이다("새로 만든 문제만 거부한다"의 같은 근거). `History.execute`가 `apply_command` 대신 `validate_command`를 불러야 새 편집이 문을 지난다: C-02b에 이월(이슈 코멘트).
 - 허용 오차 `PLACEMENT_TOLERANCE` = 1 µm는 저장된 double을 위한 수치 허용치이지 물리적 주장이 아니다.
 - **명령이 새로 만든 문제만 거부한다.** 이미 겹침이 있는 프로젝트(파일에서 연 것)도 다른 곳은 고칠 수 있다. 묶음은 구조(`apply_command`)를 단계마다, 배치는 **끝 상태**로 본다: `add_instance` 뒤 `add_joint`, 조립 전체의 이동이 중간 상태가 헐거워도 된다.
 - 스냅의 방향(쿼터니언)과 결합 축은 비교하지 않는다(B-04a, B-04b). 컴파일 오류는 X-01d, 지형 소품 편집은 W-05.
@@ -143,8 +172,9 @@ uv run python packages/core/scripts/export_schemas.py --check  # 쓰지 않고 �
 
 - 곡선(토크-속도, 추력 곡선): B-03b, B-03c.
 - 단위 `kg/s`(추진제 소모율), `N*s`(충격량): 쓰는 잎이 `Unit`에 더한다.
-- 형상 레시피와 파생값의 입력: B-01a에서 들어왔다. `PartDef.shape`, `MassProperties.derivation`. `docs/architecture/part-mass.md`.
-- 충돌 프록시: B-01b에서 들어왔다. `CollisionProxy`(기본형 지오메트리, 메운 빈 곳, 부피 오차). `docs/architecture/collision-proxy.md`.
+- 형상 레시피와 파생값의 입력: B-01a에서 들어왔다. `PartDef.shape`, `MassProperties.derivation`. `docs/architecture/part-mass.md`. 같은 레시피에서 시각 glTF와 재질 슬롯: B-01c, `docs/architecture/part-visual.md`.
+- 충돌 프록시: B-01b에서 들어왔다. `CollisionProxy`(기본형 지오메트리, 메운 빈 곳 또는 B-01f의 분해한 빈 곳, 부호 있는 부피 오차). `docs/architecture/collision-proxy.md`.
+- 컴파일 캐시와 부품 추가 절차서: B-01d. `docs/architecture/part-cache.md`, `docs/process/add-part.md`.
 - 바인딩 안 된 가정(가정이 설계의 어느 값을 흔드는지)과 가정 단위의 의미 검사: J-01a, L-02.
 - PBR 재질 슬롯: B-07(구현됨, [`materials.md`](materials.md)).
 - `export_policy`: HW-02a.

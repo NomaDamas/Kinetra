@@ -11,7 +11,9 @@
     "forbidden",
     "invalid_snap",
     "overlap",
-    "floating"
+    "floating",
+    "nothing_to_undo",
+    "nothing_to_redo"
   ],
   "title": "ReasonCode",
   "type": "string"

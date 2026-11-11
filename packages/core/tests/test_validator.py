@@ -351,3 +351,60 @@ def test_validator_reasons_survive_a_json_round_trip():
         validate_command(project, move("top-cube", 0.0, 0.0, 0.25))
     for reason in e.value.reasons:
         assert type(reason).model_validate_json(reason.model_dump_json()) == reason
+
+
+# --- terrain props are obstacles as well as supports ---------------------------------------------------------
+
+
+def with_props(*props):
+    return Project.model_validate({**project_data(), "world": {"planet": "earth", "terrain_props": list(props)}})
+
+
+def step_prop(x=3.0, height=0.5):
+    return {"kind": "step", "id": "kerb", "placement": {"x": x, "y": 0.0, "yaw": 0.0, "badge": "declared", "source": SRC}, "length": q(1.0), "width": q(1.0), "height": q(height)}
+
+
+def ramp_prop(x=3.0):
+    """Rises along +x from z = 0 at x = 2 to z = 1.0 at x = 4 (length 2 m, incline 0.4636 rad = atan(0.5))."""
+    return {"kind": "ramp", "id": "slope", "placement": {"x": x, "y": 0.0, "yaw": 0.0, "badge": "declared", "source": SRC}, "length": q(2.0), "width": q(1.0), "incline": q(0.4636476090008061, "rad")}
+
+
+def test_validator_a_part_inside_a_step_overlaps_it_and_is_not_supported_by_it():
+    project = with_props(step_prop())
+    err = reject(project, move("base", 3.0, 0.0, 0.4), ReasonCode.OVERLAP, inst("base"), Ref(kind=RefKind.PROP, id="kerb"))  # the cube spans z 0.3 .. 0.5, inside the step's 0 .. 0.5
+    assert "penetrates terrain prop 'kerb'" in err.reasons[0].message
+    assert [r.code for r in err.reasons] == [ReasonCode.OVERLAP]  # refused for the penetration, not also called floating
+
+
+def test_validator_a_part_under_a_ramps_slope_overlaps_it_and_one_on_it_is_supported():
+    project = with_props(ramp_prop())
+    # cube side 0.2: at x = 2.5 the slope is 0.25 m high; centre z = 0.125 puts the cube's top corner inside the ramp
+    reject(project, move("base", 2.5, 0.0, 0.125), ReasonCode.OVERLAP, inst("base"), Ref(kind=RefKind.PROP, id="slope"))
+    # resting on the slope: the cube's lower uphill edge (x = 2.6) on the slope, which is 0.3 m high there: centre z = 0.4
+    on_slope = validate_command(project, move("base", 2.5, 0.0, 0.4))
+    assert on_slope.project.design.instances[0].pose.position.z == 0.4
+
+
+def test_validator_beside_a_ramp_slope_floats():
+    """The exact wedge, not a bounding box: a cube hovering over the empty corner above the slope has no support."""
+    project = with_props(ramp_prop())
+    reject(project, move("base", 3.9, 0.0, 1.5), ReasonCode.FLOATING, inst("base"))
+    reject(project, move("base", 2.2, 0.0, 0.6), ReasonCode.FLOATING, inst("base"))  # above the low end of the slope
+
+
+def test_validator_a_new_ground_penetration_is_not_masked_by_an_old_pair_overlap():
+    """An instance may be called `ground`: its pair with `base` and `base`'s ground contact are different findings."""
+    project = make(instances=[instance("base"), instance("ground", x=0.1, z=0.1)])  # base and ground overlap already
+    assert [r.code for r in check_placement(project)] == [ReasonCode.OVERLAP]
+    err = reject(project, move("base", 0.0, 0.0, 0.05), ReasonCode.OVERLAP, inst("base"))  # now also below z = 0
+    assert any("below the ground" in r.message for r in err.reasons)
+
+
+def test_validator_undo_is_not_a_placement_check():
+    """Documented rule (project-model.md): the inverse of an accepted edit is applied by `apply_command` only."""
+    from kinetra_core import History, Origin
+
+    project = with_props(step_prop())
+    done = validate_command(project, move("base", 3.0, 0.0, 0.6))
+    history = History().execute(project, move("base", 3.0, 0.0, 0.6), Origin.MOUSE).history
+    assert history.undo(done.project).project == project

@@ -21,7 +21,7 @@ from .bodies import (
     load_bodies,
     load_body,
 )
-from .collision import CollisionProxy, FilledVoid, ProxyDerivation, ProxyGeom
+from .collision import CollisionProxy, DecomposedVoid, FilledVoid, ProxyDerivation, ProxyGeom, RingReport
 from .commands import (
     AddActuator,
     AddAssumption,
@@ -74,6 +74,7 @@ from .designspec import (
     WorldPosition,
 )
 from .geometry import AxisExpr, ParamTerm, Position, Quaternion
+from .history import EditResult, History, HistoryEntry, Origin
 from .massprops import (
     ComponentContribution,
     Derivation,
@@ -139,14 +140,18 @@ __all__ = [
     "DerivedScalar",
     "DerivedVector",
     "DesignSpec",
+    "DecomposedVoid",
     "Dimension",
     "Distribution",
     "EditCommand",
+    "EditResult",
     "ElasticModulus",
     "FilledVoid",
     "FixedDistribution",
     "Friction",
     "Gravity",
+    "History",
+    "HistoryEntry",
     "Incline",
     "Insolation",
     "Instance",
@@ -158,6 +163,7 @@ __all__ = [
     "MaterialCatalog",
     "MoveInstance",
     "NormalDistribution",
+    "Origin",
     "ParamDef",
     "ParamTerm",
     "ParamValue",
@@ -180,6 +186,7 @@ __all__ = [
     "Quantity",
     "Quaternion",
     "RampProp",
+    "RingReport",
     "Reason",
     "ReasonCode",
     "RemoveActuator",

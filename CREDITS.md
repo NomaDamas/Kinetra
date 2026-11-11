@@ -422,6 +422,19 @@
 - 원본 해시: `sha256:0f08147951c8cb31d844c3547d631053b127863b60be04cf06e121333ee0e2fe`
 - 확인자: omp
 
+### dep-gltf-validator-2.0.0-dev.3.10
+
+- 표기: glTF Validator, Copyright The Khronos Group Inc. Apache License 2.0. 컴파일된 코드에 Dart SDK(Copyright 2012 the Dart project authors, BSD-3-Clause), yaml(Kirill Simonov, MIT), node_preamble(Michael Bullington, MIT), PrismJS(Lea Verou, MIT), vector_math(Andrew Magill 외, Zlib).
+- 저작자: The Khronos Group Inc.
+- 라이선스: Apache-2.0 AND BSD-3-Clause AND MIT AND Zlib
+- 원본: https://www.npmjs.com/package/gltf-validator/v/2.0.0-dev.3.10 https://github.com/KhronosGroup/glTF-Validator https://github.com/KhronosGroup/glTF-Validator/blob/main/LICENSE
+- 경로: `tools/gltf-check/package.json`
+- 용도: 테스트 도구: B-01c 부품 glTF 를 Khronos 공식 검증기로 검증(tools/gltf-check validate). 제품 코드에 들어가지 않는다
+- 변경 내역: 없음(수정 없이 사용). 해시는 npm 배포 tarball 의 sha256. tools/gltf-check/package.json 의 devDependencies 와 pnpm-lock.yaml 에서 2.0.0-dev.3.10 으로 고정. 패키지 자신은 Apache-2.0, 동봉된 NOTICES 는 컴파일된 JS 에 들어 있는 Dart SDK(BSD-3-Clause, Copyright 2012 the Dart project authors), yaml(MIT, Kirill Simonov), node_preamble(MIT, Michael Bullington), PrismJS(MIT, Lea Verou), vector_math(Zlib, Andrew Magill 의 코드)를 적는다
+- 받은 날짜: 2026-11-11
+- 원본 해시: `sha256:4e03dbdc3bc0d1342afd5d2d7ae341a7e3474502ccb872b02dbbaddaee0fdec6`
+- 확인자: omp
+
 ### dep-godot-4.7.2
 
 - 표기: Godot Engine, Copyright (c) 2014-present Godot Engine contributors, (c) 2007-2014 Juan Linietsky, Ariel Manzur. MIT License. Jolt Physics, Copyright (c) 2021 Jorrit Rouwe. MIT License.
@@ -782,6 +795,19 @@
 - 경로: `spikes/webxr/package.json`
 - 용도: 실행 의존성: WebXR 스파이크(A0-02b)의 3D 장면과 WebXR 렌더러
 - 변경 내역: 없음(수정 없이 사용). npm 배포 tarball 의 sha256. spikes/webxr/package.json 의 dependencies 와 pnpm-lock.yaml 에서 0.187.0 으로 고정. @iwer/devui 와 @iwer/sem 이 추이 의존성으로 three 0.165.0 을 따로 끌어온다(MIT, 번들에는 지연 로딩 조각으로만 들어가고 emulate:false 라 실행되지 않는다)
+- 받은 날짜: 2026-11-11
+- 원본 해시: `sha256:ff540832ded0cfe919764d24a3d88f3e2a05f23303f876423e4f893841e90728`
+- 확인자: omp
+
+### dep-three-0.187.0-gltf-check
+
+- 표기: three.js, Copyright (c) 2010-2026 three.js authors. MIT License.
+- 저작자: three.js authors
+- 라이선스: MIT
+- 원본: https://www.npmjs.com/package/three/v/0.187.0 https://github.com/mrdoob/three.js https://github.com/mrdoob/three.js/blob/dev/LICENSE
+- 경로: `tools/gltf-check/package.json`
+- 용도: 실행 의존성: B-01c 증거 페이지(tools/gltf-check/page)가 GLTFLoader 로 부품 glTF 를 읽어 그린다. 제품 코드가 아님
+- 변경 내역: 없음(수정 없이 사용). 해시는 npm 배포 tarball 의 sha256. tools/gltf-check/package.json 의 dependencies 와 pnpm-lock.yaml 에서 0.187.0 으로 고정
 - 받은 날짜: 2026-11-11
 - 원본 해시: `sha256:ff540832ded0cfe919764d24a3d88f3e2a05f23303f876423e4f893841e90728`
 - 확인자: omp
