@@ -1,0 +1,26 @@
+{
+  "name": "@kinetra/gltf-check",
+  "private": true,
+  "version": "0.0.0",
+  "description": "B-01c: the official Khronos glTF validator on the committed part fixtures, and a headless three.js page that loads them (screenshot evidence)",
+  "type": "module",
+  "scripts": {
+    "validate": "node validate.ts",
+    "capture": "node capture.ts",
+    "lint": "tsc --noEmit",
+    "build": "tsc --noEmit",
+    "test": "node --test \"test/*.test.ts\"",
+    "test:browser": "node --test \"test/*.browser.ts\""
+  },
+  "dependencies": {
+    "three": "0.187.0"
+  },
+  "devDependencies": {
+    "@types/node": "26.6.6",
+    "gltf-validator": "2.0.0-dev.3.10",
+    "playwright-core": "1.65.0",
+    "pngjs": "7.0.0",
+    "@types/pngjs": "6.0.5",
+    "typescript": "7.0.2"
+  }
+}

@@ -4,3 +4,4 @@ packages:
   - schemas
   - tools/design
   - tools/screenshots
+  - tools/gltf-check

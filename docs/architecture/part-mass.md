@@ -2,7 +2,7 @@
 
 - 상태: 구현됨. 모델은 `packages/core/src/kinetra_core/`의 `shape.py`(레시피), `geometry.py`(길이식, 위치, 쿼터니언), `massprops.py`(결과). 계산은 `packages/engine/src/kinetra_engine/parts/mass.py`. 테스트는 `packages/engine/tests/test_inertia.py`, `packages/core/tests/test_shape.py`.
 - 근거: `docs/plan/studio-plan.md` 3절(build123d port), 5절, `docs/architecture/client-adapter.md` D4(파생값은 코어가 계산해 배지와 함께 보낸다), 이슈 #92, C-01a의 "알려진 확장"(형상 레시피와 파생값의 입력).
-- 범위 밖: 충돌 프록시(B-01b), glTF(B-01c), 캐시(B-01d), 부품 종류와 실재료 값(B-02, B-03, B-07), STEP·STL(HW-02).
+- 범위 밖: 충돌 프록시(B-01b), glTF(B-01c, `part-visual.md`), 캐시(B-01d), 부품 종류와 실재료 값(B-02, B-03, B-07), STEP·STL(HW-02).
 
 ## 쓰는 법
 

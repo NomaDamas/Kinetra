@@ -1,7 +1,7 @@
 name: screenshots
 
 # P0-04d: Playwright (headless Chromium) screenshots of the pages listed in .github/screenshots.json, uploaded as the
-# `screenshots` artifact on every PR, plus a raw-WebGL empty scene whose PIXELS are asserted (proves WebGL renders headless).
+# `screenshots` artifact on every PR (the part glTF page of B-01c adds out/gltf-check), plus a raw-WebGL empty scene whose PIXELS are asserted (proves WebGL renders headless).
 # A listed path that does not exist is skipped with a log line. Rules: docs/process/screenshots.md.
 on:
   pull_request:
@@ -51,16 +51,20 @@ jobs:
         run: pnpm --filter @kinetra/screenshots webgl --probe --out "$GITHUB_WORKSPACE/out/webgl-probe"
       - name: Browser tests of the tool
         run: pnpm --filter @kinetra/screenshots test:browser
+      - name: "Part glTF in three.js (B-01c: loader, linear material slot, screenshot in out/gltf-check)"
+        run: pnpm --filter @kinetra/gltf-check capture
+      - name: Browser tests of the part glTF page
+        run: pnpm --filter @kinetra/gltf-check test:browser
       - name: Artifact content check (screenshots, webgl and webgl-probe must all be there)
         if: always()
         run: |
-          for f in out/screenshots/manifest.json out/webgl/webgl-result.json out/webgl-probe/webgl-result.json; do
+          for f in out/screenshots/manifest.json out/webgl/webgl-result.json out/webgl-probe/webgl-result.json out/gltf-check/parts-gltf.png out/gltf-check/result.json; do
             test -s "$f" && echo "present: $f" || { echo "MISSING: $f"; exit 1; }
           done
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: screenshots
-          path: out/ # screenshots/ (pages + manifest), webgl/ (pixel-assertion run), webgl-probe/ (flag-set evidence)
+          path: out/ # screenshots/ (pages + manifest), webgl/ (pixel-assertion run), webgl-probe/ (flag-set evidence), gltf-check/ (B-01c part glTF page: PNG + result.json)
           if-no-files-found: error
           retention-days: 14
