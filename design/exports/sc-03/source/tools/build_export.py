@@ -103,7 +103,13 @@ window.addEventListener('load', function () {
       var transient = [].filter.call(screen.querySelectorAll('[data-transient] [data-ctl]'), shown);
       var area = screen.querySelector('[aria-label="변경안 카드 영역"]');
       var bar = screen.querySelector('[aria-label="에이전트 바"]');
-      return { screen: screen.getAttribute('data-screen'), controls: ctl.length, names: ctl.map(function (e) { return e.getAttribute('data-ctl'); }),
+      // sc-03-rev: anything (popovers included) that leaves its own state region and covers a neighbour
+      var sr = screen.getBoundingClientRect(), outside = [];
+      screen.querySelectorAll('*').forEach(function (e) {
+        if (!shown(e) || hidden(e)) return; var r = e.getBoundingClientRect();
+        if (r.top < sr.top - 0.5 || r.bottom > sr.bottom + 0.5 || r.left < sr.left - 0.5 || r.right > sr.right + 0.5) outside.push((e.getAttribute('aria-label') || e.tagName) + ' ' + Math.round(r.top - sr.top) + '..' + Math.round(r.bottom - sr.top) + ' in 0..' + Math.round(sr.height));
+      });
+      return { outside: outside, disabled: [].filter.call(screen.querySelectorAll('[data-ctl][disabled]'), shown).map(function (e) { return e.getAttribute('data-ctl') + ' :: ' + e.textContent.trim(); }), screen: screen.getAttribute('data-screen'), controls: ctl.length, names: ctl.map(function (e) { return e.getAttribute('data-ctl'); }),
         transient: transient.map(function (e) { return e.getAttribute('data-ctl'); }),
         cardArea: area ? Math.round(area.getBoundingClientRect().height) : null,
         card: area && area.querySelector('section') ? Math.round(area.querySelector('section').getBoundingClientRect().height) : null,
@@ -152,6 +158,8 @@ window.addEventListener('load', function () {
     });
     res.push({
       name: board.getAttribute('data-board'), size: [Math.round(p.width), Math.round(p.height)],
+      childSum: [].reduce.call(board.children, function (s, c) { return s + c.getBoundingClientRect().height; }, 0),
+      scrollH: board.scrollHeight,
       screens: screens,
       primary: [].filter.call(board.querySelectorAll('[data-primary]'), shown).length,
       stray: stray, small: small, overflow: over, clipped: clip,
@@ -203,7 +211,7 @@ a{{color:#5B9DFF}}a:hover{{color:#A8CBFF}}
 <body>
 <header class="kin-top">
 <h1>Kinetra Studio SC-03 에이전트 바와 변경안 카드</h1>
-<p>아트보드 S1~S13. 규격: design/briefs/sc-03.md. 토큰과 컴포넌트: design/exports/design-system/. 셸 안의 자리: design/exports/sc-01/. 폭 1200 px(셸 하단 영역), 바 56 px, 카드 영역 상한 306 px. 각 아트보드 위 40 px 줄과 변형 이름 줄은 주석입니다.</p>
+<p>아트보드 S1~S13. 규격: design/briefs/sc-03.md. 토큰과 컴포넌트: design/exports/design-system/. 셸 안의 자리: design/exports/sc-01/. 폭 1200 px(셸 하단 영역), 바 56 px, 카드 영역 상한 306 px. 각 아트보드 위 40 px 줄과 변형 이름 줄은 주석입니다. 수정본: design/briefs/sc-03-revision.md(#412)의 두 항목(S11 높이, S7 부분 수락 미리보기)을 반영했습니다.</p>
 <nav class="kin-nav" aria-label="아트보드 목차">{nav}</nav>
 </header>
 <main>{sections}</main>
