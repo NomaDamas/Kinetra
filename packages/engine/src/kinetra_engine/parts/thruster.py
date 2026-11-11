@@ -35,7 +35,7 @@ from kinetra_core.partdef import (
     THRUSTER_RATED_THRUST,
 )
 
-from ._shape import rotation
+from kinetra_core.convex import rotation
 
 G0 = 9.80665  # gravity-scan: ok standard gravity g0 of the Isp definition (CGPM 1901), not a planet constant
 """Standard gravity [m/s^2]. Used only to turn a specific impulse [s] into a mass flow (Isp = F / (mdot g0)), never as a planet value."""
