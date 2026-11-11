@@ -623,7 +623,7 @@ export interface PartDef {
  * required curves, specs and parameters), so a part that says `motor` always has the numbers a motor needs and one that says
  * `spring_damper` has its stiffness and damping (B-03e).
  */
-export type PartRole = "motor" | "thruster" | "wheel" | "battery" | "tank" | "spring_damper";
+export type PartRole = "motor" | "thruster" | "wheel" | "battery" | "tank" | "spring_damper" | "separator";
 
 /** Base color as sRGB hex. */
 export interface PbrColor {

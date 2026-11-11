@@ -1602,7 +1602,8 @@
         "wheel",
         "battery",
         "tank",
-        "spring_damper"
+        "spring_damper",
+        "separator"
       ],
       "title": "PartRole",
       "type": "string"

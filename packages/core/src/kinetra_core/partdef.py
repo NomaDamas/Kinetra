@@ -22,7 +22,7 @@ from pydantic import BaseModel, ConfigDict, Field, ValidationInfo, field_validat
 from .conventions import ID_PATTERN, Unit
 from .curve import NamedCurve
 from .geometry import AxisExpr, Name, ParamTerm, Position, Quaternion  # noqa: F401  (AxisExpr, ParamTerm: re-exported)
-from .provenance import Provenance, Quantity
+from .provenance import Badge, Provenance, Quantity
 from .shape import Shape
 
 
@@ -96,6 +96,7 @@ class PartRole(StrEnum):
     BATTERY = "battery"
     TANK = "tank"
     SPRING_DAMPER = "spring_damper"
+    SEPARATOR = "separator"
 
 
 MOTOR_CURVE = "torque_speed"
@@ -131,6 +132,19 @@ TANK_PROPELLANT_DENSITY = "propellant_density"
 `subtract` components. No propellant is named and no pressure or temperature is modelled: it is one number the user sets."""
 TANK_INITIAL_FILL = "initial_fill"
 """Optional parameter of a tank part: the fraction of the capacity it starts with, dimensionless in [0, 1]. Absent: full."""
+
+SEPARATOR_IMPULSE = "separation_impulse"
+"""Name of the parameter a separator part must have (B-15): the declared separation impulse [N*s] the part gives each side when it
+lets go, 0 allowed. It is the only number about how the release pushes: no energy source is named or modelled. The value is
+the user's (`사용자 선언`) or the definition's placeholder (`기본값`); other badges are rejected."""
+SEPARATOR_FACE_A = "face_a"
+"""Snap point a separator part must have: the face of side `a`, at +Z of the part. The declared impulse pushes the body joined here
+along +Z of this frame (outward) and the body joined at `face_b` the opposite way."""
+SEPARATOR_FACE_B = "face_b"
+"""Snap point a separator part must have: the face of side `b`, at -Z of the part, its +Z (outward normal) pointing to -Z."""
+SEPARATOR_BADGES = frozenset({Badge.DECLARED, Badge.DEFAULT})
+"""The badges a separation impulse may carry: the user declared it or the definition's default stands in. A cited, estimated or
+simulated impulse would claim a source for a number no source exists for (V5)."""
 
 
 class PartDef(BaseModel):
@@ -185,11 +199,53 @@ class PartDef(BaseModel):
             self._check_spring_damper()
         if self.role is PartRole.THRUSTER:
             self._check_thruster()
+        if self.role is PartRole.SEPARATOR:
+            self._check_separator()
         if self.role is PartRole.BATTERY:
             self._check_battery()
         if self.role is PartRole.TANK:
             self._check_tank()
         return self
+
+    def _check_separator(self) -> None:
+        """A separator part is a declared-mass body that holds two parts together and lets go on command (B-15).
+
+        Its specification is a mass (`mass_parameter`), dimensions (length parameters) and the declared separation impulse
+        (`separation_impulse` [N*s], never negative, badge `declared` or `default`), and nothing else: no specs, no curves
+        and no other parameter, so no field can carry an energy source (what pushes, how). The release itself is an event of
+        the simulation (X-08). It needs the two faces the held parts are joined to.
+        """
+        if self.mass_parameter is None:
+            raise ValueError("a separator part declares its mass: it needs a mass_parameter (kg)")
+        if self.specs:
+            raise ValueError(f"a separator part has no specs, its specification is parameters: got {[s.name for s in self.specs]}")
+        if self.curves:
+            raise ValueError(f"a separator part has no curves: got {[c.name for c in self.curves]}")
+        by_name = {p.name: p for p in self.parameters}
+        impulse = by_name.get(SEPARATOR_IMPULSE)
+        if impulse is None:
+            raise ValueError(f"a separator part needs the parameter {SEPARATOR_IMPULSE!r} (N*s)")
+        if impulse.unit is not Unit.N_S:
+            raise ValueError(f"parameter {SEPARATOR_IMPULSE!r} is an impulse in 'N*s', got {impulse.unit.value!r}")
+        if not impulse.min.value >= 0.0:
+            raise ValueError(f"parameter {SEPARATOR_IMPULSE!r}: min must not be negative, got {impulse.min.value} N*s (0 is allowed)")
+        for label, q in (("default", impulse.default), ("min", impulse.min), ("max", impulse.max)):
+            if q.badge not in SEPARATOR_BADGES:
+                raise ValueError(
+                    f"parameter {SEPARATOR_IMPULSE!r} {label}: badge must be 'declared' or 'default', got {q.badge.value!r}"
+                )
+        for p in self.parameters:
+            if p.name == SEPARATOR_IMPULSE or p.name == self.mass_parameter:
+                continue
+            if p.unit is not Unit.M:
+                raise ValueError(
+                    f"a separator part's parameters are its mass, its dimensions (m) and {SEPARATOR_IMPULSE!r}; "
+                    f"{p.name!r} is in {p.unit.value!r}"
+                )
+        ids = {s.id for s in self.snap_points}
+        for need in (SEPARATOR_FACE_A, SEPARATOR_FACE_B):
+            if need not in ids:
+                raise ValueError(f"a separator part needs the snap point {need!r} (the face one held part is joined to)")
 
     def _check_mass_parameter(self, name: str, params: dict[str, ParamDef]) -> None:
         p = params.get(name)

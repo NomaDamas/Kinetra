@@ -22,6 +22,7 @@ test("every committed part fixture passes the Khronos validator with no errors a
       "plate-al6061.glb",
       "reflectance-ior.glb",
       "sensor-mast-user-material.glb",
+      "separator-declared-mass.glb",
       "shell-al6061.glb",
       "spring-damper-lee-lc032b08-declared-mass.glb",
       "tank-al6061.glb",

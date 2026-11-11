@@ -5,6 +5,7 @@ from .cache import CacheStats, PartCache, part_key, material_key
 from .collision import collision_proxy
 from .curves import CurveError, CurveRangeError, MotorCharacteristics, evaluate, motor_characteristics, motor_torque_limit
 from .mass import mass_properties
+from .separator import ASSUMPTION_LABEL as SEPARATION_ASSUMPTION_LABEL, Separator, SeparatorError, separation_assumption, separator_from_part
 from .springs import Oscillation, SpringDamperCharacteristics, oscillation, spring_damper_characteristics, spring_damper_force
 from .thruster import Burn, CatalogFinding, Thruster, ThrusterError, burn, catalog_finding, thruster_from_part
 from .supply import Draw, Supply, SupplyError, battery_supply, electrical_power, tank_supply, tank_total_mass
@@ -20,6 +21,9 @@ __all__ = [
     "MotorCharacteristics",
     "Oscillation",
     "PartCache",
+    "SEPARATION_ASSUMPTION_LABEL",
+    "Separator",
+    "SeparatorError",
     "ShapeError",
     "SpringDamperCharacteristics",
     "Supply",
@@ -41,6 +45,8 @@ __all__ = [
     "part_gltf",
     "part_key",
     "pbr_for",
+    "separation_assumption",
+    "separator_from_part",
     "spring_damper_characteristics",
     "spring_damper_force",
     "tank_supply",
