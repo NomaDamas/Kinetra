@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "additionalProperties": false,
-  "description": "The collision proxy of one part.\n\n`proxy_volume` and `recipe_volume` are the volumes of the geoms and of the shape recipe (added minus voids, the volume\n`MassProperties` reports); `volume_error` is `(proxy - recipe) / recipe`, dimensionless and **signed**.\n\n- `added-primitives`: `filled_voids` lists every void the proxy filled, `decomposed_voids` is empty, their volumes add\n  up to `proxy_volume - recipe_volume` and the error is never negative.\n- `void-decomposition`: `decomposed_voids` lists every void kept as a gap, `filled_voids` is empty, and\n  `-derivation.tolerance <= volume_error <= derivation.tolerance`. The sign carries no rule here (a decomposition\n  may have less volume than the recipe, or more); the engine's decomposition of round through-bores keeps every piece\n  inside the recipe's material, so its error is never positive.\n\nMass, centre of mass and inertia never come from the proxy; they come from `MassProperties` (B-01a).",
+  "description": "The collision proxy of one part.\n\n`proxy_volume` and `recipe_volume` are the volumes of the proxy (the union of its geoms) and of the shape recipe (added\nminus voids, the volume `MassProperties` reports); `volume_error` is `(proxy - recipe) / recipe`, dimensionless and\n**signed**. In every proxy `proxy_volume - recipe_volume` = the sum of `filled_voids` volumes + the sum of\n`union_volume - (host_volume - volume)` over `decomposed_voids`.\n\n- `added-primitives`: `decomposed_voids` is empty, every geom is its component unchanged (`id == component`), the\n  geoms do not overlap each other and `proxy_volume` is their sum; the error is never negative.\n- `void-decomposition`: `decomposed_voids` is not empty. A host's geoms are its pieces (`component` = the host's id), the\n  rest are components unchanged. `|error|` of each decomposed host is within `derivation.tolerance`. The decomposition the\n  engine builds is inside the recipe's material, so each host's error is never positive; the model does not require it.\n\nMass, centre of mass and inertia never come from the proxy; they come from `MassProperties` (B-01a).",
   "properties": {
     "badge": {
       "const": "sim",
@@ -79,7 +79,7 @@
     },
     "DecomposedVoid": {
       "additionalProperties": false,
-      "description": "A subtracted shape component the proxy kept as a gap: the pieces of its `host` (the added component that contains\nit) leave this void empty, up to the tolerance. `volume` [m^3] is the void's own volume.",
+      "description": "A subtracted shape component the proxy kept as a gap: the pieces of its `host` (the added component that contains\nit) leave this void empty.\n\n`volume` is the void's volume, `host_volume` the host primitive's, `union_volume` the volume of the union of the host's\npieces (all in m^3), and `error` = `(union_volume - (host_volume - volume)) / (host_volume - volume)` the signed error\nof this host alone. `layout`: `strips` (disjoint boxes cut across a plate) or `ring` (boxes around a tube's axis,\noverlapping; `ring` then carries the report).",
       "properties": {
         "id": {
           "pattern": "^[a-z][a-z0-9_]{0,63}$",
@@ -104,13 +104,50 @@
           "exclusiveMinimum": 0.0,
           "title": "Volume",
           "type": "number"
+        },
+        "host_volume": {
+          "exclusiveMinimum": 0.0,
+          "title": "Host Volume",
+          "type": "number"
+        },
+        "union_volume": {
+          "exclusiveMinimum": 0.0,
+          "title": "Union Volume",
+          "type": "number"
+        },
+        "error": {
+          "title": "Error",
+          "type": "number"
+        },
+        "layout": {
+          "enum": [
+            "strips",
+            "ring"
+          ],
+          "title": "Layout",
+          "type": "string"
+        },
+        "ring": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RingReport"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
         }
       },
       "required": [
         "id",
         "primitive",
         "host",
-        "volume"
+        "volume",
+        "host_volume",
+        "union_volume",
+        "error",
+        "layout"
       ],
       "title": "DecomposedVoid",
       "type": "object"
@@ -236,7 +273,7 @@
     },
     "ProxyDerivation": {
       "additionalProperties": false,
-      "description": "What the proxy was derived from: the recipe and the parameter values, with their badges, and how the voids were\nhandled. `tolerance` is the bound the decomposition was built to on `|volume_error|` (a fraction of the recipe\nvolume); it is present exactly when `method` is `void-decomposition`.",
+      "description": "What the proxy was derived from: the recipe and the parameter values, with their badges, and how the voids were\nhandled. `tolerance` (a fraction, unit `1`, badge `default` when the engine's default, otherwise the caller's) is the\nbound on every decomposed host's `|error|`; it is present exactly when `method` is `void-decomposition`.",
       "properties": {
         "method": {
           "enum": [
@@ -249,16 +286,13 @@
         "tolerance": {
           "anyOf": [
             {
-              "exclusiveMinimum": 0.0,
-              "maximum": 1.0,
-              "type": "number"
+              "$ref": "#/$defs/Quantity"
             },
             {
               "type": "null"
             }
           ],
-          "default": null,
-          "title": "Tolerance"
+          "default": null
         },
         "shape": {
           "$ref": "#/$defs/Provenance"
@@ -418,6 +452,39 @@
         "w"
       ],
       "title": "Quaternion",
+      "type": "object"
+    },
+    "RingReport": {
+      "additionalProperties": false,
+      "description": "How a tube's ring of boxes sits against the real tube. `wall_closed`: every ray from the axis enters the wall once\nand leaves once, so there is no radial slit (the model rejects `False`). `inner_deviation` [m] is the largest radial\ndistance the proxy's bore wall is from the real bore (towards the wall); `outer_deviation` [m] the largest the\nproxy's outer surface is inside the real outer cylinder (the notches between boxes).",
+      "properties": {
+        "staves": {
+          "minimum": 3,
+          "title": "Staves",
+          "type": "integer"
+        },
+        "wall_closed": {
+          "title": "Wall Closed",
+          "type": "boolean"
+        },
+        "inner_deviation": {
+          "minimum": 0.0,
+          "title": "Inner Deviation",
+          "type": "number"
+        },
+        "outer_deviation": {
+          "minimum": 0.0,
+          "title": "Outer Deviation",
+          "type": "number"
+        }
+      },
+      "required": [
+        "staves",
+        "wall_closed",
+        "inner_deviation",
+        "outer_deviation"
+      ],
+      "title": "RingReport",
       "type": "object"
     },
     "Source": {

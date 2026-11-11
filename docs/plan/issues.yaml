@@ -3452,7 +3452,7 @@ items:
       ## 완료 정의 (DoD)
       - [ ] 인스턴스와 결합에서 바디 트리를 만든다
       - [ ] 테스트: 총질량·무게중심이 합산과 일치
-      - [ ] 충돌 프록시가 빈 곳을 메운 부품(`CollisionProxy.filled_voids`가 비어 있지 않음, B-01b)이 있으면 라벨 "근사: 충돌 프록시가 빈 곳을 메움(+N%)"(N은 `volume_error`)이 컴파일 라벨과 가정표에 나온다. 테스트: 관 또는 구멍 난 판을 넣은 설계에서 라벨과 N이 나오고, 빈 곳이 없는 설계에는 라벨이 없다
+      - [ ] 충돌 프록시가 빈 곳을 메운 부품(`CollisionProxy.filled_voids`가 비어 있지 않음, B-01b)이 있으면 라벨 "근사: 충돌 프록시가 빈 곳을 메움(+N%)"(N은 `volume_error`)이 컴파일 라벨과 가정표에 나온다. 분해한 부품(`CollisionProxy.decomposed_voids`가 비어 있지 않음, B-01f)이 있으면 호스트마다 라벨 "근사: 충돌 프록시가 빈 곳을 상자 조각으로 근사함(오차 N%, 허용 오차 T%[, 기본값])"(N은 그 `decomposed_voids[].error`, T는 `derivation.tolerance`, 배지가 `default`면 ", 기본값")이 컴파일 라벨과 가정표에 나온다. 테스트: 관과 구멍 난 판을 넣은 설계(분해)와 막힌 포켓을 넣은 설계(메움)에서 각각 라벨과 N(과 T)이 나오고, 둘이 한 설계에 있으면 둘 다 나오며, 빈 곳이 없는 설계에는 라벨이 없다
       - [ ] 프록시 지오메트리를 MuJoCo `geom`으로 옮길 때 `docs/architecture/collision-proxy.md`의 매핑 표(상자 반치수, 원기둥 반지름·반길이, 쿼터니언 w x y z)를 따르고, 바디 질량·관성은 `MassProperties`에서 `inertial`로 준다. 테스트: 상자·원기둥·구 프록시의 MuJoCo `geom_size`, 바디 질량과 부피가 손계산과 일치
       - [ ] "100% 완료" 8항목 충족(`docs/process/done-definition.md`, issues.yaml `done_definition`)
       ## 범위 밖

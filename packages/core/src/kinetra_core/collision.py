@@ -12,12 +12,14 @@ reaches the engine as this data, never as an engine fragment (`docs/architecture
   - `added-primitives` (B-01b): the proxy is the added components, each copied unchanged. A subtracted component (hole,
     pocket) is **filled** and listed in `filled_voids`; the proxy has more volume than the recipe, by exactly the filled
     volumes. There is no tolerance.
-  - `void-decomposition` (B-01f): an added component that contains voids is replaced by convex pieces whose union
-    **approximates** the component minus its voids; each void is listed in `decomposed_voids`. The approximation is
-    stated: `derivation.tolerance` is the bound the computation guarantees on `|volume_error|`. The error is signed (a decomposition may have less volume than the recipe, or more). `proxy_volume` is the sum of the geom
-    volumes, which is the volume of their union only when the pieces do not overlap; the engine's decomposition keeps
-    them interior-disjoint. Pieces may overlap in a collision (only mass needs disjoint solids, and mass never comes
-    from the proxy), but then `proxy_volume` counts the overlap twice.
+  - `void-decomposition` (B-01f): an added component with a through-bore is replaced by box pieces whose union
+    **approximates** the component minus the bore; each such void is listed in `decomposed_voids` with its host's volume
+    error. The approximation is stated: `derivation.tolerance` (a badged `Quantity`: `default` when the caller gave none,
+    otherwise the caller's) bounds `|error|` of **every decomposed host** on its own, as a fraction of that host's volume
+    minus its bore. Voids the decomposition does not cover stay in `filled_voids` (a part may have both), each with the
+    reason in `derivation.assumptions`. Pieces of a ring (tube) overlap each other: that is allowed in a collision (only
+    mass needs disjoint solids, and mass never comes from the proxy), so a host's `union_volume` is its own number and
+    `proxy_volume` adds the union volumes, not the sum of the geom volumes.
 - **Badge.** Every derived number is badge `sim`; the shape recipe, the parameter values used and their badges travel in
   `derivation`, as in `massprops.py`.
 """
@@ -32,7 +34,7 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 from .conventions import ID_PATTERN, Unit
 from .geometry import Name, Quaternion
 from .massprops import PRIMITIVE_DIMENSIONS, DerivedScalar, Dimension, ParameterUse, SimProvenance
-from .provenance import Badge, Number, Provenance
+from .provenance import Badge, Number, Provenance, Quantity
 
 _VOLUME_REL_TOL = 1e-9
 
@@ -89,9 +91,34 @@ class FilledVoid(BaseModel):
     volume: Number = Field(gt=0.0)
 
 
+class RingReport(BaseModel):
+    """How a tube's ring of boxes sits against the real tube. `wall_closed`: every ray from the axis enters the wall once
+    and leaves once, so there is no radial slit (the model rejects `False`). `inner_deviation` [m] is the largest radial
+    distance the proxy's bore wall is from the real bore (towards the wall); `outer_deviation` [m] the largest the
+    proxy's outer surface is inside the real outer cylinder (the notches between boxes)."""
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    staves: int = Field(ge=3)
+    wall_closed: bool
+    inner_deviation: Number = Field(ge=0.0)
+    outer_deviation: Number = Field(ge=0.0)
+
+    @model_validator(mode="after")
+    def _closed(self) -> "RingReport":
+        if not self.wall_closed:
+            raise ValueError("a ring with a radial slit in its wall is not a tube: wall_closed must be true")
+        return self
+
+
 class DecomposedVoid(BaseModel):
     """A subtracted shape component the proxy kept as a gap: the pieces of its `host` (the added component that contains
-    it) leave this void empty, up to the tolerance. `volume` [m^3] is the void's own volume."""
+    it) leave this void empty.
+
+    `volume` is the void's volume, `host_volume` the host primitive's, `union_volume` the volume of the union of the host's
+    pieces (all in m^3), and `error` = `(union_volume - (host_volume - volume)) / (host_volume - volume)` the signed error
+    of this host alone. `layout`: `strips` (disjoint boxes cut across a plate) or `ring` (boxes around a tube's axis,
+    overlapping; `ring` then carries the report)."""
 
     model_config = ConfigDict(extra="forbid", frozen=True)
 
@@ -99,17 +126,33 @@ class DecomposedVoid(BaseModel):
     primitive: Literal["box", "cylinder", "sphere"]
     host: Name
     volume: Number = Field(gt=0.0)
+    host_volume: Number = Field(gt=0.0)
+    union_volume: Number = Field(gt=0.0)
+    error: Number
+    layout: Literal["strips", "ring"]
+    ring: RingReport | None = None
+
+    @model_validator(mode="after")
+    def _consistent(self) -> "DecomposedVoid":
+        net = self.host_volume - self.volume
+        if not net > 0.0:
+            raise ValueError("host_volume must exceed the void's volume")
+        if abs(self.error - (self.union_volume - net) / net) > _VOLUME_REL_TOL * max(1.0, abs(self.error)):
+            raise ValueError("error must be (union_volume - (host_volume - volume)) / (host_volume - volume)")
+        if (self.layout == "ring") != (self.ring is not None):
+            raise ValueError("a ring layout carries its ring report, a strips layout does not")
+        return self
 
 
 class ProxyDerivation(BaseModel):
     """What the proxy was derived from: the recipe and the parameter values, with their badges, and how the voids were
-    handled. `tolerance` is the bound the decomposition was built to on `|volume_error|` (a fraction of the recipe
-    volume); it is present exactly when `method` is `void-decomposition`."""
+    handled. `tolerance` (a fraction, unit `1`, badge `default` when the engine's default, otherwise the caller's) is the
+    bound on every decomposed host's `|error|`; it is present exactly when `method` is `void-decomposition`."""
 
     model_config = ConfigDict(extra="forbid", frozen=True)
 
     method: Literal["added-primitives", "void-decomposition"]
-    tolerance: Number | None = Field(default=None, gt=0.0, le=1.0)
+    tolerance: Quantity | None = None
     shape: Provenance
     parameters: tuple[ParameterUse, ...]
     input_badges: tuple[Badge, ...]
@@ -119,6 +162,11 @@ class ProxyDerivation(BaseModel):
     def _input_badges_are_the_inputs_badges(self) -> "ProxyDerivation":
         if (self.method == "void-decomposition") != (self.tolerance is not None):
             raise ValueError("tolerance is given exactly when method is 'void-decomposition'")
+        if self.tolerance is not None:
+            if self.tolerance.unit is not Unit.ONE or not 0.0 < self.tolerance.value <= 1.0:
+                raise ValueError("tolerance is a fraction in (0, 1], unit '1'")
+            if self.tolerance.badge is Badge.SIM:
+                raise ValueError("a tolerance is chosen, not computed: badge 'sim' is not allowed")
         order = list(Badge)
         want = tuple(sorted({self.shape.badge, *(u.value.badge for u in self.parameters)}, key=order.index))
         if self.input_badges != want:
@@ -129,15 +177,16 @@ class ProxyDerivation(BaseModel):
 class CollisionProxy(SimProvenance):
     """The collision proxy of one part.
 
-    `proxy_volume` and `recipe_volume` are the volumes of the geoms and of the shape recipe (added minus voids, the volume
-    `MassProperties` reports); `volume_error` is `(proxy - recipe) / recipe`, dimensionless and **signed**.
+    `proxy_volume` and `recipe_volume` are the volumes of the proxy (the union of its geoms) and of the shape recipe (added
+    minus voids, the volume `MassProperties` reports); `volume_error` is `(proxy - recipe) / recipe`, dimensionless and
+    **signed**. In every proxy `proxy_volume - recipe_volume` = the sum of `filled_voids` volumes + the sum of
+    `union_volume - (host_volume - volume)` over `decomposed_voids`.
 
-    - `added-primitives`: `filled_voids` lists every void the proxy filled, `decomposed_voids` is empty, their volumes add
-      up to `proxy_volume - recipe_volume` and the error is never negative.
-    - `void-decomposition`: `decomposed_voids` lists every void kept as a gap, `filled_voids` is empty, and
-      `-derivation.tolerance <= volume_error <= derivation.tolerance`. The sign carries no rule here (a decomposition
-      may have less volume than the recipe, or more); the engine's decomposition of round through-bores keeps every piece
-      inside the recipe's material, so its error is never positive.
+    - `added-primitives`: `decomposed_voids` is empty, every geom is its component unchanged (`id == component`), the
+      geoms do not overlap each other and `proxy_volume` is their sum; the error is never negative.
+    - `void-decomposition`: `decomposed_voids` is not empty. A host's geoms are its pieces (`component` = the host's id), the
+      rest are components unchanged. `|error|` of each decomposed host is within `derivation.tolerance`. The decomposition the
+      engine builds is inside the recipe's material, so each host's error is never positive; the model does not require it.
 
     Mass, centre of mass and inertia never come from the proxy; they come from `MassProperties` (B-01a).
     """
@@ -156,42 +205,59 @@ class CollisionProxy(SimProvenance):
         ids = [g.id for g in self.geoms]
         if len(set(ids)) != len(ids):
             raise ValueError("duplicate geom id")
-        if len({v.id for v in self.filled_voids}) != len(self.filled_voids):
-            raise ValueError("duplicate filled void id")
-        if len({v.id for v in self.decomposed_voids}) != len(self.decomposed_voids):
-            raise ValueError("duplicate decomposed void id")
+        void_ids = [v.id for v in self.filled_voids] + [v.id for v in self.decomposed_voids]
+        if len(set(void_ids)) != len(void_ids):
+            raise ValueError("duplicate void id")
+        hosts = [v.host for v in self.decomposed_voids]
+        if len(set(hosts)) != len(hosts):
+            raise ValueError("a host has one decomposed void")
         for field, unit in (("proxy_volume", Unit.M3), ("recipe_volume", Unit.M3), ("volume_error", Unit.ONE)):
             if getattr(self, field).unit is not unit:
                 raise ValueError(f"{field} must be in {unit.value!r}")
         proxy, recipe = self.proxy_volume.value, self.recipe_volume.value
         if not recipe > 0.0:
             raise ValueError("recipe_volume must be above zero")
-        geoms = sum(g.volume for g in self.geoms)
-        if abs(proxy - geoms) > _VOLUME_REL_TOL * max(proxy, geoms):
-            raise ValueError("proxy_volume must be the sum of the geom volumes")
         error = self.volume_error.value
         if abs(error - (proxy - recipe) / recipe) > _VOLUME_REL_TOL * max(1.0, abs(error)):
             raise ValueError("volume_error must be (proxy_volume - recipe_volume) / recipe_volume")
+        by_component: dict[str, list[ProxyGeom]] = {}
+        for g in self.geoms:
+            by_component.setdefault(g.component, []).append(g)
+        kept = 0.0  # volume of the components that are copied unchanged
+        for component, geoms in by_component.items():
+            if component not in hosts:
+                if len(geoms) != 1 or geoms[0].id != component:
+                    raise ValueError(f"component {component!r} is copied unchanged: one geom whose id is the component's")
+                kept += geoms[0].volume
+        union = 0.0
+        extra = 0.0
+        for v in self.decomposed_voids:
+            pieces = by_component.get(v.host)
+            if not pieces:
+                raise ValueError("every decomposed void's host must have at least one piece")
+            total = sum(g.volume for g in pieces)
+            if any(g.primitive != "box" for g in pieces):
+                raise ValueError("the pieces of a decomposed host are boxes")
+            if v.layout == "strips" and abs(v.union_volume - total) > _VOLUME_REL_TOL * max(v.union_volume, total):
+                raise ValueError("the strips of a host are disjoint: union_volume must be the sum of their volumes")
+            if v.layout == "ring" and v.union_volume > total * (1.0 + _VOLUME_REL_TOL):
+                raise ValueError("union_volume of a ring cannot exceed the sum of its boxes' volumes")
+            union += v.union_volume
+            extra += v.union_volume - (v.host_volume - v.volume)
+        if abs(proxy - (kept + union)) > _VOLUME_REL_TOL * max(proxy, kept + union):
+            raise ValueError("proxy_volume must be the sum of the copied geom volumes and the hosts' union volumes")
+        filled = sum(v.volume for v in self.filled_voids)
+        if abs(proxy - recipe - (filled + extra)) > _VOLUME_REL_TOL * max(proxy, recipe):
+            raise ValueError("proxy_volume - recipe_volume must be the sum of the filled void volumes and the decomposed hosts' errors")
         if self.derivation.method == "added-primitives":
             if self.decomposed_voids:
                 raise ValueError("an added-primitives proxy has no decomposed voids")
-            if self.derivation.tolerance is not None:
-                raise ValueError("an added-primitives proxy states no tolerance")
-            if any(g.id != g.component for g in self.geoms):
-                raise ValueError("an added-primitives geom is its component unchanged: id must equal component")
-            voids = sum(v.volume for v in self.filled_voids)
-            if abs(proxy - recipe - voids) > _VOLUME_REL_TOL * max(proxy, recipe):
-                raise ValueError("proxy_volume - recipe_volume must be the sum of the filled void volumes")
         else:
-            if self.filled_voids:
-                raise ValueError("a void-decomposition proxy has no filled voids")
             if not self.decomposed_voids:
                 raise ValueError("a void-decomposition proxy lists the voids it decomposed")
-            pieced = {g.component for g in self.geoms}
-            if any(v.host not in pieced for v in self.decomposed_voids):
-                raise ValueError("every decomposed void's host must have at least one piece")
             tolerance = self.derivation.tolerance
             assert tolerance is not None  # ProxyDerivation ties it to the method
-            if abs(error) > tolerance * (1.0 + _VOLUME_REL_TOL):
-                raise ValueError(f"|volume_error| {abs(error)} exceeds the stated tolerance {tolerance}")
+            for v in self.decomposed_voids:
+                if abs(v.error) > tolerance.value * (1.0 + _VOLUME_REL_TOL):
+                    raise ValueError(f"|error| {abs(v.error)} of host {v.host!r} exceeds the stated tolerance {tolerance.value}")
         return self

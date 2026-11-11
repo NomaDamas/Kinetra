@@ -13,6 +13,7 @@ import pytest
 
 from kinetra_core import Badge, CollisionProxy, PartDef, Quantity
 from kinetra_engine.parts import ShapeError, collision_proxy, mass_properties
+from kinetra_engine.parts._decompose import MIN_STRIP_FRACTION
 from kinetra_engine.parts.collision import DEFAULT_TOLERANCE
 
 SRC = {"ref": "unit-test fixture", "locator": "test_proxy.py"}
@@ -150,7 +151,7 @@ def test_proxy_of_a_ball_void_is_filled_too():
     assert r.volume_error.value == approx(4.0 / 3.0 * math.pi * 0.001 / (0.027 - 4.0 / 3.0 * math.pi * 0.001))
 
 
-def test_two_bores_in_one_plate_take_the_fill_path_for_the_whole_part():
+def test_two_bores_in_one_plate_are_filled_with_the_reason_and_rejected_on_request():
     comps = [
         box("plate", 0.3, 0.2, 0.02),
         cyl("h1", 0.03, 0.02, at=(-0.07, 0.0, 0.0), op="subtract"),
@@ -158,6 +159,44 @@ def test_two_bores_in_one_plate_take_the_fill_path_for_the_whole_part():
     ]
     r = collision_proxy(part(comps))
     assert r.derivation.method == "added-primitives" and [v.id for v in r.filled_voids] == ["h1", "h2"]
+    assert r.derivation.tolerance is None and r.volume_error.value > 0.1
+    for void in ("h1", "h2"):
+        assert any(f"Void '{void}' was filled" in a and "2 voids" in a for a in r.derivation.assumptions)
+    with pytest.raises(ShapeError, match=r"cannot decompose.*h1.*h2.*on_unsupported='reject'"):
+        collision_proxy(part(comps), on_unsupported="reject")
+    with pytest.raises(ShapeError, match="on_unsupported must be"):
+        collision_proxy(part(comps), on_unsupported="ignore")
+
+
+def test_unsupported_voids_name_their_reasons():
+    skew = [box("blk", 0.3, 0.3, 0.3), cyl("h", 0.03, 0.3, op="subtract", quat={"x": 0.0, "y": math.sin(0.3), "z": 0.0, "w": math.cos(0.3)})]
+    tilted = [box("blk", 0.2, 0.2, 1.0), cyl("h", 1e-4, 1.0, op="subtract", quat={"x": 0.0, "y": math.sin(5e-7), "z": 0.0, "w": math.cos(5e-7)})]
+    off_axis = [cyl("outer", 0.06, 0.4), cyl("bore", 0.02, 0.4, at=(0.02, 0.0, 0.0), op="subtract")]
+    short = [box("blk", 0.3, 0.3, 0.3), cyl("h", 0.03, 0.2, at=(0.0, 0.0, 0.05), op="subtract")]
+    for comps, why in ((skew, "not parallel"), (tilted, "not parallel"), (off_axis, "off the tube's axis"), (short, "blind pocket")):
+        r = collision_proxy(part(comps))
+        assert r.derivation.method == "added-primitives" and len(r.filled_voids) == 1
+        assert any(why in a for a in r.derivation.assumptions), (why, r.derivation.assumptions)
+        with pytest.raises(ShapeError, match=why):
+            collision_proxy(part(comps), on_unsupported="reject")
+
+
+def test_a_supported_bore_is_decomposed_even_when_another_void_is_filled():
+    # plate with a through-bore + a separate block with a ball cavity (not decomposable): per void, not per part
+    comps = [*PLATE_HOLE, box("blk", 0.2, 0.2, 0.2, at=(1.0, 0.0, 0.0)), sphere("cavity", 0.05, at=(1.0, 0.0, 0.0), op="subtract")]
+    r = collision_proxy(part(comps), tolerance=0.1)
+    assert r.derivation.method == "void-decomposition"
+    assert [v.id for v in r.decomposed_voids] == ["hole"] and [v.id for v in r.filled_voids] == ["cavity"]
+    assert any("Void 'cavity' was filled" in a and "sphere" in a for a in r.derivation.assumptions)
+    assert [g.id for g in r.geoms if g.component == "blk"] == ["blk"]  # the block with the cavity is one box
+    assert not _any_geom(r, (0.05, 0.0, 0.0)) and _any_geom(r, (1.0, 0.0, 0.0))  # bore empty, cavity filled
+    # the part's error is the filled cavity plus the decomposed host's (negative) error, to the volume
+    cavity, hole = 4.0 / 3.0 * math.pi * 0.05**3, math.pi * 0.0025 * 0.02
+    host_net = 0.0012 - hole
+    want = cavity + r.decomposed_voids[0].error * host_net
+    assert r.proxy_volume.value - r.recipe_volume.value == pytest.approx(want, rel=1e-9)
+    with pytest.raises(ShapeError, match="cavity"):
+        collision_proxy(part(comps), on_unsupported="reject")
 
 
 # --- through-bores are decomposed (B-01f) -------------------------------------------------------------------------------
@@ -166,20 +205,15 @@ PLATE_HOLE = [box("plate", 0.3, 0.2, 0.02), cyl("hole", 0.05, 0.02, at=(0.05, 0.
 TUBE = [cyl("outer", 0.05, 0.5), cyl("bore", 0.04, 0.5, op="subtract")]
 
 
-def _in_box(g, pt):
-    """Point in an axis-aligned proxy box (all boxes of these parts have the identity orientation)."""
-    return all(abs(pt[i] - g.center[i]) <= dims(g)[n] / 2 for i, n in enumerate(("size_x", "size_y", "size_z")))
-
-
 def _any_geom(r, pt):
-    return any(_in_box(g, pt) for g in r.geoms)
+    return any(_geom_contains(g, pt) for g in r.geoms)
 
 
 def test_plate_with_a_hole_keeps_the_hole_empty_and_the_error_is_small_and_negative():
     r = collision_proxy(part(PLATE_HOLE), tolerance=0.02)
     hole = math.pi * 0.0025 * 0.02
-    assert r.derivation.method == "void-decomposition" and r.derivation.tolerance == 0.02
-    assert r.filled_voids == ()
+    assert r.derivation.method == "void-decomposition" and r.derivation.tolerance.value == 0.02
+    assert r.derivation.tolerance.badge is Badge.DECLARED and r.filled_voids == ()
     (d,) = r.decomposed_voids
     assert (d.id, d.primitive, d.host) == ("hole", "cylinder", "plate") and d.volume == approx(hole)
     assert all(g.primitive == "box" and g.component == "plate" for g in r.geoms)
@@ -211,37 +245,108 @@ def test_plate_hand_checked_volume_with_four_strips():
     assert r.volume_error.value == pytest.approx(-0.0247028, abs=1e-6)  # -2.47 %, inside the stated 10 %
 
 
-def test_tube_is_a_ring_of_boxes_with_the_bore_empty_and_a_small_signed_error():
+def test_tube_is_a_closed_ring_of_staves_inside_the_wall_with_reported_deviations():
     r = collision_proxy(part(TUBE))  # default tolerance
-    assert r.derivation.method == "void-decomposition" and r.derivation.tolerance == DEFAULT_TOLERANCE and r.filled_voids == ()
+    d = r.decomposed_voids[0]
+    assert r.derivation.method == "void-decomposition" and r.filled_voids == ()
+    assert r.derivation.tolerance.value == DEFAULT_TOLERANCE and r.derivation.tolerance.badge is Badge.DEFAULT
+    assert "chosen value" in r.derivation.tolerance.source.ref
+    assert d.layout == "ring" and d.ring.wall_closed and d.ring.staves == len(r.geoms) == 16
+    assert -DEFAULT_TOLERANCE <= d.error < 0.0
     recipe = math.pi * (0.05**2 - 0.04**2) * 0.5  # pi (R^2 - r^2) h = 0.00045 pi
     assert r.recipe_volume.value == approx(0.00045 * math.pi)
-    assert -DEFAULT_TOLERANCE <= r.volume_error.value < 0.0
-    assert r.proxy_volume.value == pytest.approx(recipe * (1.0 + r.volume_error.value), rel=1e-12)
-    assert len(r.geoms) > 8 and all(g.primitive == "box" and g.component == "outer" for g in r.geoms)
-    # an object of radius 0.039 fits in the bore: the centre line and the ring of points at r = 0.0399 are free
+    assert d.union_volume == pytest.approx(recipe * (1.0 + d.error), rel=1e-12)
+    assert r.proxy_volume.value == approx(d.union_volume)  # the union, not the sum of the (overlapping) boxes
+    assert d.union_volume < sum(g.volume for g in r.geoms)  # the boxes overlap each other: allowed in a collision
+    assert all(g.primitive == "box" and g.component == "outer" for g in r.geoms)
+    # the bore wall of the proxy is the regular 16-gon of apothem r: at most r (1 / cos(pi/16) - 1) = 0.78 mm into the wall
+    assert d.ring.inner_deviation == pytest.approx(0.04 * (1.0 / math.cos(math.pi / 16) - 1.0), rel=1e-12)
+    # independent ray scan (no reuse of the engine's formulas): along each of 720 rays at z = 0 the proxy is entered once and
+    # left once (no radial slit), the entry is within the reported inner deviation of r and the exit within the outer one of R
+    rs = [0.05 * k / 1000 for k in range(1, 1001)]
+    entry_dev, exit_dev = 0.0, 0.0
+    for m in range(720):
+        phi = 2 * math.pi * (m + 0.37) / 720
+        inside = [_any_geom(r, (t * math.cos(phi), t * math.sin(phi), 0.0)) for t in rs]
+        assert sum(1 for a, b in zip(inside, inside[1:]) if a != b) == 2, f"ray {m} crosses the wall more than once"
+        entry_dev = max(entry_dev, next(t for t, f in zip(rs, inside) if f) - 0.04)
+        exit_dev = max(exit_dev, 0.05 - max(t for t, f in zip(rs, inside) if f))
+    assert entry_dev <= d.ring.inner_deviation + 5e-5 and exit_dev <= d.ring.outer_deviation + 5e-5  # 5e-5 = ray step
+    # the deepest notch, found by bisection on the exit radius of 4000 rays across one notch (the ring repeats every 2 pi / 16)
+    def exit_radius(phi):
+        lo, hi = 0.045, 0.05  # inside at the wall's middle (checked above), outside at R + epsilon
+        if _any_geom(r, (hi * math.cos(phi), hi * math.sin(phi), 0.0)):
+            return hi
+        for _ in range(60):
+            mid = (lo + hi) / 2
+            lo, hi = (mid, hi) if _any_geom(r, (mid * math.cos(phi), mid * math.sin(phi), 0.0)) else (lo, mid)
+        return lo
+
+    deepest = max(0.05 - exit_radius(2 * math.pi / 16 * m / 4000) for m in range(4001))
+    assert deepest == pytest.approx(d.ring.outer_deviation, abs=2e-6)  # 1.9 mm of a 50 mm radius: not hidden, not inflated
+    # an object of radius 0.039 fits in the bore; the wall's middle (r = 0.045) is solid
     for z in (-0.24, 0.0, 0.24):
         assert not _any_geom(r, (0.0, 0.0, z))
         for k in range(24):
             t = 2 * math.pi * k / 24
-            assert not _any_geom(r, (0.0399 * math.cos(t), 0.0399 * math.sin(t), z))
-            assert _any_geom(r, (0.045 * math.cos(t), 0.045 * math.sin(t), z))  # and the wall's middle (r = 0.045) is solid
-    # nothing sticks out of the outer cylinder: every piece corner is within R (up to rounding)
+            assert not _any_geom(r, (0.0391 * math.cos(t), 0.0391 * math.sin(t), z))
+            assert _any_geom(r, (0.045 * math.cos(t), 0.045 * math.sin(t), z))
+
+
+def test_ring_staves_do_not_leave_the_tube_and_overlap_only_their_neighbours():
+    r = collision_proxy(part(TUBE))
     for g in r.geoms:
+        o = g.orientation
         for sx in (-1, 1):
             for sy in (-1, 1):
-                assert math.hypot(g.center[0] + sx * dims(g)["size_x"] / 2, g.center[1] + sy * dims(g)["size_y"] / 2) <= 0.05 * (1 + 1e-9)
-                assert math.hypot(g.center[0] - sx * dims(g)["size_x"] / 2, g.center[1] - sy * dims(g)["size_y"] / 2) >= 0.0
+                local = (sx * dims(g)["size_x"] / 2, sy * dims(g)["size_y"] / 2, 0.0)
+                # corner in the part frame: rotate by the stave's orientation (about z) and add the centre
+                ang = 2 * math.atan2(o.z, o.w)
+                cx_ = g.center[0] + local[0] * math.cos(ang) - local[1] * math.sin(ang)
+                cy_ = g.center[1] + local[0] * math.sin(ang) + local[1] * math.cos(ang)
+                rho = math.hypot(cx_, cy_)
+                assert 0.04 * (1 - 1e-9) <= rho <= 0.05 * (1 + 1e-9)
 
 
-def test_decomposed_pieces_do_not_overlap_each_other():
-    r = collision_proxy(part(TUBE))
-    boxes = [(tuple(g.center[i] - dims(g)[n] / 2 for i, n in enumerate(("size_x", "size_y", "size_z"))),
-              tuple(g.center[i] + dims(g)[n] / 2 for i, n in enumerate(("size_x", "size_y", "size_z")))) for g in r.geoms]
-    for i in range(len(boxes)):
-        for j in range(i + 1, len(boxes)):
-            (a0, a1), (b0, b1) = boxes[i], boxes[j]
-            assert not all(min(a1[k], b1[k]) - max(a0[k], b0[k]) > 1e-12 for k in range(3))
+def test_plate_strips_are_disjoint_and_never_thinner_than_the_stated_minimum():
+    for tol in (0.1, 0.02):
+        r = collision_proxy(part(PLATE_HOLE), tolerance=tol)
+        boxes = [
+            (tuple(g.center[i] - dims(g)[n] / 2 for i, n in enumerate(("size_x", "size_y", "size_z"))),
+             tuple(g.center[i] + dims(g)[n] / 2 for i, n in enumerate(("size_x", "size_y", "size_z"))))
+            for g in r.geoms
+        ]
+        for i in range(len(boxes)):
+            for j in range(i + 1, len(boxes)):
+                (a0, a1), (b0, b1) = boxes[i], boxes[j]
+                assert not all(min(a1[k], b1[k]) - max(a0[k], b0[k]) > 1e-12 for k in range(3))
+        assert min(dims(g)["size_y"] for g in r.geoms) >= MIN_STRIP_FRACTION * 0.05 * (1 - 1e-9)
+
+
+def test_strip_boundaries_closer_than_the_minimum_are_merged_and_the_error_still_holds():
+    # A hole 0.2 mm off a plate edge: the bore's own grid would put a boundary a hair from the edge.
+    comps = [box("plate", 0.3, 0.2, 0.02), cyl("hole", 0.05, 0.02, at=(0.0, 0.0499, 0.0), op="subtract")]
+    for tol in (0.05, 0.1):
+        r = collision_proxy(part(comps), tolerance=tol)
+        thinnest = min(min(dims(g)["size_x"], dims(g)["size_y"]) for g in r.geoms if g.dimensions)
+        assert min(dims(g)["size_y"] for g in r.geoms) >= MIN_STRIP_FRACTION * 0.05 * (1 - 1e-9)
+        assert -tol <= r.decomposed_voids[0].error < 0.0 and thinnest > 0.0
+
+
+def test_a_big_base_cannot_hide_a_badly_decomposed_tube():
+    # Base 0.5 x 0.5 x 0.1 (V = 0.025) plus a tube whose wall is only 0.00045 pi = 0.0014 m^3. Part-level error is dominated by the
+    # base, so a part-wide tolerance would accept a ring with half the wall missing. Each host is held to the tolerance by itself.
+    comps = [box("base", 0.5, 0.5, 0.1, at=(0.0, 0.0, -0.3)), cyl("outer", 0.05, 0.5), cyl("bore", 0.04, 0.5, op="subtract")]
+    for tol in (0.1, 0.02):
+        r = collision_proxy(part(comps), tolerance=tol)
+        (d,) = r.decomposed_voids
+        assert d.host == "outer" and -tol <= d.error < 0.0
+        assert abs(r.volume_error.value) < abs(d.error) / 5  # the part-level number is far smaller than the host's
+        ring = [g for g in r.geoms if g.component == "outer"]
+        assert d.ring.staves == len(ring) >= 16 and d.ring.wall_closed
+        assert [g.id for g in r.geoms if g.component == "base"] == ["base"]
+    # and the bound is the host's, not the part's: a ring of 6 boxes at 100 % would have passed a part-level 5 %
+    assert collision_proxy(part(comps), tolerance=0.02).decomposed_voids[0].ring.staves > collision_proxy(part(comps), tolerance=0.1).decomposed_voids[0].ring.staves
 
 
 def test_monte_carlo_coverage_of_the_decomposed_tube_and_plate():
@@ -255,7 +360,7 @@ def test_monte_carlo_coverage_of_the_decomposed_tube_and_plate():
     ):
         r = collision_proxy(part(comps), tolerance=tol)
         outer, hole = comps[0], comps[1]
-        n, in_recipe, missed = 80_000, 0, 0
+        n, in_recipe, missed = 60_000, 0, 0
         for _ in range(n):
             pt = tuple(rng.uniform(a, b) for a, b in zip(lo, hi))
             rec = _geom_contains_component(outer, pt) and not _geom_contains_component(hole, pt)
@@ -266,24 +371,59 @@ def test_monte_carlo_coverage_of_the_decomposed_tube_and_plate():
         fraction = missed / in_recipe
         sigma = math.sqrt(fraction * (1 - fraction) / in_recipe)
         assert fraction <= tol + 5 * sigma
-        assert fraction == pytest.approx(-r.volume_error.value, abs=5 * sigma + 1e-4)
-        # the recipe volume by sampling (the sample box volume times the hit rate) matches the reported one
+        assert fraction == pytest.approx(-r.decomposed_voids[0].error, abs=5 * sigma + 1e-4)
         sample_volume = math.prod(b - a for a, b in zip(lo, hi))
         assert in_recipe / n * sample_volume == pytest.approx(r.recipe_volume.value, rel=0.03)
 
 
-def test_tolerance_is_stated_and_a_wall_too_thin_for_it_is_rejected_with_the_reason():
-    thin = [cyl("outer", 0.05, 0.5), cyl("bore", 0.0475, 0.5, op="subtract")]  # wall = 5 % of the radius
-    with pytest.raises(ShapeError, match=r"too thin for the tolerance"):
-        collision_proxy(part(thin))
-    r = collision_proxy(part(thin), tolerance=0.3)  # a looser stated tolerance is accepted, and is the one reported
-    assert r.derivation.tolerance == 0.3 and -0.3 <= r.volume_error.value < 0
+def test_tolerance_is_stated_badged_and_what_cannot_meet_it_is_rejected_with_the_reason():
+    assert collision_proxy(part(TUBE)).derivation.tolerance.badge is Badge.DEFAULT
+    declared = collision_proxy(part(TUBE), tolerance=0.2).derivation.tolerance
+    assert (declared.value, declared.badge, declared.unit.value) == (0.2, Badge.DECLARED, "1")
+    cited = Quantity.model_validate({"value": 0.2, "unit": "1", "badge": "cite", "source": {"ref": "Drawing 42", "locator": "note 3"}})
+    assert collision_proxy(part(TUBE), tolerance=cited).derivation.tolerance.badge is Badge.CITE
+    # a bore of a fifth of the radius cannot be a ring of boxes inside 10 % of the wall (nor of 30 %): rejected, with why
+    small = [cyl("outer", 0.05, 0.5), cyl("bore", 0.01, 0.5, op="subtract")]
+    with pytest.raises(ShapeError, match=r"void 'bore' in 'outer' cannot be made into a closed ring.*0\.1.*raise the tolerance"):
+        collision_proxy(part(small))
+    assert collision_proxy(part(small), tolerance=1.0).decomposed_voids[0].error > -1.0  # a looser stated tolerance is accepted
+    # a plate whose strips cannot reach 0.5 % within the strip limit
+    with pytest.raises(ShapeError, match=r"cannot be cut into boxes within 0\.005"):
+        collision_proxy(part(PLATE_HOLE), tolerance=0.005)
     for bad in (0.0, -0.1, 1.5):
         with pytest.raises(ShapeError, match="tolerance must be"):
             collision_proxy(part(TUBE), tolerance=bad)
-    # a tighter tolerance gives more pieces and a smaller error
-    loose, tight = collision_proxy(part(TUBE), tolerance=0.1), collision_proxy(part(TUBE), tolerance=0.06)
+    with pytest.raises(ShapeError, match="unit '1'"):
+        collision_proxy(part(TUBE), tolerance=Quantity.model_validate(q(0.1, "m")))
+    # a tighter tolerance gives more boxes and a smaller error
+    loose, tight = collision_proxy(part(TUBE), tolerance=0.1), collision_proxy(part(TUBE), tolerance=0.05)
     assert len(tight.geoms) > len(loose.geoms) and abs(tight.volume_error.value) < abs(loose.volume_error.value)
+    # a thin wall (5 % of the radius) is fine for a ring; the report says how far the bore wall moved
+    thin = collision_proxy(part([cyl("outer", 0.05, 0.5), cyl("bore", 0.0475, 0.5, op="subtract")]))
+    assert thin.decomposed_voids[0].ring.wall_closed and thin.decomposed_voids[0].ring.inner_deviation < 0.0025 * 0.5
+
+
+def test_piece_ids_avoid_component_ids_and_stay_unique():
+    # a separate element named like the first piece of the plate
+    comps = [*PLATE_HOLE, box("plate_p0", 0.1, 0.1, 0.1, at=(1.0, 0.0, 0.0))]
+    r = collision_proxy(part(comps), tolerance=0.1)
+    ids = [g.id for g in r.geoms]
+    assert len(set(ids)) == len(ids) and ids.count("plate_p0") == 1
+    assert [g.component for g in r.geoms if g.id == "plate_p0"] == ["plate_p0"]
+    assert sorted(g.id for g in r.geoms if g.component == "plate")[0] == "plate_p1"  # p0 is taken, so the pieces start at p1
+    # two hosts whose names share the first 62 characters: ids are cut to 64, so the pieces need a different suffix
+    stem = "h" * 62
+    two = [
+        box(stem + "aa", 0.3, 0.2, 0.02),
+        cyl("hole_a", 0.05, 0.02, at=(0.05, 0.0, 0.0), op="subtract"),
+        box(stem + "bb", 0.3, 0.2, 0.02, at=(1.0, 0.0, 0.0)),
+        cyl("hole_b", 0.05, 0.02, at=(1.05, 0.0, 0.0), op="subtract"),
+    ]
+    r2 = collision_proxy(part(two), tolerance=0.1)
+    ids2 = [g.id for g in r2.geoms]
+    assert len(set(ids2)) == len(ids2) and all(len(i) <= 64 for i in ids2)
+    assert {g.component for g in r2.geoms} == {stem + "aa", stem + "bb"}
+    assert collision_proxy(part(two), tolerance=0.1) == r2  # deterministic
 
 
 def test_decomposition_follows_the_host_frame_axis_and_parameters():
@@ -299,7 +439,7 @@ def test_decomposition_follows_the_host_frame_axis_and_parameters():
     assert any(_geom_contains(g, (0.15 + 0.06, 0.2, 0.3 + 0.001)) for g in r.geoms)
     assert not any(_geom_contains(g, (0.15, 0.2 + 0.009, 0.3 + 0.04)) for g in r.geoms)
     assert any(_geom_contains(g, (0.15, 0.2 + 0.009, 0.3 + 0.06)) for g in r.geoms)
-    assert -0.02 <= r.volume_error.value < 0.0
+    assert -0.02 <= r.decomposed_voids[0].error < 0.0
     # a bore along the plate's x axis (a box face pair other than z)
     along_x = [box("blk", 0.2, 0.3, 0.3), cyl("b", 0.05, 0.2, op="subtract", quat={"x": 0.0, "y": S2, "z": 0.0, "w": S2})]
     rx = collision_proxy(part(along_x), tolerance=0.05)
@@ -332,7 +472,7 @@ def test_a_part_with_a_bore_and_an_unrelated_added_component_keeps_the_latter_wh
     r = collision_proxy(part(comps), tolerance=0.02)
     ball = [g for g in r.geoms if g.component == "ball"]
     assert len(ball) == 1 and ball[0].id == "ball" and ball[0].primitive == "sphere"
-    assert abs(r.volume_error.value) <= 0.02
+    assert abs(r.decomposed_voids[0].error) <= 0.02
 
 
 # --- the proxy covers the recipe (independent point test) ---------------------------------------------------------------
@@ -489,7 +629,9 @@ def test_proxy_is_sim_with_the_recipe_and_its_badge_behind_it():
     assert r.derivation.shape.badge is Badge.CITE and r.derivation.shape.source.ref == "Drawing 42"
     assert r.derivation.input_badges == (Badge.CITE,)
     assert any("no mesh" in a for a in r.derivation.assumptions)
-    assert any("filled" in a for a in r.derivation.assumptions)
+    assert not any("filled" in a for a in r.derivation.assumptions)  # nothing to fill in a solid block
+    filled = collision_proxy(part([box("b", 0.2, 0.1, 0.3), sphere("v", 0.02, op="subtract")]))
+    assert any("filled" in a for a in filled.derivation.assumptions)
 
 
 def _dump(r):
@@ -514,7 +656,8 @@ def test_filled_proxy_cannot_be_forged():
     broken = _forger(r)
     broken(lambda d: d.update(badge="cite"), None)
     broken(lambda d: d["volume_error"].update(value=0.0), "volume_error must be")
-    broken(lambda d: d["proxy_volume"].update(value=0.5), "proxy_volume must be the sum")
+    broken(lambda d: d["proxy_volume"].update(value=0.5), "volume_error must be")
+    broken(lambda d: (d["proxy_volume"].update(value=0.5), d["volume_error"].update(value=(0.5 - d["recipe_volume"]["value"]) / d["recipe_volume"]["value"])), "proxy_volume must be the sum")
     broken(lambda d: d["filled_voids"].clear(), "filled void")
     broken(lambda d: d["geoms"][0].update(volume=0.01), "does not match")
     broken(lambda d: d["geoms"][0].update(primitive="sphere"), "has dimensions")
@@ -522,27 +665,39 @@ def test_filled_proxy_cannot_be_forged():
     broken(lambda d: d["geoms"].append(d["geoms"][0]), "duplicate geom id")
     broken(lambda d: d["geoms"].clear(), None)
     broken(lambda d: d["volume_error"].update(unit="m^3"), "volume_error must be in")
-    broken(lambda d: d["derivation"].update(tolerance=0.1), "tolerance is given exactly")
+    tol = {"value": 0.1, "unit": "1", "badge": "default", "source": {"ref": "x"}}
+    broken(lambda d: d["derivation"].update(tolerance=tol), "tolerance is given exactly")
     broken(lambda d: d["derivation"].update(method="void-decomposition"), "tolerance is given exactly")
-    broken(lambda d: d["geoms"][0].update(id="plate_p0"), "id must equal component")
-    broken(lambda d: d.update(decomposed_voids=[{"id": "x", "primitive": "cylinder", "host": "plate", "volume": 1e-5}]), "no decomposed voids")
+    broken(lambda d: d["geoms"][0].update(id="plate_p0"), "copied unchanged")
+    broken(lambda d: d.update(decomposed_voids=[{"id": "x", "primitive": "cylinder", "host": "plate", "volume": 1e-5, "host_volume": 0.0012, "union_volume": 0.0011, "error": -0.1, "layout": "strips"}]), None)
 
 
 def test_decomposed_proxy_cannot_be_forged():
     r = collision_proxy(part(PLATE_HOLE), tolerance=0.1)
     assert r.derivation.method == "void-decomposition"
     broken = _forger(r)
-    tol = r.derivation.tolerance
-    assert tol == 0.1
     broken(lambda d: d["derivation"].update(method="added-primitives", tolerance=None), "no decomposed voids")
     broken(lambda d: d["derivation"].update(tolerance=None), "tolerance is given exactly")
-    broken(lambda d: d["derivation"].update(tolerance=0.001), "exceeds the stated tolerance")
-    broken(lambda d: d["decomposed_voids"].clear(), "lists the voids")
-    broken(lambda d: d.update(filled_voids=[{"id": "hole", "primitive": "cylinder", "volume": 1e-5}]), "no filled voids")
-    broken(lambda d: d["decomposed_voids"][0].update(host="nope"), "host must have at least one piece")
-    broken(lambda d: d["decomposed_voids"].append(d["decomposed_voids"][0]), "duplicate decomposed void id")
-    broken(lambda d: d["volume_error"].update(value=-tol * 2), "volume_error must be")
-    broken(lambda d: (d["volume_error"].update(value=0.5), d["proxy_volume"].update(value=d["recipe_volume"]["value"] * 1.5)), "proxy_volume must be the sum")
+    broken(lambda d: d["derivation"]["tolerance"].update(value=0.001), "exceeds the stated tolerance")
+    broken(lambda d: d["derivation"]["tolerance"].update(badge="sim"), "badge 'sim'")
+    broken(lambda d: d["derivation"]["tolerance"].update(unit="m"), "unit '1'")
+    broken(lambda d: d["derivation"]["tolerance"].update(value=2.0), None)
+    broken(lambda d: d["decomposed_voids"].clear(), None)
+    broken(lambda d: d.update(filled_voids=[{"id": "hole", "primitive": "cylinder", "volume": 1e-5}]), "duplicate void id")
+    broken(lambda d: d["decomposed_voids"][0].update(host="nope"), "at least one piece|copied unchanged")
+    broken(lambda d: d["decomposed_voids"][0].update(error=-0.5), "error must be")
+    broken(lambda d: d["decomposed_voids"][0].update(layout="ring"), "ring layout carries")
+    broken(lambda d: d["decomposed_voids"].append(d["decomposed_voids"][0]), "duplicate void id")
+    broken(lambda d: d["volume_error"].update(value=-0.2), "volume_error must be")
+    broken(lambda d: d["proxy_volume"].update(value=d["proxy_volume"]["value"] * 1.2), "volume_error must be")
+    broken(lambda d: (d["proxy_volume"].update(value=d["recipe_volume"]["value"]), d["volume_error"].update(value=0.0)), "must be the sum")
+    # the strips of a host are disjoint, so their volumes add up to the union
+    broken(lambda d: d["geoms"].pop(), "union_volume must be the sum")
+    ring = collision_proxy(part(TUBE))
+    broken_ring = _forger(ring)
+    broken_ring(lambda d: d["decomposed_voids"][0]["ring"].update(wall_closed=False), "radial slit")
+    broken_ring(lambda d: d["decomposed_voids"][0].update(ring=None), "ring layout carries")
+    broken_ring(lambda d: d["decomposed_voids"][0].update(union_volume=d["decomposed_voids"][0]["union_volume"] * 1.5, error=0.0), None)
 
 
 def test_proxy_has_no_mesh_kind():

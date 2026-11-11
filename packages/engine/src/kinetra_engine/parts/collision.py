@@ -1,28 +1,31 @@
 """Collision proxy of a part from its shape recipe (B-01b, B-01f).
 
-Added components become convex analytic primitives. A subtracted component cannot be one; there are two ways to treat it.
+Added components become convex analytic primitives. A subtracted component cannot be one; each void is treated on its own.
 
-- **Decompose (B-01f)**, when every void of the part is a through-bore of its host (`_decompose.plan_through_bore`: a
-  plate with a round hole, a tube; one bore per host): the host becomes box pieces around the bore, so the bore stays
-  empty. The union is **inside** the recipe's material (see `_decompose`), so `volume_error` is negative and is, in
-  magnitude, the missed fraction of the recipe volume, computed in closed form; it is within `tolerance` (the strip count is
-  the smallest even number that gets it there) or the proxy is rejected with the reason (`ShapeError`).
-- **Fill (B-01b)**, for every other void (blind pocket, sphere, skew hole, two bores in one host): all voids of the part
-  are filled and listed in `filled_voids`; the error is the filled volume, never negative.
+- **Decompose (B-01f)** a void that is the only void of its host and a through-bore of it (`_decompose.plan_through_bore`):
+  a box with a round hole along one of its axes becomes `strips` of boxes, a cylinder with a coaxial bore becomes a `ring`
+  of boxes. The bore stays empty and every box is inside the recipe's material. The error of **each such host** (its union
+  of pieces against its own volume minus its bore) is within `tolerance`, or the proxy is rejected with the reason.
+- **Fill (B-01b)** every other void (blind pocket, sphere, skew or off-axis hole, a host with two voids): the host is copied
+  as the primitive it is and the void is listed in `filled_voids`; the reason is in `derivation.assumptions`. With
+  `on_unsupported="reject"` such a void raises `ShapeError` instead.
 
 The visual mesh is never read (B-01c, and the result type has no mesh kind).
 
-    collision_proxy(part, parameters=None, tolerance=DEFAULT_TOLERANCE) -> CollisionProxy
+    collision_proxy(part, parameters=None, tolerance=None, on_unsupported="fill") -> CollisionProxy
 
-Units are SI and the frame is the part's local frame (`kinetra_core.conventions`). Parameters are resolved, checked and
-placed exactly as `mass_properties` does (`_shape.resolve_shape`), and `recipe_volume` is the same signed sum, so a recipe
-evaluates for both or for neither and the two report the same volume bit for bit. Mass, centre of mass and inertia stay
-with `mass_properties`; nothing here feeds them.
+`tolerance` is a fraction (float, or a `Quantity` of unit `1` with its own badge); `None` is `DEFAULT_TOLERANCE` with badge
+`default`, a float is badge `declared` (the caller's choice). Units are SI and the frame is the part's local frame
+(`kinetra_core.conventions`). Parameters are resolved, checked and placed exactly as `mass_properties` does
+(`_shape.resolve_shape`), and `recipe_volume` is the same signed sum, so a recipe evaluates for both or for neither and the
+two report the same volume bit for bit. Mass, centre of mass and inertia stay with `mass_properties`; nothing here feeds them.
 """
 
 from __future__ import annotations
 
+import math
 from collections.abc import Mapping
+from typing import Literal
 
 from kinetra_core import (
     Badge,
@@ -36,96 +39,136 @@ from kinetra_core import (
     ProxyDerivation,
     ProxyGeom,
     Quantity,
+    Quaternion,
+    RingReport,
     Source,
     Unit,
 )
 
 from . import _convex as cx
-from ._decompose import MAX_STRIPS, BorePlan, pieces, plan_through_bore
+from ._decompose import Decomposition, Infeasible, MIN_STRIP_FRACTION, BorePlan, decompose, plan_through_bore
 from ._shape import Placed, ShapeError, parameter_uses, resolve_shape, signed_volumes
 
-# Upper bound on (volume of the symmetric difference between the decomposed proxy and the recipe) / recipe volume.
-# Missed volume as a fraction of the recipe volume. Chosen, not derived: 10 % keeps a 50 mm bore in a 300 x 200 mm plate
-# at 8 strips and a tube of outer radius 50 mm and bore radius 40 mm at about 34 strips (a few tens of boxes); tighter
-# tolerances or thinner walls cost more pieces (at most MAX_STRIPS strips are tried).
+# Largest allowed |error| of one decomposed host, as a fraction of that host's volume minus its bore. Chosen, not derived:
+# a 50 mm bore in a 300 x 200 x 20 mm plate needs 4 strips (10 boxes, -2.5 %) and a tube of outer radius 50 mm and bore radius
+# 40 mm a ring of 16 boxes (-9.0 %); see `docs/architecture/collision-proxy.md` for the table. Thinner walls and tighter
+# tolerances cost more boxes, and past the limits in `_decompose` (or for a bore under a third of the radius) the part is rejected.
 DEFAULT_TOLERANCE = 0.10
 
 _COMPUTED_BY = "kinetra_engine.parts.collision_proxy (convex primitives; voids decomposed or filled)"
+_DEFAULT_SOURCE = "kinetra_engine.parts.collision.DEFAULT_TOLERANCE: a chosen value, not derived from a standard or a measurement"
+_CALLER_SOURCE = "tolerance argument of collision_proxy"
 
 _COMMON = (
-    "Each added shape component that has no void becomes one proxy geom of the same primitive, size, centre and "
+    "Each added shape component that is not decomposed becomes one proxy geom of the same primitive, size, centre and "
     "orientation; no mesh and no approximation of the primitives.",
 )
 _FILLED = (
-    "A convex primitive has no hole: every subtracted component is filled in the proxy, so the proxy volume is the "
-    "recipe volume plus the filled voids. The error is reported, not removed.",
+    "A convex primitive has no hole: every void listed in filled_voids is filled in the proxy, so the proxy volume is the "
+    "recipe volume plus the filled voids (and the decomposed hosts' errors). The error is reported, not removed.",
 )
 _DECOMPOSED = (
-    "A round bore is not a finite union of boxes: each added component with a through-bore is replaced by box pieces "
-    "(disjoint interiors) cut into strips across the bore. Each box takes the narrower host width and the wider bore "
-    "width of its strip, so every piece is inside the recipe's material: the bore is empty in the proxy (a body can enter "
-    "or pass through it) and nothing sticks out. The price is volume the proxy misses, so volume_error is negative; it is "
-    "computed from the closed-form area of each circular edge, not sampled, and is within the stated tolerance.",
-    "Pieces may touch and may overlap in a collision; mass, centre of mass and inertia come from the shape recipe "
-    "(MassProperties), never from the proxy geoms.",
+    "A round bore is not a finite union of boxes. Each host with a through-bore is replaced by boxes (strips across a plate, a "
+    "ring around a tube) that are all inside the recipe's material: the bore is empty in the proxy (a body can enter or pass "
+    "through it) and nothing sticks out. The price is volume the proxy misses, so the host's error is negative; it is computed "
+    "from the pieces, not sampled, and each host is within the stated tolerance. The surfaces are stepped (strips) or "
+    "faceted (ring); the ring's deviations from the real tube are in decomposed_voids[].ring.",
+    "Pieces may touch and overlap each other in a collision (a ring's boxes do); mass, centre of mass and inertia come from "
+    "the shape recipe (MassProperties), never from the proxy geoms.",
 )
 
+OnUnsupported = Literal["fill", "reject"]
 
-def _piece_geoms(plan: BorePlan, n: int):
-    """(index, centre in the part frame, size along the host's axes) of the pieces of `plan` for `n` strips, and the
-    volume the pieces miss."""
-    host = plan.host
-    out, missed = pieces(plan, n)
-    rows = []
-    for idx, piece in enumerate(out):
+
+def _tolerance(value: float | Quantity | None) -> Quantity:
+    if value is None:
+        return Quantity(value=DEFAULT_TOLERANCE, unit=Unit.ONE, badge=Badge.DEFAULT, source=Source(ref=_DEFAULT_SOURCE))
+    if isinstance(value, Quantity):
+        q = value
+    else:
+        q = Quantity(value=float(value), unit=Unit.ONE, badge=Badge.DECLARED, source=Source(ref=_CALLER_SOURCE))
+    if q.unit is not Unit.ONE:
+        raise ShapeError(f"tolerance is a fraction (unit '1'), got {q.unit.value!r}")
+    if not 0.0 < q.value <= 1.0:
+        raise ShapeError(f"tolerance must be in (0, 1], got {q.value}")
+    if q.badge is Badge.SIM:
+        raise ShapeError("tolerance is chosen, not computed: badge 'sim' is not allowed")
+    return Quantity(value=q.value, unit=q.unit, badge=q.badge, source=q.source)
+
+
+def _host_of(void: Placed, adds: list[Placed]) -> Placed:
+    for h in adds:  # resolve_shape checked that exactly one added component contains the void's body
+        if cx.contained(void.body, h.body, 1e-9 * 2.0 * max(max(void.body.half), max(h.body.half))):
+            return h
+    raise AssertionError("resolve_shape accepted a void outside every added component")
+
+
+def _piece_id(host: str, used: set[str], counter: list[int]) -> str:
+    """Next free id `<host prefix>_p<n>` of at most 64 characters; `used` holds every component id and every geom id so far."""
+    while True:
+        suffix = f"_p{counter[0]}"
+        counter[0] += 1
+        candidate = host[: 64 - len(suffix)] + suffix
+        if candidate not in used:
+            used.add(candidate)
+            return candidate
+
+
+def _mul(a: Quaternion, b: Quaternion) -> Quaternion:
+    return Quaternion(
+        x=a.w * b.x + a.x * b.w + a.y * b.z - a.z * b.y,
+        y=a.w * b.y - a.x * b.z + a.y * b.w + a.z * b.x,
+        z=a.w * b.z + a.x * b.y - a.y * b.x + a.z * b.w,
+        w=a.w * b.w - a.x * b.x - a.y * b.y - a.z * b.z,
+    )
+
+
+def _piece_geoms(dec: Decomposition, used: set[str]) -> list[ProxyGeom]:
+    host = dec.plan.host
+    counter = [0]
+    out = []
+    for piece in dec.pieces:
         centre = host.center
         for a in range(3):
             centre = cx.add(centre, cx.scale(host.body.axes[a], piece.center[a]))
-        rows.append((idx, centre, piece.size))
-    return rows, missed
-
-
-def _piece_id(host_id: str, idx: int) -> str:
-    suffix = f"_p{idx}"
-    return host_id[: 64 - len(suffix)] + suffix
-
-
-def _plans(resolved) -> list[BorePlan] | None:
-    """One `BorePlan` per void if every void is a through-bore of the single added component that contains it and no
-    host has two bores; otherwise None (the whole part then takes the fill path)."""
-    adds = [p for p in resolved.placed if p.component.operation == "add"]
-    voids = [p for p in resolved.placed if p.component.operation == "subtract"]
-    if not voids:
-        return None
-    plans: list[BorePlan] = []
-    for v in voids:
-        hosts = [h for h in adds if cx.contained(v.body, h.body, _HOST_TOL * 2.0 * max(max(v.body.half), max(h.body.half)))]
-        plan = plan_through_bore(hosts[0], v) if len(hosts) == 1 else None
-        if plan is None:
-            return None
-        plans.append(plan)
-    if len({id(pl.host) for pl in plans}) != len(plans):
-        return None
-    return plans
-
-
-_HOST_TOL = 1e-9
+        orientation = host.component.orientation
+        if piece.angle != 0.0:  # a stave of a ring: turned about the host's axis k, which is local z for a tube
+            half = piece.angle / 2.0
+            orientation = _mul(orientation, Quaternion(x=0.0, y=0.0, z=math.sin(half), w=math.cos(half)))
+        x, y, z = piece.size
+        out.append(
+            ProxyGeom(
+                id=_piece_id(host.component.id, used, counter),
+                component=host.component.id,
+                primitive="box",
+                dimensions=(Dimension(name="size_x", value=x), Dimension(name="size_y", value=y), Dimension(name="size_z", value=z)),
+                center=centre,
+                orientation=orientation,
+                volume=x * y * z,
+            )
+        )
+    return out
 
 
 def collision_proxy(
     part: PartDef,
     parameters: Mapping[str, Quantity] | None = None,
-    tolerance: float = DEFAULT_TOLERANCE,
+    tolerance: float | Quantity | None = None,
+    on_unsupported: OnUnsupported = "fill",
 ) -> CollisionProxy:
     """The collision proxy of `part` and its signed volume error against the shape recipe.
 
     `parameters` overrides the part's defaults (a `Quantity` in metres, within the parameter's range, with its own badge
-    and source), as in `mass_properties`. `tolerance` (0 < tolerance <= 1) bounds the volume a decomposed proxy misses,
-    as a fraction of the recipe volume; it has no effect on a part without through-bores. Raises `ShapeError` for a part without a recipe, a bad parameter value, a recipe that breaks the
-    disjoint-sum rule (`kinetra_core.shape`), or a through-bore whose walls are too thin to decompose within `tolerance`
-    (at most `MAX_STRIPS` strips)."""
-    if not 0.0 < tolerance <= 1.0:
-        raise ShapeError(f"tolerance must be in (0, 1], got {tolerance}")
+    and source), as in `mass_properties`. `tolerance` (see the module docstring) bounds the error of every decomposed host.
+    `on_unsupported`: what to do with a void that cannot be decomposed: `"fill"` (default) fills it and says why in
+    `derivation.assumptions`, `"reject"` raises `ShapeError`.
+
+    Raises `ShapeError` for a part without a recipe, a bad parameter value, a recipe that breaks the disjoint-sum rule
+    (`kinetra_core.shape`), a bad tolerance or `on_unsupported`, an unsupported void with `on_unsupported="reject"`, or a
+    supported through-bore that cannot be decomposed within `tolerance`."""
+    if on_unsupported not in ("fill", "reject"):
+        raise ShapeError(f"on_unsupported must be 'fill' or 'reject', got {on_unsupported!r}")
+    tol = _tolerance(tolerance)
     resolved = resolve_shape(part, parameters)
     shape = part.shape  # resolve_shape raised ShapeError if there is none
     assert shape is not None
@@ -136,64 +179,92 @@ def collision_proxy(
     if not recipe_volume > 0.0:
         raise ShapeError("the voids remove all the material: net volume is not positive")
 
-    plans = _plans(resolved)
+    hosts = {id(v): _host_of(v, adds) for v in voids}
+    per_host: dict[int, list[Placed]] = {}
+    for v in voids:
+        per_host.setdefault(id(hosts[id(v)]), []).append(v)
+
+    plans: dict[int, BorePlan] = {}  # by id(host)
+    reasons: dict[str, str] = {}  # by void id
+    for v in voids:
+        host = hosts[id(v)]
+        if len(per_host[id(host)]) > 1:
+            reasons[v.component.id] = f"its host {host.component.id!r} has {len(per_host[id(host)])} voids and only one bore per host is decomposed"
+            continue
+        plan = plan_through_bore(host, v)
+        if isinstance(plan, str):
+            reasons[v.component.id] = plan
+        else:
+            plans[id(host)] = plan
+    if reasons and on_unsupported == "reject":
+        raise ShapeError(
+            "cannot decompose: "
+            + "; ".join(f"void {i!r}: {why}" for i, why in reasons.items())
+            + " (on_unsupported='reject'; use 'fill' to fill them and report the error)"
+        )
+
+    decs: dict[int, Decomposition] = {}
+    for p in adds:
+        plan = plans.get(id(p))
+        if plan is not None:
+            try:
+                decs[id(p)] = decompose(plan, tol.value)
+            except Infeasible as e:
+                raise ShapeError(f"void {plan.void.component.id!r} in {p.component.id!r} {e}") from None
+
+    used = {p.component.id for p in resolved.placed}
     geoms: list[ProxyGeom] = []
-    sim = {"badge": Badge.SIM, "source": Source(ref=_COMPUTED_BY, locator=f"part {part.id}")}
-    filled: tuple[FilledVoid, ...] = ()
-    decomposed: tuple[DecomposedVoid, ...] = ()
-
-    def copied(p: Placed) -> ProxyGeom:
-        return ProxyGeom(
-            id=p.component.id,
-            component=p.component.id,
-            primitive=p.component.primitive.kind,
-            dimensions=tuple(Dimension(name=n, value=v) for n, v in p.dims.items()),
-            center=p.center,
-            orientation=p.component.orientation,
-            volume=p.volume,
-        )
-
-    if plans is None:
-        geoms = [copied(p) for p in adds]
-        filled = tuple(FilledVoid(id=p.component.id, primitive=p.component.primitive.kind, volume=p.volume) for p in voids)
-        method, assumptions, tol = "added-primitives", _COMMON + _FILLED, None
-        proxy_volume = sum(g.volume for g in geoms)
-    else:
-        n = next((n for n in range(4, MAX_STRIPS + 1, 2) if sum(pieces(pl, n)[1] for pl in plans) <= tolerance * recipe_volume), None)
-        if n is None:
-            worst = sum(pieces(pl, MAX_STRIPS)[1] for pl in plans) / recipe_volume
-            raise ShapeError(
-                f"the through-bores of part {part.id!r} cannot be decomposed into boxes within {tolerance:.3g} of the part's "
-                f"volume using up to {MAX_STRIPS} strips (misses {worst:.3g} of the volume at {MAX_STRIPS}); the wall is too thin for the "
-                "tolerance: raise the tolerance or thicken the wall"
-            )
-        hosts = {id(pl.host): pl for pl in plans}
-        for p in adds:
-            pl = hosts.get(id(p))
-            if pl is None:
-                geoms.append(copied(p))
-                continue
-            rows, _ = _piece_geoms(pl, n)
-            for idx, centre, size in rows:
-                geoms.append(
-                    ProxyGeom(
-                        id=_piece_id(p.component.id, idx),
-                        component=p.component.id,
-                        primitive="box",
-                        dimensions=tuple(Dimension(name=nm, value=v) for nm, v in zip(("size_x", "size_y", "size_z"), size)),
-                        center=centre,
-                        orientation=p.component.orientation,
-                        volume=size[0] * size[1] * size[2],
-                    )
+    for p in adds:
+        dec = decs.get(id(p))
+        if dec is not None:
+            geoms.extend(_piece_geoms(dec, used))
+        else:
+            geoms.append(
+                ProxyGeom(
+                    id=p.component.id,
+                    component=p.component.id,
+                    primitive=p.component.primitive.kind,
+                    dimensions=tuple(Dimension(name=n, value=v) for n, v in p.dims.items()),
+                    center=p.center,
+                    orientation=p.component.orientation,
+                    volume=p.volume,
                 )
-        decomposed = tuple(
-            DecomposedVoid(id=pl.void.component.id, primitive="cylinder", host=pl.host.component.id, volume=pl.void.volume) for pl in plans
+            )
+    proxy_volume = sum(p.volume for p in adds if id(p) not in decs) + sum(d.union_volume for d in decs.values())
+
+    decomposed = tuple(
+        DecomposedVoid(
+            id=d.plan.void.component.id,
+            primitive="cylinder",
+            host=d.plan.host.component.id,
+            volume=d.plan.void.volume,
+            host_volume=d.plan.host.volume,
+            union_volume=d.union_volume,
+            error=d.error,
+            layout=d.layout,
+            ring=None
+            if d.ring is None
+            else RingReport(staves=d.ring.staves, wall_closed=d.ring.closed, inner_deviation=d.ring.inner_deviation, outer_deviation=d.ring.outer_deviation),
         )
-        method, assumptions, tol = "void-decomposition", _COMMON + _DECOMPOSED, tolerance
-        proxy_volume = sum(g.volume for g in geoms)
+        for d in decs.values()
+    )
+    filled = tuple(
+        FilledVoid(id=v.component.id, primitive=v.component.primitive.kind, volume=v.volume) for v in voids if v.component.id in reasons
+    )
+    assumptions = list(_COMMON)
+    if decomposed:
+        assumptions += _DECOMPOSED
+        assumptions.append(
+            f"Tolerance {tol.value:g} of each decomposed host's volume minus its bore (badge {tol.badge.value}); strips are never "
+            f"thinner than {MIN_STRIP_FRACTION:g} of the bore radius across the cut."
+        )
+    if filled:
+        assumptions += _FILLED
+        assumptions += [f"Void {i!r} was filled, not decomposed: {why}." for i, why in reasons.items()]
 
     uses = parameter_uses(part, resolved)
     badges = sorted({shape.badge, *(u.value.badge for u in uses)}, key=list(Badge).index)
+    sim = {"badge": Badge.SIM, "source": Source(ref=_COMPUTED_BY, locator=f"part {part.id}")}
     return CollisionProxy(
         part_id=part.id,
         geoms=tuple(geoms),
@@ -203,12 +274,12 @@ def collision_proxy(
         recipe_volume=DerivedScalar(value=recipe_volume, unit=Unit.M3, **sim),
         volume_error=DerivedScalar(value=(proxy_volume - recipe_volume) / recipe_volume, unit=Unit.ONE, **sim),
         derivation=ProxyDerivation(
-            method=method,
-            tolerance=tol,
+            method="void-decomposition" if decomposed else "added-primitives",
+            tolerance=tol if decomposed else None,
             shape=Provenance(badge=shape.badge, source=shape.source),
             parameters=uses,
             input_badges=tuple(badges),
-            assumptions=assumptions,
+            assumptions=tuple(assumptions),
         ),
         **sim,
     )

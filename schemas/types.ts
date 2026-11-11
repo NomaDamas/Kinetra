@@ -168,15 +168,16 @@ export interface ClearParameter {
 /**
  * The collision proxy of one part.
  *
- * `proxy_volume` and `recipe_volume` are the volumes of the geoms and of the shape recipe (added minus voids, the volume
- * `MassProperties` reports); `volume_error` is `(proxy - recipe) / recipe`, dimensionless and **signed**.
+ * `proxy_volume` and `recipe_volume` are the volumes of the proxy (the union of its geoms) and of the shape recipe (added
+ * minus voids, the volume `MassProperties` reports); `volume_error` is `(proxy - recipe) / recipe`, dimensionless and
+ * **signed**. In every proxy `proxy_volume - recipe_volume` = the sum of `filled_voids` volumes + the sum of
+ * `union_volume - (host_volume - volume)` over `decomposed_voids`.
  *
- * - `added-primitives`: `filled_voids` lists every void the proxy filled, `decomposed_voids` is empty, their volumes add
- *   up to `proxy_volume - recipe_volume` and the error is never negative.
- * - `void-decomposition`: `decomposed_voids` lists every void kept as a gap, `filled_voids` is empty, and
- *   `-derivation.tolerance <= volume_error <= derivation.tolerance`. The sign carries no rule here (a decomposition
- *   may have less volume than the recipe, or more); the engine's decomposition of round through-bores keeps every piece
- *   inside the recipe's material, so its error is never positive.
+ * - `added-primitives`: `decomposed_voids` is empty, every geom is its component unchanged (`id == component`), the
+ *   geoms do not overlap each other and `proxy_volume` is their sum; the error is never negative.
+ * - `void-decomposition`: `decomposed_voids` is not empty. A host's geoms are its pieces (`component` = the host's id), the
+ *   rest are components unchanged. `|error|` of each decomposed host is within `derivation.tolerance`. The decomposition the
+ *   engine builds is inside the recipe's material, so each host's error is never positive; the model does not require it.
  *
  * Mass, centre of mass and inertia never come from the proxy; they come from `MassProperties` (B-01a).
  */
@@ -239,13 +240,23 @@ export interface Cylinder {
 
 /**
  * A subtracted shape component the proxy kept as a gap: the pieces of its `host` (the added component that contains
- * it) leave this void empty, up to the tolerance. `volume` [m^3] is the void's own volume.
+ * it) leave this void empty.
+ *
+ * `volume` is the void's volume, `host_volume` the host primitive's, `union_volume` the volume of the union of the host's
+ * pieces (all in m^3), and `error` = `(union_volume - (host_volume - volume)) / (host_volume - volume)` the signed error
+ * of this host alone. `layout`: `strips` (disjoint boxes cut across a plate) or `ring` (boxes around a tube's axis,
+ * overlapping; `ring` then carries the report).
  */
 export interface DecomposedVoid {
   id: string;
   primitive: "box" | "cylinder" | "sphere";
   host: string;
   volume: number;
+  host_volume: number;
+  union_volume: number;
+  error: number;
+  layout: "strips" | "ring";
+  ring?: RingReport | null;
 }
 
 export interface Density {
@@ -584,12 +595,12 @@ export interface Provenance {
 
 /**
  * What the proxy was derived from: the recipe and the parameter values, with their badges, and how the voids were
- * handled. `tolerance` is the bound the decomposition was built to on `|volume_error|` (a fraction of the recipe
- * volume); it is present exactly when `method` is `void-decomposition`.
+ * handled. `tolerance` (a fraction, unit `1`, badge `default` when the engine's default, otherwise the caller's) is the
+ * bound on every decomposed host's `|error|`; it is present exactly when `method` is `void-decomposition`.
  */
 export interface ProxyDerivation {
   method: "added-primitives" | "void-decomposition";
-  tolerance?: number | null;
+  tolerance?: Quantity | null;
   shape: Provenance;
   parameters: ParameterUse[];
   input_badges: Badge[];
@@ -739,6 +750,19 @@ export interface ReplaceMaterialDef {
 export interface ReplacePartDef {
   type: "replace_part_def";
   part: PartDef;
+}
+
+/**
+ * How a tube's ring of boxes sits against the real tube. `wall_closed`: every ray from the axis enters the wall once
+ * and leaves once, so there is no radial slit (the model rejects `False`). `inner_deviation` [m] is the largest radial
+ * distance the proxy's bore wall is from the real bore (towards the wall); `outer_deviation` [m] the largest the
+ * proxy's outer surface is inside the real outer cylinder (the notches between boxes).
+ */
+export interface RingReport {
+  staves: number;
+  wall_closed: boolean;
+  inner_deviation: number;
+  outer_deviation: number;
 }
 
 /** Put the project on another planet, by id. The planet's constants are not part of any command. */
