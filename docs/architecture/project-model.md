@@ -1,8 +1,8 @@
-# Project 모델: 단위·좌표·값 배지, 재료·부품·DesignSpec (C-01a, C-01b)
+# Project 모델: 단위·좌표·값 배지, 재료·부품·DesignSpec·World·가정표 (C-01a, C-01b, C-01c)
 
-- 상태: 구현됨. 코드는 `packages/core/src/kinetra_core/`(`conventions.py`, `provenance.py`, `material.py`, `partdef.py`, `designspec.py`), 테스트는 `packages/core/tests/test_material_partdef.py`와 `test_designspec.py`.
+- 상태: 구현됨. 코드는 `packages/core/src/kinetra_core/`(`conventions.py`, `provenance.py`, `material.py`, `partdef.py`, `designspec.py`, `world.py`, `assumption.py`), 테스트는 `packages/core/tests/test_material_partdef.py`와 `test_designspec.py`, `test_world_assumption.py`.
 - 근거: `docs/plan/studio-plan.md` 5절, `docs/architecture/client-adapter.md` G4·G6, 이슈 #60의 A0-04 이월 코멘트.
-- 범위 밖: MJCF(X-01), World·가정표(C-01c), JSON Schema·TS 파일 생성(C-01d). 모델은 Pydantic v2라서 `model_json_schema()`로 스키마가 이미 나온다. 파일로 내보내는 일은 C-01d다.
+- 범위 밖: MJCF(X-01), JSON Schema·TS 파일 생성(C-01d). 모델은 Pydantic v2라서 `model_json_schema()`로 스키마가 이미 나온다. 파일로 내보내는 일은 C-01d다.
 
 ## 규약 (확정)
 
@@ -12,7 +12,7 @@
 | 좌표계 | 오른손 좌표계, +Z가 위 |
 | 쿼터니언 | Project JSON에서는 성분 이름이 있는 객체 `{x, y, z, w}`, `w`가 스칼라, 길이 1(허용 오차 1e-6). 배열로 쓰지 않는다. 실행 스트림 프레임(C-05b)은 같은 성분 순서와 뜻만 따르고 인코딩은 C-05b가 정한다 |
 | 수 | 유한한 JSON 숫자. 문자열·불리언·NaN·Infinity는 거부 |
-| ID | 재료·부품·스냅 포인트·인스턴스·결합·액추에이터 `^[a-z][a-z0-9_-]{0,63}$`(`ID_PATTERN`), 파라미터·사양·종류 태그 `^[a-z][a-z0-9_]{0,63}$` |
+| ID | 재료·부품·스냅 포인트·인스턴스·결합·액추에이터·행성·지형 소품 `^[a-z][a-z0-9_-]{0,63}$`(`ID_PATTERN`), 파라미터·사양·종류 태그·가정 키 `^[a-z][a-z0-9_]{0,63}$` |
 
 ## 값 배지와 출처
 
@@ -57,11 +57,21 @@
 - 결합의 축, 종류별 자유도, 스냅 호환 태그 검사는 B-04a·B-04b가, 스프링-댐퍼는 B-03e·X-01b가 더한다. 이 PR의 `limits`와 `break_threshold`는 그 필드가 올 자리와 단위 검사까지다. 파단 임계의 계산(물성 × 단면)은 X-04a다. 분리 항목(`type: "separate"`)은 X-08이 `ActuateEntry`와 같은 자리에 더한다.
 - 이 PR의 수치는 모두 테스트가 선언한 값(`사용자 선언`)이다. 실부품 수치는 이 PR에 없다.
 
+## World와 가정표 (C-01c)
+
+코드는 `kinetra_core/world.py`, `assumption.py`, 테스트는 `packages/core/tests/test_world_assumption.py`. 이 PR에는 행성 수치가 없다. 행성 데이터와 로더는 W-01이다.
+
+- `World`: `planet`(ID 하나)과 `terrain_props`(경사로 `RampProp`, 턱 `StepProp`; `kind`로 구분하고 `kind`는 필수다). 중력, 대기 밀도, 지면 마찰, 일사는 행성의 상수라서 `data/bodies`(W-01)에만 있고 엔진만 읽는다(`client-adapter.md` 규칙 C4). `World`에는 그 값을 담을 필드가 없고, `gravity`, `g`, `air_density`, `ground_friction`, `insolation` 같은 이름(`PLANET_CONSTANT_NAMES`)이 오면 이유를 말하며 거부한다. 이 목록은 친절일 뿐이고(목록에 없는 이름은 `extra="forbid"`가 거부한다) 보장은 구조에서 나온다: 엔진은 행성 상수를 `data/bodies`에서만 읽고(W-03a) 검증기가 바꾸려는 명령을 거부한다(C-02c). `planet`이 `data/bodies`에 있는지와 `material`이 프로젝트의 재료인지는 `World` 혼자 알 수 없어서 검증기(#68)와 교차 참조 규칙(#76)이 본다.
+- 지형 소품: 평지는 z = 0 평면이고, 소품은 중심 (`x`, `y`)[m]과 +Z 둘레 회전 `yaw`[rad]로 놓는 `length` x `width` 직사각형이다. 놓는 자세 `placement`(x, y, yaw)는 `SnapPoint` 자세처럼 배지와 출처 하나가 통째로 덮는다. 크기(`length`, `width`, `incline`, `height`)는 각각 `Quantity`(배지·출처 필수)다. 경사로는 `incline`(rad, 0 초과 pi/2 미만)이고 `length`는 수평 길이다(높이는 `length * tan(incline)`로 파생하며 저장하지 않는다). 턱은 `height`(m, > 0). 표면 재료는 `material` ID로 참조하고(마찰은 재료의 것이다) `None`이면 행성 지면이다(마찰은 행성 데이터). 소품 ID는 월드 안에서 겹치지 않는다. 형상과 MJCF는 W-05, X-01이다.
+- 가정표: legacy `SpecSheet`의 `Assumption`(`legacy-v0:schemas/spec_sheet.schema.json`)을 옮겼다. `key`, `label`, `value`(공칭값, 결정론 탐색용), `distribution`(몬테카를로가 뽑는 분포: `fixed`, `uniform`, `normal`; 모델 이름은 `FixedDistribution` 등, `kind` 필수), `confidence`(`low`/`med`/`high`), `editable`은 그대로다. 바뀐 점: legacy의 `value`+`unit`+`source`(자유 문자열)는 `value: Quantity`(값, 닫힌 단위, 배지, 구조화된 출처) 하나가 됐고, `uniform`과 `normal`의 수치는 그 자체로 새 수치라서 각자 배지와 출처를 가진다(공칭값을 인용했다고 퍼짐까지 인용한 것은 아니다). 분포의 수치는 `value.unit` 단위다(단위가 그 가정에 맞는지는 검사하지 않는다). 공칭값은 분포의 지지 안에 있어야 한다(`uniform`: `low <= value <= high`, `normal`: `clip_low`/`clip_high`가 있으면 그 안; 클립이 없는 `normal`은 제한 없음). `label`은 1~100자이고 공백뿐이면 거부한다. `AssumptionTable`은 키가 겹치지 않고 순서를 보존하며, 행성 상수 이름의 키(`gravity` 등)를 거부한다. 이것도 친절일 뿐이고 `Assumption` 하나만 만들 때는 검사하지 않는다(보장은 위와 같다). legacy `SpecSheet`의 부품, 탐색 범위, 성공 기준, 템플릿은 옮기지 않았다(다른 잎의 일이다).
+- 모델 라벨("근사: 균일 중력" 등)은 W-03b, W-06이 더한다.
+
 ## 알려진 확장 (이 PR 범위 밖, 뒤 잎이 더한다)
 
 - 곡선(토크-속도, 추력 곡선): B-03b, B-03c.
 - 단위 `kg/s`(추진제 소모율), `N*s`(충격량): 쓰는 잎이 `Unit`에 더한다.
 - 형상 레시피와 파생값의 입력: B-01a.
+- 바인딩 안 된 가정(가정이 설계의 어느 값을 흔드는지)과 가정 단위의 의미 검사: J-01a, L-02.
 - PBR 재질 슬롯: B-07.
 - `export_policy`: HW-02a.
 - 모델은 불변이지만 `model_copy(update=...)`는 검증을 건너뛴다. 명령 적용기(C-02a)는 바꾼 뒤 `model_validate`로 다시 검증해야 한다.
