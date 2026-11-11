@@ -5,7 +5,6 @@
   "properties": {
     "kind": {
       "const": "cylinder",
-      "default": "cylinder",
       "title": "Kind",
       "type": "string"
     },
@@ -17,6 +16,7 @@
     }
   },
   "required": [
+    "kind",
     "radius",
     "length"
   ],

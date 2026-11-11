@@ -177,6 +177,44 @@ def test_nothing_to_export_fails():
         ex.render(fake_package(LIMIT=3))
 
 
+class OptionalTag(BaseModel):
+    kind: Literal["opt"] = "opt"  # the default makes the tag optional in the schema
+    x: float
+
+
+class RequiredTag(BaseModel):
+    kind: Literal["req"]
+    x: float
+
+
+class UnionHolder(BaseModel):
+    item: Annotated[OptionalTag | RequiredTag, Field(discriminator="kind")]
+
+
+def test_a_discriminator_tag_with_a_default_fails_the_export():
+    with pytest.raises(ex.ExportError, match=r"discriminator 'kind' must be a required field of OptionalTag"):
+        ex.render(fake_package(UnionHolder=UnionHolder, OptionalTag=OptionalTag, RequiredTag=RequiredTag))
+    Alias = Annotated[OptionalTag | RequiredTag, Field(discriminator="kind")]
+    with pytest.raises(ex.ExportError, match="OptionalTag"):
+        ex.render(fake_package(Alias=Alias))
+
+
+def test_every_discriminated_union_member_of_the_real_models_requires_its_tag():
+    files, defs, _ = ex.collect(kinetra_core)
+    tags = {
+        n: d["properties"]["kind"] for n, d in defs.items() if "kind" in d.get("properties", {}) and n.endswith(("Prop", "Distribution", "Box", "Cylinder", "Sphere"))
+    }
+    assert {"Box", "Cylinder", "Sphere", "RampProp", "StepProp"} <= set(tags)
+    for n in tags:
+        assert "kind" in defs[n]["required"], n
+        assert "default" not in tags[n], n
+
+
+def test_primitive_kind_is_required_in_the_schema():
+    bad = {"id": "a", "primitive": {"radius": {"offset": 0.1}}, "position": {"x": {"offset": 0}, "y": {"offset": 0}, "z": {"offset": 0}}}
+    assert list(validator("ShapeComponent").iter_errors(bad)) != []
+
+
 # --- the converter -----------------------------------------------------------------------------------------
 
 

@@ -96,7 +96,6 @@
       "properties": {
         "kind": {
           "const": "box",
-          "default": "box",
           "title": "Kind",
           "type": "string"
         },
@@ -111,6 +110,7 @@
         }
       },
       "required": [
+        "kind",
         "size_x",
         "size_y",
         "size_z"
@@ -124,7 +124,6 @@
       "properties": {
         "kind": {
           "const": "cylinder",
-          "default": "cylinder",
           "title": "Kind",
           "type": "string"
         },
@@ -136,6 +135,7 @@
         }
       },
       "required": [
+        "kind",
         "radius",
         "length"
       ],
@@ -522,7 +522,6 @@
       "properties": {
         "kind": {
           "const": "sphere",
-          "default": "sphere",
           "title": "Kind",
           "type": "string"
         },
@@ -531,6 +530,7 @@
         }
       },
       "required": [
+        "kind",
         "radius"
       ],
       "title": "Sphere",

@@ -69,6 +69,40 @@ def _is_schema_type(obj: Any) -> bool:
     )
 
 
+def _check_discriminators(node: Any, defs: dict[str, dict[str, Any]], where: str) -> None:
+    """Every member of a discriminated union must require its tag, as a single constant.
+
+    A tag with a default (`kind: Literal["box"] = "box"`) is optional in the schema, so a document without it
+    validates in a client and picks no member; the tag is the one field that says which member a document is.
+    """
+    if isinstance(node, list):
+        for i, v in enumerate(node):
+            _check_discriminators(v, defs, f"{where}/{i}")
+        return
+    if not isinstance(node, dict):
+        return
+    disc = node.get("discriminator")
+    if isinstance(disc, dict) and "propertyName" in disc:
+        tag = disc["propertyName"]
+        for i, member in enumerate(node.get("oneOf", node.get("anyOf", []))):
+            ref = member.get("$ref", "") if isinstance(member, dict) else ""
+            name = ref.removeprefix("#/$defs/")
+            target = defs.get(name)
+            if target is None:
+                raise ExportError(f"{where}: discriminated union member {i} is not a named model ({member!r})")
+            prop = target.get("properties", {}).get(tag)
+            if prop is None or tag not in target.get("required", []):
+                raise ExportError(
+                    f"{where}: discriminator {tag!r} must be a required field of {name} "
+                    "(remove the default on the tag field)"
+                )
+            if "const" not in prop and len(prop.get("enum", [])) != 1:
+                raise ExportError(f"{where}: discriminator {tag!r} of {name} must be a single literal value")
+    for key, v in node.items():
+        if key != "discriminator":
+            _check_discriminators(v, defs, f"{where}/{key}")
+
+
 def collect(module: pytypes.ModuleType) -> tuple[dict[str, dict[str, Any]], dict[str, dict[str, Any]], dict[str, dict[str, Any]]]:
     """Schemas of every schema-bearing name in `module.__all__`.
 
@@ -126,6 +160,8 @@ def collect(module: pytypes.ModuleType) -> tuple[dict[str, dict[str, Any]], dict
 
     if not files:
         raise ExportError(f"{module.__name__}.__all__ exports no schema-bearing names")
+    for name, schema in {**defs, **aliases}.items():
+        _check_discriminators(schema, defs, name)
     clash = sorted(set(defs) & set(aliases))
     if clash:
         raise ExportError(f"a union alias shares its name with a model: {clash}")

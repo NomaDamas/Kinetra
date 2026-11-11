@@ -75,7 +75,7 @@ uv run python packages/core/scripts/export_schemas.py          # schemas/ 를 �
 uv run python packages/core/scripts/export_schemas.py --check  # 쓰지 않고 차이만 본다(CI, engine 워크플로)
 ```
 
-- 무엇을 내보내는가는 어디에도 적혀 있지 않다. 스크립트는 `kinetra_core.__all__`의 pydantic 모델, enum, 유니온 별칭(`Distribution`, `TerrainProp`)을 모두 가져온다. 뒤 잎이 `kinetra_core/__init__.py`에 모델을 내보내면 스크립트를 고치지 않아도 스키마와 타입이 생긴다. 상수, 함수, 예외는 스키마가 없어서 건너뛴다. 모델도 enum도 아닌 클래스를 내보내면 내보내기가 실패한다(클라이언트가 볼 수 있는 것이 타입 없이 남지 않게). 같은 이름의 서로 다른 스키마도 실패한다.
+- 무엇을 내보내는가는 어디에도 적혀 있지 않다. 스크립트는 `kinetra_core.__all__`의 pydantic 모델, enum, 유니온 별칭(`Distribution`, `TerrainProp`)을 모두 가져온다. 뒤 잎이 `kinetra_core/__init__.py`에 모델을 내보내면 스크립트를 고치지 않아도 스키마와 타입이 생긴다. 상수, 함수, 예외는 스키마가 없어서 건너뛴다. 모델도 enum도 아닌 클래스를 내보내면 내보내기가 실패한다(클라이언트가 볼 수 있는 것이 타입 없이 남지 않게). 같은 이름의 서로 다른 스키마도 실패한다. 판별 유니온(`discriminator`)의 멤버가 태그(`kind`, `type`)를 `required`로 갖지 않거나(태그 필드에 기본값을 둔 경우) 단일 리터럴이 아니어도 실패한다. 태그 없는 문서가 스키마를 통과해 어느 멤버인지 정하지 못하는 일을 막는다.
 - `schemas/<Name>.schema.json`: 이름 하나마다 JSON Schema(draft 2020-12) 한 파일. `$defs`를 포함해 혼자 쓸 수 있다. 입력 검증 모드(코어가 받아들이는 JSON)이고 `const`/`exclusiveMinimum`/`pattern`으로 단위, 범위, ID 형식이 실린다.
 - `schemas/types.ts`: 모든 이름의 TypeScript `interface`/`type`(`packages/core/scripts/schema_to_ts.py`). 기본값이 있는 필드는 선택(`?`)이다. 코어가 빠진 것을 채워 주기 때문이다. 단위는 필드마다 리터럴 타입(`unit: "kg/m^3"`), 배지와 단위 어휘는 닫힌 유니온이다. 변환기가 모르는 스키마 키워드를 만나면 경로와 함께 실패한다(조용히 느슨한 타입을 내지 않는다).
 - 타입은 모양만 안다. 교차 검사(참조가 닫혀 있는가, 쿼터니언이 단위 길이인가, 자리표시 출처인가)는 코어의 검증기가 한다. 클라이언트는 타입으로 읽고 쓰되 판정은 코어에 맡긴다.

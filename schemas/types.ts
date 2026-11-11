@@ -61,7 +61,7 @@ export type Badge = "sim" | "cite" | "default" | "declared" | "estimate";
 
 /** Rectangular block. `size_*` are full extents [m] along the component's local x, y, z. */
 export interface Box {
-  kind?: "box";
+  kind: "box";
   size_x: AxisExpr;
   size_y: AxisExpr;
   size_z: AxisExpr;
@@ -102,7 +102,7 @@ export interface ControlSchedule {
 
 /** Solid circular cylinder. `radius` and `length` [m]; the axis is the component's local z. */
 export interface Cylinder {
-  kind?: "cylinder";
+  kind: "cylinder";
   radius: AxisExpr;
   length: AxisExpr;
 }
@@ -444,7 +444,7 @@ export interface SpecDef {
 
 /** Solid sphere. `radius` [m]. */
 export interface Sphere {
-  kind?: "sphere";
+  kind: "sphere";
   radius: AxisExpr;
 }
 
