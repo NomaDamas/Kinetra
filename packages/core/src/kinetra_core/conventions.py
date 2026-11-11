@@ -5,8 +5,9 @@ these conventions. Clients convert to their own renderer's frame; the core never
 
 - Units: SI. Length m, mass kg, time s, angle rad. The `Unit` vocabulary below is closed: a quantity whose unit
   is not in it is rejected, so a client never has to guess what `"mm"` or `"deg"` means.
-- Frame: right-handed, +Z is up. Quaternions are written with named components `x, y, z, w` (unit norm,
-  `w` is the scalar part), never as a bare array, so no client has to guess the component order.
+- Frame: right-handed, +Z is up. In Project JSON a quaternion is an object with named components `x, y, z, w`
+  (unit norm, `w` is the scalar part), never a bare array. Streamed frames (C-05b) use the same component order and
+  meaning; their encoding is C-05b's.
 """
 
 from __future__ import annotations
@@ -16,6 +17,9 @@ from enum import StrEnum
 COORDINATE_FRAME = "right-handed, +Z up"
 QUATERNION_COMPONENTS = ("x", "y", "z", "w")
 QUATERNION_NORM_TOLERANCE = 1e-6
+
+ID_PATTERN = r"^[a-z][a-z0-9_-]{0,63}$"  # stable ids of materials, parts, snap points (G3)
+NAME_PATTERN = r"^[a-z][a-z0-9_]{0,63}$"  # parameter, spec and tag names
 
 
 class Unit(StrEnum):

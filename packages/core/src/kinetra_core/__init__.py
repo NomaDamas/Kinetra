@@ -1,8 +1,8 @@
 """Engine-independent Project model and command layer."""
 
 from .conventions import COORDINATE_FRAME, QUATERNION_COMPONENTS, Unit
-from .material import Material
-from .partdef import AxisExpr, ParamDef, ParamTerm, PartDef, Position, Quaternion, SnapPoint
+from .material import Density, ElasticModulus, Friction, Material, YieldStrength
+from .partdef import AxisExpr, ParamDef, ParamTerm, PartDef, Position, Quaternion, SnapPoint, SpecDef
 from .provenance import BADGE_LABEL_KO, Badge, Provenance, Quantity, Source
 
 __all__ = [
@@ -10,6 +10,9 @@ __all__ = [
     "COORDINATE_FRAME",
     "QUATERNION_COMPONENTS",
     "AxisExpr",
+    "Density",
+    "ElasticModulus",
+    "Friction",
     "Badge",
     "Material",
     "ParamDef",
@@ -21,5 +24,7 @@ __all__ = [
     "Quaternion",
     "SnapPoint",
     "Source",
+    "SpecDef",
     "Unit",
+    "YieldStrength",
 ]

@@ -1,7 +1,10 @@
 """`PartDef` (C-01a): a parametric part definition. Parameters with ranges, snap points, specifications.
 
-Every number is a `Quantity` (badge and source required) except where noted on `SnapPoint`: a snap point's pose
-is one declared value, so it carries one badge and source for the whole pose.
+Every number is a `Quantity` (badge and source required) except a snap point's pose, which is one declared value:
+it carries one badge and source for the whole pose.
+
+Collections are tuples, so a `PartDef` is immutable and hashable. Order is part of the value and is preserved;
+the canonical form for definition hashes (C-03) is C-03's to fix.
 
 Not here: the shape recipe and mass/inertia (B-01a), collision proxy (B-01b), export policy (HW-02a), instances
 and joints (C-01b), MJCF (X-01).
@@ -10,14 +13,14 @@ and joints (C-01b), MJCF (X-01).
 from __future__ import annotations
 
 import math
+from typing import Annotated
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+from pydantic import BaseModel, ConfigDict, Field, ValidationInfo, field_validator, model_validator
 
-from .conventions import QUATERNION_NORM_TOLERANCE, Unit
-from .material import ID_PATTERN
-from .provenance import Number, Provenance, Quantity, require_unit
+from .conventions import ID_PATTERN, NAME_PATTERN, QUATERNION_NORM_TOLERANCE, Unit
+from .provenance import Number, Provenance, Quantity
 
-NAME_PATTERN = r"^[a-z][a-z0-9_]{0,63}$"
+Name = Annotated[str, Field(pattern=NAME_PATTERN)]
 
 
 class ParamDef(BaseModel):
@@ -25,16 +28,22 @@ class ParamDef(BaseModel):
 
     model_config = ConfigDict(extra="forbid", frozen=True)
 
-    name: str = Field(pattern=NAME_PATTERN)
+    name: Name
     unit: Unit
     default: Quantity
     min: Quantity
     max: Quantity
 
+    @field_validator("default", "min", "max")
+    @classmethod
+    def _unit_matches(cls, q: Quantity, info: ValidationInfo) -> Quantity:
+        unit = info.data.get("unit")
+        if unit is not None and q.unit is not unit:
+            raise ValueError(f"must be in {unit.value!r} like the parameter, got {q.unit.value!r}")
+        return q
+
     @model_validator(mode="after")
     def _range(self) -> "ParamDef":
-        for field in ("default", "min", "max"):
-            require_unit(getattr(self, field), self.unit, f"{self.name}.{field}")
         if not self.min.value <= self.default.value <= self.max.value:
             raise ValueError(
                 f"{self.name}: need min <= default <= max, got {self.min.value} <= {self.default.value} <= {self.max.value}"
@@ -42,12 +51,18 @@ class ParamDef(BaseModel):
         return self
 
 
+class SpecDef(Quantity):
+    """A named specification (사양): no-load speed, rated thrust, capacity ... Name and unit are the part's."""
+
+    name: Name
+
+
 class ParamTerm(BaseModel):
     """`factor * <value of parameter param>`. The parameter must be a length."""
 
     model_config = ConfigDict(extra="forbid", frozen=True)
 
-    param: str = Field(pattern=NAME_PATTERN)
+    param: Name
     factor: Number
 
 
@@ -80,7 +95,7 @@ class Quaternion(BaseModel):
 
     @model_validator(mode="after")
     def _unit_norm(self) -> "Quaternion":
-        n = math.sqrt(self.x**2 + self.y**2 + self.z**2 + self.w**2)
+        n = math.hypot(self.x, self.y, self.z, self.w)  # no overflow for huge finite components
         if abs(n - 1.0) > QUATERNION_NORM_TOLERANCE:
             raise ValueError(f"quaternion must have unit norm, got {n}")
         return self
@@ -94,19 +109,14 @@ class SnapPoint(Provenance):
     """
 
     id: str = Field(pattern=ID_PATTERN)
-    kind: str = Field(pattern=NAME_PATTERN)
-    accepts: tuple[str, ...] = ()
+    kind: Name
+    accepts: tuple[Name, ...] = ()
     position: Position
     orientation: Quaternion
 
     @field_validator("accepts")
     @classmethod
-    def _accepts(cls, v: tuple[str, ...]) -> tuple[str, ...]:
-        import re
-
-        for tag in v:
-            if not re.fullmatch(NAME_PATTERN, tag):
-                raise ValueError(f"accepts tag {tag!r} does not match {NAME_PATTERN}")
+    def _unique(cls, v: tuple[str, ...]) -> tuple[str, ...]:
         if len(set(v)) != len(v):
             raise ValueError("accepts has duplicate tags")
         return v
@@ -119,26 +129,24 @@ class PartDef(BaseModel):
     name: str = Field(min_length=1, max_length=100)
     parameters: tuple[ParamDef, ...] = ()
     snap_points: tuple[SnapPoint, ...] = ()
-    specs: dict[str, Quantity] = Field(default_factory=dict)  # 사양: no-load speed, rated thrust, capacity ...
-
-    @field_validator("specs")
-    @classmethod
-    def _spec_keys(cls, v: dict[str, Quantity]) -> dict[str, Quantity]:
-        import re
-
-        for key in v:
-            if not re.fullmatch(NAME_PATTERN, key):
-                raise ValueError(f"spec key {key!r} does not match {NAME_PATTERN}")
-        return v
+    specs: tuple[SpecDef, ...] = ()
 
     @model_validator(mode="after")
     def _consistent(self) -> "PartDef":
-        names = [p.name for p in self.parameters]
-        if len(set(names)) != len(names):
-            raise ValueError("duplicate parameter names")
-        ids = [s.id for s in self.snap_points]
-        if len(set(ids)) != len(ids):
-            raise ValueError("duplicate snap point ids")
+        for label, names in (
+            ("parameter name", [p.name for p in self.parameters]),
+            ("snap point id", [s.id for s in self.snap_points]),
+            ("spec name", [s.name for s in self.specs]),
+        ):
+            if len(set(names)) != len(names):
+                raise ValueError(f"duplicate {label}")
+        param_names = {p.name for p in self.parameters}
+        for s in self.snap_points:
+            if s.id in param_names:
+                raise ValueError(f"snap point id {s.id!r} collides with a parameter name")
+        for s in self.specs:
+            if s.name in param_names:
+                raise ValueError(f"spec name {s.name!r} collides with a parameter name")
         units = {p.name: p.unit for p in self.parameters}
         for s in self.snap_points:
             for axis_name in ("x", "y", "z"):
