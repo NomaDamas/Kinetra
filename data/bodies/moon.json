@@ -1,0 +1,70 @@
+{
+  "id": "moon",
+  "name": "Moon",
+  "gravity": {
+    "value": 1.62,
+    "unit": "m/s^2",
+    "badge": "cite",
+    "source": {
+      "ref": "NASA NSSDCA Moon Fact Sheet (updated 11 Jan 2024), accessed 2026-11-11. Surface gravity 1.62 m/s2, as printed (surface acceleration also 1.62). Cross-check: GM/R^2 with JPL SSD satellite GM 4902.800 km3/s2 (DE440) and mean radius 1737.4 km is 1.624. Not sampled.",
+      "locator": "Bulk parameters, 'Surface gravity (m/s2)'",
+      "url": "https://nssdc.gsfc.nasa.gov/planetary/factsheet/moonfact.html"
+    }
+  },
+  "atmosphere_density": {
+    "value": 0.0,
+    "unit": "kg/m^3",
+    "badge": "default",
+    "source": {
+      "ref": "Chosen 0: no drag on the Moon. NASA NSSDCA Moon Fact Sheet (updated 11 Jan 2024), accessed 2026-11-11, prints a tenuous exosphere: 3e-15 bar at night, 2e5 particles/cm3, composition 'poorly known and variable' (upper limits). By our arithmetic that is about 5e-15 kg/m^3, ~4e-15 of Earth's, below any effect the model shows. A modelling choice, not a measurement.",
+      "locator": "Lunar Atmosphere block: 'Surface pressure (night)', 'Abundance at surface', 'Estimated Composition'",
+      "url": "https://nssdc.gsfc.nasa.gov/planetary/factsheet/moonfact.html"
+    }
+  },
+  "insolation": {
+    "value": 1361.0,
+    "unit": "W/m^2",
+    "badge": "cite",
+    "source": {
+      "ref": "NASA NSSDCA Moon Fact Sheet (updated 11 Jan 2024), accessed 2026-11-11. Solar irradiance 1361.0 W/m2, ratio 1.000 to Earth: same mean Sun distance, no atmosphere, so also the surface value at normal incidence. The 29.5-day day and night is not modelled by this constant.",
+      "locator": "Bulk parameters, 'Solar irradiance (W/m2)'",
+      "url": "https://nssdc.gsfc.nasa.gov/planetary/factsheet/moonfact.html"
+    }
+  },
+  "ground_friction": {
+    "key": "ground_friction",
+    "label": "Ground friction (regolith)",
+    "value": {
+      "value": 0.7002,
+      "unit": "1",
+      "badge": "cite",
+      "source": {
+        "ref": "tan(35 deg) = 0.7002. Lunar Sourcebook (Heiken, Vaniman, French 1991) ch. 9 (Carrier, Olhoeft, Mendell), Table 9.14: soil/wheel friction angle 35 deg, trafficability parameter recommended for LRV planning (Costes 1972; Mitchell 1973a, 1974; Surveyor data); accessed 2026-11-11. The tangent is our arithmetic. One printed value, no range.",
+        "locator": "Table 9.14, row phi_b (book p. 529; PDF p. 55 of the chapter file)",
+        "url": "https://www.lpi.usra.edu/publications/books/lunar_sourcebook/pdf/Chapter09.pdf"
+      }
+    },
+    "distribution": {
+      "kind": "uniform",
+      "low": 0.5317,
+      "high": 0.9325,
+      "badge": "estimate",
+      "source": {
+        "ref": "tan(28 deg) = 0.5317 to tan(43 deg) = 0.9325. 28 deg: bottom of 28 to 35 deg from vacuum direct shear of Apollo 12 soil (Sourcebook 9.1.7). 43 deg: top of 41 to 43 deg for 0-15 cm intercrater soil (Table 9.12). Apollo estimates overall run 30 to 50 deg (Connolly and Carrier 2023, NTRS 20220014634). Uniform: bounds from different methods, not one population. accessed 2026-11-11.",
+        "url": "https://www.lpi.usra.edu/publications/books/lunar_sourcebook/pdf/Chapter09.pdf"
+      }
+    },
+    "confidence": "med",
+    "editable": false
+  },
+  "unverified": [
+    {
+      "item": "atmosphere_density",
+      "reason": "The model uses 0 (default), not a measured density: the fact sheet prints only a number density of upper-limit species and no mass density."
+    },
+    {
+      "item": "ground_friction",
+      "reason": "The nominal is a cited soil/wheel friction angle (Lunar Sourcebook Table 9.14) but not the coefficient of any part material on regolith, and the spread is our estimate from other soil-mechanics ranges; no source gives a distribution."
+    }
+  ]
+}

@@ -1,0 +1,66 @@
+{
+  "id": "earth",
+  "name": "Earth",
+  "gravity": {
+    "value": 9.80665,
+    "unit": "m/s^2",
+    "badge": "cite",
+    "source": {
+      "ref": "NASA NSSDCA Earth Fact Sheet (updated 15 Nov 2024), accessed 2026-11-11. Standard acceleration of gravity, CODATA 2018, 9.80665 m/s2 (exact). Surface values printed: mean 9.820, equator 9.780, pole 9.832. Chosen the defined standard. One uniform g per planet; the range is not sampled.",
+      "locator": "Note below the Terrestrial Atmosphere block; Bulk parameters 'Surface gravity', 'Surface acceleration (eq/pole)'",
+      "url": "https://nssdc.gsfc.nasa.gov/planetary/factsheet/earthfact.html"
+    }
+  },
+  "atmosphere_density": {
+    "value": 1.217,
+    "unit": "kg/m^3",
+    "badge": "cite",
+    "source": {
+      "ref": "NASA NSSDCA Earth Fact Sheet (updated 15 Nov 2024), accessed 2026-11-11. Surface density 1.217 kg/m3 (1014 mb, 288 K), chosen as printed. Cross-check: NASA Glenn Earth Atmosphere Model, sea level, 101.29 kPa, 15.04 C gives 1.225 (0.7% higher). Not sampled.",
+      "locator": "Terrestrial Atmosphere, 'Surface density'",
+      "url": "https://nssdc.gsfc.nasa.gov/planetary/factsheet/earthfact.html"
+    }
+  },
+  "insolation": {
+    "value": 1361.0,
+    "unit": "W/m^2",
+    "badge": "cite",
+    "source": {
+      "ref": "NASA NSSDCA Earth Fact Sheet (updated 15 Nov 2024), accessed 2026-11-11. Solar irradiance 1361.0 W/m2 at mean Sun-Earth distance, above the atmosphere. Not the irradiance at the ground (air mass, cloud, dust reduce it).",
+      "locator": "Bulk parameters, 'Solar irradiance (W/m2)'",
+      "url": "https://nssdc.gsfc.nasa.gov/planetary/factsheet/earthfact.html"
+    }
+  },
+  "ground_friction": {
+    "key": "ground_friction",
+    "label": "Ground friction (soil)",
+    "value": {
+      "value": 0.6494,
+      "unit": "1",
+      "badge": "estimate",
+      "source": {
+        "ref": "tan(33 deg) = 0.6494. 33 deg is the effective friction angle of SM-SC soil (33 +/- 4, 90% limits), mid of FHWA Table 5-15 (USBR 1960, compacted inorganic soils, standard Proctor, CU triaxial); accessed 2026-11-11. Soil internal friction used as a proxy for a part sliding on ground; no source measures that. Hard surfaces (concrete, asphalt) not covered.",
+        "locator": "FHWA NHI-06-088 vol. I, Table 5-15, manual p. 5-82 (PDF p. 332): SW 38, SP 37, SM 34, SM-SC 33, SC 31, ML 32, CL 28, CH 19 deg",
+        "url": "https://www.fhwa.dot.gov/engineering/geotech/pubs/nhi06088.pdf"
+      }
+    },
+    "distribution": {
+      "kind": "uniform",
+      "low": 0.5317,
+      "high": 0.7813,
+      "badge": "estimate",
+      "source": {
+        "ref": "tan(28 deg) = 0.5317 (CL clay, 28 +/- 2) to tan(38 deg) = 0.7813 (SW well-graded sand, 38 +/- 1), FHWA Table 5-15. Uniform: two bounds from different soils, not a measured population. CH clay (19 deg), wet or frozen ground excluded. accessed 2026-11-11.",
+        "url": "https://www.fhwa.dot.gov/engineering/geotech/pubs/nhi06088.pdf"
+      }
+    },
+    "confidence": "low",
+    "editable": false
+  },
+  "unverified": [
+    {
+      "item": "ground_friction",
+      "reason": "No source measures a part or wheel on Earth's ground. Nominal and spread are tan of soil friction angles (FHWA/USBR table) used as a proxy, so both badges are estimate. Which ground the user stands on (grass, sand, clay, pavement) is unknown to the model."
+    }
+  ]
+}

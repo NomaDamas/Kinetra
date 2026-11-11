@@ -59,7 +59,7 @@
 
 ## World와 가정표 (C-01c)
 
-코드는 `kinetra_core/world.py`, `assumption.py`, 테스트는 `packages/core/tests/test_world_assumption.py`. 이 PR에는 행성 수치가 없다. 행성 데이터와 로더는 W-01이다.
+코드는 `kinetra_core/world.py`, `assumption.py`, 테스트는 `packages/core/tests/test_world_assumption.py`. 이 PR에는 행성 수치가 없다. 행성 데이터와 로더는 W-01이고 [`bodies.md`](bodies.md)에 있다.
 
 - `World`: `planet`(ID 하나)과 `terrain_props`(경사로 `RampProp`, 턱 `StepProp`; `kind`로 구분하고 `kind`는 필수다). 중력, 대기 밀도, 지면 마찰, 일사는 행성의 상수라서 `data/bodies`(W-01)에만 있고 엔진만 읽는다(`client-adapter.md` 규칙 C4). `World`에는 그 값을 담을 필드가 없고, `gravity`, `g`, `air_density`, `ground_friction`, `insolation` 같은 이름(`PLANET_CONSTANT_NAMES`)이 오면 이유를 말하며 거부한다. 이 목록은 친절일 뿐이고(목록에 없는 이름은 `extra="forbid"`가 거부한다) 보장은 구조에서 나온다: 엔진은 행성 상수를 `data/bodies`에서만 읽고(W-03a) 검증기가 바꾸려는 명령을 거부한다(C-02c). `planet`이 `data/bodies`에 있는지와 `material`이 프로젝트의 재료인지는 `World` 혼자 알 수 없어서 검증기(#68)와 교차 참조 규칙(#76)이 본다.
 - 지형 소품: 평지는 z = 0 평면이고, 소품은 중심 (`x`, `y`)[m]과 +Z 둘레 회전 `yaw`[rad]로 놓는 `length` x `width` 직사각형이다. 놓는 자세 `placement`(x, y, yaw)는 `SnapPoint` 자세처럼 배지와 출처 하나가 통째로 덮는다. 크기(`length`, `width`, `incline`, `height`)는 각각 `Quantity`(배지·출처 필수)다. 경사로는 `incline`(rad, 0 초과 pi/2 미만)이고 `length`는 수평 길이다(높이는 `length * tan(incline)`로 파생하며 저장하지 않는다). 턱은 `height`(m, > 0). 표면 재료는 `material` ID로 참조하고(마찰은 재료의 것이다) `None`이면 행성 지면이다(마찰은 행성 데이터). 소품 ID는 월드 안에서 겹치지 않는다. 형상과 MJCF는 W-05, X-01이다.

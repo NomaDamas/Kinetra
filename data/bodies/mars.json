@@ -1,0 +1,66 @@
+{
+  "id": "mars",
+  "name": "Mars",
+  "gravity": {
+    "value": 3.73,
+    "unit": "m/s^2",
+    "badge": "cite",
+    "source": {
+      "ref": "NASA NSSDCA Mars Fact Sheet (updated 19 May 2025), accessed 2026-11-11. Surface gravity (mean) 3.73 m/s2; equator 3.69, pole 3.73. Chosen the mean. Cross-checks: JPL SSD Planetary Physical Parameters equatorial gravity 3.71; GM/R^2 from the sheet's GM 0.042828e6 km3/s2 and radius 3389.5 km is 3.728. Within 0.6%. Not sampled.",
+      "locator": "Bulk parameters, 'Surface gravity (mean) (m/s2)'",
+      "url": "https://nssdc.gsfc.nasa.gov/planetary/factsheet/marsfact.html"
+    }
+  },
+  "atmosphere_density": {
+    "value": 0.016,
+    "unit": "kg/m^3",
+    "badge": "cite",
+    "source": {
+      "ref": "NASA NSSDCA Mars Fact Sheet (updated 19 May 2025), accessed 2026-11-11. Surface density ~0.016 +/- 0.006 kg/m3 (6.36 mb mean, 4.0 to 8.7 mb by season, ~214 K), chosen 0.016, range 0.010 to 0.022. Cross-check: NASA Glenn Mars Atmosphere Model at 0 altitude gives 0.0150. A mean over season and site; density falls with altitude. Not sampled.",
+      "locator": "Martian Atmosphere, 'Surface density'",
+      "url": "https://nssdc.gsfc.nasa.gov/planetary/factsheet/marsfact.html"
+    }
+  },
+  "insolation": {
+    "value": 586.2,
+    "unit": "W/m^2",
+    "badge": "cite",
+    "source": {
+      "ref": "NASA NSSDCA Mars Fact Sheet (updated 19 May 2025), accessed 2026-11-11. Solar irradiance 586.2 W/m2 (ratio to Earth 0.431) at mean Sun-Mars distance, above the atmosphere; dust and air attenuate it at the ground. Eccentricity 0.0935 moves it from 490 at aphelion to 713 at perihelion over a Mars year (inverse square of the sheet distances, our arithmetic).",
+      "locator": "Bulk parameters, 'Solar irradiance (W/m2)'",
+      "url": "https://nssdc.gsfc.nasa.gov/planetary/factsheet/marsfact.html"
+    }
+  },
+  "ground_friction": {
+    "key": "ground_friction",
+    "label": "Ground friction (regolith)",
+    "value": {
+      "value": 0.6619,
+      "unit": "1",
+      "badge": "estimate",
+      "source": {
+        "ref": "tan(33.5 deg) = 0.6619. 33.5 deg is the middle of the 30 to 37 deg friction angles of MER wheel trenches at both landing sites (Sullivan et al., LPSC 2010, abstract 1879); accessed 2026-11-11. The middle is our choice. Soil friction angle used as a proxy for a part on the ground. Only the abstract was read: the 2011 JGR paper (doi 10.1029/2010JE003625) is blocked to automated reads.",
+        "locator": "Text and Table 1, trench rows (30 to 37 deg)",
+        "url": "https://www.lpi.usra.edu/meetings/lpsc2010/pdf/1879.pdf"
+      }
+    },
+    "distribution": {
+      "kind": "uniform",
+      "low": 0.3249,
+      "high": 0.7536,
+      "badge": "estimate",
+      "source": {
+        "ref": "tan(18 deg) = 0.3249 to tan(37 deg) = 0.7536. Top: highest MER trench value (37 deg, Sullivan LPSC 2010, Table 1). Bottom: Viking Lander 1 drift material, nominal about 18 deg (14 to 21 deg), Moore et al. 1987, USGS PP 1389, Abstract and Discussion (PDF p. 73). Uniform: bounds from two sites and methods, not a measured population. accessed 2026-11-11.",
+        "url": "https://pubs.usgs.gov/pp/1389/report.pdf"
+      }
+    },
+    "confidence": "low",
+    "editable": false
+  },
+  "unverified": [
+    {
+      "item": "ground_friction",
+      "reason": "No source gives a coefficient for a part or wheel on Martian ground. Nominal and spread are tan of soil friction angles from rover wheel trenches (MER) and lander samplers (Viking) used as a proxy, so both badges are estimate. The 2011 JGR paper behind the abstract was not read."
+    }
+  ]
+}
