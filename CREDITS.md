@@ -383,6 +383,19 @@
 - 원본 해시: `sha256:ff540832ded0cfe919764d24a3d88f3e2a05f23303f876423e4f893841e90728`
 - 확인자: omp
 
+### dep-three-0.187.0-web-client
+
+- 표기: three.js, Copyright (c) 2010-2026 three.js authors. MIT License.
+- 저작자: three.js authors
+- 라이선스: MIT
+- 원본: https://www.npmjs.com/package/three/v/0.187.0 https://github.com/mrdoob/three.js https://github.com/mrdoob/three.js/blob/dev/LICENSE
+- 경로: `spikes/web-client/package.json`
+- 용도: 실행 의존성: A0-02a/A0-02c 측정 페이지의 렌더러(InstancedMesh). 측정용 스파이크이며 제품 코드가 아님
+- 변경 내역: 없음(수정 없이 사용). 해시는 `npm pack three@0.187.0` tgz 의 sha256. spikes/web-client/package.json 의 dependencies 와 pnpm-lock.yaml 에서 0.187.0 으로 고정
+- 받은 날짜: 2026-11-10
+- 원본 해시: `sha256:ff540832ded0cfe919764d24a3d88f3e2a05f23303f876423e4f893841e90728`
+- 확인자: omp
+
 ### dep-typescript-7.0.2
 
 - 표기: TypeScript, Copyright (c) Microsoft Corporation. Apache License 2.0.
@@ -407,4 +420,17 @@
 - 변경 내역: 없음(수정 없이 복사). 이 패키지 tarball 의 dist/profiles/profilesList.json (sha256 fe0442d7b206e74d1d3d597ed5a28759e9f0a26d5814dabd179acdf1560b4ad4) 과 dist/profiles/meta-quest-touch-plus/profile.json (sha256 f69041753f555fb91c36d97fd4a58885f3ceb35e2273b179f59cedd464aec688) 두 파일만 spikes/webxr/fixtures/profiles/ 에 넣었다. 컨트롤러 3D 모델(.glb)은 넣지 않았다. 원본 해시는 tarball 의 sha256
 - 받은 날짜: 2026-11-11
 - 원본 해시: `sha256:30df2a2268220fc0d0e034bed1550aabdd7a2500573c5216f64fc70d59c3d91e`
+- 확인자: omp
+
+### dep-ws-8.22.2
+
+- 표기: ws, Copyright (c) 2011 Einar Otto Stangvik; (c) 2013 Arnout Kazemier and contributors; (c) 2016 Luigi Pinca and contributors. MIT License.
+- 저작자: Einar Otto Stangvik; Arnout Kazemier; Luigi Pinca
+- 라이선스: MIT
+- 원본: https://www.npmjs.com/package/ws/v/8.22.2 https://github.com/websockets/ws https://github.com/websockets/ws/blob/master/LICENSE
+- 경로: `spikes/web-client/package.json`
+- 용도: 실행 의존성: A0-02a 측정용 합성 포즈 스트림 서버(WebSocket). 측정용 스파이크이며 제품 코드가 아님
+- 변경 내역: 없음(수정 없이 사용). 해시는 `npm pack ws@8.22.2` tgz 의 sha256. spikes/web-client/package.json 의 dependencies 와 pnpm-lock.yaml 에서 8.22.2 로 고정
+- 받은 날짜: 2026-11-10
+- 원본 해시: `sha256:de7148fed079cf115faacda8118276839dc9ab377d6b9075cea3424fa1d758f2`
 - 확인자: omp

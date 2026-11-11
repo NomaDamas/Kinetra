@@ -66,6 +66,7 @@ uv run pytest tools/dev -q                                              # 가짜
 |---|---|---|---|
 | 강체 1,000개 이상 스케일 측정 | `spikes/mujoco-limits/scale.py` (`--bodies` 또는 `--break-pile`에 1,000 이상) | **연결됨.** 시작 전에 `guard_or_exit("heavy")`. 차단이면 종료 코드 2로 아무것도 재지 않고 끝난다. 테스트: `spikes/mujoco-limits/test_scale.py`의 `CliTest` | #43, #282 (A0-01a) |
 | XR 에뮬레이터 테스트 | `spikes/webxr/run-xr.mjs`(`pnpm --dir spikes/webxr xr`)와 `spikes/webxr/tests/browser-xr.test.mjs`(`test:browser`) | **연결됨.** `CI=true` 또는 `KINETRA_GUARD_PASSED=1`(가드가 `-- 명령`으로 감쌀 때 설정)이 아니면 시작하지 않는다(`run-xr.mjs`는 종료 코드 3, 브라우저 시험은 import 시점에 예외). 테스트: `spikes/webxr/tests/offline.test.mjs` | #48 (A0-02b). #205 (XR-01b)가 같은 방식으로 잇는다 |
+| 브라우저 렌더·스트림 측정 | `spikes/web-client/measure-pose.mjs` | **연결됨.** 가드 밖에서 시작하면 종료 코드 2로 거절한다(`KINETRA_GUARD_PASSED`). 실행: `resource_guard.py --profile heavy -- pnpm --dir spikes/web-client measure:pose` | #47 (A0-02a) |
 | 영상 인코딩 | 아직 없음 | 프레임 캡처·mp4 내보내기 진입점이 시작 전에 부른다 | #190 (H-01b), #195 (H-02d) |
 | 유체 연구 실행 | 아직 없음. Genesis·Taichi는 가드를 통과할 때만 설치하고 돌린다 | 실행기가 시작 전에 부른다 | #305 (FL-06), #307 (FL-08) |
 
