@@ -49,7 +49,7 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from .conventions import AXIS_NORM_TOLERANCE, ID_PATTERN, Unit
 from .material import Material
-from .partdef import SEPARATOR_BADGES, SEPARATOR_IMPULSE, Name, PartDef, PartRole, Quaternion
+from .partdef import SEPARATOR_BADGES, Name, PartDef, PartRole, Quaternion
 from .provenance import Number, Provenance, Quantity
 from .refs import Ref, RefError, RefKind
 
@@ -401,9 +401,9 @@ class DesignSpec(BaseModel):
                     raise RefError(f"{where}: part {part.id!r} has no parameter {v.name!r}", Ref(kind=RefKind.PARAMETER, id=f"{inst.id}/{v.name}"))
                 if v.unit is not d.unit:
                     raise RefError(f"{where}: parameter {v.name!r} is in {d.unit.value!r}, got {v.unit.value!r}", Ref(kind=RefKind.PARAMETER, id=f"{inst.id}/{v.name}"))
-                if part.role is PartRole.SEPARATOR and v.name == SEPARATOR_IMPULSE and v.badge not in SEPARATOR_BADGES:
+                if part.role is PartRole.SEPARATOR and v.badge not in SEPARATOR_BADGES:
                     raise RefError(
-                        f"{where}: the separation impulse is declared or a default, not {v.badge.value!r} (B-15)",
+                        f"{where}: parameter {v.name!r} of a separator is declared or a default, not {v.badge.value!r} (B-15)",
                         Ref(kind=RefKind.PARAMETER, id=f"{inst.id}/{v.name}"),
                     )
                 if not d.min.value <= v.value <= d.max.value:

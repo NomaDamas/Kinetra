@@ -48,7 +48,7 @@
 
 ### 역할과 곡선 (B-03b)
 
-구동 부품은 `role`(`motor` 등, `PartRole`)과 `curves`(이름 붙은 `Curve`)를 가진다. 역할이 `motor`이면 곡선 `torque_speed`(`rad/s` → `N*m`)와 사양 `rated_voltage`(V)가 없을 때 `PartDef`가 거절한다. 곡선은 점마다가 아니라 **곡선 하나에 배지와 출처 하나**라서 데이터시트에서 옮긴 점만 한 곡선에 넣는다. 예와 한계: `docs/architecture/part-motor.md`, `packages/engine/src/kinetra_engine/parts/library/motor-37d-12v-50-1.json`. 데이터시트 질량이 있는 부품은 `mass_parameter`(B-02c)로 선언한다. 역할이 `spring_damper`이면 파라미터 `stiffness`(N/m, 최솟값 > 0)와 `damping`(N·s/m, 최솟값 ≥ 0)가 없을 때 거절한다(B-03e, `docs/architecture/part-spring-damper.md`). 역할이 `separator`이면 선언 질량(`mass_parameter`)과 길이 파라미터, `separation_impulse`(N·s, 0 허용, 배지 `사용자 선언`/`기본값`만) 파라미터, 스냅 포인트 `face_a`·`face_b`가 있어야 하고 `specs`·`curves`는 가질 수 없다(B-15, `docs/architecture/part-separator.md`).
+구동 부품은 `role`(`motor` 등, `PartRole`)과 `curves`(이름 붙은 `Curve`)를 가진다. 역할이 `motor`이면 곡선 `torque_speed`(`rad/s` → `N*m`)와 사양 `rated_voltage`(V)가 없을 때 `PartDef`가 거절한다. 곡선은 점마다가 아니라 **곡선 하나에 배지와 출처 하나**라서 데이터시트에서 옮긴 점만 한 곡선에 넣는다. 예와 한계: `docs/architecture/part-motor.md`, `packages/engine/src/kinetra_engine/parts/library/motor-37d-12v-50-1.json`. 데이터시트 질량이 있는 부품은 `mass_parameter`(B-02c)로 선언한다. 역할이 `spring_damper`이면 파라미터 `stiffness`(N/m, 최솟값 > 0)와 `damping`(N·s/m, 최솟값 ≥ 0)가 없을 때 거절한다(B-03e, `docs/architecture/part-spring-damper.md`). 역할이 `separator`이면 선언 질량(`mass_parameter`)과 길이 파라미터, `separation_impulse`(N·s, 0 허용) 파라미터(모든 파라미터의 배지는 `사용자 선언`/`기본값`만), 서로 반대를 보고 `length`만큼 떨어진 스냅 포인트 `face_a`·`face_b`가 있어야 하고 `specs`·`curves`는 가질 수 없다(B-15, `docs/architecture/part-separator.md`).
 
 ### 스냅 포인트
 

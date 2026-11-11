@@ -170,7 +170,7 @@ def stack(separator_overrides=(), joint_kind="fixed", extra_joint=None) -> Desig
             "parts": [json.loads(PAYLOAD.model_dump_json()), json.loads(SEPARATOR.model_dump_json())],
             "instances": [
                 inst("lower", "payload", 0.0, [mass(3.0)]),
-                inst("sep", "separator", LOWER_TOP + 0.5 * L, [mass(0.5), *separator_overrides]),
+                inst("sep", "separator", LOWER_TOP + 0.5 * L, [*([] if any(o["name"] == "mass" for o in separator_overrides) else [mass(0.5)]), *separator_overrides]),
                 inst("upper", "payload", LOWER_TOP + L, [mass(2.0)]),
             ],
             "joints": joints + ([extra_joint] if extra_joint else []),
@@ -273,10 +273,36 @@ def test_separator_impulse_badges_other_than_declared_and_default_are_rejected(b
         with pytest.raises(ValidationError, match="'declared' or 'default'"):
             PartDef.model_validate(d)
     on_instance = {"name": "separation_impulse", "value": 1.0, "unit": "N*s", "badge": badge, "source": {"ref": "somewhere", **extra}}
-    with pytest.raises(ValidationError, match="declared or a default"):
+    with pytest.raises(ValidationError, match="separation_impulse. of a separator is declared or a default"):
         stack([on_instance])
     with pytest.raises(SeparatorError, match="only 'declared' or 'default'"):
         separator_from_part(SEPARATOR, {"separation_impulse": Quantity(value=1.0, unit="N*s", badge=badge, source={"ref": "somewhere", **extra})})
+
+
+@pytest.mark.parametrize("name", ["mass", "radius", "length"])
+@pytest.mark.parametrize("badge", ["cite", "estimate", "sim"])
+def test_separator_mass_and_dimensions_are_declared_or_default_too(name, badge):
+    extra = {"locator": "p. 1"} if badge == "cite" else {}
+    for key in ("default", "min", "max"):
+        d = load()
+        param(d, name)[key] = {**param(d, name)[key], "badge": badge, "source": {"ref": "somewhere", **extra}}
+        with pytest.raises(ValidationError, match=f"parameter '{name}' {key}: badge must be 'declared' or 'default'"):
+            PartDef.model_validate(d)
+    unit = {"mass": "kg", "radius": "m", "length": "m"}[name]
+    weak = {"name": name, "value": param(load(), name)["default"]["value"], "unit": unit, "badge": badge, "source": {"ref": "somewhere", **extra}}
+    with pytest.raises(ValidationError, match=f"parameter '{name}' of a separator is declared or a default"):
+        stack([weak])
+    with pytest.raises(SeparatorError, match=f"parameter '{name}'"):
+        separator_from_part(SEPARATOR, {name: Quantity(value=weak["value"], unit=unit, badge=badge, source=weak["source"])})
+
+
+def test_separator_declared_mass_and_dimensions_on_an_instance_are_accepted():
+    values = [
+        {"name": "mass", **json.loads(declared(1.5, "kg").model_dump_json())},
+        {"name": "radius", **json.loads(declared(0.1, "m").model_dump_json())},
+    ]
+    design = stack(values)
+    assert {p.name: p.value for p in design.instances[1].parameters} == {"mass": 1.5, "radius": 0.1}
 
 
 def test_separator_impulse_unit_must_be_newton_seconds_and_nothing_non_finite():
@@ -291,6 +317,62 @@ def test_separator_impulse_unit_must_be_newton_seconds_and_nothing_non_finite():
         declared(math.nan, "N*s")
     with pytest.raises(ValidationError):
         declared(math.inf, "N*s")
+
+
+def set_snap(d: dict, snap_id: str, **fields) -> dict:
+    next(s for s in d["snap_points"] if s["id"] == snap_id).update(fields)
+    return d
+
+
+def test_separator_faces_must_look_opposite_ways():
+    for quat in ({"x": 0.0, "y": 0.0, "z": 0.0, "w": 1.0}, {"x": 1.0, "y": 0.0, "z": 0.0, "w": 0.0}):  # both +z, both -z
+        for face in ("face_a", "face_b"):
+            d = load()
+            other = "face_b" if face == "face_a" else "face_a"
+            set_snap(d, face, orientation=next(s for s in d["snap_points"] if s["id"] == other)["orientation"])
+            with pytest.raises(ValidationError, match="look opposite ways"):
+                PartDef.model_validate(d)
+    # 90 degrees about x: a sideways normal, not antiparallel either
+    d = set_snap(load(), "face_b", orientation={"x": math.sqrt(0.5), "y": 0.0, "z": 0.0, "w": math.sqrt(0.5)})
+    with pytest.raises(ValidationError, match="look opposite ways"):
+        PartDef.model_validate(d)
+    # a face tilted by 1e-6 rad off antiparallel is rejected; the tolerance is tight
+    t = 5e-7
+    d = set_snap(load(), "face_b", orientation={"x": math.cos(t), "y": 0.0, "z": 0.0, "w": -math.sin(t)})
+    with pytest.raises(ValidationError, match="look opposite ways"):
+        PartDef.model_validate(d)
+
+
+def test_separator_faces_antiparallel_about_any_axis_are_accepted():
+    # turning face_b by 180 degrees about y instead of x is the same direction (-z): accepted
+    d = set_snap(load(), "face_b", orientation={"x": 0.0, "y": 1.0, "z": 0.0, "w": 0.0})
+    assert PartDef.model_validate(d).role is PartRole.SEPARATOR
+
+
+def test_separator_face_positions_must_be_length_apart_along_the_normal():
+    def z_expr(d, face):
+        return next(s for s in d["snap_points"] if s["id"] == face)["position"]["z"]
+
+    d = load()
+    z_expr(d, "face_b")["terms"][0]["factor"] = -0.4  # faces 0.9 length apart
+    with pytest.raises(ValidationError, match="'length' apart"):
+        PartDef.model_validate(d)
+    d = load()
+    z_expr(d, "face_a")["offset"] = 0.001  # a fixed 1 mm extra gap
+    with pytest.raises(ValidationError, match="'length' apart"):
+        PartDef.model_validate(d)
+    d = load()
+    next(s for s in d["snap_points"] if s["id"] == "face_a")["position"]["x"]["offset"] = 0.01  # sideways offset
+    with pytest.raises(ValidationError, match="'length' apart"):
+        PartDef.model_validate(d)
+    d = load()
+    z_expr(d, "face_a")["terms"][0]["param"] = "radius"  # follows the wrong parameter
+    with pytest.raises(ValidationError, match="'length' apart"):
+        PartDef.model_validate(d)
+    d = load()
+    d["parameters"] = [p for p in d["parameters"] if p["name"] != "length"]
+    with pytest.raises(ValidationError):  # no `length` parameter (the recipe and the faces both name it)
+        PartDef.model_validate(d)
 
 
 def test_separator_definition_needs_its_impulse_mass_and_both_faces():

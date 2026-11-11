@@ -62,15 +62,16 @@ class Separator:
 
 def separator_from_part(part: PartDef, parameters: Mapping[str, Quantity] | None = None) -> Separator:
     """Read the separation impulse and the two faces of a `separator` part. `parameters` is an instance's override (range
-    checked by `ShapeError` like every parameter); an impulse badge other than `declared`/`default` raises `SeparatorError`."""
+    checked by `ShapeError` like every parameter); a badge of any parameter other than `declared`/`default` raises `SeparatorError`."""
     if part.role is not PartRole.SEPARATOR:
         raise SeparatorError(f"part {part.id!r} has role {part.role.value if part.role else None!r}, not 'separator'")
     q = _resolve_parameters(part, parameters)
     impulse = q[SEPARATOR_IMPULSE]
-    if impulse.badge not in SEPARATOR_BADGES:
-        raise SeparatorError(
-            f"separation impulse of {part.id!r} has badge {impulse.badge.value!r}: only 'declared' or 'default' are allowed"
-        )
+    for name, quantity in q.items():
+        if quantity.badge not in SEPARATOR_BADGES:
+            raise SeparatorError(
+                f"parameter {name!r} of separator {part.id!r} has badge {quantity.badge.value!r}: only 'declared' or 'default' are allowed"
+            )
     values = {name: quantity.value for name, quantity in q.items()}
     snaps = {s.id: s for s in part.snap_points}
     out = {}

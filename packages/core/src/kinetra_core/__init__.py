@@ -110,6 +110,7 @@ from .partdef import (
     SEPARATOR_FACE_A,
     SEPARATOR_FACE_B,
     SEPARATOR_IMPULSE,
+    SEPARATOR_LENGTH,
     SnapPoint,
     SpecDef,
 )
@@ -305,6 +306,7 @@ __all__ = [
     "SEPARATOR_FACE_A",
     "SEPARATOR_FACE_B",
     "SEPARATOR_IMPULSE",
+    "SEPARATOR_LENGTH",
     "Snapshot",
     "Source",
     "SpecDef",
