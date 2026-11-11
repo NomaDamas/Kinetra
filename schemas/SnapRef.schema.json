@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "A snap point of a placed instance.",
+  "properties": {
+    "instance": {
+      "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+      "title": "Instance",
+      "type": "string"
+    },
+    "snap_point": {
+      "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+      "title": "Snap Point",
+      "type": "string"
+    }
+  },
+  "required": [
+    "instance",
+    "snap_point"
+  ],
+  "title": "SnapRef",
+  "type": "object"
+}

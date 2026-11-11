@@ -1,0 +1,21 @@
+{
+  "name": "@kinetra/schemas",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Project JSON Schema and TypeScript types generated from kinetra_core by packages/core/scripts/export_schemas.py (C-01d)",
+  "type": "module",
+  "types": "./types.ts",
+  "exports": {
+    ".": "./types.ts",
+    "./*.schema.json": "./*.schema.json"
+  },
+  "scripts": {
+    "lint": "tsc --noEmit",
+    "build": "tsc --noEmit",
+    "test": "node --test \"test/*.test.ts\""
+  },
+  "devDependencies": {
+    "@types/node": "26.6.6",
+    "typescript": "7.0.2"
+  }
+}
