@@ -1,0 +1,473 @@
+{
+  "id": "wheel",
+  "name": "Wheel",
+  "parameters": [
+    {
+      "name": "diameter",
+      "unit": "m",
+      "default": {
+        "badge": "default",
+        "source": {
+          "ref": "B-03a: overall tire diameter (the tread, the part that touches the ground), chosen by Kinetra for game-scale cars; not a datasheet value and not a standard tire size; the wheel turns about its local y axis"
+        },
+        "value": 0.1,
+        "unit": "m"
+      },
+      "min": {
+        "badge": "default",
+        "source": {
+          "ref": "B-03a: overall tire diameter (the tread, the part that touches the ground), chosen by Kinetra for game-scale cars; not a datasheet value and not a standard tire size; the wheel turns about its local y axis"
+        },
+        "value": 0.04,
+        "unit": "m"
+      },
+      "max": {
+        "badge": "default",
+        "source": {
+          "ref": "B-03a: overall tire diameter (the tread, the part that touches the ground), chosen by Kinetra for game-scale cars; not a datasheet value and not a standard tire size; the wheel turns about its local y axis"
+        },
+        "value": 0.3,
+        "unit": "m"
+      }
+    },
+    {
+      "name": "width",
+      "unit": "m",
+      "default": {
+        "badge": "default",
+        "source": {
+          "ref": "B-03a: tread width (the contact width along the axle), chosen by Kinetra for game-scale cars; not a datasheet value and not a standard tire size; the sidewalls, rims and hub bosses are added beside it and are not part of this width"
+        },
+        "value": 0.04,
+        "unit": "m"
+      },
+      "min": {
+        "badge": "default",
+        "source": {
+          "ref": "B-03a: tread width (the contact width along the axle), chosen by Kinetra for game-scale cars; not a datasheet value and not a standard tire size; the sidewalls, rims and hub bosses are added beside it and are not part of this width"
+        },
+        "value": 0.01,
+        "unit": "m"
+      },
+      "max": {
+        "badge": "default",
+        "source": {
+          "ref": "B-03a: tread width (the contact width along the axle), chosen by Kinetra for game-scale cars; not a datasheet value and not a standard tire size; the sidewalls, rims and hub bosses are added beside it and are not part of this width"
+        },
+        "value": 0.12,
+        "unit": "m"
+      }
+    }
+  ],
+  "snap_points": [
+    {
+      "badge": "default",
+      "source": {
+        "ref": "B-03a: the wheel centre, on the axle; the snap frame's +Z is the axle direction (part +y, the outer hub boss side). Tags follow the four-wheel-car example (shaft, axle_mount); B-04b settles the matching rules"
+      },
+      "id": "hub",
+      "kind": "shaft",
+      "accepts": [
+        "shaft",
+        "axle_mount"
+      ],
+      "position": {
+        "x": {
+          "offset": 0.0,
+          "terms": []
+        },
+        "y": {
+          "offset": 0.0,
+          "terms": []
+        },
+        "z": {
+          "offset": 0.0,
+          "terms": []
+        }
+      },
+      "orientation": {
+        "x": -0.7071067811865476,
+        "y": 0.0,
+        "z": 0.0,
+        "w": 0.7071067811865476
+      }
+    }
+  ],
+  "specs": [
+    {
+      "badge": "cite",
+      "source": {
+        "ref": "OpenStax College Physics 2e, 5.1 Friction, Table 5.1, 'Rubber on dry concrete', static 1.0 (the book gives one digit and says the values are approximate). A reference pair for a rubber tread, not this wheel on any Kinetra planet's ground (that is planet data in data/bodies; how the two combine is X-01's rule). The book is CC BY-NC-SA 4.0, so no text or table is reproduced here, only this number, with its place. Accessed 2026-11-11",
+        "locator": "Table 5.1, row 'Rubber on dry concrete', column 'Static friction'",
+        "url": "https://openstax.org/books/college-physics-2e/pages/5-1-friction"
+      },
+      "value": 1.0,
+      "unit": "1",
+      "name": "tread_friction_static"
+    },
+    {
+      "badge": "cite",
+      "source": {
+        "ref": "OpenStax College Physics 2e, 5.1 Friction, Table 5.1, 'Rubber on dry concrete', kinetic 0.7 (one digit, approximate). Same reference-pair caveat and license note as tread_friction_static. Wikipedia 'Friction', approximate coefficients, concrete/rubber, dry kinetic 0.6-0.85, contains it (cross-check only). Accessed 2026-11-11",
+        "locator": "Table 5.1, row 'Rubber on dry concrete', column 'Kinetic friction'",
+        "url": "https://openstax.org/books/college-physics-2e/pages/5-1-friction"
+      },
+      "value": 0.7,
+      "unit": "1",
+      "name": "tread_friction_kinetic"
+    }
+  ],
+  "shape": {
+    "badge": "default",
+    "source": {
+      "ref": "B-03a: drawn by Kinetra as a game-scale wheel, axle along part y. The tire (full diameter, the one element that touches flat ground) has on each side a sidewall (0.84 of the diameter, 0.06 of the tread width thick), a rim (0.64, 0.10) and a hub boss (0.2, 0.20); the proportions are Kinetra's choice, not a datasheet or a standard wheel. Solid discs: no spokes, no hollow rim, no tread pattern, no tire deformation"
+    },
+    "components": [
+      {
+        "id": "tire",
+        "primitive": {
+          "kind": "cylinder",
+          "radius": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "diameter",
+                "factor": 0.5
+              }
+            ]
+          },
+          "length": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "width",
+                "factor": 1.0
+              }
+            ]
+          }
+        },
+        "operation": "add",
+        "position": {
+          "x": {
+            "offset": 0.0,
+            "terms": []
+          },
+          "y": {
+            "offset": 0.0,
+            "terms": []
+          },
+          "z": {
+            "offset": 0.0,
+            "terms": []
+          }
+        },
+        "orientation": {
+          "x": -0.7071067811865476,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.7071067811865476
+        }
+      },
+      {
+        "id": "sidewall_out",
+        "primitive": {
+          "kind": "cylinder",
+          "radius": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "diameter",
+                "factor": 0.42
+              }
+            ]
+          },
+          "length": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "width",
+                "factor": 0.06
+              }
+            ]
+          }
+        },
+        "operation": "add",
+        "position": {
+          "x": {
+            "offset": 0.0,
+            "terms": []
+          },
+          "y": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "width",
+                "factor": 0.53
+              }
+            ]
+          },
+          "z": {
+            "offset": 0.0,
+            "terms": []
+          }
+        },
+        "orientation": {
+          "x": -0.7071067811865476,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.7071067811865476
+        }
+      },
+      {
+        "id": "rim_out",
+        "primitive": {
+          "kind": "cylinder",
+          "radius": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "diameter",
+                "factor": 0.32
+              }
+            ]
+          },
+          "length": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "width",
+                "factor": 0.1
+              }
+            ]
+          }
+        },
+        "operation": "add",
+        "position": {
+          "x": {
+            "offset": 0.0,
+            "terms": []
+          },
+          "y": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "width",
+                "factor": 0.61
+              }
+            ]
+          },
+          "z": {
+            "offset": 0.0,
+            "terms": []
+          }
+        },
+        "orientation": {
+          "x": -0.7071067811865476,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.7071067811865476
+        }
+      },
+      {
+        "id": "hub_out",
+        "primitive": {
+          "kind": "cylinder",
+          "radius": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "diameter",
+                "factor": 0.1
+              }
+            ]
+          },
+          "length": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "width",
+                "factor": 0.2
+              }
+            ]
+          }
+        },
+        "operation": "add",
+        "position": {
+          "x": {
+            "offset": 0.0,
+            "terms": []
+          },
+          "y": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "width",
+                "factor": 0.76
+              }
+            ]
+          },
+          "z": {
+            "offset": 0.0,
+            "terms": []
+          }
+        },
+        "orientation": {
+          "x": -0.7071067811865476,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.7071067811865476
+        }
+      },
+      {
+        "id": "sidewall_in",
+        "primitive": {
+          "kind": "cylinder",
+          "radius": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "diameter",
+                "factor": 0.42
+              }
+            ]
+          },
+          "length": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "width",
+                "factor": 0.06
+              }
+            ]
+          }
+        },
+        "operation": "add",
+        "position": {
+          "x": {
+            "offset": 0.0,
+            "terms": []
+          },
+          "y": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "width",
+                "factor": -0.53
+              }
+            ]
+          },
+          "z": {
+            "offset": 0.0,
+            "terms": []
+          }
+        },
+        "orientation": {
+          "x": -0.7071067811865476,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.7071067811865476
+        }
+      },
+      {
+        "id": "rim_in",
+        "primitive": {
+          "kind": "cylinder",
+          "radius": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "diameter",
+                "factor": 0.32
+              }
+            ]
+          },
+          "length": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "width",
+                "factor": 0.1
+              }
+            ]
+          }
+        },
+        "operation": "add",
+        "position": {
+          "x": {
+            "offset": 0.0,
+            "terms": []
+          },
+          "y": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "width",
+                "factor": -0.61
+              }
+            ]
+          },
+          "z": {
+            "offset": 0.0,
+            "terms": []
+          }
+        },
+        "orientation": {
+          "x": -0.7071067811865476,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.7071067811865476
+        }
+      },
+      {
+        "id": "hub_in",
+        "primitive": {
+          "kind": "cylinder",
+          "radius": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "diameter",
+                "factor": 0.1
+              }
+            ]
+          },
+          "length": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "width",
+                "factor": 0.2
+              }
+            ]
+          }
+        },
+        "operation": "add",
+        "position": {
+          "x": {
+            "offset": 0.0,
+            "terms": []
+          },
+          "y": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "width",
+                "factor": -0.76
+              }
+            ]
+          },
+          "z": {
+            "offset": 0.0,
+            "terms": []
+          }
+        },
+        "orientation": {
+          "x": -0.7071067811865476,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.7071067811865476
+        }
+      }
+    ]
+  }
+}
