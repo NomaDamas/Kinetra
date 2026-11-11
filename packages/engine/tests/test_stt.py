@@ -204,11 +204,27 @@ def test_stt_cli_bad_language_is_an_error_line_not_a_traceback(monkeypatch, caps
 SDP = b"v=0\r\no=- 0 0 IN IP4 127.0.0.1\r\ns=x\r\nc=IN IP4 127.0.0.1\r\nt=0 0\r\nm=audio 45712 RTP/AVP 0\r\na=rtpmap:0 PCMU/8000\r\n"
 
 
+def socket_fds() -> set[int]:
+    """Descriptors of this process that are sockets right now. Regular files, pipes and the directory handle `listdir` opens are not
+    counted, so unrelated descriptors (pytest capture files, GC finalisers, thread-pool wake-up pipes) cannot move the result."""
+    import stat
+
+    found = set()
+    for name in os.listdir("/dev/fd"):
+        try:
+            fd = int(name)
+            if stat.S_ISSOCK(os.fstat(fd).st_mode):
+                found.add(fd)
+        except (ValueError, OSError):  # the listdir handle itself, or a descriptor closed between listing and fstat
+            continue
+    return found
+
+
 @pytest.fixture
 def no_network(monkeypatch):
     """Guards the two ways the decoder could reach the network. FFmpeg opens its sockets in C, so blocking Python's `socket` alone sees
-    nothing: the fixture also samples the process's open file descriptors every 2 ms. At teardown the test fails if Python's socket
-    functions were called or if the descriptor count ever rose above its starting value."""
+    nothing: the fixture also samples this process's socket descriptors every 2 ms and remembers any that were not there at the start.
+    At teardown the test fails if Python's socket functions were called or a new socket descriptor was ever seen."""
     import socket
     import threading
     import time
@@ -225,13 +241,13 @@ def no_network(monkeypatch):
     for name in ("connect", "bind", "sendto", "recvfrom"):
         monkeypatch.setattr(socket.socket, name, deny(name))
     monkeypatch.setattr(socket, "getaddrinfo", deny("getaddrinfo"))
-    base = len(os.listdir("/dev/fd"))
-    peak = [base]
+    before = socket_fds()
+    new_sockets: set[int] = set()
     stop = threading.Event()
 
     def sample():
         while not stop.is_set():
-            peak[0] = max(peak[0], len(os.listdir("/dev/fd")))
+            new_sockets.update(socket_fds() - before)
             time.sleep(0.002)
 
     th = threading.Thread(target=sample, daemon=True)
@@ -239,11 +255,15 @@ def no_network(monkeypatch):
     yield attempts
     stop.set()
     th.join()
+    new_sockets.update(socket_fds() - before)
     assert not attempts, f"python-level network calls: {attempts}"
-    assert peak[0] <= base, f"open file descriptors rose from {base} to {peak[0]} while decoding (a socket or another file was opened)"
+    assert not new_sockets, f"socket descriptors opened while decoding: {sorted(new_sockets)}"
 
 
-def run_bounded(fn, seconds=15):
+HANG_SECONDS = 60  # only a bound for "the decoder is waiting on the network and never returns"; a real decode of these inputs takes milliseconds
+
+
+def run_bounded(fn, seconds=HANG_SECONDS):
     """Run `fn()` in a thread; fail the test if it does not return in time (a decoder waiting for packets never does). Returns (result, exception)."""
     import threading
 
