@@ -56,12 +56,18 @@ def material_key(material: Material) -> str:
     return _sha256(f"{_HASH_VERSION}\n{material.model_dump_json()}")
 
 
-def _parameters_hash(part: PartDef, parameters: Mapping[str, Quantity] | None) -> str:
-    """Hash of the parameter values the compiler will use: the override where given, else the default.
+def _snapshot(part: PartDef, parameters: Mapping[str, Quantity] | None) -> dict[str, Quantity]:
+    """The parameter values the compiler will use, read once: the override where given, else the default.
 
-    It is the resolved set, so an override equal to the default (same value, unit, badge and source) is the same key as
-    no override. Unknown names, wrong units and out-of-range values raise `ShapeError` here, exactly as compiling would."""
-    resolved = _resolve_parameters(part, parameters)
+    The result is a new dict of plain frozen `Quantity` values, so it no longer depends on the caller's mapping. The key
+    and the compile both use this snapshot, never `parameters` again: a caller that changes its mapping between the key
+    and the compile (another thread, a lazy mapping) cannot store a result under the key of other values. Unknown names,
+    wrong units and out-of-range values raise `ShapeError` here, exactly as compiling would."""
+    return _resolve_parameters(part, parameters)
+
+
+def _parameters_hash(resolved: Mapping[str, Quantity]) -> str:
+    """Hash of a snapshot. An override equal to the default (same value, unit, badge and source) is the same key as none."""
     return _sha256(",".join(f'"{name}":{q.model_dump_json()}' for name, q in resolved.items()))
 
 
@@ -111,13 +117,15 @@ class PartCache:
     def mass_properties(
         self, part: PartDef, material: Material, parameters: Mapping[str, Quantity] | None = None
     ) -> MassProperties:
-        key = ("mass", part_key(part), material_key(material), _parameters_hash(part, parameters))
-        return self._get_or_compute(key, lambda: mass_properties(part, material, parameters))
+        values = _snapshot(part, parameters)
+        key = ("mass", part_key(part), material_key(material), _parameters_hash(values))
+        return self._get_or_compute(key, lambda: mass_properties(part, material, values))
 
     def collision_proxy(self, part: PartDef, parameters: Mapping[str, Quantity] | None = None) -> CollisionProxy:
         """The proxy does not read the material, so one entry serves every material the part is made of."""
-        key = ("proxy", part_key(part), _parameters_hash(part, parameters))
-        return self._get_or_compute(key, lambda: collision_proxy(part, parameters))
+        values = _snapshot(part, parameters)
+        key = ("proxy", part_key(part), _parameters_hash(values))
+        return self._get_or_compute(key, lambda: collision_proxy(part, values))
 
     def part_glb(
         self,
@@ -129,8 +137,9 @@ class PartCache:
         """The glb bytes. `pbr` is part of the key (an explicit look is a different file); the catalog look of a material is
         looked up by id from the catalog loaded in this process, so it is the same for the life of the cache."""
         look = "catalog" if pbr is None else _sha256(pbr.model_dump_json())
-        key = ("glb", part_key(part), material_key(material), _parameters_hash(part, parameters), look)
-        return self._get_or_compute(key, lambda: part_glb(part, material, parameters, pbr))
+        values = _snapshot(part, parameters)
+        key = ("glb", part_key(part), material_key(material), _parameters_hash(values), look)
+        return self._get_or_compute(key, lambda: part_glb(part, material, values, pbr))
 
     def stats(self) -> CacheStats:
         with self._lock:

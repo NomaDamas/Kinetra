@@ -13,6 +13,7 @@ import os
 import subprocess
 import sys
 import threading
+from collections.abc import Mapping
 from pathlib import Path
 
 import pytest
@@ -390,3 +391,64 @@ def test_cache_every_primitive_kind_round_trips():
     assert cache.mass_properties(part, al) == mass_properties(part, al)
     assert cache.collision_proxy(part) == collision_proxy(part)
     assert cache.part_glb(part, al) == part_glb(part, al)
+
+
+class _ShiftingMapping(Mapping):
+    """A caller's mapping that answers with `first` the first time it is read and with `later` every time after: a
+    mapping that another thread changes between the cache computing its key and compiling."""
+
+    def __init__(self, first, later):
+        self._values = [first, later]
+        self.reads = 0
+
+    def _current(self):
+        return self._values[min(self.reads, 1)]
+
+    def __iter__(self):
+        value = self._current()
+        self.reads += 1
+        return iter(value)
+
+    def __len__(self):
+        return len(self._values[0])
+
+    def __getitem__(self, name):
+        return self._values[min(self.reads - 1, 1) if self.reads else 0][name]
+
+
+@pytest.mark.parametrize("kind", ["mass", "proxy", "glb"])
+def test_cache_key_and_compile_use_one_snapshot_of_the_parameters(kind):
+    """The parameter values are read once. A mapping that changes after that read cannot make the cache store the result
+    of other values under the key of the first, which a later call with the first values would be served."""
+    al, part = catalog_material(AL), plate()
+
+    def call(cache, params):
+        if kind == "mass":
+            return cache.mass_properties(part, al, params)
+        if kind == "proxy":
+            return cache.collision_proxy(part, params)
+        return cache.part_glb(part, al, params)
+
+    def direct(params):
+        if kind == "mass":
+            return mass_properties(part, al, params)
+        if kind == "proxy":
+            return collision_proxy(part, params)
+        return part_glb(part, al, params)
+
+    cache = PartCache(max_entries=8)
+    shifting = _ShiftingMapping(width(0.12), width(0.19))
+    stored = call(cache, shifting)
+    assert shifting.reads >= 1
+    assert stored == direct(width(0.12))  # the values the key was made from
+    assert call(cache, width(0.12)) is stored  # a later call with those values gets the right entry
+    assert call(cache, width(0.19)) != stored  # and the other values are not served from it
+
+
+def test_cache_a_dict_changed_after_the_call_does_not_change_what_was_stored():
+    cache, part, al = PartCache(max_entries=8), plate(), catalog_material(AL)
+    params = width(0.12)
+    stored = cache.mass_properties(part, al, params)
+    params["width"] = width(0.19)["width"]
+    assert cache.mass_properties(part, al, width(0.12)) is stored
+    assert cache.mass_properties(part, al, params).mass.value > stored.mass.value

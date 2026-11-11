@@ -29,7 +29,7 @@ cache.clear()
 
 - **정의 해시** `part_key(part)`는 `PartDef.model_dump_json()`의 SHA-256이다. 필드 순서는 모델이 정하고 파일의 키 순서와 무관하다(`test_cache_hits_for_an_equal_definition_built_separately`). 파이썬 `hash()`가 아니라 프로세스와 `PYTHONHASHSEED`에 무관하다(`test_cache_is_identical_across_processes_and_hash_seeds`).
 - **재료 해시**: 같은 id에 밀도만 다른 재료는 다른 키다(`test_cache_material_with_the_same_id_but_another_density_is_a_miss`).
-- **풀어낸 파라미터**는 `_shape._resolve_parameters`의 결과다. 덮어쓰지 않은 파라미터는 부품의 기본값이라 "덮어쓰기 없음"과 "기본값을 그대로 덮어씀"은 같은 키다. 같은 숫자라도 배지나 출처가 다르면 다른 키다. 결과가 그 배지를 싣기 때문이다. 알 수 없는 이름, 단위 오류, 범위 밖은 키를 만들다가 `ShapeError`로 거절되고 컴파일할 때와 같은 사유다.
+- **풀어낸 파라미터**는 `_shape._resolve_parameters`의 결과다. 호출마다 **한 번만** 읽어 복사본(`_snapshot`)을 만들고 키와 컴파일이 같은 복사본을 쓴다. 호출자의 매핑이 그 사이에 바뀌어도 다른 값의 결과가 첫 값의 키로 저장되지 않는다(`test_cache_key_and_compile_use_one_snapshot_of_the_parameters`, 컴파일에 원래 인자를 다시 넘기는 변이가 이 시험을 실패시킴). 덮어쓰지 않은 파라미터는 부품의 기본값이라 "덮어쓰기 없음"과 "기본값을 그대로 덮어씀"은 같은 키다. 같은 숫자라도 배지나 출처가 다르면 다른 키다. 결과가 그 배지를 싣기 때문이다. 알 수 없는 이름, 단위 오류, 범위 밖은 키를 만들다가 `ShapeError`로 거절되고 컴파일할 때와 같은 사유다.
 - 키가 빠뜨리는 입력이 있으면 낡은 결과가 나간다. 그래서 시험이 정의 JSON의 **잎을 하나씩 모두** 바꿔 해시가 달라지는지 본다(`test_cache_definition_hash_changes_with_every_leaf_of_the_definition`). `PartDef`에 새 절이 생겨도 해시가 무시하면 이 시험이 아니라 키 코드를 고쳐야 한다. 키 코드를 고의로 틀리게 한 변이(재료 빼기, 파라미터 빼기, 외형 빼기, 스냅 포인트 빼기, LRU 갱신 빼기)가 시험을 실패시키는 것을 확인했다.
 
 ## C-03의 `definition_hash`를 쓰지 않는 이유
