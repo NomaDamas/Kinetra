@@ -4,8 +4,8 @@
 that undoes this one. It never mutates its input and either returns a valid `Project` or raises `CommandRejected`
 with reasons (code, sentence, typed refs; `client-adapter.md` 3.2 `rejected`). Applying the inverse to the new
 project gives back a project equal to the original (order of every collection included), and the inverse's inverse
-redoes the edit. C-02b builds undo, redo and history on that pair; C-02c adds the policy checks (placement,
-planet constants, who may send what); C-05a puts the commands on the wire.
+redoes the edit. C-02b builds undo, redo and history on that pair; C-02c (`validator.py`) adds the policy checks (placement,
+planet constants, the material catalog, verdicts); C-05a puts the commands on the wire.
 
 Shape rules (read by C-02b, C-02c, C-03, C-05a, XR-02):
 
@@ -50,12 +50,12 @@ Shape rules (read by C-02b, C-02c, C-03, C-05a, XR-02):
   change `editable` (all `not_editable`). That keeps every inverse applicable.
 - There is deliberately no command that carries a planet constant, or a verdict (`client-adapter.md` C4):
   `SelectPlanet` names a planet by id. A material or part definition is replaced as a whole and only by id; which
-  origins may send definition commands at all is C-02c's policy.
+  origins may send definition commands at all: none is allowed or refused by origin (C-02c: the validator takes no origin).
 - Cost: every edit dumps the project to JSON and validates all of it again, so one edit costs O(project) and a
   batch of n edits n x O(project) (about 11 ms per edit at 200 instances, 25 ms at 1000, measured in the
   review of #497). Tracked in its own issue; it does not change the command shapes.
 
-Not here: the issuer and history (C-02b), policy checks and the reason texts of placement (C-02c), save format
+Not here: the issuer and history (C-02b), policy checks and placement (C-02c, `validator.py`), save format
 and hashes (C-03), the wire messages (C-05a), terrain prop edits (W-05), water (FL-02b), release entries (X-08).
 """
 
@@ -87,6 +87,10 @@ class ReasonCode(StrEnum):
     INVALID_COMMAND = "invalid_command"
     INVALID_PROJECT = "invalid_project"
     NOT_EDITABLE = "not_editable"
+    FORBIDDEN = "forbidden"  # C-02c: planet constants, the material catalog, verdicts
+    INVALID_SNAP = "invalid_snap"  # C-02c: a joint whose snap points do not accept each other or do not meet
+    OVERLAP = "overlap"  # C-02c: interpenetrating parts, or a part below the ground
+    FLOATING = "floating"  # C-02c: nothing connects the part to the ground
 
 
 class Reason(BaseModel):

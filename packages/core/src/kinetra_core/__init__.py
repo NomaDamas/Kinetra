@@ -93,10 +93,12 @@ from .project import Project
 from .refs import Ref, RefError, RefKind
 from .provenance import BADGE_LABEL_KO, Badge, Provenance, Quantity, Source
 from .shape import Box, Cylinder, Shape, ShapeComponent, Sphere
+from .validator import PLACEMENT_TOLERANCE, check_placement, parse_command, validate_command
 from .world import PLANET_CONSTANT_NAMES, Incline, Placement, PropSize, RampProp, StepProp, TerrainProp, World
 
 __all__ = [
     "BADGE_LABEL_KO",
+    "PLACEMENT_TOLERANCE",
     "BODIES_DIR",
     "BODY_IDS",
     "COORDINATE_FRAME",
@@ -212,8 +214,11 @@ __all__ = [
     "WorldPosition",
     "YieldStrength",
     "apply_command",
+    "check_placement",
     "check_world_references",
     "load_bodies",
     "load_body",
     "load_material_catalog",
+    "parse_command",
+    "validate_command",
 ]

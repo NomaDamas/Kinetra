@@ -1,4 +1,5 @@
-"""Convex primitives in the part frame: support functions, separation and containment (B-01a).
+"""Convex primitives in a frame: support functions, separation and containment (B-01a; moved from `kinetra_engine.parts`
+so the placement check of the validator, C-02c, shares the exact tests the mass computation uses).
 
 The mass computation sums component volumes, so it is only right when added components do not overlap and voids sit
 inside the material. Two convex bodies have disjoint interiors exactly when a plane separates them; one convex body is
@@ -15,7 +16,11 @@ silent double count.
 from __future__ import annotations
 
 import math
+from collections.abc import Mapping
 from dataclasses import dataclass
+
+from .geometry import Quaternion
+from .shape import Box, Cylinder, Sphere
 
 Vec = tuple[float, float, float]
 Mat = tuple[Vec, Vec, Vec]  # rows
@@ -257,3 +262,25 @@ def contained(inner: Body, outer: Body, tol: float) -> bool:
         if inner.support(n) > dot(outer.center, n) + outer.half[2] + tol:
             return False
     return _within_radius(inner, outer, tol)
+
+
+def rotation(q: Quaternion) -> Mat:
+    """Rotation matrix (rows) of a unit quaternion {x, y, z, w}."""
+    x, y, z, w = q.x, q.y, q.z, q.w
+    n = math.sqrt(x * x + y * y + z * z + w * w)
+    x, y, z, w = x / n, y / n, z / n, w / n  # the model allows norm 1 +- 1e-6; use the exact rotation
+    return (
+        (1 - 2 * (y * y + z * z), 2 * (x * y - z * w), 2 * (x * z + y * w)),
+        (2 * (x * y + z * w), 1 - 2 * (x * x + z * z), 2 * (y * z - x * w)),
+        (2 * (x * z - y * w), 2 * (y * z + x * w), 1 - 2 * (x * x + y * y)),
+    )
+
+
+def make_body(p: Box | Cylinder | Sphere, dims: Mapping[str, float], center: Vec, r: Mat) -> Body:
+    """The primitive `p` with resolved `dims` [m], centred at `center`, turned by the rotation matrix `r` (rows)."""
+    axes = tuple((r[0][j], r[1][j], r[2][j]) for j in range(3))
+    if isinstance(p, Box):
+        return Body("box", center, axes, (dims["size_x"] / 2, dims["size_y"] / 2, dims["size_z"] / 2))  # type: ignore[arg-type]
+    if isinstance(p, Cylinder):
+        return Body("cylinder", center, axes, (dims["radius"], dims["radius"], dims["length"] / 2))  # type: ignore[arg-type]
+    return Body("sphere", center, axes, (dims["radius"],) * 3)  # type: ignore[arg-type]
