@@ -1,8 +1,8 @@
 # Project 모델: 단위·좌표·값 배지 (C-01a)
 
-- 상태: 구현됨. 코드는 `packages/core/src/kinetra_core/`(`conventions.py`, `provenance.py`, `material.py`, `partdef.py`), 테스트는 `packages/core/tests/test_material_partdef.py`.
+- 상태: 구현됨. 코드는 `packages/core/src/kinetra_core/`(`conventions.py`, `provenance.py`, `material.py`, `partdef.py`, `designspec.py`), 테스트는 `packages/core/tests/test_material_partdef.py`와 `test_designspec.py`.
 - 근거: `docs/plan/studio-plan.md` 5절, `docs/architecture/client-adapter.md` G4·G6, 이슈 #60의 A0-04 이월 코멘트.
-- 범위 밖: MJCF(X-01), 인스턴스·결합(C-01b), World·가정표(C-01c), JSON Schema·TS 파일 생성(C-01d). 모델은 Pydantic v2라서 `model_json_schema()`로 스키마가 이미 나온다. 파일로 내보내는 일은 C-01d다.
+- 범위 밖: MJCF(X-01), World·가정표(C-01c), JSON Schema·TS 파일 생성(C-01d). 모델은 Pydantic v2라서 `model_json_schema()`로 스키마가 이미 나온다. 파일로 내보내는 일은 C-01d다.
 
 ## 규약 (확정)
 
@@ -37,6 +37,22 @@
 - `PartDef`: `parameters`(이름, 단위, 기본값·최소·최대; 최소 <= 기본 <= 최대), `snap_points`(ID, 종류, 받아들이는 종류, 부품 로컬 좌표의 위치 `offset + Σ factor × 길이 파라미터`, 방향 쿼터니언, 배지·출처), `specs`(`SpecDef`: 이름이 붙은 `Quantity`의 튜플, 사양).
 - 파라미터를 참조하는 스냅 포인트는 존재하는 길이(m) 파라미터만 가리킬 수 있다. 한 `PartDef` 안에서 파라미터 이름, 스냅 포인트 ID, 사양 이름은 각각 겹치지 않고, 스냅 포인트 ID와 사양 이름은 파라미터 이름과도 겹치지 않는다.
 - 모든 모델은 `extra="forbid"`, 불변(`frozen`)이고 컬렉션은 튜플이라 `PartDef`는 해시된다. 순서는 값의 일부로 보존한다(순서가 다르면 다른 값). 정의 해시용 정규 순서는 C-03이 정한다.
+
+## `DesignSpec` (C-01b)
+
+사용자가 만든 것: 부품 인스턴스, 결합, 액추에이터, 제어 스케줄. 쓰는 `Material`과 `PartDef`를 함께 담는다(계획 5.3절 "프로젝트는 쓰는 부품 정의를 담는다"). 참조(인스턴스 → 부품·재질, 결합 → 스냅 포인트, 액추에이터 → 인스턴스·결합, 스케줄 → 액추에이터)는 검증에서 닫혀 있어야 하고, 끊긴 참조는 관련 ID와 함께 거부된다. 정의가 빠진 프로젝트를 "정의 없음"으로 여는 규칙은 C-06이 이 검사를 완화하며 이 PR 범위 밖이다. 같은 컬렉션 안의 ID(재질·부품·인스턴스·결합·액추에이터)는 겹치지 않는다. 컬렉션은 튜플이고 순서가 값의 일부인 것은 위와 같다.
+
+| 레코드 | 필드 | 규칙 |
+|---|---|---|
+| `Instance` | `id`, `part`, `parameters`, `material`(없을 수 있음), `pose` | `parameters`는 부품의 파라미터 이름만, 단위가 `ParamDef`와 같고 `[min, max]` 안이며, 같은 이름은 한 번만. 적지 않은 파라미터는 `PartDef` 기본값. 각 값은 `Quantity`(배지·출처 필수) |
+| `Pose` | `position`(m, 월드), `orientation`(`{x,y,z,w}` 단위 쿼터니언), `badge`, `source` | 부품 좌표계의 월드 자세. 배지·출처 하나가 자세 전체를 덮는다(스냅 포인트와 같다) |
+| `Joint` | `id`, `kind`(`fixed` `hinge` `slider`), `a`, `b`(`SnapRef`: 인스턴스 ID + 스냅 포인트 ID), `limits`, `break_threshold` | 양끝은 서로 다른 인스턴스의 존재하는 스냅 포인트이고 한 스냅 포인트는 결합 하나에만 쓰인다. `limits`는 `Quantity` 두 개(`lower < upper`, 같은 단위): 힌지는 rad, 슬라이더는 m, 고정 결합에는 없다. `break_threshold`는 `Quantity`(N, > 0)이고 없으면 파단하지 않는다 |
+| `Actuator` | `id`, `kind`(`motor` `thruster`), `instance`, `joint` | 모터는 구동할 결합이 있어야 하고(고정 결합이 아니고, `instance`가 그 결합의 한쪽 끝), 추력기에는 결합이 없다. 액추에이터 ID가 곧 조종 채널 ID다(`client-adapter.md` I5) |
+| `ControlSchedule` | `entries`: `ActuateEntry`(`actuator`, `start`, `end`[s], `command`, `badge`, `source`) | `0 <= start < end`. `command`는 완전 구동 대비 비율이고 모터는 [-1, 1], 추력기는 [0, 1]. 한 액추에이터의 구간은 겹치지 않는다(맞닿는 것은 된다). 배지·출처 하나가 항목을 덮는다 |
+
+- `command`가 1일 때 몇 N·m, 몇 N인지는 부품의 사양(곡선)에서 온다(B-03b, B-03c, X-01b, X-01c). `DesignSpec`은 비율만 안다.
+- 결합의 축, 종류별 자유도, 스프링, 스냅 호환 태그 검사는 B-04a·B-04b가 더한다. 이 PR의 `limits`와 `break_threshold`는 그 필드가 올 자리와 단위 검사까지다. 파단 임계의 계산(물성 × 단면)은 X-04a다. 분리 항목(`type: "separate"`)은 X-08이 `ActuateEntry`와 같은 자리에 더한다.
+- 이 PR의 수치는 모두 테스트가 선언한 값(`사용자 선언`)이다. 실부품 수치는 이 PR에 없다.
 
 ## 알려진 확장 (이 PR 범위 밖, 뒤 잎이 더한다)
 
