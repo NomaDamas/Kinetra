@@ -35,6 +35,7 @@
 - 범위 밖이면 거절하지 않고 `카탈로그 밖 · <배지>`를 낸다. 예: 선언한 8 kN → `카탈로그 밖 · 사용자 선언`(`schemas/examples/PartDef.thruster-declared-8kn.json`). 판정은 선언만큼만 맞다.
 - 범위 안이어도 배지는 자기 것이다. 선언한 3 N은 `사용자 선언`이지 `인용`이 아니다(`test_thruster_declared_value_inside_the_range_stays_declared`).
 - 수식어를 그리는 쪽은 `ValueBadge`(D0-02d, `qualifier`)다. 이 계산은 문구만 낸다.
+- 에이전트 경로(G-04, `kinetra_engine/agent/guard.py`)는 이 문구를 그대로 `ToolResult.out_of_catalog`에 싣고, 사용자가 확인하기 전에는 문서에 발행하지 않는다(`docs/architecture/agent-edit-tools.md`).
 
 ## 라이브러리 부품: VACCO 48003040 (`thruster-vacco-48003040`)
 
