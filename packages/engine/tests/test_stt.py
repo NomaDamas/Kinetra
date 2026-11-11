@@ -158,6 +158,26 @@ def test_stt_audio_just_under_the_limit_is_accepted(snapshot):
     assert make(snapshot).transcribe(wav_bytes(59.0, rate=8000)).duration_s == pytest.approx(59.0, abs=0.05)
 
 
+def test_stt_size_limit_counts_bytes_not_items(snapshot, monkeypatch):
+    """`len(memoryview)` counts items: an int32 view of 4 N bytes has len N. The limit must use nbytes."""
+    import array
+
+    monkeypatch.setattr(transcriber, "MAX_AUDIO_BYTES", 1000)
+    t = make(snapshot)
+    ints = array.array("i", [0] * 400)  # 400 items, 1600 bytes (itemsize 4): len() is under 1000, nbytes is over
+    assert len(memoryview(ints)) == 400 and memoryview(ints).nbytes == 1600
+    for view in (memoryview(ints), memoryview(bytes(1600)), bytearray(1600), bytes(1600)):
+        with pytest.raises(stt.AudioRejected, match="1600 bytes, over the 1000 byte limit"):
+            t.transcribe(view)
+    with pytest.raises(stt.AudioRejected, match="empty"):
+        t.transcribe(memoryview(array.array("i")))
+    assert t._model.calls == []
+    monkeypatch.setattr(transcriber, "MAX_AUDIO_BYTES", 25 * 1024 * 1024)
+    wav = wav_bytes(1.0)
+    assert t.transcribe(memoryview(wav)).duration_s == pytest.approx(1.0, abs=0.01)
+    assert t.transcribe(bytearray(wav)).duration_s == pytest.approx(1.0, abs=0.01)
+
+
 def test_stt_unknown_language_is_an_stt_error(snapshot):
     t = make(snapshot)
     for bad in ("zz", "", "KO", "ko-KR"):

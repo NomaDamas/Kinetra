@@ -145,11 +145,12 @@ def _decode(audio: bytes | bytearray | memoryview | str | os.PathLike) -> Any:
 
     src: str | BinaryIO
     if isinstance(audio, (bytes, bytearray, memoryview)):
-        if len(audio) == 0:
+        size = memoryview(audio).nbytes  # not len(): a memoryview of 4-byte items has len() == nbytes / 4
+        if size == 0:
             raise AudioRejected("audio is empty")
-        if len(audio) > MAX_AUDIO_BYTES:
-            raise AudioRejected(f"audio is {len(audio)} bytes, over the {MAX_AUDIO_BYTES} byte limit")
-        src = io.BytesIO(bytes(audio))
+        if size > MAX_AUDIO_BYTES:
+            raise AudioRejected(f"audio is {size} bytes, over the {MAX_AUDIO_BYTES} byte limit")
+        src = io.BytesIO(memoryview(audio).tobytes())
     else:
         path = Path(audio)
         try:

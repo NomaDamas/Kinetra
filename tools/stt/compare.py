@@ -35,6 +35,16 @@ API = "https://openrouter.ai/api/v1/audio/transcriptions"
 KEY_ENV = "OPENROUTER_API_KEY"
 
 
+def redact_body(body: bytes, key: str, limit: int = 200) -> str:
+    """Error text for the console: the key is removed from the WHOLE body first, then the text is cut. Cutting first could leave a
+    prefix of the key (a cut through the middle of it no longer matches the exact value)."""
+    text = body.decode("utf-8", "replace")
+    for secret in (key, key.strip()):
+        if len(secret) >= 4:
+            text = text.replace(secret, "***")
+    return text[:limit]
+
+
 def api_transcribe(model: str, wav: bytes, key: str) -> tuple[str, float | None, float]:
     body = json.dumps({"model": model, "input_audio": {"data": base64.b64encode(wav).decode(), "format": "wav"}, "language": "ko"}).encode()
     req = urllib.request.Request(API, data=body, headers={"Content-Type": "application/json", "Authorization": f"Bearer {key}"}, method="POST")
@@ -43,7 +53,7 @@ def api_transcribe(model: str, wav: bytes, key: str) -> tuple[str, float | None,
         with urllib.request.urlopen(req, timeout=120) as r:  # https URL above
             d = json.loads(r.read())
     except urllib.error.HTTPError as e:
-        raise SystemExit(f"{model}: HTTP {e.code} {e.read()[:200].decode('utf-8', 'replace').replace(key, '***')}") from None
+        raise SystemExit(f"{model}: HTTP {e.code} {redact_body(e.read(), key)}") from None
     wall = time.perf_counter() - t0
     cost = d.get("usage", {}).get("cost")
     return d["text"].strip(), cost if isinstance(cost, (int, float)) else None, wall

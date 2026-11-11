@@ -33,6 +33,8 @@ jobs:
         run: uv run python packages/core/scripts/export_schemas.py --check
       - name: pytest tools/dev (resource guard, fake measurements)
         run: uv run pytest tools/dev -q
+      - name: pytest tools/stt (I-01a, comparison tool key redaction, offline)
+        run: uv run pytest tools/stt -q
       - name: pytest tools/design/tests (D0-02e, design-system source rebuilds index.html)
         run: uv run pytest tools/design/tests -q
       - name: pytest tools/review (P0-06, offline with fake gh and curl)

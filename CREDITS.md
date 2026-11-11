@@ -309,11 +309,11 @@
 
 - 표기: PyAV, Copyright (c) 2008-2023 Mike Boers, Jeremy Lainé and contributors. BSD-3-Clause License. 휠에 번들된 FFmpeg, libx264, libx265 는 각각 LGPL/GPL 이다(결정 대기: I-01c).
 - 저작자: PyAV contributors
-- 라이선스: BSD-3-Clause AND (LGPL-2.1-or-later OR GPL-2.0-or-later)
+- 라이선스: BSD-3-Clause AND LGPL-2.1-or-later AND GPL-2.0-or-later
 - 원본: https://pypi.org/project/av/18.1.0/ https://github.com/PyAV-Org/PyAV https://github.com/PyAV-Org/PyAV/blob/main/LICENSE.txt
 - 경로: `packages/engine/pyproject.toml`
 - 용도: 실행 의존성: 받아쓰기 입력 오디오 디코딩(wav, mp3, ogg, webm/opus, m4a)
-- 변경 내역: 없음(수정 없이 사용). faster-whisper 1.2.1 의 의존성이며 packages/engine/pyproject.toml 의 `av>=11,<19` 와 uv.lock 에서 18.1.0 으로 고정(faster-whisper 1.2.1 이 av 19 가 없앤 av.open(metadata_errors=...)를 부른다). 해시는 sdist. **휠에 든 FFmpeg 공유 라이브러리의 라이선스는 BSD-3-Clause 하나가 아니다.** PyAV 코드는 BSD-3-Clause 이고 번들 FFmpeg 는 `--enable-version3`(LGPL-3.0-or-later 로 구성, avcodec_license() 가 `LGPL version 3 or later`, `--enable-gpl` 없음)이지만 같은 휠에 별도 공유 라이브러리로 libx264 와 libx265(둘 다 GPL-2.0-or-later 로 배포)가 들어 있고 libavcodec 이 링크한다(macOS arm64 휠 `otool -L` 과 Linux x86-64 휠 av.libs 목록에서 확인). 상류 유지보수자는 휠을 "LGPLv2.1+ OR GPLv2+"로 설명한다(PyAV-Org/PyAV#2270). `import av` 하면 GPL 라이브러리가 프로세스에 올라온다. 배포(설치 프로그램, 이미지, 호스팅 빌드) 전에 창업자 결정이 필요하다: 이슈 [I-01c] PyAV 휠의 GPL 구성요소 배포 결정. 그 전까지 개발 환경(uv sync)에서만 쓴다. LicenseRef 가 아니라 SPDX 표현식으로 적었다
+- 변경 내역: 없음(수정 없이 사용). faster-whisper 1.2.1 의 의존성이며 packages/engine/pyproject.toml 의 `av>=11,<19` 와 uv.lock 에서 18.1.0 으로 고정(faster-whisper 1.2.1 이 av 19 가 없앤 av.open(metadata_errors=...)를 부른다). 해시는 sdist. **휠은 실제로 배포되는 묶음 기준으로 GPL-2.0-or-later 다.** 위 표현식은 그 묶음의 구성요소를 모두 적은 것이다(PyAV 코드 BSD-3-Clause, FFmpeg 계열 LGPL, libx264/libx265 GPL-2.0-or-later). libx264 와 libx265 가 같은 휠 안에서 libavcodec 에 링크되므로 휠 전체를 받는 쪽에 유효한 조건은 GPL 쪽이다. PyAV 코드는 BSD-3-Clause 이고 번들 FFmpeg 는 `--enable-version3`(LGPL-3.0-or-later 로 구성, avcodec_license() 가 `LGPL version 3 or later`, `--enable-gpl` 없음)이지만 같은 휠에 별도 공유 라이브러리로 libx264 와 libx265(둘 다 GPL-2.0-or-later 로 배포)가 들어 있고 libavcodec 이 링크한다(macOS arm64 휠 `otool -L` 과 Linux x86-64 휠 av.libs 목록에서 확인). 상류 유지보수자는 휠을 "LGPLv2.1+ OR GPLv2+"로 설명한다(PyAV-Org/PyAV#2270). `import av` 하면 GPL 라이브러리가 프로세스에 올라온다. 배포(설치 프로그램, 이미지, 호스팅 빌드) 전에 창업자 결정이 필요하다: 이슈 [I-01c] PyAV 휠의 GPL 구성요소 배포 결정. 그 전까지 개발 환경(uv sync)에서만 쓴다. LicenseRef 가 아니라 SPDX 표현식으로 적었다
 - 받은 날짜: 2026-11-11
 - 원본 해시: `sha256:47bfc286e1bc9de7ab4681fc2b575cd2460a66919d31ffe1bd5aa54fae531a28`
 - 확인자: omp
