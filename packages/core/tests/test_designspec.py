@@ -538,3 +538,43 @@ def test_designspec_rejects_unknown_fields():
     d = four_wheel_car()
     d["joints"][0]["spring"] = 1.0
     reject(d, "spring")
+
+
+# --- part role and actuator kind (B-03b) --------------------------------------------------------------------------
+
+
+def part(d, id):
+    return next(p for p in d["parts"] if p["id"] == id)
+
+
+def test_designspec_motor_actuator_on_a_motor_part_is_accepted():
+    d = four_wheel_car()
+    part(d, "motor")["role"] = "motor"  # curve and rated voltage are checked in PartDef (test_motor.py in the engine tests)
+    with pytest.raises(ValidationError, match="needs the curve 'torque_speed'"):
+        DesignSpec.model_validate(d)
+
+
+def test_designspec_motor_actuator_on_a_part_with_another_role_is_rejected():
+    d = four_wheel_car()
+    part(d, "motor")["role"] = "wheel"
+    reject(d, "a motor drives a part with role 'motor', but instance 'motor-l' is part 'motor' with role 'wheel'")
+
+
+def test_designspec_thruster_actuator_on_a_motor_role_part_is_rejected():
+    d = four_wheel_car()
+    part(d, "chassis")["role"] = "motor"
+    d["actuators"].append({"id": "thrust-1", "kind": "thruster", "instance": "chassis-1"})
+    with pytest.raises(ValidationError, match="needs the curve|a thruster drives a part with role 'thruster'"):
+        DesignSpec.model_validate(d)
+
+
+def test_designspec_part_without_role_takes_any_actuator_kind():
+    d = four_wheel_car()
+    assert all("role" not in p for p in d["parts"])
+    DesignSpec.model_validate(d)
+
+
+def test_designspec_part_role_must_be_a_known_role():
+    d = four_wheel_car()
+    part(d, "motor")["role"] = "engine"
+    reject(d, "role")
