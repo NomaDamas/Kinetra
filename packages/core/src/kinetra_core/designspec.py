@@ -1,9 +1,11 @@
 """`DesignSpec` (C-01b): what the user built. Part instances, joints, actuators, control schedule.
 
-A `DesignSpec` is self-contained: it carries the `Material` and `PartDef` definitions its instances use, so a
-reference (instance -> part, instance -> material, joint -> snap point) is checked here, at validation, and a
-dangling one is rejected with the ids involved. (Opening a project whose definitions are missing is C-06's rule
-and will relax the part/material checks there, not here.)
+A `DesignSpec` carries the `Material` and `PartDef` definitions its instances use. What a definition says about an
+instance (parameter names, units and ranges, a joint's snap point, an actuator's role) is checked here, at
+validation, and a conflict is rejected with the ids involved. An instance whose part or material the project does
+not carry is a placeholder (C-06, `missing.py`, `docs/architecture/missing-definitions.md`): it validates, keeps its
+pose, parameter values and joints, and nothing that needs the missing definition is checked until it is linked back.
+Other references (joint -> instance, actuator -> instance, schedule -> actuator) stay closed.
 
 Where numbers are physical they follow C-01a: a `Quantity` (value, unit, badge, source), or one `Provenance`
 that covers a whole record whose numbers have fixed units by field (an instance pose in m and a unit quaternion,
@@ -33,7 +35,7 @@ accepted (a bare body, and the compiler reports that it has no curve).
 
 Not here: MJCF (X-01); snap compatibility (B-04b), the joint axis in the world and its fit to the snap orientations (X-01a); a joint's own spring and
 damping (X-01b; the spring-damper *part* is B-03e); torque-speed and thrust curves and what a command of 1 means in N*m or N (B-03b, B-03c, X-01b,
-X-01c); release/separation schedule entries (X-08); definition hashes (`canonical.py`, C-03) and missing definitions (C-06);
+X-01c); release/separation schedule entries (X-08); definition hashes (`canonical.py`, C-03);
 `World` and assumptions (C-01c).
 """
 
@@ -387,13 +389,16 @@ class DesignSpec(BaseModel):
         joints = {j.id: j for j in self.joints}
         actuators = {a.id: a for a in self.actuators}
 
+        # A part or material the project does not carry is not an error (C-06, `missing.py`): the instance stays as a
+        # placeholder with its pose, parameter values and joints. What would need the definition (parameter names,
+        # units and ranges, a snap point's existence, an actuator's role) cannot be checked and is not; it is checked
+        # again when the definition is linked back (`relink_instance`, `add_part_def`), which validates the whole
+        # project. A snap point is still used by one joint only: that needs no definition.
         for n, inst in enumerate(self.instances):
             where = f"instances[{n}] ({inst.id!r})"
             part = parts.get(inst.part)
             if part is None:
-                raise RefError(f"{where}: unknown part {inst.part!r}", Ref(kind=RefKind.PART, id=inst.part), Ref(kind=RefKind.INSTANCE, id=inst.id))
-            if inst.material is not None and inst.material not in materials:
-                raise RefError(f"{where}: unknown material {inst.material!r}", Ref(kind=RefKind.MATERIAL, id=inst.material), Ref(kind=RefKind.INSTANCE, id=inst.id))
+                continue
             defs = {p.name: p for p in part.parameters}
             for v in inst.parameters:
                 d = defs.get(v.name)
@@ -415,7 +420,7 @@ class DesignSpec(BaseModel):
                 inst = instances.get(ref.instance)
                 if inst is None:
                     raise RefError(f"{where}: unknown instance {ref.instance!r}", Ref(kind=RefKind.INSTANCE, id=ref.instance), Ref(kind=RefKind.JOINT, id=joint.id))
-                if ref.snap_point not in {s.id for s in parts[inst.part].snap_points}:
+                if inst.part in parts and ref.snap_point not in {s.id for s in parts[inst.part].snap_points}:
                     raise RefError(
                         f"{where}: part {inst.part!r} of instance {ref.instance!r} has no snap point {ref.snap_point!r}",
                         Ref(kind=RefKind.SNAP_POINT, id=f"{ref.instance}/{ref.snap_point}"),
@@ -435,7 +440,8 @@ class DesignSpec(BaseModel):
             where = f"actuators[{n}] ({act.id!r})"
             if act.instance not in instances:
                 raise RefError(f"{where}: unknown instance {act.instance!r}", Ref(kind=RefKind.INSTANCE, id=act.instance), Ref(kind=RefKind.ACTUATOR, id=act.id))
-            role = parts[instances[act.instance].part].role
+            actuated_part = parts.get(instances[act.instance].part)
+            role = None if actuated_part is None else actuated_part.role
             want_role = _ACTUATOR_ROLE[act.kind]
             if role is not None and role is not want_role:
                 raise RefError(
@@ -453,8 +459,9 @@ class DesignSpec(BaseModel):
                         Ref(kind=RefKind.INSTANCE, id=act.supply),
                         Ref(kind=RefKind.ACTUATOR, id=act.id),
                     )
-                have, need = parts[source.part].role, _SUPPLY_ROLE[act.kind]
-                if have is not need:
+                source_part = parts.get(source.part)  # a placeholder source (C-06): its role is not known, not checked
+                have, need = (None if source_part is None else source_part.role), _SUPPLY_ROLE[act.kind]
+                if source_part is not None and have is not need:
                     raise RefError(
                         f"{where}: a {act.kind.value} draws from a part with role {need.value!r}, but supply {act.supply!r} "
                         f"is part {source.part!r} with {'no role' if have is None else f'role {have.value!r}'}",

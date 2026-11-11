@@ -76,10 +76,12 @@ from .commands import (
     ReplaceMaterialDef,
     SetAssumption,
     apply_command,
+    missing_reasons,
 )
 from .designspec import Instance
 from .material import Material
 from .material_catalog import load_material_catalog
+from .missing import BlockedOperation, MissingDefinition, missing_definitions, missing_users
 from .partdef import PartDef
 from .project import Project
 from .provenance import Badge
@@ -297,6 +299,8 @@ def _snap_findings(project: Project, tol: float) -> list[_Finding]:
     insts = {i.id: i for i in project.design.instances}
     out: list[_Finding] = []
     for joint in project.design.joints:
+        if any(insts[side.instance].part not in parts for side in (joint.a, joint.b)):
+            continue  # an end is a placeholder (C-06): its snap points are not known, so the joint is not judged
         ends = []
         for side in (joint.a, joint.b):
             inst = insts[side.instance]
@@ -346,7 +350,7 @@ def _snap_findings(project: Project, tol: float) -> list[_Finding]:
 
 def _body_findings(project: Project, tol: float) -> list[_Finding]:
     parts = {p.id: p for p in project.design.parts}
-    bodies = {i.id: _instance_bodies(parts[i.part], i) for i in project.design.instances}
+    bodies = {i.id: (_instance_bodies(parts[i.part], i) if i.part in parts else []) for i in project.design.instances}
     shaped = [i for i in project.design.instances if bodies[i.id]]
     out: list[_Finding] = []
 
@@ -491,6 +495,44 @@ def check_placement(project: Project, *, tolerance: float = PLACEMENT_TOLERANCE)
 # --- the gate -----------------------------------------------------------------------------------------------
 
 
+# --- missing definitions (C-06) -----------------------------------------------------------------------------
+
+
+class ProjectIncomplete(Exception):
+    """An operation was refused because the project has missing definitions. `missing` lists them, `reasons` is the
+    same as `Reason`s for the wire."""
+
+    def __init__(self, operation: BlockedOperation, missing: tuple[MissingDefinition, ...]):
+        self.operation = operation
+        self.missing = missing
+        self.reasons = missing_reasons(missing)
+        listed = ", ".join(f"{m.kind} {m.id!r}" for m in missing)
+        super().__init__(
+            f"cannot {operation.value}: the project has no definition for {listed}. Relink the instances, add the "
+            "definition, or delete the instances"
+        )
+
+
+def require_complete(project: Project, operation: BlockedOperation) -> None:
+    """Raise `ProjectIncomplete` when `project` has a missing definition. Compile, run, verdict and Halo export call
+    this first: a project is never run with a part left out."""
+    missing = missing_definitions(project)
+    if missing:
+        raise ProjectIncomplete(operation, missing)
+
+
+def _refuse_new_missing(before: Project, after: Project) -> None:
+    """A command never makes a placeholder (C-06): an instance of a part or material the project does not carry can
+    only come from a file that was opened. What was missing before may stay missing while the user works on it (and
+    undo, redo, which use `apply_command`, may put it back)."""
+    grouped: dict[tuple[str, str], list[str]] = {}
+    for kind, ident, user in sorted(missing_users(after) - missing_users(before)):
+        grouped.setdefault((kind, ident), []).append(user)
+    if grouped:
+        missing = tuple(MissingDefinition(kind=k, id=i, instances=tuple(u)) for (k, i), u in grouped.items())  # type: ignore[arg-type]
+        raise CommandRejected(missing_reasons(missing))
+
+
 def validate_command(project: Project, command: Command, *, tolerance: float = PLACEMENT_TOLERANCE) -> ApplyResult:
     """`apply_command` with the policy and placement checks. Raises `CommandRejected` and leaves `project` as it is
     when the command (or one command of a batch) is refused, with one reason per problem; otherwise returns the same
@@ -499,6 +541,7 @@ def validate_command(project: Project, command: Command, *, tolerance: float = P
     result = apply_command(project, command)
     if result.project == project:
         return result
+    _refuse_new_missing(project, result.project)
     found = _findings(result.project, tolerance)
     if found:
         before = {key for keys, _ in _findings(project, tolerance) for key in keys}

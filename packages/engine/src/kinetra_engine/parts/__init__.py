@@ -5,6 +5,7 @@ from .assembly import AssemblyMass, InstanceMass, assembly_mass
 from .cache import CacheStats, PartCache, part_key, material_key
 from .collision import collision_proxy
 from .curves import CurveError, CurveRangeError, MotorCharacteristics, evaluate, motor_characteristics, motor_torque_limit
+from .library import library_hashes, library_parts
 from .mass import mass_properties
 from .springs import Oscillation, SpringDamperCharacteristics, oscillation, spring_damper_characteristics, spring_damper_force
 from .thruster import Burn, CatalogFinding, Thruster, ThrusterError, burn, catalog_finding, thruster_from_part
@@ -36,6 +37,8 @@ __all__ = [
     "collision_proxy",
     "electrical_power",
     "evaluate",
+    "library_hashes",
+    "library_parts",
     "mass_properties",
     "material_key",
     "motor_characteristics",

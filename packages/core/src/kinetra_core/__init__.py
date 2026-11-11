@@ -40,6 +40,7 @@ from .commands import (
     MoveInstance,
     Reason,
     ReasonCode,
+    RelinkInstance,
     RemoveActuator,
     RemoveAssumption,
     RemoveControlEntry,
@@ -56,6 +57,7 @@ from .commands import (
     SetInstanceMaterial,
     SetParameter,
     apply_command,
+    missing_reasons,
 )
 from .conventions import COORDINATE_FRAME, QUATERNION_COMPONENTS, Unit
 from .designspec import (
@@ -93,6 +95,16 @@ from .massprops import (
 from .material import Density, ElasticModulus, Friction, Material, YieldStrength
 from .material_catalog import CatalogEntry, MaterialCatalog, load_material_catalog
 from .curve import Curve, CurvePoint, NamedCurve
+from .missing import (
+    BlockedOperation,
+    CatalogDifference,
+    MissingDefinition,
+    OpenReport,
+    catalog_differences,
+    material_catalog_hashes,
+    missing_definitions,
+    open_report,
+)
 from .partdef import (
     MOTOR_CURVE,
     MOTOR_RATED_VOLTAGE,
@@ -150,7 +162,14 @@ from .protocol import (
 )
 from .provenance import BADGE_LABEL_KO, Badge, Provenance, Quantity, Source
 from .shape import Box, Cylinder, Shape, ShapeComponent, Sphere
-from .validator import PLACEMENT_TOLERANCE, check_placement, parse_command, validate_command
+from .validator import (
+    PLACEMENT_TOLERANCE,
+    ProjectIncomplete,
+    check_placement,
+    parse_command,
+    require_complete,
+    validate_command,
+)
 from .world import PLANET_CONSTANT_NAMES, Incline, Placement, PropSize, RampProp, StepProp, TerrainProp, World
 
 __all__ = [
@@ -193,10 +212,12 @@ __all__ = [
     "AtmosphereDensity",
     "AxisExpr",
     "Badge",
+    "BlockedOperation",
     "Body",
     "Box",
     "BreakThreshold",
     "CanonicalError",
+    "CatalogDifference",
     "CatalogEntry",
     "ClearParameter",
     "CollisionProxy",
@@ -239,8 +260,10 @@ __all__ = [
     "MassProperties",
     "Material",
     "MaterialCatalog",
+    "MissingDefinition",
     "MoveInstance",
     "NormalDistribution",
+    "OpenReport",
     "Origin",
     "NamedCurve",
     "ParamDef",
@@ -259,6 +282,7 @@ __all__ = [
     "ProjectFile",
     "ProjectFileError",
     "ProjectFileErrorCode",
+    "ProjectIncomplete",
     "Ref",
     "RefError",
     "RefKind",
@@ -279,6 +303,7 @@ __all__ = [
     "RemoveInstance",
     "RemoveJoint",
     "RemoveMaterialDef",
+    "RelinkInstance",
     "RemovePartDef",
     "ReplaceControlEntry",
     "ReplaceJoint",
@@ -320,6 +345,7 @@ __all__ = [
     "apply_command",
     "check_placement",
     "canonical_json",
+    "catalog_differences",
     "changes_between",
     "check_world_references",
     "definition_hash",
@@ -329,11 +355,16 @@ __all__ = [
     "load_bodies",
     "load_body",
     "load_material_catalog",
+    "material_catalog_hashes",
+    "missing_definitions",
+    "missing_reasons",
+    "open_report",
     "parse_command",
     "validate_command",
     "open_project",
     "parse_project",
     "project_file",
     "project_hash",
+    "require_complete",
     "save_project",
 ]

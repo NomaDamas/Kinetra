@@ -614,8 +614,8 @@ def test_save_open_refuses_a_version_it_does_not_read(version):
 
 def test_save_open_refuses_an_invalid_project_with_the_validators_sentence():
     d = written()
-    d["project"]["design"]["instances"][0]["part"] = "no-such-part"
-    assert "no-such-part" in refused(json.dumps(d), ProjectFileErrorCode.INVALID_PROJECT)
+    d["project"]["design"]["joints"][0]["a"]["instance"] = "no-such-instance"
+    assert "no-such-instance" in refused(json.dumps(d), ProjectFileErrorCode.INVALID_PROJECT)
     d = written()
     d["project"]["design"]["instances"][0]["pose"].pop("source")
     refused(json.dumps(d), ProjectFileErrorCode.INVALID_PROJECT)
