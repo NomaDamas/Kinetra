@@ -60,10 +60,12 @@ export async function runXr({ chromiumArgs = [], executablePath, timeoutMs = 60_
       return { mode: s.mode, controllers: s.inputSourceStates.filter((i) => i.type === "controller").map((i) => i.inputSource.handedness).sort(), profiles: s.inputSourceStates.find((i) => i.type === "controller").inputSource.profiles };
     });
 
+    const shots = {};
     // 1. Put the right controller on the part (its grab sphere, radius 0.07 m, then overlaps the 0.2 m cube).
     await setController(page, PART.start);
     await frames(page, 4);
     const partBefore = await partPosition(page);
+    shots.before_grab = await page.screenshot({ type: "png" });
     // 2. A controller moved WITHOUT squeezing must not move the part.
     await setController(page, PART.start.map((v, i) => v + [0.05, 0, 0][i]));
     await frames(page, 4);
@@ -93,6 +95,8 @@ export async function runXr({ chromiumArgs = [], executablePath, timeoutMs = 60_
     await setSqueeze(page, 0);
     await page.waitForFunction(() => window.__xr.grabEnds >= 1, null, { timeout: timeoutMs });
     const partAfterRelease = await partPosition(page);
+    await frames(page, 2);
+    shots.after_release = await page.screenshot({ type: "png" });
     await setController(page, pos.map((v) => v + 0.2));
     await frames(page, 4);
     const partAfterReleaseAndMove = await partPosition(page);
@@ -141,7 +145,7 @@ export async function runXr({ chromiumArgs = [], executablePath, timeoutMs = 60_
       "no page errors": !pageErrorBeforeSession && !finalState.error,
       "no request left loopback": requested.every((u) => new URL(u).hostname === "127.0.0.1"),
     };
-    return { result, checks };
+    return { result, checks, screenshots: shots };
   } finally {
     await browser?.close();
     server.close();

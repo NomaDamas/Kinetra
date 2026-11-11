@@ -99,16 +99,16 @@
   },
   "headless_frame_pacing": {
    "frames": 120,
-   "mean_interval_ms": 16.668907562223804,
-   "fps": 59.99193386051687,
+   "mean_interval_ms": 17.10000000080141,
+   "fps": 58.47953216100199,
    "p50_interval_ms": 16.699999809265137,
-   "p99_interval_ms": 18.59999990463257,
-   "max_interval_ms": 19.200000047683716,
+   "p99_interval_ms": 29.799999952316284,
+   "max_interval_ms": 31,
    "note": "software-rendered headless Chromium, not a headset",
    "emulated_nominal_frame_rate_hz": 120
   },
   "requested_origins": [
-   "http://127.0.0.1:61762"
+   "http://127.0.0.1:64111"
   ],
   "requested_paths": [
    "/",
@@ -120,12 +120,24 @@
   ],
   "page_errors": [],
   "console_tail": [
-   "warning: [.WebGL-0x1340083d800]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
-   "warning: [.WebGL-0x1340083d800]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
-   "warning: [.WebGL-0x1340083d800]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
-   "warning: [.WebGL-0x1340083d800]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels (this message will no longer repeat)",
+   "warning: [.WebGL-0x1040087d200]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+   "warning: [.WebGL-0x1040087d200]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+   "warning: [.WebGL-0x1040087d200]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+   "warning: [.WebGL-0x1040087d200]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels (this message will no longer repeat)",
    "log: Nominal frame rate updated to 120"
-  ]
+  ],
+  "screenshots": {
+   "a0-02b-before-grab.png": {
+    "bytes": 6314,
+    "sha256": "ac697bfab9e94f2f2fa4cee7b519d7fc64e0c83c927f7081e7dd1306bef94b4b",
+    "written": true
+   },
+   "a0-02b-after-release.png": {
+    "bytes": 6532,
+    "sha256": "6f496e67f77f6fed8f7c3a9081056dc3381b5b7e7650ed460b606378bc330d25",
+    "written": true
+   }
+  }
  },
  "checks": {
   "emulator replaced the native navigator.xr": true,
