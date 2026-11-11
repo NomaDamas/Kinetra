@@ -115,6 +115,22 @@ def drive_shaft() -> PartDef:
     )
 
 
+LIBRARY = Path(__file__).parents[1] / "src" / "kinetra_engine" / "parts" / "library"
+
+
+def library_part(part_id: str) -> PartDef:
+    """A library part (B-02a): the shipped definition file, so the drawn fixture is the real part."""
+    return PartDef.model_validate_json((LIBRARY / f"{part_id}.json").read_text(encoding="utf-8"))
+
+
+def beam() -> PartDef:
+    return library_part("beam")
+
+
+def plate() -> PartDef:
+    return library_part("plate")
+
+
 def sensor_mast() -> PartDef:
     return part(
         "sensor-mast",
@@ -149,6 +165,8 @@ SAMPLES = {
     "drive-shaft-steel": (drive_shaft, "steel-a36"),
     "sensor-mast-user-material": (sensor_mast, None),
     "reflectance-ior": (mounting_plate, "pom-delrin-150"),
+    "beam-al6061": (beam, "al6061-t6"),
+    "plate-al6061": (plate, "al6061-t6"),
 }
 
 
