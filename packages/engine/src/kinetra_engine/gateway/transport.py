@@ -44,12 +44,22 @@ def check_base_url(url: str) -> str:
     raise GatewayError("base URL must be https (http only for localhost)")
 
 
+class _NoRedirect(urllib.request.HTTPRedirectHandler):
+    """A 3xx is returned to the caller as an error response. Following it would resend the Authorization header to wherever the Location points."""
+
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        return None
+
+
+_OPENER = urllib.request.build_opener(_NoRedirect)
+
+
 def urllib_transport(req: HttpRequest) -> HttpResponse:
     r = urllib.request.Request(req.url, data=req.body, headers=req.headers, method="POST")
     try:
-        with urllib.request.urlopen(r, timeout=req.timeout) as resp:  # noqa: S310 (scheme checked in check_base_url)
+        with _OPENER.open(r, timeout=req.timeout) as resp:  # scheme checked in check_base_url
             return HttpResponse(resp.status, resp.read())
-    except urllib.error.HTTPError as e:  # 4xx/5xx still carry a body with usage and an error message
+    except urllib.error.HTTPError as e:  # 3xx (not followed), 4xx, 5xx still carry a body with usage and an error message
         return HttpResponse(e.code, e.read())
     except (urllib.error.URLError, TimeoutError, OSError) as e:
         raise TransportError(f"request failed: {type(e).__name__}") from None

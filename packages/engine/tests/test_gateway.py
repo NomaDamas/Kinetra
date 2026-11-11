@@ -3,9 +3,11 @@
     uv run pytest packages/engine -q -k gateway
 """
 
+import http.server
 import json
 import re
 import subprocess
+import threading
 from pathlib import Path
 
 import pytest
@@ -13,14 +15,18 @@ from kinetra_engine.gateway import (
     Budget,
     BudgetExceeded,
     Gateway,
+    GatewayClosed,
     GatewayError,
     HttpRequest,
     HttpResponse,
+    LedgerWriteError,
     TransportError,
     UpstreamError,
     redact,
 )
-from kinetra_engine.gateway.transport import check_base_url
+from kinetra_engine.gateway.budget import to_micro
+from kinetra_engine.gateway.redact import mask_exact
+from kinetra_engine.gateway.transport import check_base_url, urllib_transport
 
 KEY = "sk-or-v1-0123456789abcdef0123456789abcdef"
 MSG = [{"role": "user", "content": "hello"}]
@@ -49,13 +55,18 @@ class Fake:
         return r
 
 
-def make(tmp_path, fake=None, budget=None, ledger=True, env=None, **kw):
+@pytest.fixture(autouse=True)
+def core_env(monkeypatch):
+    """The core process environment: the only place the key can come from."""
+    monkeypatch.setenv("OPENROUTER_API_KEY", KEY)
+
+
+def make(tmp_path, fake=None, budget=None, ledger=True, project="p1", **kw):
     fake = fake or Fake()
     gw = Gateway(
         default_model="openai/gpt-6.1-sol",
-        budgets={"p1": budget or Budget(max_calls=3)},
+        budgets={project: budget or Budget(max_calls=3)},
         ledger_path=(tmp_path / "cost.jsonl") if ledger else None,
-        env={"OPENROUTER_API_KEY": KEY} if env is None else env,
         transport=fake,
         **kw,
     )
@@ -90,9 +101,7 @@ def test_gateway_rejects_when_cost_budget_would_be_exceeded(tmp_path):
 
 
 def test_gateway_budget_is_per_project(tmp_path):
-    gw = Gateway(
-        default_model="m", budgets={"a": Budget(max_calls=1), "b": Budget(max_calls=1)}, env={"OPENROUTER_API_KEY": KEY}, transport=Fake()
-    )
+    gw = Gateway(default_model="m", budgets={"a": Budget(max_calls=1), "b": Budget(max_calls=1)}, transport=Fake())
     gw.chat("a", MSG)
     gw.chat("b", MSG)  # b is untouched by a's spending
     with pytest.raises(BudgetExceeded):
@@ -144,7 +153,8 @@ def test_gateway_in_flight_calls_hold_budget(tmp_path):
 
 def test_gateway_budget_validation():
     for bad in (dict(), dict(max_calls=-1), dict(max_calls=True), dict(max_cost_usd=1.0), dict(max_cost_usd=float("nan"), assumed_call_cost_usd=0.1),
-                dict(max_calls=1, assumed_call_cost_usd=0.1), dict(max_cost_usd=-1, assumed_call_cost_usd=0.1)):
+                dict(max_calls=1, assumed_call_cost_usd=0.1), dict(max_cost_usd=-1, assumed_call_cost_usd=0.1),
+                dict(max_cost_usd=1.0, assumed_call_cost_usd=0), dict(max_cost_usd=1.0, assumed_call_cost_usd=0.0)):
         with pytest.raises(ValueError):
             Budget(**bad)
 
@@ -154,24 +164,26 @@ def test_gateway_budget_validation():
 
 def test_gateway_records_cost_per_call_and_replays_it_after_restart(tmp_path):
     fake = Fake(HttpResponse(200, ok_body(cost=0.0123, prompt=11, completion=7)), HttpResponse(500, b'{"error":{"message":"boom"}}'))
-    gw, _ = make(tmp_path, fake, Budget(max_calls=3))
-    r = gw.chat("p1", MSG)
+    slug = "desk-lamp-rocket"  # contains `sk-lamp-rocket`, which a key-shaped pattern would mask and so lose the project's spend
+    gw, _ = make(tmp_path, fake, Budget(max_calls=3), project=slug)
+    r = gw.chat(slug, MSG)
     assert (r.text, r.prompt_tokens, r.completion_tokens, r.cost_usd, r.charged_usd) == ("hi", 11, 7, 0.0123, 0.0123)
     with pytest.raises(UpstreamError) as e:
-        gw.chat("p1", MSG)
+        gw.chat(slug, MSG)
     assert e.value.status == 500
     rows = lines(tmp_path)
     assert [x["status"] for x in rows] == ["ok", "http_error"]
-    assert rows[0]["project"] == "p1" and rows[0]["cost_usd"] == 0.0123 and rows[0]["prompt_tokens"] == 11
+    assert rows[0]["project"] == slug and rows[0]["cost_usd"] == 0.0123 and rows[0]["prompt_tokens"] == 11
+    assert rows[0]["charged_micro_usd"] == 12300
     assert rows[1]["http_status"] == 500 and rows[1]["cost_usd"] is None
     # an error response is a request that was sent: it counts against the budget
-    assert gw.usage("p1")["calls"] == 2
-    # a new process reads the ledger and keeps counting
-    gw2, fake2 = make(tmp_path, Fake(), Budget(max_calls=3))
-    assert gw2.usage("p1")["calls"] == 2
-    gw2.chat("p1", MSG)
+    assert gw.usage(slug)["calls"] == 2
+    # a new process reads the ledger and keeps counting, under the same project id
+    gw2, _ = make(tmp_path, Fake(), Budget(max_calls=3), project=slug)
+    assert gw2.usage(slug)["calls"] == 2
+    gw2.chat(slug, MSG)
     with pytest.raises(BudgetExceeded):
-        gw2.chat("p1", MSG)
+        gw2.chat(slug, MSG)
 
 
 def test_gateway_ledger_never_stores_message_text(tmp_path):
@@ -195,7 +207,7 @@ def test_gateway_transport_failure_is_charged_as_unknown_and_logged(tmp_path):
     with pytest.raises(UpstreamError):
         gw.chat("p1", MSG)
     row = lines(tmp_path)[0]
-    assert row["status"] == "transport_error" and row["cost_usd"] is None and row["charged_usd"] == 0.25
+    assert row["status"] == "transport_error" and row["cost_usd"] is None and row["charged_micro_usd"] == 250000
     assert gw.usage("p1")["charged_usd"] == 0.25 and gw.usage("p1")["cost_left_usd"] == pytest.approx(0.75)
 
 
@@ -217,24 +229,28 @@ def test_gateway_bad_reported_cost_counts_as_unknown(tmp_path, cost):
 
 
 def test_gateway_corrupt_ledger_stops_startup_instead_of_forgetting_spend(tmp_path):
-    (tmp_path / "cost.jsonl").write_text('{"project":"p1","charged_usd":0.1}\n{broken\n')
+    (tmp_path / "cost.jsonl").write_text('{"project":"p1","charged_micro_usd":100000}\n{broken\n')
     with pytest.raises(GatewayError, match="refusing to start"):
         make(tmp_path)
     (tmp_path / "cost.jsonl").write_text('{"project":"p1","cost_usd":null}\n')
-    with pytest.raises(GatewayError, match="charged_usd"):
+    with pytest.raises(GatewayError, match="charged_micro_usd"):
         make(tmp_path)
 
 
 # ---------------------------------------------------------------- DoD: the key lives only in the core process environment
 
 
-def test_gateway_key_comes_only_from_the_environment(tmp_path):
+def test_gateway_key_comes_only_from_the_environment(tmp_path, monkeypatch):
+    monkeypatch.delenv("OPENROUTER_API_KEY")
     with pytest.raises(GatewayError, match="OPENROUTER_API_KEY is not set"):
-        make(tmp_path, env={})
+        make(tmp_path)
+    monkeypatch.setenv("OPENROUTER_API_KEY", "   ")
     with pytest.raises(GatewayError):
-        make(tmp_path, env={"OPENROUTER_API_KEY": "   "})
-    with pytest.raises(TypeError):  # there is no way to pass a key in
-        Gateway(default_model="m", budgets={}, api_key=KEY)  # type: ignore[call-arg]
+        make(tmp_path)
+    monkeypatch.setenv("OPENROUTER_API_KEY", KEY)
+    for kwarg in ("api_key", "key", "env"):  # there is no way to pass a key (or a substitute environment) in
+        with pytest.raises(TypeError):
+            Gateway(default_model="m", budgets={}, **{kwarg: KEY})  # type: ignore[arg-type]
 
 
 def test_gateway_key_goes_only_in_the_authorization_header(tmp_path):
@@ -324,3 +340,176 @@ def test_gateway_runs_without_a_ledger_file():
     gw, _ = make(None, ledger=False)
     gw.chat("p1", MSG)
     assert gw.usage("p1")["calls"] == 1
+
+
+# ---------------------------------------------------------------- review fixes
+
+
+def test_gateway_reply_text_is_not_pattern_masked(tmp_path):
+    """Only the exact key is removed from a model reply; hyphenated words and prose that merely look like a key stay intact."""
+    text = f"Use the disk-brake-rotor and task-0123456789; the bearer bracket holds. key={KEY}"
+    gw, _ = make(tmp_path, Fake(HttpResponse(200, ok_body(content=text))))
+    out = gw.chat("p1", MSG).text
+    assert out == "Use the disk-brake-rotor and task-0123456789; the bearer bracket holds. key=***"
+
+
+def test_gateway_error_text_is_pattern_masked(tmp_path):
+    echo = {"error": {"message": "rejected sk-someotherkey1234 and Bearer abc.def"}}
+    gw, _ = make(tmp_path, Fake(HttpResponse(401, json.dumps(echo).encode())))
+    with pytest.raises(UpstreamError) as e:
+        gw.chat("p1", MSG)
+    assert "sk-someotherkey1234" not in str(e.value) and "abc.def" not in str(e.value)
+
+
+def test_gateway_ledger_masks_exact_key_before_serialising(tmp_path):
+    """A key with a quote or backslash is escaped by json.dumps and would no longer match afterwards."""
+    tricky = 'ab"cd\\ef-secret'
+    assert mask_exact({"x": f"p{tricky}q", f"k{tricky}": [tricky]}, (tricky,)) == {"x": "p***q", "k***": ["***"]}
+    gw, _ = make(tmp_path, project=f"proj-{KEY}")
+    gw.chat(f"proj-{KEY}", MSG)
+    text = (tmp_path / "cost.jsonl").read_text()
+    assert KEY not in text and "proj-***" in text
+
+
+def test_gateway_unserialisable_request_leaves_no_reservation(tmp_path):
+    gw, fake = make(tmp_path, budget=Budget(max_calls=1))
+    with pytest.raises(TypeError):
+        gw.chat("p1", [{"role": "user", "content": b"bytes are not JSON"}])
+    assert fake.requests == []
+    assert gw.usage("p1")["calls_left"] == 1
+    assert gw.chat("p1", MSG).text == "hi"  # the one call was not eaten by the failed one
+
+
+def test_gateway_transport_exception_releases_the_reservation(tmp_path):
+    gw, _ = make(tmp_path, Fake(RuntimeError("boom")), Budget(max_calls=2))
+    with pytest.raises(RuntimeError):
+        gw.chat("p1", MSG)
+    u = gw.usage("p1")
+    assert u["calls"] == 1 and u["calls_left"] == 1
+
+
+class _Server:
+    def __init__(self, handler):
+        self.httpd = http.server.HTTPServer(("127.0.0.1", 0), handler)
+        self.url = f"http://127.0.0.1:{self.httpd.server_port}"
+        self.thread = threading.Thread(target=self.httpd.serve_forever, daemon=True)
+
+    def __enter__(self):
+        self.thread.start()
+        return self
+
+    def __exit__(self, *a):
+        self.httpd.shutdown()
+        self.httpd.server_close()
+
+
+def test_gateway_urllib_transport_does_not_follow_redirects(tmp_path):
+    seen = []
+
+    class Target(http.server.BaseHTTPRequestHandler):
+        def do_POST(self):
+            seen.append(self.headers.get("Authorization"))
+            self.send_response(200)
+            self.end_headers()
+            self.wfile.write(ok_body())
+
+        def log_message(self, *a):
+            pass
+
+    with _Server(Target) as target:
+
+        class Redirector(http.server.BaseHTTPRequestHandler):
+            def do_POST(self):
+                self.rfile.read(int(self.headers.get("Content-Length", 0)))
+                self.send_response(307)
+                self.send_header("Location", target.url + "/steal")
+                self.end_headers()
+
+            def log_message(self, *a):
+                pass
+
+        with _Server(Redirector) as redirector:
+            gw = Gateway(default_model="m", budgets={"p1": Budget(max_calls=2)}, ledger_path=tmp_path / "cost.jsonl", base_url=redirector.url + "/v1")
+            with pytest.raises(UpstreamError, match="redirects are not followed") as e:
+                gw.chat("p1", MSG)
+    assert e.value.status == 307
+    assert seen == []  # the key never reached the redirect target
+    assert gw.usage("p1")["calls"] == 1  # the request was sent, so it is spent
+    assert lines(tmp_path)[0]["status"] == "http_error"
+
+
+def test_gateway_urllib_transport_reads_error_bodies_and_round_trips():
+    class H(http.server.BaseHTTPRequestHandler):
+        def do_POST(self):
+            n = int(self.headers.get("Content-Length", 0))
+            body = self.rfile.read(n)
+            code = 429 if b"fail" in body else 200
+            self.send_response(code)
+            self.end_headers()
+            self.wfile.write(ok_body() if code == 200 else b'{"error":{"message":"slow down"}}')
+
+        def log_message(self, *a):
+            pass
+
+    with _Server(H) as s:
+        ok = urllib_transport(HttpRequest(s.url, b"{}", {"Content-Type": "application/json"}, 5))
+        bad = urllib_transport(HttpRequest(s.url, b"fail", {"Content-Type": "application/json"}, 5))
+    assert ok.status == 200 and bad.status == 429 and b"slow down" in bad.body
+    with pytest.raises(TransportError):
+        urllib_transport(HttpRequest("http://127.0.0.1:9/", b"{}", {}, 1))
+
+
+def test_gateway_ledger_write_failure_closes_the_gateway_and_returns_the_reply(tmp_path):
+    gw, fake = make(tmp_path, Fake(HttpResponse(200, ok_body(content="the answer", cost=0.02))), Budget(max_calls=5))
+
+    def broken(entry):
+        raise OSError("disk full")
+
+    gw._ledger.append = broken
+    with pytest.raises(LedgerWriteError) as e:
+        gw.chat("p1", MSG)
+    err = e.value
+    assert err.reply is not None and err.reply.text == "the answer" and err.charged_usd == pytest.approx(0.02)
+    assert "not on disk" in str(err) and KEY not in str(err)
+    assert gw.usage("p1")["closed"] is True and gw.usage("p1")["charged_usd"] == pytest.approx(0.02)
+    with pytest.raises(GatewayClosed):  # nothing more is sent: spend that cannot be recorded would be forgotten
+        gw.chat("p1", MSG)
+    assert len(fake.requests) == 1
+
+
+def test_gateway_ledger_write_failure_after_an_upstream_error_keeps_the_error(tmp_path):
+    gw, _ = make(tmp_path, Fake(HttpResponse(500, b'{"error":{"message":"boom"}}')), Budget(max_calls=5))
+    gw._ledger.append = lambda entry: (_ for _ in ()).throw(OSError("disk full"))
+    with pytest.raises(LedgerWriteError) as e:
+        gw.chat("p1", MSG)
+    assert e.value.reply is None and isinstance(e.value.upstream, UpstreamError) and e.value.upstream.status == 500
+
+
+def test_gateway_budget_arithmetic_is_exact_in_micro_dollars(tmp_path):
+    """Three calls of $0.10 fit in $0.30 exactly (0.1 + 0.1 + 0.1 > 0.3 in floats), the fourth does not."""
+    assert 0.1 + 0.1 + 0.1 > 0.3
+    fake = Fake(*[HttpResponse(200, ok_body(cost=0.10))] * 3)
+    gw, _ = make(tmp_path, fake, Budget(max_cost_usd=0.30, assumed_call_cost_usd=0.10))
+    for _ in range(3):
+        gw.chat("p1", MSG)
+    with pytest.raises(BudgetExceeded):
+        gw.chat("p1", MSG)
+    assert gw.usage("p1")["charged_usd"] == 0.3 and gw.usage("p1")["cost_left_usd"] == 0.0
+    assert len(fake.requests) == 3
+
+
+def test_gateway_to_micro_rounds_a_real_cost_up_never_to_zero():
+    assert to_micro(0.1) == 100000 and to_micro(0.3) == 300000 and to_micro(0) == 0
+    assert to_micro(1e-9) == 1  # a non-zero cost is never free
+    assert to_micro(0.0000015) == 2
+
+
+def test_gateway_tiny_reported_costs_still_consume_the_budget(tmp_path):
+    """A reported $1e-9 is charged one micro-dollar, so a long run of tiny calls still hits the cap."""
+    fake = Fake(*[HttpResponse(200, ok_body(cost=1e-9))] * 2)
+    gw, _ = make(tmp_path, fake, Budget(max_cost_usd=0.000002, assumed_call_cost_usd=0.000001))
+    gw.chat("p1", MSG)
+    gw.chat("p1", MSG)
+    assert gw.usage("p1")["charged_usd"] == 0.000002
+    with pytest.raises(BudgetExceeded):
+        gw.chat("p1", MSG)

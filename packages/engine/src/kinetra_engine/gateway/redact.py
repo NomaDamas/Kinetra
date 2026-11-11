@@ -25,3 +25,22 @@ def redact(text: str, secrets: tuple[str, ...] = ()) -> str:
     for pat in _SECRET_PATTERNS:
         text = pat.sub("***", text)
     return text
+
+
+def mask_exact(obj, secrets: tuple[str, ...]):
+    """Replace each exact secret value (4+ chars) in every string of a JSON-able value, dict keys included, and nothing else.
+
+    Used where pattern masking would corrupt legitimate data (ledger lines, model replies): a project id like
+    `desk-lamp-rocket` contains `sk-lamp-rocket`, which the key-shaped pattern would eat. Run it on the value
+    *before* `json.dumps`, because serialising escapes quotes and backslashes and a key containing them no longer matches.
+    """
+    if isinstance(obj, str):
+        for s in secrets:
+            if len(s) >= 4:
+                obj = obj.replace(s, "***")
+        return obj
+    if isinstance(obj, dict):
+        return {mask_exact(k, secrets) if isinstance(k, str) else k: mask_exact(v, secrets) for k, v in obj.items()}
+    if isinstance(obj, (list, tuple)):
+        return [mask_exact(v, secrets) for v in obj]
+    return obj

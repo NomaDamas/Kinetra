@@ -1,10 +1,13 @@
 """Per-project call budget and the cost ledger (G-01).
 
+Money is counted in integer micro-dollars so repeated adds never drift (0.1 + 0.1 + 0.1 > 0.3 in floats). A provider-reported
+cost is rounded *up* to the next micro-dollar from its decimal text, so a non-zero cost never counts as zero.
+
 Cost is the `usage.cost` (USD) the provider reports in each response; this module computes no prices.
-`assumed_call_cost_usd` (`사용자 선언`, set by whoever creates the budget) does two jobs so a cost cap cannot be bypassed:
-it is held back while a call is in flight, and it is what a call is charged when the provider reported no cost (no
-`usage.cost`, or a transport failure after the request may have left). The charge goes in `charged_usd`; the record's
-`cost_usd` stays `null` so the ledger says what was actually known.
+`assumed_call_cost_usd` (`사용자 선언`, set by whoever creates the budget, must be > 0) does two jobs so a cost cap cannot be
+bypassed: it is held back while a call is in flight, and it is what a call is charged when the provider reported no cost
+(no `usage.cost`, or a transport failure after the request may have left). The charge is stored as `charged_micro_usd`; the
+record's `cost_usd` stays `null` so the ledger says what was actually known.
 """
 
 from __future__ import annotations
@@ -12,10 +15,13 @@ from __future__ import annotations
 import json
 import math
 from dataclasses import dataclass
+from decimal import ROUND_CEILING, Decimal
 from pathlib import Path
 from typing import Iterator
 
-from .redact import redact
+from .redact import mask_exact
+
+MICRO = 1_000_000
 
 
 class GatewayError(Exception):
@@ -30,9 +36,14 @@ def _finite_nonneg(v) -> bool:
     return isinstance(v, (int, float)) and not isinstance(v, bool) and math.isfinite(v) and v >= 0
 
 
+def to_micro(usd: float) -> int:
+    """USD -> integer micro-dollars, rounding up from the shortest decimal text of the float."""
+    return int((Decimal(repr(float(usd))) * MICRO).to_integral_value(rounding=ROUND_CEILING))
+
+
 @dataclass(frozen=True)
 class Budget:
-    """At least one limit is required. `max_cost_usd` also requires `assumed_call_cost_usd`."""
+    """At least one limit is required. `max_cost_usd` also requires `assumed_call_cost_usd` > 0."""
 
     max_calls: int | None = None
     max_cost_usd: float | None = None
@@ -47,26 +58,34 @@ class Budget:
             raise ValueError(f"max_cost_usd must be a finite number >= 0: {self.max_cost_usd!r}")
         if self.assumed_call_cost_usd is not None and not _finite_nonneg(self.assumed_call_cost_usd):
             raise ValueError(f"assumed_call_cost_usd must be a finite number >= 0: {self.assumed_call_cost_usd!r}")
-        if self.max_cost_usd is not None and self.assumed_call_cost_usd is None:
-            raise ValueError("max_cost_usd needs assumed_call_cost_usd (held while a call is in flight, charged when the provider reports no cost)")
+        if self.max_cost_usd is not None and (self.assumed_call_cost_usd is None or to_micro(self.assumed_call_cost_usd) <= 0):
+            raise ValueError("max_cost_usd needs assumed_call_cost_usd > 0 (held while a call is in flight, charged when the provider reports no cost)")
         if self.max_cost_usd is None and self.assumed_call_cost_usd is not None:
             raise ValueError("assumed_call_cost_usd only makes sense with max_cost_usd")
+
+    @property
+    def max_cost_micro(self) -> int | None:
+        return None if self.max_cost_usd is None else to_micro(self.max_cost_usd)
+
+    @property
+    def assumed_micro(self) -> int:
+        return 0 if self.assumed_call_cost_usd is None else to_micro(self.assumed_call_cost_usd)
 
 
 @dataclass
 class ProjectUsage:
     calls: int = 0  # requests sent (ok or error); rejected requests are not counted
-    charged_usd: float = 0.0
+    charged_micro: int = 0
     unknown_cost_calls: int = 0  # calls charged the declared assumption instead of a reported cost
     in_flight: int = 0
-    reserved_usd: float = 0.0  # in-flight calls, held at the declared unknown-call cost until the real cost is known
+    reserved_micro: int = 0  # in-flight calls, held at the declared assumption until the real cost is known
 
 
 class CostLedger:
     """Append-only JSONL, one line per request, `path=None` keeps nothing on disk.
 
     Replayed on start so the budget survives a restart. A line that does not parse stops the start-up: skipping it
-    would forget spent budget.
+    would forget spent budget. Only the exact key is masked (see `mask_exact`), never key-shaped text.
     """
 
     def __init__(self, path: Path | None = None, secrets: tuple[str, ...] = ()):
@@ -76,8 +95,7 @@ class CostLedger:
     def append(self, entry: dict) -> None:
         if self.path is None:
             return
-        line = json.dumps(entry, ensure_ascii=False)
-        line = redact(line, self._secrets)
+        line = json.dumps(mask_exact(entry, self._secrets), ensure_ascii=False)
         self.path.parent.mkdir(parents=True, exist_ok=True)
         with open(self.path, "a", encoding="utf-8") as f:
             f.write(line + "\n")
