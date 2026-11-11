@@ -6,8 +6,8 @@ these conventions. Clients convert to their own renderer's frame; the core never
 - Units: SI. Length m, mass kg, time s, angle rad. The `Unit` vocabulary below is closed: a quantity whose unit
   is not in it is rejected, so a client never has to guess what `"mm"` or `"deg"` means.
 - Frame: right-handed, +Z is up. In Project JSON a quaternion is an object with named components `x, y, z, w`
-  (unit norm, `w` is the scalar part), never a bare array. Streamed frames (C-05b) use the same component order and
-  meaning; their encoding is C-05b's.
+  (unit norm, `w` is the scalar part), never a bare array. Streamed frames (C-05b, `frames.py`) use the same component order and
+  meaning: a JSON frame the same named object, a binary frame four float32 in x, y, z, w order.
 """
 
 from __future__ import annotations

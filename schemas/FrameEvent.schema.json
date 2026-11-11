@@ -1,0 +1,183 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "discriminator": {
+    "mapping": {
+      "break": "#/$defs/BreakEvent",
+      "condition_met": "#/$defs/ConditionMetEvent",
+      "contact": "#/$defs/ContactEvent"
+    },
+    "propertyName": "kind"
+  },
+  "oneOf": [
+    {
+      "$ref": "#/$defs/ContactEvent"
+    },
+    {
+      "$ref": "#/$defs/BreakEvent"
+    },
+    {
+      "$ref": "#/$defs/ConditionMetEvent"
+    }
+  ],
+  "$defs": {
+    "BreakEvent": {
+      "description": "Joint `joint` released: the load on it reached its break threshold (both in N; plan 4.6, a simplified model).",
+      "properties": {
+        "kind": {
+          "const": "break",
+          "title": "Kind",
+          "type": "string"
+        },
+        "tick": {
+          "maximum": 4294967295,
+          "minimum": 0,
+          "title": "Tick",
+          "type": "integer"
+        },
+        "joint": {
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+          "title": "Joint",
+          "type": "string"
+        },
+        "load": {
+          "$ref": "#/$defs/ForceN"
+        },
+        "threshold": {
+          "$ref": "#/$defs/ForceN"
+        }
+      },
+      "required": [
+        "kind",
+        "tick",
+        "joint",
+        "load",
+        "threshold"
+      ],
+      "title": "BreakEvent",
+      "type": "object"
+    },
+    "ConditionMetEvent": {
+      "description": "A success condition of the project became true. This is not a verdict (P4): it says the run satisfied it.",
+      "properties": {
+        "kind": {
+          "const": "condition_met",
+          "title": "Kind",
+          "type": "string"
+        },
+        "tick": {
+          "maximum": 4294967295,
+          "minimum": 0,
+          "title": "Tick",
+          "type": "integer"
+        },
+        "condition": {
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+          "title": "Condition",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "tick",
+        "condition"
+      ],
+      "title": "ConditionMetEvent",
+      "type": "object"
+    },
+    "ContactEvent": {
+      "description": "`body` touches (`phase` `begin`) or stops touching (`end`) `other`: another body, a terrain prop (by its id in\nthe project's world) or the ground (`other` is `None`). `force` is the contact force at `begin`, if known.",
+      "properties": {
+        "kind": {
+          "const": "contact",
+          "title": "Kind",
+          "type": "string"
+        },
+        "tick": {
+          "maximum": 4294967295,
+          "minimum": 0,
+          "title": "Tick",
+          "type": "integer"
+        },
+        "phase": {
+          "enum": [
+            "begin",
+            "end"
+          ],
+          "title": "Phase",
+          "type": "string"
+        },
+        "body": {
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+          "title": "Body",
+          "type": "string"
+        },
+        "other_kind": {
+          "$ref": "#/$defs/GroundOrProp"
+        },
+        "other": {
+          "anyOf": [
+            {
+              "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Other"
+        },
+        "force": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ForceN"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "kind",
+        "tick",
+        "phase",
+        "body",
+        "other_kind"
+      ],
+      "title": "ContactEvent",
+      "type": "object"
+    },
+    "ForceN": {
+      "description": "A force in newtons (`unit` is always `N`, so a client never guesses).",
+      "properties": {
+        "value": {
+          "minimum": 0,
+          "title": "Value",
+          "type": "number"
+        },
+        "unit": {
+          "const": "N",
+          "title": "Unit",
+          "type": "string"
+        }
+      },
+      "required": [
+        "value",
+        "unit"
+      ],
+      "title": "ForceN",
+      "type": "object"
+    },
+    "GroundOrProp": {
+      "enum": [
+        "body",
+        "prop",
+        "ground"
+      ],
+      "title": "GroundOrProp",
+      "type": "string"
+    }
+  }
+}

@@ -1,0 +1,80 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "④ The physics engine: its name and version as values, how it was distributed, the hash of the distributed\nfile, and for a custom build the compiler and build flags.",
+  "properties": {
+    "name": {
+      "maxLength": 200,
+      "minLength": 1,
+      "title": "Name",
+      "type": "string"
+    },
+    "version": {
+      "maxLength": 200,
+      "minLength": 1,
+      "title": "Version",
+      "type": "string"
+    },
+    "distribution": {
+      "$ref": "#/$defs/EngineDistribution"
+    },
+    "artifact_hash": {
+      "anyOf": [
+        {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Artifact Hash"
+    },
+    "compiler": {
+      "anyOf": [
+        {
+          "maxLength": 200,
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Compiler"
+    },
+    "build_flags": {
+      "anyOf": [
+        {
+          "maxLength": 2000,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Build Flags"
+    }
+  },
+  "required": [
+    "name",
+    "version",
+    "distribution"
+  ],
+  "title": "EngineTag",
+  "type": "object",
+  "$defs": {
+    "EngineDistribution": {
+      "enum": [
+        "wheel",
+        "wasm_package",
+        "custom_build"
+      ],
+      "title": "EngineDistribution",
+      "type": "string"
+    }
+  }
+}

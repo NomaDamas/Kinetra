@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "A rigid body of the run and the project instances it consists of (welded instances move as one body). `id` is\nthe body's stable id (G3) and the id every pose, contact and break event uses.",
+  "properties": {
+    "id": {
+      "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+      "title": "Id",
+      "type": "string"
+    },
+    "instances": {
+      "items": {
+        "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Instances",
+      "type": "array"
+    }
+  },
+  "required": [
+    "id",
+    "instances"
+  ],
+  "title": "BodyRef",
+  "type": "object"
+}

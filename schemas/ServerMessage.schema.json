@@ -5,9 +5,12 @@
       "accepted": "#/$defs/Accepted",
       "applied": "#/$defs/Applied",
       "error": "#/$defs/ProtocolError",
+      "frame": "#/$defs/Frame",
       "hello": "#/$defs/Hello",
       "rejected": "#/$defs/Rejected",
       "resumed": "#/$defs/Resumed",
+      "run_ended": "#/$defs/RunEnded",
+      "run_started": "#/$defs/RunStarted",
       "snapshot": "#/$defs/Snapshot"
     },
     "propertyName": "type"
@@ -33,6 +36,15 @@
     },
     {
       "$ref": "#/$defs/ProtocolError"
+    },
+    {
+      "$ref": "#/$defs/RunStarted"
+    },
+    {
+      "$ref": "#/$defs/Frame"
+    },
+    {
+      "$ref": "#/$defs/RunEnded"
     }
   ],
   "$defs": {
@@ -663,6 +675,54 @@
       "title": "Badge",
       "type": "string"
     },
+    "BodyPose": {
+      "description": "Position [m] and orientation (unit quaternion `x, y, z, w`) of body `body`, in the world frame.",
+      "properties": {
+        "body": {
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+          "title": "Body",
+          "type": "string"
+        },
+        "position": {
+          "$ref": "#/$defs/WorldPosition"
+        },
+        "orientation": {
+          "$ref": "#/$defs/Quaternion"
+        }
+      },
+      "required": [
+        "body",
+        "position",
+        "orientation"
+      ],
+      "title": "BodyPose",
+      "type": "object"
+    },
+    "BodyRef": {
+      "description": "A rigid body of the run and the project instances it consists of (welded instances move as one body). `id` is\nthe body's stable id (G3) and the id every pose, contact and break event uses.",
+      "properties": {
+        "id": {
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "instances": {
+          "items": {
+            "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Instances",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "instances"
+      ],
+      "title": "BodyRef",
+      "type": "object"
+    },
     "Box": {
       "additionalProperties": false,
       "description": "Rectangular block. `size_*` are full extents [m] along the component's local x, y, z.",
@@ -689,6 +749,42 @@
         "size_z"
       ],
       "title": "Box",
+      "type": "object"
+    },
+    "BreakEvent": {
+      "description": "Joint `joint` released: the load on it reached its break threshold (both in N; plan 4.6, a simplified model).",
+      "properties": {
+        "kind": {
+          "const": "break",
+          "title": "Kind",
+          "type": "string"
+        },
+        "tick": {
+          "maximum": 4294967295,
+          "minimum": 0,
+          "title": "Tick",
+          "type": "integer"
+        },
+        "joint": {
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+          "title": "Joint",
+          "type": "string"
+        },
+        "load": {
+          "$ref": "#/$defs/ForceN"
+        },
+        "threshold": {
+          "$ref": "#/$defs/ForceN"
+        }
+      },
+      "required": [
+        "kind",
+        "tick",
+        "joint",
+        "load",
+        "threshold"
+      ],
+      "title": "BreakEvent",
       "type": "object"
     },
     "BreakThreshold": {
@@ -876,6 +972,75 @@
       "title": "CommandBatch",
       "type": "object"
     },
+    "ComputeTag": {
+      "additionalProperties": false,
+      "description": "⑦ The settings the run actually used: integrator, `timestep_s` [s] and the solver's settings by name.",
+      "properties": {
+        "integrator": {
+          "maxLength": 200,
+          "minLength": 1,
+          "title": "Integrator",
+          "type": "string"
+        },
+        "timestep_s": {
+          "exclusiveMinimum": 0,
+          "title": "Timestep S",
+          "type": "number"
+        },
+        "solver": {
+          "additionalProperties": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "string"
+              }
+            ]
+          },
+          "title": "Solver",
+          "type": "object"
+        }
+      },
+      "required": [
+        "integrator",
+        "timestep_s",
+        "solver"
+      ],
+      "title": "ComputeTag",
+      "type": "object"
+    },
+    "ConditionMetEvent": {
+      "description": "A success condition of the project became true. This is not a verdict (P4): it says the run satisfied it.",
+      "properties": {
+        "kind": {
+          "const": "condition_met",
+          "title": "Kind",
+          "type": "string"
+        },
+        "tick": {
+          "maximum": 4294967295,
+          "minimum": 0,
+          "title": "Tick",
+          "type": "integer"
+        },
+        "condition": {
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+          "title": "Condition",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "tick",
+        "condition"
+      ],
+      "title": "ConditionMetEvent",
+      "type": "object"
+    },
     "Confidence": {
       "enum": [
         "low",
@@ -884,6 +1049,71 @@
       ],
       "title": "Confidence",
       "type": "string"
+    },
+    "ContactEvent": {
+      "description": "`body` touches (`phase` `begin`) or stops touching (`end`) `other`: another body, a terrain prop (by its id in\nthe project's world) or the ground (`other` is `None`). `force` is the contact force at `begin`, if known.",
+      "properties": {
+        "kind": {
+          "const": "contact",
+          "title": "Kind",
+          "type": "string"
+        },
+        "tick": {
+          "maximum": 4294967295,
+          "minimum": 0,
+          "title": "Tick",
+          "type": "integer"
+        },
+        "phase": {
+          "enum": [
+            "begin",
+            "end"
+          ],
+          "title": "Phase",
+          "type": "string"
+        },
+        "body": {
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+          "title": "Body",
+          "type": "string"
+        },
+        "other_kind": {
+          "$ref": "#/$defs/GroundOrProp"
+        },
+        "other": {
+          "anyOf": [
+            {
+              "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Other"
+        },
+        "force": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ForceN"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "kind",
+        "tick",
+        "phase",
+        "body",
+        "other_kind"
+      ],
+      "title": "ContactEvent",
+      "type": "object"
     },
     "ControlSchedule": {
       "additionalProperties": false,
@@ -899,6 +1129,46 @@
         }
       },
       "title": "ControlSchedule",
+      "type": "object"
+    },
+    "CoreBuildTag": {
+      "additionalProperties": false,
+      "description": "⑥ The core build: its commit (the force-applying paths and their order are in it).",
+      "properties": {
+        "commit": {
+          "pattern": "^([0-9a-f]{40}|[0-9a-f]{64})$",
+          "title": "Commit",
+          "type": "string"
+        }
+      },
+      "required": [
+        "commit"
+      ],
+      "title": "CoreBuildTag",
+      "type": "object"
+    },
+    "CpuTag": {
+      "additionalProperties": false,
+      "description": "② CPU: architecture (`x86_64`, `arm64`, ...) and model string.",
+      "properties": {
+        "architecture": {
+          "maxLength": 200,
+          "minLength": 1,
+          "title": "Architecture",
+          "type": "string"
+        },
+        "model": {
+          "maxLength": 200,
+          "minLength": 1,
+          "title": "Model",
+          "type": "string"
+        }
+      },
+      "required": [
+        "architecture",
+        "model"
+      ],
+      "title": "CpuTag",
       "type": "object"
     },
     "Curve": {
@@ -1090,6 +1360,83 @@
       "title": "ElasticModulus",
       "type": "object"
     },
+    "EngineDistribution": {
+      "enum": [
+        "wheel",
+        "wasm_package",
+        "custom_build"
+      ],
+      "title": "EngineDistribution",
+      "type": "string"
+    },
+    "EngineTag": {
+      "additionalProperties": false,
+      "description": "④ The physics engine: its name and version as values, how it was distributed, the hash of the distributed\nfile, and for a custom build the compiler and build flags.",
+      "properties": {
+        "name": {
+          "maxLength": 200,
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        },
+        "version": {
+          "maxLength": 200,
+          "minLength": 1,
+          "title": "Version",
+          "type": "string"
+        },
+        "distribution": {
+          "$ref": "#/$defs/EngineDistribution"
+        },
+        "artifact_hash": {
+          "anyOf": [
+            {
+              "pattern": "^sha256:[0-9a-f]{64}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Artifact Hash"
+        },
+        "compiler": {
+          "anyOf": [
+            {
+              "maxLength": 200,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Compiler"
+        },
+        "build_flags": {
+          "anyOf": [
+            {
+              "maxLength": 2000,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Build Flags"
+        }
+      },
+      "required": [
+        "name",
+        "version",
+        "distribution"
+      ],
+      "title": "EngineTag",
+      "type": "object"
+    },
     "FixedDistribution": {
       "additionalProperties": false,
       "description": "No spread: Monte-Carlo uses the nominal.",
@@ -1104,6 +1451,97 @@
         "kind"
       ],
       "title": "FixedDistribution",
+      "type": "object"
+    },
+    "ForceN": {
+      "description": "A force in newtons (`unit` is always `N`, so a client never guesses).",
+      "properties": {
+        "value": {
+          "minimum": 0,
+          "title": "Value",
+          "type": "number"
+        },
+        "unit": {
+          "const": "N",
+          "title": "Unit",
+          "type": "string"
+        }
+      },
+      "required": [
+        "value",
+        "unit"
+      ],
+      "title": "ForceN",
+      "type": "object"
+    },
+    "Frame": {
+      "description": "The state of run `run_id` at `tick` (`sim_time_s` seconds): every body's pose, and the events since the\nprevious frame.",
+      "properties": {
+        "type": {
+          "const": "frame",
+          "title": "Type",
+          "type": "string"
+        },
+        "run_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Run Id",
+          "type": "string"
+        },
+        "tick": {
+          "maximum": 4294967295,
+          "minimum": 0,
+          "title": "Tick",
+          "type": "integer"
+        },
+        "sim_time_s": {
+          "minimum": 0,
+          "title": "Sim Time S",
+          "type": "number"
+        },
+        "poses": {
+          "items": {
+            "$ref": "#/$defs/BodyPose"
+          },
+          "maxItems": 4294967295,
+          "title": "Poses",
+          "type": "array"
+        },
+        "events": {
+          "default": [],
+          "items": {
+            "discriminator": {
+              "mapping": {
+                "break": "#/$defs/BreakEvent",
+                "condition_met": "#/$defs/ConditionMetEvent",
+                "contact": "#/$defs/ContactEvent"
+              },
+              "propertyName": "kind"
+            },
+            "oneOf": [
+              {
+                "$ref": "#/$defs/ContactEvent"
+              },
+              {
+                "$ref": "#/$defs/BreakEvent"
+              },
+              {
+                "$ref": "#/$defs/ConditionMetEvent"
+              }
+            ]
+          },
+          "title": "Events",
+          "type": "array"
+        }
+      },
+      "required": [
+        "type",
+        "run_id",
+        "tick",
+        "sim_time_s",
+        "poses"
+      ],
+      "title": "Frame",
       "type": "object"
     },
     "Friction": {
@@ -1135,6 +1573,15 @@
       ],
       "title": "Friction",
       "type": "object"
+    },
+    "GroundOrProp": {
+      "enum": [
+        "body",
+        "prop",
+        "ground"
+      ],
+      "title": "GroundOrProp",
+      "type": "string"
     },
     "Hello": {
       "description": "First message of each side: the protocol number it speaks. The core answers a `hello` it can serve with its\nown; with a number it cannot serve it answers `error` and closes.",
@@ -1466,6 +1913,30 @@
       "title": "Origin",
       "type": "string"
     },
+    "OsTag": {
+      "additionalProperties": false,
+      "description": "① Operating system: kind (`linux`, `macos`, ...) and kernel release.",
+      "properties": {
+        "kind": {
+          "maxLength": 200,
+          "minLength": 1,
+          "title": "Kind",
+          "type": "string"
+        },
+        "kernel_release": {
+          "maxLength": 200,
+          "minLength": 1,
+          "title": "Kernel Release",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "kernel_release"
+      ],
+      "title": "OsTag",
+      "type": "object"
+    },
     "ParamDef": {
       "additionalProperties": false,
       "description": "A named parameter of the part with its default and allowed range, all in `unit`.",
@@ -1685,6 +2156,57 @@
         "yaw"
       ],
       "title": "Placement",
+      "type": "object"
+    },
+    "PlatformTag": {
+      "additionalProperties": false,
+      "description": "The eight run conditions of `engine.md` 5.4 (H1). Two tags are the same tag when all eight are equal\n(`==`). `image_digest` is required and `None` means \"no image\" (not a container): leaving it out is an error, so\na run cannot lose that component by omission.",
+      "properties": {
+        "os": {
+          "$ref": "#/$defs/OsTag"
+        },
+        "cpu": {
+          "$ref": "#/$defs/CpuTag"
+        },
+        "image_digest": {
+          "anyOf": [
+            {
+              "pattern": "^sha256:[0-9a-f]{64}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Image Digest"
+        },
+        "engine": {
+          "$ref": "#/$defs/EngineTag"
+        },
+        "runtime": {
+          "$ref": "#/$defs/RuntimeTag"
+        },
+        "core_build": {
+          "$ref": "#/$defs/CoreBuildTag"
+        },
+        "compute": {
+          "$ref": "#/$defs/ComputeTag"
+        },
+        "threads": {
+          "$ref": "#/$defs/ThreadTag"
+        }
+      },
+      "required": [
+        "os",
+        "cpu",
+        "image_digest",
+        "engine",
+        "runtime",
+        "core_build",
+        "compute",
+        "threads"
+      ],
+      "title": "PlatformTag",
       "type": "object"
     },
     "Pose": {
@@ -2434,6 +2956,189 @@
       "title": "Resumed",
       "type": "object"
     },
+    "RunEndReason": {
+      "enum": [
+        "completed",
+        "stopped",
+        "failed"
+      ],
+      "title": "RunEndReason",
+      "type": "string"
+    },
+    "RunEnded": {
+      "description": "The run is over. `trajectory` is absent only when the run `failed`.",
+      "properties": {
+        "type": {
+          "const": "run_ended",
+          "title": "Type",
+          "type": "string"
+        },
+        "run_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Run Id",
+          "type": "string"
+        },
+        "reason": {
+          "$ref": "#/$defs/RunEndReason"
+        },
+        "last_tick": {
+          "maximum": 4294967295,
+          "minimum": 0,
+          "title": "Last Tick",
+          "type": "integer"
+        },
+        "trajectory": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/TrajectoryEvidence"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "type",
+        "run_id",
+        "reason",
+        "last_tick"
+      ],
+      "title": "RunEnded",
+      "type": "object"
+    },
+    "RunKind": {
+      "enum": [
+        "preview",
+        "verdict_sample"
+      ],
+      "title": "RunKind",
+      "type": "string"
+    },
+    "RunStarted": {
+      "description": "A run begins. `revision` and `definition_hash` name the document the run was compiled from, `bodies` is the\nfixed body list in the order of the binary pose block, `platform` the platform tag the trajectory hash at the end\nbelongs to. `frame_every_ticks` is how many ticks lie between two frames.",
+      "properties": {
+        "type": {
+          "const": "run_started",
+          "title": "Type",
+          "type": "string"
+        },
+        "run_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Run Id",
+          "type": "string"
+        },
+        "kind": {
+          "$ref": "#/$defs/RunKind"
+        },
+        "badge": {
+          "const": "sim",
+          "title": "Badge",
+          "type": "string"
+        },
+        "project_id": {
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+          "title": "Project Id",
+          "type": "string"
+        },
+        "revision": {
+          "minimum": 0,
+          "title": "Revision",
+          "type": "integer"
+        },
+        "definition_hash": {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "title": "Definition Hash",
+          "type": "string"
+        },
+        "planet": {
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+          "title": "Planet",
+          "type": "string"
+        },
+        "seed": {
+          "maximum": 9007199254740992,
+          "minimum": 0,
+          "title": "Seed",
+          "type": "integer"
+        },
+        "timestep_s": {
+          "exclusiveMinimum": 0,
+          "title": "Timestep S",
+          "type": "number"
+        },
+        "frame_every_ticks": {
+          "minimum": 1,
+          "title": "Frame Every Ticks",
+          "type": "integer"
+        },
+        "bodies": {
+          "items": {
+            "$ref": "#/$defs/BodyRef"
+          },
+          "maxItems": 4294967295,
+          "minItems": 1,
+          "title": "Bodies",
+          "type": "array"
+        },
+        "model_labels": {
+          "default": [],
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "title": "Model Labels",
+          "type": "array"
+        },
+        "platform": {
+          "$ref": "#/$defs/PlatformTag"
+        }
+      },
+      "required": [
+        "type",
+        "run_id",
+        "kind",
+        "badge",
+        "project_id",
+        "revision",
+        "definition_hash",
+        "planet",
+        "seed",
+        "timestep_s",
+        "frame_every_ticks",
+        "bodies",
+        "platform"
+      ],
+      "title": "RunStarted",
+      "type": "object"
+    },
+    "RuntimeTag": {
+      "additionalProperties": false,
+      "description": "⑤ Python and NumPy versions.",
+      "properties": {
+        "python": {
+          "maxLength": 200,
+          "minLength": 1,
+          "title": "Python",
+          "type": "string"
+        },
+        "numpy": {
+          "maxLength": 200,
+          "minLength": 1,
+          "title": "Numpy",
+          "type": "string"
+        }
+      },
+      "required": [
+        "python",
+        "numpy"
+      ],
+      "title": "RuntimeTag",
+      "type": "object"
+    },
     "SelectPlanet": {
       "additionalProperties": false,
       "description": "Put the project on another planet, by id. The planet's constants are not part of any command.",
@@ -2926,6 +3631,47 @@
         "height"
       ],
       "title": "StepProp",
+      "type": "object"
+    },
+    "ThreadTag": {
+      "additionalProperties": false,
+      "description": "⑧ Thread counts of the physics step and of the solver.",
+      "properties": {
+        "physics": {
+          "minimum": 1,
+          "title": "Physics",
+          "type": "integer"
+        },
+        "solver": {
+          "minimum": 1,
+          "title": "Solver",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "physics",
+        "solver"
+      ],
+      "title": "ThreadTag",
+      "type": "object"
+    },
+    "TrajectoryEvidence": {
+      "description": "A trajectory hash and the platform tag it belongs to. A hash without its tag is not evidence (H1), so the two\nare one object. Two of these are compared only when their tags are equal (H2).",
+      "properties": {
+        "hash": {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "title": "Hash",
+          "type": "string"
+        },
+        "platform": {
+          "$ref": "#/$defs/PlatformTag"
+        }
+      },
+      "required": [
+        "hash",
+        "platform"
+      ],
+      "title": "TrajectoryEvidence",
       "type": "object"
     },
     "UniformDistribution": {

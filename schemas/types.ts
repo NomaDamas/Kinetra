@@ -162,12 +162,37 @@ export interface Body {
   unverified?: Unverified[];
 }
 
+/** Position [m] and orientation (unit quaternion `x, y, z, w`) of body `body`, in the world frame. */
+export interface BodyPose {
+  body: string;
+  position: WorldPosition;
+  orientation: Quaternion;
+}
+
+/**
+ * A rigid body of the run and the project instances it consists of (welded instances move as one body). `id` is
+ * the body's stable id (G3) and the id every pose, contact and break event uses.
+ */
+export interface BodyRef {
+  id: string;
+  instances: string[];
+}
+
 /** Rectangular block. `size_*` are full extents [m] along the component's local x, y, z. */
 export interface Box {
   kind: "box";
   size_x: AxisExpr;
   size_y: AxisExpr;
   size_z: AxisExpr;
+}
+
+/** Joint `joint` released: the load on it reached its break threshold (both in N; plan 4.6, a simplified model). */
+export interface BreakEvent {
+  kind: "break";
+  tick: number;
+  joint: string;
+  load: ForceN;
+  threshold: ForceN;
 }
 
 /** Joint load [N] above which the joint releases. A simplified model, not FEM (plan 4.6). */
@@ -246,7 +271,35 @@ export interface ComponentContribution {
   orientation: Quaternion;
 }
 
+/** ⑦ The settings the run actually used: integrator, `timestep_s` [s] and the solver's settings by name. */
+export interface ComputeTag {
+  integrator: string;
+  timestep_s: number;
+  solver: Record<string, number | boolean | string>;
+}
+
+/** A success condition of the project became true. This is not a verdict (P4): it says the run satisfied it. */
+export interface ConditionMetEvent {
+  kind: "condition_met";
+  tick: number;
+  condition: string;
+}
+
 export type Confidence = "low" | "med" | "high";
+
+/**
+ * `body` touches (`phase` `begin`) or stops touching (`end`) `other`: another body, a terrain prop (by its id in
+ * the project's world) or the ground (`other` is `None`). `force` is the contact force at `begin`, if known.
+ */
+export interface ContactEvent {
+  kind: "contact";
+  tick: number;
+  phase: "begin" | "end";
+  body: string;
+  other_kind: GroundOrProp;
+  other?: string | null;
+  force?: ForceN | null;
+}
 
 /**
  * The time-axis control program. Entries are kept in the order given; time order is not required. Entry ids
@@ -254,6 +307,17 @@ export type Confidence = "low" | "med" | "high";
  */
 export interface ControlSchedule {
   entries?: ActuateEntry[];
+}
+
+/** ⑥ The core build: its commit (the force-applying paths and their order are in it). */
+export interface CoreBuildTag {
+  commit: string;
+}
+
+/** ② CPU: architecture (`x86_64`, `arm64`, ...) and model string. */
+export interface CpuTag {
+  architecture: string;
+  model: string;
 }
 
 /** Piecewise-linear `y(x)`: at least two points, `x` strictly increasing, in `x_unit` and `y_unit`. */
@@ -387,6 +451,21 @@ export interface ElasticModulus {
   unit: "Pa";
 }
 
+export type EngineDistribution = "wheel" | "wasm_package" | "custom_build";
+
+/**
+ * ④ The physics engine: its name and version as values, how it was distributed, the hash of the distributed
+ * file, and for a custom build the compiler and build flags.
+ */
+export interface EngineTag {
+  name: string;
+  version: string;
+  distribution: EngineDistribution;
+  artifact_hash?: string | null;
+  compiler?: string | null;
+  build_flags?: string | null;
+}
+
 /**
  * A subtracted shape component the proxy could not keep: it is solid in the proxy. `volume` [m^3] is what the proxy
  * gained from it.
@@ -400,6 +479,25 @@ export interface FilledVoid {
 /** No spread: Monte-Carlo uses the nominal. */
 export interface FixedDistribution {
   kind: "fixed";
+}
+
+/** A force in newtons (`unit` is always `N`, so a client never guesses). */
+export interface ForceN {
+  value: number;
+  unit: "N";
+}
+
+/**
+ * The state of run `run_id` at `tick` (`sim_time_s` seconds): every body's pose, and the events since the
+ * previous frame.
+ */
+export interface Frame {
+  type: "frame";
+  run_id: string;
+  tick: number;
+  sim_time_s: number;
+  poses: BodyPose[];
+  events?: (ContactEvent | BreakEvent | ConditionMetEvent)[];
 }
 
 /** Dimensionless Coulomb coefficient. */
@@ -417,6 +515,8 @@ export interface Gravity {
   value: number;
   unit: "m/s^2";
 }
+
+export type GroundOrProp = "body" | "prop" | "ground";
 
 /**
  * First message of each side: the protocol number it speaks. The core answers a `hello` it can serve with its
@@ -542,6 +642,12 @@ export interface NormalDistribution {
  */
 export type Origin = "mouse" | "agent" | "voice" | "xr" | "mcp";
 
+/** ① Operating system: kind (`linux`, `macos`, ...) and kernel release. */
+export interface OsTag {
+  kind: string;
+  kernel_release: string;
+}
+
 /** A named parameter of the part with its default and allowed range, all in `unit`. */
 export interface ParamDef {
   name: string;
@@ -625,6 +731,22 @@ export interface Placement {
   x: number;
   y: number;
   yaw: number;
+}
+
+/**
+ * The eight run conditions of `engine.md` 5.4 (H1). Two tags are the same tag when all eight are equal
+ * (`==`). `image_digest` is required and `None` means "no image" (not a container): leaving it out is an error, so
+ * a run cannot lose that component by omission.
+ */
+export interface PlatformTag {
+  os: OsTag;
+  cpu: CpuTag;
+  image_digest: string | null;
+  engine: EngineTag;
+  runtime: RuntimeTag;
+  core_build: CoreBuildTag;
+  compute: ComputeTag;
+  threads: ThreadTag;
 }
 
 /** World pose of an instance's part frame. One badge and source cover the whole pose. */
@@ -924,6 +1046,47 @@ export interface RingReport {
   outer_deviation: number;
 }
 
+export type RunEndReason = "completed" | "stopped" | "failed";
+
+/** The run is over. `trajectory` is absent only when the run `failed`. */
+export interface RunEnded {
+  type: "run_ended";
+  run_id: string;
+  reason: RunEndReason;
+  last_tick: number;
+  trajectory?: TrajectoryEvidence | null;
+}
+
+export type RunKind = "preview" | "verdict_sample";
+
+/**
+ * A run begins. `revision` and `definition_hash` name the document the run was compiled from, `bodies` is the
+ * fixed body list in the order of the binary pose block, `platform` the platform tag the trajectory hash at the end
+ * belongs to. `frame_every_ticks` is how many ticks lie between two frames.
+ */
+export interface RunStarted {
+  type: "run_started";
+  run_id: string;
+  kind: RunKind;
+  badge: "sim";
+  project_id: string;
+  revision: number;
+  definition_hash: string;
+  planet: string;
+  seed: number;
+  timestep_s: number;
+  frame_every_ticks: number;
+  bodies: BodyRef[];
+  model_labels?: string[];
+  platform: PlatformTag;
+}
+
+/** ⑤ Python and NumPy versions. */
+export interface RuntimeTag {
+  python: string;
+  numpy: string;
+}
+
 /** Put the project on another planet, by id. The planet's constants are not part of any command. */
 export interface SelectPlanet {
   type: "select_planet";
@@ -1071,6 +1234,21 @@ export interface Subscribe {
   epoch?: string | null;
 }
 
+/** ⑧ Thread counts of the physics step and of the solver. */
+export interface ThreadTag {
+  physics: number;
+  solver: number;
+}
+
+/**
+ * A trajectory hash and the platform tag it belongs to. A hash without its tag is not evidence (H1), so the two
+ * are one object. Two of these are compared only when their tags are equal (H2).
+ */
+export interface TrajectoryEvidence {
+  hash: string;
+  platform: PlatformTag;
+}
+
 export interface UniformDistribution {
   badge: Badge;
   source: Source;
@@ -1118,6 +1296,10 @@ export type Distribution = FixedDistribution | UniformDistribution | NormalDistr
 
 export type EditCommand = AddPartDef | ReplacePartDef | RemovePartDef | AddMaterialDef | ReplaceMaterialDef | RemoveMaterialDef | AddInstance | RemoveInstance | MoveInstance | SetParameter | ClearParameter | SetInstanceMaterial | AddJoint | ReplaceJoint | RemoveJoint | AddActuator | RemoveActuator | AddControlEntry | RemoveControlEntry | ReplaceControlEntry | AddAssumption | SetAssumption | RemoveAssumption | SelectPlanet;
 
-export type ServerMessage = Hello | Snapshot | Resumed | Applied | Accepted | Rejected | ProtocolError;
+export type FrameEvent = ContactEvent | BreakEvent | ConditionMetEvent;
+
+export type ServerMessage = Hello | Snapshot | Resumed | Applied | Accepted | Rejected | ProtocolError | RunStarted | Frame | RunEnded;
+
+export type SolverValue = number | boolean | string;
 
 export type TerrainProp = RampProp | StepProp;
