@@ -33,7 +33,7 @@ from kinetra_core import (
 from kinetra_core.shape import Box, Cylinder, Sphere
 
 from . import _convex as cx
-from ._shape import ShapeError, parameter_uses, resolve_shape
+from ._shape import ShapeError, parameter_uses, resolve_shape, signed_volumes
 
 _COMPUTED_BY = "kinetra_engine.parts.mass_properties (analytic primitives, parallel-axis composition)"
 
@@ -70,11 +70,12 @@ def mass_properties(
     """
     resolved = resolve_shape(part, parameters)
     shape = part.shape  # resolve_shape raised ShapeError if there is none
+    assert shape is not None
     placed = resolved.placed
     rho = material.density.value
 
     # Signed volumes: +added, -void.
-    signed = [(p.volume if p.component.operation == "add" else -p.volume) for p in placed]
+    signed = signed_volumes(resolved)
     volume = sum(signed)
     if not volume > 0.0:
         raise ShapeError("the voids remove all the material: net volume is not positive")

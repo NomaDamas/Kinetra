@@ -8,7 +8,8 @@ result type has no mesh kind).
     collision_proxy(part, parameters=None) -> CollisionProxy
 
 Units are SI and the frame is the part's local frame (`kinetra_core.conventions`). Parameters are resolved, checked and
-placed exactly as `mass_properties` does (`_shape.resolve_shape`), so a recipe either evaluates for both or for neither.
+placed exactly as `mass_properties` does (`_shape.resolve_shape`), and `recipe_volume` is the same signed sum, so a recipe
+evaluates for both or for neither and the two report the same volume bit for bit.
 """
 
 from __future__ import annotations
@@ -30,7 +31,7 @@ from kinetra_core import (
     Unit,
 )
 
-from ._shape import ShapeError, parameter_uses, resolve_shape
+from ._shape import ShapeError, parameter_uses, resolve_shape, signed_volumes
 
 _COMPUTED_BY = "kinetra_engine.parts.collision_proxy (added primitives copied; voids filled)"
 
@@ -56,7 +57,7 @@ def collision_proxy(part: PartDef, parameters: Mapping[str, Quantity] | None = N
     voids = [p for p in resolved.placed if p.component.operation == "subtract"]
     proxy_volume = sum(p.volume for p in adds)
     filled = sum(p.volume for p in voids)
-    recipe_volume = proxy_volume - filled
+    recipe_volume = sum(signed_volumes(resolved))  # the same sum, in the same order, as mass_properties().volume
     if not recipe_volume > 0.0:
         raise ShapeError("the voids remove all the material: net volume is not positive")
 

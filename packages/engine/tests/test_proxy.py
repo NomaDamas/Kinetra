@@ -132,7 +132,7 @@ def test_proxy_of_a_plate_with_a_hole_fills_the_hole_and_reports_the_volume_erro
     assert [g.id for g in r.geoms] == ["plate"]  # the hole is not a proxy geom
     assert r.proxy_volume.value == approx(0.0012)  # the plate, solid
     assert r.recipe_volume.value == approx(0.0012 - hole)
-    assert r.volume_error.value == approx(hole / (0.0012 - hole))  # about +4.3 %
+    assert r.volume_error.value == approx(hole / (0.0012 - hole))  # about +15.1 %: 1.5708e-4 / (1.2e-3 - 1.5708e-4)
     (f,) = r.filled_voids
     assert (f.id, f.primitive) == ("hole", "cylinder") and f.volume == approx(hole)
     # The recipe volume is the volume B-01a reports for the same part.
@@ -197,7 +197,7 @@ def test_proxy_contains_every_sampled_point_of_the_recipe_and_its_volume_matches
         return any(solids) and not _geom_contains_component(recipe["bore"], point)
 
     rng = random.Random(20261111)
-    lo, hi = (-0.25, -0.12, -0.02), (0.4, 0.12, 0.42)
+    lo, hi = (-0.25, -0.12, -0.04), (0.4, 0.12, 0.42)  # z reaches below the ball (z = -0.03)
     n, inside_recipe, inside_proxy = 120_000, 0, 0
     for _ in range(n):
         pt = tuple(rng.uniform(a, b) for a, b in zip(lo, hi))
@@ -207,7 +207,7 @@ def test_proxy_contains_every_sampled_point_of_the_recipe_and_its_volume_matches
         inside_recipe += in_r
         assert in_p or not in_r  # the proxy never has less than the recipe
     box_volume = math.prod(b - a for a, b in zip(lo, hi))
-    # Monte Carlo (seeded): the estimate of the reported proxy volume is within 2 % of it (sigma ~ 0.4 % at n = 120k).
+    # Monte Carlo (seeded): the estimate of the reported proxy volume is within 2 % of it (the hit fraction is about 0.05, so sigma ~ 0.64 % of the volume at n = 120k).
     assert inside_proxy / n * box_volume == pytest.approx(r.proxy_volume.value, rel=0.02)
     assert inside_recipe / n * box_volume == pytest.approx(r.recipe_volume.value, rel=0.02)
     # By hand: base 0.008 + post pi 0.0016 0.3 + ball 4/3 pi 0.000512; bore pi 0.0009 0.2.
@@ -240,6 +240,28 @@ def param_part(**kw):
         "position": {"x": ax(0.0, [("w", 0.5)]), "y": ax(), "z": ax()},
     }
     return part([comp], [length_param(**kw)])
+
+
+def test_proxy_recipe_volume_is_the_mass_volume_bit_for_bit_and_survives_cancellation():
+    # 1 m^3 added, the same 1 m^3 subtracted, then a ball of radius 1e-6 m clear of the box: material is left (4.19e-18 m^3).
+    # Summing adds and voids separately rounds that to zero; the signed sum in recipe order, as mass does, keeps it.
+    tiny = [
+        box("a", 1.0, 1.0, 1.0),
+        box("v", 1.0, 1.0, 1.0, op="subtract"),
+        sphere("s", 1e-6, at=(5.0, 0.0, 0.0)),
+    ]
+    p = part(tiny)
+    r = collision_proxy(p)
+    assert r.recipe_volume.value == mass_properties(p, material()).volume.value
+    assert r.recipe_volume.value == approx(4.0 / 3.0 * math.pi * 1e-18)
+    assert r.proxy_volume.value == approx(1.0 + 4.0 / 3.0 * math.pi * 1e-18)
+    # and for ordinary recipes with several adds and voids, exactly equal (no relative slack)
+    rng = random.Random(7)
+    for _ in range(50):
+        comps = [box(f"a{i}", rng.uniform(0.1, 0.4), rng.uniform(0.1, 0.4), rng.uniform(0.1, 0.4), at=(i * 1.0, 0.0, 0.0)) for i in range(4)]
+        comps += [sphere(f"v{i}", rng.uniform(0.01, 0.05), at=(i * 1.0, 0.0, 0.0), op="subtract") for i in range(4)]
+        p = part(comps)
+        assert collision_proxy(p).recipe_volume.value == mass_properties(p, material()).volume.value
 
 
 def test_proxy_follows_the_parameter_default_and_an_override_and_names_the_values_used():
@@ -312,7 +334,7 @@ def test_proxy_cannot_be_forged():
 
 def test_proxy_has_no_mesh_kind():
     r = collision_proxy(part([box("b", 0.2, 0.1, 0.3)]))
-    for kind in ("mesh", "convex", "hull", "trimesh"):
+    for kind in ("mesh", "trimesh"):  # a convex hull is a value L-02b may add; only meshes are excluded here
         d = _dump(r)
         d["geoms"][0]["primitive"] = kind
         with pytest.raises(ValueError):

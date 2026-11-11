@@ -68,9 +68,6 @@ class ProxyGeom(BaseModel):
             raise ValueError(f"volume {self.volume} does not match the {self.primitive}'s dimensions ({want_volume})")
         return self
 
-    def dimension(self, name: str) -> float:
-        return next(d.value for d in self.dimensions if d.name == name)
-
 
 class FilledVoid(BaseModel):
     """A subtracted shape component the proxy could not keep: it is solid in the proxy. `volume` [m^3] is what the proxy

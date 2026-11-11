@@ -16,20 +16,20 @@ proxy = collision_proxy(part_def, {"width": q})    # mass_properties와 같은 �
 
 ## 만드는 규칙
 
-- **더한 요소 하나 = 프록시 기본형 하나.** 같은 기본형, 같은 치수, 같은 중심, 같은 방향을 그대로 옮긴다(`ProxyGeom.id`는 요소 `id`). 기본형은 모두 볼록하고 MuJoCo의 `box`, `cylinder`, `sphere` 지오메트리에 하나씩 대응한다. 치수의 의미(상자는 전체 길이, 원기둥 축은 로컬 z)도 `shape.py`와 같아서 컴파일러(X-01a)가 값을 바꾸지 않고 넘긴다. 이 PR은 MJCF를 만들지 않는다.
-- **시각 메시를 충돌에 쓰지 않는다.** 입력은 형상 레시피뿐이고 glTF는 읽지 않는다. 결과 타입에는 메시 종류가 없다(`primitive`는 세 값뿐이라 `mesh`나 `convex`는 검증에서 거절된다). 가져온 메시의 프록시는 L-02b의 일이다.
-- **레시피 검사는 질량 계산과 같다.** 파라미터 단위·범위, 치수 양수, 더한 요소끼리 겹치지 않음, 뺀 요소는 더한 요소 하나 안에 있음을 `mass_properties`와 같은 코드(`_shape.resolve_shape`)로 확인하고 깨지면 `ShapeError`로 거절한다. 질량은 되는데 프록시는 안 되는 레시피(반대도)는 없다.
+- **더한 요소 하나 = 프록시 기본형 하나.** 같은 기본형, 같은 치수, 같은 중심, 같은 방향을 그대로 옮긴다(`ProxyGeom.id`는 요소 `id`). 기본형은 모두 볼록하고 MuJoCo 지오메트리 하나에 대응하지만 **값은 그대로 넘어가지 않는다**(아래 매핑 표). 이 PR은 MJCF를 만들지 않고 MuJoCo를 돌려 보지도 않았다.
+- **시각 메시를 충돌에 쓰지 않는다.** 입력은 형상 레시피뿐이고 glTF는 읽지 않는다. 결과 타입에는 메시 종류가 없다(`primitive`는 `box`·`cylinder`·`sphere` 세 값뿐이라 `mesh`와 `trimesh`는 검증에서 거절된다). 볼록체(`convex`)는 거절 목록에 굳히지 않았다. 가져온 메시의 프록시(L-02b)와 FL-03a가 필요하면 이 타입에 값을 더한다.
+- **레시피 검사는 질량 계산과 같다.** 파라미터 단위·범위, 치수 양수, 더한 요소끼리 겹치지 않음, 뺀 요소는 더한 요소 하나 안에 있음을 `mass_properties`와 같은 코드(`_shape.resolve_shape`)로 확인하고 깨지면 `ShapeError`로 거절한다. `recipe_volume`도 `mass_properties`와 같은 부호 있는 합(`_shape.signed_volumes`, 레시피 순서)이라 질량은 되는데 프록시는 안 되는 레시피(반대도)는 없고 두 부피는 비트까지 같다. 더한 부피와 뺀 부피를 따로 더해 빼면 작은 잔여 재료가 반올림으로 사라지므로 그렇게 하지 않는다(테스트 `..._survives_cancellation`).
 
 ## 빈 곳(`subtract`)은 프록시에서 메워진다 (근사, 숨기지 않는다)
 
 볼록한 기본형은 구멍을 가질 수 없다. 그래서 뺀 요소는 프록시에 들어가지 않는다. 구멍, 보어, 포켓은 **프록시에서 막힌 채로** 있고 다음을 한다.
 
 - `filled_voids`에 뺀 요소마다 id, 기본형, 부피를 적는다.
-- 프록시 부피는 레시피 부피보다 작을 수 없다(과소가 아니라 과대). `volume_error = (proxy_volume - recipe_volume) / recipe_volume`, 0 이상이고 빈 곳이 없으면 정확히 0이다. `recipe_volume`은 `mass_properties`가 내는 `volume`과 같다(테스트로 대조).
-- 검증이 `proxy_volume = Σ geoms 부피`, `proxy_volume - recipe_volume = Σ filled_voids 부피`, `volume_error` 식을 확인한다. 값만 고쳐서는 위조되지 않는다.
+- 프록시 부피는 레시피 부피보다 작을 수 없다(과소가 아니라 과대). `volume_error = (proxy_volume - recipe_volume) / recipe_volume`, 0 이상이고 빈 곳이 없으면 정확히 0이다. `recipe_volume`은 `mass_properties`가 내는 `volume`과 비트까지 같다(테스트로 대조).
+- 검증이 `proxy_volume = Σ geoms 부피`, `proxy_volume - recipe_volume = Σ filled_voids 부피`, `volume_error` 식을 확인한다. 값 하나만 고쳐서는 위조되지 않는다. `FilledVoid`에는 치수가 없어서 `filled_voids[].volume`, `recipe_volume`, `volume_error`를 함께 맞춰 고치면 검증을 통과한다. 이 모델은 계산 결과의 일관성을 확인하지 위변조를 막는 서명이 아니다.
 - 모든 값의 배지는 `sim`이고 출처는 계산 함수다. 입력(레시피, 쓴 파라미터)의 배지는 `derivation`에 있다(`massprops.py`와 같은 방식). `derivation.assumptions`에 "빈 곳을 메웠다"가 글로 실린다.
 
-**알려진 한계(근사의 크기).** 오차는 빈 곳의 부피 비율로 정직하게 보고되지만 접촉 기하는 부피 오차보다 더 틀린다. 관(tube)의 프록시는 속이 찬 원기둥이라 안에 들어가는 물체가 들어가지 못하고(위 테스트의 관은 부피로 +178%), 구멍 난 판의 구멍으로 막대가 들어갈 수 없다. 부피 오차가 작아도 이 접촉은 틀린다. 오차가 큰 부품을 소비하는 쪽(판정, 가정표)은 `filled_voids`가 비어 있지 않다는 사실을 "근사: 충돌 프록시가 빈 곳을 메움" 라벨로 보여 줄 수 있다. 빈 곳을 살리려면 겹치지 않는 볼록 조각으로 나누어 더하는 분해가 필요하다. 그것은 이 이슈 밖이고 새 이슈로 남겼다(#486, 아래 후속).
+**알려진 한계(근사의 크기).** 오차는 빈 곳의 부피 비율로 정직하게 보고되지만 접촉 기하는 부피 오차보다 더 틀린다. 관(tube)의 프록시는 속이 찬 원기둥이라 안에 들어가는 물체가 들어가지 못하고(위 테스트의 관은 부피로 +178%), 구멍 난 판의 구멍으로 막대가 들어갈 수 없다. 부피 오차가 작아도 이 접촉은 틀린다. 이 근사가 사용자와 판정에 보이도록 X-01a([#123](https://github.com/NomaDamas/Kinetra/issues/123))의 DoD에 라벨 "근사: 충돌 프록시가 빈 곳을 메움(+N%)"이 컴파일 라벨과 가정표에 나오고 테스트가 있다는 줄을 더했다. `filled_voids`가 비어 있지 않으면 이 라벨이 붙는다. 이 PR은 라벨을 만들지 않는다. X-01a가 보여 준다. 빈 곳을 살리려면 겹치지 않는 볼록 조각으로 나누어 더하는 분해가 필요하다. 그것은 이 이슈 밖이고 새 이슈로 남겼다(#486, 아래 후속). 접촉이 필요 없는 같은 바디 안에서는 영향이 없고, 안으로 들어가는 접촉에서만 틀린다.
 
 ## 부피 오차 보고
 
@@ -44,4 +44,17 @@ proxy = collision_proxy(part_def, {"width": q})    # mass_properties와 같은 �
 ## 후속
 
 - 빈 곳이 있는 부품의 프록시 분해(관, 구멍 난 판을 속이 빈 채로): [#486 (B-01f)](https://github.com/NomaDamas/Kinetra/issues/486).
-- MJCF 지오메트리 매핑: X-01a. 이 모델의 `box`·`cylinder`·`sphere`와 치수 규약이 MuJoCo와 어긋나는지는 거기서 시험한다 [확인 필요: 이 PR에서 MuJoCo를 돌려 보지 않았다].
+- MJCF 지오메트리 매핑: X-01a. 아래 표는 MuJoCo 문서(`doc/XMLreference.rst`의 `geom`)의 규약과 이 모델을 글로 대조한 것이고 MuJoCo를 돌려 확인하지 않았다 [확인 필요: X-01a가 시험한다].
+
+## MuJoCo 매핑 (X-01a가 따른다, 값이 그대로 넘어가지 않는다)
+
+| 이 모델(`ProxyGeom`) | MuJoCo `geom` |
+|---|---|
+| `box`, `size_x/y/z` = **전체 길이** | `type="box"`, `size="size_x/2 size_y/2 size_z/2"` (반치수) |
+| `cylinder`, `radius`, `length` = **전체 길이**, 축은 로컬 z | `type="cylinder"`, `size="radius length/2"` (반지름, 반길이), 축은 geom의 z |
+| `sphere`, `radius` | `type="sphere"`, `size="radius"` |
+| `center` (x, y, z) [m] | `pos="x y z"` |
+| `orientation` `{x, y, z, w}` | `quat="w x y z"` (MuJoCo는 스칼라가 앞이다) |
+
+- 부피, 질량, 관성은 프록시 지오메트리에서 구하지 않는다. MuJoCo가 `geom`의 `density`로 질량을 계산하게 두면 메운 빈 곳이 질량에 들어간다. 바디의 질량, 무게중심, 관성은 항상 `MassProperties`(B-01a)에서 와서 `inertial`로 명시한다.
+- 소비하는 쪽이 MJCF 원본을 저장하지 않는다는 규칙(`client-adapter.md` A1)은 그대로다. 이 표는 컴파일러가 산출물을 만들 때의 변환이다.

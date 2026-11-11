@@ -13,7 +13,7 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 
 from kinetra_core import ParameterUse, PartDef, Quantity
-from kinetra_core.shape import Box, Cylinder, ShapeComponent
+from kinetra_core.shape import Box, Cylinder, ShapeComponent, Sphere
 
 from . import _convex as cx
 
@@ -45,7 +45,7 @@ def _columns(r: Mat3) -> tuple[cx.Vec, cx.Vec, cx.Vec]:
     return tuple((r[0][j], r[1][j], r[2][j]) for j in range(3))  # type: ignore[return-value]
 
 
-def primitive_volume(p, dims: Mapping[str, float]) -> float:
+def primitive_volume(p: Box | Cylinder | Sphere, dims: Mapping[str, float]) -> float:
     if isinstance(p, Box):
         return dims["size_x"] * dims["size_y"] * dims["size_z"]
     if isinstance(p, Cylinder):
@@ -53,7 +53,7 @@ def primitive_volume(p, dims: Mapping[str, float]) -> float:
     return 4.0 / 3.0 * math.pi * dims["radius"] ** 3
 
 
-def _body(p, dims: Mapping[str, float], center: cx.Vec, r: Mat3) -> cx.Body:
+def _body(p: Box | Cylinder | Sphere, dims: Mapping[str, float], center: cx.Vec, r: Mat3) -> cx.Body:
     axes = _columns(r)
     if isinstance(p, Box):
         return cx.Body("box", center, axes, (dims["size_x"] / 2, dims["size_y"] / 2, dims["size_z"] / 2))
@@ -141,6 +141,13 @@ def resolve_shape(part: PartDef, parameters: Mapping[str, Quantity] | None = Non
 
     _check_disjoint_sum([(p.component, p.body) for p in placed])
     return Resolved(quantities, tuple(placed))
+
+
+def signed_volumes(resolved: Resolved) -> list[float]:
+    """Volume of each component in recipe order, positive for `add` and negative for `subtract`. Mass and the collision
+    proxy both sum exactly this list, so the net volume of a recipe is the same number for both (and a recipe whose net
+    volume is positive for one is accepted by the other)."""
+    return [(p.volume if p.component.operation == "add" else -p.volume) for p in resolved.placed]
 
 
 def parameter_uses(part: PartDef, resolved: Resolved) -> tuple[ParameterUse, ...]:
