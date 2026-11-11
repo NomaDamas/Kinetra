@@ -1,0 +1,21 @@
+; A0-03b: minimal Web-export project. One script, no assets: 200 Jolt bodies fall onto a floor for 2 s of physics, the
+; result goes to the browser console and window.__godot_result so the page size/load can be measured.
+config_version=5
+
+[application]
+
+config/name="kinetra-spike-godot-web"
+run/main_scene="res://main.tscn"
+config/features=PackedStringArray("4.7")
+
+[physics]
+
+common/physics_ticks_per_second=500
+3d/physics_engine="Jolt Physics"
+3d/default_gravity=9.80665
+3d/default_gravity_vector=Vector3(0, 0, -1)
+
+[rendering]
+
+renderer/rendering_method="gl_compatibility"
+renderer/rendering_method.mobile="gl_compatibility"

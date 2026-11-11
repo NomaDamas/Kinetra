@@ -214,13 +214,13 @@ def with_fixture(pr101_dir, monkeypatch, pr=None, diff=None, issue=None, remove=
 def test_collect_output_is_redacted_json_and_prompt(fake_env, pr101_dir, monkeypatch, capsys):
     secret_diff = (
         "diff --git a/tools/k.py b/tools/k.py\nindex 1..2 100644\n--- a/tools/k.py\n+++ b/tools/k.py\n@@ -1 +1,3 @@\n"
-        f'-x = 1\n+KEY = "{KEY}"\n+H = "Authorization: Bearer abc.def-123"\n+T = "ghp_{"a" * 24}"\n'
+        f'-x = 1\n+KEY = "{KEY}"\n+H = "Authorization: Bearer abc.def-123-LONGTOKENVALUE0123"\n+T = "ghp_{"a" * 24}"\n'
     )
     with_fixture(pr101_dir, monkeypatch, pr={"body": f"Closes #77\n키 {KEY} sk-live-abcdefgh12345"}, diff=secret_diff)
     for argv in (["101", "--repo", "o/r"], ["101", "--repo", "o/r", "--prompt"]):
         assert collect.main(argv) == 0
         out = capsys.readouterr().out
-        for leak in (KEY, "sk-live-abcdefgh12345", "abc.def-123", "ghp_" + "a" * 24):
+        for leak in (KEY, "sk-live-abcdefgh12345", "abc.def-123-LONGTOKENVALUE0123", "ghp_" + "a" * 24):
             assert leak not in out, (argv, leak)
         assert "***" in out and "tools/k.py" in out
     assert KEY not in collect.render(build())  # 모델에 보내는 본문도 같다
@@ -323,13 +323,13 @@ def test_collect_redacts_github_tokens_everywhere(fake_env, pr101_dir, monkeypat
 
 def test_collect_json_is_redacted_before_serialization_and_parses(fake_env, pr101_dir, monkeypatch, capsys):
     # 따옴표·역슬래시·개행이 섞인 비밀 주변 문자열도 JSON 이 깨지지 않아야 한다
-    body = f'Closes #77\n"Authorization: Bearer abc.def"\\n 끝 {KEY} {PAT}\nquote " back \\ slash'
-    diff = f'diff --git a/t.py b/t.py\nindex 1..2 100644\n--- a/t.py\n+++ b/t.py\n@@ -1 +1,2 @@\n-a\n+K = "Bearer zzz.yyy-1"; X = "{KEY}"\n'
+    body = f'Closes #77\n"Authorization: Bearer abc.def-LONGTOKENVALUE012345"\\n 끝 {KEY} {PAT}\nquote " back \\ slash'
+    diff = f'diff --git a/t.py b/t.py\nindex 1..2 100644\n--- a/t.py\n+++ b/t.py\n@@ -1 +1,2 @@\n-a\n+K = "Bearer zzz.yyy-LONGTOKENVALUE0123456"; X = "{KEY}"\n'
     with_fixture(pr101_dir, monkeypatch, pr={"body": body}, diff=diff)
     assert collect.main(["101", "--repo", "o/r"]) == 0
     out = capsys.readouterr().out
     data = json.loads(out)  # 파싱된다
-    for leak in (KEY, PAT, "abc.def", "zzz.yyy-1"):
+    for leak in (KEY, PAT, "abc.def-LONGTOKENVALUE012345", "zzz.yyy-LONGTOKENVALUE0123456"):
         assert leak not in out and leak not in json.dumps(data, ensure_ascii=False)
     assert "***" in data["pr"]["body"] and 'quote " back \\ slash' in data["pr"]["body"]
 
@@ -391,3 +391,133 @@ def test_collect_fence_tracking(plan, present, absent):
         assert any(h.startswith(p) for h in heads), (p, heads)
     for a in absent:
         assert not any(h.startswith(a) for h in heads), (a, heads)
+
+
+# ---------------------------------------------------------------- #428 마스킹이 코드 표현식을 바꾸지 않는다
+
+CODE_EXPRESSIONS = [
+    'headers = {"Authorization": f"Bearer {self._key}"}',
+    'h = f"Bearer {key}"',
+    'h = "Bearer " + os.environ["OPENROUTER_API_KEY"]',
+    'h = "Bearer %s" % self._key',
+    "curl -H 'Authorization: Bearer $OPENROUTER_API_KEY'",
+    'h = f"Bearer {self._openrouter_api_key}"',
+    "Authorization: Bearer self._openrouter_api_key",
+    "Bearer token",
+]
+
+
+@pytest.mark.parametrize("code", CODE_EXPRESSIONS)
+def test_redact_keeps_code_expressions_with_bearer(code, monkeypatch):
+    monkeypatch.delenv("OPENROUTER_API_KEY", raising=False)
+    assert common.redact(code) == code
+    assert common.redact_report(code) == (code, 0, [])
+
+
+SECRET_SHAPED = [
+    "sk-or-v1-" + "ab12" * 8,
+    "github_pat_" + "A1b2C3d4E5" * 4,
+    "ghp_" + "a" * 24,
+]
+
+
+@pytest.mark.parametrize("secret", SECRET_SHAPED)
+def test_redact_masks_real_secret_shapes(secret, monkeypatch):
+    monkeypatch.delenv("OPENROUTER_API_KEY", raising=False)
+    for text in (secret, f"Authorization: Bearer {secret}"):
+        got = common.redact(text)
+        assert secret not in got and "***" in got
+
+
+def test_redact_masks_long_bearer_token_but_keeps_header_name(monkeypatch):
+    monkeypatch.delenv("OPENROUTER_API_KEY", raising=False)
+    tok = "eyJhbGciOiJIUzI1NiJ9.e30.abc123def456ghi789"
+    assert common.redact(f'curl -H "Authorization: Bearer {tok}"') == 'curl -H "Authorization: ***"'
+
+
+def test_redact_report_counts_places_and_lines(monkeypatch):
+    monkeypatch.setenv("OPENROUTER_API_KEY", KEY)
+    text = f'a = 1\nh = f"Bearer {{self._key}}"\nk = "{KEY}"\nt = "ghp_{"b" * 24}" ; u = "ghp_{"c" * 24}"\n'
+    out, n, lines = common.redact_report(text)
+    assert n == 3 and lines == [3, 4]
+    assert out.splitlines()[1] == 'h = f"Bearer {self._key}"'
+    assert KEY not in out and "ghp_" not in out
+
+
+def test_redact_report_does_not_double_count_overlapping_matches(monkeypatch):
+    monkeypatch.setenv("OPENROUTER_API_KEY", KEY)
+    out, n, lines = common.redact_report(f"Authorization: Bearer {KEY}\n")
+    assert (n, lines) == (1, [1]) and KEY not in out
+
+
+def test_render_without_masking_has_no_note(fake_env):
+    text = collect.render(build())
+    assert "마스킹 안내" not in text
+
+
+def test_render_adds_masking_note_with_count_and_lines(fake_env, pr101_dir, monkeypatch):
+    diff = (
+        "diff --git a/t.py b/t.py\nindex 1..2 100644\n--- a/t.py\n+++ b/t.py\n@@ -1 +1,3 @@\n-a\n"
+        '+H = f"Bearer {self._key}"\n+T = "ghp_' + "a" * 24 + '"\n'
+    )
+    with_fixture(pr101_dir, monkeypatch, diff=diff)
+    text = collect.render(build())
+    body, note = text.split("## 마스킹 안내\n")
+    assert 'H = f"Bearer {self._key}"' in body and "ghp_" not in text
+    assert "1곳" in note and "줄 1개" in note
+    line_no = body.split("\n").index('+T = "***"') + 1
+    assert f"- 줄 {line_no}: " in note and '+T = "***"' in note
+    assert "결함으로 지적하지 않는다" in note
+
+
+def test_system_prompt_explains_masking_note():
+    from review import call
+
+    assert "마스킹 안내" in call.INSTRUCTIONS
+
+
+@pytest.mark.parametrize(
+    "secret",
+    [
+        "abc_def.ghi_jkl.mno_pqr_stu",  # 숫자 없이 `_`·`.` 만 있어도 20자 이상이면 비밀 모양이다
+        "abcdefghijklmnopqrstuvwxyz",
+        "a.b.c.d.e.f.g.h.i.j.k.l",
+        "selfish.openrouter_api_key_value",  # `self.` 로 시작하는 척하는 값
+    ],
+)
+def test_redact_masks_long_bearer_tokens_even_without_digits(secret, monkeypatch):
+    monkeypatch.delenv("OPENROUTER_API_KEY", raising=False)
+    assert common.redact(f"Authorization: Bearer {secret}") == "Authorization: ***"
+
+
+def test_redact_report_lines_are_in_masked_text_even_for_multiline_matches(monkeypatch):
+    multi = "line1\nline2"
+    monkeypatch.setenv("OPENROUTER_API_KEY", multi)
+    text = f"a\nb\nk = {multi} end\nc\nBearer {'x' * 24}\n"
+    out, n, lines = common.redact_report(text)
+    assert n == 2 and lines == [3, 5]
+    rows = out.split("\n")
+    assert rows[2] == "k = *** end" and rows[4] == "***"
+    note = collect.mask_note(out, n, lines)
+    assert "- 줄 3: k = *** end" in note and "- 줄 5: ***" in note
+    assert "line1" not in note and "x" * 24 not in note
+
+
+def test_mask_note_does_not_index_past_the_end_and_never_leaks(monkeypatch):
+    out = "one\ntwo"
+    note = collect.mask_note(out, 1, [99])
+    assert "줄 99" not in note and "목록에 없는 줄" in note
+
+
+def test_mask_note_lists_every_masked_line_number_beyond_the_snippet_cap(monkeypatch):
+    monkeypatch.delenv("OPENROUTER_API_KEY", raising=False)
+    rows = [f"row{i} Bearer {'q' * 24}" if i % 2 else f"row{i} plain" for i in range(1, 51)]
+    out, n, lines = common.redact_report("\n".join(rows))
+    assert n == 25 and len(lines) == 25 and lines == list(range(1, 50, 2))
+    note = collect.mask_note(out, n, lines)
+    assert note.count("- 줄 ") == collect.NOTE_MAX_LINES  # 발췌는 상한까지만
+    tail = note.split("줄 번호만(")[1]
+    assert tail.startswith("5줄): ") and tail.split(": ")[1].strip() == ", ".join(map(str, lines[collect.NOTE_MAX_LINES :]))
+    listed = {int(x) for x in __import__("re").findall(r"- 줄 (\d+):", note)} | {int(x) for x in tail.split(": ")[1].split(", ")}
+    assert listed == set(lines)  # 25줄 전부 나온다
+    assert "q" * 24 not in note

@@ -3,7 +3,7 @@
     OPENROUTER_API_KEY=... scripts/review_pr.sh <PR> [--repo OWNER/REPO] [--no-post] [--out DIR] [--cost-log FILE]
 
     - 키는 환경변수 `OPENROUTER_API_KEY` 로만 받는다. 인자·파일로 받는 길이 없다.
-    - 표준출력·표준오류는 전부 `redact()` 를 거친다(키 값, `sk-…`, `Bearer …`, GitHub 토큰). 하위 도구의 오류 문장까지 포함한다.
+    - 표준출력·표준오류는 전부 `redact()` 를 거친다(키 값, `sk-…`, 긴 `Bearer <토큰>`, GitHub 토큰). 하위 도구의 오류 문장까지 포함한다.
     - 결과 JSON(리뷰 + 토큰 + 비용)은 `--out`(기본 `out/review/`, .gitignore)에 `pr-<N>.json` 으로 남기고, 비용 기록은 `out/review-cost.jsonl`.
     - `--no-post` 는 PR 에 아무것도 쓰지 않고 결과만 출력한다.
 종료 코드: 0 성공, 1 실패(메시지는 `run:` 으로 시작), 2 인자 오류.
