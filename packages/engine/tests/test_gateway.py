@@ -322,18 +322,48 @@ def test_gateway_key_is_not_referenced_outside_the_core_packages():
 
 def test_gateway_redact_masks_key_shaped_strings_and_exact_secrets():
     assert redact(f"a {KEY} b") == "a *** b"
-    assert redact("Authorization: Bearer abc.def-123") == "Authorization: ***"
+    assert redact("Authorization: Bearer abcdefghijklmnopqrstuvwxyz0123456789") == "Authorization: ***"
     assert redact("token ghp_" + "a" * 20) == "token ***"
     assert redact("hunter2hunter2", ("hunter2hunter2",)) == "***"
     assert redact("plain text") == "plain text"
 
 
-def test_gateway_redact_patterns_match_review_bot():
-    """The review bot's patterns (tools/review/common.py) are the reference; this fails if the two lists drift."""
-    bot = (ROOT / "tools" / "review" / "common.py").read_text(encoding="utf-8")
-    ours = (ROOT / "packages" / "engine" / "src" / "kinetra_engine" / "gateway" / "redact.py").read_text(encoding="utf-8")
-    pat = re.compile(r're\.compile\((r"(?:[^"\\\n]|\\.)*")')
-    assert len(pat.findall(bot)) == 4 and pat.findall(bot) == pat.findall(ours)
+def _load_review_common():
+    import importlib.util
+
+    spec = importlib.util.spec_from_file_location("review_common_for_drift_test", ROOT / "tools" / "review" / "common.py")
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod
+
+
+def test_gateway_redact_matches_review_bot(monkeypatch):
+    """The review bot's rules (tools/review/common.py) are the reference: same patterns, same exception, same output on samples."""
+    import importlib
+
+    ours = importlib.import_module("kinetra_engine.gateway.redact")  # the module (the package re-exports the function under the same name)
+
+    bot = _load_review_common()
+    assert [(p.pattern, p.flags) for p in ours._SECRET_PATTERNS] == [(p.pattern, p.flags) for p in bot._SECRET_PATTERNS]
+    assert (ours._ATTR_ACCESS.pattern, ours.BEARER_MIN) == (bot._ATTR_ACCESS.pattern, bot.BEARER_MIN)
+    monkeypatch.delenv("OPENROUTER_API_KEY", raising=False)
+    samples = [
+        "Authorization: Bearer abcdefghijklmnopqrstuvwxyz0123456789",
+        f"Authorization: Bearer {KEY}",
+        "headers['Authorization'] = f'Bearer {self._key}'",
+        "Bearer self._openrouter_api_key",
+        "Bearer short",
+        "the bearer bracket holds",
+        "Bearer\tabcdefghijklmnopqrstuvwxyz",
+        "Bearer os.environ.get_value_long_name_here_x",
+        "sk-abcdefgh12345 and disk-brake-rotor and task-0123456789",
+        "token ghp_" + "a" * 20 + " github_pat_" + "B" * 22,
+        "plain text",
+    ]
+    for s in samples:
+        assert ours.redact(s) == bot.redact(s), s
+    assert ours.redact("Bearer self._key") == "Bearer self._key"  # a source expression is not a secret
+    assert "***" in ours.redact("Bearer abcdefghijklmnopqrstuvwxyz0123456789")
 
 
 @pytest.mark.parametrize("url", ["http://openrouter.ai/api/v1", "ftp://x", "https://", "openrouter.ai", "http://evil.example"])
@@ -371,11 +401,11 @@ def test_gateway_reply_text_is_not_pattern_masked(tmp_path):
 
 
 def test_gateway_error_text_is_pattern_masked(tmp_path):
-    echo = {"error": {"message": "rejected sk-someotherkey1234 and Bearer abc.def"}}
+    echo = {"error": {"message": "rejected sk-someotherkey1234 and Bearer abcdefghijklmnopqrstuvwxyz.0123"}}
     gw, _ = make(tmp_path, Fake(HttpResponse(401, json.dumps(echo).encode())))
     with pytest.raises(UpstreamError) as e:
         gw.chat("p1", MSG)
-    assert "sk-someotherkey1234" not in str(e.value) and "abc.def" not in str(e.value)
+    assert "sk-someotherkey1234" not in str(e.value) and "abcdefghijklmnopqrstuvwxyz" not in str(e.value)
 
 
 def test_gateway_ledger_masks_exact_key_before_serialising(tmp_path):
