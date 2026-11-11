@@ -21,6 +21,7 @@ from .bodies import (
     load_bodies,
     load_body,
 )
+from .canonical import CanonicalError, canonical_json, definition_hash, project_hash
 from .collision import CollisionProxy, FilledVoid, ProxyDerivation, ProxyGeom
 from .commands import (
     AddActuator,
@@ -91,6 +92,21 @@ from .material_catalog import CatalogEntry, MaterialCatalog, load_material_catal
 from .partdef import ParamDef, PartDef, SnapPoint, SpecDef
 from .pbr import PbrColor, PbrScalar, PbrSlots
 from .project import Project
+from .projectfile import (
+    FORMAT as PROJECT_FILE_FORMAT,
+    PROJECT_FILE_SUFFIX,
+    VERSION as PROJECT_FILE_VERSION,
+    DefinitionHash,
+    ProjectFile,
+    ProjectFileError,
+    ProjectFileErrorCode,
+    dump_project,
+    export_json,
+    open_project,
+    parse_project,
+    project_file,
+    save_project,
+)
 from .refs import Ref, RefError, RefKind
 from .provenance import BADGE_LABEL_KO, Badge, Provenance, Quantity, Source
 from .shape import Box, Cylinder, Shape, ShapeComponent, Sphere
@@ -102,6 +118,9 @@ __all__ = [
     "BODY_IDS",
     "COORDINATE_FRAME",
     "PLANET_CONSTANT_NAMES",
+    "PROJECT_FILE_FORMAT",
+    "PROJECT_FILE_SUFFIX",
+    "PROJECT_FILE_VERSION",
     "QUATERNION_COMPONENTS",
     "ActuateEntry",
     "Actuator",
@@ -122,6 +141,7 @@ __all__ = [
     "Body",
     "Box",
     "BreakThreshold",
+    "CanonicalError",
     "CatalogEntry",
     "ClearParameter",
     "CollisionProxy",
@@ -132,6 +152,7 @@ __all__ = [
     "Confidence",
     "ControlSchedule",
     "Cylinder",
+    "DefinitionHash",
     "Density",
     "Derivation",
     "DerivedInertia",
@@ -173,6 +194,9 @@ __all__ = [
     "Pose",
     "Position",
     "Project",
+    "ProjectFile",
+    "ProjectFileError",
+    "ProjectFileErrorCode",
     "Ref",
     "RefError",
     "RefKind",
@@ -217,8 +241,17 @@ __all__ = [
     "WorldPosition",
     "YieldStrength",
     "apply_command",
+    "canonical_json",
     "check_world_references",
+    "definition_hash",
+    "dump_project",
+    "export_json",
     "load_bodies",
     "load_body",
     "load_material_catalog",
+    "open_project",
+    "parse_project",
+    "project_file",
+    "project_hash",
+    "save_project",
 ]

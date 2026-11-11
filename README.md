@@ -18,7 +18,7 @@ This is a fresh start. The previous product (hackathon era) is preserved at the 
 | Path | Purpose |
 |---|---|
 | `apps/studio` | Studio web client |
-| `packages/core` | Engine-independent Project model and command layer (`Material`, `PartDef`, `World`, assumption table, `Project`, `Command` and `apply_command`, value badges: [`docs/architecture/project-model.md`](docs/architecture/project-model.md)) |
+| `packages/core` | Engine-independent Project model and command layer (`Material`, `PartDef`, `World`, assumption table, `Project`, `Command` and `apply_command`, project file save/open and definition hashes, value badges: [`docs/architecture/project-model.md`](docs/architecture/project-model.md)) |
 | `packages/engine` | Physics engine adapters; `kinetra_engine.gateway`: the LLM gateway (key custody, per-project call budget, cost ledger); `kinetra_engine.stt`: local Korean dictation |
 | `packages/judge` | Necessary-condition screen, search, Monte-Carlo verdicts |
 | `packages/ui` | Design-system tokens and components |
