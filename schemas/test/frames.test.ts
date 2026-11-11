@@ -63,9 +63,8 @@ test("run_started carries all eight platform tag components, and run_ended pairs
   assert.ok(ended);
   const components: (keyof PlatformTag)[] = ["os", "cpu", "image_digest", "engine", "runtime", "core_build", "compute", "threads"];
   assert.deepEqual(Object.keys(started.platform), components);
-  assert.equal(ended.end.reason, "completed");
-  if (ended.end.reason === "failed") assert.fail("a completed run");
-  assert.deepEqual(ended.end.trajectory.platform, started.platform); // narrowed by `reason`: the trajectory is there
+  assert.equal(ended.end.reason, "completed"); // narrows `end` to RunCompleted: the trajectory is there
+  assert.deepEqual(ended.end.trajectory.platform, started.platform);
   // @ts-expect-error a trajectory is the hash and its tag; the hash alone is not a TrajectoryEvidence
   const bare: TrajectoryEvidence = { hash: ended.end.trajectory.hash };
   // @ts-expect-error a completed run requires its trajectory
@@ -122,7 +121,7 @@ test("the binary frame reads with the documented layout; the quaternion is x, y,
   const json = messages.find((m): m is Frame => m.type === "frame");
   assert.ok(json);
   for (const [i, p] of frame.poses.entries()) {
-    const q = json.poses[i];
+    const q: BodyPose | undefined = json.poses[i];
     assert.ok(q);
     assert.ok(Math.abs(p.position.z - q.position.z) < 1e-6);
   }
