@@ -1,0 +1,1676 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "The whole document at `revision`, of the document life `epoch`.",
+  "properties": {
+    "type": {
+      "const": "snapshot",
+      "title": "Type",
+      "type": "string"
+    },
+    "project_id": {
+      "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+      "title": "Project Id",
+      "type": "string"
+    },
+    "epoch": {
+      "minLength": 1,
+      "title": "Epoch",
+      "type": "string"
+    },
+    "revision": {
+      "minimum": 0,
+      "title": "Revision",
+      "type": "integer"
+    },
+    "verdict": {
+      "$ref": "#/$defs/VerdictState"
+    },
+    "project": {
+      "$ref": "#/$defs/Project"
+    }
+  },
+  "required": [
+    "type",
+    "project_id",
+    "epoch",
+    "revision",
+    "verdict",
+    "project"
+  ],
+  "title": "Snapshot",
+  "type": "object",
+  "$defs": {
+    "ActuateEntry": {
+      "additionalProperties": false,
+      "description": "Command `command` on `actuator` during `[start, end)` seconds of simulated time.\n\n`command` is the fraction of the actuator's full command, in [-1, 1] for a motor (sign is direction) and\n[0, 1] for a thruster. What full command means physically comes from the part (B-03b, B-03c, X-01b, X-01c).\nOne badge and source cover the entry. `id` names the entry inside the schedule (unique there): commands\nthat edit an entry name it by id, never by position, so a reordered or partly accepted batch cannot change\na different entry than the one meant.",
+      "properties": {
+        "badge": {
+          "$ref": "#/$defs/Badge"
+        },
+        "source": {
+          "$ref": "#/$defs/Source"
+        },
+        "type": {
+          "const": "actuate",
+          "title": "Type",
+          "type": "string"
+        },
+        "id": {
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "actuator": {
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+          "title": "Actuator",
+          "type": "string"
+        },
+        "start": {
+          "minimum": 0,
+          "title": "Start",
+          "type": "number"
+        },
+        "end": {
+          "minimum": 0,
+          "title": "End",
+          "type": "number"
+        },
+        "command": {
+          "maximum": 1,
+          "minimum": -1,
+          "title": "Command",
+          "type": "number"
+        }
+      },
+      "required": [
+        "badge",
+        "source",
+        "type",
+        "id",
+        "actuator",
+        "start",
+        "end",
+        "command"
+      ],
+      "title": "ActuateEntry",
+      "type": "object"
+    },
+    "Actuator": {
+      "additionalProperties": false,
+      "description": "Something on `instance` that a command drives. A motor drives one joint (`joint`); a thruster has none.",
+      "properties": {
+        "id": {
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "$ref": "#/$defs/ActuatorKind"
+        },
+        "instance": {
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+          "title": "Instance",
+          "type": "string"
+        },
+        "joint": {
+          "anyOf": [
+            {
+              "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Joint"
+        }
+      },
+      "required": [
+        "id",
+        "kind",
+        "instance"
+      ],
+      "title": "Actuator",
+      "type": "object"
+    },
+    "ActuatorKind": {
+      "enum": [
+        "motor",
+        "thruster"
+      ],
+      "title": "ActuatorKind",
+      "type": "string"
+    },
+    "Assumption": {
+      "additionalProperties": false,
+      "description": "One assumption of the verdict, as the human-review panel shows it.",
+      "properties": {
+        "key": {
+          "description": "Stable machine key, e.g. 'vehicle_mass'. Verdict sensitivities cite it.",
+          "pattern": "^[a-z][a-z0-9_]{0,63}$",
+          "title": "Key",
+          "type": "string"
+        },
+        "label": {
+          "description": "Name shown in the panel.",
+          "maxLength": 100,
+          "minLength": 1,
+          "title": "Label",
+          "type": "string"
+        },
+        "value": {
+          "$ref": "#/$defs/Quantity"
+        },
+        "distribution": {
+          "discriminator": {
+            "mapping": {
+              "fixed": "#/$defs/FixedDistribution",
+              "normal": "#/$defs/NormalDistribution",
+              "uniform": "#/$defs/UniformDistribution"
+            },
+            "propertyName": "kind"
+          },
+          "oneOf": [
+            {
+              "$ref": "#/$defs/FixedDistribution"
+            },
+            {
+              "$ref": "#/$defs/UniformDistribution"
+            },
+            {
+              "$ref": "#/$defs/NormalDistribution"
+            }
+          ],
+          "title": "Distribution"
+        },
+        "confidence": {
+          "$ref": "#/$defs/Confidence"
+        },
+        "editable": {
+          "default": true,
+          "title": "Editable",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "key",
+        "label",
+        "value",
+        "confidence"
+      ],
+      "title": "Assumption",
+      "type": "object"
+    },
+    "AssumptionTable": {
+      "additionalProperties": false,
+      "properties": {
+        "assumptions": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/Assumption"
+          },
+          "title": "Assumptions",
+          "type": "array"
+        }
+      },
+      "title": "AssumptionTable",
+      "type": "object"
+    },
+    "AxisExpr": {
+      "additionalProperties": false,
+      "description": "A length in metres: `offset + sum(factor * param)`. A snap point coordinate in the part's local frame, or a\ndimension of a shape component (`shape.py`). Every `param` is a length parameter of the part.",
+      "properties": {
+        "offset": {
+          "title": "Offset",
+          "type": "number"
+        },
+        "terms": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/ParamTerm"
+          },
+          "title": "Terms",
+          "type": "array"
+        }
+      },
+      "required": [
+        "offset"
+      ],
+      "title": "AxisExpr",
+      "type": "object"
+    },
+    "Badge": {
+      "enum": [
+        "sim",
+        "cite",
+        "default",
+        "declared",
+        "estimate"
+      ],
+      "title": "Badge",
+      "type": "string"
+    },
+    "Box": {
+      "additionalProperties": false,
+      "description": "Rectangular block. `size_*` are full extents [m] along the component's local x, y, z.",
+      "properties": {
+        "kind": {
+          "const": "box",
+          "title": "Kind",
+          "type": "string"
+        },
+        "size_x": {
+          "$ref": "#/$defs/AxisExpr"
+        },
+        "size_y": {
+          "$ref": "#/$defs/AxisExpr"
+        },
+        "size_z": {
+          "$ref": "#/$defs/AxisExpr"
+        }
+      },
+      "required": [
+        "kind",
+        "size_x",
+        "size_y",
+        "size_z"
+      ],
+      "title": "Box",
+      "type": "object"
+    },
+    "BreakThreshold": {
+      "additionalProperties": false,
+      "description": "Joint load [N] above which the joint releases. A simplified model, not FEM (plan 4.6).",
+      "properties": {
+        "badge": {
+          "$ref": "#/$defs/Badge"
+        },
+        "source": {
+          "$ref": "#/$defs/Source"
+        },
+        "value": {
+          "exclusiveMinimum": 0,
+          "title": "Value",
+          "type": "number"
+        },
+        "unit": {
+          "const": "N",
+          "title": "Unit",
+          "type": "string"
+        }
+      },
+      "required": [
+        "badge",
+        "source",
+        "value",
+        "unit"
+      ],
+      "title": "BreakThreshold",
+      "type": "object"
+    },
+    "Confidence": {
+      "enum": [
+        "low",
+        "med",
+        "high"
+      ],
+      "title": "Confidence",
+      "type": "string"
+    },
+    "ControlSchedule": {
+      "additionalProperties": false,
+      "description": "The time-axis control program. Entries are kept in the order given; time order is not required. Entry ids\nare unique inside the schedule.",
+      "properties": {
+        "entries": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/ActuateEntry"
+          },
+          "title": "Entries",
+          "type": "array"
+        }
+      },
+      "title": "ControlSchedule",
+      "type": "object"
+    },
+    "Cylinder": {
+      "additionalProperties": false,
+      "description": "Solid circular cylinder. `radius` and `length` [m]; the axis is the component's local z.",
+      "properties": {
+        "kind": {
+          "const": "cylinder",
+          "title": "Kind",
+          "type": "string"
+        },
+        "radius": {
+          "$ref": "#/$defs/AxisExpr"
+        },
+        "length": {
+          "$ref": "#/$defs/AxisExpr"
+        }
+      },
+      "required": [
+        "kind",
+        "radius",
+        "length"
+      ],
+      "title": "Cylinder",
+      "type": "object"
+    },
+    "Density": {
+      "additionalProperties": false,
+      "properties": {
+        "badge": {
+          "$ref": "#/$defs/Badge"
+        },
+        "source": {
+          "$ref": "#/$defs/Source"
+        },
+        "value": {
+          "exclusiveMinimum": 0,
+          "title": "Value",
+          "type": "number"
+        },
+        "unit": {
+          "const": "kg/m^3",
+          "title": "Unit",
+          "type": "string"
+        }
+      },
+      "required": [
+        "badge",
+        "source",
+        "value",
+        "unit"
+      ],
+      "title": "Density",
+      "type": "object"
+    },
+    "DesignSpec": {
+      "additionalProperties": false,
+      "properties": {
+        "materials": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/Material"
+          },
+          "title": "Materials",
+          "type": "array"
+        },
+        "parts": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/PartDef"
+          },
+          "title": "Parts",
+          "type": "array"
+        },
+        "instances": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/Instance"
+          },
+          "title": "Instances",
+          "type": "array"
+        },
+        "joints": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/Joint"
+          },
+          "title": "Joints",
+          "type": "array"
+        },
+        "actuators": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/Actuator"
+          },
+          "title": "Actuators",
+          "type": "array"
+        },
+        "schedule": {
+          "$ref": "#/$defs/ControlSchedule",
+          "default": {
+            "entries": []
+          }
+        }
+      },
+      "title": "DesignSpec",
+      "type": "object"
+    },
+    "ElasticModulus": {
+      "additionalProperties": false,
+      "properties": {
+        "badge": {
+          "$ref": "#/$defs/Badge"
+        },
+        "source": {
+          "$ref": "#/$defs/Source"
+        },
+        "value": {
+          "exclusiveMinimum": 0,
+          "title": "Value",
+          "type": "number"
+        },
+        "unit": {
+          "const": "Pa",
+          "title": "Unit",
+          "type": "string"
+        }
+      },
+      "required": [
+        "badge",
+        "source",
+        "value",
+        "unit"
+      ],
+      "title": "ElasticModulus",
+      "type": "object"
+    },
+    "FixedDistribution": {
+      "additionalProperties": false,
+      "description": "No spread: Monte-Carlo uses the nominal.",
+      "properties": {
+        "kind": {
+          "const": "fixed",
+          "title": "Kind",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind"
+      ],
+      "title": "FixedDistribution",
+      "type": "object"
+    },
+    "Friction": {
+      "additionalProperties": false,
+      "description": "Dimensionless Coulomb coefficient.",
+      "properties": {
+        "badge": {
+          "$ref": "#/$defs/Badge"
+        },
+        "source": {
+          "$ref": "#/$defs/Source"
+        },
+        "value": {
+          "minimum": 0,
+          "title": "Value",
+          "type": "number"
+        },
+        "unit": {
+          "const": "1",
+          "title": "Unit",
+          "type": "string"
+        }
+      },
+      "required": [
+        "badge",
+        "source",
+        "value",
+        "unit"
+      ],
+      "title": "Friction",
+      "type": "object"
+    },
+    "Incline": {
+      "additionalProperties": false,
+      "description": "Slope angle above the ground in radians, strictly between 0 and pi/2.",
+      "properties": {
+        "badge": {
+          "$ref": "#/$defs/Badge"
+        },
+        "source": {
+          "$ref": "#/$defs/Source"
+        },
+        "value": {
+          "exclusiveMaximum": 1.5707963267948966,
+          "exclusiveMinimum": 0,
+          "title": "Value",
+          "type": "number"
+        },
+        "unit": {
+          "const": "rad",
+          "title": "Unit",
+          "type": "string"
+        }
+      },
+      "required": [
+        "badge",
+        "source",
+        "value",
+        "unit"
+      ],
+      "title": "Incline",
+      "type": "object"
+    },
+    "Instance": {
+      "additionalProperties": false,
+      "description": "One placed part. Parameters not listed take the `PartDef` default. `material` is optional: a part whose\nmass is declared by its own specs needs none; `None` means no material is assigned.",
+      "properties": {
+        "id": {
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "part": {
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+          "title": "Part",
+          "type": "string"
+        },
+        "parameters": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/ParamValue"
+          },
+          "title": "Parameters",
+          "type": "array"
+        },
+        "material": {
+          "anyOf": [
+            {
+              "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Material"
+        },
+        "pose": {
+          "$ref": "#/$defs/Pose"
+        }
+      },
+      "required": [
+        "id",
+        "part",
+        "pose"
+      ],
+      "title": "Instance",
+      "type": "object"
+    },
+    "Joint": {
+      "additionalProperties": false,
+      "description": "A connection between two snap points of two different instances. `a` is the parent side by convention.\n\n`limits` are optional (`None`: unlimited, as a wheel axle) and not allowed on a fixed joint.\n`break_threshold` is optional (`None`: never breaks).",
+      "properties": {
+        "id": {
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "$ref": "#/$defs/JointKind"
+        },
+        "a": {
+          "$ref": "#/$defs/SnapRef"
+        },
+        "b": {
+          "$ref": "#/$defs/SnapRef"
+        },
+        "limits": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/JointLimits"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "break_threshold": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/BreakThreshold"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "id",
+        "kind",
+        "a",
+        "b"
+      ],
+      "title": "Joint",
+      "type": "object"
+    },
+    "JointKind": {
+      "enum": [
+        "fixed",
+        "hinge",
+        "slider"
+      ],
+      "title": "JointKind",
+      "type": "string"
+    },
+    "JointLimits": {
+      "additionalProperties": false,
+      "description": "Travel limits of the joint coordinate: rad for a hinge, m for a slider. `lower < upper`.",
+      "properties": {
+        "lower": {
+          "$ref": "#/$defs/Quantity"
+        },
+        "upper": {
+          "$ref": "#/$defs/Quantity"
+        }
+      },
+      "required": [
+        "lower",
+        "upper"
+      ],
+      "title": "JointLimits",
+      "type": "object"
+    },
+    "Material": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "name": {
+          "maxLength": 100,
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        },
+        "density": {
+          "$ref": "#/$defs/Density"
+        },
+        "yield_strength": {
+          "$ref": "#/$defs/YieldStrength"
+        },
+        "elastic_modulus": {
+          "$ref": "#/$defs/ElasticModulus"
+        },
+        "friction": {
+          "$ref": "#/$defs/Friction"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "density",
+        "yield_strength",
+        "elastic_modulus",
+        "friction"
+      ],
+      "title": "Material",
+      "type": "object"
+    },
+    "NormalDistribution": {
+      "additionalProperties": false,
+      "properties": {
+        "badge": {
+          "$ref": "#/$defs/Badge"
+        },
+        "source": {
+          "$ref": "#/$defs/Source"
+        },
+        "kind": {
+          "const": "normal",
+          "title": "Kind",
+          "type": "string"
+        },
+        "mean": {
+          "title": "Mean",
+          "type": "number"
+        },
+        "std": {
+          "minimum": 0,
+          "title": "Std",
+          "type": "number"
+        },
+        "clip_low": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Clip Low"
+        },
+        "clip_high": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Clip High"
+        }
+      },
+      "required": [
+        "badge",
+        "source",
+        "kind",
+        "mean",
+        "std"
+      ],
+      "title": "NormalDistribution",
+      "type": "object"
+    },
+    "ParamDef": {
+      "additionalProperties": false,
+      "description": "A named parameter of the part with its default and allowed range, all in `unit`.",
+      "properties": {
+        "name": {
+          "pattern": "^[a-z][a-z0-9_]{0,63}$",
+          "title": "Name",
+          "type": "string"
+        },
+        "unit": {
+          "$ref": "#/$defs/Unit"
+        },
+        "default": {
+          "$ref": "#/$defs/Quantity"
+        },
+        "min": {
+          "$ref": "#/$defs/Quantity"
+        },
+        "max": {
+          "$ref": "#/$defs/Quantity"
+        }
+      },
+      "required": [
+        "name",
+        "unit",
+        "default",
+        "min",
+        "max"
+      ],
+      "title": "ParamDef",
+      "type": "object"
+    },
+    "ParamTerm": {
+      "additionalProperties": false,
+      "description": "`factor * <value of parameter param>`. The parameter must be a length.",
+      "properties": {
+        "param": {
+          "pattern": "^[a-z][a-z0-9_]{0,63}$",
+          "title": "Param",
+          "type": "string"
+        },
+        "factor": {
+          "title": "Factor",
+          "type": "number"
+        }
+      },
+      "required": [
+        "param",
+        "factor"
+      ],
+      "title": "ParamTerm",
+      "type": "object"
+    },
+    "ParamValue": {
+      "additionalProperties": false,
+      "description": "The value of one of the part's parameters for this instance. Unit and range are the `ParamDef`'s.",
+      "properties": {
+        "badge": {
+          "$ref": "#/$defs/Badge"
+        },
+        "source": {
+          "$ref": "#/$defs/Source"
+        },
+        "value": {
+          "title": "Value",
+          "type": "number"
+        },
+        "unit": {
+          "$ref": "#/$defs/Unit"
+        },
+        "name": {
+          "pattern": "^[a-z][a-z0-9_]{0,63}$",
+          "title": "Name",
+          "type": "string"
+        }
+      },
+      "required": [
+        "badge",
+        "source",
+        "value",
+        "unit",
+        "name"
+      ],
+      "title": "ParamValue",
+      "type": "object"
+    },
+    "PartDef": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "name": {
+          "maxLength": 100,
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        },
+        "parameters": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/ParamDef"
+          },
+          "title": "Parameters",
+          "type": "array"
+        },
+        "snap_points": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/SnapPoint"
+          },
+          "title": "Snap Points",
+          "type": "array"
+        },
+        "specs": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/SpecDef"
+          },
+          "title": "Specs",
+          "type": "array"
+        },
+        "shape": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Shape"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "mass_parameter": {
+          "anyOf": [
+            {
+              "pattern": "^[a-z][a-z0-9_]{0,63}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Mass Parameter"
+        }
+      },
+      "required": [
+        "id",
+        "name"
+      ],
+      "title": "PartDef",
+      "type": "object"
+    },
+    "Placement": {
+      "additionalProperties": false,
+      "description": "Where a prop stands on the ground: centre `x`, `y` [m] and rotation `yaw` [rad] about +Z (counter-clockwise\nseen from above). One badge and source cover the whole placement.",
+      "properties": {
+        "badge": {
+          "$ref": "#/$defs/Badge"
+        },
+        "source": {
+          "$ref": "#/$defs/Source"
+        },
+        "x": {
+          "title": "X",
+          "type": "number"
+        },
+        "y": {
+          "title": "Y",
+          "type": "number"
+        },
+        "yaw": {
+          "title": "Yaw",
+          "type": "number"
+        }
+      },
+      "required": [
+        "badge",
+        "source",
+        "x",
+        "y",
+        "yaw"
+      ],
+      "title": "Placement",
+      "type": "object"
+    },
+    "Pose": {
+      "additionalProperties": false,
+      "description": "World pose of an instance's part frame. One badge and source cover the whole pose.",
+      "properties": {
+        "badge": {
+          "$ref": "#/$defs/Badge"
+        },
+        "source": {
+          "$ref": "#/$defs/Source"
+        },
+        "position": {
+          "$ref": "#/$defs/WorldPosition"
+        },
+        "orientation": {
+          "$ref": "#/$defs/Quaternion"
+        }
+      },
+      "required": [
+        "badge",
+        "source",
+        "position",
+        "orientation"
+      ],
+      "title": "Pose",
+      "type": "object"
+    },
+    "Position": {
+      "additionalProperties": false,
+      "properties": {
+        "x": {
+          "$ref": "#/$defs/AxisExpr"
+        },
+        "y": {
+          "$ref": "#/$defs/AxisExpr"
+        },
+        "z": {
+          "$ref": "#/$defs/AxisExpr"
+        }
+      },
+      "required": [
+        "x",
+        "y",
+        "z"
+      ],
+      "title": "Position",
+      "type": "object"
+    },
+    "Project": {
+      "additionalProperties": false,
+      "properties": {
+        "design": {
+          "$ref": "#/$defs/DesignSpec",
+          "default": {
+            "materials": [],
+            "parts": [],
+            "instances": [],
+            "joints": [],
+            "actuators": [],
+            "schedule": {
+              "entries": []
+            }
+          }
+        },
+        "world": {
+          "$ref": "#/$defs/World"
+        },
+        "assumptions": {
+          "$ref": "#/$defs/AssumptionTable",
+          "default": {
+            "assumptions": []
+          }
+        }
+      },
+      "required": [
+        "world"
+      ],
+      "title": "Project",
+      "type": "object"
+    },
+    "PropSize": {
+      "additionalProperties": false,
+      "description": "A prop dimension in metres, > 0.",
+      "properties": {
+        "badge": {
+          "$ref": "#/$defs/Badge"
+        },
+        "source": {
+          "$ref": "#/$defs/Source"
+        },
+        "value": {
+          "exclusiveMinimum": 0,
+          "title": "Value",
+          "type": "number"
+        },
+        "unit": {
+          "const": "m",
+          "title": "Unit",
+          "type": "string"
+        }
+      },
+      "required": [
+        "badge",
+        "source",
+        "value",
+        "unit"
+      ],
+      "title": "PropSize",
+      "type": "object"
+    },
+    "Quantity": {
+      "additionalProperties": false,
+      "description": "One physical number with its unit, badge and source.",
+      "properties": {
+        "badge": {
+          "$ref": "#/$defs/Badge"
+        },
+        "source": {
+          "$ref": "#/$defs/Source"
+        },
+        "value": {
+          "title": "Value",
+          "type": "number"
+        },
+        "unit": {
+          "$ref": "#/$defs/Unit"
+        }
+      },
+      "required": [
+        "badge",
+        "source",
+        "value",
+        "unit"
+      ],
+      "title": "Quantity",
+      "type": "object"
+    },
+    "Quaternion": {
+      "additionalProperties": false,
+      "description": "Unit quaternion with named components (`conventions.py`).",
+      "properties": {
+        "x": {
+          "title": "X",
+          "type": "number"
+        },
+        "y": {
+          "title": "Y",
+          "type": "number"
+        },
+        "z": {
+          "title": "Z",
+          "type": "number"
+        },
+        "w": {
+          "title": "W",
+          "type": "number"
+        }
+      },
+      "required": [
+        "x",
+        "y",
+        "z",
+        "w"
+      ],
+      "title": "Quaternion",
+      "type": "object"
+    },
+    "RampProp": {
+      "additionalProperties": false,
+      "description": "Rises along local +x. `length` is the horizontal run.",
+      "properties": {
+        "id": {
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "material": {
+          "anyOf": [
+            {
+              "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "ID of the Material of the prop's surface; None is the planet's ground.",
+          "title": "Material"
+        },
+        "placement": {
+          "$ref": "#/$defs/Placement"
+        },
+        "length": {
+          "$ref": "#/$defs/PropSize"
+        },
+        "width": {
+          "$ref": "#/$defs/PropSize"
+        },
+        "kind": {
+          "const": "ramp",
+          "title": "Kind",
+          "type": "string"
+        },
+        "incline": {
+          "$ref": "#/$defs/Incline"
+        }
+      },
+      "required": [
+        "id",
+        "placement",
+        "length",
+        "width",
+        "kind",
+        "incline"
+      ],
+      "title": "RampProp",
+      "type": "object"
+    },
+    "Shape": {
+      "additionalProperties": false,
+      "description": "The recipe: one or more components. At least one is `add`; ids are unique.\n\nThe offsets and factors inside the expressions are plain numbers; like a snap point's pose, the recipe carries\none badge and source for all of them (who drew these dimensions: `declared`, or `cite` with a drawing, ...).",
+      "properties": {
+        "badge": {
+          "$ref": "#/$defs/Badge"
+        },
+        "source": {
+          "$ref": "#/$defs/Source"
+        },
+        "components": {
+          "items": {
+            "$ref": "#/$defs/ShapeComponent"
+          },
+          "minItems": 1,
+          "title": "Components",
+          "type": "array"
+        }
+      },
+      "required": [
+        "badge",
+        "source",
+        "components"
+      ],
+      "title": "Shape",
+      "type": "object"
+    },
+    "ShapeComponent": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "pattern": "^[a-z][a-z0-9_]{0,63}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "primitive": {
+          "discriminator": {
+            "mapping": {
+              "box": "#/$defs/Box",
+              "cylinder": "#/$defs/Cylinder",
+              "sphere": "#/$defs/Sphere"
+            },
+            "propertyName": "kind"
+          },
+          "oneOf": [
+            {
+              "$ref": "#/$defs/Box"
+            },
+            {
+              "$ref": "#/$defs/Cylinder"
+            },
+            {
+              "$ref": "#/$defs/Sphere"
+            }
+          ],
+          "title": "Primitive"
+        },
+        "operation": {
+          "default": "add",
+          "enum": [
+            "add",
+            "subtract"
+          ],
+          "title": "Operation",
+          "type": "string"
+        },
+        "position": {
+          "$ref": "#/$defs/Position"
+        },
+        "orientation": {
+          "$ref": "#/$defs/Quaternion"
+        }
+      },
+      "required": [
+        "id",
+        "primitive",
+        "position"
+      ],
+      "title": "ShapeComponent",
+      "type": "object"
+    },
+    "SnapPoint": {
+      "additionalProperties": false,
+      "description": "A place where this part can attach to another. `kind` and `accepts` are compatibility tags (B-04b matches them).\n\n`position` is in metres in the part's local frame and may follow length parameters; `orientation` is the\nlocal frame of the snap point. Badge and source cover the whole pose.",
+      "properties": {
+        "badge": {
+          "$ref": "#/$defs/Badge"
+        },
+        "source": {
+          "$ref": "#/$defs/Source"
+        },
+        "id": {
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "pattern": "^[a-z][a-z0-9_]{0,63}$",
+          "title": "Kind",
+          "type": "string"
+        },
+        "accepts": {
+          "default": [],
+          "items": {
+            "pattern": "^[a-z][a-z0-9_]{0,63}$",
+            "type": "string"
+          },
+          "title": "Accepts",
+          "type": "array"
+        },
+        "position": {
+          "$ref": "#/$defs/Position"
+        },
+        "orientation": {
+          "$ref": "#/$defs/Quaternion"
+        }
+      },
+      "required": [
+        "badge",
+        "source",
+        "id",
+        "kind",
+        "position",
+        "orientation"
+      ],
+      "title": "SnapPoint",
+      "type": "object"
+    },
+    "SnapRef": {
+      "additionalProperties": false,
+      "description": "A snap point of a placed instance.",
+      "properties": {
+        "instance": {
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+          "title": "Instance",
+          "type": "string"
+        },
+        "snap_point": {
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+          "title": "Snap Point",
+          "type": "string"
+        }
+      },
+      "required": [
+        "instance",
+        "snap_point"
+      ],
+      "title": "SnapRef",
+      "type": "object"
+    },
+    "Source": {
+      "additionalProperties": false,
+      "description": "Where a value comes from.\n\n`ref` is what was cited, declared or run: a document, a datasheet, a run id, or the reason a default was chosen\n(for an estimate: the method and its inputs). `locator` is where inside it (table, page, section). `url` is a\nlink when there is one. `license` (SPDX expression over the repo allowlist, `spdx.py`) and `declared_by` / `declared_at` feed the badge popover\n(`ValueBadges`, 인용 and 사용자 선언); `Provenance` allows each only on its own badge.",
+      "properties": {
+        "ref": {
+          "maxLength": 500,
+          "minLength": 1,
+          "title": "Ref",
+          "type": "string"
+        },
+        "locator": {
+          "anyOf": [
+            {
+              "maxLength": 200,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Locator"
+        },
+        "url": {
+          "anyOf": [
+            {
+              "maxLength": 2000,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Url"
+        },
+        "license": {
+          "anyOf": [
+            {
+              "maxLength": 200,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "License"
+        },
+        "declared_by": {
+          "anyOf": [
+            {
+              "maxLength": 200,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Declared By"
+        },
+        "declared_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Declared At"
+        }
+      },
+      "required": [
+        "ref"
+      ],
+      "title": "Source",
+      "type": "object"
+    },
+    "SpecDef": {
+      "additionalProperties": false,
+      "description": "A named specification (사양): no-load speed, rated thrust, capacity ... Name and unit are the part's.",
+      "properties": {
+        "badge": {
+          "$ref": "#/$defs/Badge"
+        },
+        "source": {
+          "$ref": "#/$defs/Source"
+        },
+        "value": {
+          "title": "Value",
+          "type": "number"
+        },
+        "unit": {
+          "$ref": "#/$defs/Unit"
+        },
+        "name": {
+          "pattern": "^[a-z][a-z0-9_]{0,63}$",
+          "title": "Name",
+          "type": "string"
+        }
+      },
+      "required": [
+        "badge",
+        "source",
+        "value",
+        "unit",
+        "name"
+      ],
+      "title": "SpecDef",
+      "type": "object"
+    },
+    "Sphere": {
+      "additionalProperties": false,
+      "description": "Solid sphere. `radius` [m].",
+      "properties": {
+        "kind": {
+          "const": "sphere",
+          "title": "Kind",
+          "type": "string"
+        },
+        "radius": {
+          "$ref": "#/$defs/AxisExpr"
+        }
+      },
+      "required": [
+        "kind",
+        "radius"
+      ],
+      "title": "Sphere",
+      "type": "object"
+    },
+    "StepProp": {
+      "additionalProperties": false,
+      "description": "A box `height` tall (턱).",
+      "properties": {
+        "id": {
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "material": {
+          "anyOf": [
+            {
+              "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "ID of the Material of the prop's surface; None is the planet's ground.",
+          "title": "Material"
+        },
+        "placement": {
+          "$ref": "#/$defs/Placement"
+        },
+        "length": {
+          "$ref": "#/$defs/PropSize"
+        },
+        "width": {
+          "$ref": "#/$defs/PropSize"
+        },
+        "kind": {
+          "const": "step",
+          "title": "Kind",
+          "type": "string"
+        },
+        "height": {
+          "$ref": "#/$defs/PropSize"
+        }
+      },
+      "required": [
+        "id",
+        "placement",
+        "length",
+        "width",
+        "kind",
+        "height"
+      ],
+      "title": "StepProp",
+      "type": "object"
+    },
+    "UniformDistribution": {
+      "additionalProperties": false,
+      "properties": {
+        "badge": {
+          "$ref": "#/$defs/Badge"
+        },
+        "source": {
+          "$ref": "#/$defs/Source"
+        },
+        "kind": {
+          "const": "uniform",
+          "title": "Kind",
+          "type": "string"
+        },
+        "low": {
+          "title": "Low",
+          "type": "number"
+        },
+        "high": {
+          "title": "High",
+          "type": "number"
+        }
+      },
+      "required": [
+        "badge",
+        "source",
+        "kind",
+        "low",
+        "high"
+      ],
+      "title": "UniformDistribution",
+      "type": "object"
+    },
+    "Unit": {
+      "description": "Closed unit vocabulary (SI, written the way the JSON carries it).",
+      "enum": [
+        "1",
+        "m",
+        "m^2",
+        "m^3",
+        "kg",
+        "s",
+        "rad",
+        "m/s",
+        "m/s^2",
+        "rad/s",
+        "N",
+        "N*m",
+        "N/m",
+        "N*s/m",
+        "N*m/rad",
+        "Pa",
+        "kg/m^3",
+        "kg*m^2",
+        "J",
+        "W",
+        "W/m^2"
+      ],
+      "title": "Unit",
+      "type": "string"
+    },
+    "VerdictState": {
+      "enum": [
+        "none",
+        "valid",
+        "invalid"
+      ],
+      "title": "VerdictState",
+      "type": "string"
+    },
+    "World": {
+      "additionalProperties": false,
+      "description": "`planet` is an ID (same pattern as every other ID); `terrain_props` sit on that planet's flat ground.",
+      "properties": {
+        "planet": {
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+          "title": "Planet",
+          "type": "string"
+        },
+        "terrain_props": {
+          "default": [],
+          "items": {
+            "discriminator": {
+              "mapping": {
+                "ramp": "#/$defs/RampProp",
+                "step": "#/$defs/StepProp"
+              },
+              "propertyName": "kind"
+            },
+            "oneOf": [
+              {
+                "$ref": "#/$defs/RampProp"
+              },
+              {
+                "$ref": "#/$defs/StepProp"
+              }
+            ]
+          },
+          "title": "Terrain Props",
+          "type": "array"
+        }
+      },
+      "required": [
+        "planet"
+      ],
+      "title": "World",
+      "type": "object"
+    },
+    "WorldPosition": {
+      "additionalProperties": false,
+      "description": "A position in metres, world frame.",
+      "properties": {
+        "x": {
+          "title": "X",
+          "type": "number"
+        },
+        "y": {
+          "title": "Y",
+          "type": "number"
+        },
+        "z": {
+          "title": "Z",
+          "type": "number"
+        }
+      },
+      "required": [
+        "x",
+        "y",
+        "z"
+      ],
+      "title": "WorldPosition",
+      "type": "object"
+    },
+    "YieldStrength": {
+      "additionalProperties": false,
+      "properties": {
+        "badge": {
+          "$ref": "#/$defs/Badge"
+        },
+        "source": {
+          "$ref": "#/$defs/Source"
+        },
+        "value": {
+          "exclusiveMinimum": 0,
+          "title": "Value",
+          "type": "number"
+        },
+        "unit": {
+          "const": "Pa",
+          "title": "Unit",
+          "type": "string"
+        }
+      },
+      "required": [
+        "badge",
+        "source",
+        "value",
+        "unit"
+      ],
+      "title": "YieldStrength",
+      "type": "object"
+    }
+  }
+}

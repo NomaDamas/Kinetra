@@ -122,7 +122,9 @@ class Derivation(BaseModel):
 
     method: Literal["analytic-primitives"] = "analytic-primitives"
     shape: Provenance
-    material_id: str = Field(pattern=ID_PATTERN)
+    material_id: str | None = Field(default=None, pattern=ID_PATTERN)
+    """The material whose density was used, or None when the part's mass is declared by its `mass_parameter` (B-02c): then
+    `density` is the effective density, the declared mass over the net volume, and no material was read."""
     density: Density
     parameters: tuple[ParameterUse, ...]
     components: tuple[ComponentContribution, ...]

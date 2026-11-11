@@ -626,10 +626,13 @@ def test_apply_a_command_that_sets_what_is_there_is_accepted_and_changes_nothing
     assert done.project == project
 
 
-def test_apply_result_is_not_the_wire_message_name():
+def test_apply_result_is_not_the_wire_message():
+    """`ApplyResult` (project + inverse) stays the applier's value; the wire message `applied` (C-05a) is `Applied`,
+    a different type with a revision, an origin and the changed sections."""
     import kinetra_core
 
-    assert hasattr(kinetra_core, "ApplyResult") and not hasattr(kinetra_core, "Applied")
+    assert kinetra_core.ApplyResult is not kinetra_core.Applied
+    assert "revision" in kinetra_core.Applied.model_fields and "revision" not in kinetra_core.ApplyResult.model_fields
 
 
 def test_project_is_compatible_with_check_world_references(project):

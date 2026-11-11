@@ -1,0 +1,902 @@
+{
+  "format": "kinetra-project",
+  "version": 1,
+  "project": {
+    "design": {
+      "materials": [
+        {
+          "id": "example-material",
+          "name": "example-material",
+          "density": {
+            "badge": "declared",
+            "source": {
+              "ref": "Kinetra schema example: illustrative value, not a measured part",
+              "locator": null,
+              "url": null,
+              "license": null,
+              "declared_by": "kinetra-docs",
+              "declared_at": "2026-11-11T00:00:00Z"
+            },
+            "value": 1000.0,
+            "unit": "kg/m^3"
+          },
+          "yield_strength": {
+            "badge": "declared",
+            "source": {
+              "ref": "Kinetra schema example: illustrative value, not a measured part",
+              "locator": null,
+              "url": null,
+              "license": null,
+              "declared_by": "kinetra-docs",
+              "declared_at": "2026-11-11T00:00:00Z"
+            },
+            "value": 10000000.0,
+            "unit": "Pa"
+          },
+          "elastic_modulus": {
+            "badge": "declared",
+            "source": {
+              "ref": "Kinetra schema example: illustrative value, not a measured part",
+              "locator": null,
+              "url": null,
+              "license": null,
+              "declared_by": "kinetra-docs",
+              "declared_at": "2026-11-11T00:00:00Z"
+            },
+            "value": 1000000000.0,
+            "unit": "Pa"
+          },
+          "friction": {
+            "badge": "default",
+            "source": {
+              "ref": "Kinetra schema example: illustrative default",
+              "locator": null,
+              "url": null,
+              "license": null,
+              "declared_by": null,
+              "declared_at": null
+            },
+            "value": 0.5,
+            "unit": "1"
+          }
+        }
+      ],
+      "parts": [
+        {
+          "id": "chassis",
+          "name": "Chassis",
+          "parameters": [
+            {
+              "name": "length",
+              "unit": "m",
+              "default": {
+                "badge": "declared",
+                "source": {
+                  "ref": "Kinetra schema example: illustrative value, not a measured part",
+                  "locator": null,
+                  "url": null,
+                  "license": null,
+                  "declared_by": "kinetra-docs",
+                  "declared_at": "2026-11-11T00:00:00Z"
+                },
+                "value": 0.4,
+                "unit": "m"
+              },
+              "min": {
+                "badge": "declared",
+                "source": {
+                  "ref": "Kinetra schema example: illustrative value, not a measured part",
+                  "locator": null,
+                  "url": null,
+                  "license": null,
+                  "declared_by": "kinetra-docs",
+                  "declared_at": "2026-11-11T00:00:00Z"
+                },
+                "value": 0.2,
+                "unit": "m"
+              },
+              "max": {
+                "badge": "declared",
+                "source": {
+                  "ref": "Kinetra schema example: illustrative value, not a measured part",
+                  "locator": null,
+                  "url": null,
+                  "license": null,
+                  "declared_by": "kinetra-docs",
+                  "declared_at": "2026-11-11T00:00:00Z"
+                },
+                "value": 0.8,
+                "unit": "m"
+              }
+            }
+          ],
+          "snap_points": [
+            {
+              "badge": "declared",
+              "source": {
+                "ref": "Kinetra schema example: illustrative value, not a measured part",
+                "locator": null,
+                "url": null,
+                "license": null,
+                "declared_by": "kinetra-docs",
+                "declared_at": "2026-11-11T00:00:00Z"
+              },
+              "id": "motor-l",
+              "kind": "motor_mount",
+              "accepts": [
+                "motor_mount"
+              ],
+              "position": {
+                "x": {
+                  "offset": -0.1,
+                  "terms": []
+                },
+                "y": {
+                  "offset": 0.1,
+                  "terms": []
+                },
+                "z": {
+                  "offset": 0.0,
+                  "terms": []
+                }
+              },
+              "orientation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+              }
+            },
+            {
+              "badge": "declared",
+              "source": {
+                "ref": "Kinetra schema example: illustrative value, not a measured part",
+                "locator": null,
+                "url": null,
+                "license": null,
+                "declared_by": "kinetra-docs",
+                "declared_at": "2026-11-11T00:00:00Z"
+              },
+              "id": "motor-r",
+              "kind": "motor_mount",
+              "accepts": [
+                "motor_mount"
+              ],
+              "position": {
+                "x": {
+                  "offset": -0.1,
+                  "terms": []
+                },
+                "y": {
+                  "offset": -0.1,
+                  "terms": []
+                },
+                "z": {
+                  "offset": 0.0,
+                  "terms": []
+                }
+              },
+              "orientation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+              }
+            },
+            {
+              "badge": "declared",
+              "source": {
+                "ref": "Kinetra schema example: illustrative value, not a measured part",
+                "locator": null,
+                "url": null,
+                "license": null,
+                "declared_by": "kinetra-docs",
+                "declared_at": "2026-11-11T00:00:00Z"
+              },
+              "id": "axle-fl",
+              "kind": "axle_mount",
+              "accepts": [
+                "shaft"
+              ],
+              "position": {
+                "x": {
+                  "offset": 0.1,
+                  "terms": []
+                },
+                "y": {
+                  "offset": 0.1,
+                  "terms": []
+                },
+                "z": {
+                  "offset": 0.0,
+                  "terms": []
+                }
+              },
+              "orientation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+              }
+            },
+            {
+              "badge": "declared",
+              "source": {
+                "ref": "Kinetra schema example: illustrative value, not a measured part",
+                "locator": null,
+                "url": null,
+                "license": null,
+                "declared_by": "kinetra-docs",
+                "declared_at": "2026-11-11T00:00:00Z"
+              },
+              "id": "axle-fr",
+              "kind": "axle_mount",
+              "accepts": [
+                "shaft"
+              ],
+              "position": {
+                "x": {
+                  "offset": 0.1,
+                  "terms": []
+                },
+                "y": {
+                  "offset": -0.1,
+                  "terms": []
+                },
+                "z": {
+                  "offset": 0.0,
+                  "terms": []
+                }
+              },
+              "orientation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+              }
+            }
+          ],
+          "specs": [],
+          "shape": null,
+          "mass_parameter": null
+        },
+        {
+          "id": "motor",
+          "name": "Motor",
+          "parameters": [],
+          "snap_points": [
+            {
+              "badge": "declared",
+              "source": {
+                "ref": "Kinetra schema example: illustrative value, not a measured part",
+                "locator": null,
+                "url": null,
+                "license": null,
+                "declared_by": "kinetra-docs",
+                "declared_at": "2026-11-11T00:00:00Z"
+              },
+              "id": "mount",
+              "kind": "motor_mount",
+              "accepts": [
+                "motor_mount"
+              ],
+              "position": {
+                "x": {
+                  "offset": 0.0,
+                  "terms": []
+                },
+                "y": {
+                  "offset": 0.0,
+                  "terms": []
+                },
+                "z": {
+                  "offset": 0.0,
+                  "terms": []
+                }
+              },
+              "orientation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+              }
+            },
+            {
+              "badge": "declared",
+              "source": {
+                "ref": "Kinetra schema example: illustrative value, not a measured part",
+                "locator": null,
+                "url": null,
+                "license": null,
+                "declared_by": "kinetra-docs",
+                "declared_at": "2026-11-11T00:00:00Z"
+              },
+              "id": "shaft",
+              "kind": "shaft",
+              "accepts": [
+                "shaft"
+              ],
+              "position": {
+                "x": {
+                  "offset": 0.0,
+                  "terms": []
+                },
+                "y": {
+                  "offset": 0.03,
+                  "terms": []
+                },
+                "z": {
+                  "offset": 0.0,
+                  "terms": []
+                }
+              },
+              "orientation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+              }
+            }
+          ],
+          "specs": [],
+          "shape": null,
+          "mass_parameter": null
+        },
+        {
+          "id": "wheel",
+          "name": "Wheel",
+          "parameters": [
+            {
+              "name": "diameter",
+              "unit": "m",
+              "default": {
+                "badge": "declared",
+                "source": {
+                  "ref": "Kinetra schema example: illustrative value, not a measured part",
+                  "locator": null,
+                  "url": null,
+                  "license": null,
+                  "declared_by": "kinetra-docs",
+                  "declared_at": "2026-11-11T00:00:00Z"
+                },
+                "value": 0.1,
+                "unit": "m"
+              },
+              "min": {
+                "badge": "declared",
+                "source": {
+                  "ref": "Kinetra schema example: illustrative value, not a measured part",
+                  "locator": null,
+                  "url": null,
+                  "license": null,
+                  "declared_by": "kinetra-docs",
+                  "declared_at": "2026-11-11T00:00:00Z"
+                },
+                "value": 0.05,
+                "unit": "m"
+              },
+              "max": {
+                "badge": "declared",
+                "source": {
+                  "ref": "Kinetra schema example: illustrative value, not a measured part",
+                  "locator": null,
+                  "url": null,
+                  "license": null,
+                  "declared_by": "kinetra-docs",
+                  "declared_at": "2026-11-11T00:00:00Z"
+                },
+                "value": 0.2,
+                "unit": "m"
+              }
+            }
+          ],
+          "snap_points": [
+            {
+              "badge": "declared",
+              "source": {
+                "ref": "Kinetra schema example: illustrative value, not a measured part",
+                "locator": null,
+                "url": null,
+                "license": null,
+                "declared_by": "kinetra-docs",
+                "declared_at": "2026-11-11T00:00:00Z"
+              },
+              "id": "hub",
+              "kind": "shaft",
+              "accepts": [
+                "shaft",
+                "axle_mount"
+              ],
+              "position": {
+                "x": {
+                  "offset": 0.0,
+                  "terms": []
+                },
+                "y": {
+                  "offset": 0.0,
+                  "terms": []
+                },
+                "z": {
+                  "offset": 0.0,
+                  "terms": []
+                }
+              },
+              "orientation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+              }
+            }
+          ],
+          "specs": [],
+          "shape": null,
+          "mass_parameter": null
+        }
+      ],
+      "instances": [
+        {
+          "id": "chassis-1",
+          "part": "chassis",
+          "parameters": [],
+          "material": "example-material",
+          "pose": {
+            "badge": "declared",
+            "source": {
+              "ref": "Kinetra schema example: illustrative value, not a measured part",
+              "locator": null,
+              "url": null,
+              "license": null,
+              "declared_by": "kinetra-docs",
+              "declared_at": "2026-11-11T00:00:00Z"
+            },
+            "position": {
+              "x": 0.0,
+              "y": 0.0,
+              "z": 0.05
+            },
+            "orientation": {
+              "x": 0.0,
+              "y": 0.0,
+              "z": 0.0,
+              "w": 1.0
+            }
+          }
+        },
+        {
+          "id": "motor-l",
+          "part": "motor",
+          "parameters": [],
+          "material": null,
+          "pose": {
+            "badge": "declared",
+            "source": {
+              "ref": "Kinetra schema example: illustrative value, not a measured part",
+              "locator": null,
+              "url": null,
+              "license": null,
+              "declared_by": "kinetra-docs",
+              "declared_at": "2026-11-11T00:00:00Z"
+            },
+            "position": {
+              "x": -0.1,
+              "y": 0.1,
+              "z": 0.05
+            },
+            "orientation": {
+              "x": 0.0,
+              "y": 0.0,
+              "z": 0.0,
+              "w": 1.0
+            }
+          }
+        },
+        {
+          "id": "motor-r",
+          "part": "motor",
+          "parameters": [],
+          "material": null,
+          "pose": {
+            "badge": "declared",
+            "source": {
+              "ref": "Kinetra schema example: illustrative value, not a measured part",
+              "locator": null,
+              "url": null,
+              "license": null,
+              "declared_by": "kinetra-docs",
+              "declared_at": "2026-11-11T00:00:00Z"
+            },
+            "position": {
+              "x": -0.1,
+              "y": -0.1,
+              "z": 0.05
+            },
+            "orientation": {
+              "x": 0.0,
+              "y": 0.0,
+              "z": 1.0,
+              "w": 0.0
+            }
+          }
+        },
+        {
+          "id": "wheel-rl",
+          "part": "wheel",
+          "parameters": [
+            {
+              "badge": "declared",
+              "source": {
+                "ref": "Kinetra schema example: illustrative value, not a measured part",
+                "locator": null,
+                "url": null,
+                "license": null,
+                "declared_by": "kinetra-docs",
+                "declared_at": "2026-11-11T00:00:00Z"
+              },
+              "value": 0.1,
+              "unit": "m",
+              "name": "diameter"
+            }
+          ],
+          "material": null,
+          "pose": {
+            "badge": "declared",
+            "source": {
+              "ref": "Kinetra schema example: illustrative value, not a measured part",
+              "locator": null,
+              "url": null,
+              "license": null,
+              "declared_by": "kinetra-docs",
+              "declared_at": "2026-11-11T00:00:00Z"
+            },
+            "position": {
+              "x": -0.1,
+              "y": 0.13,
+              "z": 0.05
+            },
+            "orientation": {
+              "x": 0.0,
+              "y": 0.0,
+              "z": 0.0,
+              "w": 1.0
+            }
+          }
+        },
+        {
+          "id": "wheel-rr",
+          "part": "wheel",
+          "parameters": [],
+          "material": null,
+          "pose": {
+            "badge": "declared",
+            "source": {
+              "ref": "Kinetra schema example: illustrative value, not a measured part",
+              "locator": null,
+              "url": null,
+              "license": null,
+              "declared_by": "kinetra-docs",
+              "declared_at": "2026-11-11T00:00:00Z"
+            },
+            "position": {
+              "x": -0.1,
+              "y": -0.13,
+              "z": 0.05
+            },
+            "orientation": {
+              "x": 0.0,
+              "y": 0.0,
+              "z": 0.0,
+              "w": 1.0
+            }
+          }
+        },
+        {
+          "id": "wheel-fl",
+          "part": "wheel",
+          "parameters": [],
+          "material": null,
+          "pose": {
+            "badge": "declared",
+            "source": {
+              "ref": "Kinetra schema example: illustrative value, not a measured part",
+              "locator": null,
+              "url": null,
+              "license": null,
+              "declared_by": "kinetra-docs",
+              "declared_at": "2026-11-11T00:00:00Z"
+            },
+            "position": {
+              "x": 0.1,
+              "y": 0.1,
+              "z": 0.05
+            },
+            "orientation": {
+              "x": 0.0,
+              "y": 0.0,
+              "z": 0.0,
+              "w": 1.0
+            }
+          }
+        },
+        {
+          "id": "wheel-fr",
+          "part": "wheel",
+          "parameters": [],
+          "material": null,
+          "pose": {
+            "badge": "declared",
+            "source": {
+              "ref": "Kinetra schema example: illustrative value, not a measured part",
+              "locator": null,
+              "url": null,
+              "license": null,
+              "declared_by": "kinetra-docs",
+              "declared_at": "2026-11-11T00:00:00Z"
+            },
+            "position": {
+              "x": 0.1,
+              "y": -0.1,
+              "z": 0.05
+            },
+            "orientation": {
+              "x": 0.0,
+              "y": 0.0,
+              "z": 0.0,
+              "w": 1.0
+            }
+          }
+        }
+      ],
+      "joints": [
+        {
+          "id": "weld-ml",
+          "kind": "fixed",
+          "a": {
+            "instance": "chassis-1",
+            "snap_point": "motor-l"
+          },
+          "b": {
+            "instance": "motor-l",
+            "snap_point": "mount"
+          },
+          "limits": null,
+          "break_threshold": null
+        },
+        {
+          "id": "weld-mr",
+          "kind": "fixed",
+          "a": {
+            "instance": "chassis-1",
+            "snap_point": "motor-r"
+          },
+          "b": {
+            "instance": "motor-r",
+            "snap_point": "mount"
+          },
+          "limits": null,
+          "break_threshold": null
+        },
+        {
+          "id": "drive-l",
+          "kind": "hinge",
+          "a": {
+            "instance": "motor-l",
+            "snap_point": "shaft"
+          },
+          "b": {
+            "instance": "wheel-rl",
+            "snap_point": "hub"
+          },
+          "limits": null,
+          "break_threshold": null
+        },
+        {
+          "id": "drive-r",
+          "kind": "hinge",
+          "a": {
+            "instance": "motor-r",
+            "snap_point": "shaft"
+          },
+          "b": {
+            "instance": "wheel-rr",
+            "snap_point": "hub"
+          },
+          "limits": null,
+          "break_threshold": null
+        },
+        {
+          "id": "axle-fl",
+          "kind": "hinge",
+          "a": {
+            "instance": "chassis-1",
+            "snap_point": "axle-fl"
+          },
+          "b": {
+            "instance": "wheel-fl",
+            "snap_point": "hub"
+          },
+          "limits": null,
+          "break_threshold": null
+        },
+        {
+          "id": "axle-fr",
+          "kind": "hinge",
+          "a": {
+            "instance": "chassis-1",
+            "snap_point": "axle-fr"
+          },
+          "b": {
+            "instance": "wheel-fr",
+            "snap_point": "hub"
+          },
+          "limits": null,
+          "break_threshold": null
+        }
+      ],
+      "actuators": [
+        {
+          "id": "drive-motor-l",
+          "kind": "motor",
+          "instance": "motor-l",
+          "joint": "drive-l"
+        },
+        {
+          "id": "drive-motor-r",
+          "kind": "motor",
+          "instance": "motor-r",
+          "joint": "drive-r"
+        }
+      ],
+      "schedule": {
+        "entries": [
+          {
+            "badge": "declared",
+            "source": {
+              "ref": "Kinetra schema example: illustrative value, not a measured part",
+              "locator": null,
+              "url": null,
+              "license": null,
+              "declared_by": "kinetra-docs",
+              "declared_at": "2026-11-11T00:00:00Z"
+            },
+            "type": "actuate",
+            "id": "run-l",
+            "actuator": "drive-motor-l",
+            "start": 0.0,
+            "end": 5.0,
+            "command": 1.0
+          },
+          {
+            "badge": "declared",
+            "source": {
+              "ref": "Kinetra schema example: illustrative value, not a measured part",
+              "locator": null,
+              "url": null,
+              "license": null,
+              "declared_by": "kinetra-docs",
+              "declared_at": "2026-11-11T00:00:00Z"
+            },
+            "type": "actuate",
+            "id": "run-r",
+            "actuator": "drive-motor-r",
+            "start": 0.0,
+            "end": 5.0,
+            "command": 1.0
+          }
+        ]
+      }
+    },
+    "world": {
+      "planet": "earth",
+      "terrain_props": [
+        {
+          "id": "ramp-1",
+          "material": "example-material",
+          "placement": {
+            "badge": "declared",
+            "source": {
+              "ref": "Kinetra schema example: illustrative value, not a measured part",
+              "locator": null,
+              "url": null,
+              "license": null,
+              "declared_by": "kinetra-docs",
+              "declared_at": "2026-11-11T00:00:00Z"
+            },
+            "x": 2.0,
+            "y": 0.0,
+            "yaw": 0.0
+          },
+          "length": {
+            "badge": "declared",
+            "source": {
+              "ref": "Kinetra schema example: illustrative value, not a measured part",
+              "locator": null,
+              "url": null,
+              "license": null,
+              "declared_by": "kinetra-docs",
+              "declared_at": "2026-11-11T00:00:00Z"
+            },
+            "value": 3.0,
+            "unit": "m"
+          },
+          "width": {
+            "badge": "declared",
+            "source": {
+              "ref": "Kinetra schema example: illustrative value, not a measured part",
+              "locator": null,
+              "url": null,
+              "license": null,
+              "declared_by": "kinetra-docs",
+              "declared_at": "2026-11-11T00:00:00Z"
+            },
+            "value": 1.0,
+            "unit": "m"
+          },
+          "kind": "ramp",
+          "incline": {
+            "badge": "declared",
+            "source": {
+              "ref": "Kinetra schema example: illustrative value, not a measured part",
+              "locator": null,
+              "url": null,
+              "license": null,
+              "declared_by": "kinetra-docs",
+              "declared_at": "2026-11-11T00:00:00Z"
+            },
+            "value": 0.2,
+            "unit": "rad"
+          }
+        }
+      ]
+    },
+    "assumptions": {
+      "assumptions": [
+        {
+          "key": "vehicle_mass",
+          "label": "Vehicle mass",
+          "value": {
+            "badge": "declared",
+            "source": {
+              "ref": "Kinetra schema example: illustrative value, not a measured part",
+              "locator": null,
+              "url": null,
+              "license": null,
+              "declared_by": "kinetra-docs",
+              "declared_at": "2026-11-11T00:00:00Z"
+            },
+            "value": 2.0,
+            "unit": "kg"
+          },
+          "distribution": {
+            "kind": "fixed"
+          },
+          "confidence": "low",
+          "editable": true
+        }
+      ]
+    }
+  },
+  "project_hash": "sha256:89f684405667a3c2c09d890f9ac9d48bc93e7baba00318e76ddf778f73630c15",
+  "definitions": [
+    {
+      "kind": "material",
+      "id": "example-material",
+      "hash": "sha256:cdcc6059f45963a0443d41374b0df284b68ccb4a213e44514118cddb2382b2be"
+    },
+    {
+      "kind": "part",
+      "id": "chassis",
+      "hash": "sha256:814b0c520cc3d649ec64af19d160b00e5d31f1af6a7e05783846207261067dc7"
+    },
+    {
+      "kind": "part",
+      "id": "motor",
+      "hash": "sha256:39db5cd4edf975bb4b92a71d7c0d7d9bab50416454cb67625ff5f4d26bf64ae1"
+    },
+    {
+      "kind": "part",
+      "id": "wheel",
+      "hash": "sha256:a966558b36f983f65df335aa5db8c98da5d2c3e63a1a170df271ae5f43773809"
+    }
+  ]
+}

@@ -7,6 +7,8 @@ dependencies = [
     "faster-whisper==1.2.1",
     # faster-whisper 1.2.1 calls av.open(metadata_errors=...), which av 19 removed; it declares only av>=11
     "av>=11,<19",
+    # C-05a: the WebSocket transport of the document channel (kinetra_engine.protocol); BSD-3-Clause
+    "websockets==17.4",
 ]
 
 [build-system]

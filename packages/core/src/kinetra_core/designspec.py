@@ -28,7 +28,7 @@ on a thruster part) is checked once B-03b and B-03c give parts that role.
 
 Not here: MJCF (X-01); joint axis, DoF rules per kind, snap compatibility (B-04a, B-04b); springs and dampers
 (B-03e, X-01b); torque-speed and thrust curves and what a command of 1 means in N*m or N (B-03b, B-03c, X-01b,
-X-01c); release/separation schedule entries (X-08); definition hashes and missing definitions (C-03, C-06);
+X-01c); release/separation schedule entries (X-08); definition hashes (`canonical.py`, C-03) and missing definitions (C-06);
 `World` and assumptions (C-01c).
 """
 

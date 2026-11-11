@@ -4,9 +4,10 @@ Every number is a `Quantity` (badge and source required) except a snap point's p
 it carries one badge and source for the whole pose.
 
 Collections are tuples, so a `PartDef` is immutable and hashable. Order is part of the value and is preserved;
-the canonical form for definition hashes (C-03) is C-03's to fix.
+the canonical order that definition hashes use is `canonical.py` (C-03).
 
-The optional `shape` (B-01a, `shape.py`) is the recipe mass, centre of mass and inertia are computed from.
+The optional `shape` (B-01a, `shape.py`) is the recipe mass, centre of mass and inertia are computed from. The
+optional `mass_parameter` (B-02c) names a kg parameter that fixes the mass itself; the recipe then only places it.
 
 Not here: the computation (`kinetra_engine.parts`, result in `massprops.py`), collision proxy (B-01b), export policy (HW-02a), instances
 and joints (C-01b), MJCF (X-01).
@@ -86,6 +87,11 @@ class PartDef(BaseModel):
     snap_points: tuple[SnapPoint, ...] = ()
     specs: tuple[SpecDef, ...] = ()
     shape: Shape | None = None
+    mass_parameter: Name | None = None
+    """B-02c. Names a parameter in kg whose value *is* the part's mass (a payload, a ballast weight, a datasheet mass).
+    The shape recipe then only says where that mass sits: it is spread uniformly over the recipe's net volume. A part
+    without it gets its mass from the instance's material density times the shape volume. The value is the instance's
+    (`Instance.parameters`) or this definition's default, with its own badge and source."""
 
     @model_validator(mode="after")
     def _consistent(self) -> "PartDef":
@@ -113,7 +119,20 @@ class PartDef(BaseModel):
                         raise ValueError(f"snap point {s.id!r}: parameter {t.param!r} is not a length (m)")
         if self.shape is not None:
             self._check_shape(self.shape, {p.name: p for p in self.parameters})
+        if self.mass_parameter is not None:
+            self._check_mass_parameter(self.mass_parameter, {p.name: p for p in self.parameters})
         return self
+
+    def _check_mass_parameter(self, name: str, params: dict[str, ParamDef]) -> None:
+        p = params.get(name)
+        if p is None:
+            raise ValueError(f"mass_parameter {name!r} is not a parameter of the part")
+        if p.unit is not Unit.KG:
+            raise ValueError(f"mass_parameter {name!r} must be in 'kg', got {p.unit.value!r}")
+        if not p.min.value > 0.0:
+            raise ValueError(f"mass_parameter {name!r}: min must be above zero over the whole range, got {p.min.value} kg")
+        if self.shape is None:
+            raise ValueError("mass_parameter needs a shape recipe: the mass is spread over the recipe's volume")
 
     @staticmethod
     def _check_shape(shape: Shape, params: dict[str, ParamDef]) -> None:
