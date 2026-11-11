@@ -2,7 +2,7 @@
 
 - 상태: 구현됨. 코드는 `packages/engine/src/kinetra_engine/agent/`(`edit_tools.py`, `snapmath.py`, `guard.py`), 테스트는 `packages/engine/tests/test_edit_tools.py`(`uv run pytest packages/engine -q -k edit_tools`)와 `test_agent_guard.py`(`uv run pytest packages/engine -q -k guard`).
 - 근거: `docs/plan/studio-plan.md` 4.4절(에이전트와의 협업)과 위험 3("에이전트가 3D 편집을 망친다": 자유 좌표가 아닌 스냅 포인트 기반 명령), `docs/architecture/client-adapter.md` C1·C4, 이슈 #144(G-02a), #151(G-04).
-- 범위 밖: 조회 도구(G-02b), 실행·판정 요청 도구(G-02c), 변경안과 재시도(G-03a), MCP 서버(G-08: 이 도구들을 그대로 MCP로 내보낸다, `mcp-server.md`), UI, 카탈로그 확장.
+- 범위 밖: 조회 도구(G-02b), 실행·판정 요청 도구(G-02c), 변경안과 재시도(G-03a, [`agent-proposal.md`](agent-proposal.md)), MCP 서버(G-08: 이 도구들을 그대로 MCP로 내보낸다, `mcp-server.md`), UI, 카탈로그 확장.
 
 ## 규칙
 
@@ -27,7 +27,7 @@
 | `add_actuator`, `remove_actuator` | `add_actuator`, `remove_actuator` |
 | `schedule_command`, `change_command`, `remove_command` | `add_control_entry`, `replace_control_entry`, `remove_control_entry` |
 
-`specs()`는 도구를 OpenAI 함수 도구 객체(`Gateway.chat`이 `tools`로 싣는 모양)로 낸다. 호출은 도구 이름과 모델의 `tool_calls`에 오는 JSON 인자 문자열이다. 이 모듈은 환경변수도 키도 읽지 않는다(키는 G-01의 것).
+`specs()`는 도구를 OpenAI 함수 도구 객체로 낸다. `Gateway.chat`에는 `tools` 필드가 없으므로 변경안(G-03a, [`agent-proposal.md`](agent-proposal.md))은 이 객체들을 시스템 메시지에 싣고, 모델은 도구 이름과 JSON 인자를 답의 JSON으로 보낸다. 이 모듈은 환경변수도 키도 읽지 않는다(키는 G-01의 것).
 
 ## 권한 가드 (G-04)
 
