@@ -8,7 +8,7 @@ import os from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { startServer } from "./src/serve.mjs";
-import { launch, machine, requireGuard } from "./src/runner-common.mjs";
+import { launch, machine, requireGuard, clientVersion } from "./src/runner-common.mjs";
 import { summarize } from "./src/stats.js";
 import { FLOWS, MAX_WINDOW } from "./src/flow.js";
 
@@ -24,7 +24,7 @@ const FLOW = process.env.FLOW ?? "none", WIN = Number(process.env.WIN ?? 2);
 if (!FLOWS.includes(FLOW) || !Number.isInteger(WIN) || WIN < 1 || WIN > MAX_WINDOW) { console.error(`FLOW must be one of ${FLOWS.join(", ")} and WIN an integer 1..${MAX_WINDOW}, got FLOW=${FLOW} WIN=${process.env.WIN}`); process.exit(2); }
 const TAG = FLOW === "ack" ? `${GL}-ack${WIN}` : GL;
 const browser = await launch(GL_ARGS);
-const result = { issue: FLOW === "ack" ? "A0-02a-f #420" : "A0-02a #47", flow: FLOW, win: FLOW === "ack" ? WIN : null, machine_before: machine(), gl_backend: GL, launch_args: GL_ARGS, browser: { name: "chromium-headless-shell (playwright-core 1.65.0)", version: browser.version() }, runs: [] };
+const result = { issue: FLOW === "ack" ? "A0-02a-f #420" : "A0-02a #47", flow: FLOW, win: FLOW === "ack" ? WIN : null, client: clientVersion(), machine_before: machine(), gl_backend: GL, launch_args: GL_ARGS, browser: { name: "chromium-headless-shell (playwright-core 1.65.0)", version: browser.version() }, runs: [] };
 try {
   for (const n of bodies) {
     const page = await browser.newPage({ viewport: { width: 960, height: 540 } });

@@ -52,3 +52,13 @@ test("client messages: control 12 B and ack 8 B round-trip little-endian; anythi
   const buf = Buffer.concat([Buffer.alloc(3), Buffer.from(k)]); // a Buffer slice with a non-zero byteOffset, as ws delivers
   assert.deepEqual(readClientMessage(buf.subarray(3)), { kind: "ack", tick: 123456 });
 });
+test("AckWindow: an ack below the oldest unacked frame (a tick the core skipped) is ignored without throwing or changing state", () => {
+  const w = new AckWindow(2);
+  w.sent(0, 0); w.sent(1, 10);
+  assert.equal(w.ack(1, 20), 10);
+  w.sent(18, 300); w.sent(19, 310); // ticks 2..17 were skipped by the core
+  for (const skipped of [2, 5, 17]) assert.equal(w.ack(skipped, 320), null, `ack ${skipped}`);
+  assert.equal(w.inflight, 2); assert.equal(w.acked, 1); // nothing consumed, `acked` not moved
+  assert.equal(w.ack(18, 330), 30); // a real ack still works afterwards
+  assert.equal(w.inflight, 1);
+});

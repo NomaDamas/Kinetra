@@ -25,11 +25,13 @@ export class AckWindow {
     if (this.queue.length > this.max_inflight) this.max_inflight = this.queue.length;
   }
   /** Apply a cumulative ack at `t`. Returns the ack lag in ms (`t` minus the send time of the frame with tick `tick`), or null when
-   *  the ack is not valid: not an integer, not after the last acked tick, or for a tick that was never sent. Invalid acks change nothing. */
+   *  the ack is not valid: not an integer, not after the last acked tick, or for a tick that was never sent (above the newest sent tick, or below the oldest unacked one). Invalid acks change nothing,
+ *  not even `acked`. */
   ack(tick, t) {
     if (!Number.isInteger(tick) || tick <= this.acked) return null;
     const last = this.queue.at(-1);
     if (!last || tick > last.tick) return null;
+    if (this.queue[0].tick > tick) return null; // no sent, unacked frame at or below this tick: it was never sent (the core skipped it) or is already acked, nothing to free
     let hit = null;
     while (this.queue.length && this.queue[0].tick <= tick) hit = this.queue.shift();
     this.acked = tick;

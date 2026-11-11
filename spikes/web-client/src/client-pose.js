@@ -15,7 +15,6 @@ const q = new URLSearchParams(location.search);
 const cfg = { n: +(q.get("n") ?? 1000), seed: +(q.get("seed") ?? 0), warmup_ms: +(q.get("warmup") ?? 1500), measure_ms: +(q.get("measure") ?? 8000),
   bench_frames: +(q.get("bench") ?? 60), presses: +(q.get("presses") ?? 40), w: +(q.get("w") ?? 960), h: +(q.get("h") ?? 540),
   flow: q.get("flow") ?? "none", win: +(q.get("win") ?? 2) };
-if (!FLOWS.includes(cfg.flow)) throw new Error(`flow must be one of ${FLOWS.join(", ")}, got ${cfg.flow}`);
 const now = () => performance.now();
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const fail = (e) => { window.__A0_02A_ERROR = String(e && e.stack || e); };
@@ -23,6 +22,7 @@ window.addEventListener("error", (e) => fail(e.error ?? e.message));
 window.addEventListener("unhandledrejection", (e) => fail(e.reason));
 
 try {
+  if (!FLOWS.includes(cfg.flow)) throw new Error(`flow must be one of ${FLOWS.join(", ")}, got ${cfg.flow}`); // inside try, after the listeners: a bad URL sets __A0_02A_ERROR
   const world = makeWorld(cfg.n, cfg.seed);
   const canvas = document.getElementById("c");
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: false, powerPreference: "high-performance" });

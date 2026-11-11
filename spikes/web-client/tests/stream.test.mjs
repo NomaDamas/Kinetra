@@ -176,3 +176,21 @@ test("a bad flow or window is refused at the upgrade, the server keeps serving",
     assert.equal(await refused(""), "open");
   } finally { s.close(); }
 });
+test("flow=ack: an ack for a tick the core skipped (below the oldest unacked frame) is counted as ignored; the server and the stream keep going", async () => {
+  const c = await ackStream(2);
+  try {
+    await sleepMs(250);
+    assert.deepEqual(c.ticks, [0, 1]);
+    c.ws.send(writeAck(1)); // frees both slots; the core then sends the newest ticks
+    await sleepMs(150);
+    assert.ok(c.ticks.length >= 4); const oldestUnacked = c.ticks[2];
+    assert.ok(oldestUnacked > 5, `expected a fresh tick above 5, got ${oldestUnacked}`);
+    c.ws.send(writeAck(5)); // 1 < 5 < oldest unacked: never sent
+    await sleepMs(80);
+    assert.equal(c.st().acks, 1); assert.equal(c.st().acks_ignored, 1); assert.equal(c.st().socket_errors, 0);
+    const before = c.ticks.length;
+    c.ws.send(writeAck(c.ticks.at(-1))); // a valid ack right after: the stream still serves it
+    await sleepMs(150);
+    assert.equal(c.st().acks, 2); assert.ok(c.ticks.length > before);
+  } finally { c.done(); }
+});
