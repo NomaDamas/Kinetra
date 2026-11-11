@@ -34,7 +34,7 @@ from pathlib import Path
 from typing import Any
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from schema_to_ts import render_declarations  # noqa: E402
+from schema_to_ts import UnsupportedSchema, render_declarations  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[3]
 DEFAULT_OUT = ROOT / "schemas"
@@ -62,11 +62,9 @@ def _is_schema_type(obj: Any) -> bool:
 
     if isinstance(obj, type):
         return issubclass(obj, (BaseModel, enum.Enum))
-    # `Annotated[A | B, Field(discriminator=...)]`, `A | B`, `Literal[...]`: what pydantic can build a schema for
-    origin = typing.get_origin(obj)
-    return origin is not None and (
-        origin in (typing.Annotated, typing.Union, typing.Literal, pytypes.UnionType)
-    )
+    # Any parametrised typing construct is a type alias a client may see: `Annotated[A | B, Field(discriminator=...)]`,
+    # `A | B`, `Literal[...]`, `list[A]`, `dict[str, A]`, `tuple[A, ...]`. Constants and functions have no origin.
+    return typing.get_origin(obj) is not None
 
 
 def _check_discriminators(node: Any, defs: dict[str, dict[str, Any]], where: str) -> None:
@@ -218,7 +216,7 @@ def main(argv: list[str] | None = None) -> int:
 
     try:
         rendered = render(kinetra_core)
-    except ExportError as e:
+    except (ExportError, UnsupportedSchema) as e:
         print(f"export_schemas: {e}", file=sys.stderr)
         return 1
     schema_count = sum(1 for n in rendered if n.endswith(SCHEMA_SUFFIX))

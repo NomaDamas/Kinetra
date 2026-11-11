@@ -152,6 +152,28 @@ def test_a_class_that_is_not_a_model_fails_the_export_instead_of_being_skipped()
         ex.render(fake_package(Wheel=Wheel, Plain=Plain))
 
 
+def test_generic_aliases_are_exported_not_skipped():
+    mod = fake_package(Wheel=Wheel, Wheels=list[Wheel], ByName=dict[str, Wheel], Pair=tuple[float, float], LIMIT=3)
+    rendered = ex.render(mod)
+    assert {"Wheels.schema.json", "ByName.schema.json", "Pair.schema.json"} <= set(rendered)
+    t = rendered["types.ts"]
+    assert "export type Wheels = Wheel[];" in t
+    assert "export type ByName = Record<string, Wheel>;" in t
+    assert "export type Pair = [number, number];" in t
+
+
+def test_an_unsupported_schema_is_a_clean_error_not_a_traceback(monkeypatch, capsys):
+    import kinetra_core as core
+
+    def boom(_module):
+        raise ts.UnsupportedSchema("#/$defs/X: unsupported JSON Schema keyword(s) ['not']")
+
+    monkeypatch.setattr(ex, "render", boom)
+    assert ex.main(["--check", "--out", "/nonexistent"]) == 1
+    assert "export_schemas: #/$defs/X: unsupported" in capsys.readouterr().err
+    assert core  # the real package is untouched
+
+
 def test_a_class_exported_under_another_name_fails():
     with pytest.raises(ex.ExportError, match="under its own name"):
         ex.render(fake_package(Alias=Wheel))
@@ -297,6 +319,7 @@ def mutate(data, path, value):
 
 
 CAR = "DesignSpec.four-wheel-car.json"
+BLOCK = "PartDef.block-with-hole.json"
 
 
 @pytest.mark.parametrize(
@@ -311,6 +334,10 @@ CAR = "DesignSpec.four-wheel-car.json"
         (CAR, "DesignSpec", ["instances", 0, "pose", "orientation"], [0, 0, 0, 1]),  # object, not array
         (CAR, "DesignSpec", ["instances", 0, "colour"], "red"),  # extra field
         (CAR, "DesignSpec", ["joints", 0, "kind"], "ball"),
+        (BLOCK, "PartDef", ["shape", "components", 0, "primitive", "kind"], KeyError),  # the union tag is required
+        (BLOCK, "PartDef", ["shape", "components", 1, "primitive", "kind"], "torus"),
+        (BLOCK, "PartDef", ["shape", "components", 0, "primitive", "size_x"], KeyError),
+        (BLOCK, "PartDef", ["shape", "components", 0, "operation"], "intersect"),
         ("World.ramp-and-step.json", "World", ["terrain_props", 0, "kind"], KeyError),  # kind is required
         ("World.ramp-and-step.json", "World", ["planet"], "Mars"),  # ID pattern
         ("World.ramp-and-step.json", "World", ["gravity"], 3.7),  # a planet constant has no field
