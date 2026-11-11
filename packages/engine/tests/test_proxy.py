@@ -13,6 +13,7 @@ import pytest
 
 from kinetra_core import Badge, CollisionProxy, PartDef, Quantity
 from kinetra_engine.parts import ShapeError, collision_proxy, mass_properties
+from kinetra_engine.parts.collision import DEFAULT_TOLERANCE
 
 SRC = {"ref": "unit-test fixture", "locator": "test_proxy.py"}
 RHO = 1000.0
@@ -125,28 +126,213 @@ def test_proxy_of_a_rotated_rod_with_a_ball_keeps_both_primitives_unchanged():
     assert r.proxy_volume.value == approx(want) and r.volume_error.value == 0.0
 
 
-def test_proxy_of_a_plate_with_a_hole_fills_the_hole_and_reports_the_volume_error():
-    # Plate 0.3 x 0.2 x 0.02 (V = 0.0012 m^3) with a 0.05 m radius through-hole (V = pi 0.0025 0.02 = 5e-5 pi m^3).
-    r = collision_proxy(part([box("plate", 0.3, 0.2, 0.02), cyl("hole", 0.05, 0.02, at=(0.05, 0.0, 0.0), op="subtract")]))
-    hole = math.pi * 0.0025 * 0.02  # pi r^2 h
-    assert [g.id for g in r.geoms] == ["plate"]  # the hole is not a proxy geom
+def test_proxy_of_a_blind_pocket_fills_it_and_reports_the_volume_error():
+    # Plate 0.3 x 0.2 x 0.02 (V = 0.0012 m^3) with a 0.05 m radius pocket 0.01 deep (V = pi 0.0025 0.01 = 2.5e-5 pi m^3).
+    # A blind pocket is not a through-bore: it is not decomposed, so it is filled (B-01b) and the error is the filled volume.
+    comps = [box("plate", 0.3, 0.2, 0.02), cyl("pocket", 0.05, 0.01, at=(0.05, 0.0, 0.005), op="subtract")]
+    r = collision_proxy(part(comps))
+    pocket = math.pi * 0.0025 * 0.01  # pi r^2 h
+    assert r.derivation.method == "added-primitives" and r.derivation.tolerance is None
+    assert [g.id for g in r.geoms] == ["plate"]  # the pocket is not a proxy geom
     assert r.proxy_volume.value == approx(0.0012)  # the plate, solid
-    assert r.recipe_volume.value == approx(0.0012 - hole)
-    assert r.volume_error.value == approx(hole / (0.0012 - hole))  # about +15.1 %: 1.5708e-4 / (1.2e-3 - 1.5708e-4)
+    assert r.recipe_volume.value == approx(0.0012 - pocket)
+    assert r.volume_error.value == approx(pocket / (0.0012 - pocket))  # about +7.0 %
+    assert r.decomposed_voids == ()
     (f,) = r.filled_voids
-    assert (f.id, f.primitive) == ("hole", "cylinder") and f.volume == approx(hole)
+    assert (f.id, f.primitive) == ("pocket", "cylinder") and f.volume == approx(pocket)
     # The recipe volume is the volume B-01a reports for the same part.
-    p = part([box("plate", 0.3, 0.2, 0.02), cyl("hole", 0.05, 0.02, at=(0.05, 0.0, 0.0), op="subtract")])
-    assert mass_properties(p, material()).volume.value == approx(r.recipe_volume.value)
+    assert mass_properties(part(comps), material()).volume.value == approx(r.recipe_volume.value)
 
 
-def test_proxy_of_a_tube_is_its_outer_cylinder():
-    # Tube R = 0.05, r = 0.04, length 0.5: recipe pi (R^2 - r^2) h = 0.00045 pi; proxy pi R^2 h = 0.00125 pi.
-    r = collision_proxy(part([cyl("outer", 0.05, 0.5), cyl("bore", 0.04, 0.5, op="subtract")]))
-    assert r.proxy_volume.value == approx(0.00125 * math.pi)
+def test_proxy_of_a_ball_void_is_filled_too():
+    r = collision_proxy(part([box("block", 0.3, 0.3, 0.3), sphere("cavity", 0.1, op="subtract")]))
+    assert r.derivation.method == "added-primitives"
+    assert r.volume_error.value == approx(4.0 / 3.0 * math.pi * 0.001 / (0.027 - 4.0 / 3.0 * math.pi * 0.001))
+
+
+def test_two_bores_in_one_plate_take_the_fill_path_for_the_whole_part():
+    comps = [
+        box("plate", 0.3, 0.2, 0.02),
+        cyl("h1", 0.03, 0.02, at=(-0.07, 0.0, 0.0), op="subtract"),
+        cyl("h2", 0.03, 0.02, at=(0.07, 0.0, 0.0), op="subtract"),
+    ]
+    r = collision_proxy(part(comps))
+    assert r.derivation.method == "added-primitives" and [v.id for v in r.filled_voids] == ["h1", "h2"]
+
+
+# --- through-bores are decomposed (B-01f) -------------------------------------------------------------------------------
+
+PLATE_HOLE = [box("plate", 0.3, 0.2, 0.02), cyl("hole", 0.05, 0.02, at=(0.05, 0.0, 0.0), op="subtract")]
+TUBE = [cyl("outer", 0.05, 0.5), cyl("bore", 0.04, 0.5, op="subtract")]
+
+
+def _in_box(g, pt):
+    """Point in an axis-aligned proxy box (all boxes of these parts have the identity orientation)."""
+    return all(abs(pt[i] - g.center[i]) <= dims(g)[n] / 2 for i, n in enumerate(("size_x", "size_y", "size_z")))
+
+
+def _any_geom(r, pt):
+    return any(_in_box(g, pt) for g in r.geoms)
+
+
+def test_plate_with_a_hole_keeps_the_hole_empty_and_the_error_is_small_and_negative():
+    r = collision_proxy(part(PLATE_HOLE), tolerance=0.02)
+    hole = math.pi * 0.0025 * 0.02
+    assert r.derivation.method == "void-decomposition" and r.derivation.tolerance == 0.02
+    assert r.filled_voids == ()
+    (d,) = r.decomposed_voids
+    assert (d.id, d.primitive, d.host) == ("hole", "cylinder", "plate") and d.volume == approx(hole)
+    assert all(g.primitive == "box" and g.component == "plate" for g in r.geoms)
+    assert r.recipe_volume.value == approx(0.0012 - hole)
+    # Points on the hole's centre line (x = 0.05, y = 0) are outside the proxy, so are points inside its wall; material
+    # outside the wall is inside.
+    for z in (-0.009, 0.0, 0.009):
+        assert not _any_geom(r, (0.05, 0.0, z))
+        assert not _any_geom(r, (0.05 + 0.04, 0.0, z)) and not _any_geom(r, (0.05, 0.04, z))
+        assert _any_geom(r, (0.05 + 0.06, 0.0, z)) and _any_geom(r, (0.05, 0.06, z))
+    assert r.proxy_volume.value == pytest.approx(sum(g.volume for g in r.geoms), rel=1e-12)
+    assert -0.02 <= r.volume_error.value < 0.0  # inside the recipe: never more than the recipe has
+
+
+def test_plate_hand_checked_volume_with_four_strips():
+    # tolerance 0.10 is met by n = 4: strip boundaries across y at -0.1, -0.05, -0.05 cos 45deg, 0, +0.05 cos 45deg, 0.05, 0.1
+    # (c = 0.05 / sqrt 2 = 0.035355). Each box takes the narrower of the plate's width (0.3) and the wider of the bore's chord
+    # at the strip's two ends. Outer slabs (|y| in 0.05..0.1) miss the bore: 0.3 x 0.05, twice. The strips |y| in c..0.05
+    # have bore half-chord at most sqrt(r^2 - c^2) = c: boxes of width 0.3 - 2c. The strips |y| in 0..c reach the full
+    # radius at y = 0: width 0.3 - 2 * 0.05.
+    r = collision_proxy(part(PLATE_HOLE), tolerance=0.10)
+    assert len(r.geoms) == 10  # 2 whole slabs + 4 slabs each split in two by the bore
+    c = 0.05 * math.sqrt(0.5)
+    proxy = 0.02 * (2 * 0.05 * 0.3 + 2 * (0.05 - c) * (0.3 - 2 * c) + 2 * c * (0.3 - 2 * 0.05))
+    recipe = 0.0012 - math.pi * 0.0025 * 0.02
+    assert proxy == pytest.approx(0.001017157287525381, rel=1e-12)
+    assert r.proxy_volume.value == approx(proxy)
+    assert r.volume_error.value == approx(proxy / recipe - 1.0)
+    assert r.volume_error.value == pytest.approx(-0.0247028, abs=1e-6)  # -2.47 %, inside the stated 10 %
+
+
+def test_tube_is_a_ring_of_boxes_with_the_bore_empty_and_a_small_signed_error():
+    r = collision_proxy(part(TUBE))  # default tolerance
+    assert r.derivation.method == "void-decomposition" and r.derivation.tolerance == DEFAULT_TOLERANCE and r.filled_voids == ()
+    recipe = math.pi * (0.05**2 - 0.04**2) * 0.5  # pi (R^2 - r^2) h = 0.00045 pi
     assert r.recipe_volume.value == approx(0.00045 * math.pi)
-    assert r.volume_error.value == approx(0.0008 / 0.00045)  # +178 %: a tube's proxy is a bar
-    assert r.volume_error.value > 1.0
+    assert -DEFAULT_TOLERANCE <= r.volume_error.value < 0.0
+    assert r.proxy_volume.value == pytest.approx(recipe * (1.0 + r.volume_error.value), rel=1e-12)
+    assert len(r.geoms) > 8 and all(g.primitive == "box" and g.component == "outer" for g in r.geoms)
+    # an object of radius 0.039 fits in the bore: the centre line and the ring of points at r = 0.0399 are free
+    for z in (-0.24, 0.0, 0.24):
+        assert not _any_geom(r, (0.0, 0.0, z))
+        for k in range(24):
+            t = 2 * math.pi * k / 24
+            assert not _any_geom(r, (0.0399 * math.cos(t), 0.0399 * math.sin(t), z))
+            assert _any_geom(r, (0.045 * math.cos(t), 0.045 * math.sin(t), z))  # and the wall's middle (r = 0.045) is solid
+    # nothing sticks out of the outer cylinder: every piece corner is within R (up to rounding)
+    for g in r.geoms:
+        for sx in (-1, 1):
+            for sy in (-1, 1):
+                assert math.hypot(g.center[0] + sx * dims(g)["size_x"] / 2, g.center[1] + sy * dims(g)["size_y"] / 2) <= 0.05 * (1 + 1e-9)
+                assert math.hypot(g.center[0] - sx * dims(g)["size_x"] / 2, g.center[1] - sy * dims(g)["size_y"] / 2) >= 0.0
+
+
+def test_decomposed_pieces_do_not_overlap_each_other():
+    r = collision_proxy(part(TUBE))
+    boxes = [(tuple(g.center[i] - dims(g)[n] / 2 for i, n in enumerate(("size_x", "size_y", "size_z"))),
+              tuple(g.center[i] + dims(g)[n] / 2 for i, n in enumerate(("size_x", "size_y", "size_z")))) for g in r.geoms]
+    for i in range(len(boxes)):
+        for j in range(i + 1, len(boxes)):
+            (a0, a1), (b0, b1) = boxes[i], boxes[j]
+            assert not all(min(a1[k], b1[k]) - max(a0[k], b0[k]) > 1e-12 for k in range(3))
+
+
+def test_monte_carlo_coverage_of_the_decomposed_tube_and_plate():
+    # Seeded Monte Carlo against the recipe, independent of the code under test (point-in-primitive by inverse rotation).
+    # The decomposition is inside the recipe: no sampled point is in the proxy and not in the recipe, and the fraction of the
+    # recipe missed agrees with the reported error within the sampling error.
+    rng = random.Random(486)
+    for comps, lo, hi, tol in (
+        (TUBE, (-0.06, -0.06, -0.26), (0.06, 0.06, 0.26), 0.10),
+        (PLATE_HOLE, (-0.16, -0.11, -0.011), (0.16, 0.11, 0.011), 0.02),
+    ):
+        r = collision_proxy(part(comps), tolerance=tol)
+        outer, hole = comps[0], comps[1]
+        n, in_recipe, missed = 80_000, 0, 0
+        for _ in range(n):
+            pt = tuple(rng.uniform(a, b) for a, b in zip(lo, hi))
+            rec = _geom_contains_component(outer, pt) and not _geom_contains_component(hole, pt)
+            prx = _any_geom(r, pt)
+            assert rec or not prx  # the proxy never has material the recipe does not
+            in_recipe += rec
+            missed += rec and not prx
+        fraction = missed / in_recipe
+        sigma = math.sqrt(fraction * (1 - fraction) / in_recipe)
+        assert fraction <= tol + 5 * sigma
+        assert fraction == pytest.approx(-r.volume_error.value, abs=5 * sigma + 1e-4)
+        # the recipe volume by sampling (the sample box volume times the hit rate) matches the reported one
+        sample_volume = math.prod(b - a for a, b in zip(lo, hi))
+        assert in_recipe / n * sample_volume == pytest.approx(r.recipe_volume.value, rel=0.03)
+
+
+def test_tolerance_is_stated_and_a_wall_too_thin_for_it_is_rejected_with_the_reason():
+    thin = [cyl("outer", 0.05, 0.5), cyl("bore", 0.0475, 0.5, op="subtract")]  # wall = 5 % of the radius
+    with pytest.raises(ShapeError, match=r"too thin for the tolerance"):
+        collision_proxy(part(thin))
+    r = collision_proxy(part(thin), tolerance=0.3)  # a looser stated tolerance is accepted, and is the one reported
+    assert r.derivation.tolerance == 0.3 and -0.3 <= r.volume_error.value < 0
+    for bad in (0.0, -0.1, 1.5):
+        with pytest.raises(ShapeError, match="tolerance must be"):
+            collision_proxy(part(TUBE), tolerance=bad)
+    # a tighter tolerance gives more pieces and a smaller error
+    loose, tight = collision_proxy(part(TUBE), tolerance=0.1), collision_proxy(part(TUBE), tolerance=0.06)
+    assert len(tight.geoms) > len(loose.geoms) and abs(tight.volume_error.value) < abs(loose.volume_error.value)
+
+
+def test_decomposition_follows_the_host_frame_axis_and_parameters():
+    # A plate rotated 90 degrees about x (its z axis now along world y), bore along that axis, at an offset centre.
+    comps = [
+        box("plate", 0.3, 0.2, 0.02, at=(0.1, 0.2, 0.3), quat=ROT_X90),
+        cyl("hole", 0.05, 0.02, at=(0.15, 0.2, 0.3), op="subtract", quat=ROT_X90),
+    ]
+    r = collision_proxy(part(comps), tolerance=0.02)
+    assert r.derivation.method == "void-decomposition"
+    centre_line = (0.15, 0.2, 0.3)
+    assert not any(_geom_contains(g, centre_line) for g in r.geoms)
+    assert any(_geom_contains(g, (0.15 + 0.06, 0.2, 0.3 + 0.001)) for g in r.geoms)
+    assert not any(_geom_contains(g, (0.15, 0.2 + 0.009, 0.3 + 0.04)) for g in r.geoms)
+    assert any(_geom_contains(g, (0.15, 0.2 + 0.009, 0.3 + 0.06)) for g in r.geoms)
+    assert -0.02 <= r.volume_error.value < 0.0
+    # a bore along the plate's x axis (a box face pair other than z)
+    along_x = [box("blk", 0.2, 0.3, 0.3), cyl("b", 0.05, 0.2, op="subtract", quat={"x": 0.0, "y": S2, "z": 0.0, "w": S2})]
+    rx = collision_proxy(part(along_x), tolerance=0.05)
+    assert rx.derivation.method == "void-decomposition"
+    assert not any(_geom_contains(g, (0.09, 0.0, 0.0)) for g in rx.geoms) and any(_geom_contains(g, (0.09, 0.0, 0.08)) for g in rx.geoms)
+    # a parameter-driven tube: the proxy follows the length parameter and names it
+    tube = {
+        "id": "outer",
+        "primitive": {"kind": "cylinder", "radius": ax(0.05), "length": ax(0.0, [("w", 1.0)])},
+        "position": {"x": ax(), "y": ax(), "z": ax()},
+    }
+    bore = {**tube, "id": "bore", "operation": "subtract", "primitive": {"kind": "cylinder", "radius": ax(0.04), "length": ax(0.0, [("w", 1.0)])}}
+    pp = part([tube, bore], [length_param()])
+    long = collision_proxy(pp, {"w": Quantity.model_validate(q(0.4))})
+    assert long.derivation.method == "void-decomposition" and long.recipe_volume.value == approx(math.pi * 0.0009 * 0.4)
+    assert [u.name for u in long.derivation.parameters] == ["w"]
+
+
+def test_decomposition_leaves_mass_to_mass_properties():
+    p = part(TUBE)
+    r = collision_proxy(p, tolerance=0.1)
+    m = mass_properties(p, material())
+    assert m.volume.value == r.recipe_volume.value  # the recipe volume, bit for bit; the proxy geoms are not summed for mass
+    assert m.mass.value == approx(RHO * math.pi * 0.00045)
+    assert r.proxy_volume.value != m.volume.value  # the proxy is an approximation and is not what mass uses
+
+
+def test_a_part_with_a_bore_and_an_unrelated_added_component_keeps_the_latter_whole():
+    comps = [*PLATE_HOLE, sphere("ball", 0.05, at=(0.5, 0.0, 0.0))]
+    r = collision_proxy(part(comps), tolerance=0.02)
+    ball = [g for g in r.geoms if g.component == "ball"]
+    assert len(ball) == 1 and ball[0].id == "ball" and ball[0].primitive == "sphere"
+    assert abs(r.volume_error.value) <= 0.02
 
 
 # --- the proxy covers the recipe (independent point test) ---------------------------------------------------------------
@@ -179,10 +365,10 @@ def _geom_contains(g, point):
 
 
 def test_proxy_contains_every_sampled_point_of_the_recipe_and_its_volume_matches_integration():
-    # A bracket: block with a rotated cylindrical hole through it, plus a post on top and a ball on the side.
+    # A bracket: block with a rotated blind cylindrical pocket in it, plus a post on top and a ball on the side.
     comps = [
         box("base", 0.4, 0.2, 0.1, at=(0.0, 0.0, 0.05)),
-        cyl("bore", 0.03, 0.2, at=(0.1, 0.0, 0.05), op="subtract", quat=ROT_X90),
+        cyl("bore", 0.03, 0.1, at=(0.1, 0.0, 0.05), op="subtract", quat=ROT_X90),  # blind: not a through-bore, so filled
         cyl("post", 0.04, 0.3, at=(-0.1, 0.0, 0.25)),
         sphere("ball", 0.08, at=(0.3, 0.0, 0.05)),
     ]
@@ -210,9 +396,9 @@ def test_proxy_contains_every_sampled_point_of_the_recipe_and_its_volume_matches
     # Monte Carlo (seeded): the estimate of the reported proxy volume is within 2 % of it (the hit fraction is about 0.05, so sigma ~ 0.64 % of the volume at n = 120k).
     assert inside_proxy / n * box_volume == pytest.approx(r.proxy_volume.value, rel=0.02)
     assert inside_recipe / n * box_volume == pytest.approx(r.recipe_volume.value, rel=0.02)
-    # By hand: base 0.008 + post pi 0.0016 0.3 + ball 4/3 pi 0.000512; bore pi 0.0009 0.2.
+    # By hand: base 0.008 + post pi 0.0016 0.3 + ball 4/3 pi 0.000512; bore pi 0.0009 0.1.
     proxy_hand = 0.008 + math.pi * 0.0016 * 0.3 + 4.0 / 3.0 * math.pi * 0.000512
-    bore_hand = math.pi * 0.0009 * 0.2
+    bore_hand = math.pi * 0.0009 * 0.1
     assert r.proxy_volume.value == approx(proxy_hand)
     assert r.recipe_volume.value == approx(proxy_hand - bore_hand)
     assert r.volume_error.value == approx(bore_hand / (proxy_hand - bore_hand))
@@ -310,8 +496,7 @@ def _dump(r):
     return r.model_dump(mode="json")
 
 
-def test_proxy_cannot_be_forged():
-    r = collision_proxy(part([box("plate", 0.3, 0.2, 0.02), cyl("hole", 0.05, 0.02, op="subtract")]))
+def _forger(r):
     CollisionProxy.model_validate(_dump(r))
 
     def broken(edit, match: str | None):
@@ -320,6 +505,13 @@ def test_proxy_cannot_be_forged():
         with pytest.raises(ValueError, match=match):
             CollisionProxy.model_validate(d)
 
+    return broken
+
+
+def test_filled_proxy_cannot_be_forged():
+    r = collision_proxy(part([box("plate", 0.3, 0.2, 0.02), cyl("pocket", 0.05, 0.01, at=(0.0, 0.0, 0.005), op="subtract")]))
+    assert r.derivation.method == "added-primitives"
+    broken = _forger(r)
     broken(lambda d: d.update(badge="cite"), None)
     broken(lambda d: d["volume_error"].update(value=0.0), "volume_error must be")
     broken(lambda d: d["proxy_volume"].update(value=0.5), "proxy_volume must be the sum")
@@ -330,6 +522,27 @@ def test_proxy_cannot_be_forged():
     broken(lambda d: d["geoms"].append(d["geoms"][0]), "duplicate geom id")
     broken(lambda d: d["geoms"].clear(), None)
     broken(lambda d: d["volume_error"].update(unit="m^3"), "volume_error must be in")
+    broken(lambda d: d["derivation"].update(tolerance=0.1), "tolerance is given exactly")
+    broken(lambda d: d["derivation"].update(method="void-decomposition"), "tolerance is given exactly")
+    broken(lambda d: d["geoms"][0].update(id="plate_p0"), "id must equal component")
+    broken(lambda d: d.update(decomposed_voids=[{"id": "x", "primitive": "cylinder", "host": "plate", "volume": 1e-5}]), "no decomposed voids")
+
+
+def test_decomposed_proxy_cannot_be_forged():
+    r = collision_proxy(part(PLATE_HOLE), tolerance=0.1)
+    assert r.derivation.method == "void-decomposition"
+    broken = _forger(r)
+    tol = r.derivation.tolerance
+    assert tol == 0.1
+    broken(lambda d: d["derivation"].update(method="added-primitives", tolerance=None), "no decomposed voids")
+    broken(lambda d: d["derivation"].update(tolerance=None), "tolerance is given exactly")
+    broken(lambda d: d["derivation"].update(tolerance=0.001), "exceeds the stated tolerance")
+    broken(lambda d: d["decomposed_voids"].clear(), "lists the voids")
+    broken(lambda d: d.update(filled_voids=[{"id": "hole", "primitive": "cylinder", "volume": 1e-5}]), "no filled voids")
+    broken(lambda d: d["decomposed_voids"][0].update(host="nope"), "host must have at least one piece")
+    broken(lambda d: d["decomposed_voids"].append(d["decomposed_voids"][0]), "duplicate decomposed void id")
+    broken(lambda d: d["volume_error"].update(value=-tol * 2), "volume_error must be")
+    broken(lambda d: (d["volume_error"].update(value=0.5), d["proxy_volume"].update(value=d["recipe_volume"]["value"] * 1.5)), "proxy_volume must be the sum")
 
 
 def test_proxy_has_no_mesh_kind():

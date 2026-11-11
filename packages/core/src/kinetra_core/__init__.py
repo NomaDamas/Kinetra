@@ -9,7 +9,7 @@ from .assumption import (
     NormalDistribution,
     UniformDistribution,
 )
-from .collision import CollisionProxy, FilledVoid, ProxyDerivation, ProxyGeom
+from .collision import CollisionProxy, DecomposedVoid, FilledVoid, ProxyDerivation, ProxyGeom
 from .conventions import COORDINATE_FRAME, QUATERNION_COMPONENTS, Unit
 from .designspec import (
     ActuateEntry,
@@ -72,6 +72,7 @@ __all__ = [
     "DerivedInertia",
     "DerivedScalar",
     "DerivedVector",
+    "DecomposedVoid",
     "Dimension",
     "DesignSpec",
     "Distribution",

@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "A subtracted shape component the proxy kept as a gap: the pieces of its `host` (the added component that contains\nit) leave this void empty, up to the tolerance. `volume` [m^3] is the void's own volume.",
+  "properties": {
+    "id": {
+      "pattern": "^[a-z][a-z0-9_]{0,63}$",
+      "title": "Id",
+      "type": "string"
+    },
+    "primitive": {
+      "enum": [
+        "box",
+        "cylinder",
+        "sphere"
+      ],
+      "title": "Primitive",
+      "type": "string"
+    },
+    "host": {
+      "pattern": "^[a-z][a-z0-9_]{0,63}$",
+      "title": "Host",
+      "type": "string"
+    },
+    "volume": {
+      "exclusiveMinimum": 0.0,
+      "title": "Volume",
+      "type": "number"
+    }
+  },
+  "required": [
+    "id",
+    "primitive",
+    "host",
+    "volume"
+  ],
+  "title": "DecomposedVoid",
+  "type": "object"
+}
