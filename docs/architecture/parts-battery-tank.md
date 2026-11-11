@@ -36,6 +36,7 @@
 
 `Supply`는 값이다(불변). `capacity`(단위 J 또는 kg)와 `remaining`을 가지고 `draw(양)`이나 `draw_rate(률, dt)`가 **새 `Supply`와 `Draw`**(요청량, 낸 양, `satisfied` = 낸 양 ÷ 요청량)를 돌려준다. 시뮬레이션이 공급원 인스턴스마다 `Supply` 하나를 쥐고 매 단계 넘기므로, 같은 인스턴스를 `supply`로 가리키는 액추에이터 여럿이 같은 잔량을 쓴다(`test_battery_two_motors_on_one_battery_spend_the_same_stock`).
 
+- 받을 수 없는 요청(음수나 비유한 양·률·시간 간격)은 `SupplyError`(`ValueError`의 하위 클래스)다. `draw_rate`는 `rate`와 `dt`를 따로 검사하므로 `draw_rate(-1.0, 0.0)`도 거부한다(곱 `-0.0`이 양 검사를 통과하던 틈, B-03f).
 - 잔량이 모자라면 있는 만큼만 내고 `satisfied < 1`을 알린다. 부르는 쪽은 그 단계의 액추에이터 출력에 `satisfied`를 곱한다(받은 에너지가 절반이면 일을 절반 한다). 잔량은 0 아래로 내려가지 않는다. 다 쓴 공급원은 0을 낸다.
 - 모터가 배터리에서 꺼내는 전력은 $P_\mathrm{el} = P_\mathrm{mech}/\eta$ (`electrical_power`, $0<\eta\le 1$). 부하가 모터를 제동하는 구간(기계 동력이 음수)은 0을 꺼내고 **되돌려주지 않는다**(회생 제동은 모델에 없다).
 - 탱크의 질량: `tank_total_mass(건조 질량, 공급)` = 건조 질량 + 남은 추진제. 건조 질량은 `mass_properties(tank, 재료)`의 질량이다. 소모에 따라 총질량이 준다. 이 질량 변화를 MJCF에 어떻게 반영할지는 X-01c의 결정이고 이 문서가 정하지 않는다. 무게중심이 추진제와 함께 이동하는 것도 여기에 없다(`tank_total_mass`는 스칼라 질량만 준다).
