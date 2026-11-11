@@ -18,12 +18,13 @@ Rules (the issue's DoD; read by G-03a proposals, G-04 guard, G-08 MCP server):
   point it meets (`snap_to`), joined at once by a joint; two parts already in the project are joined with `connect`. The pose of the
   instance is then computed in closed form (`snapmath.py`), so the two snap frames coincide (`facing: aligned`) or face each other
   (`facing: opposed`, their +Z axes opposite), turned about the joining axis by a whole number of quarter turns. The one place
-  with nothing to snap to is the ground: `on_ground` rests the part, unrotated, on z = 0 at ground position (x, y) [m]; a part with a
-  shape recipe rests on its lowest point, one without (nothing to measure) is given the height `z` of its origin, which is then a
-  declared number. There is no tool that moves or rotates a part by numbers.
+  with nothing to snap to is the ground: `on_ground` rests the part, unrotated, with its lowest point on z = 0 at ground position
+  (x, y) [m]. It is only for a part with a shape recipe (the validator can then check support and overlap); a part without one is
+  refused, there is no free height. There is no tool that moves or rotates a part by numbers.
 - **What the agent states is declared, what the tool computes is `sim`.** Parameter values, joint limits, break thresholds and
   control-schedule numbers the call carries are the user's: badge `declared`, source = the optional `source` text of the call
-  (the user's words or reason) or a default sentence, `declared_by` "agent edit tools (G-02a)". A pose the tool computes from snap
+  (the user's words or reason) or a default sentence, `declared_by` "agent edit tools (G-02a)". The ground spot (x, y) of `on_ground` is the call's, so that pose is `declared` too (z is
+  computed). A pose the tool computes from snap
   points is a closed-form calculation: badge `sim` (`project-model.md`), `source.ref` names the two snap points. Nothing is `cite`:
   the tools cite no document.
 - **Schema violations are refused before anything is built.** Arguments are JSON; an unparsable string, an unknown tool, an unknown
@@ -58,7 +59,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Annotated, Any, Literal, Union
 
-from pydantic import BaseModel, ConfigDict, Field, ValidationError
+from pydantic import BaseModel, ConfigDict, Field, StrictBool, ValidationError
 
 from kinetra_core import (
     ActuateEntry,
@@ -173,13 +174,12 @@ class JointArg(_Args):
 
 
 class OnGround(_Args):
-    """Rest the part, unrotated, on the ground at (x, y) [m]. A part with a shape recipe rests on its lowest point. A part without one
-    has no geometry to rest, so the height of its origin `z` [m] must be given (and is refused for a part that has a shape)."""
+    """Rest the part, unrotated, on the ground at (x, y) [m]: its lowest point at z = 0 (z is computed, never given). Only for a part with
+    a shape recipe; the validator can then check support and overlap. The ground spot (x, y) is the caller's: `declared` with the call's `source`."""
 
     type: Literal["on_ground"]
     x: _Num = 0.0
     y: _Num = 0.0
-    z: _Num | None = None
 
 
 class SnapTo(_Args):
@@ -210,14 +210,14 @@ class SetParameterArgs(_Args):
     instance: _Id
     name: _Name
     value: _Num = Field(description="In the parameter's own unit (SI); the part's range applies.")
-    resnap: bool = Field(default=True, description="Move the instance so its first joint still meets after the change.")
+    resnap: StrictBool = Field(default=True, description="Move the instance so its first joint still meets after the change.")
     source: _Source = None
 
 
 class ClearParameterArgs(_Args):
     instance: _Id
     name: _Name
-    resnap: bool = True
+    resnap: StrictBool = True
 
 
 class SetMaterialArgs(_Args):
@@ -575,22 +575,18 @@ class EditTools:
         if isinstance(place, OnGround):
             geometry = sm.world_bodies(part, values, sm.IDENTITY, (0.0, 0.0, 0.0))
             low = sm.lowest_z(geometry)
-            if low is None and place.z is None:
-                raise _refuse(
-                    ReasonCode.INVALID_COMMAND,
-                    f"part {part.id!r} has no shape recipe, so there is nothing to rest on the ground: give the height z [m] of its origin",
-                    Ref(kind=RefKind.PART, id=part.id),
-                )
-            if low is not None and place.z is not None:
-                raise _refuse(
-                    ReasonCode.INVALID_COMMAND,
-                    f"part {part.id!r} has a shape recipe and rests on its lowest point: z must not be given",
-                    Ref(kind=RefKind.PART, id=part.id),
-                )
             if low is None:
-                pose = self._pose(sm.IDENTITY, (place.x, place.y, place.z), self._declared(a.source))
-            else:
-                pose = self._pose(sm.IDENTITY, (place.x, place.y, -low), self._computed(f"rests on the ground: lowest point of {ident!r} at z = 0 (snapmath)"))
+                raise _refuse(
+                    ReasonCode.INVALID_COMMAND,
+                    f"part {part.id!r} has no shape recipe, so the validator could not check its support or overlap: it cannot be put on the ground "
+                    "by this tool. Place it at a snap point of a part that is in the project",
+                    Ref(kind=RefKind.PART, id=part.id),
+                )
+            # One badge covers a whole pose (`Pose`). (x, y) are the caller's number, so the pose is `declared`; z is computed.
+            note = "z computed by resting the lowest point of the part on the ground (snapmath)"
+            pose = self._pose(
+                sm.IDENTITY, (place.x, place.y, -low), {"badge": Badge.DECLARED, "source": Source(ref=f"{a.source or DEFAULT_SOURCE}; {note}", declared_by=DECLARED_BY, declared_at=self._clock())}
+            )
             joint = None
             where = f"on the ground at ({place.x:g}, {place.y:g}) m"
         else:
@@ -664,7 +660,11 @@ class EditTools:
             why = f"rests on the ground after a parameter change: lowest point of {inst.id!r} at z = 0 (snapmath)"
         moves: list = []
         if max(abs(x - y) for x, y in zip(t_new, t_old)) >= 1e-12:
-            moves.append(self._translated(inst, t_new, why))
+            if anchor is None:  # only z is recomputed; (x, y) stay the caller's, so the pose keeps its provenance
+                pose = Pose(position=WorldPosition(x=sm.clean(t_new[0]), y=sm.clean(t_new[1]), z=sm.clean(t_new[2])), orientation=inst.pose.orientation, badge=inst.pose.badge, source=inst.pose.source)
+                moves.append(MoveInstance(type="move_instance", id=inst.id, pose=pose))
+            else:
+                moves.append(self._translated(inst, t_new, why))
         held = {inst.id} | ({anchor.a.instance} if anchor is not None else set())
         for joint in project.design.joints:
             if inst.id not in (joint.a.instance, joint.b.instance) or joint is anchor:

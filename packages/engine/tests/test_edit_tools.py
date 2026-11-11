@@ -128,11 +128,11 @@ def _property_names(node):
 
 def test_edit_tools_the_only_coordinates_are_a_ground_spot_and_no_tool_takes_a_pose():
     """Position is a snap point: no field is a pose, an orientation, a quaternion or a position. The one numeric place is `on_ground`
-    (x, y, and z for a part without geometry), the spot where nothing exists yet to snap to."""
+    (x and y only: z is computed from the shape), the spot where nothing exists yet to snap to."""
     names = set(_property_names(specs()))
     assert not names & {"pose", "orientation", "quaternion", "position", "w", "rotation", "yaw"}
     on_ground = [t for t in specs() if t["function"]["name"] == "add_part"][0]["function"]["parameters"]["$defs"]["OnGround"]
-    assert set(on_ground["properties"]) == {"type", "x", "y", "z"}
+    assert set(on_ground["properties"]) == {"type", "x", "y"}
 
 
 # --- schema violations are refused ---------------------------------------------------------------------------------
@@ -244,7 +244,10 @@ def test_edit_tools_a_plate_rests_on_the_ground_by_its_lowest_point(tools):
     r = ok(tools, empty(), "add_part", {"part": "plate", "parameters": {"thickness": 0.01}, "place": {"type": "on_ground", "x": 1.0, "y": -2.0}})
     inst = r.project.design.instances[0]
     assert near(pos(r.project, "plate-1"), (1.0, -2.0, 0.005))  # the slab is thickness/2 above its centre... lowest point z = 0
-    assert inst.pose.badge is Badge.SIM and "ground" in inst.pose.source.ref  # computed by the tool, not declared
+    # (x, y) are the call's number, so the pose is declared with the call's source; z is computed and the source says so
+    assert inst.pose.badge is Badge.DECLARED and inst.pose.source.declared_by == "agent edit tools (G-02a)" and "z computed" in inst.pose.source.ref
+    r2 = ok(tools, empty(), "add_part", {"part": "plate", "place": {"type": "on_ground", "x": 1.0}, "source": "the user said: put it one metre to the right"})
+    assert r2.project.design.instances[0].pose.source.ref.startswith("the user said: put it one metre to the right;")
     assert inst.parameters[0].badge is Badge.DECLARED and inst.parameters[0].source.declared_by == "agent edit tools (G-02a)"
     assert inst.parameters[0].source.declared_at == NOW
 
@@ -292,18 +295,22 @@ def test_edit_tools_an_unknown_snap_point_or_target_is_unknown_id(tools, tower):
     assert codes(r) == [ReasonCode.UNKNOWN_ID]
 
 
-def test_edit_tools_a_shapeless_part_needs_a_height_and_a_shaped_one_refuses_it(tools):
+def test_edit_tools_a_part_without_a_shape_cannot_be_put_on_the_ground_and_there_is_no_free_height(tools):
     shapeless = PartDef.model_validate(
         {"id": "marker", "name": "marker", "snap_points": [{"id": "p", "kind": "k", "accepts": ["k"], "position": {"x": {"offset": 0}, "y": {"offset": 0}, "z": {"offset": 0}},
                                                            "orientation": {"x": 0, "y": 0, "z": 0, "w": 1}, "badge": "declared", "source": {"ref": "unit test"}}]}
     )
     t = EditTools(library={**load_library(), "marker": shapeless}, clock=lambda: NOW)
     r = run(t, empty(), "add_part", {"part": "marker", "place": GROUND})
-    assert codes(r) == [ReasonCode.INVALID_COMMAND]
-    r = ok(t, empty(), "add_part", {"part": "marker", "place": {"type": "on_ground", "z": 0.25}})
-    assert near(pos(r.project, "marker-1"), (0.0, 0.0, 0.25)) and r.project.design.instances[0].pose.badge is Badge.DECLARED
+    assert codes(r) == [ReasonCode.INVALID_COMMAND] and "shape recipe" in r.reasons[0].message and r.reasons[0].ids[0].id == "marker"
+    r = run(t, empty(), "add_part", {"part": "marker", "place": {"type": "on_ground", "z": 0.25}})  # a height has no field
+    assert codes(r) == [ReasonCode.INVALID_COMMAND] and "z" in r.reasons[0].message
     r = run(t, empty(), "add_part", {"part": "plate", "place": {"type": "on_ground", "z": 0.25}})
     assert codes(r) == [ReasonCode.INVALID_COMMAND]
+    # it can still be put at a snap point of a shaped part (the validator then checks the geometry that exists)
+    p = ok(t, empty(), "add_part", {"part": "plate", "place": GROUND}).project
+    r = run(t, p, "add_part", {"part": "marker", "place": snap("p", "plate-1", "top", "aligned")})
+    assert codes(r) == [ReasonCode.INVALID_SNAP]  # the kinds do not accept each other: the validator, not the tool, decides
 
 
 def test_edit_tools_ids_are_made_deterministically_and_can_be_given(tools, tower):
@@ -342,6 +349,15 @@ def test_edit_tools_a_parameter_outside_the_range_or_of_another_part_is_refused(
     assert codes(r) == [ReasonCode.UNKNOWN_ID]
 
 
+@pytest.mark.parametrize("tool,base", [("set_parameter", {"name": "thickness", "value": 0.01}), ("clear_parameter", {"name": "thickness"})])
+@pytest.mark.parametrize("bad", ["true", "false", 1, 0, None, "yes"])
+def test_edit_tools_resnap_is_a_strict_boolean(tools, tower, tool, base, bad):
+    tower = ok(tools, tower, "set_parameter", {"instance": "plate-1", "name": "thickness", "value": 0.008}).project  # so both tools have a value to act on
+    r = run(tools, tower, tool, {"instance": "plate-1", "resnap": bad, **base})
+    assert not r.ok and codes(r) == [ReasonCode.INVALID_COMMAND] and any("resnap" in x.message for x in r.reasons)
+    assert run(tools, tower, tool, {"instance": "plate-1", "resnap": True, **base}).ok
+
+
 def test_edit_tools_clear_parameter_takes_the_default_again(tools, tower):
     p = ok(tools, tower, "set_parameter", {"instance": "plate-1", "name": "thickness", "value": 0.01}).project
     r = ok(tools, p, "clear_parameter", {"instance": "plate-1", "name": "thickness"})
@@ -374,14 +390,19 @@ def test_edit_tools_remove_part_takes_what_hangs_on_it(tools, tower):
 
 def car_tools():
     example = json.loads((EXAMPLES / "DesignSpec.four-wheel-car.json").read_text(encoding="utf-8"))
-    library = {p["id"]: PartDef.model_validate(p) for p in example["parts"]}
+    # The hand-written car has no shapes. Its chassis gets a 0.1 m cube so that it can rest on the ground (its lowest point at z = 0
+    # puts the centre at z = 0.05, the hand-written pose); the other parts are as written.
+    cube = {"badge": "declared", "source": {"ref": "unit test: a 0.1 m cube"}, "components": [
+        {"id": "body", "operation": "add", "position": {"x": {"offset": 0.0}, "y": {"offset": 0.0}, "z": {"offset": 0.0}},
+         "primitive": {"kind": "box", "size_x": {"offset": 0.1}, "size_y": {"offset": 0.1}, "size_z": {"offset": 0.1}}}]}
+    library = {p["id"]: PartDef.model_validate({**p, "shape": cube} if p["id"] == "chassis" else p) for p in example["parts"]}
     project = Project.model_validate({"world": {"planet": "earth"}, "design": {"materials": example["materials"]}})
     return EditTools(library=library, clock=lambda: NOW), project, DesignSpec.model_validate(example)
 
 
 def test_edit_tools_the_four_wheel_car_is_built_from_snap_points_alone_and_matches_the_hand_written_one():
     t, p, example = car_tools()
-    p = ok(t, p, "add_part", {"part": "chassis", "instance_id": "chassis-1", "place": {"type": "on_ground", "z": 0.05}, "material": "example-material"}).project
+    p = ok(t, p, "add_part", {"part": "chassis", "instance_id": "chassis-1", "place": GROUND, "material": "example-material"}).project
 
     def add(part, ident, own, target_inst, target_snap, **more):
         nonlocal p
@@ -420,22 +441,22 @@ def test_edit_tools_the_four_wheel_car_is_built_from_snap_points_alone_and_match
 
 def test_edit_tools_connect_moves_the_second_assembly_to_meet_the_first(tools):
     t, p, _ = car_tools()
-    p = ok(t, p, "add_part", {"part": "chassis", "place": {"type": "on_ground", "z": 0.05}}).project
-    p = ok(t, p, "add_part", {"part": "wheel", "place": {"type": "on_ground", "x": 1.0, "y": 1.0, "z": 0.05}}).project
-    assert near(pos(p, "wheel-1"), (1.0, 1.0, 0.05))
-    r = ok(t, p, "connect", {"a": {"instance": "chassis-1", "snap_point": "axle-fl"}, "b": {"instance": "wheel-1", "snap_point": "hub"}, "facing": "aligned", "joint": {"kind": "hinge", "id": "axle"}})
-    assert near(pos(r.project, "wheel-1"), (0.1, 0.1, 0.05))  # chassis at (0, 0, 0.05), axle-fl snap at (0.1, 0.1, 0)
+    p = ok(t, p, "add_part", {"part": "chassis", "place": GROUND}).project
+    p = ok(t, p, "add_part", {"part": "chassis", "place": {"type": "on_ground", "x": 1.0, "y": 1.0}}).project
+    assert near(pos(p, "chassis-2"), (1.0, 1.0, 0.05))
+    r = ok(t, p, "connect", {"a": {"instance": "chassis-1", "snap_point": "motor-l"}, "b": {"instance": "chassis-2", "snap_point": "motor-r"}, "facing": "aligned", "joint": {"kind": "fixed", "id": "bridge"}})
+    assert near(pos(r.project, "chassis-2"), (0.0, 0.2, 0.05))  # motor-l of chassis-1 is at (-0.1, 0.1); motor-r sits at (-0.1, -0.1) from chassis-2's centre
     assert r.command.commands[-1].type == "add_joint" and r.command.commands[0].type == "move_instance"
-    # `none` joins where they are: they are 1.3 m apart, so the validator refuses
-    r = run(t, p, "connect", {"a": {"instance": "chassis-1", "snap_point": "axle-fl"}, "b": {"instance": "wheel-1", "snap_point": "hub"}, "facing": "aligned", "move": "none"})
-    assert codes(r) == [ReasonCode.INVALID_SNAP]
+    # `none` joins where they are: they are about 1.3 m apart, so the validator refuses
+    r = run(t, p, "connect", {"a": {"instance": "chassis-1", "snap_point": "motor-l"}, "b": {"instance": "chassis-2", "snap_point": "motor-r"}, "facing": "aligned", "move": "none"})
+    assert ReasonCode.INVALID_SNAP in codes(r)
     assert codes(run(t, p, "connect", {"a": {"instance": "chassis-1", "snap_point": "axle-fl"}, "b": {"instance": "chassis-1", "snap_point": "axle-fr"}, "facing": "aligned"})) == [ReasonCode.INVALID_COMMAND]
 
 
 def test_edit_tools_connect_carries_everything_joined_to_the_moved_part_and_refuses_a_loop():
     t, p, _ = car_tools()
-    p = ok(t, p, "add_part", {"part": "chassis", "place": {"type": "on_ground", "z": 0.05}}).project
-    p = ok(t, p, "add_part", {"part": "chassis", "place": {"type": "on_ground", "x": 5.0, "z": 0.05}}).project
+    p = ok(t, p, "add_part", {"part": "chassis", "place": GROUND}).project
+    p = ok(t, p, "add_part", {"part": "chassis", "place": {"type": "on_ground", "x": 5.0}}).project
     p = ok(t, p, "add_part", {"part": "motor", "place": snap("mount", "chassis-2", "motor-l", "aligned")}).project
     assert near(pos(p, "motor-1"), (4.9, 0.1, 0.05))
     r = ok(t, p, "connect", {"a": {"instance": "chassis-1", "snap_point": "motor-l"}, "b": {"instance": "chassis-2", "snap_point": "motor-r"}, "facing": "aligned"})
@@ -447,7 +468,7 @@ def test_edit_tools_connect_carries_everything_joined_to_the_moved_part_and_refu
 
 def test_edit_tools_set_joint_changes_kind_limits_and_threshold_with_declared_numbers():
     t, p, _ = car_tools()
-    p = ok(t, p, "add_part", {"part": "chassis", "place": {"type": "on_ground", "z": 0.05}}).project
+    p = ok(t, p, "add_part", {"part": "chassis", "place": GROUND}).project
     p = ok(t, p, "add_part", {"part": "wheel", "place": snap("hub", "chassis-1", "axle-fl", "aligned", joint={"kind": "hinge", "id": "axle"})}).project
     r = ok(t, p, "set_joint", {"joint": "axle", "limits": {"lower": -1.0, "upper": 1.0}, "break_threshold": 250.0, "source": "user asked for a stop at one radian"})
     (joint,) = r.project.design.joints
