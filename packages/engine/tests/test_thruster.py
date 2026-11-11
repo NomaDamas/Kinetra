@@ -392,3 +392,21 @@ def test_thruster_opening_response_is_checked_against_the_first_time_at_rated_th
         d["curves"][0]["curve"]["points"] = [{"x": 0.0, "y": 0.0}, {"x": 0.007, "y": F}, {"x": 1.0, "y": F}]
 
     PartDef.model_validate(mutated(edit))  # a flat tail after the rise is fine: the spec still names the first time
+
+
+def test_thruster_part_without_its_numbers_is_rejected_even_as_a_bare_role():
+    from kinetra_core import DesignSpec
+
+    d = json.loads((ROOT / "schemas/examples/DesignSpec.four-wheel-car.json").read_text(encoding="utf-8"))
+    next(p for p in d["parts"] if p["id"] == "motor")["role"] = "thruster"
+    with pytest.raises(ValueError, match="a thruster part needs the curve 'thrust'"):
+        DesignSpec.model_validate(d)
+
+
+def test_motor_actuator_on_a_complete_thruster_part_is_rejected():
+    from kinetra_core import DesignSpec
+
+    d = rocket_car(raw())
+    d["actuators"].append({"id": "motor-x", "kind": "motor", "instance": "rocket-1", "joint": d["joints"][0]["id"]})
+    with pytest.raises(ValueError, match="a motor drives a part with role 'motor', but instance 'rocket-1'"):
+        DesignSpec.model_validate(d)
