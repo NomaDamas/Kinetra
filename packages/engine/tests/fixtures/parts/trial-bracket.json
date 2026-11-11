@@ -1,0 +1,249 @@
+{
+  "id": "trial-bracket",
+  "name": "Trial L-bracket",
+  "parameters": [
+    {
+      "name": "width",
+      "unit": "m",
+      "default": {
+        "badge": "declared",
+        "source": {
+          "ref": "B-01d trial part: dimensions declared to exercise docs/process/add-part.md, not a real part",
+          "declared_by": "kinetra-b01d-trial",
+          "declared_at": "2026-11-12T00:00:00Z"
+        },
+        "value": 0.1,
+        "unit": "m"
+      },
+      "min": {
+        "badge": "declared",
+        "source": {
+          "ref": "B-01d trial part: dimensions declared to exercise docs/process/add-part.md, not a real part",
+          "declared_by": "kinetra-b01d-trial",
+          "declared_at": "2026-11-12T00:00:00Z"
+        },
+        "value": 0.08,
+        "unit": "m"
+      },
+      "max": {
+        "badge": "declared",
+        "source": {
+          "ref": "B-01d trial part: dimensions declared to exercise docs/process/add-part.md, not a real part",
+          "declared_by": "kinetra-b01d-trial",
+          "declared_at": "2026-11-12T00:00:00Z"
+        },
+        "value": 0.2,
+        "unit": "m"
+      }
+    }
+  ],
+  "snap_points": [
+    {
+      "badge": "declared",
+      "source": {
+        "ref": "B-01d trial part: dimensions declared to exercise docs/process/add-part.md, not a real part",
+        "declared_by": "kinetra-b01d-trial",
+        "declared_at": "2026-11-12T00:00:00Z"
+      },
+      "id": "base",
+      "kind": "surface",
+      "accepts": [
+        "surface"
+      ],
+      "position": {
+        "x": {
+          "offset": 0.0,
+          "terms": []
+        },
+        "y": {
+          "offset": 0.0,
+          "terms": []
+        },
+        "z": {
+          "offset": -0.005,
+          "terms": []
+        }
+      },
+      "orientation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0,
+        "w": 1.0
+      }
+    }
+  ],
+  "specs": [],
+  "shape": {
+    "badge": "declared",
+    "source": {
+      "ref": "B-01d trial part: dimensions declared to exercise docs/process/add-part.md, not a real part",
+      "declared_by": "kinetra-b01d-trial",
+      "declared_at": "2026-11-12T00:00:00Z"
+    },
+    "components": [
+      {
+        "id": "plate",
+        "primitive": {
+          "kind": "box",
+          "size_x": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "width",
+                "factor": 1.0
+              }
+            ]
+          },
+          "size_y": {
+            "offset": 0.06,
+            "terms": []
+          },
+          "size_z": {
+            "offset": 0.01,
+            "terms": []
+          }
+        },
+        "operation": "add",
+        "position": {
+          "x": {
+            "offset": 0.0,
+            "terms": []
+          },
+          "y": {
+            "offset": 0.0,
+            "terms": []
+          },
+          "z": {
+            "offset": 0.0,
+            "terms": []
+          }
+        },
+        "orientation": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 1.0
+        }
+      },
+      {
+        "id": "upright",
+        "primitive": {
+          "kind": "box",
+          "size_x": {
+            "offset": 0.02,
+            "terms": []
+          },
+          "size_y": {
+            "offset": 0.06,
+            "terms": []
+          },
+          "size_z": {
+            "offset": 0.05,
+            "terms": []
+          }
+        },
+        "operation": "add",
+        "position": {
+          "x": {
+            "offset": 0.01,
+            "terms": [
+              {
+                "param": "width",
+                "factor": -0.5
+              }
+            ]
+          },
+          "y": {
+            "offset": 0.0,
+            "terms": []
+          },
+          "z": {
+            "offset": 0.03,
+            "terms": []
+          }
+        },
+        "orientation": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 1.0
+        }
+      },
+      {
+        "id": "pin",
+        "primitive": {
+          "kind": "cylinder",
+          "radius": {
+            "offset": 0.005,
+            "terms": []
+          },
+          "length": {
+            "offset": 0.06,
+            "terms": []
+          }
+        },
+        "operation": "add",
+        "position": {
+          "x": {
+            "offset": 0.01,
+            "terms": [
+              {
+                "param": "width",
+                "factor": -0.5
+              }
+            ]
+          },
+          "y": {
+            "offset": 0.0,
+            "terms": []
+          },
+          "z": {
+            "offset": 0.06,
+            "terms": []
+          }
+        },
+        "orientation": {
+          "x": 0.7071067811865476,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.7071067811865476
+        }
+      },
+      {
+        "id": "hole",
+        "primitive": {
+          "kind": "cylinder",
+          "radius": {
+            "offset": 0.008,
+            "terms": []
+          },
+          "length": {
+            "offset": 0.01,
+            "terms": []
+          }
+        },
+        "operation": "subtract",
+        "position": {
+          "x": {
+            "offset": 0.02,
+            "terms": []
+          },
+          "y": {
+            "offset": 0.0,
+            "terms": []
+          },
+          "z": {
+            "offset": 0.0,
+            "terms": []
+          }
+        },
+        "orientation": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 1.0
+        }
+      }
+    ]
+  }
+}
