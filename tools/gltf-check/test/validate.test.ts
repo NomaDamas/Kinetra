@@ -9,7 +9,18 @@ test("every committed part fixture passes the Khronos validator with no errors a
   const reports = await validateDir(FIXTURES);
   assert.deepEqual(
     reports.map((r) => r.file),
-    ["beam-al6061.glb", "drive-shaft-steel.glb", "mounting-plate-al6061.glb", "plate-al6061.glb", "reflectance-ior.glb", "sensor-mast-user-material.glb", "wheel-pom.glb"],
+    [
+      "ballast-weight-declared-mass.glb",
+      "beam-al6061.glb",
+      "drive-shaft-steel.glb",
+      "mounting-plate-al6061.glb",
+      "payload-declared-mass.glb",
+      "payload-mount-al6061.glb",
+      "plate-al6061.glb",
+      "reflectance-ior.glb",
+      "sensor-mast-user-material.glb",
+      "wheel-pom.glb",
+    ],
   );
   for (const r of reports) assert.ok(passes(r), `${r.file}: ${JSON.stringify(r.messages)}`);
 });

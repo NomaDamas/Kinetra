@@ -226,7 +226,10 @@ def test_wheel_tread_friction_is_cited_with_a_place_and_kinetic_is_not_above_sta
     assert load_body("earth").ground_friction.value.value != specs["tread_friction_static"].value
 
 
-# ---- rolling -------------------------------------------------------------------------------------------------------------
+# ---- the compiled mass and inertia satisfy the rolling-without-slip relations ---------------------------------------------
+# These tests do NOT simulate a rolling wheel. They take the compiled mass m and axle inertia I and check them against the
+# relations of rolling without slipping (a = g sin(theta) / (1 + I / (m R^2)), friction needed), written out by hand here.
+# The simulated rolling on the three planets (MuJoCo against the same formula) is carried by X-01b.
 
 
 def rolling_ratio(wheel: PartDef, D: float = 0.1, W: float = 0.04) -> float:
@@ -247,7 +250,7 @@ def test_wheel_rolling_ratio_is_the_hand_value_and_between_a_ring_and_a_solid_di
 
 @pytest.mark.parametrize("planet", ["earth", "mars", "moon"])
 @pytest.mark.parametrize("theta_deg", [5.0, 20.0, 45.0])
-def test_wheel_rolls_down_an_incline_without_slipping_as_the_energy_and_force_balances_say(wheel, planet, theta_deg):
+def test_wheel_compiled_mass_and_inertia_satisfy_the_rolling_relations_on_every_planet(wheel, planet, theta_deg):
     g = load_body(planet).gravity.value
     theta = math.radians(theta_deg)
     r = mass_properties(wheel, POM)
@@ -259,7 +262,7 @@ def test_wheel_rolls_down_an_incline_without_slipping_as_the_energy_and_force_ba
     a = m * g * math.sin(theta) / (m + I / R**2)
     v_force = math.sqrt(2 * a * L)
     assert v_energy == pytest.approx(v_force, rel=1e-12)
-    # (3) Step the motion: the wheel turns w and travels x with x' = w R, w' = a / R, from rest. Semi-implicit Euler, dt = 1 ms.
+    # (3) Step the closed-form motion (not a physics engine): the wheel turns w and travels x with x' = w R, w' = a / R, from rest. Semi-implicit Euler, dt = 1 ms.
     x = w = 0.0
     dt, t = 1e-3, 0.0
     while x < L:
@@ -274,7 +277,7 @@ def test_wheel_rolls_down_an_incline_without_slipping_as_the_energy_and_force_ba
     assert 0.5 * g * math.sin(theta) < a < g * math.sin(theta)
 
 
-def test_wheel_rolling_acceleration_scales_with_the_planets_gravity_and_not_with_the_wheel(wheel):
+def test_wheel_rolling_relation_scales_with_the_planets_gravity_and_not_with_the_wheel(wheel):
     g = {p: load_body(p).gravity.value for p in ("earth", "mars", "moon")}
     k = rolling_ratio(wheel)
     a = {p: g[p] * math.sin(math.radians(20.0)) / (1 + k) for p in g}
@@ -284,7 +287,7 @@ def test_wheel_rolling_acceleration_scales_with_the_planets_gravity_and_not_with
         assert g["earth"] * math.sin(math.radians(20.0)) / (1 + rolling_ratio(wheel, D, W)) == pytest.approx(a["earth"], rel=1e-9)
 
 
-def test_wheel_rolls_without_slipping_up_to_the_slope_the_cited_static_friction_allows(wheel):
+def test_wheel_no_slip_slope_limit_from_the_cited_static_friction(wheel):
     # The friction force is F = m g sin(theta) k / (1 + k) and may not exceed mu_s m g cos(theta): tan(theta) <= mu_s (1 + k) / k.
     k = rolling_ratio(wheel)
     mu_s = {s.name: s.value for s in wheel.specs}["tread_friction_static"]

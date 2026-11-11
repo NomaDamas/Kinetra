@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "To the publisher: `id` is done and the document is at `revision` (the new one, or the unchanged one when the\ncommand changed nothing). Comes after the `applied` of the same change.",
+  "properties": {
+    "type": {
+      "const": "accepted",
+      "title": "Type",
+      "type": "string"
+    },
+    "id": {
+      "maxLength": 128,
+      "minLength": 1,
+      "title": "Id",
+      "type": "string"
+    },
+    "revision": {
+      "minimum": 0,
+      "title": "Revision",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "type",
+    "id",
+    "revision"
+  ],
+  "title": "Accepted",
+  "type": "object"
+}

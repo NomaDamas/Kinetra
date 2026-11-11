@@ -1,0 +1,530 @@
+{
+  "id": "payload-mount",
+  "name": "Payload mount (cradle)",
+  "parameters": [
+    {
+      "name": "length",
+      "unit": "m",
+      "default": {
+        "badge": "default",
+        "source": {
+          "ref": "B-02c payload-mount: dimension range chosen by us so it can hold the payload and ballast ranges; not a real product (inside length: the payload's length)"
+        },
+        "value": 0.12,
+        "unit": "m"
+      },
+      "min": {
+        "badge": "default",
+        "source": {
+          "ref": "B-02c payload-mount: dimension range chosen by us so it can hold the payload and ballast ranges; not a real product (inside length: the payload's length)"
+        },
+        "value": 0.06,
+        "unit": "m"
+      },
+      "max": {
+        "badge": "default",
+        "source": {
+          "ref": "B-02c payload-mount: dimension range chosen by us so it can hold the payload and ballast ranges; not a real product (inside length: the payload's length)"
+        },
+        "value": 0.4,
+        "unit": "m"
+      }
+    },
+    {
+      "name": "width",
+      "unit": "m",
+      "default": {
+        "badge": "default",
+        "source": {
+          "ref": "B-02c payload-mount: dimension range chosen by us so it can hold the payload and ballast ranges; not a real product (inside width: the payload's width)"
+        },
+        "value": 0.08,
+        "unit": "m"
+      },
+      "min": {
+        "badge": "default",
+        "source": {
+          "ref": "B-02c payload-mount: dimension range chosen by us so it can hold the payload and ballast ranges; not a real product (inside width: the payload's width)"
+        },
+        "value": 0.04,
+        "unit": "m"
+      },
+      "max": {
+        "badge": "default",
+        "source": {
+          "ref": "B-02c payload-mount: dimension range chosen by us so it can hold the payload and ballast ranges; not a real product (inside width: the payload's width)"
+        },
+        "value": 0.3,
+        "unit": "m"
+      }
+    },
+    {
+      "name": "wall_height",
+      "unit": "m",
+      "default": {
+        "badge": "default",
+        "source": {
+          "ref": "B-02c payload-mount: dimension range chosen by us so it can hold the payload and ballast ranges; not a real product"
+        },
+        "value": 0.04,
+        "unit": "m"
+      },
+      "min": {
+        "badge": "default",
+        "source": {
+          "ref": "B-02c payload-mount: dimension range chosen by us so it can hold the payload and ballast ranges; not a real product"
+        },
+        "value": 0.02,
+        "unit": "m"
+      },
+      "max": {
+        "badge": "default",
+        "source": {
+          "ref": "B-02c payload-mount: dimension range chosen by us so it can hold the payload and ballast ranges; not a real product"
+        },
+        "value": 0.2,
+        "unit": "m"
+      }
+    }
+  ],
+  "snap_points": [
+    {
+      "badge": "default",
+      "source": {
+        "ref": "B-02c: snap frame convention chosen here: the snap frame's +z is the outward normal of the face the point sits on, position on that face; B-04b may refine the compatibility tags"
+      },
+      "id": "seat",
+      "kind": "payload_seat",
+      "accepts": [
+        "payload_base"
+      ],
+      "position": {
+        "x": {
+          "offset": 0.0,
+          "terms": []
+        },
+        "y": {
+          "offset": 0.0,
+          "terms": []
+        },
+        "z": {
+          "offset": 0.006,
+          "terms": []
+        }
+      },
+      "orientation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0,
+        "w": 1.0
+      }
+    },
+    {
+      "badge": "default",
+      "source": {
+        "ref": "B-02c: snap frame convention chosen here: the snap frame's +z is the outward normal of the face the point sits on, position on that face; B-04b may refine the compatibility tags"
+      },
+      "id": "bottom",
+      "kind": "surface",
+      "accepts": [
+        "surface"
+      ],
+      "position": {
+        "x": {
+          "offset": 0.0,
+          "terms": []
+        },
+        "y": {
+          "offset": 0.0,
+          "terms": []
+        },
+        "z": {
+          "offset": 0.0,
+          "terms": []
+        }
+      },
+      "orientation": {
+        "x": 1.0,
+        "y": 0.0,
+        "z": 0.0,
+        "w": 0.0
+      }
+    },
+    {
+      "badge": "default",
+      "source": {
+        "ref": "B-02c: snap frame convention chosen here: the snap frame's +z is the outward normal of the face the point sits on, position on that face; B-04b may refine the compatibility tags"
+      },
+      "id": "side-left",
+      "kind": "surface",
+      "accepts": [
+        "surface"
+      ],
+      "position": {
+        "x": {
+          "offset": 0.0,
+          "terms": []
+        },
+        "y": {
+          "offset": 0.004,
+          "terms": [
+            {
+              "param": "width",
+              "factor": 0.5
+            }
+          ]
+        },
+        "z": {
+          "offset": 0.006,
+          "terms": [
+            {
+              "param": "wall_height",
+              "factor": 0.5
+            }
+          ]
+        }
+      },
+      "orientation": {
+        "x": -0.7071067811865476,
+        "y": 0.0,
+        "z": 0.0,
+        "w": 0.7071067811865476
+      }
+    },
+    {
+      "badge": "default",
+      "source": {
+        "ref": "B-02c: snap frame convention chosen here: the snap frame's +z is the outward normal of the face the point sits on, position on that face; B-04b may refine the compatibility tags"
+      },
+      "id": "side-right",
+      "kind": "surface",
+      "accepts": [
+        "surface"
+      ],
+      "position": {
+        "x": {
+          "offset": 0.0,
+          "terms": []
+        },
+        "y": {
+          "offset": -0.004,
+          "terms": [
+            {
+              "param": "width",
+              "factor": -0.5
+            }
+          ]
+        },
+        "z": {
+          "offset": 0.006,
+          "terms": [
+            {
+              "param": "wall_height",
+              "factor": 0.5
+            }
+          ]
+        }
+      },
+      "orientation": {
+        "x": 0.7071067811865476,
+        "y": 0.0,
+        "z": 0.0,
+        "w": 0.7071067811865476
+      }
+    }
+  ],
+  "specs": [],
+  "shape": {
+    "badge": "default",
+    "source": {
+      "ref": "B-02c payload-mount: silhouette drawn by us: base plate 0.006 m thick, two side rails and two low end walls 0.004 m thick; thicknesses are our choice, not a real product"
+    },
+    "components": [
+      {
+        "id": "plate",
+        "primitive": {
+          "kind": "box",
+          "size_x": {
+            "offset": 0.008,
+            "terms": [
+              {
+                "param": "length",
+                "factor": 1.0
+              }
+            ]
+          },
+          "size_y": {
+            "offset": 0.008,
+            "terms": [
+              {
+                "param": "width",
+                "factor": 1.0
+              }
+            ]
+          },
+          "size_z": {
+            "offset": 0.006,
+            "terms": []
+          }
+        },
+        "operation": "add",
+        "position": {
+          "x": {
+            "offset": 0.0,
+            "terms": []
+          },
+          "y": {
+            "offset": 0.0,
+            "terms": []
+          },
+          "z": {
+            "offset": 0.003,
+            "terms": []
+          }
+        },
+        "orientation": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 1.0
+        }
+      },
+      {
+        "id": "rail_left",
+        "primitive": {
+          "kind": "box",
+          "size_x": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "length",
+                "factor": 1.0
+              }
+            ]
+          },
+          "size_y": {
+            "offset": 0.004,
+            "terms": []
+          },
+          "size_z": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "wall_height",
+                "factor": 1.0
+              }
+            ]
+          }
+        },
+        "operation": "add",
+        "position": {
+          "x": {
+            "offset": 0.0,
+            "terms": []
+          },
+          "y": {
+            "offset": 0.002,
+            "terms": [
+              {
+                "param": "width",
+                "factor": 0.5
+              }
+            ]
+          },
+          "z": {
+            "offset": 0.006,
+            "terms": [
+              {
+                "param": "wall_height",
+                "factor": 0.5
+              }
+            ]
+          }
+        },
+        "orientation": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 1.0
+        }
+      },
+      {
+        "id": "rail_right",
+        "primitive": {
+          "kind": "box",
+          "size_x": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "length",
+                "factor": 1.0
+              }
+            ]
+          },
+          "size_y": {
+            "offset": 0.004,
+            "terms": []
+          },
+          "size_z": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "wall_height",
+                "factor": 1.0
+              }
+            ]
+          }
+        },
+        "operation": "add",
+        "position": {
+          "x": {
+            "offset": 0.0,
+            "terms": []
+          },
+          "y": {
+            "offset": -0.002,
+            "terms": [
+              {
+                "param": "width",
+                "factor": -0.5
+              }
+            ]
+          },
+          "z": {
+            "offset": 0.006,
+            "terms": [
+              {
+                "param": "wall_height",
+                "factor": 0.5
+              }
+            ]
+          }
+        },
+        "orientation": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 1.0
+        }
+      },
+      {
+        "id": "end_front",
+        "primitive": {
+          "kind": "box",
+          "size_x": {
+            "offset": 0.004,
+            "terms": []
+          },
+          "size_y": {
+            "offset": 0.008,
+            "terms": [
+              {
+                "param": "width",
+                "factor": 1.0
+              }
+            ]
+          },
+          "size_z": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "wall_height",
+                "factor": 0.5
+              }
+            ]
+          }
+        },
+        "operation": "add",
+        "position": {
+          "x": {
+            "offset": 0.002,
+            "terms": [
+              {
+                "param": "length",
+                "factor": 0.5
+              }
+            ]
+          },
+          "y": {
+            "offset": 0.0,
+            "terms": []
+          },
+          "z": {
+            "offset": 0.006,
+            "terms": [
+              {
+                "param": "wall_height",
+                "factor": 0.25
+              }
+            ]
+          }
+        },
+        "orientation": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 1.0
+        }
+      },
+      {
+        "id": "end_back",
+        "primitive": {
+          "kind": "box",
+          "size_x": {
+            "offset": 0.004,
+            "terms": []
+          },
+          "size_y": {
+            "offset": 0.008,
+            "terms": [
+              {
+                "param": "width",
+                "factor": 1.0
+              }
+            ]
+          },
+          "size_z": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "wall_height",
+                "factor": 0.5
+              }
+            ]
+          }
+        },
+        "operation": "add",
+        "position": {
+          "x": {
+            "offset": -0.002,
+            "terms": [
+              {
+                "param": "length",
+                "factor": -0.5
+              }
+            ]
+          },
+          "y": {
+            "offset": 0.0,
+            "terms": []
+          },
+          "z": {
+            "offset": 0.006,
+            "terms": [
+              {
+                "param": "wall_height",
+                "factor": 0.25
+              }
+            ]
+          }
+        },
+        "orientation": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 1.0
+        }
+      }
+    ]
+  }
+}

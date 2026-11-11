@@ -3480,6 +3480,7 @@ items:
       ## 완료 정의 (DoD)
       - [ ] 힌지·슬라이더·스프링과 모터의 토크-속도 제한
       - [ ] 테스트: 무부하 속도, 정지 토크
+      - [ ] B-03a 휠의 실제 구름 시험(경사 3행성, 미끄럼 없는 구름의 가속도 = g sinθ / (1 + I/(m r²)) 와 MuJoCo 결과 대조)
       - [ ] "100% 완료" 8항목 충족(`docs/process/done-definition.md`, issues.yaml `done_definition`)
       ## 범위 밖
       MJCF를 저장 원본으로 쓰는 것. MJCF는 산출물이다.

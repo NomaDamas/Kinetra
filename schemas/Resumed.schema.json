@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "The core continues a subscription from `after_revision`: the `revision - after_revision` `applied` messages\nthat follow, in order, bring the client's copy to `revision`.",
+  "properties": {
+    "type": {
+      "const": "resumed",
+      "title": "Type",
+      "type": "string"
+    },
+    "project_id": {
+      "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+      "title": "Project Id",
+      "type": "string"
+    },
+    "epoch": {
+      "minLength": 1,
+      "title": "Epoch",
+      "type": "string"
+    },
+    "after_revision": {
+      "minimum": 0,
+      "title": "After Revision",
+      "type": "integer"
+    },
+    "revision": {
+      "minimum": 0,
+      "title": "Revision",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "type",
+    "project_id",
+    "epoch",
+    "after_revision",
+    "revision"
+  ],
+  "title": "Resumed",
+  "type": "object"
+}

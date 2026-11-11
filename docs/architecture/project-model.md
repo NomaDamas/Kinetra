@@ -34,7 +34,7 @@
 ## 모델
 
 - `Material`: `density`(kg/m^3, > 0), `yield_strength`(Pa, > 0), `elastic_modulus`(Pa, > 0), `friction`(무차원 쿨롱 계수, >= 0). 필드마다 단위와 범위가 타입에 있어 오류가 그 필드를 가리키고 JSON Schema에 `const`/`exclusiveMinimum`이 실린다. 두 재료의 접촉 마찰을 어떻게 합치는지는 컴파일러(X-01)가 정한다. 실제 재료 5종의 값은 B-07이 출처와 함께 채웠다: [`materials.md`](materials.md).
-- `PartDef`: `parameters`(이름, 단위, 기본값·최소·최대; 최소 <= 기본 <= 최대), `snap_points`(ID, 종류, 받아들이는 종류, 부품 로컬 좌표의 위치 `offset + Σ factor × 길이 파라미터`, 방향 쿼터니언, 배지·출처), `specs`(`SpecDef`: 이름이 붙은 `Quantity`의 튜플, 사양), `shape`(선택, B-01a: 질량·관성 계산의 레시피).
+- `PartDef`: `parameters`(이름, 단위, 기본값·최소·최대; 최소 <= 기본 <= 최대), `snap_points`(ID, 종류, 받아들이는 종류, 부품 로컬 좌표의 위치 `offset + Σ factor × 길이 파라미터`, 방향 쿼터니언, 배지·출처), `specs`(`SpecDef`: 이름이 붙은 `Quantity`의 튜플, 사양), `shape`(선택, B-01a: 질량·관성 계산의 레시피). `mass_parameter`(선택, B-02c: 질량을 정하는 kg 파라미터의 이름. 있으면 부품의 질량은 그 값이고 재료를 읽지 않는다. [`part-payload.md`](part-payload.md)).
 - 파라미터를 참조하는 스냅 포인트는 존재하는 길이(m) 파라미터만 가리킬 수 있다. 한 `PartDef` 안에서 파라미터 이름, 스냅 포인트 ID, 사양 이름은 각각 겹치지 않고, 스냅 포인트 ID와 사양 이름은 파라미터 이름과도 겹치지 않는다.
 - 모든 모델은 `extra="forbid"`, 불변(`frozen`)이고 컬렉션은 튜플이라 `PartDef`는 해시된다. 순서는 값의 일부로 보존한다(순서가 다르면 다른 값). 정의 해시용 정규 순서는 C-03이 정한다.
 
@@ -141,6 +141,10 @@ uv run python packages/core/scripts/export_schemas.py --check  # 쓰지 않고 �
 - 거부된 명령은 아무것도 바꾸지 않는다(`CommandRejected`). 되돌릴 것이 없을 때의 `undo`와 다시 할 것이 없을 때의 `redo`도 같은 길로 거부한다(`nothing_to_undo`, `nothing_to_redo`).
 - 이력 길이의 상한은 없다. 계획과 이슈 어디에도 숫자가 없어서 만들어 쓰지 않았다. 칸당 명령 둘을 쥔다. 상한이나 저장 여부는 보관하는 C-03, C-05a가 정한다.
 - 이 PR에 없는 것: 개정 번호와 `applied` 메시지(C-05a), 이력의 저장 형식과 해시(C-03), 여러 사용자의 사용자별 되돌리기(N-04), 출처별 허용 정책(C-02c), 시각(벽시계 시각은 결정론 문서에 두지 않는다).
+
+## 선로의 메시지 (C-05a)
+
+`Command`와 `ApplyResult`를 선로에 올리는 메시지(`hello` `subscribe` `snapshot` `resumed` `applied` `publish` `accepted` `rejected` `request` `error`)는 `kinetra_core/protocol.py`에 있고 `schemas/`에 `ClientMessage`, `ServerMessage`로 생성된다. `ApplyResult`(프로젝트 + 역명령)는 그대로 적용기의 값이고, 선로의 `applied`(개정 번호, 발행자, 바뀐 구역)는 `Applied`로 이름이 다르다. 규칙과 필드는 [`client-adapter.md`](client-adapter.md) 3.1~3.2 확정.
 
 ## 알려진 확장 (이 PR 범위 밖, 뒤 잎이 더한다)
 

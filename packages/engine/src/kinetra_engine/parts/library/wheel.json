@@ -97,7 +97,7 @@
     {
       "badge": "cite",
       "source": {
-        "ref": "OpenStax College Physics 2e, 5.1 Friction, Table 5.1, 'Rubber on dry concrete', static 1.0 (the book gives one digit and says the values are approximate). A reference pair for a rubber tread, not this wheel on any Kinetra planet's ground (that is planet data in data/bodies; how the two combine is X-01's rule). The book is CC BY-NC-SA 4.0, so no text or table is reproduced here, only this number, with its place. Accessed 2026-11-11",
+        "ref": "OpenStax College Physics 2e, 5.1 Friction, Table 5.1, 'Rubber on dry concrete', static 1.0 (the book gives one digit and says the values are approximate). A reference pair for a rubber tread, not this wheel on any Kinetra planet's ground (that is planet data in data/bodies; how the two combine is X-01's rule). Book licence CC BY-NC-SA 4.0; only factual values cited, no text or table copied. Accessed 2026-11-11",
         "locator": "Table 5.1, row 'Rubber on dry concrete', column 'Static friction'",
         "url": "https://openstax.org/books/college-physics-2e/pages/5-1-friction"
       },
@@ -108,7 +108,7 @@
     {
       "badge": "cite",
       "source": {
-        "ref": "OpenStax College Physics 2e, 5.1 Friction, Table 5.1, 'Rubber on dry concrete', kinetic 0.7 (one digit, approximate). Same reference-pair caveat and license note as tread_friction_static. Wikipedia 'Friction', approximate coefficients, concrete/rubber, dry kinetic 0.6-0.85, contains it (cross-check only). Accessed 2026-11-11",
+        "ref": "OpenStax College Physics 2e, 5.1 Friction, Table 5.1, 'Rubber on dry concrete', kinetic 0.7 (one digit, approximate). Same reference-pair caveat as tread_friction_static. Book licence CC BY-NC-SA 4.0; only factual values cited, no text or table copied. Wikipedia 'Friction', approximate coefficients, concrete/rubber, dry kinetic 0.6-0.85, contains it (cross-check only). Accessed 2026-11-11",
         "locator": "Table 5.1, row 'Rubber on dry concrete', column 'Kinetic friction'",
         "url": "https://openstax.org/books/college-physics-2e/pages/5-1-friction"
       },

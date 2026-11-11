@@ -15,6 +15,7 @@ from kinetra_core import Material, PartDef, PbrSlots, load_material_catalog
 from kinetra_engine.parts import part_glb
 
 FIXTURES = Path(__file__).parent / "fixtures" / "gltf"
+NO_MATERIAL = "no-material"  # a part with a declared mass is drawn without a material: the neutral look
 SRC = {"ref": "B-01c test fixture: dimensions declared by the test", "locator": "gltf_samples.py"}
 S2 = math.sqrt(0.5)
 ROT_X90 = {"x": S2, "y": 0.0, "z": 0.0, "w": S2}
@@ -171,12 +172,18 @@ SAMPLES = {
     "reflectance-ior": (mounting_plate, "pom-delrin-150"),
     "beam-al6061": (beam, "al6061-t6"),
     "plate-al6061": (plate, "al6061-t6"),
+    # B-02c: payload and ballast have a declared mass and no material; the mount is aluminium.
+    "payload-declared-mass": (lambda: library_part("payload"), NO_MATERIAL),
+    "ballast-weight-declared-mass": (lambda: library_part("ballast-weight"), NO_MATERIAL),
+    "payload-mount-al6061": (lambda: library_part("payload-mount"), "al6061-t6"),
     "wheel-pom": (wheel, "pom-delrin-150"),
 }
 
 
-def sample_material(name: str) -> Material:
+def sample_material(name: str) -> Material | None:
     material_id = SAMPLES[name][1]
+    if material_id == NO_MATERIAL:
+        return None
     return catalog_material(material_id) if material_id else user_material()
 
 
