@@ -1,11 +1,16 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "additionalProperties": false,
-  "description": "One convex primitive of the proxy, in the part frame.\n\n`dimensions` are resolved lengths in metres under the names `shape.py` gives them (`size_x`, `radius`, `length`, ...),\n`center` its centre in metres and `orientation` its rotation about that centre. `id` is the id of the added shape\ncomponent it copies; the geom is that component's primitive, unchanged. `volume` is in m^3.",
+  "description": "One convex primitive of the proxy, in the part frame.\n\n`dimensions` are resolved lengths in metres under the names `shape.py` gives them (`size_x`, `radius`, `length`, ...),\n`center` its centre in metres and `orientation` its rotation about that centre. `component` is the id of the added\nshape component the geom belongs to. With method `added-primitives` the geom is that component's primitive unchanged\nand `id == component`; with `void-decomposition` a component that has voids is several geoms (pieces), each with\nits own `id`. `volume` is in m^3.",
   "properties": {
     "id": {
       "pattern": "^[a-z][a-z0-9_]{0,63}$",
       "title": "Id",
+      "type": "string"
+    },
+    "component": {
+      "pattern": "^[a-z][a-z0-9_]{0,63}$",
+      "title": "Component",
       "type": "string"
     },
     "primitive": {
@@ -52,6 +57,7 @@
   },
   "required": [
     "id",
+    "component",
     "primitive",
     "dimensions",
     "center",
