@@ -19,7 +19,7 @@ This is a fresh start. The previous product (hackathon era) is preserved at the 
 |---|---|
 | `apps/studio` | Studio web client |
 | `packages/core` | Engine-independent Project model and command layer |
-| `packages/engine` | Physics engine adapters |
+| `packages/engine` | Physics engine adapters; `kinetra_engine.gateway`: the LLM gateway (key custody, per-project call budget, cost ledger) |
 | `packages/judge` | Necessary-condition screen, search, Monte-Carlo verdicts |
 | `packages/ui` | Design-system tokens and components |
 | `design/` | Claude Design briefs and approved exports |
@@ -38,6 +38,14 @@ uv sync
 uv run pytest packages -q   # CI: .github/workflows/engine.yml (PRs and main)
 pnpm install --frozen-lockfile
 pnpm lint && pnpm build && pnpm test   # CI: .github/workflows/web.yml (PRs and main)
+```
+
+## LLM gateway (G-01)
+
+`packages/engine/src/kinetra_engine/gateway/` is the only place that holds the model API key and spends it. The core process reads `OPENROUTER_API_KEY` from its own environment; there is no argument, file or request field that carries a key, and nothing a client can read (replies, `Gateway.usage()`, errors, ledger lines, `repr`) contains it (`redact` masks it and key-shaped strings, same patterns as `tools/review/common.py`; a test fails if the lists drift). Each project needs a `Budget(max_calls=…, max_cost_usd=…, assumed_call_cost_usd=…)`; a project without one is rejected, not unlimited. A request that does not fit is refused before anything is sent (`BudgetExceeded`). Every sent request appends one JSON line to the cost ledger (project, model, status, tokens, the provider-reported `usage.cost`, and what the budget was charged), never the message text, and the ledger is replayed on start so the budget survives a restart. When the provider reports no cost, the call is charged `assumed_call_cost_usd`, a value the budget's author declares (`사용자 선언`); this module computes no prices. Model choice UI, retries and prompt logic are not here.
+
+```bash
+uv run pytest packages/engine -q -k gateway   # offline: fake transport, no network, no key needed
 ```
 
 ## Asset and dependency ledger
