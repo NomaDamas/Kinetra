@@ -94,6 +94,7 @@ class _Connection:
         self.dropped = False
 
     def full(self, size: int) -> bool:
+        """Would a message of `size` bytes (UTF-8) not fit?"""
         waiting = self.queue.qsize()
         return waiting >= QUEUE_MAX_MESSAGES or (waiting > 0 and self.pending_bytes + size > QUEUE_MAX_BYTES)
 
@@ -101,9 +102,10 @@ class _Connection:
         """Queue a serialized message. `False` (and nothing queued) when the connection is full."""
         if self.dropped:
             return True
-        if self.full(len(text)):
+        size = len(text.encode())
+        if self.full(size):
             return False
-        self.pending_bytes += len(text)
+        self.pending_bytes += size
         self.queue.put_nowait(text)
         return True
 
@@ -113,7 +115,7 @@ class _Connection:
 
     async def pump(self) -> None:
         while (text := await self.queue.get()) is not _CLOSE:
-            self.pending_bytes -= len(text)
+            self.pending_bytes -= len(text.encode())
             if self.dropped:
                 return
             try:
@@ -223,7 +225,10 @@ class Hub:
         return True
 
     def _receive_hello(self, conn: _Connection, raw: str | bytes) -> bool:
-        """Before `hello` the only valid frame is a `hello` for a protocol we speak; anything else is fatal."""
+        """Before `hello` the only valid frame is a text `hello` for a protocol we speak; anything else is fatal
+        (a binary frame included: the protocol is text-only, so it is refused before it is parsed)."""
+        if isinstance(raw, bytes):
+            return self._fail(conn, "binary frames are not part of the protocol; send JSON text", fatal=True)
         try:
             message = _CLIENT_MESSAGE.validate_json(raw)
         except (ValidationError, RecursionError):

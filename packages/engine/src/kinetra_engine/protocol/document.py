@@ -128,7 +128,7 @@ class Document:
             if not self._log or self._log[0][0] > after_revision + 1:
                 return None
             missed = tuple(text for revision, text in self._log if revision > after_revision)
-            if sum(len(t) for t in missed) >= len(self.snapshot().model_dump_json()):
+            if sum(len(t.encode()) for t in missed) >= len(self.snapshot().model_dump_json().encode()):
                 return None
         resumed = Resumed(
             type="resumed", project_id=self.project_id, epoch=self.epoch, after_revision=after_revision, revision=self._revision
@@ -264,10 +264,18 @@ class Document:
         return Outcome(reply=outcome.reply, applied=applied, applied_text=text)
 
     def _remember(self, revision: int, text: str) -> None:
+        """Keep `text` (the JSON of the `Applied` of `revision`) for resuming, within the bounds. A revision that is
+        alone bigger than `LOG_MAX_BYTES` is not kept, and the log is emptied, because a log with a hole in it cannot
+        be replayed: `resume` then answers a snapshot to anyone who needs that revision."""
+        size = len(text.encode())
+        if size > LOG_MAX_BYTES:
+            self._log.clear()
+            self._log_bytes = 0
+            return
         self._log.append((revision, text))
-        self._log_bytes += len(text)
-        while len(self._log) > LOG_MAX_REVISIONS or (self._log_bytes > LOG_MAX_BYTES and len(self._log) > 1):
-            self._log_bytes -= len(self._log.popleft()[1])
+        self._log_bytes += size
+        while len(self._log) > LOG_MAX_REVISIONS or self._log_bytes > LOG_MAX_BYTES:
+            self._log_bytes -= len(self._log.popleft()[1].encode())
 
 
 def refuse_unsubscribed(command_id: str) -> Rejected:

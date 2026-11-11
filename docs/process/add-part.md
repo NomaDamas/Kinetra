@@ -2,7 +2,7 @@
 
 부품 하나를 정의 파일에서 시작해 질량·충돌 프록시·시각 glb가 나오고 테스트와 문서가 맞을 때까지 넣는 순서다. 종류별 부품(B-02 구조, B-03 구동)이 이 순서를 따른다. 근거: 이슈 #95, `docs/architecture/part-mass.md`, `collision-proxy.md`, `part-visual.md`, `docs/process/done-definition.md`. 목표는 부품 하나를 2시간 안에 넣는 것이다(`docs/plan/history/final-plan.md` Go 기준 표의 제안값이고 측정으로 확정한 값이 아니다. 실측은 아래 "소요 시간 기록").
 
-이 문서가 정하지 않는 것: 부품 종류와 실제 사양값(B-02, B-03), 가져온 glb(L-02), 빈 곳을 깎은 메시(#496), 임의 형상 커널(#484). 정의 파일을 어느 디렉터리에 두는지는 첫 부품 종류(B-02a)가 정하고 이 문서에 한 줄로 더한다. 아래 확인 명령은 어느 경로의 파일에도 돈다.
+이 문서가 정하지 않는 것: 부품 종류와 실제 사양값(B-02, B-03), 가져온 glb(L-02), 빈 곳을 깎은 메시(#496), 임의 형상 커널(#484). 정의 파일의 자리는 B-02a가 정했다: **라이브러리에 들어가는 부품은 `packages/engine/src/kinetra_engine/parts/library/<id>.json`**(파일 이름이 부품 id)이고 `PartDef.model_validate_json`으로 읽는다. 시험용 부품은 `packages/engine/tests/fixtures/parts/`에 둔다. 아래 확인 명령은 어느 경로의 파일에도 돈다.
 
 ## 0. 시작 전에 정할 것 (10분)
 
@@ -29,7 +29,7 @@
 - 요소는 기본형 `box`(`size_x/y/z` 전체 길이), `cylinder`(`radius`, `length`, 축은 로컬 z), `sphere`(`radius`)이고 `operation`은 `add`(재료) 또는 `subtract`(빈 곳)다. 위치는 요소의 중심, 단위 m, 부품 로컬 좌표(오른손, +Z 위)다.
 - 모든 치수와 위치는 `offset + Σ factor × 길이 파라미터`다. 파라미터의 **전 범위에서** 치수가 0보다 커야 한다(`PartDef`가 확인한다).
 - **요소는 겹치지 않는 합**이다(`part-mass.md`). 더한 요소끼리 내부가 겹치면 안 되고, 뺀 요소는 더한 요소 하나 안에 완전히 들어 있어야 한다. 어기면 `ShapeError`로 거절된다. 겹치는 부품은 요소를 겹치지 않게 나눈다(L자는 상자 둘로).
-- 구멍(`subtract`)이 있는 부품은 충돌 프록시에서 **메워지고** 시각 메시에서 **파이지 않는다**. 이 근사는 지워지지 않고 결과에 나온다(`filled_voids`, `volume_error`, 글의 `extras.kinetra.voids`). 정의 파일에서 할 일은 없고 PR 본문에 이 부품이 구멍을 가진다고 적는다.
+- 구멍(`subtract`)이 있는 부품은 시각 메시에서 **파이지 않고**, 충돌 프록시에서는 **관통 보어(판의 구멍, 관)면 상자 조각으로 분해돼 비워지며**(`decomposed_voids`, 호스트별 부호 있는 오차, 허용 오차 기본 0.10, B-01f) 그 밖의 빈 곳(막힌 포켓, 구, 비스듬한 구멍)은 **메워진다**(`filled_voids`, 이유는 `derivation.assumptions`). 이 근사는 지워지지 않고 결과에 나온다(`volume_error`, 글의 `extras.kinetra.voids`). 정의 파일에서 할 일은 없고 PR 본문에 이 부품이 구멍을 가진다고 적는다.
 - 모깎기·모따기·나사산은 표현하지 못한다(`part-mass.md` "못 하는 것").
 
 ### 맞닿은 요소: 돌린 요소를 반올림해 붙이지 않는다
@@ -68,7 +68,7 @@ uv run python -m kinetra_engine.parts PATH/part.json --material al6061-t6 --out 
 2. 파라미터를 바꾸면 질량이 식대로 바뀐다(최솟값, 최댓값). **치수 변경이 질량에 반영된다**(B-02a의 DoD).
 3. 범위 밖 파라미터, 알 수 없는 파라미터는 `ShapeError`다.
 4. 스냅 포인트의 위치가 파라미터를 따르는 경우 값이 식대로 나온다.
-5. 구멍이 있으면 `filled_voids`와 `volume_error`가 손계산 부피와 같다.
+5. 구멍이 있으면 `filled_voids` 또는 `decomposed_voids`와 `volume_error`가 손계산과 같다(메우면 메운 부피, 분해하면 호스트의 부호 있는 오차가 허용 오차 안).
 6. glb가 `tests/gltf_validate.py`의 `validate()`를 통과한다. 고정 파일을 새로 두려면 `tests/gltf_samples.py`의 `SAMPLES`에 더하고 `uv run python packages/engine/tests/gltf_samples.py`로 다시 쓴다(`tools/gltf-check`가 CI에서 공식 검증기로 본다).
 7. 사양(`specs`)이 있으면 배지가 의도와 같다(`인용`이면 위치가 있다).
 

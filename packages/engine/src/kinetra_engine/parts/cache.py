@@ -6,7 +6,7 @@ back to a value already seen), so `PartCache` remembers the result under a key m
 
     cache = PartCache(max_entries=...)
     cache.mass_properties(part, material, parameters=None) -> MassProperties
-    cache.collision_proxy(part, parameters=None) -> CollisionProxy
+    cache.collision_proxy(part, parameters=None, tolerance=None, on_unsupported="fill") -> CollisionProxy
     cache.part_glb(part, material, parameters=None, pbr=None) -> bytes
 
 A hit returns the object the first call returned (all three are immutable), and a cached answer equals the uncached one
@@ -121,11 +121,23 @@ class PartCache:
         key = ("mass", part_key(part), material_key(material), _parameters_hash(values))
         return self._get_or_compute(key, lambda: mass_properties(part, material, values))
 
-    def collision_proxy(self, part: PartDef, parameters: Mapping[str, Quantity] | None = None) -> CollisionProxy:
-        """The proxy does not read the material, so one entry serves every material the part is made of."""
+    def collision_proxy(
+        self,
+        part: PartDef,
+        parameters: Mapping[str, Quantity] | None = None,
+        tolerance: float | Quantity | None = None,
+        on_unsupported: str = "fill",
+    ) -> CollisionProxy:
+        """The proxy does not read the material, so one entry serves every material the part is made of. `tolerance` and
+        `on_unsupported` change the result (B-01f), so they are in the key: a float and the `Quantity` it becomes are
+        different keys (their badges differ)."""
         values = _snapshot(part, parameters)
-        key = ("proxy", part_key(part), _parameters_hash(values))
-        return self._get_or_compute(key, lambda: collision_proxy(part, values))
+        if isinstance(tolerance, Quantity):
+            tol_key = tolerance.model_dump_json()
+        else:
+            tol_key = "default" if tolerance is None else f"declared:{float(tolerance)!r}"
+        key = ("proxy", part_key(part), _parameters_hash(values), tol_key, str(on_unsupported))
+        return self._get_or_compute(key, lambda: collision_proxy(part, values, tolerance, on_unsupported))  # type: ignore[arg-type]
 
     def part_glb(
         self,

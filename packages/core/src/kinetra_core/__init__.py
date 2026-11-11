@@ -21,7 +21,7 @@ from .bodies import (
     load_bodies,
     load_body,
 )
-from .collision import CollisionProxy, FilledVoid, ProxyDerivation, ProxyGeom
+from .collision import CollisionProxy, DecomposedVoid, FilledVoid, ProxyDerivation, ProxyGeom, RingReport
 from .commands import (
     AddActuator,
     AddAssumption,
@@ -168,6 +168,7 @@ __all__ = [
     "DerivedScalar",
     "DerivedVector",
     "DesignSpec",
+    "DecomposedVoid",
     "Dimension",
     "Distribution",
     "EditCommand",
@@ -213,6 +214,7 @@ __all__ = [
     "Quantity",
     "Quaternion",
     "RampProp",
+    "RingReport",
     "Reason",
     "ReasonCode",
     "Rejected",

@@ -449,11 +449,14 @@ def test_protocol_document_a_replay_bigger_than_a_snapshot_is_not_sent(project):
 def test_protocol_document_the_log_is_also_bounded_by_bytes(project, monkeypatch):
     from kinetra_engine.protocol import document as document_module
 
-    monkeypatch.setattr(document_module, "LOG_MAX_BYTES", 1)
+    probe = Document("car", project)
+    probe.publish(publish("c0", move(x=0.1)))
+    one = len(probe._log[0][1].encode())
+    monkeypatch.setattr(document_module, "LOG_MAX_BYTES", 2 * one + one // 2)  # room for two revisions, not three
     doc = Document("car", project)
     for n in range(4):
         doc.publish(publish(f"c{n}", move(x=0.1 * (n + 1)), base=n))
-    assert len(doc._log) == 1  # the newest revision is always kept
+    assert [r for r, _ in doc._log] == [3, 4] and doc._log_bytes <= document_module.LOG_MAX_BYTES
 
 
 def test_protocol_document_remembered_command_ids_are_bounded(project, monkeypatch):
@@ -645,3 +648,63 @@ def test_protocol_document_a_subscriber_that_does_not_read_is_dropped_and_shutdo
         assert time.monotonic() - started < 5  # leaving the server did not wait for any subscriber
 
     asyncio.run(main())
+
+
+# --- second review of #505: one big revision, bytes not characters, binary hello --------------------------------
+
+
+def test_protocol_document_one_revision_bigger_than_the_byte_budget_is_not_kept(project, monkeypatch):
+    from kinetra_engine.protocol import document as document_module
+
+    doc = Document("car", project)
+    doc.publish(publish("c0", move(x=0.1)))
+    one = len(json.dumps(json.loads(doc._log[0][1])).encode())
+    monkeypatch.setattr(document_module, "LOG_MAX_BYTES", one // 2)  # every revision alone is over the budget
+    for n in range(1, 4):
+        doc.publish(publish(f"c{n}", move(x=0.1 * (n + 1)), base=n))
+    assert len(doc._log) == 0 and doc._log_bytes == 0 and doc.revision == 4
+    assert doc.resume(3, doc.epoch) is None  # the revision it needs is not held: a snapshot, not a replay with a hole
+    assert doc.resume(4, doc.epoch) is not None  # nothing to replay
+    monkeypatch.setattr(document_module, "LOG_MAX_BYTES", 10 * one)  # back to normal: later revisions are kept again
+    doc.publish(publish("c9", move(x=0.9), base=4))
+    assert doc.resume(4, doc.epoch)[1] != () and doc.resume(3, doc.epoch) is None  # revision 4 stayed out
+
+
+def test_protocol_document_byte_limits_count_utf8_bytes_not_characters(project, monkeypatch):
+    from kinetra_engine.protocol import document as document_module
+    from kinetra_engine.protocol.server import _Connection
+
+    text = "한" * 100  # 100 characters, 300 bytes
+    monkeypatch.setattr("kinetra_engine.protocol.server.QUEUE_MAX_BYTES", 400)
+
+    class FakeWs:
+        pass
+
+    conn = _Connection(FakeWs())
+    assert conn.enqueue(text) and conn.pending_bytes == 300  # an empty queue takes one message of any size
+    assert not conn.enqueue("한" * 40)  # 120 bytes: 420 > 400 (by characters it would be 140 <= 400 and fit)
+    assert conn.enqueue("a" * 100) and conn.pending_bytes == 400
+
+    doc = Document("car", project)  # the log counts bytes too: a revision whose text has multibyte characters in it
+    korean = move()
+    korean["pose"]["source"]["ref"] = "단위 시험의 값 " * 20
+    doc.publish(publish("c0", korean))
+    text = doc._log[0][1]
+    assert len(text.encode()) > len(text) and doc._log_bytes == len(text.encode())
+    probe = Document("car", project)
+    probe.publish(publish("c0", korean))
+    monkeypatch.setattr(document_module, "LOG_MAX_BYTES", len(text))  # fits by characters, not by bytes
+    other = Document("car", project)
+    other.publish(publish("c0", korean))
+    assert len(other._log) == 0
+
+
+def test_protocol_document_a_binary_first_frame_is_refused_before_it_is_parsed(project):
+    async def scenario(hub, dial):
+        async with dial() as ws:
+            hello = json.dumps({"type": "hello", "protocol": PROTOCOL_VERSION}).encode()
+            await ws.send(hello)  # valid JSON, but a binary frame: the protocol is text only
+            e = SERVER.validate_json(await asyncio.wait_for(ws.recv(), 5))
+            assert e.type == "error" and e.fatal and "binary" in e.message
+
+    run_with_core(project, scenario)
