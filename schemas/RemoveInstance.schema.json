@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "additionalProperties": false,
-  "description": "Delete an instance with its joints, the actuators on it or on those joints, and their schedule entries.",
+  "description": "Delete an instance with its joints, the actuators on it, on those joints or drawing from it (a battery or tank),\nand their schedule entries.",
   "properties": {
     "type": {
       "const": "remove_instance",

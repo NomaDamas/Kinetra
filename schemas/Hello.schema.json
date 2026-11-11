@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "First message of each side: the protocol number it speaks. The core answers a `hello` it can serve with its\nown; with a number it cannot serve it answers `error` and closes.",
+  "properties": {
+    "type": {
+      "const": "hello",
+      "title": "Type",
+      "type": "string"
+    },
+    "protocol": {
+      "minimum": 1,
+      "title": "Protocol",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "type",
+    "protocol"
+  ],
+  "title": "Hello",
+  "type": "object"
+}

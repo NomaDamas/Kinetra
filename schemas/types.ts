@@ -6,6 +6,16 @@
 // `{ x, y, z, w }` (docs/architecture/project-model.md).
 
 /**
+ * To the publisher: `id` is done and the document is at `revision` (the new one, or the unchanged one when the
+ * command changed nothing). Comes after the `applied` of the same change.
+ */
+export interface Accepted {
+  type: "accepted";
+  id: string;
+  revision: number;
+}
+
+/**
  * Command `command` on `actuator` during `[start, end)` seconds of simulated time.
  *
  * `command` is the fraction of the actuator's full command, in [-1, 1] for a motor (sign is direction) and
@@ -25,12 +35,19 @@ export interface ActuateEntry {
   command: number;
 }
 
-/** Something on `instance` that a command drives. A motor drives one joint (`joint`); a thruster has none. */
+/**
+ * Something on `instance` that a command drives. A motor drives one joint (`joint`); a thruster has none.
+ *
+ * `supply` (B-03d) is the instance the actuator draws from: a motor from a `battery` part, a thruster from a `tank`
+ * part (`PartRole`). `None` means the actuator is not metered (nothing runs out). Several actuators may share one
+ * supply; what it holds is spent by all of them (`kinetra_engine.parts.supply`).
+ */
 export interface Actuator {
   id: string;
   kind: ActuatorKind;
   instance: string;
   joint?: string | null;
+  supply?: string | null;
 }
 
 export type ActuatorKind = "motor" | "thruster";
@@ -81,6 +98,21 @@ export interface AddPartDef {
   type: "add_part_def";
   part: PartDef;
   index?: number | null;
+}
+
+/**
+ * Revision `revision` of the document exists: `command` (as applied) from `origin` changed it as `changes`
+ * says, and the verdict is now `verdict`. Sent to every subscriber, the publisher included, in revision order.
+ */
+export interface Applied {
+  type: "applied";
+  revision: number;
+  id: string;
+  cause: "publish" | "undo" | "redo";
+  origin: Origin;
+  command: AddPartDef | ReplacePartDef | RemovePartDef | AddMaterialDef | ReplaceMaterialDef | RemoveMaterialDef | AddInstance | RemoveInstance | MoveInstance | SetParameter | ClearParameter | SetInstanceMaterial | AddJoint | ReplaceJoint | RemoveJoint | AddActuator | RemoveActuator | AddControlEntry | RemoveControlEntry | ReplaceControlEntry | AddAssumption | SetAssumption | RemoveAssumption | SelectPlanet | CommandBatch;
+  changes: ProjectChanges;
+  verdict: VerdictState;
 }
 
 /**
@@ -231,6 +263,20 @@ export interface ControlSchedule {
   entries?: ActuateEntry[];
 }
 
+/** Piecewise-linear `y(x)`: at least two points, `x` strictly increasing, in `x_unit` and `y_unit`. */
+export interface Curve {
+  badge: Badge;
+  source: Source;
+  x_unit: Unit;
+  y_unit: Unit;
+  points: CurvePoint[];
+}
+
+export interface CurvePoint {
+  x: number;
+  y: number;
+}
+
 /** Solid circular cylinder. `radius` and `length` [m]; the axis is the component's local z. */
 export interface Cylinder {
   kind: "cylinder";
@@ -259,6 +305,13 @@ export interface DecomposedVoid {
   ring?: RingReport | null;
 }
 
+/** The hash of one definition the project carries (a `PartDef` or a `Material`). */
+export interface DefinitionHash {
+  kind: "material" | "part";
+  id: string;
+  hash: string;
+}
+
 export interface Density {
   badge: Badge;
   source: Source;
@@ -270,7 +323,7 @@ export interface Density {
 export interface Derivation {
   method?: "analytic-primitives";
   shape: Provenance;
-  material_id: string;
+  material_id?: string | null;
   density: Density;
   parameters: ParameterUse[];
   components: ComponentContribution[];
@@ -372,6 +425,15 @@ export interface Gravity {
   unit: "m/s^2";
 }
 
+/**
+ * First message of each side: the protocol number it speaks. The core answers a `hello` it can serve with its
+ * own; with a number it cannot serve it answers `error` and closes.
+ */
+export interface Hello {
+  type: "hello";
+  protocol: number;
+}
+
 /** `entries[:cursor]` are applied, `entries[cursor:]` were undone and can be redone. */
 export interface History {
   entries?: HistoryEntry[];
@@ -465,6 +527,12 @@ export interface MoveInstance {
   pose: Pose;
 }
 
+/** A curve a part defines under a name (`torque_speed` for a motor, `thrust` for a thruster). */
+export interface NamedCurve {
+  name: string;
+  curve: Curve;
+}
+
 export interface NormalDistribution {
   badge: Badge;
   source: Source;
@@ -518,7 +586,19 @@ export interface PartDef {
   snap_points?: SnapPoint[];
   specs?: SpecDef[];
   shape?: Shape | null;
+  mass_parameter?: string | null;
+  role?: PartRole | null;
+  curves?: NamedCurve[];
 }
+
+/**
+ * What a part is for, where the simulation needs to know (B-03b). A part without a role is only a body.
+ *
+ * The actuator on an instance must fit its part's role (`designspec.py`): a motor actuator drives a `motor` part, a
+ * thruster actuator a `thruster` part. What a role requires of the definition is checked by `PartDef` (the
+ * required curves and specs), so a part that says `motor` always has the numbers a motor needs.
+ */
+export type PartRole = "motor" | "thruster" | "wheel" | "battery" | "tank" | "spring_damper";
 
 /** Base color as sRGB hex. */
 export interface PbrColor {
@@ -574,12 +654,54 @@ export interface Project {
   assumptions?: AssumptionTable;
 }
 
+/**
+ * The sections of the project a change replaced, each as its whole new value. A section that is `None` did not
+ * change. `materials`, `parts`, `instances`, `joints`, `actuators`, `schedule` are the parts of `Project.design`;
+ * `world` and `assumptions` are the project's. A change is at the grain of a section, not of an item: a client
+ * that needs finer grain reads `Applied.command`, but never needs to apply it (D3).
+ */
+export interface ProjectChanges {
+  materials?: Material[] | null;
+  parts?: PartDef[] | null;
+  instances?: Instance[] | null;
+  joints?: Joint[] | null;
+  actuators?: Actuator[] | null;
+  schedule?: ControlSchedule | null;
+  world?: World | null;
+  assumptions?: AssumptionTable | null;
+}
+
+/**
+ * What is in a project file. Building one with `project_file` gives hashes that match `project`; reading one
+ * with `parse_project` checks that they do.
+ */
+export interface ProjectFile {
+  format: "kinetra-project";
+  version: 1;
+  project: Project;
+  project_hash: string;
+  definitions: DefinitionHash[];
+}
+
+export type ProjectFileErrorCode = "not_json" | "not_a_project_file" | "unsupported_version" | "invalid_project" | "hash_mismatch";
+
 /** A prop dimension in metres, > 0. */
 export interface PropSize {
   badge: Badge;
   source: Source;
   value: number;
   unit: "m";
+}
+
+/**
+ * The connection broke the protocol (not a rejected command): bad JSON, a message that is no known message,
+ * a `publish` before `hello` or `subscribe`, an unknown project, a protocol number the core does not speak. A
+ * fatal error is followed by the core closing the connection.
+ */
+export interface ProtocolError {
+  type: "error";
+  message: string;
+  fatal: boolean;
 }
 
 /**
@@ -626,6 +748,18 @@ export interface ProxyGeom {
   volume: number;
 }
 
+/**
+ * Send a command (one edit or a batch, all or nothing: C2). `id` is the publisher's command id (C6),
+ * `base_revision` the revision the publisher saw (C5), `origin` the input path (`client-adapter.md` 3.5).
+ */
+export interface Publish {
+  type: "publish";
+  id: string;
+  base_revision: number;
+  command: AddPartDef | ReplacePartDef | RemovePartDef | AddMaterialDef | ReplaceMaterialDef | RemoveMaterialDef | AddInstance | RemoveInstance | MoveInstance | SetParameter | ClearParameter | SetInstanceMaterial | AddJoint | ReplaceJoint | RemoveJoint | AddActuator | RemoveActuator | AddControlEntry | RemoveControlEntry | ReplaceControlEntry | AddAssumption | SetAssumption | RemoveAssumption | SelectPlanet | CommandBatch;
+  origin: Origin;
+}
+
 /** One physical number with its unit, badge and source. */
 export interface Quantity {
   badge: Badge;
@@ -665,7 +799,7 @@ export interface Reason {
   ids?: Ref[];
 }
 
-export type ReasonCode = "unknown_id" | "duplicate_id" | "in_use" | "index_out_of_range" | "invalid_command" | "invalid_project" | "not_editable" | "nothing_to_undo" | "nothing_to_redo";
+export type ReasonCode = "unknown_id" | "duplicate_id" | "in_use" | "index_out_of_range" | "invalid_command" | "invalid_project" | "not_editable" | "forbidden" | "invalid_snap" | "overlap" | "floating" | "nothing_to_undo" | "nothing_to_redo";
 
 /**
  * `id` of a `kind`. A snap point is `<instance>/<snap point>`, a parameter `<instance>/<parameter>`:
@@ -677,6 +811,13 @@ export interface Ref {
 }
 
 export type RefKind = "instance" | "joint" | "actuator" | "part" | "material" | "snap_point" | "schedule_entry" | "assumption" | "parameter" | "planet" | "prop";
+
+/** To the publisher: `id` changed nothing, for these reasons (never empty: C3). */
+export interface Rejected {
+  type: "rejected";
+  id: string;
+  reasons: Reason[];
+}
 
 /** Remove an actuator with its schedule entries. */
 export interface RemoveActuator {
@@ -696,7 +837,10 @@ export interface RemoveControlEntry {
   id: string;
 }
 
-/** Delete an instance with its joints, the actuators on it or on those joints, and their schedule entries. */
+/**
+ * Delete an instance with its joints, the actuators on it, on those joints or drawing from it (a battery or tank),
+ * and their schedule entries.
+ */
 export interface RemoveInstance {
   type: "remove_instance";
   id: string;
@@ -750,6 +894,31 @@ export interface ReplaceMaterialDef {
 export interface ReplacePartDef {
   type: "replace_part_def";
   part: PartDef;
+}
+
+/**
+ * Ask the core to do something to the history. `undo` and `redo` take back and redo the document's last
+ * entry, whoever made it (one linear history in S1; per-user undo is N-04).
+ */
+export interface Request {
+  type: "request";
+  id: string;
+  action: RequestAction;
+  origin: Origin;
+}
+
+export type RequestAction = "undo" | "redo";
+
+/**
+ * The core continues a subscription from `after_revision`: the `revision - after_revision` `applied` messages
+ * that follow, in order, bring the client's copy to `revision`.
+ */
+export interface Resumed {
+  type: "resumed";
+  project_id: string;
+  epoch: string;
+  after_revision: number;
+  revision: number;
 }
 
 /**
@@ -846,6 +1015,16 @@ export interface SnapRef {
   snap_point: string;
 }
 
+/** The whole document at `revision`, of the document life `epoch`. */
+export interface Snapshot {
+  type: "snapshot";
+  project_id: string;
+  epoch: string;
+  revision: number;
+  verdict: VerdictState;
+  project: Project;
+}
+
 /**
  * Where a value comes from.
  *
@@ -890,6 +1069,18 @@ export interface StepProp {
   height: PropSize;
 }
 
+/**
+ * Follow a project. `after_revision` and `epoch` are the last revision the client holds and the `epoch` it came
+ * with (a reconnect); `None` for a first subscription. Both are needed to be resumed: with only one the core
+ * answers a `snapshot`. One subscription per connection; a second `subscribe` replaces it.
+ */
+export interface Subscribe {
+  type: "subscribe";
+  project: string;
+  after_revision?: number | null;
+  epoch?: string | null;
+}
+
 export interface UniformDistribution {
   badge: Badge;
   source: Source;
@@ -899,13 +1090,15 @@ export interface UniformDistribution {
 }
 
 /** Closed unit vocabulary (SI, written the way the JSON carries it). */
-export type Unit = "1" | "m" | "m^2" | "m^3" | "kg" | "s" | "rad" | "m/s" | "m/s^2" | "rad/s" | "N" | "N*m" | "N/m" | "N*s/m" | "N*m/rad" | "Pa" | "kg/m^3" | "kg*m^2" | "J" | "W" | "W/m^2";
+export type Unit = "1" | "m" | "m^2" | "m^3" | "kg" | "kg/s" | "s" | "rad" | "m/s" | "m/s^2" | "rad/s" | "N" | "N*s" | "N*m" | "N/m" | "N*s/m" | "N*m/rad" | "Pa" | "kg/m^3" | "kg*m^2" | "J" | "W" | "W/m^2" | "V" | "A";
 
 /** A constant that is not a cited number, and why. */
 export interface Unverified {
   item: "gravity" | "atmosphere_density" | "insolation" | "ground_friction";
   reason: string;
 }
+
+export type VerdictState = "none" | "valid" | "invalid";
 
 /** `planet` is an ID (same pattern as every other ID); `terrain_props` sit on that planet's flat ground. */
 export interface World {
@@ -927,10 +1120,14 @@ export interface YieldStrength {
   unit: "Pa";
 }
 
+export type ClientMessage = Hello | Subscribe | Publish | Request;
+
 export type Command = AddPartDef | ReplacePartDef | RemovePartDef | AddMaterialDef | ReplaceMaterialDef | RemoveMaterialDef | AddInstance | RemoveInstance | MoveInstance | SetParameter | ClearParameter | SetInstanceMaterial | AddJoint | ReplaceJoint | RemoveJoint | AddActuator | RemoveActuator | AddControlEntry | RemoveControlEntry | ReplaceControlEntry | AddAssumption | SetAssumption | RemoveAssumption | SelectPlanet | CommandBatch;
 
 export type Distribution = FixedDistribution | UniformDistribution | NormalDistribution;
 
 export type EditCommand = AddPartDef | ReplacePartDef | RemovePartDef | AddMaterialDef | ReplaceMaterialDef | RemoveMaterialDef | AddInstance | RemoveInstance | MoveInstance | SetParameter | ClearParameter | SetInstanceMaterial | AddJoint | ReplaceJoint | RemoveJoint | AddActuator | RemoveActuator | AddControlEntry | RemoveControlEntry | ReplaceControlEntry | AddAssumption | SetAssumption | RemoveAssumption | SelectPlanet;
+
+export type ServerMessage = Hello | Snapshot | Resumed | Applied | Accepted | Rejected | ProtocolError;
 
 export type TerrainProp = RampProp | StepProp;

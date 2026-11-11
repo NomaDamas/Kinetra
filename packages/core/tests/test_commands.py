@@ -626,10 +626,13 @@ def test_apply_a_command_that_sets_what_is_there_is_accepted_and_changes_nothing
     assert done.project == project
 
 
-def test_apply_result_is_not_the_wire_message_name():
+def test_apply_result_is_not_the_wire_message():
+    """`ApplyResult` (project + inverse) stays the applier's value; the wire message `applied` (C-05a) is `Applied`,
+    a different type with a revision, an origin and the changed sections."""
     import kinetra_core
 
-    assert hasattr(kinetra_core, "ApplyResult") and not hasattr(kinetra_core, "Applied")
+    assert kinetra_core.ApplyResult is not kinetra_core.Applied
+    assert "revision" in kinetra_core.Applied.model_fields and "revision" not in kinetra_core.ApplyResult.model_fields
 
 
 def test_project_is_compatible_with_check_world_references(project):
@@ -638,3 +641,11 @@ def test_project_is_compatible_with_check_world_references(project):
     check_world_references(project.world, planets=["mars", "moon", "earth"], materials=[m.id for m in project.design.materials])
     with pytest.raises(ValueError, match="unknown planet"):
         check_world_references(project.world, planets=["moon"], materials=[m.id for m in project.design.materials])
+
+
+def test_apply_replace_part_def_with_a_role_that_does_not_fit_its_actuators_is_rejected_with_the_refs(project):
+    """B-03b: giving the motor part the role `wheel` breaks the motor actuators on its instances: the refusal names the
+    instance, the part and the actuator (a `DesignSpec` error is a `RefError`, which carries them)."""
+    motor = next(p for p in load("DesignSpec.four-wheel-car.json")["parts"] if p["id"] == "motor")
+    err = rejected(project, cmd(type="replace_part_def", part={**motor, "role": "wheel"}), ReasonCode.INVALID_PROJECT)
+    assert {ref("instance", "motor-l"), ref("part", "motor"), ref("actuator", "drive-motor-l")} <= set(err.reasons[0].ids)

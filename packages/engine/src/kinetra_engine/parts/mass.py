@@ -17,6 +17,7 @@ from collections.abc import Mapping
 from kinetra_core import (
     Badge,
     ComponentContribution,
+    Density,
     Derivation,
     DerivedInertia,
     DerivedScalar,
@@ -24,16 +25,17 @@ from kinetra_core import (
     Dimension,
     MassProperties,
     Material,
+    ParameterUse,
     PartDef,
     Provenance,
     Quantity,
     Source,
     Unit,
 )
+from kinetra_core import convex as cx
 from kinetra_core.shape import Box, Cylinder, Sphere
 
-from . import _convex as cx
-from ._shape import ShapeError, parameter_uses, resolve_shape, signed_volumes
+from ._shape import Resolved, ShapeError, parameter_uses, resolve_shape, signed_volumes
 
 _COMPUTED_BY = "kinetra_engine.parts.mass_properties (analytic primitives, parallel-axis composition)"
 
@@ -42,6 +44,12 @@ _ASSUMPTIONS = (
     "Volumes and inertias are the exact closed forms of box, cylinder and sphere; fillets, chamfers and threads are not modelled.",
     "Added components have disjoint interiors, voids have disjoint interiors, and each void lies inside one added "
     "component. This was tested with a separating-plane and a containment test on the primitives, not by a CAD boolean.",
+)
+
+_DECLARED_ASSUMPTION = (
+    "The part's mass is declared (mass_parameter), not derived from a material: it is spread uniformly over the recipe's "
+    "net volume (effective density = mass / volume), so the centre of mass and inertia are those of a homogeneous body of "
+    "that shape. A real payload is not homogeneous; the shape says where the mass is assumed to sit. Voids are empty."
 )
 
 
@@ -58,28 +66,57 @@ def _principal_inertia(p: Box | Cylinder | Sphere, m: float, dims: Mapping[str, 
     return (i, i, i)
 
 
+def _declared_density(part: PartDef, resolved: Resolved, volume: float) -> tuple[float, Density]:
+    """The declared mass of a part with a `mass_parameter` [kg] and the effective density [kg/m^3] that spreads it over the
+    net recipe volume. The density carries the badge of the mass value (it is exactly as good as that declaration) and a
+    source that says it is derived."""
+    name = part.mass_parameter
+    assert name is not None
+    q = resolved.quantities[name]
+    rho = q.value / volume
+    ref = (
+        f"effective density = declared mass parameter {name!r} ({q.value!r} kg; {q.source.ref}) / net recipe volume "
+        f"{volume!r} m^3 of part {part.id}: the declared mass spread uniformly over the shape, not a material"
+    )
+    source = Source(ref=ref[:500], locator=q.source.locator, url=q.source.url, license=q.source.license,
+                    declared_by=q.source.declared_by, declared_at=q.source.declared_at)
+    return q.value, Density(value=rho, unit=Unit.KG_PER_M3, badge=q.badge, source=source)
+
+
 def mass_properties(
     part: PartDef,
-    material: Material,
+    material: Material | None,
     parameters: Mapping[str, Quantity] | None = None,
 ) -> MassProperties:
     """Volume, mass, centre of mass and inertia of `part` made of `material`, with the inputs that produced them.
 
     `parameters` overrides the part's defaults (a `Quantity` in metres, within the parameter's range, with its own badge
     and source). The result is badge `sim`; `derivation` lists the shape, density and parameter values with their badges.
+
+    A part with a `mass_parameter` (B-02c) has the mass that parameter says (kg), spread uniformly over the recipe's net
+    volume; `material` is not read (it may be `None`), and `derivation.material_id` is `None`. Any other part needs a
+    `material`: mass is its density times the recipe volume.
     """
     resolved = resolve_shape(part, parameters)
     shape = part.shape  # resolve_shape raised ShapeError if there is none
     assert shape is not None
     placed = resolved.placed
-    rho = material.density.value
 
     # Signed volumes: +added, -void.
     signed = signed_volumes(resolved)
     volume = sum(signed)
     if not volume > 0.0:
         raise ShapeError("the voids remove all the material: net volume is not positive")
-    mass = rho * volume
+    if part.mass_parameter is not None:
+        mass, density = _declared_density(part, resolved, volume)
+        material_id = None
+        rho = density.value
+    else:
+        if material is None:
+            raise ShapeError(f"part {part.id!r} has no mass_parameter, so its mass needs a material (density x volume)")
+        density, material_id = material.density, material.id
+        rho = density.value
+        mass = rho * volume
     com = tuple(sum(s * rho * pl.center[i] for s, pl in zip(signed, placed)) / mass for i in range(3))
 
     ixx = iyy = izz = ixy = ixz = iyz = 0.0
@@ -103,10 +140,11 @@ def mass_properties(
     _check_physical(mass, (ixx, iyy, izz, ixy, ixz, iyz))
 
     uses = parameter_uses(part, resolved)
-    input_badges = sorted(
-        {shape.badge, material.density.badge, *(q.value.badge for q in uses)}, key=list(Badge).index
-    )
-    source = Source(ref=_COMPUTED_BY, locator=f"part {part.id}, material {material.id}")
+    if part.mass_parameter is not None and part.mass_parameter not in {u.name for u in uses}:
+        # The declared mass is an input like any dimension: list it with its own badge and source.
+        uses = tuple(sorted((*uses, ParameterUse(name=part.mass_parameter, value=resolved.quantities[part.mass_parameter])), key=lambda u: u.name))
+    input_badges = sorted({shape.badge, density.badge, *(q.value.badge for q in uses)}, key=list(Badge).index)
+    source = Source(ref=_COMPUTED_BY, locator=f"part {part.id}, " + (f"material {material_id}" if material_id else f"declared mass {part.mass_parameter}"))
     sim = {"badge": Badge.SIM, "source": source}
     contributions = tuple(
         ComponentContribution(
@@ -129,12 +167,12 @@ def mass_properties(
         inertia=DerivedInertia(ixx=ixx, iyy=iyy, izz=izz, ixy=ixy, ixz=ixz, iyz=iyz, unit=Unit.KG_M2, **sim),
         derivation=Derivation(
             shape=Provenance(badge=shape.badge, source=shape.source),
-            material_id=material.id,
-            density=material.density,
+            material_id=material_id,
+            density=density,
             parameters=uses,
             components=contributions,
             input_badges=tuple(input_badges),
-            assumptions=_ASSUMPTIONS,
+            assumptions=_ASSUMPTIONS if part.mass_parameter is None else (_DECLARED_ASSUMPTION, *_ASSUMPTIONS[1:]),
         ),
     )
 

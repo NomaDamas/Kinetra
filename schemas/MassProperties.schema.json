@@ -163,9 +163,17 @@
           "$ref": "#/$defs/Provenance"
         },
         "material_id": {
-          "pattern": "^[a-z][a-z0-9_-]{0,63}$",
-          "title": "Material Id",
-          "type": "string"
+          "anyOf": [
+            {
+              "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Material Id"
         },
         "density": {
           "$ref": "#/$defs/Density"
@@ -201,7 +209,6 @@
       },
       "required": [
         "shape",
-        "material_id",
         "density",
         "parameters",
         "components",
@@ -542,12 +549,14 @@
         "m^2",
         "m^3",
         "kg",
+        "kg/s",
         "s",
         "rad",
         "m/s",
         "m/s^2",
         "rad/s",
         "N",
+        "N*s",
         "N*m",
         "N/m",
         "N*s/m",
@@ -557,7 +566,9 @@
         "kg*m^2",
         "J",
         "W",
-        "W/m^2"
+        "W/m^2",
+        "V",
+        "A"
       ],
       "title": "Unit",
       "type": "string"

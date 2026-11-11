@@ -32,10 +32,10 @@ Rules (read by C-05a, B-05b, XR-02d, the agent proposals of G-02):
   `undo` with nothing to undo and `redo` with nothing to redo raise it too (`nothing_to_undo`,
   `nothing_to_redo`), so the request path of 3.2 answers both with the same `rejected` message.
 - The history has no size cap: nothing in the plan or the issues names a number, and a number here would be
-  invented. It holds two commands per entry; a cap (or saving it with the project) is a decision for C-03 and C-05a
-  when they have to keep it.
+  invented. It holds two commands per entry; a cap is a decision for C-05a when it has to keep it. C-03 does not save it with the project
+  (`projectfile.py`).
 
-Not here: revision numbers and the `applied` message (C-05a), the saved form of a history and its hash (C-03),
+Not here: revision numbers and the `applied` message (C-05a), the saved form of a history (C-03 does not save one),
 the per-user undo of several editors (N-04; stored inverses carry absolute positions, see `project-model.md`),
 what an origin may send (C-02c), timestamps (wall-clock time has no place in a deterministic document).
 """
@@ -48,6 +48,7 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from .commands import Command, CommandRejected, Reason, ReasonCode, apply_command
 from .project import Project
+from .validator import validate_command
 
 
 class Origin(StrEnum):
@@ -94,8 +95,10 @@ class History(BaseModel):
         return self.cursor < len(self.entries)
 
     def execute(self, project: Project, command: Command, origin: Origin) -> EditResult:
-        """Apply `command` from `origin`. Raises `CommandRejected` (nothing changes) when the applier refuses."""
-        applied = apply_command(project, command)
+        """Apply `command` from `origin` through the validator (`validate_command`, C-02c: structure, policy and
+        placement). Raises `CommandRejected` (project and history unchanged) when it refuses. `undo` and `redo` go back
+        to states that were accepted and use `apply_command` only (`project-model.md`, "검증기")."""
+        applied = validate_command(project, command)
         if applied.project == project:
             return EditResult(project=project, history=self, entry=None)
         entry = HistoryEntry(origin=origin, command=command, inverse=applied.inverse)

@@ -538,3 +538,67 @@ def test_designspec_rejects_unknown_fields():
     d = four_wheel_car()
     d["joints"][0]["spring"] = 1.0
     reject(d, "spring")
+
+
+# --- part role and actuator kind (B-03b) --------------------------------------------------------------------------
+# These exercise the DesignSpec check only: every PartDef below is valid on its own (a motor part has its curve and
+# rated voltage; the other roles have no requirements of their own here), so a rejection is the role-actuator rule.
+
+
+def part(d, id):
+    return next(p for p in d["parts"] if p["id"] == id)
+
+
+def make_motor_part(d, id="motor"):
+    p = part(d, id)
+    p["role"] = "motor"
+    p["specs"] = [{"name": "rated_voltage", **q(12.0, "V")}]
+    p["curves"] = [
+        {
+            "name": "torque_speed",
+            "curve": {
+                "badge": "declared",
+                "source": SRC,
+                "x_unit": "rad/s",
+                "y_unit": "N*m",
+                "points": [{"x": 0.0, "y": 2.0}, {"x": 20.0, "y": 0.0}],
+            },
+        }
+    ]
+
+
+def test_designspec_motor_actuator_on_a_motor_part_is_accepted():
+    d = four_wheel_car()
+    make_motor_part(d)
+    assert DesignSpec.model_validate(d).parts  # the definition alone is valid; both motor actuators sit on it
+
+
+# "thruster" is not here: a thruster part must itself be complete (curve, specs, nozzle; B-03c), so a bare one is
+# rejected before the actuator rule. `test_thruster_...` in packages/engine/tests/test_thruster.py covers that pairing.
+# "battery" and "tank" are not here either (B-03d): they must be complete parts too (specs, an inside), so a bare one is
+# rejected first. `test_supply_motor_on_a_battery_part_is_rejected` in test_supply.py covers that pairing.
+@pytest.mark.parametrize("role", ["wheel", "spring_damper"])
+def test_designspec_motor_actuator_on_a_part_with_another_role_is_rejected(role):
+    d = four_wheel_car()
+    part(d, "motor")["role"] = role
+    reject(d, f"a motor drives a part with role 'motor', but instance 'motor-l' is part 'motor' with role '{role}'")
+
+
+def test_designspec_thruster_actuator_on_a_valid_motor_part_is_rejected():
+    d = four_wheel_car()
+    make_motor_part(d, "chassis")
+    d["actuators"].append({"id": "thrust-1", "kind": "thruster", "instance": "chassis-1"})
+    reject(d, "a thruster drives a part with role 'thruster', but instance 'chassis-1' is part 'chassis' with role 'motor'")
+
+
+def test_designspec_part_without_role_takes_any_actuator_kind():
+    d = four_wheel_car()
+    assert all("role" not in p for p in d["parts"])
+    d["actuators"].append({"id": "thrust-1", "kind": "thruster", "instance": "chassis-1"})
+    DesignSpec.model_validate(d)
+
+
+def test_designspec_part_role_must_be_a_known_role():
+    d = four_wheel_car()
+    part(d, "motor")["role"] = "engine"
+    reject(d, "role")

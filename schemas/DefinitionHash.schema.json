@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "The hash of one definition the project carries (a `PartDef` or a `Material`).",
+  "properties": {
+    "kind": {
+      "enum": [
+        "material",
+        "part"
+      ],
+      "title": "Kind",
+      "type": "string"
+    },
+    "id": {
+      "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+      "title": "Id",
+      "type": "string"
+    },
+    "hash": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "title": "Hash",
+      "type": "string"
+    }
+  },
+  "required": [
+    "kind",
+    "id",
+    "hash"
+  ],
+  "title": "DefinitionHash",
+  "type": "object"
+}

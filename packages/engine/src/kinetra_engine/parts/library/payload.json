@@ -1,0 +1,361 @@
+{
+  "id": "payload",
+  "name": "Payload (declared mass)",
+  "parameters": [
+    {
+      "name": "mass",
+      "unit": "kg",
+      "default": {
+        "badge": "default",
+        "source": {
+          "ref": "B-02c payload: PLACEHOLDER initial value so a new payload has a mass; the user declares the real mass on the instance (then badge 사용자 선언). The range is a modelling limit, not a product limit"
+        },
+        "value": 1.0,
+        "unit": "kg"
+      },
+      "min": {
+        "badge": "default",
+        "source": {
+          "ref": "B-02c payload: PLACEHOLDER initial value so a new payload has a mass; the user declares the real mass on the instance (then badge 사용자 선언). The range is a modelling limit, not a product limit"
+        },
+        "value": 0.01,
+        "unit": "kg"
+      },
+      "max": {
+        "badge": "default",
+        "source": {
+          "ref": "B-02c payload: PLACEHOLDER initial value so a new payload has a mass; the user declares the real mass on the instance (then badge 사용자 선언). The range is a modelling limit, not a product limit"
+        },
+        "value": 200.0,
+        "unit": "kg"
+      }
+    },
+    {
+      "name": "length",
+      "unit": "m",
+      "default": {
+        "badge": "default",
+        "source": {
+          "ref": "B-02c payload: dimension range chosen by us so the part stays a visible block from a 6 cm instrument to a 40 cm crate; not a real product"
+        },
+        "value": 0.12,
+        "unit": "m"
+      },
+      "min": {
+        "badge": "default",
+        "source": {
+          "ref": "B-02c payload: dimension range chosen by us so the part stays a visible block from a 6 cm instrument to a 40 cm crate; not a real product"
+        },
+        "value": 0.06,
+        "unit": "m"
+      },
+      "max": {
+        "badge": "default",
+        "source": {
+          "ref": "B-02c payload: dimension range chosen by us so the part stays a visible block from a 6 cm instrument to a 40 cm crate; not a real product"
+        },
+        "value": 0.4,
+        "unit": "m"
+      }
+    },
+    {
+      "name": "width",
+      "unit": "m",
+      "default": {
+        "badge": "default",
+        "source": {
+          "ref": "B-02c payload: dimension range chosen by us so the part stays a visible block from a 6 cm instrument to a 40 cm crate; not a real product"
+        },
+        "value": 0.08,
+        "unit": "m"
+      },
+      "min": {
+        "badge": "default",
+        "source": {
+          "ref": "B-02c payload: dimension range chosen by us so the part stays a visible block from a 6 cm instrument to a 40 cm crate; not a real product"
+        },
+        "value": 0.04,
+        "unit": "m"
+      },
+      "max": {
+        "badge": "default",
+        "source": {
+          "ref": "B-02c payload: dimension range chosen by us so the part stays a visible block from a 6 cm instrument to a 40 cm crate; not a real product"
+        },
+        "value": 0.3,
+        "unit": "m"
+      }
+    },
+    {
+      "name": "height",
+      "unit": "m",
+      "default": {
+        "badge": "default",
+        "source": {
+          "ref": "B-02c payload: dimension range chosen by us so the part stays a visible block from a 6 cm instrument to a 40 cm crate; not a real product"
+        },
+        "value": 0.06,
+        "unit": "m"
+      },
+      "min": {
+        "badge": "default",
+        "source": {
+          "ref": "B-02c payload: dimension range chosen by us so the part stays a visible block from a 6 cm instrument to a 40 cm crate; not a real product"
+        },
+        "value": 0.03,
+        "unit": "m"
+      },
+      "max": {
+        "badge": "default",
+        "source": {
+          "ref": "B-02c payload: dimension range chosen by us so the part stays a visible block from a 6 cm instrument to a 40 cm crate; not a real product"
+        },
+        "value": 0.3,
+        "unit": "m"
+      }
+    }
+  ],
+  "snap_points": [
+    {
+      "badge": "default",
+      "source": {
+        "ref": "B-02c: snap frame convention chosen here: the snap frame's +z is the outward normal of the face the point sits on, position on that face; B-04b may refine the compatibility tags"
+      },
+      "id": "base",
+      "kind": "payload_base",
+      "accepts": [
+        "payload_seat",
+        "surface"
+      ],
+      "position": {
+        "x": {
+          "offset": 0.0,
+          "terms": []
+        },
+        "y": {
+          "offset": 0.0,
+          "terms": []
+        },
+        "z": {
+          "offset": 0.0,
+          "terms": []
+        }
+      },
+      "orientation": {
+        "x": 1.0,
+        "y": 0.0,
+        "z": 0.0,
+        "w": 0.0
+      }
+    },
+    {
+      "badge": "default",
+      "source": {
+        "ref": "B-02c: snap frame convention chosen here: the snap frame's +z is the outward normal of the face the point sits on, position on that face; B-04b may refine the compatibility tags"
+      },
+      "id": "top",
+      "kind": "surface",
+      "accepts": [
+        "surface"
+      ],
+      "position": {
+        "x": {
+          "offset": 0.0,
+          "terms": []
+        },
+        "y": {
+          "offset": 0.0,
+          "terms": []
+        },
+        "z": {
+          "offset": 0.02,
+          "terms": [
+            {
+              "param": "height",
+              "factor": 1.0
+            }
+          ]
+        }
+      },
+      "orientation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0,
+        "w": 1.0
+      }
+    }
+  ],
+  "specs": [],
+  "shape": {
+    "badge": "default",
+    "source": {
+      "ref": "B-02c payload: silhouette drawn by us from boxes and a cylinder (instrument case: body, stepped lid, sensor boss); proportions are ours, not a real product"
+    },
+    "components": [
+      {
+        "id": "body",
+        "primitive": {
+          "kind": "box",
+          "size_x": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "length",
+                "factor": 1.0
+              }
+            ]
+          },
+          "size_y": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "width",
+                "factor": 1.0
+              }
+            ]
+          },
+          "size_z": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "height",
+                "factor": 0.8
+              }
+            ]
+          }
+        },
+        "operation": "add",
+        "position": {
+          "x": {
+            "offset": 0.0,
+            "terms": []
+          },
+          "y": {
+            "offset": 0.0,
+            "terms": []
+          },
+          "z": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "height",
+                "factor": 0.4
+              }
+            ]
+          }
+        },
+        "orientation": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 1.0
+        }
+      },
+      {
+        "id": "lid",
+        "primitive": {
+          "kind": "box",
+          "size_x": {
+            "offset": -0.016,
+            "terms": [
+              {
+                "param": "length",
+                "factor": 1.0
+              }
+            ]
+          },
+          "size_y": {
+            "offset": -0.016,
+            "terms": [
+              {
+                "param": "width",
+                "factor": 1.0
+              }
+            ]
+          },
+          "size_z": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "height",
+                "factor": 0.2
+              }
+            ]
+          }
+        },
+        "operation": "add",
+        "position": {
+          "x": {
+            "offset": 0.0,
+            "terms": []
+          },
+          "y": {
+            "offset": 0.0,
+            "terms": []
+          },
+          "z": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "height",
+                "factor": 0.9
+              }
+            ]
+          }
+        },
+        "orientation": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 1.0
+        }
+      },
+      {
+        "id": "boss",
+        "primitive": {
+          "kind": "cylinder",
+          "radius": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "width",
+                "factor": 0.2
+              }
+            ]
+          },
+          "length": {
+            "offset": 0.02,
+            "terms": []
+          }
+        },
+        "operation": "add",
+        "position": {
+          "x": {
+            "offset": 0.0,
+            "terms": []
+          },
+          "y": {
+            "offset": 0.0,
+            "terms": []
+          },
+          "z": {
+            "offset": 0.01,
+            "terms": [
+              {
+                "param": "height",
+                "factor": 1.0
+              }
+            ]
+          }
+        },
+        "orientation": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 1.0
+        }
+      }
+    ]
+  },
+  "mass_parameter": "mass"
+}

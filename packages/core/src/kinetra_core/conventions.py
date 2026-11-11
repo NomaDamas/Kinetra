@@ -30,12 +30,14 @@ class Unit(StrEnum):
     M2 = "m^2"
     M3 = "m^3"
     KG = "kg"
+    KG_PER_S = "kg/s"  # propellant mass flow (B-03c)
     S = "s"
     RAD = "rad"
     M_PER_S = "m/s"
     M_PER_S2 = "m/s^2"
     RAD_PER_S = "rad/s"
     N = "N"
+    N_S = "N*s"  # impulse (B-03c)
     N_M = "N*m"
     N_PER_M = "N/m"
     N_S_PER_M = "N*s/m"
@@ -46,3 +48,5 @@ class Unit(StrEnum):
     J = "J"
     W = "W"
     W_PER_M2 = "W/m^2"  # irradiance (planet insolation, W-01)
+    V = "V"  # electrical: motor rated voltage (B-03b)
+    A = "A"  # electrical: motor current (B-03b)

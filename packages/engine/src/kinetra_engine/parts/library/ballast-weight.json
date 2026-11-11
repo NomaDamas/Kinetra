@@ -1,0 +1,314 @@
+{
+  "id": "ballast-weight",
+  "name": "Ballast weight",
+  "parameters": [
+    {
+      "name": "mass",
+      "unit": "kg",
+      "default": {
+        "badge": "default",
+        "source": {
+          "ref": "B-02c ballast-weight: PLACEHOLDER initial value so a new weight has a mass; the user declares the real mass on the instance (then badge 사용자 선언). The range is a modelling limit, not a product limit"
+        },
+        "value": 2.0,
+        "unit": "kg"
+      },
+      "min": {
+        "badge": "default",
+        "source": {
+          "ref": "B-02c ballast-weight: PLACEHOLDER initial value so a new weight has a mass; the user declares the real mass on the instance (then badge 사용자 선언). The range is a modelling limit, not a product limit"
+        },
+        "value": 0.01,
+        "unit": "kg"
+      },
+      "max": {
+        "badge": "default",
+        "source": {
+          "ref": "B-02c ballast-weight: PLACEHOLDER initial value so a new weight has a mass; the user declares the real mass on the instance (then badge 사용자 선언). The range is a modelling limit, not a product limit"
+        },
+        "value": 500.0,
+        "unit": "kg"
+      }
+    },
+    {
+      "name": "radius",
+      "unit": "m",
+      "default": {
+        "badge": "default",
+        "source": {
+          "ref": "B-02c ballast-weight: dimension range chosen by us; not a real product"
+        },
+        "value": 0.05,
+        "unit": "m"
+      },
+      "min": {
+        "badge": "default",
+        "source": {
+          "ref": "B-02c ballast-weight: dimension range chosen by us; not a real product"
+        },
+        "value": 0.02,
+        "unit": "m"
+      },
+      "max": {
+        "badge": "default",
+        "source": {
+          "ref": "B-02c ballast-weight: dimension range chosen by us; not a real product"
+        },
+        "value": 0.2,
+        "unit": "m"
+      }
+    },
+    {
+      "name": "thickness",
+      "unit": "m",
+      "default": {
+        "badge": "default",
+        "source": {
+          "ref": "B-02c ballast-weight: dimension range chosen by us; not a real product"
+        },
+        "value": 0.03,
+        "unit": "m"
+      },
+      "min": {
+        "badge": "default",
+        "source": {
+          "ref": "B-02c ballast-weight: dimension range chosen by us; not a real product"
+        },
+        "value": 0.01,
+        "unit": "m"
+      },
+      "max": {
+        "badge": "default",
+        "source": {
+          "ref": "B-02c ballast-weight: dimension range chosen by us; not a real product"
+        },
+        "value": 0.15,
+        "unit": "m"
+      }
+    }
+  ],
+  "snap_points": [
+    {
+      "badge": "default",
+      "source": {
+        "ref": "B-02c: snap frame convention chosen here: the snap frame's +z is the outward normal of the face the point sits on, position on that face; B-04b may refine the compatibility tags"
+      },
+      "id": "base",
+      "kind": "payload_base",
+      "accepts": [
+        "payload_seat",
+        "surface"
+      ],
+      "position": {
+        "x": {
+          "offset": 0.0,
+          "terms": []
+        },
+        "y": {
+          "offset": 0.0,
+          "terms": []
+        },
+        "z": {
+          "offset": 0.0,
+          "terms": []
+        }
+      },
+      "orientation": {
+        "x": 1.0,
+        "y": 0.0,
+        "z": 0.0,
+        "w": 0.0
+      }
+    },
+    {
+      "badge": "default",
+      "source": {
+        "ref": "B-02c: snap frame convention chosen here: the snap frame's +z is the outward normal of the face the point sits on, position on that face; B-04b may refine the compatibility tags"
+      },
+      "id": "top",
+      "kind": "surface",
+      "accepts": [
+        "surface"
+      ],
+      "position": {
+        "x": {
+          "offset": 0.0,
+          "terms": []
+        },
+        "y": {
+          "offset": 0.0,
+          "terms": []
+        },
+        "z": {
+          "offset": 0.02,
+          "terms": [
+            {
+              "param": "thickness",
+              "factor": 1.0
+            },
+            {
+              "param": "radius",
+              "factor": 0.7
+            }
+          ]
+        }
+      },
+      "orientation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0,
+        "w": 1.0
+      }
+    }
+  ],
+  "specs": [],
+  "shape": {
+    "badge": "default",
+    "source": {
+      "ref": "B-02c ballast-weight: silhouette drawn by us: a disc with a neck and a knob; proportions are ours, not a real product"
+    },
+    "components": [
+      {
+        "id": "disc",
+        "primitive": {
+          "kind": "cylinder",
+          "radius": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "radius",
+                "factor": 1.0
+              }
+            ]
+          },
+          "length": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "thickness",
+                "factor": 1.0
+              }
+            ]
+          }
+        },
+        "operation": "add",
+        "position": {
+          "x": {
+            "offset": 0.0,
+            "terms": []
+          },
+          "y": {
+            "offset": 0.0,
+            "terms": []
+          },
+          "z": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "thickness",
+                "factor": 0.5
+              }
+            ]
+          }
+        },
+        "orientation": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 1.0
+        }
+      },
+      {
+        "id": "neck",
+        "primitive": {
+          "kind": "cylinder",
+          "radius": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "radius",
+                "factor": 0.2
+              }
+            ]
+          },
+          "length": {
+            "offset": 0.02,
+            "terms": []
+          }
+        },
+        "operation": "add",
+        "position": {
+          "x": {
+            "offset": 0.0,
+            "terms": []
+          },
+          "y": {
+            "offset": 0.0,
+            "terms": []
+          },
+          "z": {
+            "offset": 0.01,
+            "terms": [
+              {
+                "param": "thickness",
+                "factor": 1.0
+              }
+            ]
+          }
+        },
+        "orientation": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 1.0
+        }
+      },
+      {
+        "id": "knob",
+        "primitive": {
+          "kind": "sphere",
+          "radius": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "radius",
+                "factor": 0.35
+              }
+            ]
+          }
+        },
+        "operation": "add",
+        "position": {
+          "x": {
+            "offset": 0.0,
+            "terms": []
+          },
+          "y": {
+            "offset": 0.0,
+            "terms": []
+          },
+          "z": {
+            "offset": 0.02,
+            "terms": [
+              {
+                "param": "thickness",
+                "factor": 1.0
+              },
+              {
+                "param": "radius",
+                "factor": 0.35
+              }
+            ]
+          }
+        },
+        "orientation": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 1.0
+        }
+      }
+    ]
+  },
+  "mass_parameter": "mass"
+}

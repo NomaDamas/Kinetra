@@ -4,8 +4,8 @@
 that undoes this one. It never mutates its input and either returns a valid `Project` or raises `CommandRejected`
 with reasons (code, sentence, typed refs; `client-adapter.md` 3.2 `rejected`). Applying the inverse to the new
 project gives back a project equal to the original (order of every collection included), and the inverse's inverse
-redoes the edit. C-02b builds undo, redo and history on that pair; C-02c adds the policy checks (placement,
-planet constants, who may send what); C-05a puts the commands on the wire.
+redoes the edit. C-02b builds undo, redo and history on that pair; C-02c (`validator.py`) adds the policy checks (placement,
+planet constants, the material catalog, verdicts); C-05a puts the commands on the wire.
 
 Shape rules (read by C-02b, C-02c, C-03, C-05a, XR-02):
 
@@ -22,7 +22,8 @@ Shape rules (read by C-02b, C-02c, C-03, C-05a, XR-02):
   `model_copy`), so a command that would leave a reference dangling, a range broken or an id duplicated is
   rejected and nothing changes. A `Project` that exists has no dangling state; a command cannot build one.
 - Removing something removes what hangs on it in the same command. `RemoveInstance` takes the instance's
-  joints, the actuators on the instance or on those joints, and those actuators' schedule entries with it;
+  joints, the actuators on the instance, on those joints or drawing from it (`Actuator.supply`), and those
+  actuators' schedule entries with it;
   `RemoveJoint` takes the actuators on the joint and their entries; `RemoveActuator` takes its entries. The
   inverse is a `CommandBatch` that adds all of it back at the original positions. Definitions are the
   exception: `RemovePartDef` and `RemoveMaterialDef` are rejected while anything uses the definition
@@ -50,12 +51,12 @@ Shape rules (read by C-02b, C-02c, C-03, C-05a, XR-02):
   change `editable` (all `not_editable`). That keeps every inverse applicable.
 - There is deliberately no command that carries a planet constant, or a verdict (`client-adapter.md` C4):
   `SelectPlanet` names a planet by id. A material or part definition is replaced as a whole and only by id; which
-  origins may send definition commands at all is C-02c's policy.
+  origins may send definition commands at all: none is allowed or refused by origin (C-02c: the validator takes no origin).
 - Cost: every edit dumps the project to JSON and validates all of it again, so one edit costs O(project) and a
   batch of n edits n x O(project) (about 11 ms per edit at 200 instances, 25 ms at 1000, measured in the
   review of #497). Tracked in its own issue; it does not change the command shapes.
 
-Not here: the issuer and history (C-02b), policy checks and the reason texts of placement (C-02c), save format
+Not here: the issuer and history (C-02b), policy checks and placement (C-02c, `validator.py`), save format
 and hashes (C-03), the wire messages (C-05a), terrain prop edits (W-05), water (FL-02b), release entries (X-08).
 """
 
@@ -87,6 +88,10 @@ class ReasonCode(StrEnum):
     INVALID_COMMAND = "invalid_command"
     INVALID_PROJECT = "invalid_project"
     NOT_EDITABLE = "not_editable"
+    FORBIDDEN = "forbidden"  # C-02c: planet constants, the material catalog, verdicts
+    INVALID_SNAP = "invalid_snap"  # C-02c: a joint whose snap points do not accept each other or do not meet
+    OVERLAP = "overlap"  # C-02c: interpenetrating parts, or a part below the ground
+    FLOATING = "floating"  # C-02c: nothing connects the part to the ground
     NOTHING_TO_UNDO = "nothing_to_undo"
     NOTHING_TO_REDO = "nothing_to_redo"
 
@@ -172,7 +177,8 @@ class AddInstance(_Cmd):
 
 
 class RemoveInstance(_Cmd):
-    """Delete an instance with its joints, the actuators on it or on those joints, and their schedule entries."""
+    """Delete an instance with its joints, the actuators on it, on those joints or drawing from it (a battery or tank),
+    and their schedule entries."""
 
     type: Literal["remove_instance"]
     id: _Id
@@ -434,7 +440,10 @@ def _dependents(project: Project, *, instance=None, joint_ids=(), actuator_ids=(
     actuators = [
         (n, a)
         for n, a in enumerate(d.actuators)
-        if a.id in actuator_ids or a.instance == instance or (a.joint is not None and a.joint in removed_joints)
+        if a.id in actuator_ids
+        or a.instance == instance
+        or (instance is not None and a.supply == instance)
+        or (a.joint is not None and a.joint in removed_joints)
     ]
     removed_actuators = {a.id for _, a in actuators}
     entries = [(n, e) for n, e in enumerate(d.schedule.entries) if e.actuator in removed_actuators]

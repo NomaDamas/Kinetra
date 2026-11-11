@@ -1,8 +1,10 @@
 """Compile one part definition file: the check step of `docs/process/add-part.md` (B-01d).
 
     uv run python -m kinetra_engine.parts PART.json --material al6061-t6 [--out DIR]
+    uv run python -m kinetra_engine.parts PAYLOAD.json [--out DIR]          # a part with a `mass_parameter` needs no material
 
-Reads a `PartDef` JSON file, the material by id from the B-07 catalog, and compiles mass, collision proxy and glb exactly
+Reads a `PartDef` JSON file, the material by id from the B-07 catalog (not needed, not read, for a part whose mass is
+declared by its `mass_parameter`; a given one only picks the look), and compiles mass, collision proxy and glb exactly
 as the studio does (default parameter values). Prints one JSON report on stdout: mass, centre of mass, inertia, proxy volume
 error, filled and undrawn voids, glb size, and the milliseconds each step took. With `--out DIR` it also writes
 `DIR/<part id>.glb`. Exit code 0 when all three compile, 1 with the reason on stderr when the definition is rejected
@@ -36,7 +38,10 @@ def _timed(fn):
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="python -m kinetra_engine.parts", description=__doc__.split("\n\n")[0])
     parser.add_argument("part", type=Path, help="PartDef JSON file")
-    parser.add_argument("--material", required=True, help="material id in the B-07 catalog (kinetra_core.load_material_catalog)")
+    parser.add_argument(
+        "--material",
+        help="material id in the B-07 catalog (kinetra_core.load_material_catalog); required unless the part has a mass_parameter",
+    )
     parser.add_argument("--out", type=Path, help="directory to write <part id>.glb into")
     args = parser.parse_args(argv)
 
@@ -48,11 +53,16 @@ def main(argv: list[str] | None = None) -> int:
     except ValidationError as e:
         print(f"{args.part}: not a valid PartDef:\n{e}", file=sys.stderr)
         return 1
-    try:
-        material = load_material_catalog().get(args.material).material
-    except KeyError:
-        ids = [e.material.id for e in load_material_catalog().entries]
-        print(f"unknown material {args.material!r}; the catalog has {ids}", file=sys.stderr)
+    material = None
+    if args.material is not None:
+        try:
+            material = load_material_catalog().get(args.material).material
+        except KeyError:
+            ids = [e.material.id for e in load_material_catalog().entries]
+            print(f"unknown material {args.material!r}; the catalog has {ids}", file=sys.stderr)
+            return 1
+    elif part.mass_parameter is None:
+        print(f"{part.id}: --material is required (this part has no mass_parameter, so its mass is density x volume)", file=sys.stderr)
         return 1
 
     try:
@@ -68,7 +78,8 @@ def main(argv: list[str] | None = None) -> int:
         (args.out / f"{part.id}.glb").write_bytes(glb)
     report = {
         "part": part.id,
-        "material": material.id,
+        "material": material.id if material is not None else None,
+        "mass_declared_by": part.mass_parameter,
         "mass_kg": mass.mass.value,
         "volume_m3": mass.volume.value,
         "center_of_mass_m": [mass.center_of_mass.x, mass.center_of_mass.y, mass.center_of_mass.z],
