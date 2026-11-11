@@ -1,13 +1,19 @@
 """Per-project call budget and the cost ledger (G-01).
 
-Money is counted in integer micro-dollars so repeated adds never drift (0.1 + 0.1 + 0.1 > 0.3 in floats). A provider-reported
-cost is rounded *up* to the next micro-dollar from its decimal text, so a non-zero cost never counts as zero.
+Money is counted in integer micro-dollars so repeated adds never drift (0.1 + 0.1 + 0.1 > 0.3 in floats). Amounts that are
+spent (a reported cost, the assumed cost) are rounded *up* to the next micro-dollar from their decimal text, so a non-zero
+cost never counts as zero. The cap `max_cost_usd` is rounded *down*, so it is never above what the budget declared.
 
-Cost is the `usage.cost` (USD) the provider reports in each response; this module computes no prices.
-`assumed_call_cost_usd` (`사용자 선언`, set by whoever creates the budget, must be > 0) does two jobs so a cost cap cannot be
-bypassed: it is held back while a call is in flight, and it is what a call is charged when the provider reported no cost
-(no `usage.cost`, or a transport failure after the request may have left). The charge is stored as `charged_micro_usd`; the
-record's `cost_usd` stays `null` so the ledger says what was actually known.
+Cost semantics (this module computes no prices; `usage.cost` is what the provider reports):
+    - `assumed_call_cost_usd` (`사용자 선언`, set by whoever creates the budget, must be > 0) is the least a call can cost us.
+    - Before a request is sent the project needs `remaining >= assumed` (remaining = cap - charged - in-flight reservations),
+      and once `charged >= cap` nothing more is sent.
+    - After the reply the call is charged `max(reported, assumed)`; when the provider reported no cost, or the call failed
+      after the request may have left, that is `assumed`. The record's `cost_usd` stays `null` in that case.
+    - So one call can push the total past the cap by at most `reported - assumed` (when the reported cost is larger). That
+      overshoot is written in the ledger line (`overshoot_micro_usd`) and the next call is refused.
+    - The reservation is written to the ledger *before* sending (`reserved`) and the outcome after (`settled`). A `reserved`
+      line with no `settled` line (the process died in between) counts as charged at its reserved amount on restart.
 """
 
 from __future__ import annotations
@@ -15,7 +21,7 @@ from __future__ import annotations
 import json
 import math
 from dataclasses import dataclass
-from decimal import ROUND_CEILING, Decimal
+from decimal import ROUND_CEILING, ROUND_FLOOR, Decimal
 from pathlib import Path
 from typing import Iterator
 
@@ -36,9 +42,9 @@ def _finite_nonneg(v) -> bool:
     return isinstance(v, (int, float)) and not isinstance(v, bool) and math.isfinite(v) and v >= 0
 
 
-def to_micro(usd: float) -> int:
-    """USD -> integer micro-dollars, rounding up from the shortest decimal text of the float."""
-    return int((Decimal(repr(float(usd))) * MICRO).to_integral_value(rounding=ROUND_CEILING))
+def to_micro(usd: float, rounding=ROUND_CEILING) -> int:
+    """USD -> integer micro-dollars from the shortest decimal text of the float. Rounds up unless told otherwise (spent amounts)."""
+    return int((Decimal(repr(float(usd))) * MICRO).to_integral_value(rounding=rounding))
 
 
 @dataclass(frozen=True)
@@ -65,7 +71,7 @@ class Budget:
 
     @property
     def max_cost_micro(self) -> int | None:
-        return None if self.max_cost_usd is None else to_micro(self.max_cost_usd)
+        return None if self.max_cost_usd is None else to_micro(self.max_cost_usd, ROUND_FLOOR)  # never above the declared cap
 
     @property
     def assumed_micro(self) -> int:
@@ -79,6 +85,7 @@ class ProjectUsage:
     unknown_cost_calls: int = 0  # calls charged the declared assumption instead of a reported cost
     in_flight: int = 0
     reserved_micro: int = 0  # in-flight calls, held at the declared assumption until the real cost is known
+    overshoot_micro: int = 0  # how far charged spend is past the cap (0 when within it)
 
 
 class CostLedger:

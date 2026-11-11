@@ -50,7 +50,7 @@ class Fake:
     def __call__(self, req: HttpRequest) -> HttpResponse:
         self.requests.append(req)
         r = self.responses.pop(0) if self.responses else HttpResponse(200, ok_body())
-        if isinstance(r, Exception):
+        if isinstance(r, BaseException):
             raise r
         return r
 
@@ -73,8 +73,25 @@ def make(tmp_path, fake=None, budget=None, ledger=True, project="p1", **kw):
     return gw, fake
 
 
-def lines(tmp_path):
+def all_lines(tmp_path):
     return [json.loads(x) for x in (tmp_path / "cost.jsonl").read_text().splitlines()]
+
+
+def lines(tmp_path):
+    """The ledger without the `reserved` lines: one settled or rejected record per request."""
+    return [x for x in all_lines(tmp_path) if x["status"] != "reserved"]
+
+
+def fail_settlements(gw):
+    """Make every ledger write after the `reserved` line fail, as a disk that fills up during the call would."""
+    real = gw._ledger.append
+
+    def append(entry):
+        if entry["status"] == "reserved":
+            return real(entry)
+        raise OSError("disk full")
+
+    gw._ledger.append = append
 
 
 # ---------------------------------------------------------------- DoD: budget exceeded is rejected
@@ -380,12 +397,24 @@ def test_gateway_unserialisable_request_leaves_no_reservation(tmp_path):
     assert gw.chat("p1", MSG).text == "hi"  # the one call was not eaten by the failed one
 
 
-def test_gateway_transport_exception_releases_the_reservation(tmp_path):
-    gw, _ = make(tmp_path, Fake(RuntimeError("boom")), Budget(max_calls=2))
-    with pytest.raises(RuntimeError):
+def test_gateway_unexpected_transport_exception_becomes_a_masked_upstream_error_and_settles(tmp_path):
+    gw, _ = make(tmp_path, Fake(RuntimeError(f"boom {KEY} sk-otherkey123456")), Budget(max_cost_usd=1.0, assumed_call_cost_usd=0.25))
+    with pytest.raises(UpstreamError) as e:
         gw.chat("p1", MSG)
+    assert "RuntimeError" in str(e.value) and KEY not in str(e.value) and "sk-otherkey123456" not in str(e.value)
+    assert e.value.__cause__ is None
     u = gw.usage("p1")
-    assert u["calls"] == 1 and u["calls_left"] == 1
+    assert u["calls"] == 1 and u["charged_usd"] == 0.25 and u["cost_left_usd"] == 0.75  # the request may have left: charged the assumed cost, reservation released
+    row = lines(tmp_path)[0]
+    assert row["status"] == "transport_error" and row["charged_micro_usd"] == 250000
+    assert KEY not in (tmp_path / "cost.jsonl").read_text()
+
+
+def test_gateway_keyboard_interrupt_still_settles_the_books(tmp_path):
+    gw, _ = make(tmp_path, Fake(KeyboardInterrupt()), Budget(max_calls=2))
+    with pytest.raises(KeyboardInterrupt):
+        gw.chat("p1", MSG)
+    assert gw.usage("p1")["calls"] == 1 and gw.usage("p1")["calls_left"] == 1
 
 
 class _Server:
@@ -462,15 +491,12 @@ def test_gateway_urllib_transport_reads_error_bodies_and_round_trips():
 def test_gateway_ledger_write_failure_closes_the_gateway_and_returns_the_reply(tmp_path):
     gw, fake = make(tmp_path, Fake(HttpResponse(200, ok_body(content="the answer", cost=0.02))), Budget(max_calls=5))
 
-    def broken(entry):
-        raise OSError("disk full")
-
-    gw._ledger.append = broken
+    fail_settlements(gw)
     with pytest.raises(LedgerWriteError) as e:
         gw.chat("p1", MSG)
     err = e.value
     assert err.reply is not None and err.reply.text == "the answer" and err.charged_usd == pytest.approx(0.02)
-    assert "not on disk" in str(err) and KEY not in str(err)
+    assert "may not be on disk" in str(err) and KEY not in str(err)
     assert gw.usage("p1")["closed"] is True and gw.usage("p1")["charged_usd"] == pytest.approx(0.02)
     with pytest.raises(GatewayClosed):  # nothing more is sent: spend that cannot be recorded would be forgotten
         gw.chat("p1", MSG)
@@ -479,7 +505,7 @@ def test_gateway_ledger_write_failure_closes_the_gateway_and_returns_the_reply(t
 
 def test_gateway_ledger_write_failure_after_an_upstream_error_keeps_the_error(tmp_path):
     gw, _ = make(tmp_path, Fake(HttpResponse(500, b'{"error":{"message":"boom"}}')), Budget(max_calls=5))
-    gw._ledger.append = lambda entry: (_ for _ in ()).throw(OSError("disk full"))
+    fail_settlements(gw)
     with pytest.raises(LedgerWriteError) as e:
         gw.chat("p1", MSG)
     assert e.value.reply is None and isinstance(e.value.upstream, UpstreamError) and e.value.upstream.status == 500
@@ -513,3 +539,101 @@ def test_gateway_tiny_reported_costs_still_consume_the_budget(tmp_path):
     assert gw.usage("p1")["charged_usd"] == 0.000002
     with pytest.raises(BudgetExceeded):
         gw.chat("p1", MSG)
+
+
+# ---------------------------------------------------------------- review round 2: cost semantics, persisted reservation, cap rounding
+
+
+def test_gateway_charge_is_the_larger_of_reported_and_assumed_and_overshoot_is_recorded(tmp_path):
+    """cap $1.00, assumed $0.30: a call reported at $0.90 is charged $0.90 (> assumed), a call reported at $0.01 is charged the assumed $0.30."""
+    fake = Fake(HttpResponse(200, ok_body(cost=0.01)), HttpResponse(200, ok_body(cost=0.90)), HttpResponse(200, ok_body(cost=0.90)))
+    gw, _ = make(tmp_path, fake, Budget(max_cost_usd=1.0, assumed_call_cost_usd=0.30))
+    a = gw.chat("p1", MSG)
+    assert (a.cost_usd, a.charged_usd) == (0.01, 0.30)  # reported is below the least a call can cost: charge the assumption
+    b = gw.chat("p1", MSG)  # remaining 0.70 >= 0.30 so it is sent; reported 0.90 -> charged 0.90, total 1.20
+    assert b.charged_usd == 0.90
+    rows = lines(tmp_path)
+    assert rows[0]["overshoot_micro_usd"] == 0 and rows[1]["overshoot_micro_usd"] == 200000  # 1.20 - 1.00
+    assert gw.usage("p1")["overshoot_usd"] == 0.2
+    with pytest.raises(BudgetExceeded, match="cost cap reached"):  # spent >= cap: nothing more is sent
+        gw.chat("p1", MSG)
+    assert len(gw._transport.requests) == 2
+
+
+def test_gateway_overshoot_is_at_most_reported_minus_assumed(tmp_path):
+    """A call is only sent with remaining >= assumed, so total <= cap - assumed + reported, i.e. overshoot <= reported - assumed."""
+    cap, assumed, reported = 1.0, 0.15, 0.80
+    gw, _ = make(tmp_path, Fake(*[HttpResponse(200, ok_body(cost=reported))] * 5), Budget(max_cost_usd=cap, assumed_call_cost_usd=assumed))
+    sent = 0
+    while True:
+        try:
+            gw.chat("p1", MSG)
+        except BudgetExceeded:
+            break
+        sent += 1
+    spent = gw.usage("p1")["charged_usd"]
+    assert sent == 2 and spent == pytest.approx(1.6)  # 0.80; remaining 0.20 >= 0.15 so a second call goes out (1.60); spent >= cap so no third
+    assert spent - cap <= reported - assumed + 1e-9
+
+
+def test_gateway_max_cost_is_rounded_down_to_micro_dollars_never_above_the_declared_cap(tmp_path):
+    b = Budget(max_cost_usd=0.0000019, assumed_call_cost_usd=0.000001)
+    assert b.max_cost_micro == 1  # 1.9 micro-dollars -> 1, not 2
+    gw, _ = make(tmp_path, Fake(HttpResponse(200, ok_body(cost=None)), HttpResponse(200, ok_body(cost=None))), b)
+    gw.chat("p1", MSG)  # remaining 1 >= assumed 1
+    with pytest.raises(BudgetExceeded):  # rounding the cap up to 2 would have allowed this second call
+        gw.chat("p1", MSG)
+    assert Budget(max_cost_usd=0.30, assumed_call_cost_usd=0.10).max_cost_micro == 300000
+    assert Budget(max_cost_usd=0.1 + 0.2, assumed_call_cost_usd=0.1).max_cost_micro == 300000  # 0.30000000000000004 -> 300000
+
+
+def test_gateway_a_crash_between_send_and_settle_counts_the_reservation_as_spent(tmp_path):
+    """Simulated crash: the transport kills the process before the settlement line is written."""
+    b = Budget(max_cost_usd=0.50, assumed_call_cost_usd=0.20)
+
+    class Crash(BaseException):
+        pass
+
+    gw, _ = make(tmp_path, Fake(HttpResponse(200, ok_body(cost=0.01))), b)
+    gw._settle = lambda *a, **k: (_ for _ in ()).throw(Crash())  # the reply arrived, the process dies before recording it
+    with pytest.raises(Crash):
+        gw.chat("p1", MSG)
+    on_disk = all_lines(tmp_path)
+    assert [x["status"] for x in on_disk] == ["reserved"] and on_disk[0]["reserved_micro_usd"] == 200000
+    gw2, _ = make(tmp_path, Fake(), b)  # restart
+    u = gw2.usage("p1")
+    assert u["calls"] == 1 and u["charged_usd"] == 0.20 and u["unknown_cost_calls"] == 1 and u["cost_left_usd"] == pytest.approx(0.30)
+    gw2.chat("p1", MSG)  # 0.30 left >= 0.20
+    with pytest.raises(BudgetExceeded):  # 0.20 + 0.20 charged, 0.10 left < 0.20
+        gw2.chat("p1", MSG)
+
+
+def test_gateway_reservation_line_is_written_before_the_request_is_sent(tmp_path):
+    seen = {}
+
+    def transport(req):
+        seen["ledger"] = all_lines(tmp_path)
+        return HttpResponse(200, ok_body())
+
+    gw, _ = make(tmp_path, Fake(), Budget(max_cost_usd=1.0, assumed_call_cost_usd=0.1))
+    gw._transport = transport
+    gw.chat("p1", MSG)
+    assert [x["status"] for x in seen["ledger"]] == ["reserved"]
+    final = all_lines(tmp_path)
+    assert [x["status"] for x in final] == ["reserved", "ok"] and final[0]["rid"] == final[1]["rid"]
+
+
+def test_gateway_settled_reservation_is_not_counted_twice_on_restart(tmp_path):
+    b = Budget(max_cost_usd=1.0, assumed_call_cost_usd=0.1)
+    gw, _ = make(tmp_path, Fake(HttpResponse(200, ok_body(cost=0.25))), b)
+    gw.chat("p1", MSG)
+    gw2, _ = make(tmp_path, Fake(), b)
+    assert gw2.usage("p1")["calls"] == 1 and gw2.usage("p1")["charged_usd"] == 0.25
+
+
+def test_gateway_reservation_write_failure_sends_nothing_and_closes(tmp_path):
+    gw, fake = make(tmp_path)
+    gw._ledger.append = lambda entry: (_ for _ in ()).throw(OSError("read-only"))
+    with pytest.raises(LedgerWriteError, match="nothing was sent"):
+        gw.chat("p1", MSG)
+    assert fake.requests == [] and gw.usage("p1")["calls"] == 0 and gw.usage("p1")["closed"] is True
