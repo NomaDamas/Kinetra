@@ -132,6 +132,10 @@ def plate() -> PartDef:
     return library_part("plate")
 
 
+def thruster() -> PartDef:
+    return library_part("thruster-vacco-48003040")
+
+
 def sensor_mast() -> PartDef:
     return part(
         "sensor-mast",
@@ -174,6 +178,7 @@ SAMPLES = {
     "payload-mount-al6061": (lambda: library_part("payload-mount"), "al6061-t6"),
     # B-03b: a datasheet motor, mass declared by the datasheet weight, drawn without a material.
     "motor-37d-12v-50-1-declared-mass": (lambda: library_part("motor-37d-12v-50-1"), NO_MATERIAL),
+    "thruster-vacco-48003040-steel": (thruster, "steel-a36"),
 }
 
 

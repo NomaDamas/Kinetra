@@ -90,7 +90,19 @@ from .massprops import (
 from .material import Density, ElasticModulus, Friction, Material, YieldStrength
 from .material_catalog import CatalogEntry, MaterialCatalog, load_material_catalog
 from .curve import Curve, CurvePoint, NamedCurve
-from .partdef import MOTOR_CURVE, MOTOR_RATED_VOLTAGE, ParamDef, PartDef, PartRole, SnapPoint, SpecDef
+from .partdef import (
+    MOTOR_CURVE,
+    MOTOR_RATED_VOLTAGE,
+    THRUSTER_CURVE,
+    THRUSTER_NOZZLE,
+    THRUSTER_PROPELLANT_FLOW,
+    THRUSTER_RATED_THRUST,
+    ParamDef,
+    PartDef,
+    PartRole,
+    SnapPoint,
+    SpecDef,
+)
 from .pbr import PbrColor, PbrScalar, PbrSlots
 from .project import Project
 from .projectfile import (
@@ -278,6 +290,10 @@ __all__ = [
     "Snapshot",
     "Source",
     "SpecDef",
+    "THRUSTER_CURVE",
+    "THRUSTER_NOZZLE",
+    "THRUSTER_PROPELLANT_FLOW",
+    "THRUSTER_RATED_THRUST",
     "Sphere",
     "StepProp",
     "Subscribe",

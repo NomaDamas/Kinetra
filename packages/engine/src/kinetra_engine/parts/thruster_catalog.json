@@ -1,0 +1,85 @@
+{
+  "note": "Rated thrusts of cold-gas thrusters read in two public datasheets (B-03c). The range of these values is what 'in the catalog' means for a thruster; outside it a value is shown as '카탈로그 밖 · <badge>'. Not a purchasing catalog: no price, no availability.",
+  "thrusts": [
+    {
+      "value": 0.01,
+      "unit": "N",
+      "badge": "cite",
+      "source": {
+        "ref": "Moog, Cold Gas Thrusters datasheet (Form 500-1171 0121)",
+        "locator": "Performance characteristics, Nominal Thrust: 10 mN, model 058E143/145/146, at 1.5 bar GN2",
+        "url": "https://www.moog.com/content/dam/moog/literature/sdg/space/propulsion/moog-coldgasthrusters-datasheet.pdf"
+      }
+    },
+    {
+      "value": 0.016,
+      "unit": "N",
+      "badge": "cite",
+      "source": {
+        "ref": "Moog, Cold Gas Thrusters datasheet (Form 500-1171 0121)",
+        "locator": "Performance characteristics, Nominal Thrust: 16 mN, model 058E143/145/146, at 1.5 bar GN2",
+        "url": "https://www.moog.com/content/dam/moog/literature/sdg/space/propulsion/moog-coldgasthrusters-datasheet.pdf"
+      }
+    },
+    {
+      "value": 0.04,
+      "unit": "N",
+      "badge": "cite",
+      "source": {
+        "ref": "Moog, Cold Gas Thrusters datasheet (Form 500-1171 0121)",
+        "locator": "Performance characteristics, Nominal Thrust: 40 mN, model 058E143/145/146, at 1.5 bar GN2",
+        "url": "https://www.moog.com/content/dam/moog/literature/sdg/space/propulsion/moog-coldgasthrusters-datasheet.pdf"
+      }
+    },
+    {
+      "value": 0.12,
+      "unit": "N",
+      "badge": "cite",
+      "source": {
+        "ref": "Moog, Cold Gas Thrusters datasheet (Form 500-1171 0121)",
+        "locator": "Performance characteristics, Nominal Thrust: 120 mN, model 058E142A, at 6.9 bar GN2",
+        "url": "https://www.moog.com/content/dam/moog/literature/sdg/space/propulsion/moog-coldgasthrusters-datasheet.pdf"
+      }
+    },
+    {
+      "value": 0.9,
+      "unit": "N",
+      "badge": "cite",
+      "source": {
+        "ref": "Moog, Cold Gas Thrusters datasheet (Form 500-1171 0121)",
+        "locator": "Performance characteristics, Nominal Thrust: 0.9 N, model 58E163A, at 90 bar GN2",
+        "url": "https://www.moog.com/content/dam/moog/literature/sdg/space/propulsion/moog-coldgasthrusters-datasheet.pdf"
+      }
+    },
+    {
+      "value": 3.6,
+      "unit": "N",
+      "badge": "cite",
+      "source": {
+        "ref": "Moog, Cold Gas Thrusters datasheet (Form 500-1171 0121)",
+        "locator": "Performance characteristics, Nominal Thrust: 3.6 N, model 058-118, at 15.7 bar GN2",
+        "url": "https://www.moog.com/content/dam/moog/literature/sdg/space/propulsion/moog-coldgasthrusters-datasheet.pdf"
+      }
+    },
+    {
+      "value": 5.0,
+      "unit": "N",
+      "badge": "cite",
+      "source": {
+        "ref": "VACCO Industries, LOW POWER COLD GAS THRUSTER V1E10703-01 datasheet (07 July 2004)",
+        "locator": "Features: 5.0 N @ 3000 psia",
+        "url": "https://www.vacco.com/images/uploads/pdfs/cold_gas_thrusters.pdf"
+      }
+    },
+    {
+      "value": 8.896443230521,
+      "unit": "N",
+      "badge": "cite",
+      "source": {
+        "ref": "VACCO Industries, 2 LBF COLD GAS THRUSTER 48003040 datasheet (07 July 2004)",
+        "locator": "Operating parameters: Thrust @ 250 psia GN2 inlet 2.0 lbf (x 4.4482216152605 N/lbf)",
+        "url": "https://www.vacco.com/images/uploads/pdfs/cold_gas_thrusters.pdf"
+      }
+    }
+  ]
+}
