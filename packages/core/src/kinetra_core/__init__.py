@@ -9,6 +9,7 @@ from .assumption import (
     NormalDistribution,
     UniformDistribution,
 )
+from .collision import CollisionProxy, FilledVoid, ProxyDerivation, ProxyGeom
 from .conventions import COORDINATE_FRAME, QUATERNION_COMPONENTS, Unit
 from .designspec import (
     ActuateEntry,
@@ -36,6 +37,7 @@ from .massprops import (
     Dimension,
     MassProperties,
     ParameterUse,
+    SimProvenance,
 )
 from .material import Density, ElasticModulus, Friction, Material, YieldStrength
 from .material_catalog import CatalogEntry, MaterialCatalog, load_material_catalog
@@ -60,6 +62,7 @@ __all__ = [
     "Box",
     "CatalogEntry",
     "BreakThreshold",
+    "CollisionProxy",
     "ComponentContribution",
     "Confidence",
     "ControlSchedule",
@@ -73,6 +76,7 @@ __all__ = [
     "DesignSpec",
     "Distribution",
     "ElasticModulus",
+    "FilledVoid",
     "FixedDistribution",
     "Friction",
     "Incline",
@@ -97,11 +101,14 @@ __all__ = [
     "Position",
     "PropSize",
     "Provenance",
+    "ProxyDerivation",
+    "ProxyGeom",
     "Quantity",
     "Quaternion",
     "RampProp",
     "Shape",
     "ShapeComponent",
+    "SimProvenance",
     "SnapPoint",
     "SnapRef",
     "Source",
