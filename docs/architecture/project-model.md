@@ -1,8 +1,8 @@
-# Project 모델: 단위·좌표·값 배지, 재료·부품·DesignSpec·World·가정표 (C-01a, C-01b, C-01c)
+# Project 모델: 단위·좌표·값 배지, 재료·부품·DesignSpec·World·가정표 (C-01a, C-01b, C-01c, C-01d)
 
 - 상태: 구현됨. 코드는 `packages/core/src/kinetra_core/`(`conventions.py`, `provenance.py`, `material.py`, `partdef.py`, `designspec.py`, `world.py`, `assumption.py`), 테스트는 `packages/core/tests/test_material_partdef.py`와 `test_designspec.py`, `test_world_assumption.py`.
 - 근거: `docs/plan/studio-plan.md` 5절, `docs/architecture/client-adapter.md` G4·G6, 이슈 #60의 A0-04 이월 코멘트.
-- 범위 밖: MJCF(X-01), JSON Schema·TS 파일 생성(C-01d). 모델은 Pydantic v2라서 `model_json_schema()`로 스키마가 이미 나온다. 파일로 내보내는 일은 C-01d다.
+- 범위 밖: MJCF(X-01). JSON Schema와 TS 타입은 코어 모델에서 생성한다(아래 "스키마와 TS 타입", C-01d).
 
 ## 규약 (확정)
 
@@ -65,6 +65,23 @@
 - 지형 소품: 평지는 z = 0 평면이고, 소품은 중심 (`x`, `y`)[m]과 +Z 둘레 회전 `yaw`[rad]로 놓는 `length` x `width` 직사각형이다. 놓는 자세 `placement`(x, y, yaw)는 `SnapPoint` 자세처럼 배지와 출처 하나가 통째로 덮는다. 크기(`length`, `width`, `incline`, `height`)는 각각 `Quantity`(배지·출처 필수)다. 경사로는 `incline`(rad, 0 초과 pi/2 미만)이고 `length`는 수평 길이다(높이는 `length * tan(incline)`로 파생하며 저장하지 않는다). 턱은 `height`(m, > 0). 표면 재료는 `material` ID로 참조하고(마찰은 재료의 것이다) `None`이면 행성 지면이다(마찰은 행성 데이터). 소품 ID는 월드 안에서 겹치지 않는다. 형상과 MJCF는 W-05, X-01이다.
 - 가정표: legacy `SpecSheet`의 `Assumption`(`legacy-v0:schemas/spec_sheet.schema.json`)을 옮겼다. `key`, `label`, `value`(공칭값, 결정론 탐색용), `distribution`(몬테카를로가 뽑는 분포: `fixed`, `uniform`, `normal`; 모델 이름은 `FixedDistribution` 등, `kind` 필수), `confidence`(`low`/`med`/`high`), `editable`은 그대로다. 바뀐 점: legacy의 `value`+`unit`+`source`(자유 문자열)는 `value: Quantity`(값, 닫힌 단위, 배지, 구조화된 출처) 하나가 됐고, `uniform`과 `normal`의 수치는 그 자체로 새 수치라서 각자 배지와 출처를 가진다(공칭값을 인용했다고 퍼짐까지 인용한 것은 아니다). 분포의 수치는 `value.unit` 단위다(단위가 그 가정에 맞는지는 검사하지 않는다). 공칭값은 분포의 지지 안에 있어야 한다(`uniform`: `low <= value <= high`, `normal`: `clip_low`/`clip_high`가 있으면 그 안; 클립이 없는 `normal`은 제한 없음). `label`은 1~100자이고 공백뿐이면 거부한다. `AssumptionTable`은 키가 겹치지 않고 순서를 보존하며, 행성 상수 이름의 키(`gravity` 등)를 거부한다. 이것도 친절일 뿐이고 `Assumption` 하나만 만들 때는 검사하지 않는다(보장은 위와 같다). legacy `SpecSheet`의 부품, 탐색 범위, 성공 기준, 템플릿은 옮기지 않았다(다른 잎의 일이다).
 - 모델 라벨("근사: 균일 중력" 등)은 W-03b, W-06이 더한다.
+
+## 스키마와 TS 타입 (C-01d)
+
+모델이 단일 원본이다. `schemas/`는 거기서 생성한 것이라 손으로 고치지 않는다.
+
+```
+uv run python packages/core/scripts/export_schemas.py          # schemas/ 를 다시 쓴다
+uv run python packages/core/scripts/export_schemas.py --check  # 쓰지 않고 차이만 본다(CI, engine 워크플로)
+```
+
+- 무엇을 내보내는가는 어디에도 적혀 있지 않다. 스크립트는 `kinetra_core.__all__`의 pydantic 모델, enum, 유니온 별칭(`Distribution`, `TerrainProp`)을 모두 가져온다. 뒤 잎이 `kinetra_core/__init__.py`에 모델을 내보내면 스크립트를 고치지 않아도 스키마와 타입이 생긴다. 상수, 함수, 예외는 스키마가 없어서 건너뛴다. 모델도 enum도 아닌 클래스를 내보내면 내보내기가 실패한다(클라이언트가 볼 수 있는 것이 타입 없이 남지 않게). 같은 이름의 서로 다른 스키마도 실패한다.
+- `schemas/<Name>.schema.json`: 이름 하나마다 JSON Schema(draft 2020-12) 한 파일. `$defs`를 포함해 혼자 쓸 수 있다. 입력 검증 모드(코어가 받아들이는 JSON)이고 `const`/`exclusiveMinimum`/`pattern`으로 단위, 범위, ID 형식이 실린다.
+- `schemas/types.ts`: 모든 이름의 TypeScript `interface`/`type`(`packages/core/scripts/schema_to_ts.py`). 기본값이 있는 필드는 선택(`?`)이다. 코어가 빠진 것을 채워 주기 때문이다. 단위는 필드마다 리터럴 타입(`unit: "kg/m^3"`), 배지와 단위 어휘는 닫힌 유니온이다. 변환기가 모르는 스키마 키워드를 만나면 경로와 함께 실패한다(조용히 느슨한 타입을 내지 않는다).
+- 타입은 모양만 안다. 교차 검사(참조가 닫혀 있는가, 쿼터니언이 단위 길이인가, 자리표시 출처인가)는 코어의 검증기가 한다. 클라이언트는 타입으로 읽고 쓰되 판정은 코어에 맡긴다.
+- 웹: `schemas/`는 pnpm 워크스페이스 패키지 `@kinetra/schemas`(`types`는 `types.ts`, `@kinetra/schemas/<Name>.schema.json`으로 스키마도 가져온다)이고 `apps/studio`가 의존한다. `pnpm lint`가 `tsc`로 타입을, `pnpm test`가 `schemas/test/types.test.ts`를 돈다.
+- `schemas/examples/<Name>.<설명>.json`은 손으로 쓴 예시다(`DesignSpec.four-wheel-car`, `Material.example`, `World.ramp-and-step`, `AssumptionTable.vehicle-mass`). `packages/core/tests/test_schema_export.py`가 예시마다 JSON Schema(`jsonschema`)와 모델 둘 다 통과하는지 보고, 잘못된 입력(출처 없음, 모르는 배지, 틀린 단위, 범위 밖, 배열 쿼터니언, 모르는 필드)을 둘 다 거부하는지 본다. 예시의 수치는 모두 `사용자 선언`이고 실부품 데이터가 아니다.
+- 새 모델을 더한 PR은 `export_schemas.py`를 돌려 `schemas/`를 같이 커밋한다. 안 하면 CI의 `--check`와 `test_committed_schemas_match_the_models`가 실패한다.
 
 ## 알려진 확장 (이 PR 범위 밖, 뒤 잎이 더한다)
 

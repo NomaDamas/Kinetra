@@ -1,0 +1,224 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "pattern": "^[a-z][a-z0-9_]{0,63}$",
+      "title": "Id",
+      "type": "string"
+    },
+    "primitive": {
+      "discriminator": {
+        "mapping": {
+          "box": "#/$defs/Box",
+          "cylinder": "#/$defs/Cylinder",
+          "sphere": "#/$defs/Sphere"
+        },
+        "propertyName": "kind"
+      },
+      "oneOf": [
+        {
+          "$ref": "#/$defs/Box"
+        },
+        {
+          "$ref": "#/$defs/Cylinder"
+        },
+        {
+          "$ref": "#/$defs/Sphere"
+        }
+      ],
+      "title": "Primitive"
+    },
+    "operation": {
+      "default": "add",
+      "enum": [
+        "add",
+        "subtract"
+      ],
+      "title": "Operation",
+      "type": "string"
+    },
+    "position": {
+      "$ref": "#/$defs/Position"
+    },
+    "orientation": {
+      "$ref": "#/$defs/Quaternion"
+    }
+  },
+  "required": [
+    "id",
+    "primitive",
+    "position"
+  ],
+  "title": "ShapeComponent",
+  "type": "object",
+  "$defs": {
+    "AxisExpr": {
+      "additionalProperties": false,
+      "description": "A length in metres: `offset + sum(factor * param)`. A snap point coordinate in the part's local frame, or a\ndimension of a shape component (`shape.py`). Every `param` is a length parameter of the part.",
+      "properties": {
+        "offset": {
+          "title": "Offset",
+          "type": "number"
+        },
+        "terms": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/ParamTerm"
+          },
+          "title": "Terms",
+          "type": "array"
+        }
+      },
+      "required": [
+        "offset"
+      ],
+      "title": "AxisExpr",
+      "type": "object"
+    },
+    "Box": {
+      "additionalProperties": false,
+      "description": "Rectangular block. `size_*` are full extents [m] along the component's local x, y, z.",
+      "properties": {
+        "kind": {
+          "const": "box",
+          "default": "box",
+          "title": "Kind",
+          "type": "string"
+        },
+        "size_x": {
+          "$ref": "#/$defs/AxisExpr"
+        },
+        "size_y": {
+          "$ref": "#/$defs/AxisExpr"
+        },
+        "size_z": {
+          "$ref": "#/$defs/AxisExpr"
+        }
+      },
+      "required": [
+        "size_x",
+        "size_y",
+        "size_z"
+      ],
+      "title": "Box",
+      "type": "object"
+    },
+    "Cylinder": {
+      "additionalProperties": false,
+      "description": "Solid circular cylinder. `radius` and `length` [m]; the axis is the component's local z.",
+      "properties": {
+        "kind": {
+          "const": "cylinder",
+          "default": "cylinder",
+          "title": "Kind",
+          "type": "string"
+        },
+        "radius": {
+          "$ref": "#/$defs/AxisExpr"
+        },
+        "length": {
+          "$ref": "#/$defs/AxisExpr"
+        }
+      },
+      "required": [
+        "radius",
+        "length"
+      ],
+      "title": "Cylinder",
+      "type": "object"
+    },
+    "ParamTerm": {
+      "additionalProperties": false,
+      "description": "`factor * <value of parameter param>`. The parameter must be a length.",
+      "properties": {
+        "param": {
+          "pattern": "^[a-z][a-z0-9_]{0,63}$",
+          "title": "Param",
+          "type": "string"
+        },
+        "factor": {
+          "title": "Factor",
+          "type": "number"
+        }
+      },
+      "required": [
+        "param",
+        "factor"
+      ],
+      "title": "ParamTerm",
+      "type": "object"
+    },
+    "Position": {
+      "additionalProperties": false,
+      "properties": {
+        "x": {
+          "$ref": "#/$defs/AxisExpr"
+        },
+        "y": {
+          "$ref": "#/$defs/AxisExpr"
+        },
+        "z": {
+          "$ref": "#/$defs/AxisExpr"
+        }
+      },
+      "required": [
+        "x",
+        "y",
+        "z"
+      ],
+      "title": "Position",
+      "type": "object"
+    },
+    "Quaternion": {
+      "additionalProperties": false,
+      "description": "Unit quaternion with named components (`conventions.py`).",
+      "properties": {
+        "x": {
+          "title": "X",
+          "type": "number"
+        },
+        "y": {
+          "title": "Y",
+          "type": "number"
+        },
+        "z": {
+          "title": "Z",
+          "type": "number"
+        },
+        "w": {
+          "title": "W",
+          "type": "number"
+        }
+      },
+      "required": [
+        "x",
+        "y",
+        "z",
+        "w"
+      ],
+      "title": "Quaternion",
+      "type": "object"
+    },
+    "Sphere": {
+      "additionalProperties": false,
+      "description": "Solid sphere. `radius` [m].",
+      "properties": {
+        "kind": {
+          "const": "sphere",
+          "default": "sphere",
+          "title": "Kind",
+          "type": "string"
+        },
+        "radius": {
+          "$ref": "#/$defs/AxisExpr"
+        }
+      },
+      "required": [
+        "radius"
+      ],
+      "title": "Sphere",
+      "type": "object"
+    }
+  }
+}

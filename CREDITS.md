@@ -240,6 +240,19 @@
 - 원본 해시: `sha256:13b2beaad985e05e2d6407ee4c4f35590b11f8d693a258a561055cac8f64cab7`
 - 확인자: omp
 
+### dep-attrs-26.1.0
+
+- 표기: attrs, Copyright (c) 2015 Hynek Schlawack and the attrs contributors. MIT License.
+- 저작자: Hynek Schlawack; attrs contributors
+- 라이선스: MIT
+- 원본: https://pypi.org/project/attrs/26.1.0/ https://github.com/python-attrs/attrs
+- 경로: `pyproject.toml`
+- 용도: jsonschema 의 추이 의존성
+- 변경 내역: 없음(수정 없이 사용). 루트 pyproject.toml 의 dev 그룹(jsonschema>=4.26)과 uv.lock 에서 26.1.0 로 고정. 해시는 PyPI sdist 의 sha256
+- 받은 날짜: 2026-11-11
+- 원본 해시: `sha256:d03ceb89cb322a8fd706d4fb91940737b6642aa36998fe130a9bc96c985eff32`
+- 확인자: omp
+
 ### dep-esbuild-0.28.2
 
 - 표기: esbuild, Copyright (c) 2020 Evan Wallace. MIT License.
@@ -290,6 +303,32 @@
 - 변경 내역: 없음(수정 없이 사용). npm 배포 tarball 의 sha256. spikes/webxr/package.json 의 dependencies 와 pnpm-lock.yaml 에서 2.8.0 으로 고정. 추이 의존성 gl-matrix 3.4.4(MIT), webxr-layers-polyfill 1.1.0(Apache-2.0)
 - 받은 날짜: 2026-11-11
 - 원본 해시: `sha256:dd945dce10f8e8561615214a0015918296c93732d25c1fbd917b7de262cd977a`
+- 확인자: omp
+
+### dep-jsonschema-4.26.0
+
+- 표기: jsonschema, Copyright (c) 2013 Julian Berman. MIT License.
+- 저작자: Julian Berman
+- 라이선스: MIT
+- 원본: https://pypi.org/project/jsonschema/4.26.0/ https://github.com/python-jsonschema/jsonschema
+- 경로: `pyproject.toml`
+- 용도: 개발 의존성: C-01d 의 스키마 검증 테스트(packages/core/tests/test_schema_export.py). 생성한 JSON Schema 가 예시를 받고 잘못된 입력을 거부하는지 확인
+- 변경 내역: 없음(수정 없이 사용). 루트 pyproject.toml 의 dev 그룹(jsonschema>=4.26)과 uv.lock 에서 4.26.0 로 고정. 해시는 PyPI sdist 의 sha256
+- 받은 날짜: 2026-11-11
+- 원본 해시: `sha256:0c26707e2efad8aa1bfc5b7ce170f3fccc2e4918ff85989ba9ffa9facb2be326`
+- 확인자: omp
+
+### dep-jsonschema-specifications-2025.9.1
+
+- 표기: jsonschema-specifications, Copyright (c) 2022 Julian Berman. MIT License.
+- 저작자: Julian Berman
+- 라이선스: MIT
+- 원본: https://pypi.org/project/jsonschema-specifications/2025.9.1/ https://github.com/python-jsonschema/jsonschema-specifications
+- 경로: `pyproject.toml`
+- 용도: jsonschema 의 추이 의존성
+- 변경 내역: 없음(수정 없이 사용). 루트 pyproject.toml 의 dev 그룹(jsonschema>=4.26)과 uv.lock 에서 2025.9.1 로 고정. 해시는 PyPI sdist 의 sha256
+- 받은 날짜: 2026-11-11
+- 원본 해시: `sha256:b540987f239e745613c7a9176f3edb72b832a4ac465cf02712288397832b5e8d`
 - 확인자: omp
 
 ### dep-mujoco-4.0.0
@@ -420,6 +459,32 @@
 - 변경 내역: 없음(수정 없이 사용). 루트 pyproject.toml 의 dev 그룹(pyyaml>=6)과 uv.lock 에서 6.0.3 으로 고정, `scripts/gh/bootstrap.sh`·`seed_issues.sh` 는 `uv run --with pyyaml` 로도 실행
 - 받은 날짜: 2026-11-10
 - 원본 해시: `sha256:d76623373421df22fb4cf8817020cbb7ef15c725b9d5e45f17e189bfc384190f`
+- 확인자: omp
+
+### dep-referencing-0.37.0
+
+- 표기: referencing, Copyright (c) 2022 Julian Berman. MIT License.
+- 저작자: Julian Berman
+- 라이선스: MIT
+- 원본: https://pypi.org/project/referencing/0.37.0/ https://github.com/python-jsonschema/referencing
+- 경로: `pyproject.toml`
+- 용도: jsonschema 의 추이 의존성
+- 변경 내역: 없음(수정 없이 사용). 루트 pyproject.toml 의 dev 그룹(jsonschema>=4.26)과 uv.lock 에서 0.37.0 로 고정. 해시는 PyPI sdist 의 sha256
+- 받은 날짜: 2026-11-11
+- 원본 해시: `sha256:44aefc3142c5b842538163acb373e24cce6632bd54bdb01b21ad5863489f50d8`
+- 확인자: omp
+
+### dep-rpds-py-2026.9.1
+
+- 표기: rpds-py, Copyright (c) 2023 Julian Berman. MIT License.
+- 저작자: Julian Berman
+- 라이선스: MIT
+- 원본: https://pypi.org/project/rpds-py/2026.9.1/ https://github.com/crate-py/rpds
+- 경로: `pyproject.toml`
+- 용도: jsonschema 의 추이 의존성(Rust 확장)
+- 변경 내역: 없음(수정 없이 사용). 루트 pyproject.toml 의 dev 그룹(jsonschema>=4.26)과 uv.lock 에서 2026.9.1 로 고정. 해시는 PyPI sdist 의 sha256
+- 받은 날짜: 2026-11-11
+- 원본 해시: `sha256:4793ef7f78268b124b73fa933440f01d258bbae01de9fa53e9080c9ab0425a12`
 - 확인자: omp
 
 ### dep-three-0.187.0

@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "`factor * <value of parameter param>`. The parameter must be a length.",
+  "properties": {
+    "param": {
+      "pattern": "^[a-z][a-z0-9_]{0,63}$",
+      "title": "Param",
+      "type": "string"
+    },
+    "factor": {
+      "title": "Factor",
+      "type": "number"
+    }
+  },
+  "required": [
+    "param",
+    "factor"
+  ],
+  "title": "ParamTerm",
+  "type": "object"
+}

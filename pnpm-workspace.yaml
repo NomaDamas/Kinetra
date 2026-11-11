@@ -1,5 +1,6 @@
 packages:
   - apps/*
   - packages/ui
+  - schemas
   - tools/design
   - tools/screenshots

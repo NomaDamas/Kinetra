@@ -1,0 +1,75 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Rectangular block. `size_*` are full extents [m] along the component's local x, y, z.",
+  "properties": {
+    "kind": {
+      "const": "box",
+      "default": "box",
+      "title": "Kind",
+      "type": "string"
+    },
+    "size_x": {
+      "$ref": "#/$defs/AxisExpr"
+    },
+    "size_y": {
+      "$ref": "#/$defs/AxisExpr"
+    },
+    "size_z": {
+      "$ref": "#/$defs/AxisExpr"
+    }
+  },
+  "required": [
+    "size_x",
+    "size_y",
+    "size_z"
+  ],
+  "title": "Box",
+  "type": "object",
+  "$defs": {
+    "AxisExpr": {
+      "additionalProperties": false,
+      "description": "A length in metres: `offset + sum(factor * param)`. A snap point coordinate in the part's local frame, or a\ndimension of a shape component (`shape.py`). Every `param` is a length parameter of the part.",
+      "properties": {
+        "offset": {
+          "title": "Offset",
+          "type": "number"
+        },
+        "terms": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/ParamTerm"
+          },
+          "title": "Terms",
+          "type": "array"
+        }
+      },
+      "required": [
+        "offset"
+      ],
+      "title": "AxisExpr",
+      "type": "object"
+    },
+    "ParamTerm": {
+      "additionalProperties": false,
+      "description": "`factor * <value of parameter param>`. The parameter must be a length.",
+      "properties": {
+        "param": {
+          "pattern": "^[a-z][a-z0-9_]{0,63}$",
+          "title": "Param",
+          "type": "string"
+        },
+        "factor": {
+          "title": "Factor",
+          "type": "number"
+        }
+      },
+      "required": [
+        "param",
+        "factor"
+      ],
+      "title": "ParamTerm",
+      "type": "object"
+    }
+  }
+}

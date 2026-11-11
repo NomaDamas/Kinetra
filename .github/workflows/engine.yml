@@ -29,6 +29,8 @@ jobs:
         run: uv run python -m unittest discover -s scripts/gh/tests -p "test_seed_issues.py" -v
       - name: pytest packages
         run: uv run pytest packages -q -rs --junitxml=pytest-report.xml
+      - name: Generated schemas are up to date (C-01d; drift fails, run packages/core/scripts/export_schemas.py)
+        run: uv run python packages/core/scripts/export_schemas.py --check
       - name: pytest tools/dev (resource guard, fake measurements)
         run: uv run pytest tools/dev -q
       - name: pytest tools/design/tests (D0-02e, design-system source rebuilds index.html)
