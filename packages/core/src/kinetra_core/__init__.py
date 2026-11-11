@@ -21,7 +21,7 @@ from .bodies import (
     load_bodies,
     load_body,
 )
-from .canonical import CanonicalError, canonical_json, definition_hash, project_hash
+from .canonical import CanonicalError, canonical_json, canonical_order, definition_hash, project_hash
 from .collision import CollisionProxy, DecomposedVoid, FilledVoid, ProxyDerivation, ProxyGeom, RingReport
 from .commands import (
     AddActuator,
@@ -355,6 +355,7 @@ __all__ = [
     "apply_command",
     "check_placement",
     "canonical_json",
+    "canonical_order",
     "catalog_differences",
     "changes_between",
     "check_world_references",

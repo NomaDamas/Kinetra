@@ -67,7 +67,7 @@ proxy = collision_proxy(part_def, on_unsupported="reject")  # 분해할 수 없�
 
 - 판의 보어 안쪽 면은 계단이고 관의 안쪽 면은 정다각형이다. 보어를 따라 미끄러지는 접촉과 보어 안쪽 마찰은 매끈한 원통과 다르다. 관의 바깥 면도 상자 사이 홈(위 표의 `outer_deviation`)만큼 안으로 들어가고, 굴러가는 관은 위 표만큼 출렁인다.
 - 한 호스트에 빈 곳 둘 이상, 막힌 포켓, 구, 비스듬한 구멍은 분해하지 않는다.
-- 조각이 많아지면 접촉 계산이 느려질 수 있다 [확인 필요: X-01a/X-04에서 MuJoCo로 잰다. 이 PR은 MuJoCo를 돌리지 않았다].
+- 조각이 많아지면 접촉 계산이 느려질 수 있다 [확인 필요: X-04에서 MuJoCo로 잰다. X-01a는 접촉을 돌리지 않았다].
 - 축 평행 판정: 보어 축이 호스트 축에서 벗어나는 횡방향 거리(길이의 절반 x 벗어난 성분)가 보어 반지름의 `1e-9` 배 이하일 때만 평행으로 본다. 이 안에서는 안쪽 근사가 깨지지 않는다.
 
 ## 메우는 경로 (`added-primitives`, B-01b) (근사, 숨기지 않는다)
@@ -96,7 +96,7 @@ proxy = collision_proxy(part_def, on_unsupported="reject")  # 분해할 수 없�
 ## 후속
 
 - 빈 곳의 분해는 [#486 (B-01f)](https://github.com/NomaDamas/Kinetra/issues/486)이 했다(관통 보어만).
-- MJCF 지오메트리 매핑: X-01a. 아래 표는 MuJoCo 문서(`doc/XMLreference.rst`의 `geom`)의 규약과 이 모델을 글로 대조한 것이고 MuJoCo를 돌려 확인하지 않았다 [확인 필요: X-01a가 시험한다].
+- MJCF 지오메트리 매핑: X-01a(#123)가 했다(`kinetra_engine.compiler`, [`body-tree.md`](body-tree.md)). 아래 표를 실제 MuJoCo 4.0.0 로더로 시험한다: 상자·원기둥·구 프록시의 `geom_size`, 쿼터니언의 `w x y z` 순서, 바디 질량이 손계산과 일치(`packages/engine/tests/test_body_tree.py`). 프록시의 근사는 컴파일 라벨 "근사: 충돌 프록시가 …"로 나온다(`proxy_labels`).
 
 ## MuJoCo 매핑 (X-01a가 따른다, 값이 그대로 넘어가지 않는다)
 

@@ -940,3 +940,28 @@ def test_save_a_new_file_gets_the_default_mode_of_the_umask(car, tmp_path):
     finally:
         os.umask(old)
     assert ((tmp_path / "new.kinetra.json").stat().st_mode & 0o777) == 0o640
+
+
+def test_canonical_order_sorts_every_collection_keeps_the_value_and_reads_one_project_one_way():
+    """#511: `canonical_order` is the one reading order of the compiler. It is the order `canonical_json` writes, all the way
+    down, so projects with one `project_hash` become equal values."""
+    from kinetra_core import canonical_order
+
+    project = Project.model_validate_json((EXAMPLES / "Project.four-wheel-car.json").read_text(encoding="utf-8"))
+    data = project.model_dump(mode="json")
+    data["design"]["instances"].reverse()
+    data["design"]["joints"].reverse()
+    data["design"]["parts"].reverse()
+    for p in data["design"]["parts"]:
+        p["snap_points"].reverse()
+        p["parameters"].reverse()
+    shuffled = Project.model_validate(data)
+    assert shuffled != project and project_hash(shuffled) == project_hash(project)
+    ordered = canonical_order(shuffled)
+    assert ordered == canonical_order(project)
+    assert [i.id for i in ordered.design.instances] == sorted(i.id for i in project.design.instances)
+    assert [j.id for j in ordered.design.joints] == sorted(j.id for j in project.design.joints)
+    assert canonical_json(ordered) == canonical_json(shuffled) and project_hash(ordered) == project_hash(project)
+    assert shuffled.design.instances[0].id != ordered.design.instances[0].id  # the input is not changed
+    with pytest.raises(TypeError):
+        canonical_order("not a model")  # type: ignore[type-var]

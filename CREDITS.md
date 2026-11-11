@@ -422,6 +422,19 @@
 - 원본 해시: `sha256:0f08147951c8cb31d844c3547d631053b127863b60be04cf06e121333ee0e2fe`
 - 확인자: omp
 
+### dep-glfw-2.11.0
+
+- 표기: pyGLFW, Copyright (c) 2013-2019 Florian Rhiem. MIT License.
+- 저작자: Florian Rhiem
+- 라이선스: MIT
+- 원본: https://pypi.org/project/glfw/2.11.0/ https://github.com/FlorianRhiem/pyGLFW https://github.com/FlorianRhiem/pyGLFW/blob/master/LICENSE.txt
+- 경로: `packages/engine/pyproject.toml`
+- 용도: 실행 의존성: mujoco 4.0.0 이 끌고 오는 추이 의존성(X-01a). 저장소 코드는 창을 열지 않는다
+- 변경 내역: 없음(수정 없이 사용). 추이 의존성: mujoco 4.0.0 이(가) 요구하며 uv.lock 에서 2.11.0 으로 고정. 해시는 PyPI sdist. 휠에 GLFW 라이브러리(libglfw, Zlib)가 들어 있다
+- 받은 날짜: 2026-11-12
+- 원본 해시: `sha256:4bd3a462ed02ae25455dceaeb76d154faf08b48962c0cb2cf685419a34a71305`
+- 확인자: omp
+
 ### dep-gltf-validator-2.0.0-dev.3.10
 
 - 표기: glTF Validator, Copyright The Khronos Group Inc. Apache License 2.0. 컴파일된 코드에 Dart SDK(Copyright 2012 the Dart project authors, BSD-3-Clause), yaml(Kirill Simonov, MIT), node_preamble(Michael Bullington, MIT), PrismJS(Lea Verou, MIT), vector_math(Andrew Magill 외, Zlib).
@@ -604,6 +617,32 @@
 - 원본 해시: `sha256:c503ff7003dd7dfee19b575aed6a409fb9bc15bf9f1c4053892c793e05b5edb3`
 - 확인자: omp
 
+### dep-mujoco-core-4.0.0
+
+- 표기: MuJoCo (mujoco-core), Copyright Google DeepMind. Apache License 2.0.
+- 저작자: Google DeepMind
+- 라이선스: Apache-2.0
+- 원본: https://pypi.org/project/mujoco-core/4.0.0/ https://github.com/google-deepmind/mujoco https://github.com/google-deepmind/mujoco/blob/main/LICENSE
+- 경로: `packages/engine/pyproject.toml`
+- 용도: 실행 의존성: MuJoCo 엔진 코어(X-01a 가 packages/engine 의 의존성 mujoco==4.0.0 으로 추가, 결정은 docs/decisions/engine.md). 컴파일한 MJCF 를 실제 로더로 읽어 geom_size, 질량을 시험한다
+- 변경 내역: 없음(수정 없이 사용). 추이 의존성: mujoco 4.0.0 이(가) 요구하며 uv.lock 에서 4.0.0 으로 고정. 해시는 PyPI sdist(uv.lock 의 sdist 항목). mujoco 와 같은 프로젝트의 엔진 코어 배포본
+- 받은 날짜: 2026-11-12
+- 원본 해시: `sha256:7300cc232f27ceb8694aa45b26c790667eebd4a06286156b49b9726e3bf1d7cf`
+- 확인자: omp
+
+### dep-mujoco-studio-4.0.0
+
+- 표기: MuJoCo (mujoco-studio), Copyright Google DeepMind. Apache License 2.0.
+- 저작자: Google DeepMind
+- 라이선스: Apache-2.0
+- 원본: https://pypi.org/project/mujoco-studio/4.0.0/ https://github.com/google-deepmind/mujoco https://github.com/google-deepmind/mujoco/blob/main/LICENSE
+- 경로: `packages/engine/pyproject.toml`
+- 용도: 실행 의존성: mujoco 4.0.0 이 끌고 오는 추이 의존성(X-01a). 저장소 코드는 쓰지 않는다
+- 변경 내역: 없음(수정 없이 사용). 추이 의존성: mujoco 4.0.0 이(가) 요구하며 uv.lock 에서 4.0.0 으로 고정. 해시는 PyPI sdist. 시각화 도구이고 이 저장소는 import 하지 않는다. mujoco-studio 가 websockets 를 요구하며 uv.lock 은 이미 고정한 17.4 를 쓴다
+- 받은 날짜: 2026-11-12
+- 원본 해시: `sha256:19714399ab9870e7775018fe343c0b729103a8b9e6c814ad535ec108a74989dd`
+- 확인자: omp
+
 ### dep-mujoco-wasm-4.0.0
 
 - 표기: MuJoCo, Copyright Google DeepMind. Apache License 2.0.
@@ -745,6 +784,19 @@
 - 변경 내역: 없음(수정 없이 사용). packages/core/pyproject.toml 의 pydantic>=2.14,<3 과 uv.lock 에서 고정. 해시는 PyPI sdist 의 sha256
 - 받은 날짜: 2026-11-11
 - 원본 해시: `sha256:aead3b74b68396bf0feab5d57e050b730ded7df55853c1e048a87e00aaf033c6`
+- 확인자: omp
+
+### dep-pyopengl-3.1.10
+
+- 표기: PyOpenGL, Copyright Mike C. Fletcher and contributors. BSD License.
+- 저작자: Mike C. Fletcher
+- 라이선스: BSD-3-Clause
+- 원본: https://pypi.org/project/pyopengl/3.1.10/ https://github.com/mcfletch/pyopengl https://github.com/mcfletch/pyopengl/blob/master/license.txt
+- 경로: `packages/engine/pyproject.toml`
+- 용도: 실행 의존성: mujoco 4.0.0 이 끌고 오는 추이 의존성(X-01a). 저장소 코드는 렌더링하지 않는다
+- 변경 내역: 없음(수정 없이 사용). 추이 의존성: mujoco 4.0.0 이(가) 요구하며 uv.lock 에서 3.1.10 으로 고정. 해시는 PyPI sdist. PyPI 분류는 BSD License 이며 SPDX 는 저장소 LICENSE 의 BSD 3조항으로 읽은 값이다 [확인: 리뷰]
+- 받은 날짜: 2026-11-12
+- 원본 해시: `sha256:c4a02d6866b54eb119c8e9b3fb04fa835a95ab802dd96607ab4cdb0012df8335`
 - 확인자: omp
 
 ### dep-pyyaml-6.0.3

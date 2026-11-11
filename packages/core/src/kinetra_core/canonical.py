@@ -44,12 +44,14 @@ a change to these rules is a new file `version` (`projectfile.py`).
 (design, world and assumptions). Not here: what a client does with a hash that differs from the catalog's (C-06),
 the trajectory hash of a run (X-02d), asset content hashes (A2).
 
-What this does not promise: two projects with equal hashes are equal as documents, not bit for bit as inputs. The
-float sum of an engine that walks `instances` in list order can differ in its last digits from the sum in another
-order, and MuJoCo orders its solver by body order. A consumer that needs one hash to mean one trajectory has to read
-the project in this module's order (by id): the compiler's rule, issue #511. Until then there are two definition
-hashes in the repository on purpose: this one (order-free, "is it the same definition?", C-06) and
-`kinetra_engine.parts.cache.part_key` (strict, a cache key: never reuse a result computed from another order).
+What this promises about the engine's input (#511). Two projects with equal hashes are equal as documents, and `canonical_order`
+returns the one project in this module's order: every registered collection sorted by the key above, all the way down
+(instances, joints, the components of a shape recipe, parameters, snap points...). A consumer that has to turn a project into a
+number or a model whose bits depend on order (the float sum of a mass, the order of MuJoCo bodies and geoms) reads the project
+through `canonical_order` and nothing else (`kinetra_engine.compiler`), so equal hashes give equal engine input. The order is a
+property of the compiler's input, not of the stored file: the file keeps its order (`project-model.md`). `part_key`
+(`kinetra_engine.parts.cache`, strict, a cache key) stays order-sensitive on purpose: it names a result computed from one order.
+Not here: the trajectory hash of a run (X-02d); the hash of the physical part of a definition alone (B-16).
 """
 
 from __future__ import annotations
@@ -61,7 +63,7 @@ from collections.abc import Callable
 from datetime import datetime, timezone
 from decimal import Decimal
 from enum import Enum
-from typing import Any
+from typing import Any, TypeVar
 
 from pydantic import BaseModel
 
@@ -76,6 +78,8 @@ from .shape import Shape
 from .world import World
 
 HASH_PREFIX = "sha256:"
+
+_M = TypeVar("_M", bound=BaseModel)
 
 
 class CanonicalError(ValueError):
@@ -217,6 +221,35 @@ def _serialize(value: Any) -> str:
 def canonical_json(model: BaseModel) -> str:
     """The canonical text of `model` (see the module docstring). Raises `CanonicalError` when it has none."""
     return _serialize(_plain(model))
+
+
+def _in_order(value: Any) -> Any:
+    if isinstance(value, float):
+        return 0.0 if value == 0.0 else value  # the hash writes -0.0 as 0 (`_number`): one value, so one bit pattern
+    if not isinstance(value, BaseModel):
+        return value
+    update: dict[str, Any] = {}
+    for name in type(value).model_fields:
+        item = getattr(value, name)
+        if isinstance(item, tuple):
+            update[name] = tuple(_in_order(i) for i in _sorted(value, name, item))
+        elif isinstance(item, (BaseModel, float)):
+            update[name] = _in_order(item)
+    return value.model_copy(update=update) if update else value
+
+
+def canonical_order(model: _M) -> _M:
+    """`model` with every collection in it in canonical order (the order `canonical_json` writes), recursively.
+
+    This is the one function the compiler reads a project through (#511): the order of instances, joints, the components of a
+    shape recipe and so on is then the order of their ids, not of the file, so projects with the same `project_hash` give the
+    same engine input bit for bit. The value is the same value (`canonical_json(canonical_order(m)) == canonical_json(m)`);
+    only the order of its collections differs and a negative zero is a zero (the hash writes both as `0`). Raises `CanonicalError` for a collection with no registered order, like the hash.
+    Sorting keeps every check the model made (a validator never reads the position of an item), so the result is not validated again.
+    """
+    if not isinstance(model, BaseModel):
+        raise TypeError(f"expected a model, not {type(model).__name__}")
+    return _in_order(model)
 
 
 def _hash(model: BaseModel) -> str:
