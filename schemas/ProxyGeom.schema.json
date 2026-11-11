@@ -1,0 +1,116 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "One convex primitive of the proxy, in the part frame.\n\n`dimensions` are resolved lengths in metres under the names `shape.py` gives them (`size_x`, `radius`, `length`, ...),\n`center` its centre in metres and `orientation` its rotation about that centre. `id` is the id of the added shape\ncomponent it copies; the geom is that component's primitive, unchanged. `volume` is in m^3.",
+  "properties": {
+    "id": {
+      "pattern": "^[a-z][a-z0-9_]{0,63}$",
+      "title": "Id",
+      "type": "string"
+    },
+    "primitive": {
+      "enum": [
+        "box",
+        "cylinder",
+        "sphere"
+      ],
+      "title": "Primitive",
+      "type": "string"
+    },
+    "dimensions": {
+      "items": {
+        "$ref": "#/$defs/Dimension"
+      },
+      "title": "Dimensions",
+      "type": "array"
+    },
+    "center": {
+      "maxItems": 3,
+      "minItems": 3,
+      "prefixItems": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "number"
+        },
+        {
+          "type": "number"
+        }
+      ],
+      "title": "Center",
+      "type": "array"
+    },
+    "orientation": {
+      "$ref": "#/$defs/Quaternion"
+    },
+    "volume": {
+      "exclusiveMinimum": 0.0,
+      "title": "Volume",
+      "type": "number"
+    }
+  },
+  "required": [
+    "id",
+    "primitive",
+    "dimensions",
+    "center",
+    "orientation",
+    "volume"
+  ],
+  "title": "ProxyGeom",
+  "type": "object",
+  "$defs": {
+    "Dimension": {
+      "additionalProperties": false,
+      "description": "One resolved length of a primitive, in metres, under the field name `shape.py` gives it.",
+      "properties": {
+        "name": {
+          "pattern": "^[a-z][a-z0-9_]{0,63}$",
+          "title": "Name",
+          "type": "string"
+        },
+        "value": {
+          "title": "Value",
+          "type": "number"
+        }
+      },
+      "required": [
+        "name",
+        "value"
+      ],
+      "title": "Dimension",
+      "type": "object"
+    },
+    "Quaternion": {
+      "additionalProperties": false,
+      "description": "Unit quaternion with named components (`conventions.py`).",
+      "properties": {
+        "x": {
+          "title": "X",
+          "type": "number"
+        },
+        "y": {
+          "title": "Y",
+          "type": "number"
+        },
+        "z": {
+          "title": "Z",
+          "type": "number"
+        },
+        "w": {
+          "title": "W",
+          "type": "number"
+        }
+      },
+      "required": [
+        "x",
+        "y",
+        "z",
+        "w"
+      ],
+      "title": "Quaternion",
+      "type": "object"
+    }
+  }
+}

@@ -81,6 +81,25 @@ export interface CatalogEntry {
 }
 
 /**
+ * The collision proxy of one part.
+ *
+ * `proxy_volume` and `recipe_volume` are the volumes of the geoms and of the shape recipe (added minus voids, the volume
+ * `MassProperties` reports); `volume_error` is `(proxy - recipe) / recipe`, dimensionless and never negative.
+ * `filled_voids` lists every void the proxy filled; their volumes add up to `proxy_volume - recipe_volume`.
+ */
+export interface CollisionProxy {
+  badge: "sim";
+  source: Source;
+  part_id: string;
+  geoms: ProxyGeom[];
+  filled_voids: FilledVoid[];
+  proxy_volume: DerivedScalar;
+  recipe_volume: DerivedScalar;
+  volume_error: DerivedScalar;
+  derivation: ProxyDerivation;
+}
+
+/**
  * What one shape component added or removed, with the values it was evaluated at.
  *
  * `dimensions` are the primitive's resolved lengths in metres under the field names of `shape.py` (`size_x`, `radius`,
@@ -181,6 +200,16 @@ export interface ElasticModulus {
   source: Source;
   value: number;
   unit: "Pa";
+}
+
+/**
+ * A subtracted shape component the proxy could not keep: it is solid in the proxy. `volume` [m^3] is what the proxy
+ * gained from it.
+ */
+export interface FilledVoid {
+  id: string;
+  primitive: "box" | "cylinder" | "sphere";
+  volume: number;
 }
 
 /** No spread: Monte-Carlo uses the nominal. */
@@ -377,6 +406,31 @@ export interface Provenance {
   source: Source;
 }
 
+/** What the proxy was derived from: the recipe and the parameter values, with their badges. */
+export interface ProxyDerivation {
+  method?: "added-primitives";
+  shape: Provenance;
+  parameters: ParameterUse[];
+  input_badges: Badge[];
+  assumptions: string[];
+}
+
+/**
+ * One convex primitive of the proxy, in the part frame.
+ *
+ * `dimensions` are resolved lengths in metres under the names `shape.py` gives them (`size_x`, `radius`, `length`, ...),
+ * `center` its centre in metres and `orientation` its rotation about that centre. `id` is the id of the added shape
+ * component it copies; the geom is that component's primitive, unchanged. `volume` is in m^3.
+ */
+export interface ProxyGeom {
+  id: string;
+  primitive: "box" | "cylinder" | "sphere";
+  dimensions: Dimension[];
+  center: [number, number, number];
+  orientation: Quaternion;
+  volume: number;
+}
+
 /** One physical number with its unit, badge and source. */
 export interface Quantity {
   badge: Badge;
@@ -423,6 +477,12 @@ export interface ShapeComponent {
   operation?: "add" | "subtract";
   position: Position;
   orientation?: Quaternion;
+}
+
+/** Provenance fixed to badge `sim`: a derived value cannot claim to be cited or declared. */
+export interface SimProvenance {
+  badge: "sim";
+  source: Source;
 }
 
 /**
