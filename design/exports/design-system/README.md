@@ -16,10 +16,10 @@
 | `index.html` | 독립 갤러리 한 파일(원본 296,982바이트, 문구 1곳 수정 뒤 297023바이트). 아트보드 11장을 이어 붙였고 `tokens.css`가 인라인돼 있다. 브라우저에서 바로 열린다 |
 | `tokens.json` | 토큰. 키는 규격의 토큰 이름(`color.bg.app`). 값은 모두 [제안] |
 | `tokens.css` | 같은 토큰의 CSS 변수(`--kin-color-bg-app`). 점을 하이픈으로 바꾸고 `--kin-` 접두를 붙였다 |
-| `design-system.zip` | `index.html`, `tokens.json`, `tokens.css`, `source/` 전체(16개 파일). 항목은 이름순, 시각은 모두 2026-11-10 00:00 고정, 압축 deflate 9, 권한 0644라서 같은 입력이면 같은 바이트다. sha256 `45fb4e4bd32347df9fe74f4edbf9f190acf29966976e0456bdf387dbba417e7b` (88,395바이트). `README.md`와 `preview.png`는 넣지 않았다 |
+| `design-system.zip` | `index.html`, `tokens.json`, `tokens.css`, `source/` 전체(16개 파일). 항목은 이름순, 시각은 모두 2026-11-10 00:00 고정, 압축 deflate 9, 권한 0644. `tools/design/pack_design_system.py`가 만들고 `--check`가 항목 내용이 폴더와 같은지 본다(압축 바이트는 zlib 버전에 따라 달라질 수 있어 바이트 해시를 약속하지 않는다). D0-02e(#395)에서 `source/` 세 파일을 고쳐 다시 묶었다. 이 줄을 쓴 시점의 sha256 `1d587098a8e1ede01eb01e1ac1f7ac446b815c80662f8d76371cad252facccfe` (87,902바이트, 이 머신의 zlib). `README.md`와 `preview.png`는 넣지 않았다 |
 | `source/*.dc.html` | Claude Design 캔버스 형식의 아트보드 원본 11개: `Main`(색), `Tokens-Scale`(타이포·간격·모서리·높이·모션), `ValueBadges`(배지 5종), `Evidence`(증거 4단계), `Controls`, `Inspector`, `ChangeCard`, `VerdictCards`, `AgentBar`, `States`(상태 4종), `A11y` |
 | `source/canvas.json` | 아트보드 위치·크기·제목·순서 |
-| `source/tools/build_export.py` | Claude Design이 쓴 내보내기 스크립트. `python3 build_export.py <project_dir> <out_dir>` (`project_dir`에 `*.dc.html`, `canvas.json`, `tokens.css`가 있어야 한다) |
+| `source/tools/build_export.py` | Claude Design이 쓴 내보내기 스크립트. `python3 source/tools/build_export.py source <out_dir>`이 `source/`만으로 `index.html`을 만들고 결과는 승인본 `index.html`과 바이트가 같다(`uv run pytest tools/design/tests -q`가 단언한다). `project_dir`에 `*.dc.html`과 `canvas.json`이 있어야 하고 `tokens.css`는 그 폴더나 바로 위 폴더에서 읽는다(D0-02e에서 한 줄 더함, 아래) |
 | `preview.png` | `index.html`을 헤드리스 Chrome(임시 `--user-data-dir`, 끝나고 삭제)으로 1440×2400에서 찍은 스크린샷. 맨 위 약 2400px(색, 증거 강도 스케일, 값 배지, 타이포그래피, 간격, 크기, 모서리, 높이)만 보인다 |
 
 ## 글꼴: 파일은 들어 있지 않다
@@ -38,7 +38,21 @@
 - `preview.png`는 갤러리 맨 위 2400px만 찍은 것이라 이 문구가 보이지 않아 다시 찍지 않았다.
 - 같은 아트보드 외에 "민감도 · 판정을 뒤집는 가정"이라는 필드 라벨은 `VerdictCards`에 4번 있다. 이것은 브리프 5.1절·6절의 필드 이름 그대로여서 바꾸지 않았다.
 
+## D0-02e(#395)에서 고친 곳: `source/`가 승인본 `index.html`을 다시 만든다
+
+승인본은 `index.html`이다(창업자 승인 #33, 2026-11-10). 높이는 `index.html`이 따르던 `canvas.json` 값을 기준으로 했고 `index.html`과 디자인 값은 바꾸지 않았다. 바뀐 것은 `source/` 쪽 세 아트보드와 빌드 스크립트의 파일 위치 처리뿐이다.
+
+| 파일 | 전 | 후 |
+|---|---|---|
+| `source/Tokens-Scale.dc.html` | 루트 `height:1160px`, `$preview` 높이 1160 | `height:1100px`, `$preview` 높이 1100 |
+| `source/Inspector.dc.html` | 루트 `height:980px` (`$preview`는 이미 920) | `height:920px` |
+| `source/AgentBar.dc.html` | 루트 `height:900px`, `$preview` 높이 900 | `height:840px`, `$preview` 높이 840 |
+| `source/tools/build_export.py` | `tokens.css`를 `project_dir`에서만 읽음 | `project_dir`에 없으면 바로 위 폴더에서 읽음(저장소와 zip에서는 `tokens.css`가 `source/` 밖에 있다). 높이 `assert`는 그대로다 |
+
+- 확인: `python3 source/tools/build_export.py source /tmp/out`의 `index.html`이 승인본과 `cmp` 결과 같다(sha256 `42184fee52a5c2937d28f5568b15bc2f7ab0a6f2853649e53a63206df0021237`, 277,244자). 이전 PR 발견("`min-height`만 다르다")과 일치한다: 고치기 전에 단언만 느슨하게 한 사본의 출력은 세 `min-height`(1160, 980, 900)만 승인본과 달랐다.
+- 보이는 값이 `index.html`에서 달라지지 않았으므로 `preview.png`는 그대로다. `source/`를 Claude Design 캔버스에서 열면 세 아트보드의 고정 높이가 40~60px 줄어 그 안의 내용이 잘릴 수 있다. 내용이 잘리는지는 캔버스에서 열어 확인하지 않았다 [확인 필요]. 내보낸 `index.html`은 `min-height`라서 어느 쪽이든 잘리지 않는다.
+- `tools/design/pack_design_system.py`가 `design-system.zip`을 다시 묶는다.
+
 ## 알려진 불일치 (고치지 않고 적는다)
 
-- `source/`의 `Tokens-Scale`, `Inspector`, `AgentBar` 세 파일은 루트 높이(1160, 980, 900px)가 `canvas.json`의 높이(1100, 920, 840)와 다르다. 그래서 `build_export.py`는 이 `source/`로는 `assert`에서 멈춘다. `index.html`은 `canvas.json`의 높이(min-height 1100, 920, 840)로 만들어진 상태 그대로다. `index.html`이 승인 대상이고, 원본에서 다시 만드는 일은 아직 안 된다. 후속 이슈 #395.
 - 값(색, 크기 등)은 Claude Design이 계산했다고 갤러리에 적은 대비 수치를 포함한다. omp는 그 수치를 다시 계산하지 않았다.

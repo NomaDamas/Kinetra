@@ -2,6 +2,7 @@
 """Kinetra Studio DS: build the standalone HTML gallery from the canvas artboards.
 
 usage: build_export.py <project_dir> <out_dir> [--measure]
+  <project_dir> holds the *.dc.html artboards and canvas.json; tokens.css is read from it or from its parent
   --measure  write measure.html (natural heights reported into <pre id="out">) instead of index.html
 """
 import json, re, sys, pathlib
@@ -64,7 +65,11 @@ for name in order:
     html = html.replace(root_h.group(0), repl, 1)
     boards.append({'name': name, 'id': name.split('.')[0].lower(), 'title': b.get('title', name), 'w': w, 'h': h, 'html': html})
 
-tokens_css = (project / 'tokens.css').read_text(encoding='utf-8')
+# tokens.css sits beside the artboards when exported from Claude Design, and one level up (next to source/) in the repo and the zip.
+tokens_path = next((p for p in (project / 'tokens.css', project.parent / 'tokens.css') if p.is_file()), None)
+if tokens_path is None:
+    raise SystemExit(f'tokens.css not found in {project} or {project.parent}')
+tokens_css = tokens_path.read_text(encoding='utf-8')
 
 SCRIPT = r"""
 (function () {
