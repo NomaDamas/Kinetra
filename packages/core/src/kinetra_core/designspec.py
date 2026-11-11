@@ -440,7 +440,8 @@ class DesignSpec(BaseModel):
                         Ref(kind=RefKind.JOINT, id=joint.id),
                     )
                 used[key] = joint.id
-                if parts[inst.part].role is PartRole.SEPARATOR and joint.kind is not JointKind.FIXED:
+                held = parts.get(inst.part)  # a placeholder (C-06): its role is not known, not checked
+                if held is not None and held.role is PartRole.SEPARATOR and joint.kind is not JointKind.FIXED:
                     raise RefError(
                         f"{where}: a separator holds its two parts with fixed joints, but joint {joint.id!r} is a {joint.kind.value}",
                         Ref(kind=RefKind.INSTANCE, id=ref.instance),

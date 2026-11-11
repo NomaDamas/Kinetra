@@ -42,7 +42,7 @@
 
 ## 분리 전 총질량·무게중심
 
-분리 전에 분리기는 그냥 질량이 선언된 부품이다. 총질량과 무게중심은 몸체마다의 합이다: $M = \sum m_i$, $z_c = \sum m_i z_i / M$. `test_separator_total_mass_and_centre_of_mass_before_release_are_the_sum_of_the_parts`가 탑재체 둘 사이에 분리기를 끼운 스택(3 kg, 0.5 kg, 2 kg)의 총질량 5.5 kg과 무게중심을 윤곽 부피로 손계산한 값과 1e-12에서 맞춘다(스택의 스냅 프레임이 저장 자세에서 맞는지도 확인한다). 분리 뒤 남은 쪽의 합은 X-08의 DoD다.
+분리 전에 분리기는 그냥 질량이 선언된 부품이다. 총질량과 무게중심은 몸체마다의 합이다: $M = \sum m_i$, $z_c = \sum m_i z_i / M$. `test_separator_total_mass_and_centre_of_mass_before_release_are_the_sum_of_the_parts`가 탑재체 둘 사이에 분리기를 끼우고 고정 결합 둘로 이은 `DesignSpec`(3 kg, 0.5 kg, 2 kg)을 `kinetra_engine.parts.assembly_mass`(B-02)에 넣어 총질량 5.5 kg을, 그 인스턴스별 `MassProperties`와 인스턴스 자세로 무게중심을 구해 윤곽 부피로 손계산한 값과 1e-12에서 맞춘다(스택의 스냅 프레임이 저장 자세에서 맞는지도 확인한다). 분리 뒤 남은 쪽의 합은 X-08의 DoD다.
 
 ## 한계
 

@@ -32,12 +32,14 @@ from kinetra_engine.parts import (
     PartCache,
     SeparatorError,
     ShapeError,
+    assembly_mass,
     collision_proxy,
     mass_properties,
     part_glb,
     separation_assumption,
     separator_from_part,
 )
+from kinetra_core.convex import rotation
 from kinetra_engine.parts.__main__ import main
 
 SEPARATOR = library_part("separator")
@@ -138,12 +140,6 @@ def test_separator_out_of_range_and_unknown_parameters_are_rejected():
 # ---- the DoD test: total mass and centre of mass before release are the sum of the parts' -------------------------------------
 
 
-def world_com(part: PartDef, instance_mass: float, z0: float):
-    """(mass, COM z in the world) of an instance of `part` placed upright at height z0, from the compiler."""
-    r = mass_properties(part, None, {"mass": declared(instance_mass, "kg")})
-    return r.mass.value, z0 + r.center_of_mass.z
-
-
 POSE = {
     "position": {"x": 0.0, "y": 0.0, "z": 0.0},
     "orientation": {"x": 0.0, "y": 0.0, "z": 0.0, "w": 1.0},
@@ -153,7 +149,7 @@ POSE = {
 
 
 def stack(separator_overrides=(), joint_kind="fixed", extra_joint=None) -> DesignSpec:
-    """Lower payload, separator, upper payload, stacked: the lower payload's `top` face (z = 0.06) joined to the separator's
+    """Lower payload, separator, upper payload, stacked: the lower payload's `top` face joined to the separator's
     `face_b` (local z = -0.02), the separator's `face_a` (local z = +0.02) joined to the upper payload's `base`. The payload's `top`
     snap is at z = 0.02 + height = 0.08 m (the library file), so the separator's origin is at 0.10 and the upper payload's base at 0.12."""
     def inst(id, part, z, params=()):
@@ -179,21 +175,39 @@ def stack(separator_overrides=(), joint_kind="fixed", extra_joint=None) -> Desig
 
 
 def test_separator_total_mass_and_centre_of_mass_before_release_are_the_sum_of_the_parts():
+    """The real path: the stacked DesignSpec (payload, separator, payload on two fixed joints) goes through
+    `assembly_mass`; the centre of mass is built from its per-instance `MassProperties` and the instance poses."""
     design = stack()
-    # Hand: the payload's centre of mass above its base is (v_body 0.024 + v_lid 0.054 + v_boss 0.07 weighted by volume) / v.
+    result = assembly_mass(design)
+
+    # Hand: the payload's centre of mass above its base is (v_body 0.024 + v_lid 0.054 + v_boss 0.07 weighted by volume) / v;
+    # the separator's is its origin (symmetric recipe).
     v_body, v_lid, v_boss = 0.12 * 0.08 * 0.048, 0.104 * 0.064 * 0.012, math.pi * 0.016**2 * 0.02
     zc = (v_body * 0.024 + v_lid * 0.054 + v_boss * 0.07) / (v_body + v_lid + v_boss)
-    masses, zs = (3.0, 0.5, 2.0), (zc, LOWER_TOP + 0.5 * L, LOWER_TOP + L + zc)  # lower payload, separator (centre is its origin), upper payload
-    total, com_z = sum(masses), sum(m * z for m, z in zip(masses, zs)) / sum(masses)
-    assert total == pytest.approx(5.5, rel=1e-15)
+    masses = {"lower": 3.0, "sep": 0.5, "upper": 2.0}
+    zs = {"lower": zc, "sep": LOWER_TOP + 0.5 * L, "upper": LOWER_TOP + L + zc}
+    hand_total = 3.0 + 0.5 + 2.0
+    hand_com_z = sum(masses[k] * zs[k] for k in masses) / hand_total
 
-    got = [
-        world_com(PAYLOAD, 3.0, design.instances[0].pose.position.z),
-        world_com(SEPARATOR, 0.5, design.instances[1].pose.position.z),
-        world_com(PAYLOAD, 2.0, design.instances[2].pose.position.z),
-    ]
-    assert sum(m for m, _ in got) == pytest.approx(total, rel=1e-12)
-    assert sum(m * z for m, z in got) / sum(m for m, _ in got) == pytest.approx(com_z, rel=1e-12)
+    assert [r.instance for r in result.instances] == ["lower", "sep", "upper"]
+    assert {r.instance: r.mass for r in result.instances} == pytest.approx(masses, rel=1e-12)
+    assert result.total.value == pytest.approx(hand_total, rel=1e-12) and result.total.badge is Badge.SIM
+    assert Badge.DECLARED in result.input_badges  # the declared masses travel with the total
+
+    poses = {i.id: i.pose for i in design.instances}
+    moment = [0.0, 0.0, 0.0]
+    for row in result.instances:
+        pose = poses[row.instance]
+        r = rotation(pose.orientation)
+        c = (row.properties.center_of_mass.x, row.properties.center_of_mass.y, row.properties.center_of_mass.z)
+        world = [pose.position.x, pose.position.y, pose.position.z]
+        for i in range(3):
+            world[i] += sum(r[i][k] * c[k] for k in range(3))
+        for i in range(3):
+            moment[i] += row.mass * world[i]
+    com = [m / result.total.value for m in moment]
+    assert com[0] == pytest.approx(0.0, abs=1e-15) and com[1] == pytest.approx(0.0, abs=1e-15)
+    assert com[2] == pytest.approx(hand_com_z, rel=1e-12)
 
 
 def test_separator_stack_faces_meet_where_the_joints_say():
