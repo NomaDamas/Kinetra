@@ -116,7 +116,7 @@ window.addEventListener('load', function () {
       var r = e.getBoundingClientRect();
       if (r.right > p.right + 0.5 || r.bottom > p.bottom + 0.5 || r.left < p.left - 0.5) over.push(label(e));
       var cs = getComputedStyle(e);
-      if (e.tagName !== 'SELECT' && e.tagName !== 'INPUT' && (cs.overflowX !== 'visible' || cs.overflowY !== 'visible') && (e.scrollWidth > e.clientWidth + 1 || e.scrollHeight > e.clientHeight + 1)) clip.push(label(e) + ' ' + e.scrollWidth + 'x' + e.scrollHeight + ' in ' + e.clientWidth + 'x' + e.clientHeight);
+      if (!e.hasAttribute('data-scroll') && e.tagName !== 'SELECT' && e.tagName !== 'INPUT' && (cs.overflowX !== 'visible' || cs.overflowY !== 'visible') && (e.scrollWidth > e.clientWidth + 1 || e.scrollHeight > e.clientHeight + 1)) clip.push(label(e) + ' ' + e.scrollWidth + 'x' + e.scrollHeight + ' in ' + e.clientWidth + 'x' + e.clientHeight);
       if (e.children.length === 0 && e.clientWidth > 0 && cs.overflowX === 'visible' && e.scrollWidth > e.clientWidth + 1) clip.push('spills its box: ' + label(e) + ' ' + e.scrollWidth + '>' + e.clientWidth);
       // sc-02-rev: a field cell with children (icon + value) must also stay inside its grid track
       if (e.children.length > 0 && e.closest('[data-panel]') && e.clientWidth > 0 && cs.overflowX === 'visible' && e.scrollWidth > e.clientWidth + 1) clip.push('cell spills: ' + label(e) + ' ' + e.scrollWidth + '>' + e.clientWidth);
@@ -139,8 +139,42 @@ window.addEventListener('load', function () {
     // panel content must fit its 790 px height: every child of a panel inside the panel box
     var panels = [].map.call(board.querySelectorAll('[data-panel]'), function (pn) {
       var r = pn.getBoundingClientRect(), spill = [];
-      pn.querySelectorAll('*').forEach(function (e) { if (!shown(e)) return; var q = e.getBoundingClientRect(); if (q.bottom > r.bottom + 0.5 || q.right > r.right + 0.5) spill.push(label(e)); });
-      return { id: pn.getAttribute('data-panel'), w: Math.round(r.width), h: Math.round(r.height), ctl: [].filter.call(pn.querySelectorAll('[data-ctl]'), function (e) { return shown(e) && !e.closest('[data-transient]'); }).length, spill: spill.slice(0, 5) };
+      pn.querySelectorAll('*').forEach(function (e) { if (!shown(e) || e.closest('[data-scroll]')) return; var q = e.getBoundingClientRect(); if (q.bottom > r.bottom + 0.5 || q.right > r.right + 0.5) spill.push(label(e)); });
+      // sc-02-rev2: content inside a scroll region must stay inside the region horizontally; vertically it scrolls
+      pn.querySelectorAll('[data-scroll] *').forEach(function (e) { if (!shown(e)) return; var q = e.getBoundingClientRect(), s = e.closest('[data-scroll]').getBoundingClientRect(); if (q.right > s.right + 0.5 || q.left < s.left - 0.5) spill.push('scroll x: ' + label(e)); });
+      // sc-02-rev2: a non-scrolling panel body must hold its content; a flex child squeezed below its own size is cut content
+      var squeezed = [], bodyOver = [];
+      [].forEach.call(pn.children, function (c) {
+        var cs = getComputedStyle(c); if (cs.display !== 'flex' && cs.display !== 'grid') return;
+        if (!c.hasAttribute('data-scroll') && c.scrollHeight > c.clientHeight + 1) bodyOver.push(label(c).slice(0, 20) + ' ' + c.scrollHeight + '>' + c.clientHeight);
+        [].forEach.call(c.children, function (k) { if (!shown(k)) return; var h1 = k.getBoundingClientRect().height, old = k.style.flexShrink; k.style.flexShrink = '0'; var h2 = k.getBoundingClientRect().height; k.style.flexShrink = old; if (h2 > h1 + 0.5) squeezed.push(label(k) + ' ' + h1.toFixed(1) + '<' + h2.toFixed(1)); });
+      });
+      // sc-02-rev2: scroll region. Heads pinned top/bottom must be fully inside the visible region at the top and at the
+      // bottom of the scroll, now and with 600 px of extra content (as if the open section were longer)
+      var scroll = [].map.call(pn.querySelectorAll('[data-scroll]'), function (sc) {
+        var heads = [].filter.call(sc.querySelectorAll('[data-sticky-top] button[aria-expanded], [data-sticky-heads] button[aria-expanded]'), shown);
+        function check(tag) { var bad = []; [0, 1e6].forEach(function (y) { sc.scrollTop = y; var v = sc.getBoundingClientRect(); heads.forEach(function (h) { var q = h.getBoundingClientRect(); if (q.top < v.top - 0.5 || q.bottom > v.bottom + 0.5) bad.push(tag + (y ? ' bottom ' : ' top ') + label(h)); }); }); sc.scrollTop = 0; return bad; }
+        var title = pn.querySelector('h2'), t0 = title.getBoundingClientRect().top;
+        var res = { content: sc.scrollHeight, visible: sc.clientHeight, heads: heads.map(label), hidden: check('now') };
+        var open = sc.querySelector('[role="region"]'), pad = document.createElement('div'); pad.style.height = '600px'; open.appendChild(pad);
+        res.stressContent = sc.scrollHeight; res.hidden = res.hidden.concat(check('stress'));
+        var dock = sc.querySelector('[data-sticky-heads]'), pinned = sc.querySelector('[data-sticky-top]');
+        // stuck positions while scrolled half-way: the dock's bottom edge should meet the region's bottom edge, the top block its top edge
+        sc.scrollTop = Math.round((sc.scrollHeight - sc.clientHeight) / 2); var v = sc.getBoundingClientRect();
+        if (dock) res.dockGapStuck = +(v.bottom - dock.getBoundingClientRect().bottom).toFixed(1);
+        if (pinned) res.topGapStuck = +(pinned.getBoundingClientRect().top - v.top).toFixed(1);
+        sc.scrollTop = 1e6;
+        res.titleMoved = Math.abs(title.getBoundingClientRect().top - t0) > 0.5; sc.scrollTop = 0; open.removeChild(pad);
+        return res;
+      });
+      return { id: pn.getAttribute('data-panel'), w: Math.round(r.width), h: Math.round(r.height), ctl: [].filter.call(pn.querySelectorAll('[data-ctl]'), function (e) { return shown(e) && !e.closest('[data-transient]'); }).length, spill: spill.slice(0, 5), squeezed: squeezed, bodyOver: bodyOver, scroll: scroll };
+    });
+    var vec = [].map.call(board.querySelectorAll('[data-vec]'), function (v) {
+      var cells = [].filter.call(v.children, function (k) { return /JetBrains/.test(getComputedStyle(k).fontFamily); });
+      var fit = cells.map(function (k) { var rg = document.createRange(); rg.selectNodeContents(k); var w = rg.getBoundingClientRect().width; return { v: k.textContent, text: +w.toFixed(1), cell: +k.getBoundingClientRect().width.toFixed(1) }; });
+      var ch = (function () { var s = document.createElement('span'); s.style.cssText = getComputedStyle(cells[0]).cssText; s.style.font = getComputedStyle(cells[0]).font; s.style.position = 'absolute'; s.textContent = '0000000000'; v.appendChild(s); var w = s.getBoundingClientRect().width / 10; v.removeChild(s); return w; })();
+      var row = v.parentElement, nx = row.nextElementSibling;
+      return { fit: fit, charW: +ch.toFixed(2), maxChars: Math.floor(Math.min.apply(null, fit.map(function (f) { return f.cell; })) / ch), frame: !!(nx && nx.hasAttribute('data-frame')) ? nx.textContent.trim() : null, frameFocusable: !!(nx && nx.querySelector(SEL)) };
     });
     var minc = 99, bad = [], w = document.createTreeWalker(board, NodeFilter.SHOW_TEXT), n;
     while ((n = w.nextNode())) {
@@ -172,7 +206,7 @@ window.addEventListener('load', function () {
       transient: transient.map(function (e) { return e.getAttribute('data-ctl'); }),
       primary: [].filter.call(board.querySelectorAll('[data-primary]'), shown).length,
       badges: [].map.call(board.querySelectorAll('[data-badge]'), function (e) { return e.getAttribute('data-badge'); }).filter(function (v, i, a) { return a.indexOf(v) === i; }),
-      panels: panels,
+      panels: panels, vec: vec,
       stray: stray, small: small, overflow: over.slice(0, 8), clipped: clip, cellSpill: stick,
       minContrast: +minc.toFixed(2), lowContrast: bad,
       colors: Object.keys(colors).sort(), offToken: Object.keys(offToken), danger: danger,
