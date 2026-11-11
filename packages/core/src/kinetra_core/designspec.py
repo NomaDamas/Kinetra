@@ -282,13 +282,20 @@ class ActuatorKind(StrEnum):
     THRUSTER = "thruster"
 
 
+_SUPPLY_ROLE = {ActuatorKind.MOTOR: PartRole.BATTERY, ActuatorKind.THRUSTER: PartRole.TANK}
+"""The part role an actuator kind draws from (`Actuator.supply`, B-03d). Unlike the actuator's own part, the supply part
+must have exactly this role: a part with no role is not a battery or a tank."""
 _ACTUATOR_ROLE = {ActuatorKind.MOTOR: PartRole.MOTOR, ActuatorKind.THRUSTER: PartRole.THRUSTER}
 """The part role an actuator kind drives. A part with a different role is rejected; a part without a role is a bare body
 and is accepted here (the compiler cannot find a curve on it and reports that, X-01d)."""
 
 
 class Actuator(BaseModel):
-    """Something on `instance` that a command drives. A motor drives one joint (`joint`); a thruster has none."""
+    """Something on `instance` that a command drives. A motor drives one joint (`joint`); a thruster has none.
+
+    `supply` (B-03d) is the instance the actuator draws from: a motor from a `battery` part, a thruster from a `tank`
+    part (`PartRole`). `None` means the actuator is not metered (nothing runs out). Several actuators may share one
+    supply; what it holds is spent by all of them (`kinetra_engine.parts.supply`)."""
 
     model_config = ConfigDict(extra="forbid", frozen=True)
 
@@ -296,6 +303,7 @@ class Actuator(BaseModel):
     kind: ActuatorKind
     instance: _Id
     joint: _Id | None = None
+    supply: _Id | None = None
 
     @model_validator(mode="after")
     def _joint_matches_kind(self) -> "Actuator":
@@ -437,6 +445,23 @@ class DesignSpec(BaseModel):
                     Ref(kind=RefKind.PART, id=instances[act.instance].part),
                     Ref(kind=RefKind.ACTUATOR, id=act.id),
                 )
+            if act.supply is not None:
+                source = instances.get(act.supply)
+                if source is None:
+                    raise RefError(
+                        f"{where}: unknown supply instance {act.supply!r}",
+                        Ref(kind=RefKind.INSTANCE, id=act.supply),
+                        Ref(kind=RefKind.ACTUATOR, id=act.id),
+                    )
+                have, need = parts[source.part].role, _SUPPLY_ROLE[act.kind]
+                if have is not need:
+                    raise RefError(
+                        f"{where}: a {act.kind.value} draws from a part with role {need.value!r}, but supply {act.supply!r} "
+                        f"is part {source.part!r} with {'no role' if have is None else f'role {have.value!r}'}",
+                        Ref(kind=RefKind.INSTANCE, id=act.supply),
+                        Ref(kind=RefKind.PART, id=source.part),
+                        Ref(kind=RefKind.ACTUATOR, id=act.id),
+                    )
             if act.joint is not None:
                 joint = joints.get(act.joint)
                 if joint is None:

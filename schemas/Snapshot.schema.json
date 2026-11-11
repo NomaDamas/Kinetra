@@ -97,7 +97,7 @@
     },
     "Actuator": {
       "additionalProperties": false,
-      "description": "Something on `instance` that a command drives. A motor drives one joint (`joint`); a thruster has none.",
+      "description": "Something on `instance` that a command drives. A motor drives one joint (`joint`); a thruster has none.\n\n`supply` (B-03d) is the instance the actuator draws from: a motor from a `battery` part, a thruster from a `tank`\npart (`PartRole`). `None` means the actuator is not metered (nothing runs out). Several actuators may share one\nsupply; what it holds is spent by all of them (`kinetra_engine.parts.supply`).",
       "properties": {
         "id": {
           "pattern": "^[a-z][a-z0-9_-]{0,63}$",
@@ -124,6 +124,19 @@
           ],
           "default": null,
           "title": "Joint"
+        },
+        "supply": {
+          "anyOf": [
+            {
+              "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Supply"
         }
       },
       "required": [

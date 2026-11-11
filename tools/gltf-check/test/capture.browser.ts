@@ -12,14 +12,15 @@ if (problem) throw new Error(problem);
 // sRGB values of the B-07 catalog and the neutral fallback (docs/architecture/materials.md).
 const SRGB: Record<string, string> = { "mounting-plate-al6061": "#e8eaea", "drive-shaft-steel": "#c4c6c6", "sensor-mast-user-material": "#808080", "reflectance-ior": "#b03030", "beam-al6061": "#e8eaea", "plate-al6061": "#e8eaea",
   "payload-mount-al6061": "#e8eaea", "payload-declared-mass": "#808080", "ballast-weight-declared-mass": "#808080", "motor-37d-12v-50-1-declared-mass": "#808080",
-  "wheel-pom": "#e9e7e0", "thruster-vacco-48003040-steel": "#c4c6c6" };
+  "wheel-pom": "#e9e7e0", "thruster-vacco-48003040-steel": "#c4c6c6",
+  "battery-18650-declared-mass": "#808080", "battery-pack-4s-declared-mass": "#808080", "tank-al6061": "#e8eaea", "shell-al6061": "#e8eaea" };
 const hex = (s: string) => [1, 3, 5].map((i) => parseInt(s.slice(i, i + 2), 16) / 255);
 
 test("three.js loads each fixture and its colour is the linear value of the slot's sRGB", async () => {
   const { page, drawn } = await run(mkdtempSync(join(tmpdir(), "gltf-check-")));
   assert.ok(drawn > 10000, `only ${drawn} pixels drawn`);
   assert.ok(page.max_ndc < 1, `the box corners reach |NDC| ${page.max_ndc}: a part is cut off`);
-  assert.equal(page.undrawn_voids, 2, "only the two mounting-plate fixtures list a void (one each); the library parts, B-02c and B-03b included, have none");
+  assert.equal(page.undrawn_voids, 3, "the two mounting-plate fixtures and the B-03d tank list one void each; the other library parts, including the shell, have none");
   for (const r of page.results) {
     const want = hex(SRGB[r.name]!).map(srgbToLinear);
     r.color_linear.forEach((c, k) => assert.ok(Math.abs(c - want[k]!) < 1e-5, `${r.name} channel ${k}: ${c} vs ${want[k]}`));

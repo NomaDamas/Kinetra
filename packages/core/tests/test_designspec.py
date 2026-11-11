@@ -575,7 +575,9 @@ def test_designspec_motor_actuator_on_a_motor_part_is_accepted():
 
 # "thruster" is not here: a thruster part must itself be complete (curve, specs, nozzle; B-03c), so a bare one is
 # rejected before the actuator rule. `test_thruster_...` in packages/engine/tests/test_thruster.py covers that pairing.
-@pytest.mark.parametrize("role", ["wheel", "battery", "tank", "spring_damper"])
+# "battery" and "tank" are not here either (B-03d): they must be complete parts too (specs, an inside), so a bare one is
+# rejected first. `test_supply_motor_on_a_battery_part_is_rejected` in test_supply.py covers that pairing.
+@pytest.mark.parametrize("role", ["wheel", "spring_damper"])
 def test_designspec_motor_actuator_on_a_part_with_another_role_is_rejected(role):
     d = four_wheel_car()
     part(d, "motor")["role"] = role

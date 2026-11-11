@@ -35,12 +35,19 @@ export interface ActuateEntry {
   command: number;
 }
 
-/** Something on `instance` that a command drives. A motor drives one joint (`joint`); a thruster has none. */
+/**
+ * Something on `instance` that a command drives. A motor drives one joint (`joint`); a thruster has none.
+ *
+ * `supply` (B-03d) is the instance the actuator draws from: a motor from a `battery` part, a thruster from a `tank`
+ * part (`PartRole`). `None` means the actuator is not metered (nothing runs out). Several actuators may share one
+ * supply; what it holds is spent by all of them (`kinetra_engine.parts.supply`).
+ */
 export interface Actuator {
   id: string;
   kind: ActuatorKind;
   instance: string;
   joint?: string | null;
+  supply?: string | null;
 }
 
 export type ActuatorKind = "motor" | "thruster";
@@ -854,7 +861,10 @@ export interface RemoveControlEntry {
   id: string;
 }
 
-/** Delete an instance with its joints, the actuators on it or on those joints, and their schedule entries. */
+/**
+ * Delete an instance with its joints, the actuators on it, on those joints or drawing from it (a battery or tank),
+ * and their schedule entries.
+ */
 export interface RemoveInstance {
   type: "remove_instance";
   id: string;
