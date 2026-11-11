@@ -1,0 +1,150 @@
+{
+  "id": "trial-spacer",
+  "name": "Trial spacer block",
+  "parameters": [
+    {
+      "name": "height",
+      "unit": "m",
+      "default": {
+        "badge": "declared",
+        "source": {
+          "ref": "B-01d trial part 2 for the add-part timing run: dimensions declared, not a real part",
+          "declared_by": "kinetra-b01d-trial",
+          "declared_at": "2026-11-12T00:00:00Z"
+        },
+        "value": 0.1,
+        "unit": "m"
+      },
+      "min": {
+        "badge": "declared",
+        "source": {
+          "ref": "B-01d trial part 2 for the add-part timing run: dimensions declared, not a real part",
+          "declared_by": "kinetra-b01d-trial",
+          "declared_at": "2026-11-12T00:00:00Z"
+        },
+        "value": 0.05,
+        "unit": "m"
+      },
+      "max": {
+        "badge": "declared",
+        "source": {
+          "ref": "B-01d trial part 2 for the add-part timing run: dimensions declared, not a real part",
+          "declared_by": "kinetra-b01d-trial",
+          "declared_at": "2026-11-12T00:00:00Z"
+        },
+        "value": 0.3,
+        "unit": "m"
+      }
+    }
+  ],
+  "snap_points": [],
+  "specs": [],
+  "shape": {
+    "badge": "declared",
+    "source": {
+      "ref": "B-01d trial part 2 for the add-part timing run: dimensions declared, not a real part",
+      "declared_by": "kinetra-b01d-trial",
+      "declared_at": "2026-11-12T00:00:00Z"
+    },
+    "components": [
+      {
+        "id": "base",
+        "primitive": {
+          "kind": "box",
+          "size_x": {
+            "offset": 0.1,
+            "terms": []
+          },
+          "size_y": {
+            "offset": 0.1,
+            "terms": []
+          },
+          "size_z": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "height",
+                "factor": 1.0
+              }
+            ]
+          }
+        },
+        "operation": "add",
+        "position": {
+          "x": {
+            "offset": 0.0,
+            "terms": []
+          },
+          "y": {
+            "offset": 0.0,
+            "terms": []
+          },
+          "z": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "height",
+                "factor": 0.5
+              }
+            ]
+          }
+        },
+        "orientation": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 1.0
+        }
+      },
+      {
+        "id": "turned",
+        "primitive": {
+          "kind": "box",
+          "size_x": {
+            "offset": 0.1,
+            "terms": []
+          },
+          "size_y": {
+            "offset": 0.1,
+            "terms": []
+          },
+          "size_z": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "height",
+                "factor": 1.0
+              }
+            ]
+          }
+        },
+        "operation": "add",
+        "position": {
+          "x": {
+            "offset": 0.12071067811865475,
+            "terms": []
+          },
+          "y": {
+            "offset": 0.0,
+            "terms": []
+          },
+          "z": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "height",
+                "factor": 0.5
+              }
+            ]
+          }
+        },
+        "orientation": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.3826834323650898,
+          "w": 0.9238795325112867
+        }
+      }
+    ]
+  }
+}
