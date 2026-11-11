@@ -18,7 +18,7 @@ COORDINATE_FRAME = "right-handed, +Z up"
 QUATERNION_COMPONENTS = ("x", "y", "z", "w")
 QUATERNION_NORM_TOLERANCE = 1e-6
 
-ID_PATTERN = r"^[a-z][a-z0-9_-]{0,63}$"  # stable ids of materials, parts, snap points (G3)
+ID_PATTERN = r"^[a-z][a-z0-9_-]{0,63}$"  # stable ids of materials, parts, snap points, instances, joints, actuators (G3)
 NAME_PATTERN = r"^[a-z][a-z0-9_]{0,63}$"  # parameter, spec and tag names
 
 
