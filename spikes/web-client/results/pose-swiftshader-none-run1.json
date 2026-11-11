@@ -1,0 +1,812 @@
+{
+ "issue": "A0-02a #47",
+ "flow": "none",
+ "win": null,
+ "machine_before": {
+  "cpu": "Apple M2 Pro",
+  "ncpu": 10,
+  "platform": "Darwin 24.6.0 arm64",
+  "load_avg": [
+   19.9,
+   27.1,
+   31.6
+  ],
+  "swap": "total = 14336.00M  used = 13324.94M  free = 1011.06M  (encrypted)",
+  "node": "v22.22.2"
+ },
+ "gl_backend": "swiftshader",
+ "launch_args": [],
+ "browser": {
+  "name": "chromium-headless-shell (playwright-core 1.65.0)",
+  "version": "158.0.8127.18"
+ },
+ "runs": [
+  {
+   "config": {
+    "n": 1000,
+    "seed": 0,
+    "warmup_ms": 1500,
+    "measure_ms": 8000,
+    "bench_frames": 60,
+    "presses": 40,
+    "w": 960,
+    "h": 540,
+    "flow": "none",
+    "win": 2
+   },
+   "bytes_per_frame": 28024,
+   "marker_px": [
+    [
+     404,
+     305
+    ],
+    [
+     556,
+     305
+    ]
+   ],
+   "env": {
+    "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/158.0.8127.18 Safari/537.36",
+    "webgl_renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (LLVM 10.0.0) (0x0000C0DE)), SwiftShader driver)",
+    "webgl_vendor": "Google Inc. (Google)",
+    "cross_origin_isolated": true,
+    "device_pixel_ratio": 1,
+    "three_revision": "187",
+    "used_js_heap_mb": 10
+   },
+   "render_info": {
+    "calls": 1,
+    "triangles": 12000
+   },
+   "phase_a": {
+    "wall_s": 8.267,
+    "raf_frames": 76,
+    "raf_fps": 9.19,
+    "raf_dt_ms": {
+     "n_valid": 76,
+     "n_missing": 0,
+     "mean": 107.013,
+     "min": 33.325,
+     "p50": 83.335,
+     "p95": 199.995,
+     "p99": 266.65,
+     "max": 266.65
+    },
+    "raf_dt_over_20ms": 76,
+    "raf_dt_over_33ms": 76,
+    "raf_dt_samples_ms": [
+     100,
+     266.65,
+     100,
+     83.33,
+     166.65,
+     199.99,
+     183.33,
+     50,
+     166.66,
+     66.66,
+     83.34,
+     83.33,
+     199.99,
+     66.66,
+     49.99,
+     50,
+     83.33,
+     50,
+     50,
+     49.99,
+     133.33,
+     99.99,
+     66.67,
+     83.34,
+     33.32,
+     50,
+     133.33,
+     100,
+     133.32,
+     50,
+     100,
+     50,
+     133.32,
+     116.66,
+     83.33,
+     183.33,
+     49.99,
+     66.66,
+     149.99,
+     66.67,
+     66.66,
+     50,
+     216.66,
+     199.99,
+     99.99,
+     149.99,
+     166.66,
+     149.99,
+     66.66,
+     66.67,
+     116.66,
+     66.66,
+     83.34,
+     183.32,
+     183.32,
+     183.32,
+     33.34,
+     49.99,
+     149.99,
+     50.01,
+     49.99,
+     166.66,
+     83.33,
+     183.33,
+     50,
+     66.66,
+     83.33,
+     66.67,
+     83.33,
+     133.33,
+     100,
+     99.99,
+     183.32,
+     66.67,
+     233.33,
+     116.66
+    ],
+    "update_ms": {
+     "n_valid": 76,
+     "n_missing": 0,
+     "mean": 0.021,
+     "min": 0.005,
+     "p50": 0.01,
+     "p95": 0.035,
+     "p99": 0.665,
+     "max": 0.665
+    },
+    "render_call_ms": {
+     "n_valid": 76,
+     "n_missing": 0,
+     "mean": 0.13,
+     "min": 0.1,
+     "p50": 0.115,
+     "p95": 0.21,
+     "p99": 0.46,
+     "max": 0.46
+    },
+    "cpu_ms": {
+     "n_valid": 76,
+     "n_missing": 0,
+     "mean": 0.15,
+     "min": 0.105,
+     "p50": 0.125,
+     "p95": 0.3,
+     "p99": 0.785,
+     "max": 0.785
+    },
+    "distinct_ticks_drawn": 76,
+    "distinct_ticks_per_s": 9.19,
+    "tick_gap": {
+     "n_valid": 75,
+     "n_missing": 0,
+     "mean": 6.347,
+     "min": 1,
+     "p50": 5,
+     "p95": 16,
+     "p99": 20,
+     "max": 20
+    },
+    "tick_gap_over_1": 74,
+    "frames_received": 353,
+    "frames_overwritten_before_draw": 277,
+    "frames_unaccounted": 0,
+    "frame_age_at_draw_ms": {
+     "n_valid": 76,
+     "n_missing": 0,
+     "mean": 0.09,
+     "min": 0.065,
+     "p50": 0.08,
+     "p95": 0.165,
+     "p99": 0.24,
+     "max": 0.24
+    }
+   },
+   "net": {
+    "frames": 353,
+    "bytes": 9892472,
+    "bad_frames": 0,
+    "frames_per_s": 42.7,
+    "payload_bytes_per_s": 1196691,
+    "payload_mbit_per_s": 9.574,
+    "arrive_dt_ms": {
+     "n_valid": 353,
+     "n_missing": 0,
+     "mean": 23.041,
+     "min": 0.065,
+     "p50": 0.115,
+     "p95": 160.775,
+     "p99": 203.855,
+     "max": 261.205
+    },
+    "recv_tick_gap": {
+     "n_valid": 353,
+     "n_missing": 0,
+     "mean": 1.36,
+     "min": 1,
+     "p50": 1,
+     "p95": 3,
+     "p99": 12,
+     "max": 17
+    },
+    "recv_tick_gap_over_1": 21,
+    "acks_sent": 0
+   },
+   "bench": {
+    "frames": 60,
+    "update_ms": {
+     "n_valid": 60,
+     "n_missing": 0,
+     "mean": 0.009,
+     "min": 0.005,
+     "p50": 0.01,
+     "p95": 0.015,
+     "p99": 0.02,
+     "max": 0.02
+    },
+    "render_call_ms": {
+     "n_valid": 60,
+     "n_missing": 0,
+     "mean": 0.159,
+     "min": 0.09,
+     "p50": 0.125,
+     "p95": 0.18,
+     "p99": 1.26,
+     "max": 1.26
+    },
+    "sync_ms": {
+     "n_valid": 60,
+     "n_missing": 0,
+     "mean": 136.946,
+     "min": 34.31,
+     "p50": 115.005,
+     "p95": 245.815,
+     "p99": 315.225,
+     "max": 315.225
+    },
+    "total_ms": {
+     "n_valid": 60,
+     "n_missing": 0,
+     "mean": 137.114,
+     "min": 34.45,
+     "p50": 115.16,
+     "p95": 246.005,
+     "p99": 315.36,
+     "max": 315.36
+    },
+    "frames_per_s_sync": 7.29
+   },
+   "latency": {
+    "requested": 40,
+    "measured": 9,
+    "superseded": 22,
+    "no_visible_change": 9,
+    "unresolved": 0,
+    "samples": [
+     {
+      "seq": 5,
+      "input_to_handler": 46.90499997138977,
+      "handler_to_sent": 0.05000019073486328,
+      "sent_to_first_frame_recv": 7988.159999847412,
+      "recv_to_draw_start": 0.5750000476837158,
+      "draw_start_to_pixels": 281.84999990463257,
+      "total": 8317.539999961853,
+      "frame_tick": 1384
+     },
+     {
+      "seq": 7,
+      "input_to_handler": 32.950000047683716,
+      "handler_to_sent": 0.039999961853027344,
+      "sent_to_first_frame_recv": 8834.140000104904,
+      "recv_to_draw_start": 0.1399998664855957,
+      "draw_start_to_pixels": 83.45000004768372,
+      "total": 8950.72000002861,
+      "frame_tick": 1426
+     },
+     {
+      "seq": 21,
+      "input_to_handler": 165.20499992370605,
+      "handler_to_sent": 0.03500008583068848,
+      "sent_to_first_frame_recv": 7724.305000066757,
+      "recv_to_draw_start": 0.5849997997283936,
+      "draw_start_to_pixels": 345.0350000858307,
+      "total": 8235.164999961853,
+      "frame_tick": 1837
+     },
+     {
+      "seq": 22,
+      "input_to_handler": 221.97000002861023,
+      "handler_to_sent": 0.04999995231628418,
+      "sent_to_first_frame_recv": 8415.230000019073,
+      "recv_to_draw_start": 0.24500012397766113,
+      "draw_start_to_pixels": 64.90499997138977,
+      "total": 8702.400000095367,
+      "frame_tick": 1876
+     },
+     {
+      "seq": 24,
+      "input_to_handler": 31.230000019073486,
+      "handler_to_sent": 0.03500008583068848,
+      "sent_to_first_frame_recv": 7378.240000009537,
+      "recv_to_draw_start": 1.2849998474121094,
+      "draw_start_to_pixels": 80.89000010490417,
+      "total": 7491.680000066757,
+      "frame_tick": 1943
+     },
+     {
+      "seq": 25,
+      "input_to_handler": 137.11500000953674,
+      "handler_to_sent": 0.03500008583068848,
+      "sent_to_first_frame_recv": 6967.09500002861,
+      "recv_to_draw_start": 0.18999981880187988,
+      "draw_start_to_pixels": 137.24000000953674,
+      "total": 7241.674999952316,
+      "frame_tick": 1973
+     },
+     {
+      "seq": 29,
+      "input_to_handler": 29.579999923706055,
+      "handler_to_sent": 0.03000020980834961,
+      "sent_to_first_frame_recv": 6194.509999990463,
+      "recv_to_draw_start": 0.33499979972839355,
+      "draw_start_to_pixels": 135.51500010490417,
+      "total": 6359.97000002861,
+      "frame_tick": 2083
+     },
+     {
+      "seq": 35,
+      "input_to_handler": 119.61500000953674,
+      "handler_to_sent": 0.039999961853027344,
+      "sent_to_first_frame_recv": 4435.90499997139,
+      "recv_to_draw_start": 0.375,
+      "draw_start_to_pixels": 53.890000104904175,
+      "total": 4609.825000047684,
+      "frame_tick": 2207
+     },
+     {
+      "seq": 40,
+      "input_to_handler": 92.89499998092651,
+      "handler_to_sent": 0.029999971389770508,
+      "sent_to_first_frame_recv": 2254.2699999809265,
+      "recv_to_draw_start": 0.24500012397766113,
+      "draw_start_to_pixels": 130.0349998474121,
+      "total": 2477.4749999046326,
+      "frame_tick": 2363
+     }
+    ],
+    "summary": {
+     "input_to_handler": {
+      "n_valid": 9,
+      "n_missing": 0,
+      "mean": 97.496,
+      "min": 29.58,
+      "p50": 92.895,
+      "p95": 221.97,
+      "p99": 221.97,
+      "max": 221.97
+     },
+     "handler_to_sent": {
+      "n_valid": 9,
+      "n_missing": 0,
+      "mean": 0.038,
+      "min": 0.03,
+      "p50": 0.035,
+      "p95": 0.05,
+      "p99": 0.05,
+      "max": 0.05
+     },
+     "sent_to_first_frame_recv": {
+      "n_valid": 9,
+      "n_missing": 0,
+      "mean": 6687.984,
+      "min": 2254.27,
+      "p50": 7378.24,
+      "p95": 8834.14,
+      "p99": 8834.14,
+      "max": 8834.14
+     },
+     "recv_to_draw_start": {
+      "n_valid": 9,
+      "n_missing": 0,
+      "mean": 0.442,
+      "min": 0.14,
+      "p50": 0.335,
+      "p95": 1.285,
+      "p99": 1.285,
+      "max": 1.285
+     },
+     "draw_start_to_pixels": {
+      "n_valid": 9,
+      "n_missing": 0,
+      "mean": 145.868,
+      "min": 53.89,
+      "p50": 130.035,
+      "p95": 345.035,
+      "p99": 345.035,
+      "max": 345.035
+     },
+     "total": {
+      "n_valid": 9,
+      "n_missing": 0,
+      "mean": 6931.828,
+      "min": 2477.475,
+      "p50": 7491.68,
+      "p95": 8950.72,
+      "p99": 8950.72,
+      "max": 8950.72
+     }
+    }
+   },
+   "server": {
+    "frames_sent": 775,
+    "backpressure_skipped": 1738,
+    "window_skipped": 0,
+    "acks": 0,
+    "acks_ignored": 0,
+    "ack_lag_ms": {
+     "n_valid": 0,
+     "n_missing": 0
+    },
+    "inflight_at_tick": {
+     "n_valid": 0,
+     "n_missing": 0
+    },
+    "clock_rebases": 0,
+    "bytes": 21718600,
+    "tick_lateness_ms": {
+     "n_valid": 2513,
+     "n_missing": 0,
+     "mean": 0.828,
+     "min": 0,
+     "p50": 0.517,
+     "p95": 3.155,
+     "p99": 6.065,
+     "max": 25.102
+    },
+    "frame_build_ms": {
+     "n_valid": 775,
+     "n_missing": 0,
+     "mean": 0.364,
+     "min": 0.115,
+     "p50": 0.244,
+     "p95": 0.727,
+     "p99": 3.263,
+     "max": 27.415
+    },
+    "control_wait_for_tick_ms": {
+     "n_valid": 40,
+     "n_missing": 0,
+     "mean": 7.931,
+     "min": 0.202,
+     "p50": 7.802,
+     "p95": 16.173,
+     "p99": 16.884,
+     "max": 16.884
+    }
+   },
+   "load_avg_1m": [
+    19.9,
+    25.5
+   ],
+   "console": [
+    "warning: [.WebGL-0x12c0089f600]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+    "warning: [.WebGL-0x12c0089f600]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+    "warning: [.WebGL-0x12c0089f600]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+    "warning: [.WebGL-0x12c0089f600]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels (this message will no longer repeat)"
+   ]
+  },
+  {
+   "config": {
+    "n": 5000,
+    "seed": 0,
+    "warmup_ms": 1500,
+    "measure_ms": 8000,
+    "bench_frames": 60,
+    "presses": 40,
+    "w": 960,
+    "h": 540,
+    "flow": "none",
+    "win": 2
+   },
+   "bytes_per_frame": 140024,
+   "marker_px": [
+    [
+     404,
+     307
+    ],
+    [
+     556,
+     307
+    ]
+   ],
+   "env": {
+    "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/158.0.8127.18 Safari/537.36",
+    "webgl_renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (LLVM 10.0.0) (0x0000C0DE)), SwiftShader driver)",
+    "webgl_vendor": "Google Inc. (Google)",
+    "cross_origin_isolated": true,
+    "device_pixel_ratio": 1,
+    "three_revision": "187",
+    "used_js_heap_mb": 10
+   },
+   "render_info": {
+    "calls": 1,
+    "triangles": 60000
+   },
+   "phase_a": {
+    "wall_s": 8.538,
+    "raf_frames": 21,
+    "raf_fps": 2.46,
+    "raf_dt_ms": {
+     "n_valid": 21,
+     "n_missing": 0,
+     "mean": 421.412,
+     "min": 183.33,
+     "p50": 416.65,
+     "p95": 849.965,
+     "p99": 883.295,
+     "max": 883.295
+    },
+    "raf_dt_over_20ms": 21,
+    "raf_dt_over_33ms": 21,
+    "raf_dt_samples_ms": [
+     849.97,
+     883.3,
+     666.64,
+     433.32,
+     399.98,
+     233.32,
+     183.33,
+     483.31,
+     516.65,
+     249.99,
+     233.32,
+     233.32,
+     416.65,
+     266.66,
+     283.32,
+     216.65,
+     499.99,
+     616.64,
+     316.66,
+     433.31,
+     433.32
+    ],
+    "update_ms": {
+     "n_valid": 21,
+     "n_missing": 0,
+     "mean": 0.079,
+     "min": 0.065,
+     "p50": 0.075,
+     "p95": 0.095,
+     "p99": 0.125,
+     "max": 0.125
+    },
+    "render_call_ms": {
+     "n_valid": 21,
+     "n_missing": 0,
+     "mean": 0.163,
+     "min": 0.105,
+     "p50": 0.13,
+     "p95": 0.275,
+     "p99": 0.345,
+     "max": 0.345
+    },
+    "cpu_ms": {
+     "n_valid": 21,
+     "n_missing": 0,
+     "mean": 0.242,
+     "min": 0.175,
+     "p50": 0.21,
+     "p95": 0.4,
+     "p99": 0.42,
+     "max": 0.42
+    },
+    "distinct_ticks_drawn": 12,
+    "distinct_ticks_per_s": 1.41,
+    "tick_gap": {
+     "n_valid": 11,
+     "n_missing": 0,
+     "mean": 1,
+     "min": 1,
+     "p50": 1,
+     "p95": 1,
+     "p99": 1,
+     "max": 1
+    },
+    "tick_gap_over_1": 0,
+    "frames_received": 11,
+    "frames_overwritten_before_draw": 0,
+    "frames_unaccounted": -1,
+    "frame_age_at_draw_ms": {
+     "n_valid": 21,
+     "n_missing": 0,
+     "mean": 265.791,
+     "min": 0.275,
+     "p50": 0.57,
+     "p95": 1011.23,
+     "p99": 1521.405,
+     "max": 1521.405
+    }
+   },
+   "net": {
+    "frames": 11,
+    "bytes": 1540264,
+    "bad_frames": 0,
+    "frames_per_s": 1.29,
+    "payload_bytes_per_s": 180393,
+    "payload_mbit_per_s": 1.443,
+    "arrive_dt_ms": {
+     "n_valid": 11,
+     "n_missing": 0,
+     "mean": 825.806,
+     "min": 178.53,
+     "p50": 672.45,
+     "p95": 2397.175,
+     "p99": 2397.175,
+     "max": 2397.175
+    },
+    "recv_tick_gap": {
+     "n_valid": 11,
+     "n_missing": 0,
+     "mean": 1,
+     "min": 1,
+     "p50": 1,
+     "p95": 1,
+     "p99": 1,
+     "max": 1
+    },
+    "recv_tick_gap_over_1": 0,
+    "acks_sent": 0
+   },
+   "bench": {
+    "frames": 60,
+    "update_ms": {
+     "n_valid": 60,
+     "n_missing": 0,
+     "mean": 0.072,
+     "min": 0.035,
+     "p50": 0.075,
+     "p95": 0.11,
+     "p99": 0.18,
+     "max": 0.18
+    },
+    "render_call_ms": {
+     "n_valid": 60,
+     "n_missing": 0,
+     "mean": 0.203,
+     "min": 0.105,
+     "p50": 0.165,
+     "p95": 0.53,
+     "p99": 0.865,
+     "max": 0.865
+    },
+    "sync_ms": {
+     "n_valid": 60,
+     "n_missing": 0,
+     "mean": 527.204,
+     "min": 143.335,
+     "p50": 501.945,
+     "p95": 992.21,
+     "p99": 1158.16,
+     "max": 1158.16
+    },
+    "total_ms": {
+     "n_valid": 60,
+     "n_missing": 0,
+     "mean": 527.479,
+     "min": 143.555,
+     "p50": 502.165,
+     "p95": 992.465,
+     "p99": 1158.34,
+     "max": 1158.34
+    },
+    "frames_per_s_sync": 1.9
+   },
+   "latency": {
+    "requested": 40,
+    "measured": 0,
+    "superseded": 0,
+    "no_visible_change": 0,
+    "unresolved": 40,
+    "samples": [],
+    "summary": {
+     "input_to_handler": {
+      "n_valid": 0,
+      "n_missing": 0
+     },
+     "handler_to_sent": {
+      "n_valid": 0,
+      "n_missing": 0
+     },
+     "sent_to_first_frame_recv": {
+      "n_valid": 0,
+      "n_missing": 0
+     },
+     "recv_to_draw_start": {
+      "n_valid": 0,
+      "n_missing": 0
+     },
+     "draw_start_to_pixels": {
+      "n_valid": 0,
+      "n_missing": 0
+     },
+     "total": {
+      "n_valid": 0,
+      "n_missing": 0
+     }
+    }
+   },
+   "server": {
+    "frames_sent": 49,
+    "backpressure_skipped": 7175,
+    "window_skipped": 0,
+    "acks": 0,
+    "acks_ignored": 0,
+    "ack_lag_ms": {
+     "n_valid": 0,
+     "n_missing": 0
+    },
+    "inflight_at_tick": {
+     "n_valid": 0,
+     "n_missing": 0
+    },
+    "clock_rebases": 0,
+    "bytes": 6861176,
+    "tick_lateness_ms": {
+     "n_valid": 7224,
+     "n_missing": 0,
+     "mean": 0.919,
+     "min": 0,
+     "p50": 0.495,
+     "p95": 3.336,
+     "p99": 7.924,
+     "max": 48.828
+    },
+    "frame_build_ms": {
+     "n_valid": 49,
+     "n_missing": 0,
+     "mean": 2.381,
+     "min": 0.538,
+     "p50": 1.343,
+     "p95": 6.711,
+     "p99": 25.845,
+     "max": 25.845
+    },
+    "control_wait_for_tick_ms": {
+     "n_valid": 40,
+     "n_missing": 0,
+     "mean": 8.709,
+     "min": 0.341,
+     "p50": 8.368,
+     "p95": 17.119,
+     "p99": 17.355,
+     "max": 17.355
+    }
+   },
+   "load_avg_1m": [
+    25.5,
+    50
+   ],
+   "console": []
+  }
+ ],
+ "machine_after": {
+  "cpu": "Apple M2 Pro",
+  "ncpu": 10,
+  "platform": "Darwin 24.6.0 arm64",
+  "load_avg": [
+   50,
+   35.6,
+   34.2
+  ],
+  "swap": "total = 14336.00M  used = 13276.94M  free = 1059.06M  (encrypted)",
+  "node": "v22.22.2"
+ }
+}

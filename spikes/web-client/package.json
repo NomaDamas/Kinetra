@@ -11,7 +11,7 @@
   "scripts": {
     "dev": "node src/serve.mjs",
     "measure:pose": "node measure-pose.mjs",
-    "test": "node --test --test-name-pattern=. tests/frame.test.mjs tests/poses.test.mjs tests/stats.test.mjs tests/stream.test.mjs tests/latency.test.mjs"
+    "test": "node --test --test-name-pattern=. tests/frame.test.mjs tests/poses.test.mjs tests/stats.test.mjs tests/stream.test.mjs tests/latency.test.mjs tests/flow.test.mjs"
   },
   "dependencies": {
     "three": "0.187.0",
