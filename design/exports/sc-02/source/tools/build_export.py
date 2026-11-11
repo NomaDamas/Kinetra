@@ -118,7 +118,23 @@ window.addEventListener('load', function () {
       var cs = getComputedStyle(e);
       if (e.tagName !== 'SELECT' && e.tagName !== 'INPUT' && (cs.overflowX !== 'visible' || cs.overflowY !== 'visible') && (e.scrollWidth > e.clientWidth + 1 || e.scrollHeight > e.clientHeight + 1)) clip.push(label(e) + ' ' + e.scrollWidth + 'x' + e.scrollHeight + ' in ' + e.clientWidth + 'x' + e.clientHeight);
       if (e.children.length === 0 && e.clientWidth > 0 && cs.overflowX === 'visible' && e.scrollWidth > e.clientWidth + 1) clip.push('spills its box: ' + label(e) + ' ' + e.scrollWidth + '>' + e.clientWidth);
+      // sc-02-rev: a field cell with children (icon + value) must also stay inside its grid track
+      if (e.children.length > 0 && e.closest('[data-panel]') && e.clientWidth > 0 && cs.overflowX === 'visible' && e.scrollWidth > e.clientWidth + 1) clip.push('cell spills: ' + label(e) + ' ' + e.scrollWidth + '>' + e.clientWidth);
       if ((e.tagName === 'INPUT' || e.tagName === 'SELECT') && e.scrollWidth > e.clientWidth + 1) clip.push('text cut: ' + label(e) + ' ' + e.scrollWidth + '>' + e.clientWidth);
+    });
+    // sc-02-rev: a child that sticks out of a field row cell on either side (right-aligned content
+    // spills to the left, which scrollWidth does not report)
+    var stick = [];
+    board.querySelectorAll('[data-panel] [style*="display:grid"] > *').forEach(function (cell) {
+      if (!shown(cell)) return; var c = cell.getBoundingClientRect();
+      function annot(k) { for (var e = k; e && e !== cell; e = e.parentElement) if (getComputedStyle(e).position === 'absolute') return true; return false; }
+      cell.querySelectorAll('*').forEach(function (k) { if (!shown(k) || annot(k)) return; var q = k.getBoundingClientRect();
+        if (q.left < c.left - 0.5 || q.right > c.right + 0.5) stick.push(label(cell) + ' > ' + label(k) + ' ' + Math.round(q.left - c.left) + '/' + Math.round(c.right - q.right));
+        // an icon squeezed below its drawn size counts as not fitting
+        if (k.tagName.toLowerCase() === 'svg' && k.getAttribute('width') && q.width < parseFloat(k.getAttribute('width')) - 0.5) stick.push('icon squeezed in ' + label(cell) + ' ' + q.width.toFixed(1) + '<' + k.getAttribute('width')); });
+      var tw = document.createTreeWalker(cell, NodeFilter.SHOW_TEXT), tn;
+      while ((tn = tw.nextNode())) { if (!tn.nodeValue.trim() || annot(tn.parentElement)) continue; var rg = document.createRange(); rg.selectNodeContents(tn); var tr = rg.getBoundingClientRect();
+        if (tr.width > 0 && (tr.left < c.left - 0.5 || tr.right > c.right + 0.5)) stick.push('text spills ' + label(cell) + ': ' + tn.nodeValue.trim().slice(0, 20)); }
     });
     // panel content must fit its 790 px height: every child of a panel inside the panel box
     var panels = [].map.call(board.querySelectorAll('[data-panel]'), function (pn) {
@@ -157,7 +173,7 @@ window.addEventListener('load', function () {
       primary: [].filter.call(board.querySelectorAll('[data-primary]'), shown).length,
       badges: [].map.call(board.querySelectorAll('[data-badge]'), function (e) { return e.getAttribute('data-badge'); }).filter(function (v, i, a) { return a.indexOf(v) === i; }),
       panels: panels,
-      stray: stray, small: small, overflow: over.slice(0, 8), clipped: clip,
+      stray: stray, small: small, overflow: over.slice(0, 8), clipped: clip, cellSpill: stick,
       minContrast: +minc.toFixed(2), lowContrast: bad,
       colors: Object.keys(colors).sort(), offToken: Object.keys(offToken), danger: danger,
       banned: BANNED.filter(function (b) { return txt.indexOf(b) >= 0; })

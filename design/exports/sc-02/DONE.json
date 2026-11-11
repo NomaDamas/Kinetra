@@ -1,8 +1,19 @@
 {
-  "run_id": "sc02-20261110T215445",
+  "run_id": "sc02rev-20261110T230109",
   "screen": "SC-02",
+  "kind": "revision",
+  "revision_brief": "design/briefs/sc-02-revision.md",
   "brief": "design/briefs/sc-02.md",
+  "previous_export": "design/exports/sc-02/",
+  "previous_run_id": "sc02-20261110T215445",
   "artifact": "https://claude.ai/artifact/W5F2kNGaJAdKUv1nBEhgdP",
+  "artifact_version": "1794375590-9386",
+  "fixed": {
+    "1_axis_reference_frame": "S3: read-only label '부모 바디 좌표계 기준 · 차체' next to the axis unit vector; not counted as a control",
+    "2_thrust_single_truth": "S2 (d), S4 (a)-(d): '카탈로그 최대 추력 8.9 N 인용' (read-only) vs '선언 노즐당 추력 8 kN 카탈로그 밖 · 사용자 선언' + one-line note",
+    "3_joint_progressive_disclosure": "S3 (a) kind + limit/break summaries only, details behind accordion heads; (b) axis open; S2 (c) direct-open buttons keep details at step 2",
+    "4_com_overflow": "centre-of-mass vector as three narrow read-only cells with x/y/z line; S1, S2, S6, S7, S8, S9, S10"
+  },
   "artboards": [
     "Main.dc.html (S1)",
     "S2.dc.html",
@@ -17,13 +28,21 @@
   ],
   "self_check": {
     "s1_controls": 10,
+    "s3_controls": {
+      "a": 9,
+      "b": 13
+    },
     "primary_in_inspector": 0,
     "badge_kinds": 5,
     "new_colors": 0,
     "max_step": 2,
-    "banned_phrases": 0
+    "banned_phrases": 0,
+    "panel_overflow": 0,
+    "cell_overflow": 0,
+    "targets_under_24px": 0
   },
-  "index_html_sha256": "5d80436c3e518882e7db1bd247020a4e668ba02c53fe2af0cbd700775186c16d",
+  "browser_measurement": "headless Chrome only, throwaway --user-data-dir under /tmp, deleted after each run; none left",
+  "index_html_sha256": "cbcf5a8af54f4738760c8c72e1c839fae9e4bead74b2a903b2a9b3fc45847fa8",
   "files": [
     "NOTES.md",
     "index.html",
@@ -39,8 +58,10 @@
     "source/S9.dc.html",
     "source/canvas.json",
     "source/tools/build_export.py",
+    "source/tools/make_s3.py",
     "source/tools/measure.sh",
+    "source/tools/revise.py",
     "source/tools/shot.sh"
   ],
-  "finished_at": "2026-11-10T13:28:29Z"
+  "finished_at": "2026-11-11T05:42:17Z"
 }
