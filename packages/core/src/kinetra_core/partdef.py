@@ -6,21 +6,20 @@ it carries one badge and source for the whole pose.
 Collections are tuples, so a `PartDef` is immutable and hashable. Order is part of the value and is preserved;
 the canonical form for definition hashes (C-03) is C-03's to fix.
 
-Not here: the shape recipe and mass/inertia (B-01a), collision proxy (B-01b), export policy (HW-02a), instances
+The optional `shape` (B-01a, `shape.py`) is the recipe mass, centre of mass and inertia are computed from.
+
+Not here: the computation (`kinetra_engine.parts`, result in `massprops.py`), collision proxy (B-01b), export policy (HW-02a), instances
 and joints (C-01b), MJCF (X-01).
 """
 
 from __future__ import annotations
 
-import math
-from typing import Annotated
-
 from pydantic import BaseModel, ConfigDict, Field, ValidationInfo, field_validator, model_validator
 
-from .conventions import ID_PATTERN, NAME_PATTERN, QUATERNION_NORM_TOLERANCE, Unit
-from .provenance import Number, Provenance, Quantity
-
-Name = Annotated[str, Field(pattern=NAME_PATTERN)]
+from .conventions import ID_PATTERN, Unit
+from .geometry import AxisExpr, Name, ParamTerm, Position, Quaternion  # noqa: F401  (AxisExpr, ParamTerm: re-exported)
+from .provenance import Provenance, Quantity
+from .shape import Shape
 
 
 class ParamDef(BaseModel):
@@ -57,50 +56,6 @@ class SpecDef(Quantity):
     name: Name
 
 
-class ParamTerm(BaseModel):
-    """`factor * <value of parameter param>`. The parameter must be a length."""
-
-    model_config = ConfigDict(extra="forbid", frozen=True)
-
-    param: Name
-    factor: Number
-
-
-class AxisExpr(BaseModel):
-    """One coordinate of a snap point in the part's local frame [m]: `offset + sum(factor * param)`."""
-
-    model_config = ConfigDict(extra="forbid", frozen=True)
-
-    offset: Number
-    terms: tuple[ParamTerm, ...] = ()
-
-
-class Position(BaseModel):
-    model_config = ConfigDict(extra="forbid", frozen=True)
-
-    x: AxisExpr
-    y: AxisExpr
-    z: AxisExpr
-
-
-class Quaternion(BaseModel):
-    """Unit quaternion with named components (`conventions.py`)."""
-
-    model_config = ConfigDict(extra="forbid", frozen=True)
-
-    x: Number
-    y: Number
-    z: Number
-    w: Number
-
-    @model_validator(mode="after")
-    def _unit_norm(self) -> "Quaternion":
-        n = math.hypot(self.x, self.y, self.z, self.w)  # no overflow for huge finite components
-        if abs(n - 1.0) > QUATERNION_NORM_TOLERANCE:
-            raise ValueError(f"quaternion must have unit norm, got {n}")
-        return self
-
-
 class SnapPoint(Provenance):
     """A place where this part can attach to another. `kind` and `accepts` are compatibility tags (B-04b matches them).
 
@@ -130,6 +85,7 @@ class PartDef(BaseModel):
     parameters: tuple[ParamDef, ...] = ()
     snap_points: tuple[SnapPoint, ...] = ()
     specs: tuple[SpecDef, ...] = ()
+    shape: Shape | None = None
 
     @model_validator(mode="after")
     def _consistent(self) -> "PartDef":
@@ -155,4 +111,26 @@ class PartDef(BaseModel):
                         raise ValueError(f"snap point {s.id!r}: unknown parameter {t.param!r}")
                     if units[t.param] is not Unit.M:
                         raise ValueError(f"snap point {s.id!r}: parameter {t.param!r} is not a length (m)")
+        if self.shape is not None:
+            self._check_shape(self.shape, {p.name: p for p in self.parameters})
         return self
+
+    @staticmethod
+    def _check_shape(shape: Shape, params: dict[str, ParamDef]) -> None:
+        for comp in shape.components:
+            for path, expr in comp.axis_exprs():
+                where = f"shape component {comp.id!r} {path}"
+                lo = hi = expr.offset
+                for param in sorted({t.param for t in expr.terms}):
+                    if param not in params:
+                        raise ValueError(f"{where}: unknown parameter {param!r}")
+                    if params[param].unit is not Unit.M:
+                        raise ValueError(f"{where}: parameter {param!r} is not a length (m)")
+                    # Terms of one parameter are summed first: the expression is linear, so its extremes are at the range ends.
+                    factor = sum(t.factor for t in expr.terms if t.param == param)
+                    a, b = factor * params[param].min.value, factor * params[param].max.value
+                    lo, hi = lo + min(a, b), hi + max(a, b)
+                if path.startswith("primitive.") and lo <= 0.0:
+                    raise ValueError(
+                        f"{where}: must stay above zero over the whole parameter range, but reaches {lo} m"
+                    )
