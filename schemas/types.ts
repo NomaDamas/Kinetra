@@ -75,6 +75,11 @@ export interface BreakThreshold {
   unit: "N";
 }
 
+export interface CatalogEntry {
+  material: Material;
+  pbr: PbrSlots;
+}
+
 /**
  * What one shape component added or removed, with the values it was evaluated at.
  *
@@ -252,6 +257,10 @@ export interface Material {
   friction: Friction;
 }
 
+export interface MaterialCatalog {
+  entries: CatalogEntry[];
+}
+
 export interface NormalDistribution {
   badge: Badge;
   source: Source;
@@ -299,6 +308,28 @@ export interface PartDef {
   snap_points?: SnapPoint[];
   specs?: SpecDef[];
   shape?: Shape | null;
+}
+
+/** Base color as sRGB hex. */
+export interface PbrColor {
+  badge: Badge;
+  source: Source;
+  srgb: string;
+}
+
+/** A dimensionless slot value in [0, 1]. */
+export interface PbrScalar {
+  badge: Badge;
+  source: Source;
+  value: number;
+  unit: "1";
+}
+
+export interface PbrSlots {
+  base_color: PbrColor;
+  metallic: PbrScalar;
+  roughness: PbrScalar;
+  reflectance: PbrScalar;
 }
 
 /**
