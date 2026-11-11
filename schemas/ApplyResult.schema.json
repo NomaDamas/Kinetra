@@ -800,6 +800,60 @@
       "title": "ControlSchedule",
       "type": "object"
     },
+    "Curve": {
+      "additionalProperties": false,
+      "description": "Piecewise-linear `y(x)`: at least two points, `x` strictly increasing, in `x_unit` and `y_unit`.",
+      "properties": {
+        "badge": {
+          "$ref": "#/$defs/Badge"
+        },
+        "source": {
+          "$ref": "#/$defs/Source"
+        },
+        "x_unit": {
+          "$ref": "#/$defs/Unit"
+        },
+        "y_unit": {
+          "$ref": "#/$defs/Unit"
+        },
+        "points": {
+          "items": {
+            "$ref": "#/$defs/CurvePoint"
+          },
+          "minItems": 2,
+          "title": "Points",
+          "type": "array"
+        }
+      },
+      "required": [
+        "badge",
+        "source",
+        "x_unit",
+        "y_unit",
+        "points"
+      ],
+      "title": "Curve",
+      "type": "object"
+    },
+    "CurvePoint": {
+      "additionalProperties": false,
+      "properties": {
+        "x": {
+          "title": "X",
+          "type": "number"
+        },
+        "y": {
+          "title": "Y",
+          "type": "number"
+        }
+      },
+      "required": [
+        "x",
+        "y"
+      ],
+      "title": "CurvePoint",
+      "type": "object"
+    },
     "Cylinder": {
       "additionalProperties": false,
       "description": "Solid circular cylinder. `radius` and `length` [m]; the axis is the component's local z.",
@@ -1200,6 +1254,26 @@
       "title": "MoveInstance",
       "type": "object"
     },
+    "NamedCurve": {
+      "additionalProperties": false,
+      "description": "A curve a part defines under a name (`torque_speed` for a motor, `thrust` for a thruster).",
+      "properties": {
+        "name": {
+          "pattern": "^[a-z][a-z0-9_]{0,63}$",
+          "title": "Name",
+          "type": "string"
+        },
+        "curve": {
+          "$ref": "#/$defs/Curve"
+        }
+      },
+      "required": [
+        "name",
+        "curve"
+      ],
+      "title": "NamedCurve",
+      "type": "object"
+    },
     "NormalDistribution": {
       "additionalProperties": false,
       "properties": {
@@ -1405,6 +1479,25 @@
           ],
           "default": null,
           "title": "Mass Parameter"
+        },
+        "role": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/PartRole"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "curves": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/NamedCurve"
+          },
+          "title": "Curves",
+          "type": "array"
         }
       },
       "required": [
@@ -1413,6 +1506,19 @@
       ],
       "title": "PartDef",
       "type": "object"
+    },
+    "PartRole": {
+      "description": "What a part is for, where the simulation needs to know (B-03b). A part without a role is only a body.\n\nThe actuator on an instance must fit its part's role (`designspec.py`): a motor actuator drives a `motor` part, a\nthruster actuator a `thruster` part. What a role requires of the definition is checked by `PartDef` (the\nrequired curves and specs), so a part that says `motor` always has the numbers a motor needs.",
+      "enum": [
+        "motor",
+        "thruster",
+        "wheel",
+        "battery",
+        "tank",
+        "spring_damper"
+      ],
+      "title": "PartRole",
+      "type": "string"
     },
     "Placement": {
       "additionalProperties": false,
@@ -2408,7 +2514,9 @@
         "kg*m^2",
         "J",
         "W",
-        "W/m^2"
+        "W/m^2",
+        "V",
+        "A"
       ],
       "title": "Unit",
       "type": "string"

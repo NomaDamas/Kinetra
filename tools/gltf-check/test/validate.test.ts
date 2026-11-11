@@ -13,6 +13,7 @@ test("every committed part fixture passes the Khronos validator with no errors a
       "ballast-weight-declared-mass.glb",
       "beam-al6061.glb",
       "drive-shaft-steel.glb",
+      "motor-37d-12v-50-1-declared-mass.glb",
       "mounting-plate-al6061.glb",
       "payload-declared-mass.glb",
       "payload-mount-al6061.glb",

@@ -641,3 +641,11 @@ def test_project_is_compatible_with_check_world_references(project):
     check_world_references(project.world, planets=["mars", "moon", "earth"], materials=[m.id for m in project.design.materials])
     with pytest.raises(ValueError, match="unknown planet"):
         check_world_references(project.world, planets=["moon"], materials=[m.id for m in project.design.materials])
+
+
+def test_apply_replace_part_def_with_a_role_that_does_not_fit_its_actuators_is_rejected_with_the_refs(project):
+    """B-03b: giving the motor part the role `wheel` breaks the motor actuators on its instances: the refusal names the
+    instance, the part and the actuator (a `DesignSpec` error is a `RefError`, which carries them)."""
+    motor = next(p for p in load("DesignSpec.four-wheel-car.json")["parts"] if p["id"] == "motor")
+    err = rejected(project, cmd(type="replace_part_def", part={**motor, "role": "wheel"}), ReasonCode.INVALID_PROJECT)
+    assert {ref("instance", "motor-l"), ref("part", "motor"), ref("actuator", "drive-motor-l")} <= set(err.reasons[0].ids)

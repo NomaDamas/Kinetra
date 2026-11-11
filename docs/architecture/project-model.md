@@ -34,7 +34,7 @@
 ## 모델
 
 - `Material`: `density`(kg/m^3, > 0), `yield_strength`(Pa, > 0), `elastic_modulus`(Pa, > 0), `friction`(무차원 쿨롱 계수, >= 0). 필드마다 단위와 범위가 타입에 있어 오류가 그 필드를 가리키고 JSON Schema에 `const`/`exclusiveMinimum`이 실린다. 두 재료의 접촉 마찰을 어떻게 합치는지는 컴파일러(X-01)가 정한다. 실제 재료 5종의 값은 B-07이 출처와 함께 채웠다: [`materials.md`](materials.md).
-- `PartDef`: `parameters`(이름, 단위, 기본값·최소·최대; 최소 <= 기본 <= 최대), `snap_points`(ID, 종류, 받아들이는 종류, 부품 로컬 좌표의 위치 `offset + Σ factor × 길이 파라미터`, 방향 쿼터니언, 배지·출처), `specs`(`SpecDef`: 이름이 붙은 `Quantity`의 튜플, 사양), `shape`(선택, B-01a: 질량·관성 계산의 레시피). `mass_parameter`(선택, B-02c: 질량을 정하는 kg 파라미터의 이름. 있으면 부품의 질량은 그 값이고 재료를 읽지 않는다. [`part-payload.md`](part-payload.md)).
+- `PartDef`: `parameters`(이름, 단위, 기본값·최소·최대; 최소 <= 기본 <= 최대), `snap_points`(ID, 종류, 받아들이는 종류, 부품 로컬 좌표의 위치 `offset + Σ factor × 길이 파라미터`, 방향 쿼터니언, 배지·출처), `specs`(`SpecDef`: 이름이 붙은 `Quantity`의 튜플, 사양), `shape`(선택, B-01a: 질량·관성 계산의 레시피). `mass_parameter`(선택, B-02c: 질량을 정하는 kg 파라미터의 이름. 있으면 부품의 질량은 그 값이고 재료를 읽지 않는다. [`part-payload.md`](part-payload.md)), `role`(선택, B-03b: `motor` `thruster` `wheel` `battery` `tank` `spring_damper`. 모터는 곡선 `torque_speed`와 사양 `rated_voltage`가 있어야 한다), `curves`(`NamedCurve`의 튜플, B-03b: 점들과 단위, 배지·출처 하나. [`part-motor.md`](part-motor.md)).
 - 파라미터를 참조하는 스냅 포인트는 존재하는 길이(m) 파라미터만 가리킬 수 있다. 한 `PartDef` 안에서 파라미터 이름, 스냅 포인트 ID, 사양 이름은 각각 겹치지 않고, 스냅 포인트 ID와 사양 이름은 파라미터 이름과도 겹치지 않는다.
 - 모든 모델은 `extra="forbid"`, 불변(`frozen`)이고 컬렉션은 튜플이라 `PartDef`는 해시된다. 순서는 값의 일부로 보존한다(순서가 다르면 다른 값). 정의 해시용 정규 순서는 아래 "저장·열기와 정의 해시"(C-03)가 정한다.
 
@@ -53,7 +53,7 @@
 - `command`가 1일 때 몇 N·m, 몇 N인지는 부품의 사양(곡선)에서 온다(B-03b, B-03c, X-01b, X-01c). `DesignSpec`은 비율만 안다.
 - 자세가 권위다. 결합은 어느 두 스냅 포인트가 한 쌍인지만 말하고 아무것도 옮기지 않는다. 결합한 스냅 포인트가 저장된 자세에서 실제로 겹치는지, 부품이 공중에 떠 있는지는 배치 검사(C-02c 검증기, X-01d 컴파일 오류)이고 `DesignSpec` 검증이 아니다. 4륜차 예시는 조립된 차(바퀴 중심 z = 0.05 m, 오른쪽 모터는 Z축으로 180° 돌림, 맞닿는 스냅 포인트는 서로 `accepts`)이고 `test_designspec_four_wheel_car_is_assembled`가 결합한 모든 쌍이 월드에서 1e-9 안에 겹치는지 검사한다.
 - 결합 그래프가 트리(고리 없음, 한 덩어리)인지는 바디 트리를 만드는 X-01a의 규칙이고 컴파일 오류(X-01d)로 낸다. 이 모델은 양끝 존재와 스냅 포인트 중복 사용만 본다.
-- 액추에이터 종류와 부품 역할의 대응(모터 부품에 모터, 추력기 부품에 추력기)은 B-03b·B-03c가 부품에 역할을 주면 그때 검사한다.
+- 액추에이터 종류와 부품 역할의 대응: 모터 액추에이터는 역할이 `motor`인 부품의 인스턴스에, 추력기는 `thruster`인 부품에 붙는다(B-03b, `part-motor.md`). 다른 역할이면 거절하고, 역할이 없는 부품은 받는다.
 - 결합의 축, 종류별 자유도, 스냅 호환 태그 검사는 B-04a·B-04b가, 스프링-댐퍼는 B-03e·X-01b가 더한다. 이 PR의 `limits`와 `break_threshold`는 그 필드가 올 자리와 단위 검사까지다. 파단 임계의 계산(물성 × 단면)은 X-04a다. 분리 항목(`type: "separate"`)은 X-08이 `ActuateEntry`와 같은 자리에 더한다.
 - 이 PR의 수치는 모두 테스트가 선언한 값(`사용자 선언`)이다. 실부품 수치는 이 PR에 없다.
 
@@ -170,7 +170,7 @@ uv run python packages/core/scripts/export_schemas.py --check  # 쓰지 않고 �
 해시는 "같은 것"을 말한다. 표시만 다른 두 값(목록 순서, 키 순서, 공백, `1`과 `1.0`, 시각을 쓴 UTC 오프셋)은 같은 해시이고 나머지가 다른 두 값은 다른 해시다. `project_hash(project)`와 `definition_hash(PartDef | Material)`는 `sha256:` + 아래 정규 텍스트의 UTF-8 바이트의 소문자 16진 SHA-256이다. 해시는 알고리즘만 싣고 규칙은 싣지 않는다: 규칙이 바뀌면 파일 `version`을 올린다.
 
 - **키**: JSON 객체의 키는 UTF-16 코드 단위 순으로 정렬한다(RFC 8785). 필수가 아닌 필드가 기본값이면 빼서, 뒤 잎이 선택 필드를 더해도 그 필드를 건드리지 않은 값의 해시가 바뀌지 않는다(`client-adapter.md` G5). 그래서 `{"design": {"materials": []}}`와 `design` 생략은 같은 해시이고, 항등 방향을 명시한 형상 요소와 생략한 것도 같다.
-- **컬렉션 순서**: 항목을 이름 붙이는 키로, **필드마다** 정렬한다(`canonical._ORDER`는 (소유 모델, 필드 이름)이 키다). `DesignSpec`의 재료·부품·인스턴스·결합·액추에이터, `ControlSchedule.entries`, `World.terrain_props`는 `id`; `PartDef.parameters`·`specs`와 `Instance.parameters`는 `name`; `PartDef.snap_points`와 `Shape.components`는 `id`; `AssumptionTable.assumptions`는 `key`; `SnapPoint.accepts`는 태그 값; `AxisExpr.terms`는 `(param, factor)`. 모든 컬렉션 항목은 그 컬렉션 안에서 유일한 키를 가지므로(모델이 검사한다) 순서는 전순서다. ID와 이름은 ASCII 패턴이라 코드 포인트 순과 UTF-16 코드 단위 순이 같다: TS 클라이언트는 `localeCompare`가 아니라 코드 단위 비교(`<`)를 써야 한다(`a_b`와 `a-b`의 순서가 로캘마다 다르다). 컬렉션이 아닌 것의 순서는 의미라서 그대로다: 결합의 `a`(부모)와 `b`(자식), 쿼터니언 성분, 위치 성분.
+- **컬렉션 순서**: 항목을 이름 붙이는 키로, **필드마다** 정렬한다(`canonical._ORDER`는 (소유 모델, 필드 이름)이 키다). `DesignSpec`의 재료·부품·인스턴스·결합·액추에이터, `ControlSchedule.entries`, `World.terrain_props`는 `id`; `PartDef.parameters`·`specs`와 `Instance.parameters`는 `name`; `PartDef.snap_points`와 `Shape.components`는 `id`; `PartDef.curves`(B-03b)는 `name`, `Curve.points`는 `x`(엄격히 증가하므로 전순서이고 보존된다); `AssumptionTable.assumptions`는 `key`; `SnapPoint.accepts`는 태그 값; `AxisExpr.terms`는 `(param, factor)`. 모든 컬렉션 항목은 그 컬렉션 안에서 유일한 키를 가지므로(모델이 검사한다) 순서는 전순서다. ID와 이름은 ASCII 패턴이라 코드 포인트 순과 UTF-16 코드 단위 순이 같다: TS 클라이언트는 `localeCompare`가 아니라 코드 단위 비교(`<`)를 써야 한다(`a_b`와 `a-b`의 순서가 로캘마다 다르다). 컬렉션이 아닌 것의 순서는 의미라서 그대로다: 결합의 `a`(부모)와 `b`(자식), 쿼터니언 성분, 위치 성분.
 - **새 컬렉션은 순서를 정해야 한다**: 등록되지 않은 튜플 필드를 만나면 파일 순서로 해시하지 않고 `CanonicalError`를 던진다. 키가 항목 타입이 아니라 필드에 걸려 있어서 다른 필드가 `tuple[str, ...]`를 등록했다는 이유로 순서가 의미인 목록(경유 ID 목록, 분리 순서)이 조용히 정렬되지 않는다. `Project`에서 닿는 모든 튜플 필드가 `_ORDER`에 있고 `_ORDER`에 튜플이 아닌 필드가 없는지 `test_hash_every_collection_of_the_project_model_has_a_canonical_order`가 모델을 훑어 검사하고(뒤 잎의 새 튜플 필드에서 실패한다), 순서가 의미인 필드는 등록하지 않는 새 규칙(파일 버전)으로 다룬다. 시각이 UTC로 쓸 수 없는 범위(0001-01-01 +09:00 등)면 `CanonicalError`다.
 - **숫자**: ECMAScript `Number.prototype.toString`(RFC 8785 3.2.2.3)과 같은 글자다. 같은 double로 읽히는 가장 짧은 자릿수, `1.0`은 `1`, `-0.0`은 `0`, 1e-6 미만과 1e21 이상은 지수 표기(`1e-7`, `1e+21`). 테스트 벡터는 JavaScript(Bun)의 `String(x)`에서 얻었고 같은 규칙으로 해시하는 TS 클라이언트는 같은 글자를 얻는다. 유한하지 않은 수는 모델이 이미 거부한다.
 - **시각**: `declared_at`은 UTC로 바꿔 `YYYY-MM-DDTHH:MM:SS[.f]Z`로 쓴다(소수부 끝의 0은 뗀다). 같은 순간은 오프셋이 달라도 같은 해시다.
@@ -214,8 +214,8 @@ uv run python packages/core/scripts/export_schemas.py --check  # 쓰지 않고 �
 
 ## 알려진 확장 (이 PR 범위 밖, 뒤 잎이 더한다)
 
-- 곡선(토크-속도, 추력 곡선): B-03b, B-03c.
-- 단위 `kg/s`(추진제 소모율), `N*s`(충격량): 쓰는 잎이 `Unit`에 더한다.
+- 곡선(토크-속도, 추력 곡선): B-03b에서 들어왔다. `Curve`, `PartDef.curves`, 모터 `torque_speed`. [`part-motor.md`](part-motor.md). 추력 곡선은 B-03c.
+- 단위 `V`, `A`는 B-03b가 더했다. `kg/s`(추진제 소모율), `N*s`(충격량): 쓰는 잎이 `Unit`에 더한다.
 - 형상 레시피와 파생값의 입력: B-01a에서 들어왔다. `PartDef.shape`, `MassProperties.derivation`. `docs/architecture/part-mass.md`. 같은 레시피에서 시각 glTF와 재질 슬롯: B-01c, `docs/architecture/part-visual.md`.
 - 충돌 프록시: B-01b에서 들어왔다. `CollisionProxy`(기본형 지오메트리, 메운 빈 곳 또는 B-01f의 분해한 빈 곳, 부호 있는 부피 오차). `docs/architecture/collision-proxy.md`.
 - 컴파일 캐시와 부품 추가 절차서: B-01d. `docs/architecture/part-cache.md`, `docs/process/add-part.md`.

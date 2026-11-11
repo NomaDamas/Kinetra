@@ -258,7 +258,9 @@
           ],
           "specs": [],
           "shape": null,
-          "mass_parameter": null
+          "mass_parameter": null,
+          "role": null,
+          "curves": []
         },
         {
           "id": "motor",
@@ -340,7 +342,9 @@
           ],
           "specs": [],
           "shape": null,
-          "mass_parameter": null
+          "mass_parameter": null,
+          "role": null,
+          "curves": []
         },
         {
           "id": "wheel",
@@ -431,7 +435,9 @@
           ],
           "specs": [],
           "shape": null,
-          "mass_parameter": null
+          "mass_parameter": null,
+          "role": null,
+          "curves": []
         }
       ],
       "instances": [

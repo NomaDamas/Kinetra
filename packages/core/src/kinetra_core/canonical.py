@@ -14,7 +14,7 @@ The canonical form of a value (`canonical_json`):
 - Every collection is sorted by the key that names its items. The key is registered per FIELD (`_ORDER`, keyed by
   the owning model and the field name), not per item type: `DesignSpec.materials`, `.parts`, `.instances`,
   `.joints`, `.actuators`, `ControlSchedule.entries` and `World.terrain_props` by `id`; `PartDef.parameters`,
-  `.specs` and `Instance.parameters` by `name`; `PartDef.snap_points` and `Shape.components` by `id`;
+  `.specs` and `Instance.parameters` by `name`; `PartDef.snap_points` and `Shape.components` by `id`; `PartDef.curves` by `name` and `Curve.points` by `x`;
   `AssumptionTable.assumptions` by `key`; `SnapPoint.accepts` tags by value; `AxisExpr.terms` by
   `(param, factor)`. Every item of a collection has such a key, so the order is total. Names and ids match
   ASCII patterns, so code point order is UTF-16 code unit order and a client compares with `<`, not a locale
@@ -66,6 +66,7 @@ from typing import Any
 from pydantic import BaseModel
 
 from .assumption import AssumptionTable
+from .curve import Curve
 from .designspec import ControlSchedule, DesignSpec, Instance
 from .geometry import AxisExpr
 from .material import Material
@@ -102,6 +103,8 @@ _ORDER: dict[tuple[type, str], Callable[[Any], Any]] = {
     (PartDef, "parameters"): _name,
     (PartDef, "specs"): _name,
     (PartDef, "snap_points"): _id,
+    (PartDef, "curves"): _name,
+    (Curve, "points"): lambda p: p.x,
     (Shape, "components"): _id,
     (Instance, "parameters"): _name,
     (AssumptionTable, "assumptions"): lambda m: m.key,

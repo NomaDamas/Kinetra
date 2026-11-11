@@ -46,6 +46,10 @@
 
 그러니: (1) 가능하면 돌린 요소를 맞닿게 놓지 않고 축에 나란한 요소끼리 맞닿게 쪼갠다. (2) 돌린 요소를 붙여야 하면 위치를 파이썬으로 계산해 `repr(float)`을 쓰거나, 멀어지는 쪽으로 올리고 그 틈을 PR 본문에 적는다. (3) 내림한 값을 쓰지 않는다. 거절 메시지(`... overlap`)가 나오면 먼저 이 반올림을 의심한다.
 
+### 역할과 곡선 (B-03b)
+
+구동 부품은 `role`(`motor` 등, `PartRole`)과 `curves`(이름 붙은 `Curve`)를 가진다. 역할이 `motor`이면 곡선 `torque_speed`(`rad/s` → `N*m`)와 사양 `rated_voltage`(V)가 없을 때 `PartDef`가 거절한다. 곡선은 점마다가 아니라 **곡선 하나에 배지와 출처 하나**라서 데이터시트에서 옮긴 점만 한 곡선에 넣는다. 예와 한계: `docs/architecture/part-motor.md`, `packages/engine/src/kinetra_engine/parts/library/motor-37d-12v-50-1.json`. 데이터시트 질량이 있는 부품은 `mass_parameter`(B-02c)로 선언한다.
+
 ### 스냅 포인트
 
 `id`, `kind`, `accepts`(호환 태그, B-04b가 맞춘다), `position`(m, 파라미터를 따를 수 있다), `orientation`(쿼터니언 `{x,y,z,w}`, 단위 노름), 배지와 출처. 위치가 가리키는 파라미터는 길이(m)여야 한다. 스냅 포인트 id는 파라미터 이름과 같을 수 없다.

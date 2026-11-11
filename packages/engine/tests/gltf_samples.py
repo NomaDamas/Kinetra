@@ -172,6 +172,8 @@ SAMPLES = {
     "payload-declared-mass": (lambda: library_part("payload"), NO_MATERIAL),
     "ballast-weight-declared-mass": (lambda: library_part("ballast-weight"), NO_MATERIAL),
     "payload-mount-al6061": (lambda: library_part("payload-mount"), "al6061-t6"),
+    # B-03b: a datasheet motor, mass declared by the datasheet weight, drawn without a material.
+    "motor-37d-12v-50-1-declared-mass": (lambda: library_part("motor-37d-12v-50-1"), NO_MATERIAL),
 }
 
 

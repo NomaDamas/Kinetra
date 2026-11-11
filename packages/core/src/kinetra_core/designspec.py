@@ -23,8 +23,9 @@ rule, reported as a compile error (X-01a, X-01d).
 Stable ids (G3): instance, joint, actuator and schedule entry ids match `ID_PATTERN` and are unique inside their own collection.
 An actuator's id is also its control channel id (client-adapter I5): manual control (`control`) and schedule
 entries name the actuator. Two actuators with the same kind, instance and joint are rejected (a second channel
-to the same drive is ambiguous). Which part may carry which actuator kind (a motor on a motor part, a thruster
-on a thruster part) is checked once B-03b and B-03c give parts that role.
+to the same drive is ambiguous). Which part may carry which actuator kind: a motor actuator on a part whose role is
+`motor`, a thruster on `thruster` (`PartRole`, B-03b). A part with another role is rejected; a part with no role is
+accepted (a bare body, and the compiler reports that it has no curve).
 
 Not here: MJCF (X-01); joint axis, DoF rules per kind, snap compatibility (B-04a, B-04b); springs and dampers
 (B-03e, X-01b); torque-speed and thrust curves and what a command of 1 means in N*m or N (B-03b, B-03c, X-01b,
@@ -42,7 +43,7 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from .conventions import ID_PATTERN, Unit
 from .material import Material
-from .partdef import Name, PartDef, Quaternion
+from .partdef import Name, PartDef, PartRole, Quaternion
 from .provenance import Number, Provenance, Quantity
 from .refs import Ref, RefError, RefKind
 
@@ -170,6 +171,11 @@ class Joint(BaseModel):
 class ActuatorKind(StrEnum):
     MOTOR = "motor"
     THRUSTER = "thruster"
+
+
+_ACTUATOR_ROLE = {ActuatorKind.MOTOR: PartRole.MOTOR, ActuatorKind.THRUSTER: PartRole.THRUSTER}
+"""The part role an actuator kind drives. A part with a different role is rejected; a part without a role is a bare body
+and is accepted here (the compiler cannot find a curve on it and reports that, X-01d)."""
 
 
 class Actuator(BaseModel):
@@ -312,6 +318,16 @@ class DesignSpec(BaseModel):
             where = f"actuators[{n}] ({act.id!r})"
             if act.instance not in instances:
                 raise RefError(f"{where}: unknown instance {act.instance!r}", Ref(kind=RefKind.INSTANCE, id=act.instance), Ref(kind=RefKind.ACTUATOR, id=act.id))
+            role = parts[instances[act.instance].part].role
+            want_role = _ACTUATOR_ROLE[act.kind]
+            if role is not None and role is not want_role:
+                raise RefError(
+                    f"{where}: a {act.kind.value} drives a part with role {want_role.value!r}, "
+                    f"but instance {act.instance!r} is part {instances[act.instance].part!r} with role {role.value!r}",
+                    Ref(kind=RefKind.INSTANCE, id=act.instance),
+                    Ref(kind=RefKind.PART, id=instances[act.instance].part),
+                    Ref(kind=RefKind.ACTUATOR, id=act.id),
+                )
             if act.joint is not None:
                 joint = joints.get(act.joint)
                 if joint is None:
