@@ -1,0 +1,28 @@
+{
+  "name": "kinetra-spike-webxr",
+  "private": true,
+  "version": "0.0.0",
+  "description": "A0-02b: pmndrs/xr grab-and-move of one part in the IWER WebXR emulator, driven by Playwright. Standalone pnpm project, not part of the root workspace.",
+  "type": "module",
+  "packageManager": "pnpm@10.18.3",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "build": "node build.mjs",
+    "xr": "node run-xr.mjs",
+    "test": "node --test --test-name-pattern=. tests/offline.test.mjs",
+    "test:browser": "node --test \"tests/browser-*.test.mjs\""
+  },
+  "dependencies": {
+    "@pmndrs/handle": "6.6.32",
+    "@pmndrs/pointer-events": "6.6.32",
+    "@pmndrs/xr": "6.6.32",
+    "iwer": "2.8.0",
+    "three": "0.187.0"
+  },
+  "devDependencies": {
+    "esbuild": "0.28.2",
+    "playwright-core": "1.65.0"
+  }
+}
