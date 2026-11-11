@@ -4,7 +4,161 @@
 
 ## 에셋 (asset)
 
-(없음)
+### asset-acg-NightSkyHDRI008-1k
+
+- 표기: Night Sky HDRI 008, ambientCG.com. CC0 1.0.
+- 저작자: ambientCG
+- 라이선스: CC0-1.0
+- 원본: https://ambientcg.com/a/NightSkyHDRI008 https://ambientcg.com/get?file=NightSkyHDRI008_1K.zip https://docs.ambientcg.com/license/
+- 경로: `assets/scene/moon/NightSkyHDRI008_1K_HDR.exr`
+- 용도: HDRI(하늘과 조명): 달 평지의 검은 하늘과 별. 대기가 없는 하늘의 시각 대용이며 달에서 본 실제 별자리가 아니다. W-02c 가 쓴다
+- 변경 내역: 없음(ambientCG 의 NightSkyHDRI008_1K.zip(sha256:68cdee7909e0b22a8495da003190e2c6dbc63f68a6b6cbce343733be2b2818d9)에서 NightSkyHDRI008_1K_HDR.exr 한 파일만 꺼내 수정 없이 사용, 나머지 zip 내용은 저장소에 넣지 않음). ambientCG 는 에셋을 CC0 1.0 으로 배포한다(https://docs.ambientcg.com/license/)
+- 받은 날짜: 2026-11-11
+- 원본 해시: `sha256:6ef147a43547248fca1954e82dea8744e35477c49c7dd768a0362bc224f856e2`
+- 확인자: omp
+
+### asset-ph-grass_ground-diff-1k
+
+- 표기: grass_ground (albedo(색)), Charlotte Baglioni, Poly Haven. CC0 1.0.
+- 저작자: Charlotte Baglioni
+- 라이선스: CC0-1.0
+- 원본: https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/grass_ground/grass_ground_diff_1k.jpg https://polyhaven.com/a/grass_ground https://api.polyhaven.com/files/grass_ground https://polyhaven.com/license
+- 경로: `assets/scene/earth/grass_ground_diff_1k.jpg`
+- 용도: 시각(지면 재질): 지구 평지 지면 albedo(색). 풀과 흙. W-02a 가 쓴다
+- 변경 내역: 없음(Poly Haven 1k jpg 를 수정 없이 사용). Poly Haven 은 모든 에셋을 CC0 로 배포한다(https://polyhaven.com/license). 받은 파일의 md5 는 Poly Haven files API 가 알려 준 값과 일치
+- 받은 날짜: 2026-11-11
+- 원본 해시: `sha256:a79cc5ed65af0f80261b39a383b64a8c5272c5144d724deb43dbc29f0e4cd19b`
+- 확인자: omp
+
+### asset-ph-grass_ground-nor_gl-1k
+
+- 표기: grass_ground (법선(OpenGL, Y+)), Charlotte Baglioni, Poly Haven. CC0 1.0.
+- 저작자: Charlotte Baglioni
+- 라이선스: CC0-1.0
+- 원본: https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/grass_ground/grass_ground_nor_gl_1k.jpg https://polyhaven.com/a/grass_ground https://api.polyhaven.com/files/grass_ground https://polyhaven.com/license
+- 경로: `assets/scene/earth/grass_ground_nor_gl_1k.jpg`
+- 용도: 시각(지면 재질): 지구 평지 지면 법선(OpenGL, Y+). 풀과 흙. W-02a 가 쓴다
+- 변경 내역: 없음(Poly Haven 1k jpg 를 수정 없이 사용). Poly Haven 은 모든 에셋을 CC0 로 배포한다(https://polyhaven.com/license). 받은 파일의 md5 는 Poly Haven files API 가 알려 준 값과 일치
+- 받은 날짜: 2026-11-11
+- 원본 해시: `sha256:7000e2ccd479bb7b66dcdf4faef7b47554324566886314ca620cbf03e274e826`
+- 확인자: omp
+
+### asset-ph-grass_ground-rough-1k
+
+- 표기: grass_ground (거칠기), Charlotte Baglioni, Poly Haven. CC0 1.0.
+- 저작자: Charlotte Baglioni
+- 라이선스: CC0-1.0
+- 원본: https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/grass_ground/grass_ground_rough_1k.jpg https://polyhaven.com/a/grass_ground https://api.polyhaven.com/files/grass_ground https://polyhaven.com/license
+- 경로: `assets/scene/earth/grass_ground_rough_1k.jpg`
+- 용도: 시각(지면 재질): 지구 평지 지면 거칠기. 풀과 흙. W-02a 가 쓴다
+- 변경 내역: 없음(Poly Haven 1k jpg 를 수정 없이 사용). Poly Haven 은 모든 에셋을 CC0 로 배포한다(https://polyhaven.com/license). 받은 파일의 md5 는 Poly Haven files API 가 알려 준 값과 일치
+- 받은 날짜: 2026-11-11
+- 원본 해시: `sha256:111341f948b7e073edf7ac6add8777e1bf10df8959400df3863243e89bbc8c08`
+- 확인자: omp
+
+### asset-ph-kloofendal_43d_clear_puresky-1k
+
+- 표기: kloofendal_43d_clear_puresky, Greg Zaal, Poly Haven. CC0 1.0.
+- 저작자: Greg Zaal
+- 라이선스: CC0-1.0
+- 원본: https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/1k/kloofendal_43d_clear_puresky_1k.hdr https://polyhaven.com/a/kloofendal_43d_clear_puresky https://api.polyhaven.com/files/kloofendal_43d_clear_puresky https://polyhaven.com/license
+- 경로: `assets/scene/earth/kloofendal_43d_clear_puresky_1k.hdr`
+- 용도: HDRI(하늘과 조명): 지구 평지. 맑은 낮 하늘(지평선 아래 지면을 뺀 pure sky). W-02a 가 쓴다
+- 변경 내역: 없음(Poly Haven 1k hdr 를 수정 없이 사용). Poly Haven 은 모든 에셋을 CC0 로 배포한다(https://polyhaven.com/license). 받은 파일의 md5 는 Poly Haven files API 가 알려 준 값과 일치
+- 받은 날짜: 2026-11-11
+- 원본 해시: `sha256:de7ba9d0b070470dbb70d0144294c8708068df353537b26ab59c394707e84377`
+- 확인자: omp
+
+### asset-ph-moon_01-diff-1k
+
+- 표기: moon_01 (albedo(색)), Greg Zaal; Rico Cilliers; Jenelle van Heerden (촬영), Dario Barresi (가공), Poly Haven. CC0 1.0.
+- 저작자: Greg Zaal; Rico Cilliers; Jenelle van Heerden (촬영), Dario Barresi (가공)
+- 라이선스: CC0-1.0
+- 원본: https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/moon_01/moon_01_diff_1k.jpg https://polyhaven.com/a/moon_01 https://api.polyhaven.com/files/moon_01 https://polyhaven.com/license
+- 경로: `assets/scene/moon/moon_01_diff_1k.jpg`
+- 용도: 시각(지면 재질): 달 평지 지면 albedo(색). 달 레골리스(Spaceport Rostock 실험실 촬영). W-02c 가 쓴다
+- 변경 내역: 없음(Poly Haven 1k jpg 를 수정 없이 사용). Poly Haven 은 모든 에셋을 CC0 로 배포한다(https://polyhaven.com/license). 받은 파일의 md5 는 Poly Haven files API 가 알려 준 값과 일치
+- 받은 날짜: 2026-11-11
+- 원본 해시: `sha256:ebe99635c8babc05620fb532eba8459b9168b5b09f9704e320938c231900ed62`
+- 확인자: omp
+
+### asset-ph-moon_01-nor_gl-1k
+
+- 표기: moon_01 (법선(OpenGL, Y+)), Greg Zaal; Rico Cilliers; Jenelle van Heerden (촬영), Dario Barresi (가공), Poly Haven. CC0 1.0.
+- 저작자: Greg Zaal; Rico Cilliers; Jenelle van Heerden (촬영), Dario Barresi (가공)
+- 라이선스: CC0-1.0
+- 원본: https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/moon_01/moon_01_nor_gl_1k.jpg https://polyhaven.com/a/moon_01 https://api.polyhaven.com/files/moon_01 https://polyhaven.com/license
+- 경로: `assets/scene/moon/moon_01_nor_gl_1k.jpg`
+- 용도: 시각(지면 재질): 달 평지 지면 법선(OpenGL, Y+). 달 레골리스(Spaceport Rostock 실험실 촬영). W-02c 가 쓴다
+- 변경 내역: 없음(Poly Haven 1k jpg 를 수정 없이 사용). Poly Haven 은 모든 에셋을 CC0 로 배포한다(https://polyhaven.com/license). 받은 파일의 md5 는 Poly Haven files API 가 알려 준 값과 일치
+- 받은 날짜: 2026-11-11
+- 원본 해시: `sha256:cd0f110d7a5079fa2ae3739f91cad85480b5314fd2b414998a08f1f444c6a110`
+- 확인자: omp
+
+### asset-ph-moon_01-rough-1k
+
+- 표기: moon_01 (거칠기), Greg Zaal; Rico Cilliers; Jenelle van Heerden (촬영), Dario Barresi (가공), Poly Haven. CC0 1.0.
+- 저작자: Greg Zaal; Rico Cilliers; Jenelle van Heerden (촬영), Dario Barresi (가공)
+- 라이선스: CC0-1.0
+- 원본: https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/moon_01/moon_01_rough_1k.jpg https://polyhaven.com/a/moon_01 https://api.polyhaven.com/files/moon_01 https://polyhaven.com/license
+- 경로: `assets/scene/moon/moon_01_rough_1k.jpg`
+- 용도: 시각(지면 재질): 달 평지 지면 거칠기. 달 레골리스(Spaceport Rostock 실험실 촬영). W-02c 가 쓴다
+- 변경 내역: 없음(Poly Haven 1k jpg 를 수정 없이 사용). Poly Haven 은 모든 에셋을 CC0 로 배포한다(https://polyhaven.com/license). 받은 파일의 md5 는 Poly Haven files API 가 알려 준 값과 일치
+- 받은 날짜: 2026-11-11
+- 원본 해시: `sha256:483d2254502ddfd8a2310ec623418477e8a55e4d150717aef049ab3588506ba6`
+- 확인자: omp
+
+### asset-ph-syferfontein_1d_clear_puresky-1k
+
+- 표기: syferfontein_1d_clear_puresky, Greg Zaal (원본), Jarod Guest (하늘 편집), Poly Haven. CC0 1.0.
+- 저작자: Greg Zaal (원본), Jarod Guest (하늘 편집)
+- 라이선스: CC0-1.0
+- 원본: https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/1k/syferfontein_1d_clear_puresky_1k.hdr https://polyhaven.com/a/syferfontein_1d_clear_puresky https://api.polyhaven.com/files/syferfontein_1d_clear_puresky https://polyhaven.com/license
+- 경로: `assets/scene/mars/syferfontein_1d_clear_puresky_1k.hdr`
+- 용도: HDRI(하늘과 조명): 화성 평지. 지평선 근처 낮은 해의 맑은 하늘. 화성의 하늘 색을 재현하지 않는 시각 대용이다. W-02b 가 쓴다
+- 변경 내역: 없음(Poly Haven 1k hdr 를 수정 없이 사용). Poly Haven 은 모든 에셋을 CC0 로 배포한다(https://polyhaven.com/license). 받은 파일의 md5 는 Poly Haven files API 가 알려 준 값과 일치
+- 받은 날짜: 2026-11-11
+- 원본 해시: `sha256:d598873ab0acb88af990c54fd7a1634564d9ead0d5fd36f7a40da38c90632de2`
+- 확인자: omp
+
+### asset-ph-terrain_red_01-diff-1k
+
+- 표기: terrain_red_01 (albedo(색)), Rob Tuytel, Poly Haven. CC0 1.0.
+- 저작자: Rob Tuytel
+- 라이선스: CC0-1.0
+- 원본: https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/terrain_red_01/terrain_red_01_diff_1k.jpg https://polyhaven.com/a/terrain_red_01 https://api.polyhaven.com/files/terrain_red_01 https://polyhaven.com/license
+- 경로: `assets/scene/mars/terrain_red_01_diff_1k.jpg`
+- 용도: 시각(지면 재질): 화성 평지 지면 albedo(색). 붉은 흙과 자갈. W-02b 가 쓴다. 화성 표면의 측정 사진이 아니라 지구의 붉은 지면 사진이다(시각 대용)
+- 변경 내역: 없음(Poly Haven 1k jpg 를 수정 없이 사용). Poly Haven 은 모든 에셋을 CC0 로 배포한다(https://polyhaven.com/license). 받은 파일의 md5 는 Poly Haven files API 가 알려 준 값과 일치
+- 받은 날짜: 2026-11-11
+- 원본 해시: `sha256:f3f3fa6ebcddce22ece1fc8a343b469cbf67faefafac453ba53bce1fa28fc4b0`
+- 확인자: omp
+
+### asset-ph-terrain_red_01-nor_gl-1k
+
+- 표기: terrain_red_01 (법선(OpenGL, Y+)), Rob Tuytel, Poly Haven. CC0 1.0.
+- 저작자: Rob Tuytel
+- 라이선스: CC0-1.0
+- 원본: https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/terrain_red_01/terrain_red_01_nor_gl_1k.jpg https://polyhaven.com/a/terrain_red_01 https://api.polyhaven.com/files/terrain_red_01 https://polyhaven.com/license
+- 경로: `assets/scene/mars/terrain_red_01_nor_gl_1k.jpg`
+- 용도: 시각(지면 재질): 화성 평지 지면 법선(OpenGL, Y+). 붉은 흙과 자갈. W-02b 가 쓴다. 화성 표면의 측정 사진이 아니라 지구의 붉은 지면 사진이다(시각 대용)
+- 변경 내역: 없음(Poly Haven 1k jpg 를 수정 없이 사용). Poly Haven 은 모든 에셋을 CC0 로 배포한다(https://polyhaven.com/license). 받은 파일의 md5 는 Poly Haven files API 가 알려 준 값과 일치
+- 받은 날짜: 2026-11-11
+- 원본 해시: `sha256:97b57469b655d40c2e4c39b7c5f8deb9cbaee2af16c0ee19cd85f435f48f1da6`
+- 확인자: omp
+
+### asset-ph-terrain_red_01-rough-1k
+
+- 표기: terrain_red_01 (거칠기), Rob Tuytel, Poly Haven. CC0 1.0.
+- 저작자: Rob Tuytel
+- 라이선스: CC0-1.0
+- 원본: https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/terrain_red_01/terrain_red_01_rough_1k.jpg https://polyhaven.com/a/terrain_red_01 https://api.polyhaven.com/files/terrain_red_01 https://polyhaven.com/license
+- 경로: `assets/scene/mars/terrain_red_01_rough_1k.jpg`
+- 용도: 시각(지면 재질): 화성 평지 지면 거칠기. 붉은 흙과 자갈. W-02b 가 쓴다. 화성 표면의 측정 사진이 아니라 지구의 붉은 지면 사진이다(시각 대용)
+- 변경 내역: 없음(Poly Haven 1k jpg 를 수정 없이 사용). Poly Haven 은 모든 에셋을 CC0 로 배포한다(https://polyhaven.com/license). 받은 파일의 md5 는 Poly Haven files API 가 알려 준 값과 일치
+- 받은 날짜: 2026-11-11
+- 원본 해시: `sha256:d28d3cb3cb1cff885eff978ebab96e2e887aad9c82294978554bc09ae00b2832`
+- 확인자: omp
 
 ## 의존성 (dependency)
 
