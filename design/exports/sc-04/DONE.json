@@ -1,0 +1,49 @@
+{
+  "run_id": "sc04-20261111T145935",
+  "status": "done",
+  "brief": "design/briefs/sc-04.md",
+  "artifact_url": "https://claude.ai/artifact/UAAPKfqpPDS2cK7bSUsM43",
+  "artboards": [
+    "S1",
+    "S2",
+    "S3",
+    "S4",
+    "S5",
+    "S6",
+    "S7",
+    "S8",
+    "S9",
+    "S10",
+    "S11",
+    "S12",
+    "S13"
+  ],
+  "self_check": {
+    "s1_controls": 8,
+    "primary_in_card": 0,
+    "new_color_tokens": 0,
+    "min_contrast": 5.95,
+    "targets_under_24px": 0,
+    "max_reach_level": 2
+  },
+  "files": {
+    "NOTES.md": "29e78e6a2c7b9ea118ac48a41daae04fb666f3310bbbe5bf0bda27a391367025",
+    "index.html": "1d2c6174093f582952d65b371bc7e707f30437007de56ce9c5174e0830da6c88",
+    "source/Main.dc.html": "da04fb9ea765ce7e3368cebadce65de9588a6749a399a9fafc43763c5144a207",
+    "source/S10.dc.html": "db5de7b568621a762a4e90dfdfeb49ff7c8203176f7d3e6173e4cef425f6f68d",
+    "source/S11.dc.html": "4bed950619e246c749a848a7b56ced3702eae484230b7c49c3c8149b60df25ca",
+    "source/S12.dc.html": "6289fc1cf6f635440f3956b5a3b4d9e6291ef27fdb4d9b18d2699d36400e0df3",
+    "source/S13.dc.html": "dbb520c71393e154da75bedc495f75e861c90c234fe18e517791cc9981461f67",
+    "source/S2.dc.html": "fae7ab904a62ad9d471e343f813e0a08eb6b744f3c3b15e8abb2b2b771549ea1",
+    "source/S3.dc.html": "1e90ed1202bde9e0b35ff97e8ba8c7074fa71e8744d01a4757cb746d7e8261a0",
+    "source/S4.dc.html": "4911e9e9a3441487772c1ebb0c636b09786579c78dadff18d41931e4e81d772c",
+    "source/S5.dc.html": "ebbc3901ba0eb462d034324eeac3c1be9313ac94d4a56c18114dc86dd1e8238c",
+    "source/S6.dc.html": "1ad70d65853fe9dbf95a5baa4ebcd468707281249b688119c1c9b7fc154b09b5",
+    "source/S7.dc.html": "140a8d832f7f691931f62f714565cab35a4bb1b94d984004dc0c9c286ce143c3",
+    "source/S8.dc.html": "bf75958bc170410aa362ca6e7b52a54133313b94de3dee4fa127a33d87f12fda",
+    "source/S9.dc.html": "0e868d8960e297460ef2290cc581ec29354714ceb92d005739633e830f1fbacc",
+    "source/canvas.json": "868ff27c78e6f0bdd57bb3d71a67d4737e1ba277bcbb23875e0b1063832e9233",
+    "source/tools/build_export.py": "784f295c5ad3d7acc9629f5a17632f1ee15c2a68ff827feb277ac7042703984b"
+  },
+  "written_at": "2026-11-11T06:30:05Z"
+}

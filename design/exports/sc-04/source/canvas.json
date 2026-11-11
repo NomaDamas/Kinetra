@@ -1,0 +1,43 @@
+{
+  "v": 3,
+  "createdOnFiles": {"v": 1, "at": "2026-11-11T15:00:00Z"},
+  "title": "SC-04 판정 카드·가정표·민감도",
+  "launch": {"view": "canvas"},
+  "pages": [],
+  "boards": {
+    "Main.dc.html": {"x": 0, "y": 0, "w": 600, "h": 840, "title": "S1 기본 · FEASIBLE_FOUND, 머리 모두 접힘"},
+    "S2.dc.html": {"x": 680, "y": 0, "w": 600, "h": 840, "title": "S2 가정표 펼침"},
+    "S3.dc.html": {"x": 1360, "y": 0, "w": 600, "h": 840, "title": "S3 민감도 순위 펼침"},
+    "S4.dc.html": {"x": 2040, "y": 0, "w": 600, "h": 840, "title": "S4 INFEASIBLE_NECESSARY_CONDITION"},
+    "S5.dc.html": {"x": 2720, "y": 0, "w": 600, "h": 840, "title": "S5 NOT_FOUND_IN_BUDGET · 약한 증거"},
+    "S6.dc.html": {"x": 0, "y": 1260, "w": 600, "h": 840, "title": "S6 모델 밖"},
+    "S7.dc.html": {"x": 680, "y": 1260, "w": 600, "h": 840, "title": "S7 진행 중"},
+    "S8.dc.html": {"x": 1360, "y": 1260, "w": 600, "h": 840, "title": "S8 무효"},
+    "S9.dc.html": {"x": 2040, "y": 1260, "w": 952, "h": 840, "title": "S9 오류와 엔진 오프라인"},
+    "S10.dc.html": {"x": 0, "y": 2520, "w": 600, "h": 840, "title": "S10 가정 편집"},
+    "S11.dc.html": {"x": 680, "y": 2520, "w": 600, "h": 840, "title": "S11 실행 정보와 소요 시간 예산"},
+    "S12.dc.html": {"x": 1360, "y": 2520, "w": 952, "h": 840, "title": "S12 실패 리포트 ↔ 타임라인"},
+    "S13.dc.html": {"x": 2392, "y": 2520, "w": 600, "h": 840, "title": "S13 키보드 · 주석 아트보드"}
+  },
+  "order": [
+    "Main.dc.html",
+    "S2.dc.html",
+    "S3.dc.html",
+    "S4.dc.html",
+    "S5.dc.html",
+    "S6.dc.html",
+    "S7.dc.html",
+    "S8.dc.html",
+    "S9.dc.html",
+    "S10.dc.html",
+    "S11.dc.html",
+    "S12.dc.html",
+    "S13.dc.html"
+  ],
+  "notes": {
+    "row-1": {"x": 0, "y": -300, "text": "SC-04 판정 카드 · 기본, 펼침, 판정 4종", "kind": "title1", "maxW": 3320},
+    "row-2": {"x": 0, "y": 960, "text": "모델 밖, 진행 중, 무효, 오류", "kind": "title1", "maxW": 2992},
+    "row-3": {"x": 0, "y": 2220, "text": "가정 편집, 실행 정보, 실패 리포트, 키보드", "kind": "title1", "maxW": 2992}
+  },
+  "designSystems": []
+}
