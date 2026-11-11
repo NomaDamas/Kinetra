@@ -744,13 +744,15 @@
           "id": "drive-motor-l",
           "kind": "motor",
           "instance": "motor-l",
-          "joint": "drive-l"
+          "joint": "drive-l",
+          "supply": null
         },
         {
           "id": "drive-motor-r",
           "kind": "motor",
           "instance": "motor-r",
-          "joint": "drive-r"
+          "joint": "drive-r",
+          "supply": null
         }
       ],
       "schedule": {

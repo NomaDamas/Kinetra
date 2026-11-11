@@ -47,7 +47,7 @@
 | `Instance` | `id`, `part`, `parameters`, `material`(없을 수 있음), `pose` | `parameters`는 부품의 파라미터 이름만, 단위가 `ParamDef`와 같고 `[min, max]` 안이며, 같은 이름은 한 번만. 적지 않은 파라미터는 `PartDef` 기본값. 각 값은 `Quantity`(배지·출처 필수) |
 | `Pose` | `position`(`WorldPosition`, m, 월드), `orientation`(`{x,y,z,w}` 단위 쿼터니언), `badge`, `source` | 부품 좌표계의 월드 자세. 인스턴스 위치의 저장된 권위는 이 자세다. 배지·출처 하나가 자세 전체를 덮는다(스냅 포인트와 같다) |
 | `Joint` | `id`, `kind`(`fixed` `hinge` `slider`), `a`, `b`(`SnapRef`: 인스턴스 ID + 스냅 포인트 ID), `limits`, `break_threshold` | 양끝은 서로 다른 인스턴스의 존재하는 스냅 포인트이고 한 스냅 포인트는 결합 하나에만 쓰인다. `a`가 부모, `b`가 자식이다. 결합 좌표의 0은 저장된 자세다(힌지 0 rad, 슬라이더 0 m). `limits`는 `Quantity` 두 개(`lower < upper`, 같은 단위): 힌지는 rad, 슬라이더는 m, 고정 결합에는 없다. `break_threshold`는 `Quantity`(N, > 0)이고 없으면 파단하지 않는다 |
-| `Actuator` | `id`, `kind`(`motor` `thruster`), `instance`, `joint` | 모터는 구동할 결합이 있어야 하고(고정 결합이 아니고, `instance`가 그 결합의 한쪽 끝), 추력기에는 결합이 없다. 같은 `kind`·`instance`·`joint`의 액추에이터 둘은 거부한다. 액추에이터 ID가 곧 조종 채널 ID다(`client-adapter.md` I5) |
+| `Actuator` | `id`, `kind`(`motor` `thruster`), `instance`, `joint`, `supply` | 모터는 구동할 결합이 있어야 하고(고정 결합이 아니고, `instance`가 그 결합의 한쪽 끝), 추력기에는 결합이 없다. 같은 `kind`·`instance`·`joint`의 액추에이터 둘은 거부한다. 액추에이터 ID가 곧 조종 채널 ID다(`client-adapter.md` I5). `supply`(B-03d, 없어도 됨)는 에너지나 추진제를 꺼내 쓰는 인스턴스다: 모터는 역할 `battery`인 부품의 인스턴스, 추력기는 `tank`인 부품의 인스턴스여야 하고(역할 없는 부품은 거부), 없는 인스턴스도 거부한다. `None`이면 계량하지 않는다(바닥나지 않는다). 한 공급원에 액추에이터 여럿이 달릴 수 있고 같은 잔량을 함께 쓴다 |
 | `ControlSchedule` | `entries`: `ActuateEntry`(`id`, `actuator`, `start`, `end`[s], `command`, `badge`, `source`) | `0 <= start < end`. `command`는 완전 구동 대비 비율이고 모터는 [-1, 1], 추력기는 [0, 1]. `id`는 스케줄 안에서 유일하다(명령이 항목을 위치가 아니라 ID로 가리킨다, C-02a). 한 액추에이터의 구간은 겹치지 않는다(맞닿는 것은 된다). 배지·출처 하나가 항목을 덮는다 |
 
 - `command`가 1일 때 몇 N·m, 몇 N인지는 부품의 사양(곡선)에서 온다(B-03b, B-03c, X-01b, X-01c). `DesignSpec`은 비율만 안다.
@@ -109,7 +109,7 @@ uv run python packages/core/scripts/export_schemas.py --check  # 쓰지 않고 �
 
 | 명령 | 효과 | 역명령 |
 |---|---|---|
-| `add_instance` / `remove_instance` | 부품 인스턴스 추가·삭제. 삭제는 그 인스턴스의 결합, 그 인스턴스나 그 결합에 달린 액추에이터, 그 액추에이터의 스케줄 항목을 같은 명령에서 함께 지운다 | `remove_instance` / 묶음(`add_instance`, 지운 결합·액추에이터·항목을 원래 위치에 다시 추가) |
+| `add_instance` / `remove_instance` | 부품 인스턴스 추가·삭제. 삭제는 그 인스턴스의 결합, 그 인스턴스나 그 결합에 달렸거나 그 인스턴스를 `supply`로 쓰는 액추에이터, 그 액추에이터의 스케줄 항목을 같은 명령에서 함께 지운다 | `remove_instance` / 묶음(`add_instance`, 지운 결합·액추에이터·항목을 원래 위치에 다시 추가) |
 | `move_instance` | 인스턴스의 저장된 월드 자세를 바꾼다. 결합한 짝은 따라오지 않는다(자세가 권위). 짝이 따라오게 하려면 묶음으로 보낸다 | 이전 자세의 `move_instance` |
 | `set_parameter` / `clear_parameter` | 인스턴스의 파라미터 값을 정하거나(단위·범위는 `PartDef`의 것) 지워 기본값으로 되돌린다 | 이전 값의 `set_parameter`, 또는 `clear_parameter`(지운 자리에 `index`) |
 | `set_instance_material` | 인스턴스에 프로젝트의 재료를 지정(`None`이면 없음) | 이전 재료 |
@@ -217,6 +217,7 @@ uv run python packages/core/scripts/export_schemas.py --check  # 쓰지 않고 �
 - 곡선(토크-속도, 추력 곡선): B-03b에서 들어왔다. `Curve`, `PartDef.curves`, 모터 `torque_speed`. [`part-motor.md`](part-motor.md). 추력 곡선은 B-03c에서 들어왔다(`thrust`).
 - 단위 `V`, `A`는 B-03b가 더했다. `kg/s`(추진제 소모율), `N*s`(충격량)는 B-03c가 더했다(`KG_PER_S`, `N_S`).
 - 추력기 부품: B-03c. `PartRole.THRUSTER`의 요건(`thrust` 곡선, `rated_thrust`·`propellant_flow` 사양, `nozzle` 스냅 포인트), 엔진 쪽 계산과 카탈로그 범위. `docs/architecture/parts-thruster.md`.
+- 배터리와 탱크(`PartRole.BATTERY`, `TANK`), 잔량(`kinetra_engine.parts.Supply`)과 `Actuator.supply`: B-03d. `docs/architecture/parts-battery-tank.md`.
 - 형상 레시피와 파생값의 입력: B-01a에서 들어왔다. `PartDef.shape`, `MassProperties.derivation`. `docs/architecture/part-mass.md`. 같은 레시피에서 시각 glTF와 재질 슬롯: B-01c, `docs/architecture/part-visual.md`.
 - 충돌 프록시: B-01b에서 들어왔다. `CollisionProxy`(기본형 지오메트리, 메운 빈 곳 또는 B-01f의 분해한 빈 곳, 부호 있는 부피 오차). `docs/architecture/collision-proxy.md`.
 - 컴파일 캐시와 부품 추가 절차서: B-01d. `docs/architecture/part-cache.md`, `docs/process/add-part.md`.
