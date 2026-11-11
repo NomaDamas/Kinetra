@@ -83,6 +83,20 @@ uv run python packages/core/scripts/export_schemas.py --check  # 쓰지 않고 �
 - `schemas/examples/<Name>.<설명>.json`은 손으로 쓴 예시다(`DesignSpec.four-wheel-car`, `Material.example`, `PartDef.block-with-hole`(형상 포함), `World.ramp-and-step`, `AssumptionTable.vehicle-mass`, `CommandBatch.move-and-select-planet`). `packages/core/tests/test_schema_export.py`가 예시마다 JSON Schema(`jsonschema`)와 모델 둘 다 통과하는지 보고, 잘못된 입력(출처 없음, 모르는 배지, 틀린 단위, 범위 밖, 배열 쿼터니언, 모르는 필드)을 둘 다 거부하는지 본다. 예시의 수치는 실부품 데이터가 아니다. 대부분 `사용자 선언`이고 일부는 `기본값`(`Material.example`과 4륜차 예시의 재료 마찰)과 `추정`(가정표의 퍼짐)이며 출처 문구에 "예시"라고 적었다.
 - 새 모델을 더한 PR은 `export_schemas.py`를 돌려 `schemas/`를 같이 커밋한다. 안 하면 CI의 `--check`와 `test_committed_schemas_match_the_models`가 실패한다.
 
+## 예시 프로젝트 (C-01 에픽 통합, #60)
+
+`schemas/examples/Project.<설명>.json` 셋이 에픽의 통합 시연이다. `Project`는 `design`과 `assumptions`(둘 다 생략하면 빈 값)와 필수인 `world`를 가진다.
+
+| 파일 | 내용 |
+|---|---|
+| `Project.four-wheel-car.json` | 4륜차(`DesignSpec.four-wheel-car`의 조립된 차) + 지구 + 경사로 하나 + 차량 질량 가정. 모터 둘이 힌지 둘을 구동한다 |
+| `Project.rocket-car-skeleton.json` | 섀시 + 바퀴 넷(액슬 힌지 넷) + 로켓 부품 하나(고정 결합) + 달. 추력기 액추에이터 하나(`kind: thruster`, 결합 없음, C-01b)와 그 스케줄 항목(`command` = 1, 0~2 s). 로켓의 `rated_thrust` 사양(`SpecDef`)은 선언값이다. 뼈대라서 성능을 주장하지 않는다 |
+| `Project.empty.json` | `{"world": {"planet": "earth"}}`. 부품·결합·가정이 없는 프로젝트 |
+
+- 검증: `uv run python packages/core/scripts/validate_examples.py`. `schemas/examples/*.json`을 모두 JSON Schema(`jsonschema`)와 Pydantic 모델 둘 다로 검사하고, `Project`는 `world.planet`이 `data/bodies`에 있는지와 지형 소품의 재료가 프로젝트의 것인지도 `check_world_references`로 본다. 필수 예시 셋이 하나라도 없거나 로켓 자동차에 스케줄된 추력기가 없으면 실패한다. CI는 `engine` 워크플로에서 돈다. `packages/core/tests/test_examples.py`가 같은 스크립트와 예시의 내용(조립 일치, 되돌리기 가능한 명령 적용, 배지)을 시험한다.
+- TS: `schemas/test/examples.test.ts`가 세 예시를 `@kinetra/schemas`의 `Project` 타입으로 읽는다(`pnpm build`가 타입을, `pnpm test`가 값을 본다). 타입은 모양만 안다. 유효성 판정은 위 스크립트가 한다.
+- 예시의 수치는 모두 `사용자 선언`(`kinetra-docs`)이거나 `기본값`/`추정`이고 출처 문구에 "illustrative"가 있다. 실부품 수치도 성능 주장도 아니다.
+
 ## `Project`와 `Command` (C-02a)
 
 코드는 `kinetra_core/project.py`, `commands.py`, 테스트는 `packages/core/tests/test_commands.py`. 모든 편집은 `Command`다(계획 5.3절, `client-adapter.md` I1). 입력 수단(마우스, 에이전트, 음성, XR, MCP)마다 다른 Command는 없다.

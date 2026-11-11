@@ -1,0 +1,635 @@
+{
+  "design": {
+    "materials": [
+      {
+        "id": "example-material",
+        "name": "example-material",
+        "density": {
+          "value": 1000.0,
+          "unit": "kg/m^3",
+          "badge": "declared",
+          "source": {
+            "ref": "Kinetra schema example: illustrative value, not a measured part",
+            "declared_by": "kinetra-docs",
+            "declared_at": "2026-11-11T00:00:00Z"
+          }
+        },
+        "yield_strength": {
+          "value": 10000000.0,
+          "unit": "Pa",
+          "badge": "declared",
+          "source": {
+            "ref": "Kinetra schema example: illustrative value, not a measured part",
+            "declared_by": "kinetra-docs",
+            "declared_at": "2026-11-11T00:00:00Z"
+          }
+        },
+        "elastic_modulus": {
+          "value": 1000000000.0,
+          "unit": "Pa",
+          "badge": "declared",
+          "source": {
+            "ref": "Kinetra schema example: illustrative value, not a measured part",
+            "declared_by": "kinetra-docs",
+            "declared_at": "2026-11-11T00:00:00Z"
+          }
+        },
+        "friction": {
+          "value": 0.5,
+          "unit": "1",
+          "badge": "default",
+          "source": {
+            "ref": "Kinetra schema example: illustrative default"
+          }
+        }
+      }
+    ],
+    "parts": [
+      {
+        "id": "chassis",
+        "name": "Chassis",
+        "parameters": [
+          {
+            "name": "length",
+            "unit": "m",
+            "default": {
+              "value": 0.4,
+              "unit": "m",
+              "badge": "declared",
+              "source": {
+                "ref": "Kinetra schema example: illustrative value, not a measured part",
+                "declared_by": "kinetra-docs",
+                "declared_at": "2026-11-11T00:00:00Z"
+              }
+            },
+            "min": {
+              "value": 0.2,
+              "unit": "m",
+              "badge": "declared",
+              "source": {
+                "ref": "Kinetra schema example: illustrative value, not a measured part",
+                "declared_by": "kinetra-docs",
+                "declared_at": "2026-11-11T00:00:00Z"
+              }
+            },
+            "max": {
+              "value": 0.8,
+              "unit": "m",
+              "badge": "declared",
+              "source": {
+                "ref": "Kinetra schema example: illustrative value, not a measured part",
+                "declared_by": "kinetra-docs",
+                "declared_at": "2026-11-11T00:00:00Z"
+              }
+            }
+          }
+        ],
+        "snap_points": [
+          {
+            "id": "axle-fl",
+            "kind": "axle_mount",
+            "accepts": [
+              "shaft"
+            ],
+            "position": {
+              "x": {
+                "offset": 0.1,
+                "terms": []
+              },
+              "y": {
+                "offset": 0.1,
+                "terms": []
+              },
+              "z": {
+                "offset": 0.0,
+                "terms": []
+              }
+            },
+            "orientation": {
+              "x": 0.0,
+              "y": 0.0,
+              "z": 0.0,
+              "w": 1.0
+            },
+            "badge": "declared",
+            "source": {
+              "ref": "Kinetra schema example: illustrative value, not a measured part",
+              "declared_by": "kinetra-docs",
+              "declared_at": "2026-11-11T00:00:00Z"
+            }
+          },
+          {
+            "id": "axle-fr",
+            "kind": "axle_mount",
+            "accepts": [
+              "shaft"
+            ],
+            "position": {
+              "x": {
+                "offset": 0.1,
+                "terms": []
+              },
+              "y": {
+                "offset": -0.1,
+                "terms": []
+              },
+              "z": {
+                "offset": 0.0,
+                "terms": []
+              }
+            },
+            "orientation": {
+              "x": 0.0,
+              "y": 0.0,
+              "z": 0.0,
+              "w": 1.0
+            },
+            "badge": "declared",
+            "source": {
+              "ref": "Kinetra schema example: illustrative value, not a measured part",
+              "declared_by": "kinetra-docs",
+              "declared_at": "2026-11-11T00:00:00Z"
+            }
+          },
+          {
+            "id": "axle-rl",
+            "kind": "axle_mount",
+            "accepts": [
+              "shaft"
+            ],
+            "position": {
+              "x": {
+                "offset": -0.1,
+                "terms": []
+              },
+              "y": {
+                "offset": 0.1,
+                "terms": []
+              },
+              "z": {
+                "offset": 0.0,
+                "terms": []
+              }
+            },
+            "orientation": {
+              "x": 0.0,
+              "y": 0.0,
+              "z": 0.0,
+              "w": 1.0
+            },
+            "badge": "declared",
+            "source": {
+              "ref": "Kinetra schema example: illustrative value, not a measured part",
+              "declared_by": "kinetra-docs",
+              "declared_at": "2026-11-11T00:00:00Z"
+            }
+          },
+          {
+            "id": "axle-rr",
+            "kind": "axle_mount",
+            "accepts": [
+              "shaft"
+            ],
+            "position": {
+              "x": {
+                "offset": -0.1,
+                "terms": []
+              },
+              "y": {
+                "offset": -0.1,
+                "terms": []
+              },
+              "z": {
+                "offset": 0.0,
+                "terms": []
+              }
+            },
+            "orientation": {
+              "x": 0.0,
+              "y": 0.0,
+              "z": 0.0,
+              "w": 1.0
+            },
+            "badge": "declared",
+            "source": {
+              "ref": "Kinetra schema example: illustrative value, not a measured part",
+              "declared_by": "kinetra-docs",
+              "declared_at": "2026-11-11T00:00:00Z"
+            }
+          },
+          {
+            "id": "thruster-mount",
+            "kind": "thruster_mount",
+            "accepts": [
+              "thruster_mount"
+            ],
+            "position": {
+              "x": {
+                "offset": -0.2,
+                "terms": []
+              },
+              "y": {
+                "offset": 0.0,
+                "terms": []
+              },
+              "z": {
+                "offset": 0.0,
+                "terms": []
+              }
+            },
+            "orientation": {
+              "x": 0.0,
+              "y": 0.0,
+              "z": 0.0,
+              "w": 1.0
+            },
+            "badge": "declared",
+            "source": {
+              "ref": "Kinetra schema example: illustrative value, not a measured part",
+              "declared_by": "kinetra-docs",
+              "declared_at": "2026-11-11T00:00:00Z"
+            }
+          }
+        ]
+      },
+      {
+        "id": "wheel",
+        "name": "Wheel",
+        "parameters": [
+          {
+            "name": "diameter",
+            "unit": "m",
+            "default": {
+              "value": 0.1,
+              "unit": "m",
+              "badge": "declared",
+              "source": {
+                "ref": "Kinetra schema example: illustrative value, not a measured part",
+                "declared_by": "kinetra-docs",
+                "declared_at": "2026-11-11T00:00:00Z"
+              }
+            },
+            "min": {
+              "value": 0.05,
+              "unit": "m",
+              "badge": "declared",
+              "source": {
+                "ref": "Kinetra schema example: illustrative value, not a measured part",
+                "declared_by": "kinetra-docs",
+                "declared_at": "2026-11-11T00:00:00Z"
+              }
+            },
+            "max": {
+              "value": 0.2,
+              "unit": "m",
+              "badge": "declared",
+              "source": {
+                "ref": "Kinetra schema example: illustrative value, not a measured part",
+                "declared_by": "kinetra-docs",
+                "declared_at": "2026-11-11T00:00:00Z"
+              }
+            }
+          }
+        ],
+        "snap_points": [
+          {
+            "id": "hub",
+            "kind": "shaft",
+            "accepts": [
+              "shaft",
+              "axle_mount"
+            ],
+            "position": {
+              "x": {
+                "offset": 0.0,
+                "terms": []
+              },
+              "y": {
+                "offset": 0.0,
+                "terms": []
+              },
+              "z": {
+                "offset": 0.0,
+                "terms": []
+              }
+            },
+            "orientation": {
+              "x": 0.0,
+              "y": 0.0,
+              "z": 0.0,
+              "w": 1.0
+            },
+            "badge": "declared",
+            "source": {
+              "ref": "Kinetra schema example: illustrative value, not a measured part",
+              "declared_by": "kinetra-docs",
+              "declared_at": "2026-11-11T00:00:00Z"
+            }
+          }
+        ]
+      },
+      {
+        "id": "rocket",
+        "name": "Rocket",
+        "snap_points": [
+          {
+            "id": "mount",
+            "kind": "thruster_mount",
+            "accepts": [
+              "thruster_mount"
+            ],
+            "position": {
+              "x": {
+                "offset": 0.0,
+                "terms": []
+              },
+              "y": {
+                "offset": 0.0,
+                "terms": []
+              },
+              "z": {
+                "offset": 0.0,
+                "terms": []
+              }
+            },
+            "orientation": {
+              "x": 0.0,
+              "y": 0.0,
+              "z": 0.0,
+              "w": 1.0
+            },
+            "badge": "declared",
+            "source": {
+              "ref": "Kinetra schema example: illustrative value, not a measured part",
+              "declared_by": "kinetra-docs",
+              "declared_at": "2026-11-11T00:00:00Z"
+            }
+          }
+        ],
+        "specs": [
+          {
+            "name": "rated_thrust",
+            "value": 5.0,
+            "unit": "N",
+            "badge": "declared",
+            "source": {
+              "ref": "Kinetra schema example: illustrative value, not a measured part",
+              "declared_by": "kinetra-docs",
+              "declared_at": "2026-11-11T00:00:00Z"
+            }
+          }
+        ]
+      }
+    ],
+    "instances": [
+      {
+        "id": "chassis-1",
+        "part": "chassis",
+        "material": "example-material",
+        "pose": {
+          "position": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.05
+          },
+          "orientation": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0,
+            "w": 1.0
+          },
+          "badge": "declared",
+          "source": {
+            "ref": "Kinetra schema example: illustrative value, not a measured part",
+            "declared_by": "kinetra-docs",
+            "declared_at": "2026-11-11T00:00:00Z"
+          }
+        }
+      },
+      {
+        "id": "wheel-fl",
+        "part": "wheel",
+        "pose": {
+          "position": {
+            "x": 0.1,
+            "y": 0.1,
+            "z": 0.05
+          },
+          "orientation": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0,
+            "w": 1.0
+          },
+          "badge": "declared",
+          "source": {
+            "ref": "Kinetra schema example: illustrative value, not a measured part",
+            "declared_by": "kinetra-docs",
+            "declared_at": "2026-11-11T00:00:00Z"
+          }
+        }
+      },
+      {
+        "id": "wheel-fr",
+        "part": "wheel",
+        "pose": {
+          "position": {
+            "x": 0.1,
+            "y": -0.1,
+            "z": 0.05
+          },
+          "orientation": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0,
+            "w": 1.0
+          },
+          "badge": "declared",
+          "source": {
+            "ref": "Kinetra schema example: illustrative value, not a measured part",
+            "declared_by": "kinetra-docs",
+            "declared_at": "2026-11-11T00:00:00Z"
+          }
+        }
+      },
+      {
+        "id": "wheel-rl",
+        "part": "wheel",
+        "pose": {
+          "position": {
+            "x": -0.1,
+            "y": 0.1,
+            "z": 0.05
+          },
+          "orientation": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0,
+            "w": 1.0
+          },
+          "badge": "declared",
+          "source": {
+            "ref": "Kinetra schema example: illustrative value, not a measured part",
+            "declared_by": "kinetra-docs",
+            "declared_at": "2026-11-11T00:00:00Z"
+          }
+        }
+      },
+      {
+        "id": "wheel-rr",
+        "part": "wheel",
+        "pose": {
+          "position": {
+            "x": -0.1,
+            "y": -0.1,
+            "z": 0.05
+          },
+          "orientation": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0,
+            "w": 1.0
+          },
+          "badge": "declared",
+          "source": {
+            "ref": "Kinetra schema example: illustrative value, not a measured part",
+            "declared_by": "kinetra-docs",
+            "declared_at": "2026-11-11T00:00:00Z"
+          }
+        }
+      },
+      {
+        "id": "rocket-1",
+        "part": "rocket",
+        "pose": {
+          "position": {
+            "x": -0.2,
+            "y": 0.0,
+            "z": 0.05
+          },
+          "orientation": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0,
+            "w": 1.0
+          },
+          "badge": "declared",
+          "source": {
+            "ref": "Kinetra schema example: illustrative value, not a measured part",
+            "declared_by": "kinetra-docs",
+            "declared_at": "2026-11-11T00:00:00Z"
+          }
+        }
+      }
+    ],
+    "joints": [
+      {
+        "id": "axle-fl",
+        "kind": "hinge",
+        "a": {
+          "instance": "chassis-1",
+          "snap_point": "axle-fl"
+        },
+        "b": {
+          "instance": "wheel-fl",
+          "snap_point": "hub"
+        }
+      },
+      {
+        "id": "axle-fr",
+        "kind": "hinge",
+        "a": {
+          "instance": "chassis-1",
+          "snap_point": "axle-fr"
+        },
+        "b": {
+          "instance": "wheel-fr",
+          "snap_point": "hub"
+        }
+      },
+      {
+        "id": "axle-rl",
+        "kind": "hinge",
+        "a": {
+          "instance": "chassis-1",
+          "snap_point": "axle-rl"
+        },
+        "b": {
+          "instance": "wheel-rl",
+          "snap_point": "hub"
+        }
+      },
+      {
+        "id": "axle-rr",
+        "kind": "hinge",
+        "a": {
+          "instance": "chassis-1",
+          "snap_point": "axle-rr"
+        },
+        "b": {
+          "instance": "wheel-rr",
+          "snap_point": "hub"
+        }
+      },
+      {
+        "id": "weld-rocket",
+        "kind": "fixed",
+        "a": {
+          "instance": "chassis-1",
+          "snap_point": "thruster-mount"
+        },
+        "b": {
+          "instance": "rocket-1",
+          "snap_point": "mount"
+        }
+      }
+    ],
+    "actuators": [
+      {
+        "id": "thrust-1",
+        "kind": "thruster",
+        "instance": "rocket-1"
+      }
+    ],
+    "schedule": {
+      "entries": [
+        {
+          "type": "actuate",
+          "id": "burn-1",
+          "actuator": "thrust-1",
+          "start": 0.0,
+          "end": 2.0,
+          "command": 1.0,
+          "badge": "declared",
+          "source": {
+            "ref": "Kinetra schema example: illustrative value, not a measured part",
+            "declared_by": "kinetra-docs",
+            "declared_at": "2026-11-11T00:00:00Z"
+          }
+        }
+      ]
+    }
+  },
+  "world": {
+    "planet": "moon"
+  },
+  "assumptions": {
+    "assumptions": [
+      {
+        "key": "vehicle_mass",
+        "label": "Vehicle mass",
+        "value": {
+          "value": 2.0,
+          "unit": "kg",
+          "badge": "declared",
+          "source": {
+            "ref": "Kinetra schema example: illustrative value, not a measured part",
+            "declared_by": "kinetra-docs",
+            "declared_at": "2026-11-11T00:00:00Z"
+          }
+        },
+        "confidence": "low"
+      }
+    ]
+  }
+}
