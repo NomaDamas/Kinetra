@@ -15,7 +15,7 @@ from .designspec import (
     ParamValue,
     Pose,
     SnapRef,
-    Vec3,
+    WorldPosition,
 )
 from .material import Density, ElasticModulus, Friction, Material, YieldStrength
 from .partdef import AxisExpr, ParamDef, ParamTerm, PartDef, Position, Quaternion, SnapPoint, SpecDef
@@ -38,7 +38,7 @@ __all__ = [
     "ParamValue",
     "Pose",
     "SnapRef",
-    "Vec3",
+    "WorldPosition",
     "AxisExpr",
     "Density",
     "ElasticModulus",

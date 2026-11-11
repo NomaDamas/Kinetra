@@ -10,15 +10,26 @@ that covers a whole record whose numbers have fixed units by field (an instance 
 a schedule entry's times in s), the way a snap point's pose does in `partdef.py`.
 
 Conventions are `conventions.py`: SI, right-handed +Z up, quaternion `{x, y, z, w}`. A pose is the world pose of
-the instance's part frame.
+the instance's part frame. The pose is the stored authority for where an instance is: a joint does not move
+anything, it says which two snap points belong together. Whether the joined snap points actually coincide at the
+stored poses, and whether a part floats free, is a placement check (C-02c validator, X-01d compile errors), not
+a `DesignSpec` validation. A joint's coordinate is 0 at the saved pose (hinge angle 0 rad, slider offset 0 m);
+`limits` are travel from there.
+
+Joint graph: `a` is the parent side, `b` the child. This model only checks that each end exists and that no snap
+point is used twice. That the joints form a tree (no loop, one connected assembly) is the body-tree builder's
+rule, reported as a compile error (X-01a, X-01d).
 
 Stable ids (G3): instance, joint and actuator ids match `ID_PATTERN` and are unique inside their own collection.
 An actuator's id is also its control channel id (client-adapter I5): manual control (`control`) and schedule
-entries name the actuator.
+entries name the actuator. Two actuators with the same kind, instance and joint are rejected (a second channel
+to the same drive is ambiguous). Which part may carry which actuator kind (a motor on a motor part, a thruster
+on a thruster part) is checked once B-03b and B-03c give parts that role.
 
-Not here: MJCF (X-01); joint axis, DoF rules per kind, spring and snap compatibility (B-04a, B-04b); torque-speed
-and thrust curves and what a command of 1 means in N*m or N (B-03b, B-03c, X-01b, X-01c); release/separation
-schedule entries (X-08); definition hashes and missing definitions (C-03, C-06); `World` and assumptions (C-01c).
+Not here: MJCF (X-01); joint axis, DoF rules per kind, snap compatibility (B-04a, B-04b); springs and dampers
+(B-03e, X-01b); torque-speed and thrust curves and what a command of 1 means in N*m or N (B-03b, B-03c, X-01b,
+X-01c); release/separation schedule entries (X-08); definition hashes and missing definitions (C-03, C-06);
+`World` and assumptions (C-01c).
 """
 
 from __future__ import annotations
@@ -39,7 +50,7 @@ _NonNegative = Annotated[float, Field(strict=True, allow_inf_nan=False, ge=0)]
 _Command = Annotated[float, Field(strict=True, allow_inf_nan=False, ge=-1, le=1)]
 
 
-class Vec3(BaseModel):
+class WorldPosition(BaseModel):
     """A position in metres, world frame."""
 
     model_config = ConfigDict(extra="forbid", frozen=True)
@@ -52,7 +63,7 @@ class Vec3(BaseModel):
 class Pose(Provenance):
     """World pose of an instance's part frame. One badge and source cover the whole pose."""
 
-    position: Vec3
+    position: WorldPosition
     orientation: Quaternion
 
 
@@ -184,7 +195,7 @@ class ActuateEntry(Provenance):
 
     `command` is the fraction of the actuator's full command, in [-1, 1] for a motor (sign is direction) and
     [0, 1] for a thruster. What full command means physically comes from the part (B-03b, B-03c, X-01b, X-01c).
-    One badge and source cover the entry (a user-typed entry is `declared`, a found one `estimate` or `sim`).
+    One badge and source cover the entry.
     """
 
     type: Literal["actuate"]
@@ -289,6 +300,16 @@ class DesignSpec(BaseModel):
                     raise ValueError(f"{where}: joint {act.joint!r} is fixed, nothing to drive")
                 if act.instance not in (joint.a.instance, joint.b.instance):
                     raise ValueError(f"{where}: instance {act.instance!r} is not at either end of joint {act.joint!r}")
+
+        seen_drive: dict[tuple[ActuatorKind, str, str | None], str] = {}
+        for n, act in enumerate(self.actuators):
+            drive = (act.kind, act.instance, act.joint)
+            if drive in seen_drive:
+                raise ValueError(
+                    f"actuators[{n}] ({act.id!r}): same {act.kind.value} on instance {act.instance!r}"
+                    f"{'' if act.joint is None else f' and joint {act.joint!r}'} as actuator {seen_drive[drive]!r}"
+                )
+            seen_drive[drive] = act.id
 
         by_actuator: dict[str, list[ActuateEntry]] = {}
         for n, entry in enumerate(self.schedule.entries):

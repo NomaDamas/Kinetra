@@ -34,8 +34,11 @@ def snap(id, kind, x=0.0, y=0.0, z=0.0, accepts=()):
     }
 
 
-def pose(x=0.0, y=0.0, z=0.0):
-    return {"position": {"x": x, "y": y, "z": z}, "orientation": IDENTITY, "badge": "declared", "source": SRC}
+def pose(x=0.0, y=0.0, z=0.0, orientation=IDENTITY):
+    return {"position": {"x": x, "y": y, "z": z}, "orientation": orientation, "badge": "declared", "source": SRC}
+
+
+TURN_180_Z = {"x": 0.0, "y": 0.0, "z": 1.0, "w": 0.0}
 
 
 def material(id="steel"):
@@ -54,24 +57,26 @@ def param(name, unit, default, lo, hi):
 
 
 def four_wheel_car():
-    """Chassis, two motors fixed to its rear, four wheels. Rear wheels turn on the motor shafts, front wheels on
-    passive axles. The motors drive the two rear hinges and run for 5 s."""
+    """An assembled car: chassis, two motors fixed to its rear, four wheels, all hubs at z = 0.05 m (the default
+    wheel radius). Rear wheels turn on the motor shafts (the right motor is turned 180 deg about Z so its shaft
+    points to -y), front wheels on passive axles. The motors drive the two rear hinges for 5 s. Every joined
+    pair of snap points coincides in world space (`test_designspec_four_wheel_car_is_assembled`)."""
     parts = [
         {
             "id": "chassis",
             "name": "Chassis",
             "parameters": [param("length", "m", 0.4, 0.2, 0.8)],
             "snap_points": [
-                snap("motor-l", "motor_mount", -0.1, 0.1),
-                snap("motor-r", "motor_mount", -0.1, -0.1),
-                snap("axle-fl", "axle_mount", 0.1, 0.1),
-                snap("axle-fr", "axle_mount", 0.1, -0.1),
+                snap("motor-l", "motor_mount", -0.1, 0.1, accepts=["motor_mount"]),
+                snap("motor-r", "motor_mount", -0.1, -0.1, accepts=["motor_mount"]),
+                snap("axle-fl", "axle_mount", 0.1, 0.1, accepts=["shaft"]),
+                snap("axle-fr", "axle_mount", 0.1, -0.1, accepts=["shaft"]),
             ],
         },
         {
             "id": "motor",
             "name": "Motor",
-            "snap_points": [snap("mount", "motor_mount"), snap("shaft", "shaft", y=0.03)],
+            "snap_points": [snap("mount", "motor_mount", accepts=["motor_mount"]), snap("shaft", "shaft", y=0.03, accepts=["shaft"])],
         },
         {
             "id": "wheel",
@@ -81,10 +86,10 @@ def four_wheel_car():
         },
     ]
     instances = [
-        {"id": "chassis-1", "part": "chassis", "material": "steel", "pose": pose(z=0.1)},
-        {"id": "motor-l", "part": "motor", "pose": pose(-0.1, 0.1, 0.1)},
-        {"id": "motor-r", "part": "motor", "pose": pose(-0.1, -0.1, 0.1)},
-        {"id": "wheel-rl", "part": "wheel", "parameters": [{"name": "diameter", **q(0.12, "m")}], "pose": pose(-0.1, 0.13, 0.06)},
+        {"id": "chassis-1", "part": "chassis", "material": "steel", "pose": pose(z=0.05)},
+        {"id": "motor-l", "part": "motor", "pose": pose(-0.1, 0.1, 0.05)},
+        {"id": "motor-r", "part": "motor", "pose": pose(-0.1, -0.1, 0.05, TURN_180_Z)},
+        {"id": "wheel-rl", "part": "wheel", "parameters": [{"name": "diameter", **q(0.1, "m")}], "pose": pose(-0.1, 0.13, 0.05)},
         {"id": "wheel-rr", "part": "wheel", "pose": pose(-0.1, -0.13, 0.05)},
         {"id": "wheel-fl", "part": "wheel", "pose": pose(0.1, 0.1, 0.05)},
         {"id": "wheel-fr", "part": "wheel", "pose": pose(0.1, -0.1, 0.05)},
@@ -132,6 +137,52 @@ def test_designspec_four_wheel_car_validates():
     assert spec.instances[3].parameters[0].unit is Unit.M
 
 
+def rotate(q, v):
+    """Rotate vector v by unit quaternion q = (x, y, z, w): v + 2w(u x v) + 2 u x (u x v), u = (x, y, z)."""
+    ux, uy, uz, w = q.x, q.y, q.z, q.w
+    vx, vy, vz = v
+    cx, cy, cz = uy * vz - uz * vy, uz * vx - ux * vz, ux * vy - uy * vx
+    dx, dy, dz = uy * cz - uz * cy, uz * cx - ux * cz, ux * cy - uy * cx
+    return (vx + 2 * (w * cx + dx), vy + 2 * (w * cy + dy), vz + 2 * (w * cz + dz))
+
+
+def world_snap_position(spec, ref):
+    inst = next(i for i in spec.instances if i.id == ref.instance)
+    part = next(p for p in spec.parts if p.id == inst.part)
+    snap_pt = next(s for s in part.snap_points if s.id == ref.snap_point)
+    values = {p.name: p.default.value for p in part.parameters} | {p.name: p.value for p in inst.parameters}
+
+    def axis_value(a):
+        return a.offset + sum(t.factor * values[t.param] for t in a.terms)
+
+    local = (axis_value(snap_pt.position.x), axis_value(snap_pt.position.y), axis_value(snap_pt.position.z))
+    r = rotate(inst.pose.orientation, local)
+    p = inst.pose.position
+    return (p.x + r[0], p.y + r[1], p.z + r[2])
+
+
+def snap_of(spec, ref):
+    inst = next(i for i in spec.instances if i.id == ref.instance)
+    part = next(p for p in spec.parts if p.id == inst.part)
+    return next(s for s in part.snap_points if s.id == ref.snap_point)
+
+
+def test_designspec_four_wheel_car_is_assembled():
+    """The fixture is a real car, not a bag of parts: joined snap points coincide in world space and accept each
+    other, wheels sit on the ground plane z = 0 (hub z = radius), and the stored pose is what makes it so."""
+    spec = DesignSpec.model_validate(four_wheel_car())
+    assert len(spec.joints) == 6
+    for joint in spec.joints:
+        pa, pb = world_snap_position(spec, joint.a), world_snap_position(spec, joint.b)
+        assert pa == pytest.approx(pb, abs=1e-9), joint.id
+        sa, sb = snap_of(spec, joint.a), snap_of(spec, joint.b)
+        assert sb.kind in sa.accepts and sa.kind in sb.accepts, joint.id  # B-04b will enforce this rule
+    for inst in spec.instances:
+        assert inst.pose.position.z == pytest.approx(0.05, abs=1e-9), inst.id
+    right_shaft = world_snap_position(spec, next(j for j in spec.joints if j.id == "drive-r").a)
+    assert right_shaft[1] == pytest.approx(-0.13, abs=1e-9)  # the 180 deg turn points the right motor outward
+
+
 def test_designspec_round_trips_through_json_and_hashes():
     spec = DesignSpec.model_validate(four_wheel_car())
     again = DesignSpec.model_validate_json(spec.model_dump_json())
@@ -146,6 +197,9 @@ def test_designspec_empty_is_valid():
 def test_designspec_json_schema_is_produced():
     schema = DesignSpec.model_json_schema()
     assert {"instances", "joints", "actuators", "schedule"} <= set(schema["properties"])
+    defs = schema["$defs"]
+    assert defs["BreakThreshold"]["properties"]["unit"]["const"] == "N"
+    assert defs["ActuateEntry"]["properties"]["type"]["const"] == "actuate"
 
 
 # --- references to snap points and other ids -------------------------------------------------------------
@@ -361,6 +415,27 @@ def test_designspec_rejects_actuator_far_from_its_joint():
     reject(d, "is not at either end of joint 'drive-l'")
 
 
+def test_designspec_rejects_second_actuator_on_the_same_drive():
+    d = four_wheel_car()
+    d["actuators"].append({"id": "drive-motor-l2", "kind": "motor", "instance": "motor-l", "joint": "drive-l"})
+    reject(d, "same motor on instance 'motor-l' and joint 'drive-l' as actuator 'drive-motor-l'")
+    d = four_wheel_car()
+    d["actuators"] += [
+        {"id": "thrust-1", "kind": "thruster", "instance": "chassis-1"},
+        {"id": "thrust-2", "kind": "thruster", "instance": "chassis-1"},
+    ]
+    reject(d, "same thruster on instance 'chassis-1' as actuator 'thrust-1'")
+
+
+def test_designspec_two_thrusters_on_different_instances_are_fine():
+    d = four_wheel_car()
+    d["actuators"] += [
+        {"id": "thrust-1", "kind": "thruster", "instance": "chassis-1"},
+        {"id": "thrust-2", "kind": "thruster", "instance": "motor-l"},
+    ]
+    DesignSpec.model_validate(d)
+
+
 def test_designspec_rejects_motor_on_fixed_joint():
     d = four_wheel_car()
     d["actuators"][0]["joint"] = "weld-ml"
@@ -397,16 +472,14 @@ def test_designspec_rejects_schedule_entry_for_unknown_actuator():
 def test_designspec_rejects_bad_interval(start, end):
     d = four_wheel_car()
     d["schedule"]["entries"] = [entry(start=start, end=end)]
-    with pytest.raises(ValidationError):
-        DesignSpec.model_validate(d)
+    reject(d, "start|end")
 
 
 @pytest.mark.parametrize("command", [1.5, -1.01, float("inf")])
 def test_designspec_rejects_command_outside_unit_range(command):
     d = four_wheel_car()
     d["schedule"]["entries"] = [entry(command=command)]
-    with pytest.raises(ValidationError):
-        DesignSpec.model_validate(d)
+    reject(d, "command")
 
 
 def test_designspec_rejects_negative_thruster_command():
