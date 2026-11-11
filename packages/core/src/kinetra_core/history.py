@@ -48,6 +48,7 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from .commands import Command, CommandRejected, Reason, ReasonCode, apply_command
 from .project import Project
+from .validator import validate_command
 
 
 class Origin(StrEnum):
@@ -94,8 +95,10 @@ class History(BaseModel):
         return self.cursor < len(self.entries)
 
     def execute(self, project: Project, command: Command, origin: Origin) -> EditResult:
-        """Apply `command` from `origin`. Raises `CommandRejected` (nothing changes) when the applier refuses."""
-        applied = apply_command(project, command)
+        """Apply `command` from `origin` through the validator (`validate_command`, C-02c: structure, policy and
+        placement). Raises `CommandRejected` (project and history unchanged) when it refuses. `undo` and `redo` go back
+        to states that were accepted and use `apply_command` only (`project-model.md`, "검증기")."""
+        applied = validate_command(project, command)
         if applied.project == project:
             return EditResult(project=project, history=self, entry=None)
         entry = HistoryEntry(origin=origin, command=command, inverse=applied.inverse)

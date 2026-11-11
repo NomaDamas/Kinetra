@@ -19,7 +19,7 @@ What is refused beyond `apply_command`:
 
 | code | when |
 |---|---|
-| `forbidden` | the payload names a planet constant or a verdict; an assumption keyed like a planet constant; a material definition that uses the id of a catalog material (`load_material_catalog`) but is not that material exactly |
+| `forbidden` | the payload names a planet constant or a verdict; an assumption keyed like a planet constant; a material definition that uses the id of a catalog material (`load_material_catalog`) but is not that material exactly; a material of another id whose `cite` property uses a catalog source with other numbers |
 | `unknown_id` (ref kind `planet`) | `world.planet` is not a planet of `data/bodies` (W-01). Material references of terrain props are checked by `Project` itself |
 | `invalid_snap` | a joint whose two snap points do not accept each other's `kind`, or do not coincide in the world |
 | `overlap` | two instances whose collision shapes interpenetrate, or one that goes below the ground or into a terrain prop |
@@ -78,9 +78,11 @@ from .commands import (
     apply_command,
 )
 from .designspec import Instance
+from .material import Material
 from .material_catalog import load_material_catalog
 from .partdef import PartDef
 from .project import Project
+from .provenance import Badge
 from .refs import Ref, RefError, RefKind
 from .world import PLANET_CONSTANT_NAMES, RampProp
 
@@ -186,6 +188,7 @@ def _check_policy(command: Command) -> None:
             try:
                 entry = catalog.get(material.id)
             except KeyError:
+                _check_own_material(material, catalog)
                 continue
             if material != entry.material:
                 raise _forbidden(
@@ -193,6 +196,34 @@ def _check_policy(command: Command) -> None:
                     "command: use the catalog's definition as it is, or give your own material another id",
                     Ref(kind=RefKind.MATERIAL, id=material.id),
                 )
+
+
+_PROPERTIES = ("density", "yield_strength", "elastic_modulus", "friction")
+
+
+def _check_own_material(material: Material, catalog) -> None:
+    """A material that is not in the catalog is the user's own: its numbers are `declared` (or `cite` of the user's own
+    source). What it cannot do is wear the catalog's citation with other numbers: a `cite` property whose source is one
+    the catalog cites for a property must carry that property's value and unit, or the catalog is being edited under
+    a new id (`forbidden`)."""
+    cited = {}
+    for entry in catalog.entries:
+        for name in _PROPERTIES:
+            q = getattr(entry.material, name)
+            cited.setdefault(q.source.ref, []).append((entry.material.id, name, q.value, q.unit))
+    for name in _PROPERTIES:
+        q = getattr(material, name)
+        if q.badge is not Badge.CITE:
+            continue
+        known = cited.get(q.source.ref)
+        if known and not any((q.value, q.unit) == (v, u) for _, _, v, u in known):
+            owner, field, value, unit = known[0]
+            raise _forbidden(
+                f"material {material.id!r}: {name} cites the source of {owner!r} {field} (a catalog value, "
+                f"{value} {unit.value}) with {q.value} {q.unit.value}. The catalog cannot be changed under another "
+                "id: use the catalog value, or declare your own value (badge declared, your own source)",
+                Ref(kind=RefKind.MATERIAL, id=material.id),
+            )
 
 
 # --- placement ----------------------------------------------------------------------------------------------

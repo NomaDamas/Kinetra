@@ -16,6 +16,8 @@ import pytest
 from kinetra_core import (
     CommandBatch,
     CommandRejected,
+    History,
+    Origin,
     Project,
     ReasonCode,
     Ref,
@@ -320,8 +322,9 @@ def test_validator_the_catalog_cannot_be_changed_by_a_command():
     # the catalog's own definition, unchanged, is fine; so is a material of the user's own with another id
     same = validate_command(make(), cmd(type="add_material_def", material=entry.model_dump(mode="json")))
     assert same.project.design.materials == (entry,)
-    mine = {**altered, "id": "my-aluminium"}
-    assert validate_command(make(), cmd(type="add_material_def", material=mine)).project.design.materials[0].id == "my-aluminium"
+    mine = {**altered, "id": "my-aluminium"}  # the catalog's citation with a doubled number under a new id
+    err = reject(make(), cmd(type="add_material_def", material=mine), ReasonCode.FORBIDDEN, Ref(kind=RefKind.MATERIAL, id="my-aluminium"))
+    assert "density" in err.reasons[0].message
 
 
 def test_validator_a_not_editable_assumption_stays_the_systems():  # editable: false (C-01c / C-02a carry-over)
@@ -400,11 +403,73 @@ def test_validator_a_new_ground_penetration_is_not_masked_by_an_old_pair_overlap
     assert any("below the ground" in r.message for r in err.reasons)
 
 
-def test_validator_undo_is_not_a_placement_check():
-    """Documented rule (project-model.md): the inverse of an accepted edit is applied by `apply_command` only."""
-    from kinetra_core import History, Origin
+def own_material(id="my-aluminium", density=2700.0, badge="declared", source=None):
+    """A material of the user's own (not in the catalog). `source` defaults to the test's own declaration."""
+    src = source or SRC
 
+    def prop(value, unit):
+        return {"value": value, "unit": unit, "badge": badge, "source": src}
+
+    return {"id": id, "name": "Mine", "density": prop(density, "kg/m^3"), "yield_strength": prop(2.4e8, "Pa"), "elastic_modulus": prop(6.9e10, "Pa"), "friction": prop(0.47, "1")}
+
+
+def test_validator_a_new_id_that_copies_a_catalog_citation_with_other_numbers_is_forbidden():
+    entry = load_material_catalog().entries[0].material
+    copied = own_material(badge="cite")
+    for name in ("density", "yield_strength", "elastic_modulus", "friction"):
+        copied[name] = getattr(entry, name).model_dump(mode="json", exclude_none=True)  # the catalog's cited numbers
+    copied["density"]["value"] = 3100.0  # ... with one of them changed, under a new id
+    err = reject(make(), cmd(type="add_material_def", material=copied), ReasonCode.FORBIDDEN, Ref(kind=RefKind.MATERIAL, id="my-aluminium"))
+    assert "density" in err.reasons[0].message and entry.id in err.reasons[0].message
+    # replacing a user's declared material by one that wears the catalog's citation is the same refusal
+    project = validate_command(make(), cmd(type="add_material_def", material=own_material())).project
+    reject(project, cmd(type="replace_material_def", material={**copied}), ReasonCode.FORBIDDEN)
+
+
+def test_validator_a_users_own_material_is_allowed_declared_or_with_its_own_citation_and_the_catalogs_exact_values():
+    entry = load_material_catalog().entries[0].material
+    project = validate_command(make(), cmd(type="add_material_def", material=own_material())).project
+    changed = validate_command(project, cmd(type="replace_material_def", material=own_material(density=2800.0))).project
+    assert changed.design.materials[0].density.value == 2800.0 and changed.design.materials[0].density.badge.value == "declared"
+    mine = {**own_material("my-cite"), "density": {"value": 1234.0, "unit": "kg/m^3", "badge": "cite", "source": {"ref": "My supplier datasheet, rev 3", "locator": "table 2", "url": "https://example.com/datasheet.pdf"}}}
+    assert validate_command(make(), cmd(type="add_material_def", material=mine)).project.design.materials[0].id == "my-cite"
+    exact = own_material("same-numbers", badge="cite")
+    for name in ("density", "yield_strength", "elastic_modulus", "friction"):
+        exact[name] = getattr(entry, name).model_dump(mode="json", exclude_none=True)  # the catalog's own cited numbers
+    assert validate_command(make(), cmd(type="add_material_def", material=exact)).project.design.materials[0].id == "same-numbers"
+
+
+def test_history_execute_goes_through_the_validator_and_leaves_history_unchanged_when_refused():
+    project = stacked_with_prop()
+    history = History()
+    done = history.execute(project, move("base", 3.0, 0.0, 0.6), Origin.MOUSE)
+    assert len(done.history.entries) == 1
+    for bad in (
+        move("base", 3.0, 0.0, 0.4),  # into the step: overlap
+        move("base", 3.0, 0.0, 5.0),  # in the air: floating
+        cmd(type="select_planet", planet="venus"),  # no data
+        cmd(type="add_assumption", assumption={"key": "gravity", "label": "Gravity", "value": q(1.62, "m/s^2"), "confidence": "low", "editable": True}),  # forbidden
+    ):
+        with pytest.raises(CommandRejected):
+            done.history.execute(done.project, bad, Origin.AGENT)
+        assert done.history == done.history and len(done.history.entries) == 1
+    assert done.history.undo(done.project).project == project  # undo is apply_command only
+
+
+def stacked_with_prop():
+    return with_props(step_prop())
+
+
+def test_history_execute_refusal_is_the_same_for_every_origin():
     project = with_props(step_prop())
-    done = validate_command(project, move("base", 3.0, 0.0, 0.6))
-    history = History().execute(project, move("base", 3.0, 0.0, 0.6), Origin.MOUSE).history
-    assert history.undo(done.project).project == project
+    for origin in Origin:
+        with pytest.raises(CommandRejected) as e:
+            History().execute(project, move("base", 3.0, 0.0, 0.4), origin)
+        assert e.value.reasons[0].code is ReasonCode.OVERLAP
+
+
+def test_history_undo_is_not_a_placement_check():
+    """Documented rule (project-model.md): the inverse of an accepted edit is applied by `apply_command` only."""
+    project = with_props(step_prop())
+    done = History().execute(project, move("base", 3.0, 0.0, 0.6), Origin.MOUSE)
+    assert done.history.undo(done.project).project == project
