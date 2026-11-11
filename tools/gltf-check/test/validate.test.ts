@@ -21,6 +21,7 @@ test("every committed part fixture passes the Khronos validator with no errors a
       "reflectance-ior.glb",
       "sensor-mast-user-material.glb",
       "thruster-vacco-48003040-steel.glb",
+      "wheel-pom.glb",
     ],
   );
   for (const r of reports) assert.ok(passes(r), `${r.file}: ${JSON.stringify(r.messages)}`);
