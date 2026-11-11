@@ -27,8 +27,8 @@ to the same drive is ambiguous). Which part may carry which actuator kind: a mot
 `motor`, a thruster on `thruster` (`PartRole`, B-03b). A part with another role is rejected; a part with no role is
 accepted (a bare body, and the compiler reports that it has no curve).
 
-Not here: MJCF (X-01); joint axis, DoF rules per kind, snap compatibility (B-04a, B-04b); springs and dampers
-(B-03e, X-01b); torque-speed and thrust curves and what a command of 1 means in N*m or N (B-03b, B-03c, X-01b,
+Not here: MJCF (X-01); joint axis, DoF rules per kind, snap compatibility (B-04a, B-04b); a joint's own spring and
+damping (X-01b; the spring-damper *part* is B-03e); torque-speed and thrust curves and what a command of 1 means in N*m or N (B-03b, B-03c, X-01b,
 X-01c); release/separation schedule entries (X-08); definition hashes (`canonical.py`, C-03) and missing definitions (C-06);
 `World` and assumptions (C-01c).
 """

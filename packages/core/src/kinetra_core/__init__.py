@@ -93,6 +93,8 @@ from .curve import Curve, CurvePoint, NamedCurve
 from .partdef import (
     MOTOR_CURVE,
     MOTOR_RATED_VOLTAGE,
+    SPRING_DAMPING,
+    SPRING_STIFFNESS,
     THRUSTER_CURVE,
     THRUSTER_NOZZLE,
     THRUSTER_OPENING_RESPONSE,
@@ -158,6 +160,8 @@ __all__ = [
     "COORDINATE_FRAME",
     "MOTOR_CURVE",
     "MOTOR_RATED_VOLTAGE",
+    "SPRING_DAMPING",
+    "SPRING_STIFFNESS",
     "ClientMessage",
     "Hello",
     "MAX_COMMAND_ID_LENGTH",

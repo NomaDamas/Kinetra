@@ -1695,7 +1695,7 @@
       "type": "object"
     },
     "PartRole": {
-      "description": "What a part is for, where the simulation needs to know (B-03b). A part without a role is only a body.\n\nThe actuator on an instance must fit its part's role (`designspec.py`): a motor actuator drives a `motor` part, a\nthruster actuator a `thruster` part. What a role requires of the definition is checked by `PartDef` (the\nrequired curves and specs), so a part that says `motor` always has the numbers a motor needs.",
+      "description": "What a part is for, where the simulation needs to know (B-03b). A part without a role is only a body.\n\nThe actuator on an instance must fit its part's role (`designspec.py`): a motor actuator drives a `motor` part, a\nthruster actuator a `thruster` part. What a role requires of the definition is checked by `PartDef` (the\nrequired curves, specs and parameters), so a part that says `motor` always has the numbers a motor needs and one that says\n`spring_damper` has its stiffness and damping (B-03e).",
       "enum": [
         "motor",
         "thruster",

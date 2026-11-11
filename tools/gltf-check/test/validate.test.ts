@@ -23,6 +23,7 @@ test("every committed part fixture passes the Khronos validator with no errors a
       "reflectance-ior.glb",
       "sensor-mast-user-material.glb",
       "shell-al6061.glb",
+      "spring-damper-lee-lc032b08-declared-mass.glb",
       "tank-al6061.glb",
       "thruster-vacco-48003040-steel.glb",
       "wheel-pom.glb",

@@ -86,7 +86,8 @@ class PartRole(StrEnum):
 
     The actuator on an instance must fit its part's role (`designspec.py`): a motor actuator drives a `motor` part, a
     thruster actuator a `thruster` part. What a role requires of the definition is checked by `PartDef` (the
-    required curves and specs), so a part that says `motor` always has the numbers a motor needs.
+    required curves, specs and parameters), so a part that says `motor` always has the numbers a motor needs and one that says
+    `spring_damper` has its stiffness and damping (B-03e).
     """
 
     MOTOR = "motor"
@@ -101,6 +102,10 @@ MOTOR_CURVE = "torque_speed"
 """Name of a motor's torque-speed curve in `PartDef.curves`: x = shaft speed [rad/s], y = torque [N*m] at full command."""
 MOTOR_RATED_VOLTAGE = "rated_voltage"
 """Name of the spec a motor part must have: the supply voltage [V] the curve is for."""
+SPRING_STIFFNESS = "stiffness"
+"""Name of the parameter a spring-damper part must have: the spring rate [N/m] along its axis."""
+SPRING_DAMPING = "damping"
+"""Name of the parameter a spring-damper part must have: the viscous damping coefficient [N*s/m] along its axis."""
 
 THRUSTER_CURVE = "thrust"
 """Name of a thruster's thrust curve in `PartDef.curves` (B-03c): x = time since the command went on [s], y = thrust [N] at
@@ -176,6 +181,8 @@ class PartDef(BaseModel):
             self._check_mass_parameter(self.mass_parameter, {p.name: p for p in self.parameters})
         if self.role is PartRole.MOTOR:
             self._check_motor()
+        if self.role is PartRole.SPRING_DAMPER:
+            self._check_spring_damper()
         if self.role is PartRole.THRUSTER:
             self._check_thruster()
         if self.role is PartRole.BATTERY:
@@ -262,6 +269,25 @@ class PartDef(BaseModel):
         if spec.unit is not Unit.V or not spec.value > 0.0:
             raise ValueError(f"spec {MOTOR_RATED_VOLTAGE!r} is a positive voltage in 'V', got {spec.value} {spec.unit.value!r}")
 
+    def _check_spring_damper(self) -> None:
+        """A spring-damper part has the two parameters the user tunes: a stiffness [N/m] that stays above zero over the
+        whole range (a zero spring is not a spring) and a damping [N*s/m] that is never negative (negative damping
+        feeds energy into the motion). Zero damping is allowed: an undamped spring is a spring."""
+        by_name = {p.name: p for p in self.parameters}
+        k = by_name.get(SPRING_STIFFNESS)
+        if k is None:
+            raise ValueError(f"a spring-damper part needs the parameter {SPRING_STIFFNESS!r} (N/m)")
+        if k.unit is not Unit.N_PER_M:
+            raise ValueError(f"parameter {SPRING_STIFFNESS!r} is a spring rate in 'N/m', got {k.unit.value!r}")
+        if not k.min.value > 0.0:
+            raise ValueError(f"parameter {SPRING_STIFFNESS!r}: min must be above zero over the whole range, got {k.min.value} N/m")
+        c = by_name.get(SPRING_DAMPING)
+        if c is None:
+            raise ValueError(f"a spring-damper part needs the parameter {SPRING_DAMPING!r} (N*s/m)")
+        if c.unit is not Unit.N_S_PER_M:
+            raise ValueError(f"parameter {SPRING_DAMPING!r} is a damping coefficient in 'N*s/m', got {c.unit.value!r}")
+        if not c.min.value >= 0.0:
+            raise ValueError(f"parameter {SPRING_DAMPING!r}: min must not be negative, got {c.min.value} N*s/m")
     def _check_thruster(self) -> None:
         """A thruster part is a game-level thrust source: a thrust curve, a rated thrust, a propellant flow and a nozzle frame.
 

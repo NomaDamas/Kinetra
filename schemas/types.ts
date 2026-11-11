@@ -596,7 +596,8 @@ export interface PartDef {
  *
  * The actuator on an instance must fit its part's role (`designspec.py`): a motor actuator drives a `motor` part, a
  * thruster actuator a `thruster` part. What a role requires of the definition is checked by `PartDef` (the
- * required curves and specs), so a part that says `motor` always has the numbers a motor needs.
+ * required curves, specs and parameters), so a part that says `motor` always has the numbers a motor needs and one that says
+ * `spring_damper` has its stiffness and damping (B-03e).
  */
 export type PartRole = "motor" | "thruster" | "wheel" | "battery" | "tank" | "spring_damper";
 
