@@ -50,7 +50,7 @@
 | `source/tools/build_export.py` | `tokens.css`를 `project_dir`에서만 읽음 | `project_dir`에 없으면 바로 위 폴더에서 읽음(저장소와 zip에서는 `tokens.css`가 `source/` 밖에 있다). 높이 `assert`는 그대로다 |
 
 - 확인: `python3 source/tools/build_export.py source /tmp/out`의 `index.html`이 승인본과 `cmp` 결과 같다(sha256 `42184fee52a5c2937d28f5568b15bc2f7ab0a6f2853649e53a63206df0021237`, 277,244자). 이전 PR 발견("`min-height`만 다르다")과 일치한다: 고치기 전에 단언만 느슨하게 한 사본의 출력은 세 `min-height`(1160, 980, 900)만 승인본과 달랐다.
-- 보이는 값이 `index.html`에서 달라지지 않았으므로 `preview.png`는 그대로다. `source/`를 Claude Design 캔버스에서 열면 세 아트보드의 고정 높이가 40~60px 줄어 그 안의 내용이 잘릴 수 있다. 내용이 잘리는지는 캔버스에서 열어 확인하지 않았다 [확인 필요]. 내보낸 `index.html`은 `min-height`라서 어느 쪽이든 잘리지 않는다.
+- 보이는 값이 `index.html`에서 달라지지 않았으므로 `preview.png`는 그대로다. `source/`를 Claude Design 캔버스에서 열면 세 아트보드의 고정 높이가 40~60px 줄어 그 안의 내용이 잘릴 수 있다. 내용이 잘리는지는 캔버스에서 열어 확인하지 않았다 [확인 필요]. 후속 이슈 #427(D0-02f). 내보낸 `index.html`은 `min-height`라서 어느 쪽이든 잘리지 않는다.
 - `tools/design/pack_design_system.py`가 `design-system.zip`을 다시 묶는다.
 
 ## 알려진 불일치 (고치지 않고 적는다)
