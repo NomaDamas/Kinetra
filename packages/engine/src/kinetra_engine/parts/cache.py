@@ -51,9 +51,10 @@ def part_key(part: PartDef) -> str:
     return _sha256(f"{_HASH_VERSION}\n{part.model_dump_json()}")
 
 
-def material_key(material: Material) -> str:
-    """SHA-256 (hex) of `material` as a value (density and its badge and source, the rest of the properties, the id)."""
-    return _sha256(f"{_HASH_VERSION}\n{material.model_dump_json()}")
+def material_key(material: Material | None) -> str:
+    """SHA-256 (hex) of `material` as a value (density and its badge and source, the rest of the properties, the id).
+    `None` (a part with a declared mass is compiled without a material) is its own key, different from every material."""
+    return _sha256(f"{_HASH_VERSION}\n{'no-material' if material is None else material.model_dump_json()}")
 
 
 def _snapshot(part: PartDef, parameters: Mapping[str, Quantity] | None) -> dict[str, Quantity]:
@@ -115,10 +116,11 @@ class PartCache:
         return value
 
     def mass_properties(
-        self, part: PartDef, material: Material, parameters: Mapping[str, Quantity] | None = None
+        self, part: PartDef, material: Material | None, parameters: Mapping[str, Quantity] | None = None
     ) -> MassProperties:
         values = _snapshot(part, parameters)
-        key = ("mass", part_key(part), material_key(material), _parameters_hash(values))
+        # A part with a declared mass does not read the material: one entry serves every material (and none).
+        key = ("mass", part_key(part), material_key(None if part.mass_parameter is not None else material), _parameters_hash(values))
         return self._get_or_compute(key, lambda: mass_properties(part, material, values))
 
     def collision_proxy(self, part: PartDef, parameters: Mapping[str, Quantity] | None = None) -> CollisionProxy:
@@ -130,7 +132,7 @@ class PartCache:
     def part_glb(
         self,
         part: PartDef,
-        material: Material,
+        material: Material | None,
         parameters: Mapping[str, Quantity] | None = None,
         pbr: PbrSlots | None = None,
     ) -> bytes:

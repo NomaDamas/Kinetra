@@ -13,9 +13,17 @@
       "$ref": "#/$defs/Provenance"
     },
     "material_id": {
-      "pattern": "^[a-z][a-z0-9_-]{0,63}$",
-      "title": "Material Id",
-      "type": "string"
+      "anyOf": [
+        {
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Material Id"
     },
     "density": {
       "$ref": "#/$defs/Density"
@@ -51,7 +59,6 @@
   },
   "required": [
     "shape",
-    "material_id",
     "density",
     "parameters",
     "components",

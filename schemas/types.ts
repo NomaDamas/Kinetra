@@ -253,7 +253,7 @@ export interface Density {
 export interface Derivation {
   method?: "analytic-primitives";
   shape: Provenance;
-  material_id: string;
+  material_id?: string | null;
   density: Density;
   parameters: ParameterUse[];
   components: ComponentContribution[];
@@ -507,6 +507,7 @@ export interface PartDef {
   snap_points?: SnapPoint[];
   specs?: SpecDef[];
   shape?: Shape | null;
+  mass_parameter?: string | null;
   role?: PartRole | null;
   curves?: NamedCurve[];
 }
