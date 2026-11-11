@@ -27,18 +27,18 @@ from .material import Density
 from .provenance import Badge, Number, Provenance, Quantity
 
 
-class _Sim(Provenance):
+class SimProvenance(Provenance):
     """Provenance fixed to badge `sim`: a derived value cannot claim to be cited or declared."""
 
     badge: Literal[Badge.SIM]
 
 
-class DerivedScalar(_Sim):
+class DerivedScalar(SimProvenance):
     value: Number
     unit: Unit
 
 
-class DerivedVector(_Sim):
+class DerivedVector(SimProvenance):
     """A point in the part's local frame [m]."""
 
     x: Number
@@ -47,7 +47,7 @@ class DerivedVector(_Sim):
     unit: Literal[Unit.M]
 
 
-class DerivedInertia(_Sim):
+class DerivedInertia(SimProvenance):
     """Inertia tensor about the centre of mass, in the part's axes [kg*m^2]."""
 
     ixx: Number
