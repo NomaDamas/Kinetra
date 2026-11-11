@@ -182,3 +182,30 @@ def test_supply_a_part_replacement_that_unmakes_a_battery_is_rejected(supplied):
     with pytest.raises(CommandRejected) as e:
         apply_command(supplied, cmd(type="replace_part_def", part=d))
     assert e.value.reasons[0].code is ReasonCode.INVALID_PROJECT
+
+
+def test_supply_a_motor_or_thruster_on_a_complete_battery_or_tank_part_is_rejected():
+    """The actuator rule of B-03b: a motor drives a `motor` part. A battery and a tank are complete parts here."""
+    d = car_with_supplies()
+    d["actuators"].append({"id": "m-on-cell", "kind": "motor", "instance": "cell-1", "joint": "drive-l"})
+    reject(d, "a motor drives a part with role 'motor', but instance 'cell-1' is part 'cell' with role 'battery'")
+    d = car_with_supplies()
+    d["actuators"][2]["instance"] = "tank-1"
+    reject(d, "a thruster drives a part with role 'thruster', but instance 'tank-1' is part 'tank' with role 'tank'")
+
+
+def test_supply_is_part_of_the_project_hash_and_an_unset_supply_is_not_written(supplied):
+    """C-03: `Actuator.supply` is in the canonical text when set (drawing from another battery is another design) and left
+    out when None (its default is pinned in `test_hash_omitted_defaults_are_pinned`)."""
+    from kinetra_core import project_hash
+    from kinetra_core.canonical import canonical_json
+
+    base = project_hash(supplied)
+    d = supplied.model_dump(mode="json")
+    assert '"supply":"cell-1"' in canonical_json(supplied)
+    d["design"]["instances"].append({**next(i for i in d["design"]["instances"] if i["id"] == "cell-1"), "id": "cell-2"})
+    d["design"]["actuators"][0]["supply"] = "cell-2"
+    assert project_hash(Project.model_validate(d)) != base
+    for a in d["design"]["actuators"]:
+        a["supply"] = None
+    assert '"supply"' not in canonical_json(Project.model_validate(d))
