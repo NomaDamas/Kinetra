@@ -14,8 +14,8 @@ frame is that instance's frame. Its mass, centre of mass and inertia are the sum
 **Tree.** `hinge` and `slider` joints connect bodies. The bodies and these joints must form one tree: a loop, a joint inside
 one rigid body and a second assembly the first is not joined to are `CompileError`s naming the instances and joints. The
 root is the smallest-id body that is no joint's `b` side (the `a` side is the parent by convention); the tree is then walked
-from it, and a joint met from its `b` side is reversed (the axis and the limits change sign: the same line of motion seen from
-the other body). The root is free (6 degrees of freedom); every other body has the one degree of freedom of its joint.
+from it, and a joint met from its `b` side is reversed: the axis changes sign and the coordinate and its limits stay the
+joint's own (`b` turning by q relative to `a` is `a` turning by q about the opposite axis). The root is free (6 degrees of freedom); every other body has the one degree of freedom of its joint.
 
 **Frames.** SI, right-handed, +Z up; quaternions are `(w, x, y, z)` here because MuJoCo orders them so (`collision-proxy.md`,
 mapping table). A body's `pos`/`quat` are relative to its parent body (the root's to the world). A joint's `pos` and `axis` are
@@ -171,8 +171,8 @@ class BodyGeom:
 @dataclass(frozen=True)
 class BodyJoint:
     """The one degree of freedom a body has relative to its parent. `axis` and `pos` are in this body's frame, `range` is
-    the travel limit in the direction of `axis` (rad or m, `None` = unlimited). `reversed`: the body is the joint's `a` side,
-    so the axis and the range are the joint's with the sign flipped."""
+    the joint's travel limit (rad or m, `None` = unlimited), the same coordinate as the project's joint. `reversed`: the body is
+    the joint's `a` side, so `axis` is the joint's with the sign flipped (and the coordinate keeps its meaning and its limits)."""
 
     id: str
     kind: JointKind
@@ -426,10 +426,9 @@ def build_body_tree(project: Project, cache: PartCache | None = None, tolerance:
             axis_world = mv(rot(snap_world(joint.a.instance, joint.a.snap_point)[1]), joint.unit_axis)  # the joint is never fixed here
             sign = -1.0 if rev else 1.0
             axis = mtv(rb, (sign * axis_world[0], sign * axis_world[1], sign * axis_world[2]))
-            limits = None
-            if joint.limits is not None:
-                lo, hi = joint.limits.lower.value, joint.limits.upper.value
-                limits = (-hi, -lo) if rev else (lo, hi)
+            # Reversed (this body is the joint's `a` side): `b` moving by q about/along u relative to `a` is `a` moving by -q,
+            # i.e. by q about/along -u. So the axis flips and the coordinate, hence its limits, stays the joint's own.
+            limits = None if joint.limits is None else (joint.limits.lower.value, joint.limits.upper.value)
             bjoint = BodyJoint(joint.id, joint.kind, mtv(rb, vsub(ap, tb)), axis, limits, rev)
         bodies.append(Body(g, ids, parent, bjoint, pos, quat, mass, com, inertia, tuple(geoms)))  # type: ignore[arg-type]
 

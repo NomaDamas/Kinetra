@@ -15,7 +15,8 @@ Mapping (`docs/architecture/collision-proxy.md`, "MuJoCo 매핑"; the values do 
 The body's mass, centre of mass and inertia come from `MassProperties` as an explicit `<inertial pos mass fullinertia>`; the
 geoms carry no density and `inertiafromgeom="false"` makes MuJoCo refuse a body without that element, so no body takes its mass
 from a collision proxy (which has filled voids in it). `fullinertia` is `Ixx Iyy Izz Ixy Ixz Iyz`, the matrix entries about the
-centre of mass in the body frame, the same signs as `MassProperties`. Angles are radians. The root has a `freejoint`; every
+centre of mass in the body frame, the same signs as `MassProperties`. Angles are radians. The root has a `freejoint` named
+`ROOT_JOINT_PREFIX + <body id>`; every
 other body has the one `hinge` or `slider` joint of its tree joint, `pos`/`axis` in the body frame, `range` the limits (the
 coordinate is 0 at the saved pose, which is also the model's reference pose). Numbers are written with `repr`, so they read
 back as the same doubles; bodies, joints and geoms are in tree order. No `<option>`: gravity, time step, integrator and contact
@@ -29,6 +30,10 @@ from xml.sax.saxutils import quoteattr
 from kinetra_core import JointKind
 
 from .bodytree import Body, BodyGeom, BodyTree
+
+ROOT_JOINT_PREFIX = "__kinetra_root_"
+"""The root's free joint is named `__kinetra_root_<body id>`. A project id cannot start with `_` (`ID_PATTERN`), so this name
+never collides with a joint of the project."""
 
 
 def _n(values) -> str:
@@ -49,7 +54,7 @@ def _body(tree: BodyTree, b: Body, depth: int) -> list[str]:
     ixx, iyy, izz, ixy, ixz, iyz = b.inertia
     lines.append(f"{pad}  <inertial pos={quoteattr(_n(b.com))} mass={quoteattr(_n([b.mass]))} fullinertia={quoteattr(_n([ixx, iyy, izz, ixy, ixz, iyz]))}/>")
     if b.joint is None:
-        lines.append(f"{pad}  <freejoint {_attr('name', 'free-' + b.id)}/>")
+        lines.append(f"{pad}  <freejoint {_attr('name', ROOT_JOINT_PREFIX + b.id)}/>")
     else:
         j = b.joint
         kind = "hinge" if j.kind is JointKind.HINGE else "slide"

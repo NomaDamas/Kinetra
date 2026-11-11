@@ -189,11 +189,63 @@ def test_body_tree_a_joint_met_from_its_b_side_is_reversed_with_its_limits():
     assert tree.body("c").joint.reversed and not tree.body("b").joint.reversed
     model = mj(tree)
     data = mujoco.MjData(model)
-    mujoco.mj_forward(model, data)
     j2 = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_JOINT, "j2")
-    assert data.xaxis[j2] == pytest.approx([-1.0, 0.0, 0.0], abs=1e-12)  # -axis: the same line seen from the other body
-    assert list(model.jnt_range[j2]) == [-0.75, 0.25]  # the sign of the coordinate and of the limits flip together
     assert model.jnt_type[j2] == mujoco.mjtJoint.mjJNT_SLIDE
+    assert list(model.jnt_range[j2]) == [-0.25, 0.75]  # the joint's own coordinate and limits: only the axis flips
+    mujoco.mj_forward(model, data)
+    assert data.xaxis[j2] == pytest.approx([-1.0, 0.0, 0.0], abs=1e-12)
+    # world motion: the project's coordinate q moves b by q along +x relative to c, so c moves by -q relative to b (fixed here)
+    for q_ in (-0.25, 0.0, 0.5, 0.75):
+        data.qpos[:] = model.qpos0
+        data.qpos[model.jnt_qposadr[j2]] = q_
+        mujoco.mj_forward(model, data)
+        b, c = body_row(model, "b"), body_row(model, "c")
+        assert data.xpos[b][0] - data.xpos[c][0] == pytest.approx(-1.0 + q_, abs=1e-12)  # b - c along the axis: rest + q
+
+
+def hinge_pair(reverse):
+    """c and b, a hinge with `a` = c, `b` = b, axis +z of c's snap, limits [-0.5, 1.0]. `reverse`: b is also the `b` side of a
+    hinge `h0` from `a0` (the smallest id), so the root is `a0`, the tree reaches b through `h0` and meets `h` from its `b` side."""
+    parts = [part("blk", [box("b", 0.1, 0.1, 0.1)])]
+    instances = [instance("c", "blk", (0, 0, 0)), instance("b", "blk", (1, 0, 0))]
+    joints = [joint("h", "hinge", ("c", "s1"), ("b", "s1"), axis=(0, 0, 1), limits=(-0.5, 1.0))]
+    if reverse:
+        instances.append(instance("a0", "blk", (1, 1, 0)))
+        joints.append(joint("h0", "hinge", ("a0", "s1"), ("b", "s2"), axis=(1, 0, 0)))
+    return build_body_tree(project(parts, instances, joints))
+
+
+def test_body_tree_a_hinge_met_from_either_side_gives_the_same_relative_motion_over_the_same_range():
+    forward, backward = hinge_pair(False), hinge_pair(True)
+    assert not forward.body("b").joint.reversed
+    assert backward.root.id == "a0" and backward.body("c").joint.reversed
+    for tree in (forward, backward):
+        model = mj(tree)
+        data = mujoco.MjData(model)
+        h = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_JOINT, "h")
+        assert list(model.jnt_range[h]) == [-0.5, 1.0]
+        for q_ in (-0.5, 0.0, 0.3, 1.0):
+            data.qpos[:] = model.qpos0
+            data.qpos[model.jnt_qposadr[h]] = q_
+            mujoco.mj_forward(model, data)
+            rc = data.xmat[body_row(model, "c")].reshape(3, 3)
+            rb = data.xmat[body_row(model, "b")].reshape(3, 3)
+            rel = rc.T @ rb  # b relative to c: Joint.displacement(q), a right-handed turn by q about +z
+            hand = np.array([[math.cos(q_), -math.sin(q_), 0], [math.sin(q_), math.cos(q_), 0], [0, 0, 1]])
+            assert rel == pytest.approx(hand, abs=1e-12)
+            # b's origin turns about the hinge point (c's snap s1, c's origin) by q
+            p = rc.T @ (data.xpos[body_row(model, "b")] - data.xpos[body_row(model, "c")])
+            assert p == pytest.approx([math.cos(q_), math.sin(q_), 0.0], abs=1e-12)
+
+
+def test_body_tree_root_free_joint_name_cannot_collide_with_a_project_joint():
+    parts = [part("blk", [box("b", 0.1, 0.1, 0.1)])]
+    instances = [instance("a", "blk", (0, 0, 0)), instance("b", "blk", (1, 0, 0))]
+    joints = [joint("free-a", "hinge", ("a", "s1"), ("b", "s1"))]  # a legal joint id, the name the root once had
+    model = mj(build_body_tree(project(parts, instances, joints)))
+    names = [mujoco.mj_id2name(model, mujoco.mjtObj.mjOBJ_JOINT, k) for k in range(model.njnt)]
+    assert names == ["__kinetra_root_a", "free-a"]
+    assert model.jnt_type[0] == mujoco.mjtJoint.mjJNT_FREE
 
 
 # --- MuJoCo geom mapping: half extents, radius and half length, w x y z ----------------------------------------------------
