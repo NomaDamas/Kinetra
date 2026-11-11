@@ -834,7 +834,6 @@ export interface ReplacePartDef {
 }
 
 /**
-<<<<<<< HEAD
  * Ask the core to do something to the history. `undo` and `redo` take back and redo the document's last
  * entry, whoever made it (one linear history in S1; per-user undo is N-04).
  */
@@ -857,7 +856,9 @@ export interface Resumed {
   epoch: string;
   after_revision: number;
   revision: number;
-=======
+}
+
+/**
  * How a tube's ring of boxes sits against the real tube. `wall_closed`: every ray from the axis enters the wall once
  * and leaves once, so there is no radial slit (the model rejects `False`). `inner_deviation` [m] is the largest radial
  * distance the proxy's bore wall is from the real bore (towards the wall); `outer_deviation` [m] the largest the
@@ -868,7 +869,6 @@ export interface RingReport {
   wall_closed: boolean;
   inner_deviation: number;
   outer_deviation: number;
->>>>>>> origin/main
 }
 
 /** Put the project on another planet, by id. The planet's constants are not part of any command. */
