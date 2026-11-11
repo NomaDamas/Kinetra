@@ -48,7 +48,7 @@
 
 ### 역할과 곡선 (B-03b)
 
-구동 부품은 `role`(`motor` 등, `PartRole`)과 `curves`(이름 붙은 `Curve`)를 가진다. 역할이 `motor`이면 곡선 `torque_speed`(`rad/s` → `N*m`)와 사양 `rated_voltage`(V)가 없을 때 `PartDef`가 거절한다. 곡선은 점마다가 아니라 **곡선 하나에 배지와 출처 하나**라서 데이터시트에서 옮긴 점만 한 곡선에 넣는다. 예와 한계: `docs/architecture/part-motor.md`, `packages/engine/src/kinetra_engine/parts/library/motor-37d-12v-50-1.json`. 데이터시트 질량이 있는 부품은 `mass_parameter`(B-02c)로 선언한다.
+구동 부품은 `role`(`motor` 등, `PartRole`)과 `curves`(이름 붙은 `Curve`)를 가진다. 역할이 `motor`이면 곡선 `torque_speed`(`rad/s` → `N*m`)와 사양 `rated_voltage`(V)가 없을 때 `PartDef`가 거절한다. 곡선은 점마다가 아니라 **곡선 하나에 배지와 출처 하나**라서 데이터시트에서 옮긴 점만 한 곡선에 넣는다. 예와 한계: `docs/architecture/part-motor.md`, `packages/engine/src/kinetra_engine/parts/library/motor-37d-12v-50-1.json`. 데이터시트 질량이 있는 부품은 `mass_parameter`(B-02c)로 선언한다. 역할이 `spring_damper`이면 파라미터 `stiffness`(N/m, 최솟값 > 0)와 `damping`(N·s/m, 최솟값 ≥ 0)가 없을 때 거절한다(B-03e, `docs/architecture/part-spring-damper.md`).
 
 ### 스냅 포인트
 

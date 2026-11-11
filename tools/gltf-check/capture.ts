@@ -27,6 +27,7 @@ export const FILES = [
   "payload-declared-mass",
   "ballast-weight-declared-mass",
   "motor-37d-12v-50-1-declared-mass",
+  "spring-damper-lee-lc032b08-declared-mass",
 ];
 export const DEFAULT_OUT = join(REPO_ROOT, "out", "gltf-check");
 const BACKGROUND = [0x14, 0x18, 0x1f];
