@@ -34,7 +34,7 @@
 ## 모델
 
 - `Material`: `density`(kg/m^3, > 0), `yield_strength`(Pa, > 0), `elastic_modulus`(Pa, > 0), `friction`(무차원 쿨롱 계수, >= 0). 필드마다 단위와 범위가 타입에 있어 오류가 그 필드를 가리키고 JSON Schema에 `const`/`exclusiveMinimum`이 실린다. 두 재료의 접촉 마찰을 어떻게 합치는지는 컴파일러(X-01)가 정한다. 실제 재료 5종의 값은 B-07이 출처와 함께 채웠다: [`materials.md`](materials.md).
-- `PartDef`: `parameters`(이름, 단위, 기본값·최소·최대; 최소 <= 기본 <= 최대), `snap_points`(ID, 종류, 받아들이는 종류, 부품 로컬 좌표의 위치 `offset + Σ factor × 길이 파라미터`, 방향 쿼터니언, 배지·출처), `specs`(`SpecDef`: 이름이 붙은 `Quantity`의 튜플, 사양), `shape`(선택, B-01a: 질량·관성 계산의 레시피). `mass_parameter`(선택, B-02c: 질량을 정하는 kg 파라미터의 이름. 있으면 부품의 질량은 그 값이고 재료를 읽지 않는다. [`part-payload.md`](part-payload.md)).
+- `PartDef`: `parameters`(이름, 단위, 기본값·최소·최대; 최소 <= 기본 <= 최대), `snap_points`(ID, 종류, 받아들이는 종류, 부품 로컬 좌표의 위치 `offset + Σ factor × 길이 파라미터`, 방향 쿼터니언, 배지·출처), `specs`(`SpecDef`: 이름이 붙은 `Quantity`의 튜플, 사양), `shape`(선택, B-01a: 질량·관성 계산의 레시피). `mass_parameter`(선택, B-02c: 질량을 정하는 kg 파라미터의 이름. 있으면 부품의 질량은 그 값이고 재료를 읽지 않는다. [`part-payload.md`](part-payload.md)), `role`(선택, B-03b: `motor` `thruster` `wheel` `battery` `tank` `spring_damper`. 모터는 곡선 `torque_speed`와 사양 `rated_voltage`가 있어야 한다), `curves`(`NamedCurve`의 튜플, B-03b: 점들과 단위, 배지·출처 하나. [`part-motor.md`](part-motor.md)).
 - 파라미터를 참조하는 스냅 포인트는 존재하는 길이(m) 파라미터만 가리킬 수 있다. 한 `PartDef` 안에서 파라미터 이름, 스냅 포인트 ID, 사양 이름은 각각 겹치지 않고, 스냅 포인트 ID와 사양 이름은 파라미터 이름과도 겹치지 않는다.
 - 모든 모델은 `extra="forbid"`, 불변(`frozen`)이고 컬렉션은 튜플이라 `PartDef`는 해시된다. 순서는 값의 일부로 보존한다(순서가 다르면 다른 값). 정의 해시용 정규 순서는 C-03이 정한다.
 
@@ -53,7 +53,7 @@
 - `command`가 1일 때 몇 N·m, 몇 N인지는 부품의 사양(곡선)에서 온다(B-03b, B-03c, X-01b, X-01c). `DesignSpec`은 비율만 안다.
 - 자세가 권위다. 결합은 어느 두 스냅 포인트가 한 쌍인지만 말하고 아무것도 옮기지 않는다. 결합한 스냅 포인트가 저장된 자세에서 실제로 겹치는지, 부품이 공중에 떠 있는지는 배치 검사(C-02c 검증기, X-01d 컴파일 오류)이고 `DesignSpec` 검증이 아니다. 4륜차 예시는 조립된 차(바퀴 중심 z = 0.05 m, 오른쪽 모터는 Z축으로 180° 돌림, 맞닿는 스냅 포인트는 서로 `accepts`)이고 `test_designspec_four_wheel_car_is_assembled`가 결합한 모든 쌍이 월드에서 1e-9 안에 겹치는지 검사한다.
 - 결합 그래프가 트리(고리 없음, 한 덩어리)인지는 바디 트리를 만드는 X-01a의 규칙이고 컴파일 오류(X-01d)로 낸다. 이 모델은 양끝 존재와 스냅 포인트 중복 사용만 본다.
-- 액추에이터 종류와 부품 역할의 대응(모터 부품에 모터, 추력기 부품에 추력기)은 B-03b·B-03c가 부품에 역할을 주면 그때 검사한다.
+- 액추에이터 종류와 부품 역할의 대응: 모터 액추에이터는 역할이 `motor`인 부품의 인스턴스에, 추력기는 `thruster`인 부품에 붙는다(B-03b, `part-motor.md`). 다른 역할이면 거절하고, 역할이 없는 부품은 받는다.
 - 결합의 축, 종류별 자유도, 스냅 호환 태그 검사는 B-04a·B-04b가, 스프링-댐퍼는 B-03e·X-01b가 더한다. 이 PR의 `limits`와 `break_threshold`는 그 필드가 올 자리와 단위 검사까지다. 파단 임계의 계산(물성 × 단면)은 X-04a다. 분리 항목(`type: "separate"`)은 X-08이 `ActuateEntry`와 같은 자리에 더한다.
 - 이 PR의 수치는 모두 테스트가 선언한 값(`사용자 선언`)이다. 실부품 수치는 이 PR에 없다.
 
@@ -144,8 +144,8 @@ uv run python packages/core/scripts/export_schemas.py --check  # 쓰지 않고 �
 
 ## 알려진 확장 (이 PR 범위 밖, 뒤 잎이 더한다)
 
-- 곡선(토크-속도, 추력 곡선): B-03b, B-03c.
-- 단위 `kg/s`(추진제 소모율), `N*s`(충격량): 쓰는 잎이 `Unit`에 더한다.
+- 곡선(토크-속도, 추력 곡선): B-03b에서 들어왔다. `Curve`, `PartDef.curves`, 모터 `torque_speed`. [`part-motor.md`](part-motor.md). 추력 곡선은 B-03c.
+- 단위 `V`, `A`는 B-03b가 더했다. `kg/s`(추진제 소모율), `N*s`(충격량): 쓰는 잎이 `Unit`에 더한다.
 - 형상 레시피와 파생값의 입력: B-01a에서 들어왔다. `PartDef.shape`, `MassProperties.derivation`. `docs/architecture/part-mass.md`. 같은 레시피에서 시각 glTF와 재질 슬롯: B-01c, `docs/architecture/part-visual.md`.
 - 충돌 프록시: B-01b에서 들어왔다. `CollisionProxy`(기본형 지오메트리, 메운 빈 곳 또는 B-01f의 분해한 빈 곳, 부호 있는 부피 오차). `docs/architecture/collision-proxy.md`.
 - 컴파일 캐시와 부품 추가 절차서: B-01d. `docs/architecture/part-cache.md`, `docs/process/add-part.md`.
