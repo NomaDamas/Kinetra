@@ -24,7 +24,7 @@
 | `driver.mjs` | Playwright 쪽: 번들, 서버, 브라우저, 세션 진입, 컨트롤러 스크립트, 단언 13개(`checks`), 증거 JSON |
 | `run-xr.mjs` | `pnpm xr`의 진입점. 가드 밖이면 종료 코드 3 |
 | `guard.mjs` | 가드 규칙 한 곳: `CI=true` 또는 `KINETRA_GUARD_PASSED=1` |
-| `tests/offline.test.mjs` | 15건, 브라우저 없음(CI의 `spikes` 잡이 돈다) |
+| `tests/offline.test.mjs` | 20건, 브라우저 없음(CI의 `spikes` 잡이 돈다) |
 | `tests/browser-xr.test.mjs` | 1건, 브라우저. 가드 밖이면 import 시점에 예외 |
 | `results/a0-02b-xr.json` | 기록된 실행의 증거 |
 | `fixtures/profiles/` | `@webxr-input-profiles/assets` 1.0.20의 JSON 두 개(`profilesList.json`, `meta-quest-touch-plus/profile.json`). 원본 해시는 `assets/LEDGER.csv`에 있고 tarball의 같은 파일 sha256과 일치함을 확인했다. 컨트롤러 3D 모델(.glb)은 넣지 않았다 |
@@ -99,7 +99,7 @@
 pnpm --dir spikes/webxr install --frozen-lockfile
 # 브라우저는 Playwright 캐시의 chromium-headless-shell 을 쓴다. 없으면 한 번:
 pnpm --dir spikes/webxr exec playwright-core install chromium-headless-shell
-# 오프라인 시험(15건, 브라우저 없음). CI 의 spikes 잡이 돈다
+# 오프라인 시험(20건, 브라우저 없음). CI 의 spikes 잡이 돈다
 pnpm --dir spikes/webxr test
 # 장면 실행과 증거 JSON(무거운 실행: 가드 아래에서)
 uv run python tools/dev/resource_guard.py --profile heavy -- pnpm --dir spikes/webxr xr --out results/a0-02b-xr.json

@@ -99,16 +99,16 @@
   },
   "headless_frame_pacing": {
    "frames": 120,
-   "mean_interval_ms": 16.663025208881923,
-   "fps": 60.01311211285741,
-   "p50_interval_ms": 16.700000047683716,
-   "p99_interval_ms": 17.300000190734863,
-   "max_interval_ms": 17.800000190734863,
+   "mean_interval_ms": 16.668907562223804,
+   "fps": 59.99193386051687,
+   "p50_interval_ms": 16.699999809265137,
+   "p99_interval_ms": 18.59999990463257,
+   "max_interval_ms": 19.200000047683716,
    "note": "software-rendered headless Chromium, not a headset",
    "emulated_nominal_frame_rate_hz": 120
   },
   "requested_origins": [
-   "http://127.0.0.1:60134"
+   "http://127.0.0.1:61762"
   ],
   "requested_paths": [
    "/",
@@ -120,10 +120,10 @@
   ],
   "page_errors": [],
   "console_tail": [
-   "warning: [.WebGL-0x11c0083c600]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
-   "warning: [.WebGL-0x11c0083c600]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
-   "warning: [.WebGL-0x11c0083c600]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
-   "warning: [.WebGL-0x11c0083c600]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels (this message will no longer repeat)",
+   "warning: [.WebGL-0x1340083d800]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+   "warning: [.WebGL-0x1340083d800]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+   "warning: [.WebGL-0x1340083d800]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+   "warning: [.WebGL-0x1340083d800]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels (this message will no longer repeat)",
    "log: Nominal frame rate updated to 120"
   ]
  },

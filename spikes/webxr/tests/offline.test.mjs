@@ -15,6 +15,7 @@ import { guardProblem } from "../guard.mjs";
 import { resolveUrl, startServer } from "../serve.mjs";
 import { build } from "../build.mjs";
 import { MOVE_LEGS } from "../driver.mjs";
+import { waitForFrames } from "../src/waitframes.js";
 
 /** A scene with the part, a fake grip object and a grab pointer on it; `step(pos)` moves the grip and runs one frame. */
 function rig() {
@@ -222,4 +223,43 @@ test("the page bundle builds: app.js + index.html + a lazy emulator chunk", asyn
   } finally {
     rmSync(outdir, { recursive: true });
   }
+});
+
+// --- waitForFrames (src/waitframes.js): the in-page XR-frame wait has a timeout and rejects on page errors ---
+const timers = [(f) => setTimeout(f, 1), (f, ms) => setTimeout(f, ms), (t) => clearTimeout(t)];
+
+test("waitForFrames resolves with the frame count once n more frames arrived", async () => {
+  const win = { __xr: { frames: 5, error: null } };
+  const iv = setInterval(() => { win.__xr.frames++; }, 2);
+  try {
+    assert.ok((await waitForFrames(win, 3, 2000, ...timers)) >= 8);
+  } finally { clearInterval(iv); }
+});
+
+test("waitForFrames rejects with a clear message when frames never arrive", async () => {
+  const win = { __xr: { frames: 0, error: null } };
+  await assert.rejects(waitForFrames(win, 2, 40, ...timers), /timed out after 40 ms waiting for 2 XR frame\(s\): got 0, page error: none/);
+});
+
+test("waitForFrames rejects as soon as the page reports an error, naming it", async () => {
+  const win = { __xr: { frames: 0, error: null } };
+  setTimeout(() => { win.__xr.error = "boom"; }, 10);
+  const t0 = Date.now();
+  await assert.rejects(waitForFrames(win, 2, 5000, ...timers), /page error while waiting for 2 XR frame\(s\): boom/);
+  assert.ok(Date.now() - t0 < 2000, "did not wait for the timeout");
+});
+
+test("waitForFrames survives being serialised as source (what driver.mjs sends into the page)", async () => {
+  const fn = new Function(`return (${waitForFrames.toString()})`)();
+  const win = { __xr: { frames: 0, error: null } };
+  await assert.rejects(fn(win, 1, 20, ...timers), /timed out after 20 ms/);
+});
+
+test("runXr closes the server when the browser fails to launch", async () => {
+  const { runXr } = await import("../driver.mjs");
+  const before = process._getActiveHandles().filter((h) => h.constructor?.name === "Server").length;
+  await assert.rejects(runXr({ chromiumArgs: [], executablePath: "/nonexistent/chromium" }), /executable|ENOENT|Failed to launch/i);
+  await new Promise((r) => setTimeout(r, 50));
+  const after = process._getActiveHandles().filter((h) => h.constructor?.name === "Server").length;
+  assert.equal(after, before, "no listening server left behind");
 });

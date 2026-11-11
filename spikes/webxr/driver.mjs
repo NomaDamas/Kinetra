@@ -7,6 +7,7 @@ import { chromium } from "playwright-core";
 import { build } from "./build.mjs";
 import { startServer } from "./serve.mjs";
 import { PART } from "./src/scene.js";
+import { waitForFrames } from "./src/waitframes.js";
 import { POSITION_TOLERANCE_M, expectedFinal, maxAxisError, summarizeFrames } from "./src/expected.js";
 
 /** Controller path after the grab, in metres relative to where it grabbed. Each leg is applied in STEPS frames. */
@@ -14,11 +15,11 @@ export const MOVE_LEGS = Object.freeze([[0.3, 0.15, -0.1], [0.0, 0.1, -0.2], [-0
 const STEPS_PER_LEG = 6;
 const FRAME_SAMPLE = 120;
 
-const frames = (page, n) => page.evaluate((n) => new Promise((ok) => {
-  const target = window.__xr.frames + n;
-  const tick = () => (window.__xr.frames >= target ? ok(window.__xr.frames) : requestAnimationFrame(tick));
-  tick();
-}), n);
+const FRAME_WAIT_TIMEOUT_MS = 15_000;
+/** Wait for n more XR frames in the page; rejects on a page error or after FRAME_WAIT_TIMEOUT_MS (see src/waitframes.js). */
+const frames = (page, n, timeoutMs = FRAME_WAIT_TIMEOUT_MS) => page.evaluate(
+  `(${waitForFrames.toString()})(window, ${n}, ${timeoutMs}, (f) => requestAnimationFrame(f), (f, ms) => setTimeout(f, ms), (t) => clearTimeout(t))`,
+);
 
 const setController = (page, [x, y, z]) => page.evaluate(([x, y, z]) => window.__xrObjects.device.controllers.right.position.set(x, y, z), [x, y, z]);
 const setSqueeze = (page, v) => page.evaluate((v) => window.__xrObjects.device.controllers.right.updateButtonValue("squeeze", v), v);
@@ -28,12 +29,13 @@ const partPosition = (page) => page.evaluate(() => window.__xrObjects.part.posit
  * Runs the scenario and returns `{ result, checks }`. `result` is JSON-serialisable evidence; `checks` maps each DoD-level
  * assertion to a boolean so the caller (CLI or node:test) can fail with the name of the one that broke.
  */
-export async function runXr({ chromiumArgs = [], timeoutMs = 60_000 } = {}) {
+export async function runXr({ chromiumArgs = [], executablePath, timeoutMs = 60_000 } = {}) {
   await build();
   const server = await startServer();
-  const browser = await chromium.launch({ headless: true, args: chromiumArgs });
+  let browser;
   const logs = [];
   try {
+    browser = await chromium.launch({ headless: true, args: chromiumArgs, executablePath });
     const page = await browser.newPage({ viewport: { width: 1280, height: 720 } });
     page.on("console", (m) => logs.push(`${m.type()}: ${m.text()}`));
     page.on("pageerror", (e) => logs.push(`pageerror: ${e.message}`));
@@ -141,7 +143,7 @@ export async function runXr({ chromiumArgs = [], timeoutMs = 60_000 } = {}) {
     };
     return { result, checks };
   } finally {
-    await browser.close();
+    await browser?.close();
     server.close();
   }
 }
