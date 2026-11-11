@@ -692,6 +692,7 @@ OMITTED_DEFAULTS = {
     "Joint.limits": None,
     "NormalDistribution.clip_high": None,
     "NormalDistribution.clip_low": None,
+    "PartDef.mass_parameter": None,
     "PartDef.parameters": [],
     "PartDef.shape": None,
     "PartDef.snap_points": [],
@@ -771,7 +772,13 @@ def test_save_open_reads_the_frozen_v1_file():
     opened = parse_project(raw)
     assert opened.version == 1 and opened.project_hash == V1_PROJECT_HASH == project_hash(opened.project)
     assert any(p.shape is not None for p in opened.project.design.parts)  # it covers a shape, the omitted-default case
-    assert dump_project(opened.project) == raw
+    # The writer writes every field, so a field a later build adds (B-02c's `PartDef.mass_parameter`: optional, default
+    # None) appears in what it writes and not in this old file: the bytes may differ, the project and its hash may not.
+    again = parse_project(dump_project(opened.project))
+    assert again.project == opened.project and again.project_hash == V1_PROJECT_HASH
+    assert dump_project(again.project) == dump_project(opened.project)
+    old, new = json.loads(raw), json.loads(dump_project(opened.project))
+    assert old["project_hash"] == new["project_hash"] and old["definitions"] == new["definitions"]
 
 
 # --- save: concurrency, links, permissions ---------------------------------------------------------------------

@@ -257,7 +257,8 @@
             }
           ],
           "specs": [],
-          "shape": null
+          "shape": null,
+          "mass_parameter": null
         },
         {
           "id": "motor",
@@ -338,7 +339,8 @@
             }
           ],
           "specs": [],
-          "shape": null
+          "shape": null,
+          "mass_parameter": null
         },
         {
           "id": "wheel",
@@ -428,7 +430,8 @@
             }
           ],
           "specs": [],
-          "shape": null
+          "shape": null,
+          "mass_parameter": null
         }
       ],
       "instances": [

@@ -67,6 +67,10 @@ FALLBACK_PBR = PbrSlots.model_validate(
 _REFLECTANCE_GLTF_CORE = 0.5  # Filament reflectance whose F0 (0.04, ior 1.5) glTF core fixes
 
 
+UNASSIGNED_MATERIAL = "unassigned"
+"""Name of the glTF material slot of a part drawn without a material (a part with a declared mass, `PartDef.mass_parameter`)."""
+
+
 def pbr_for(material: Material) -> tuple[PbrSlots, bool]:
     """The PBR slots of `material` (looked up by id) and whether they come from the catalog (False: the fallback)."""
     try:
@@ -97,10 +101,15 @@ def ior_from_reflectance(r: float) -> float:
     return (1.0 + 0.4 * r) / (1.0 - 0.4 * r)
 
 
-def _material_entry(material: Material, pbr: PbrSlots | None) -> tuple[dict[str, Any], bool]:
-    slots, from_catalog = (pbr, False) if pbr is not None else pbr_for(material)
+def _material_entry(material: Material | None, pbr: PbrSlots | None) -> tuple[dict[str, Any], bool]:
+    if pbr is not None:
+        slots, from_catalog = pbr, False
+    elif material is not None:
+        slots, from_catalog = pbr_for(material)
+    else:
+        slots, from_catalog = FALLBACK_PBR, False  # no material assigned: the neutral look
     entry: dict[str, Any] = {
-        "name": material.id,
+        "name": material.id if material is not None else UNASSIGNED_MATERIAL,
         "pbrMetallicRoughness": {
             "baseColorFactor": linear_base_color(slots.base_color.srgb),
             "metallicFactor": slots.metallic.value,
@@ -185,13 +194,15 @@ def _unit_quaternion(q) -> list[float]:
 
 def part_gltf(
     part: PartDef,
-    material: Material,
+    material: Material | None,
     parameters: Mapping[str, Quantity] | None = None,
     pbr: PbrSlots | None = None,
 ) -> tuple[dict[str, Any], bytes]:
     """The glTF JSON document of `part` made of `material` and the BIN chunk it indexes (`buffers[0]`, no uri).
 
-    `parameters` overrides the part's defaults exactly as in `mass_properties`. `pbr` replaces the look: without it the
+    `material` only picks the look (it is not read for mass); it may be `None` for a part with a declared mass, which is then
+    drawn with the neutral look (`unassigned`) unless `pbr` is given. `parameters` overrides the part's defaults exactly as in
+    `mass_properties`. `pbr` replaces the look: without it the
     slots come from the catalog entry of `material.id` (or the neutral fallback); with it they are the caller's and the
     file says `pbr_from_catalog: false`. Raises `ShapeError` for a part without
     a shape recipe, an unknown or out-of-range parameter, a dimension that is not above zero, or components that break
@@ -251,7 +262,7 @@ def part_gltf(
         "extras": {
             "kinetra": {
                 "part_id": part.id,
-                "material_id": material.id,
+                "material_id": material.id if material is not None else None,
                 "frame": FRAME_NOTE,
                 "parameters": {n: q.model_dump(mode="json", exclude_none=True) for n, q in quantities.items()},
                 "shape": {"badge": part.shape.badge.value, "source": part.shape.source.model_dump(mode="json", exclude_none=True)},
@@ -286,7 +297,7 @@ _GLB_MAGIC, _GLB_VERSION, _CHUNK_JSON, _CHUNK_BIN = 0x46546C67, 2, 0x4E4F534A, 0
 
 def part_glb(
     part: PartDef,
-    material: Material,
+    material: Material | None,
     parameters: Mapping[str, Quantity] | None = None,
     pbr: PbrSlots | None = None,
 ) -> bytes:

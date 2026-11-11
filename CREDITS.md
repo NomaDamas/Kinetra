@@ -903,6 +903,19 @@
 - 원본 해시: `sha256:7f16c411e7930dc79596d42ab44672a3fe5f60eb34b781a1647e7872363120c7`
 - 확인자: omp
 
+### dep-websockets-17.4
+
+- 표기: websockets, Copyright (c) Aymeric Augustin and contributors. BSD-3-Clause License.
+- 저작자: Aymeric Augustin and contributors
+- 라이선스: BSD-3-Clause
+- 원본: https://pypi.org/project/websockets/17.4/ https://github.com/python-websockets/websockets https://github.com/python-websockets/websockets/blob/main/LICENSE
+- 경로: `packages/engine/pyproject.toml`
+- 용도: 실행 의존성: 문서 구독과 명령 발행 채널의 WebSocket 전송(C-05a) kinetra_engine.protocol
+- 변경 내역: 없음(수정 없이 사용). packages/engine/pyproject.toml 의 dependencies(websockets==17.4)와 uv.lock 에서 고정. 해시는 PyPI sdist. 추이 의존성 없음
+- 받은 날짜: 2026-11-12
+- 원본 해시: `sha256:09d3939b70df0c8ad2da145ebd50978bccaee1d565e838b0e7921a34d38571eb`
+- 확인자: omp
+
 ### dep-webxr-input-profiles-assets-1.0.20
 
 - 표기: WebXR Input Profiles, Copyright (c) 2019 Amazon. MIT License.

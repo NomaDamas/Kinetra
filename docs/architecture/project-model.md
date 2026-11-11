@@ -34,7 +34,7 @@
 ## 모델
 
 - `Material`: `density`(kg/m^3, > 0), `yield_strength`(Pa, > 0), `elastic_modulus`(Pa, > 0), `friction`(무차원 쿨롱 계수, >= 0). 필드마다 단위와 범위가 타입에 있어 오류가 그 필드를 가리키고 JSON Schema에 `const`/`exclusiveMinimum`이 실린다. 두 재료의 접촉 마찰을 어떻게 합치는지는 컴파일러(X-01)가 정한다. 실제 재료 5종의 값은 B-07이 출처와 함께 채웠다: [`materials.md`](materials.md).
-- `PartDef`: `parameters`(이름, 단위, 기본값·최소·최대; 최소 <= 기본 <= 최대), `snap_points`(ID, 종류, 받아들이는 종류, 부품 로컬 좌표의 위치 `offset + Σ factor × 길이 파라미터`, 방향 쿼터니언, 배지·출처), `specs`(`SpecDef`: 이름이 붙은 `Quantity`의 튜플, 사양), `shape`(선택, B-01a: 질량·관성 계산의 레시피).
+- `PartDef`: `parameters`(이름, 단위, 기본값·최소·최대; 최소 <= 기본 <= 최대), `snap_points`(ID, 종류, 받아들이는 종류, 부품 로컬 좌표의 위치 `offset + Σ factor × 길이 파라미터`, 방향 쿼터니언, 배지·출처), `specs`(`SpecDef`: 이름이 붙은 `Quantity`의 튜플, 사양), `shape`(선택, B-01a: 질량·관성 계산의 레시피). `mass_parameter`(선택, B-02c: 질량을 정하는 kg 파라미터의 이름. 있으면 부품의 질량은 그 값이고 재료를 읽지 않는다. [`part-payload.md`](part-payload.md)).
 - 파라미터를 참조하는 스냅 포인트는 존재하는 길이(m) 파라미터만 가리킬 수 있다. 한 `PartDef` 안에서 파라미터 이름, 스냅 포인트 ID, 사양 이름은 각각 겹치지 않고, 스냅 포인트 ID와 사양 이름은 파라미터 이름과도 겹치지 않는다.
 - 모든 모델은 `extra="forbid"`, 불변(`frozen`)이고 컬렉션은 튜플이라 `PartDef`는 해시된다. 순서는 값의 일부로 보존한다(순서가 다르면 다른 값). 정의 해시용 정규 순서는 아래 "저장·열기와 정의 해시"(C-03)가 정한다.
 
@@ -152,7 +152,7 @@ uv run python packages/core/scripts/export_schemas.py --check  # 쓰지 않고 �
 
 | 필드 | 뜻 |
 |---|---|
-| `format`, `version` | `"kinetra-project"`, `1`. 읽는 쪽이 모르는 `version`은 다른 것을 읽기 전에 거부한다(`unsupported_version`). 버전은 봉투, 정규 규칙, 모델을 함께 가리킨다: 셋 중 하나가 바뀌면 올린다. **모델의 기본값을 바꾸는 것도 형식 변경이다**(해시가 기본값인 필드를 빼므로 기본값은 규칙의 일부다): 버전을 올리고, 새 읽기는 이전 버전의 파일을 그 버전의 규칙으로 대조한 뒤 이관한다. 정규 규칙이 생략하는 기본값 표는 `test_hash_omitted_defaults_are_pinned`가 고정하고, 다시 만들지 않는 v1 파일 `packages/core/tests/fixtures/project-file-v1.kinetra.json`이 `test_save_open_reads_the_frozen_v1_file`로 "v1은 지금도 열린다"를 지킨다 |
+| `format`, `version` | `"kinetra-project"`, `1`. 읽는 쪽이 모르는 `version`은 다른 것을 읽기 전에 거부한다(`unsupported_version`). 버전은 봉투와 정규 규칙을 가리키고, 모델이 기존 데이터의 뜻을 바꿀 때도 올린다(필드의 이름·뜻·삭제 변경). **기본값이 있는 선택 필드를 더하는 것은 올리지 않는다**: 새 빌드는 이전 파일을 그대로 열고(없는 필드는 기본값) 해시도 같다(기본값은 해시에서 빠진다). 대신 새 빌드가 쓴 파일(`null`인 새 필드까지 쓴다)을 이전 빌드는 열지 못한다(아래 "앞으로 호환이 없다"). B-02c의 `PartDef.mass_parameter`가 그 경우이고, 고정한 v1 파일은 그대로 열리며 해시가 같다(`test_save_open_reads_the_frozen_v1_file`). **모델의 기본값을 바꾸는 것도 형식 변경이다**(해시가 기본값인 필드를 빼므로 기본값은 규칙의 일부다): 버전을 올리고, 새 읽기는 이전 버전의 파일을 그 버전의 규칙으로 대조한 뒤 이관한다. 정규 규칙이 생략하는 기본값 표는 `test_hash_omitted_defaults_are_pinned`가 고정하고, 다시 만들지 않는 v1 파일 `packages/core/tests/fixtures/project-file-v1.kinetra.json`이 `test_save_open_reads_the_frozen_v1_file`로 "v1은 지금도 열린다"를 지킨다 |
 | `project` | `Project` 그대로. 컬렉션 순서는 사용자가 가진 순서를 보존한다(순서는 값의 일부) |
 | `project_hash` | 프로젝트 전체의 해시(정규 형식) |
 | `definitions` | 프로젝트가 담은 재료와 부품 정의마다 `{kind, id, hash}`. 프로젝트의 순서(재료, 그다음 부품)를 따른다. 계획 5.3절의 "쓰는 부품 정의를 정의 해시와 함께 담는다"의 해시다. 카탈로그와 비교해 "카탈로그와 다름"을 알리는 것은 C-06이다 |
@@ -162,7 +162,7 @@ uv run python packages/core/scripts/export_schemas.py --check  # 쓰지 않고 �
 - 열 때 해시를 읽은 프로젝트와 대조한다. 저장한 뒤 손으로 고쳤거나 잘렸거나 정규 규칙을 따르지 않는 쓰기 도구가 만든 파일은 `hash_mismatch`로 거부하고 무엇이 다른지 적는다. 조용히 열지 않는다. 사유는 `not_json`(JSON이 아님, 잘림, 중복 키, `NaN`/`Infinity`), `not_a_project_file`, `unsupported_version`, `invalid_project`(검증기의 문장), `hash_mismatch`다.
 - 해시는 서명이 아니다. 값을 바꾸고 해시도 맞게 다시 쓴 파일은 다른 프로젝트의 올바른 파일이다. 해시는 같은지 다른지만 말한다.
 - JSON 내보내기: `export_json(project)`는 봉투와 해시 없이 `Project`만 같은 서식으로 내놓는다(`schemas/Project.schema.json`이 설명하는 문서, `Project.model_validate_json`으로 열린다).
-- **v1에는 앞으로 호환이 없다(결정).** 모든 모델이 `extra="forbid"`이고 쓰기는 `null`인 필드까지 전부 쓴다. 선택 필드를 하나 더한 빌드의 파일을 이전 빌드가 열면 `version`이 1이어도 `invalid_project`(\"Extra inputs are not permitted\")다. 일부러 그렇게 정했다: 필드를 더하는 것은 모델 변경이므로 `version`을 올리고(위 표), 모르는 버전은 `version`으로 먼저 정확한 사유와 함께 거부한다. `client-adapter.md` G5(모르는 선택 필드는 무시)는 선로 프로토콜의 규칙이고 이 파일의 규칙이 아니다. 해시가 기본값 필드를 빼는 것은 이 규칙과 모순이 아니다: 해시는 \"같은 값인가\"를, 파일은 \"이 빌드가 아는 것만 담았는가\"를 말한다. C-06(#455)은 `Project` 검증을 완화해 빠진 정의를 담게 하고 `_differences`의 \"프로젝트가 담지 않은 정의의 해시\" 규칙도 바꿔야 하는데, 조용히 무시하는 필드를 만들지 않는 이 규칙을 지키고 그 변경에 필요한 이관을 함께 가져온다.
+- **v1에는 앞으로 호환이 없다(결정).** 모든 모델이 `extra="forbid"`이고 쓰기는 `null`인 필드까지 전부 쓴다. 선택 필드를 하나 더한 빌드의 파일을 이전 빌드가 열면 `version`이 1이어도 `invalid_project`(\"Extra inputs are not permitted\")다. 일부러 그렇게 정했다: 기본값이 있는 선택 필드를 더해도 `version`은 그대로이므로(위 표) 이전 빌드는 새 빌드의 파일을 `invalid_project`로 거부한다. 그 값이 하는 일을 바꾸는 변경(필드 이름·뜻·삭제, 기본값, 정규 규칙)은 `version`을 올려 모르는 버전을 `version`으로 먼저 정확한 사유와 함께 거부한다. `client-adapter.md` G5(모르는 선택 필드는 무시)는 선로 프로토콜의 규칙이고 이 파일의 규칙이 아니다. 해시가 기본값 필드를 빼는 것은 이 규칙과 모순이 아니다: 해시는 \"같은 값인가\"를, 파일은 \"이 빌드가 아는 것만 담았는가\"를 말한다. C-06(#455)은 `Project` 검증을 완화해 빠진 정의를 담게 하고 `_differences`의 \"프로젝트가 담지 않은 정의의 해시\" 규칙도 바꿔야 하는데, 조용히 무시하는 필드를 만들지 않는 이 규칙을 지키고 그 변경에 필요한 이관을 함께 가져온다.
 - 이력(C-02b)은 저장하지 않는다. 역명령은 계산된 그 상태에서만 맞는 절대 위치를 담아서, 프로젝트 없는 이력도 다른 프로젝트의 이력도 쓸모없다. 다시 연 프로젝트는 빈 `History`로 시작한다. 개정 번호, 발행자, 시각도 없다(저장 파일은 문서이고 사건이 아니다; 벽시계 시각은 의미가 없다, `client-adapter.md` F2).
 
 ### 정규 형식과 해시
@@ -179,6 +179,10 @@ uv run python packages/core/scripts/export_schemas.py --check  # 쓰지 않고 �
 
 한계(`canonical.py` 머리말): 해시가 같은 두 프로젝트는 문서로서 같고 엔진 입력으로서 비트가 같다는 약속이 아니다. 인스턴스를 목록 순서로 더하는 엔진의 부동소수점 합은 순서가 다르면 끝자리가 다를 수 있고 MuJoCo는 바디 순서로 풀이를 한다(리뷰 측정: 형상 요소 5개의 120가지 순서에서 `definition_hash`는 1개, `MassProperties`의 비트는 5가지). 정규 순서로 컴파일하는 규칙은 #511이 맡는다. 그 전까지 **저장소에 정의 해시가 둘이다**: 이 문서의 `definition_hash`(순서 무관: "같은 정의인가", C-06의 카탈로그 비교와 파일의 `definitions`)와 B-01d의 `part_key`(`kinetra_engine.parts.cache`, 엄격: 순서·문구까지 다르면 다른 키, 부품 캐시). 컴파일 결과의 캐시 키로 `definition_hash`를 쓰면 안 된다. 판정 캐시(J)와 `run_started`의 키도 `project_hash` 하나로는 안 되고 (프로젝트 해시, 플랫폼 태그, 시드, 계산 설정)이어야 한다(행성 상수는 `data/bodies`에, 엔진 빌드는 태그에 있다). 해시는 서명이 아니라서 서버는 받은 해시를 믿지 말고 다시 계산한다. 이름·출처 문구·`declared_at`·배지도 해시에 들어가므로 이름만 고쳐도 해시가 바뀐다(안전한 쪽의 오류; 물리 부분만의 해시는 B-16이 필드 거르개로 더한다). 궤적 해시는 X-02d, 에셋 내용 해시는 A2의 몫이다.
 
+## 선로의 메시지 (C-05a)
+
+`Command`와 `ApplyResult`를 선로에 올리는 메시지(`hello` `subscribe` `snapshot` `resumed` `applied` `publish` `accepted` `rejected` `request` `error`)는 `kinetra_core/protocol.py`에 있고 `schemas/`에 `ClientMessage`, `ServerMessage`로 생성된다. `ApplyResult`(프로젝트 + 역명령)는 그대로 적용기의 값이고, 선로의 `applied`(개정 번호, 발행자, 바뀐 구역)는 `Applied`로 이름이 다르다. 규칙과 필드는 [`client-adapter.md`](client-adapter.md) 3.1~3.2 확정.
+
 ## 알려진 확장 (이 PR 범위 밖, 뒤 잎이 더한다)
 
 - 곡선(토크-속도, 추력 곡선): B-03b, B-03c.
@@ -186,6 +190,7 @@ uv run python packages/core/scripts/export_schemas.py --check  # 쓰지 않고 �
 - 형상 레시피와 파생값의 입력: B-01a에서 들어왔다. `PartDef.shape`, `MassProperties.derivation`. `docs/architecture/part-mass.md`. 같은 레시피에서 시각 glTF와 재질 슬롯: B-01c, `docs/architecture/part-visual.md`.
 - 충돌 프록시: B-01b에서 들어왔다. `CollisionProxy`(기본형 지오메트리, 메운 빈 곳 또는 B-01f의 분해한 빈 곳, 부호 있는 부피 오차). `docs/architecture/collision-proxy.md`.
 - 컴파일 캐시와 부품 추가 절차서: B-01d. `docs/architecture/part-cache.md`, `docs/process/add-part.md`.
+- 구조 부품 빔과 판: B-02a. 정의는 `packages/engine/src/kinetra_engine/parts/library/`. `docs/architecture/parts-beam-plate.md`.
 - 바인딩 안 된 가정(가정이 설계의 어느 값을 흔드는지)과 가정 단위의 의미 검사: J-01a, L-02.
 - PBR 재질 슬롯: B-07(구현됨, [`materials.md`](materials.md)).
 - `export_policy`: HW-02a.
