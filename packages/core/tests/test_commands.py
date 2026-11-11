@@ -562,6 +562,23 @@ def test_apply_replace_joint_keeps_position_motor_and_schedule(project):
     assert [e.id for e in d.schedule.entries] == ["run-l", "run-r"]
 
 
+def test_apply_replace_joint_can_add_and_remove_a_spring_and_undo_each(project):
+    drive_l = next(j for j in load("DesignSpec.four-wheel-car.json")["joints"] if j["id"] == "drive-l")
+    spring = {"stiffness": q(0.5, "N*m/rad"), "damping": q(0.02, "N*m*s/rad")}
+    with_spring = roundtrip(project, cmd(type="replace_joint", joint={**drive_l, "spring": spring}))
+    assert with_spring.project.design.joints[2].spring.stiffness.value == 0.5
+    assert ids(with_spring.project.design.actuators) == ids(project.design.actuators)  # the motor on the joint stays
+    without = roundtrip(with_spring.project, cmd(type="replace_joint", joint=drive_l))
+    assert without.project == project  # the spring is gone, the project is the original
+
+
+def test_replace_joint_with_a_spring_in_the_wrong_unit_is_not_a_command(project):
+    drive_l = next(j for j in load("DesignSpec.four-wheel-car.json")["joints"] if j["id"] == "drive-l")
+    bad = {"stiffness": q(2770.0, "N/m"), "damping": q(20.0, "N*s/m")}  # a hinge takes N*m/rad
+    with pytest.raises(ValidationError, match="spring of a hinge joint"):
+        cmd(type="replace_joint", joint={**drive_l, "spring": bad})
+
+
 def test_apply_replace_joint_that_strands_its_motor_is_rejected(project):
     drive_l = next(j for j in load("DesignSpec.four-wheel-car.json")["joints"] if j["id"] == "drive-l")
     err = rejected(project, cmd(type="replace_joint", joint={**drive_l, "kind": "fixed"}), ReasonCode.INVALID_PROJECT)

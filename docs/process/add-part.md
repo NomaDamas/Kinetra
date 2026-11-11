@@ -50,6 +50,8 @@
 
 구동 부품은 `role`(`motor` 등, `PartRole`)과 `curves`(이름 붙은 `Curve`)를 가진다. 역할이 `motor`이면 곡선 `torque_speed`(`rad/s` → `N*m`)와 사양 `rated_voltage`(V)가 없을 때 `PartDef`가 거절한다. 곡선은 점마다가 아니라 **곡선 하나에 배지와 출처 하나**라서 데이터시트에서 옮긴 점만 한 곡선에 넣는다. 예와 한계: `docs/architecture/part-motor.md`, `packages/engine/src/kinetra_engine/parts/library/motor-37d-12v-50-1.json`. 데이터시트 질량이 있는 부품은 `mass_parameter`(B-02c)로 선언한다.
 
+구동 부품 가운데 스프링-댐퍼(`role: "spring_damper"`, B-03e)는 곡선이 아니라 파라미터 `stiffness`와 `damping`을 요구한다(단위쌍은 N/m와 N*s/m 또는 N*m/rad와 N*m*s/rad). 사양 수치를 파라미터로 둔 첫 부품이라서 절차서 0단계의 "파라미터는 길이만"이 이 역할에는 적용되지 않는다. 값마다 배지가 따로다: [`part-spring.md`](../architecture/part-spring.md).
+
 ### 스냅 포인트
 
 `id`, `kind`, `accepts`(호환 태그, B-04b가 맞춘다), `position`(m, 파라미터를 따를 수 있다), `orientation`(쿼터니언 `{x,y,z,w}`, 단위 노름), 배지와 출처. 위치가 가리키는 파라미터는 길이(m)여야 한다. 스냅 포인트 id는 파라미터 이름과 같을 수 없다.

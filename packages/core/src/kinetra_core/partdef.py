@@ -102,6 +102,13 @@ MOTOR_CURVE = "torque_speed"
 MOTOR_RATED_VOLTAGE = "rated_voltage"
 """Name of the spec a motor part must have: the supply voltage [V] the curve is for."""
 
+SPRING_STIFFNESS = "stiffness"
+"""Name of the parameter a spring-damper part must have: its spring rate, N/m (linear) or N*m/rad (torsional) (B-03e)."""
+SPRING_DAMPING = "damping"
+"""Name of the parameter a spring-damper part must have: its viscous damping, N*s/m (linear) or N*m*s/rad (torsional)."""
+SPRING_UNIT_PAIRS = ((Unit.N_PER_M, Unit.N_S_PER_M), (Unit.N_M_PER_RAD, Unit.N_M_S_PER_RAD))
+"""The two (stiffness, damping) unit pairs a spring-damper part may use: linear, for a slider, and torsional, for a hinge."""
+
 
 class PartDef(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
@@ -151,7 +158,29 @@ class PartDef(BaseModel):
             self._check_mass_parameter(self.mass_parameter, {p.name: p for p in self.parameters})
         if self.role is PartRole.MOTOR:
             self._check_motor()
+        if self.role is PartRole.SPRING_DAMPER:
+            self._check_spring_damper()
         return self
+
+    def _check_spring_damper(self) -> None:
+        """A spring-damper part has the parameters `stiffness` and `damping`, in a unit pair that goes together (N/m with
+        N*s/m: a slider; N*m/rad with N*m*s/rad: a hinge). The stiffness is above zero over its whole range (a part
+        with no spring is not a spring-damper; a pure damper is a joint's `spring` with stiffness 0), the damping is
+        not negative. `kinetra_engine.parts.joint_spring` turns the part's values into the `JointSpring` a joint of the matching kind carries."""
+        params = {p.name: p for p in self.parameters}
+        for name in (SPRING_STIFFNESS, SPRING_DAMPING):
+            if name not in params:
+                raise ValueError(f"a spring_damper part needs the parameter {name!r}")
+        k, c = params[SPRING_STIFFNESS], params[SPRING_DAMPING]
+        if (k.unit, c.unit) not in SPRING_UNIT_PAIRS:
+            raise ValueError(
+                f"parameters {SPRING_STIFFNESS!r} and {SPRING_DAMPING!r} are in 'N/m' and 'N*s/m' or in 'N*m/rad' and "
+                f"'N*m*s/rad', got {k.unit.value!r} and {c.unit.value!r}"
+            )
+        if not k.min.value > 0.0:
+            raise ValueError(f"parameter {SPRING_STIFFNESS!r}: min must be above zero over the whole range, got {k.min.value}")
+        if c.min.value < 0.0:
+            raise ValueError(f"parameter {SPRING_DAMPING!r}: min must not be negative, got {c.min.value}")
 
     def _check_mass_parameter(self, name: str, params: dict[str, ParamDef]) -> None:
         p = params.get(name)

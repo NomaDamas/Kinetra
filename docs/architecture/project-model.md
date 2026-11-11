@@ -46,7 +46,7 @@
 |---|---|---|
 | `Instance` | `id`, `part`, `parameters`, `material`(없을 수 있음), `pose` | `parameters`는 부품의 파라미터 이름만, 단위가 `ParamDef`와 같고 `[min, max]` 안이며, 같은 이름은 한 번만. 적지 않은 파라미터는 `PartDef` 기본값. 각 값은 `Quantity`(배지·출처 필수) |
 | `Pose` | `position`(`WorldPosition`, m, 월드), `orientation`(`{x,y,z,w}` 단위 쿼터니언), `badge`, `source` | 부품 좌표계의 월드 자세. 인스턴스 위치의 저장된 권위는 이 자세다. 배지·출처 하나가 자세 전체를 덮는다(스냅 포인트와 같다) |
-| `Joint` | `id`, `kind`(`fixed` `hinge` `slider`), `a`, `b`(`SnapRef`: 인스턴스 ID + 스냅 포인트 ID), `limits`, `break_threshold` | 양끝은 서로 다른 인스턴스의 존재하는 스냅 포인트이고 한 스냅 포인트는 결합 하나에만 쓰인다. `a`가 부모, `b`가 자식이다. 결합 좌표의 0은 저장된 자세다(힌지 0 rad, 슬라이더 0 m). `limits`는 `Quantity` 두 개(`lower < upper`, 같은 단위): 힌지는 rad, 슬라이더는 m, 고정 결합에는 없다. `break_threshold`는 `Quantity`(N, > 0)이고 없으면 파단하지 않는다 |
+| `Joint` | `id`, `kind`(`fixed` `hinge` `slider`), `a`, `b`(`SnapRef`: 인스턴스 ID + 스냅 포인트 ID), `limits`, `break_threshold`, `spring` | 양끝은 서로 다른 인스턴스의 존재하는 스냅 포인트이고 한 스냅 포인트는 결합 하나에만 쓰인다. `a`가 부모, `b`가 자식이다. 결합 좌표의 0은 저장된 자세다(힌지 0 rad, 슬라이더 0 m). `limits`는 `Quantity` 두 개(`lower < upper`, 같은 단위): 힌지는 rad, 슬라이더는 m, 고정 결합에는 없다. `break_threshold`는 `Quantity`(N, > 0)이고 없으면 파단하지 않는다. `spring`(B-03e)은 `JointSpring`(`stiffness`, `damping`, 각각 배지와 출처)이고 없으면 스프링도 댐퍼도 없다. 단위는 종류를 따른다: 슬라이더 N/m와 N*s/m, 힌지 N*m/rad와 N*m*s/rad, 고정 결합에는 없다. 두 값은 0 이상이고 둘 다 0일 수는 없다. 스프링은 결합 좌표 0(저장된 자세)에서 쉰다. [`part-spring.md`](part-spring.md) |
 | `Actuator` | `id`, `kind`(`motor` `thruster`), `instance`, `joint` | 모터는 구동할 결합이 있어야 하고(고정 결합이 아니고, `instance`가 그 결합의 한쪽 끝), 추력기에는 결합이 없다. 같은 `kind`·`instance`·`joint`의 액추에이터 둘은 거부한다. 액추에이터 ID가 곧 조종 채널 ID다(`client-adapter.md` I5) |
 | `ControlSchedule` | `entries`: `ActuateEntry`(`id`, `actuator`, `start`, `end`[s], `command`, `badge`, `source`) | `0 <= start < end`. `command`는 완전 구동 대비 비율이고 모터는 [-1, 1], 추력기는 [0, 1]. `id`는 스케줄 안에서 유일하다(명령이 항목을 위치가 아니라 ID로 가리킨다, C-02a). 한 액추에이터의 구간은 겹치지 않는다(맞닿는 것은 된다). 배지·출처 하나가 항목을 덮는다 |
 
@@ -54,7 +54,7 @@
 - 자세가 권위다. 결합은 어느 두 스냅 포인트가 한 쌍인지만 말하고 아무것도 옮기지 않는다. 결합한 스냅 포인트가 저장된 자세에서 실제로 겹치는지, 부품이 공중에 떠 있는지는 배치 검사(C-02c 검증기, X-01d 컴파일 오류)이고 `DesignSpec` 검증이 아니다. 4륜차 예시는 조립된 차(바퀴 중심 z = 0.05 m, 오른쪽 모터는 Z축으로 180° 돌림, 맞닿는 스냅 포인트는 서로 `accepts`)이고 `test_designspec_four_wheel_car_is_assembled`가 결합한 모든 쌍이 월드에서 1e-9 안에 겹치는지 검사한다.
 - 결합 그래프가 트리(고리 없음, 한 덩어리)인지는 바디 트리를 만드는 X-01a의 규칙이고 컴파일 오류(X-01d)로 낸다. 이 모델은 양끝 존재와 스냅 포인트 중복 사용만 본다.
 - 액추에이터 종류와 부품 역할의 대응: 모터 액추에이터는 역할이 `motor`인 부품의 인스턴스에, 추력기는 `thruster`인 부품에 붙는다(B-03b, `part-motor.md`). 다른 역할이면 거절하고, 역할이 없는 부품은 받는다.
-- 결합의 축, 종류별 자유도, 스냅 호환 태그 검사는 B-04a·B-04b가, 스프링-댐퍼는 B-03e·X-01b가 더한다. 이 PR의 `limits`와 `break_threshold`는 그 필드가 올 자리와 단위 검사까지다. 파단 임계의 계산(물성 × 단면)은 X-04a다. 분리 항목(`type: "separate"`)은 X-08이 `ActuateEntry`와 같은 자리에 더한다.
+- 결합의 축, 종류별 자유도, 스냅 호환 태그 검사는 B-04a·B-04b가, 스프링을 엔진에 넘기는 일은 X-01b가 더한다(스프링 필드와 부품 쪽 정의는 B-03e에서 들어왔다). 이 PR의 `limits`와 `break_threshold`는 그 필드가 올 자리와 단위 검사까지다. 파단 임계의 계산(물성 × 단면)은 X-04a다. 분리 항목(`type: "separate"`)은 X-08이 `ActuateEntry`와 같은 자리에 더한다.
 - 이 PR의 수치는 모두 테스트가 선언한 값(`사용자 선언`)이다. 실부품 수치는 이 PR에 없다.
 
 ## World와 가정표 (C-01c)
@@ -145,6 +145,7 @@ uv run python packages/core/scripts/export_schemas.py --check  # 쓰지 않고 �
 ## 알려진 확장 (이 PR 범위 밖, 뒤 잎이 더한다)
 
 - 곡선(토크-속도, 추력 곡선): B-03b에서 들어왔다. `Curve`, `PartDef.curves`, 모터 `torque_speed`. [`part-motor.md`](part-motor.md). 추력 곡선은 B-03c.
+- 스프링-댐퍼: B-03e에서 들어왔다. `Joint.spring`(`JointSpring`), 부품 역할 `spring_damper`, 단위 `N*m*s/rad`. [`part-spring.md`](part-spring.md).
 - 단위 `V`, `A`는 B-03b가 더했다. `kg/s`(추진제 소모율), `N*s`(충격량): 쓰는 잎이 `Unit`에 더한다.
 - 형상 레시피와 파생값의 입력: B-01a에서 들어왔다. `PartDef.shape`, `MassProperties.derivation`. `docs/architecture/part-mass.md`. 같은 레시피에서 시각 glTF와 재질 슬롯: B-01c, `docs/architecture/part-visual.md`.
 - 충돌 프록시: B-01b에서 들어왔다. `CollisionProxy`(기본형 지오메트리, 메운 빈 곳 또는 B-01f의 분해한 빈 곳, 부호 있는 부피 오차). `docs/architecture/collision-proxy.md`.

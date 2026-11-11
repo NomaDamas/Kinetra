@@ -38,8 +38,9 @@ class Unit(StrEnum):
     N = "N"
     N_M = "N*m"
     N_PER_M = "N/m"
-    N_S_PER_M = "N*s/m"
-    N_M_PER_RAD = "N*m/rad"
+    N_S_PER_M = "N*s/m"  # linear damping (B-03e)
+    N_M_PER_RAD = "N*m/rad"  # torsional spring rate
+    N_M_S_PER_RAD = "N*m*s/rad"  # torsional damping (B-03e)
     PA = "Pa"
     KG_PER_M3 = "kg/m^3"
     KG_M2 = "kg*m^2"

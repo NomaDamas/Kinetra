@@ -853,7 +853,7 @@
     },
     "Joint": {
       "additionalProperties": false,
-      "description": "A connection between two snap points of two different instances. `a` is the parent side by convention.\n\n`limits` are optional (`None`: unlimited, as a wheel axle) and not allowed on a fixed joint.\n`break_threshold` is optional (`None`: never breaks).",
+      "description": "A connection between two snap points of two different instances. `a` is the parent side by convention.\n\n`limits` are optional (`None`: unlimited, as a wheel axle) and not allowed on a fixed joint.\n`break_threshold` is optional (`None`: never breaks).\n`spring` is optional (`None`: no spring and no damping) and not allowed on a fixed joint (B-03e).",
       "properties": {
         "id": {
           "pattern": "^[a-z][a-z0-9_-]{0,63}$",
@@ -884,6 +884,17 @@
           "anyOf": [
             {
               "$ref": "#/$defs/BreakThreshold"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "spring": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/JointSpring"
             },
             {
               "type": "null"
@@ -926,6 +937,24 @@
         "upper"
       ],
       "title": "JointLimits",
+      "type": "object"
+    },
+    "JointSpring": {
+      "additionalProperties": false,
+      "description": "A linear spring and viscous damper in parallel about a joint coordinate q:\nforce (torque) = -stiffness * q - damping * dq/dt.\n\nq is 0 at the saved pose (C-01b), so the spring is at rest where the part was placed. Stiffness and damping each\ncarry their own badge and source. They are a pair: N/m with N*s/m, or N*m/rad with N*m*s/rad. At least one is above\nzero (a spring that does nothing is left out). That the pair fits the joint's kind is the joint's check.",
+      "properties": {
+        "stiffness": {
+          "$ref": "#/$defs/SpringStiffness"
+        },
+        "damping": {
+          "$ref": "#/$defs/SpringDamping"
+        }
+      },
+      "required": [
+        "stiffness",
+        "damping"
+      ],
+      "title": "JointSpring",
       "type": "object"
     },
     "Material": {
@@ -1997,6 +2026,72 @@
       "title": "Sphere",
       "type": "object"
     },
+    "SpringDamping": {
+      "additionalProperties": false,
+      "description": "Resisting force (torque) per unit of joint speed: N*s/m on a slider, N*m*s/rad on a hinge. 0 is a pure spring.",
+      "properties": {
+        "badge": {
+          "$ref": "#/$defs/Badge"
+        },
+        "source": {
+          "$ref": "#/$defs/Source"
+        },
+        "value": {
+          "minimum": 0,
+          "title": "Value",
+          "type": "number"
+        },
+        "unit": {
+          "enum": [
+            "N*s/m",
+            "N*m*s/rad"
+          ],
+          "title": "Unit",
+          "type": "string"
+        }
+      },
+      "required": [
+        "badge",
+        "source",
+        "value",
+        "unit"
+      ],
+      "title": "SpringDamping",
+      "type": "object"
+    },
+    "SpringStiffness": {
+      "additionalProperties": false,
+      "description": "Restoring force (torque) per unit of joint travel: N/m on a slider, N*m/rad on a hinge. 0 is a pure damper.",
+      "properties": {
+        "badge": {
+          "$ref": "#/$defs/Badge"
+        },
+        "source": {
+          "$ref": "#/$defs/Source"
+        },
+        "value": {
+          "minimum": 0,
+          "title": "Value",
+          "type": "number"
+        },
+        "unit": {
+          "enum": [
+            "N/m",
+            "N*m/rad"
+          ],
+          "title": "Unit",
+          "type": "string"
+        }
+      },
+      "required": [
+        "badge",
+        "source",
+        "value",
+        "unit"
+      ],
+      "title": "SpringStiffness",
+      "type": "object"
+    },
     "UniformDistribution": {
       "additionalProperties": false,
       "properties": {
@@ -2048,6 +2143,7 @@
         "N/m",
         "N*s/m",
         "N*m/rad",
+        "N*m*s/rad",
         "Pa",
         "kg/m^3",
         "kg*m^2",

@@ -27,8 +27,11 @@ to the same drive is ambiguous). Which part may carry which actuator kind: a mot
 `motor`, a thruster on `thruster` (`PartRole`, B-03b). A part with another role is rejected; a part with no role is
 accepted (a bare body, and the compiler reports that it has no curve).
 
-Not here: MJCF (X-01); joint axis, DoF rules per kind, snap compatibility (B-04a, B-04b); springs and dampers
-(B-03e, X-01b); torque-speed and thrust curves and what a command of 1 means in N*m or N (B-03b, B-03c, X-01b,
+A joint may carry a `spring` (B-03e): a stiffness and a damping about the joint coordinate. The spring is at rest at
+the coordinate's zero, the saved pose. Units follow the kind: N/m and N*s/m on a slider, N*m/rad and N*m*s/rad on a hinge.
+
+Not here: MJCF and handing the spring to the engine (X-01, X-01b); joint axis, DoF rules per kind, snap compatibility
+(B-04a, B-04b); torque-speed and thrust curves and what a command of 1 means in N*m or N (B-03b, B-03c, X-01b,
 X-01c); release/separation schedule entries (X-08); definition hashes and missing definitions (C-03, C-06);
 `World` and assumptions (C-01c).
 """
@@ -135,6 +138,49 @@ class BreakThreshold(Quantity):
 
 
 _LIMIT_UNIT = {JointKind.HINGE: Unit.RAD, JointKind.SLIDER: Unit.M}
+_SPRING_UNITS = {
+    JointKind.SLIDER: (Unit.N_PER_M, Unit.N_S_PER_M),
+    JointKind.HINGE: (Unit.N_M_PER_RAD, Unit.N_M_S_PER_RAD),
+}
+
+
+class SpringStiffness(Quantity):
+    """Restoring force (torque) per unit of joint travel: N/m on a slider, N*m/rad on a hinge. 0 is a pure damper."""
+
+    value: Annotated[float, Field(strict=True, allow_inf_nan=False, ge=0)]
+    unit: Literal[Unit.N_PER_M, Unit.N_M_PER_RAD]
+
+
+class SpringDamping(Quantity):
+    """Resisting force (torque) per unit of joint speed: N*s/m on a slider, N*m*s/rad on a hinge. 0 is a pure spring."""
+
+    value: Annotated[float, Field(strict=True, allow_inf_nan=False, ge=0)]
+    unit: Literal[Unit.N_S_PER_M, Unit.N_M_S_PER_RAD]
+
+
+class JointSpring(BaseModel):
+    """A linear spring and viscous damper in parallel about a joint coordinate q:
+    force (torque) = -stiffness * q - damping * dq/dt.
+
+    q is 0 at the saved pose (C-01b), so the spring is at rest where the part was placed. Stiffness and damping each
+    carry their own badge and source. They are a pair: N/m with N*s/m, or N*m/rad with N*m*s/rad. At least one is above
+    zero (a spring that does nothing is left out). That the pair fits the joint's kind is the joint's check.
+    """
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    stiffness: SpringStiffness
+    damping: SpringDamping
+
+    @model_validator(mode="after")
+    def _consistent(self) -> "JointSpring":
+        if (self.stiffness.unit, self.damping.unit) not in set(_SPRING_UNITS.values()):
+            raise ValueError(
+                f"stiffness in {self.stiffness.unit.value!r} goes with damping in the matching unit, got {self.damping.unit.value!r}"
+            )
+        if self.stiffness.value == 0.0 and self.damping.value == 0.0:
+            raise ValueError("stiffness and damping are both 0: leave the spring out instead")
+        return self
 
 
 class Joint(BaseModel):
@@ -142,6 +188,7 @@ class Joint(BaseModel):
 
     `limits` are optional (`None`: unlimited, as a wheel axle) and not allowed on a fixed joint.
     `break_threshold` is optional (`None`: never breaks).
+    `spring` is optional (`None`: no spring and no damping) and not allowed on a fixed joint (B-03e).
     """
 
     model_config = ConfigDict(extra="forbid", frozen=True)
@@ -152,6 +199,7 @@ class Joint(BaseModel):
     b: SnapRef
     limits: JointLimits | None = None
     break_threshold: BreakThreshold | None = None
+    spring: JointSpring | None = None
 
     @model_validator(mode="after")
     def _consistent(self) -> "Joint":
@@ -164,6 +212,16 @@ class Joint(BaseModel):
             if self.limits.lower.unit is not want:
                 raise ValueError(
                     f"joint {self.id!r}: limits of a {self.kind.value} joint are in {want.value!r}, got {self.limits.lower.unit.value!r}"
+                )
+        if self.spring is not None:
+            want_units = _SPRING_UNITS.get(self.kind)
+            if want_units is None:
+                raise ValueError(f"joint {self.id!r}: a {self.kind.value} joint has no spring")
+            got = (self.spring.stiffness.unit, self.spring.damping.unit)
+            if got != want_units:
+                raise ValueError(
+                    f"joint {self.id!r}: the spring of a {self.kind.value} joint is in {want_units[0].value!r} and "
+                    f"{want_units[1].value!r}, got {got[0].value!r} and {got[1].value!r}"
                 )
         return self
 

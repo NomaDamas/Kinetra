@@ -432,6 +432,7 @@ export interface Instance {
  *
  * `limits` are optional (`None`: unlimited, as a wheel axle) and not allowed on a fixed joint.
  * `break_threshold` is optional (`None`: never breaks).
+ * `spring` is optional (`None`: no spring and no damping) and not allowed on a fixed joint (B-03e).
  */
 export interface Joint {
   id: string;
@@ -440,6 +441,7 @@ export interface Joint {
   b: SnapRef;
   limits?: JointLimits | null;
   break_threshold?: BreakThreshold | null;
+  spring?: JointSpring | null;
 }
 
 export type JointKind = "fixed" | "hinge" | "slider";
@@ -448,6 +450,19 @@ export type JointKind = "fixed" | "hinge" | "slider";
 export interface JointLimits {
   lower: Quantity;
   upper: Quantity;
+}
+
+/**
+ * A linear spring and viscous damper in parallel about a joint coordinate q:
+ * force (torque) = -stiffness * q - damping * dq/dt.
+ *
+ * q is 0 at the saved pose (C-01b), so the spring is at rest where the part was placed. Stiffness and damping each
+ * carry their own badge and source. They are a pair: N/m with N*s/m, or N*m/rad with N*m*s/rad. At least one is above
+ * zero (a spring that does nothing is left out). That the pair fits the joint's kind is the joint's check.
+ */
+export interface JointSpring {
+  stiffness: SpringStiffness;
+  damping: SpringDamping;
 }
 
 export interface MassProperties {
@@ -910,6 +925,22 @@ export interface Sphere {
   radius: AxisExpr;
 }
 
+/** Resisting force (torque) per unit of joint speed: N*s/m on a slider, N*m*s/rad on a hinge. 0 is a pure spring. */
+export interface SpringDamping {
+  badge: Badge;
+  source: Source;
+  value: number;
+  unit: "N*s/m" | "N*m*s/rad";
+}
+
+/** Restoring force (torque) per unit of joint travel: N/m on a slider, N*m/rad on a hinge. 0 is a pure damper. */
+export interface SpringStiffness {
+  badge: Badge;
+  source: Source;
+  value: number;
+  unit: "N/m" | "N*m/rad";
+}
+
 /** A box `height` tall (턱). */
 export interface StepProp {
   id: string;
@@ -931,7 +962,7 @@ export interface UniformDistribution {
 }
 
 /** Closed unit vocabulary (SI, written the way the JSON carries it). */
-export type Unit = "1" | "m" | "m^2" | "m^3" | "kg" | "s" | "rad" | "m/s" | "m/s^2" | "rad/s" | "N" | "N*m" | "N/m" | "N*s/m" | "N*m/rad" | "Pa" | "kg/m^3" | "kg*m^2" | "J" | "W" | "W/m^2" | "V" | "A";
+export type Unit = "1" | "m" | "m^2" | "m^3" | "kg" | "s" | "rad" | "m/s" | "m/s^2" | "rad/s" | "N" | "N*m" | "N/m" | "N*s/m" | "N*m/rad" | "N*m*s/rad" | "Pa" | "kg/m^3" | "kg*m^2" | "J" | "W" | "W/m^2" | "V" | "A";
 
 /** A constant that is not a cited number, and why. */
 export interface Unverified {

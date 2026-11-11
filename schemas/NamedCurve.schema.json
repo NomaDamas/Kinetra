@@ -184,6 +184,7 @@
         "N/m",
         "N*s/m",
         "N*m/rad",
+        "N*m*s/rad",
         "Pa",
         "kg/m^3",
         "kg*m^2",

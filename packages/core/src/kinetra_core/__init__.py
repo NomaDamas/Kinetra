@@ -68,9 +68,12 @@ from .designspec import (
     Joint,
     JointKind,
     JointLimits,
+    JointSpring,
     ParamValue,
     Pose,
     SnapRef,
+    SpringDamping,
+    SpringStiffness,
     WorldPosition,
 )
 from .geometry import AxisExpr, ParamTerm, Position, Quaternion
@@ -89,7 +92,17 @@ from .massprops import (
 from .material import Density, ElasticModulus, Friction, Material, YieldStrength
 from .material_catalog import CatalogEntry, MaterialCatalog, load_material_catalog
 from .curve import Curve, CurvePoint, NamedCurve
-from .partdef import MOTOR_CURVE, MOTOR_RATED_VOLTAGE, ParamDef, PartDef, PartRole, SnapPoint, SpecDef
+from .partdef import (
+    MOTOR_CURVE,
+    MOTOR_RATED_VOLTAGE,
+    SPRING_DAMPING,
+    SPRING_STIFFNESS,
+    ParamDef,
+    PartDef,
+    PartRole,
+    SnapPoint,
+    SpecDef,
+)
 from .pbr import PbrColor, PbrScalar, PbrSlots
 from .project import Project
 from .refs import Ref, RefError, RefKind
@@ -106,6 +119,8 @@ __all__ = [
     "MOTOR_RATED_VOLTAGE",
     "PLANET_CONSTANT_NAMES",
     "QUATERNION_COMPONENTS",
+    "SPRING_DAMPING",
+    "SPRING_STIFFNESS",
     "ActuateEntry",
     "Actuator",
     "ActuatorKind",
@@ -161,6 +176,7 @@ __all__ = [
     "Joint",
     "JointKind",
     "JointLimits",
+    "JointSpring",
     "MassProperties",
     "Material",
     "MaterialCatalog",
@@ -215,6 +231,8 @@ __all__ = [
     "SnapPoint",
     "SnapRef",
     "Source",
+    "SpringDamping",
+    "SpringStiffness",
     "SpecDef",
     "Sphere",
     "StepProp",

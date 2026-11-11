@@ -178,6 +178,8 @@ SAMPLES = {
     "payload-mount-al6061": (lambda: library_part("payload-mount"), "al6061-t6"),
     # B-03b: a datasheet motor, mass declared by the datasheet weight, drawn without a material.
     "motor-37d-12v-50-1-declared-mass": (lambda: library_part("motor-37d-12v-50-1"), NO_MATERIAL),
+    # B-03e: a spring-damper with a declared (datasheet) mass, drawn without a material.
+    "spring-damper-lc075k06m-declared-mass": (lambda: library_part("spring-damper-lc075k06m"), NO_MATERIAL),
     "beam-al6061": (beam, "al6061-t6"),
     "plate-al6061": (plate, "al6061-t6"),
 }

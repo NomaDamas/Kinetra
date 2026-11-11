@@ -1,0 +1,771 @@
+{
+  "id": "spring-damper-lc075k06m",
+  "name": "Spring-damper (Lee Spring LC 075K 06 M rate)",
+  "parameters": [
+    {
+      "name": "stiffness",
+      "unit": "N/m",
+      "default": {
+        "badge": "cite",
+        "source": {
+          "ref": "Lee Spring stock compression spring LC 075K 06 M (music wire ASTM A228, squared and ground), manufacturer product page",
+          "locator": "Specifications: Rate (N/mm) 2.77 (Rate 15.82 lb/in, tolerance 10 %)",
+          "url": "https://www.leespring.com/product/compression-spring-lc075k06m-music-wire"
+        },
+        "value": 2770.0,
+        "unit": "N/m"
+      },
+      "min": {
+        "badge": "default",
+        "source": {
+          "ref": "Kinetra: allowed range of the spring rate, chosen by us to cover small hobby springs up to stiff suspension springs; not a product limit"
+        },
+        "value": 100.0,
+        "unit": "N/m"
+      },
+      "max": {
+        "badge": "default",
+        "source": {
+          "ref": "Kinetra: allowed range of the spring rate, chosen by us to cover small hobby springs up to stiff suspension springs; not a product limit"
+        },
+        "value": 100000.0,
+        "unit": "N/m"
+      }
+    },
+    {
+      "name": "damping",
+      "unit": "N*s/m",
+      "default": {
+        "badge": "default",
+        "source": {
+          "ref": "Kinetra: starting damping chosen by us so a new damper visibly damps a 1 kg sprung mass on the default spring (damping ratio about 0.19); the Lee Spring page has no damper. Set the real value for the damper you mean"
+        },
+        "value": 20.0,
+        "unit": "N*s/m"
+      },
+      "min": {
+        "badge": "default",
+        "source": {
+          "ref": "Kinetra: allowed range of the damping, chosen by us (0 is a spring with no damper); not a product limit"
+        },
+        "value": 0.0,
+        "unit": "N*s/m"
+      },
+      "max": {
+        "badge": "default",
+        "source": {
+          "ref": "Kinetra: allowed range of the damping, chosen by us (0 is a spring with no damper); not a product limit"
+        },
+        "value": 2000.0,
+        "unit": "N*s/m"
+      }
+    },
+    {
+      "name": "mass",
+      "unit": "kg",
+      "default": {
+        "badge": "estimate",
+        "source": {
+          "ref": "Lee Spring stock compression spring LC 075K 06 M (music wire ASTM A228, squared and ground), manufacturer product page. The page gives Weight 0.03 lb (two decimals, so anywhere in 0.025 to 0.035 lb); 0.03 lb = 0.0136078 kg is used as the spring's own mass and the rounding is not removed. The mass of a damper body is in no datasheet and is not included. The user sets the real mass",
+          "locator": "Specifications: Weight 0.03 lb",
+          "url": "https://www.leespring.com/product/compression-spring-lc075k06m-music-wire"
+        },
+        "value": 0.0136078,
+        "unit": "kg"
+      },
+      "min": {
+        "badge": "default",
+        "source": {
+          "ref": "Kinetra: allowed range of the mass, chosen by us; not a product limit"
+        },
+        "value": 0.001,
+        "unit": "kg"
+      },
+      "max": {
+        "badge": "default",
+        "source": {
+          "ref": "Kinetra: allowed range of the mass, chosen by us; not a product limit"
+        },
+        "value": 2.0,
+        "unit": "kg"
+      }
+    }
+  ],
+  "snap_points": [
+    {
+      "badge": "declared",
+      "source": {
+        "ref": "Kinetra: the centre of an end cap face. The snap frame's +z is the outward normal of that face; the part axis is z, base cap at z = 0",
+        "declared_by": "kinetra-b03e",
+        "declared_at": "2026-11-12T00:00:00Z"
+      },
+      "id": "end_a",
+      "kind": "spring_mount",
+      "accepts": [
+        "spring_mount",
+        "surface"
+      ],
+      "position": {
+        "x": {
+          "offset": 0.0,
+          "terms": []
+        },
+        "y": {
+          "offset": 0.0,
+          "terms": []
+        },
+        "z": {
+          "offset": 0.0,
+          "terms": []
+        }
+      },
+      "orientation": {
+        "x": 1.0,
+        "y": 0.0,
+        "z": 0.0,
+        "w": 0.0
+      }
+    },
+    {
+      "badge": "declared",
+      "source": {
+        "ref": "Kinetra: the centre of an end cap face. The snap frame's +z is the outward normal of that face; the part axis is z, base cap at z = 0",
+        "declared_by": "kinetra-b03e",
+        "declared_at": "2026-11-12T00:00:00Z"
+      },
+      "id": "end_b",
+      "kind": "spring_mount",
+      "accepts": [
+        "spring_mount",
+        "surface"
+      ],
+      "position": {
+        "x": {
+          "offset": 0.0,
+          "terms": []
+        },
+        "y": {
+          "offset": 0.0,
+          "terms": []
+        },
+        "z": {
+          "offset": 0.05879999999999999,
+          "terms": []
+        }
+      },
+      "orientation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0,
+        "w": 1.0
+      }
+    }
+  ],
+  "specs": [],
+  "shape": {
+    "badge": "estimate",
+    "source": {
+      "ref": "Kinetra: silhouette drawn by us. Spring length 50.8 mm, outside diameter 21.46 mm, wire diameter 1.91 mm from the Lee Spring LC 075K 06 M page (https://www.leespring.com/product/compression-spring-lc075k06m-music-wire); eight turns drawn as discs on a core (the coil is not modelled), end caps and the core radius are ours"
+    },
+    "components": [
+      {
+        "id": "base_cap",
+        "primitive": {
+          "kind": "cylinder",
+          "radius": {
+            "offset": 0.0125,
+            "terms": []
+          },
+          "length": {
+            "offset": 0.004,
+            "terms": []
+          }
+        },
+        "operation": "add",
+        "position": {
+          "x": {
+            "offset": 0.0,
+            "terms": []
+          },
+          "y": {
+            "offset": 0.0,
+            "terms": []
+          },
+          "z": {
+            "offset": 0.002,
+            "terms": []
+          }
+        },
+        "orientation": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 1.0
+        }
+      },
+      {
+        "id": "turn_1",
+        "primitive": {
+          "kind": "cylinder",
+          "radius": {
+            "offset": 0.01073,
+            "terms": []
+          },
+          "length": {
+            "offset": 0.00191,
+            "terms": []
+          }
+        },
+        "operation": "add",
+        "position": {
+          "x": {
+            "offset": 0.0,
+            "terms": []
+          },
+          "y": {
+            "offset": 0.0,
+            "terms": []
+          },
+          "z": {
+            "offset": 0.004955,
+            "terms": []
+          }
+        },
+        "orientation": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 1.0
+        }
+      },
+      {
+        "id": "core_1",
+        "primitive": {
+          "kind": "cylinder",
+          "radius": {
+            "offset": 0.004,
+            "terms": []
+          },
+          "length": {
+            "offset": 0.0050742857142857135,
+            "terms": []
+          }
+        },
+        "operation": "add",
+        "position": {
+          "x": {
+            "offset": 0.0,
+            "terms": []
+          },
+          "y": {
+            "offset": 0.0,
+            "terms": []
+          },
+          "z": {
+            "offset": 0.008447142857142858,
+            "terms": []
+          }
+        },
+        "orientation": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 1.0
+        }
+      },
+      {
+        "id": "turn_2",
+        "primitive": {
+          "kind": "cylinder",
+          "radius": {
+            "offset": 0.01073,
+            "terms": []
+          },
+          "length": {
+            "offset": 0.00191,
+            "terms": []
+          }
+        },
+        "operation": "add",
+        "position": {
+          "x": {
+            "offset": 0.0,
+            "terms": []
+          },
+          "y": {
+            "offset": 0.0,
+            "terms": []
+          },
+          "z": {
+            "offset": 0.011939285714285713,
+            "terms": []
+          }
+        },
+        "orientation": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 1.0
+        }
+      },
+      {
+        "id": "core_2",
+        "primitive": {
+          "kind": "cylinder",
+          "radius": {
+            "offset": 0.004,
+            "terms": []
+          },
+          "length": {
+            "offset": 0.0050742857142857135,
+            "terms": []
+          }
+        },
+        "operation": "add",
+        "position": {
+          "x": {
+            "offset": 0.0,
+            "terms": []
+          },
+          "y": {
+            "offset": 0.0,
+            "terms": []
+          },
+          "z": {
+            "offset": 0.015431428571428572,
+            "terms": []
+          }
+        },
+        "orientation": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 1.0
+        }
+      },
+      {
+        "id": "turn_3",
+        "primitive": {
+          "kind": "cylinder",
+          "radius": {
+            "offset": 0.01073,
+            "terms": []
+          },
+          "length": {
+            "offset": 0.00191,
+            "terms": []
+          }
+        },
+        "operation": "add",
+        "position": {
+          "x": {
+            "offset": 0.0,
+            "terms": []
+          },
+          "y": {
+            "offset": 0.0,
+            "terms": []
+          },
+          "z": {
+            "offset": 0.01892357142857143,
+            "terms": []
+          }
+        },
+        "orientation": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 1.0
+        }
+      },
+      {
+        "id": "core_3",
+        "primitive": {
+          "kind": "cylinder",
+          "radius": {
+            "offset": 0.004,
+            "terms": []
+          },
+          "length": {
+            "offset": 0.0050742857142857135,
+            "terms": []
+          }
+        },
+        "operation": "add",
+        "position": {
+          "x": {
+            "offset": 0.0,
+            "terms": []
+          },
+          "y": {
+            "offset": 0.0,
+            "terms": []
+          },
+          "z": {
+            "offset": 0.022415714285714282,
+            "terms": []
+          }
+        },
+        "orientation": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 1.0
+        }
+      },
+      {
+        "id": "turn_4",
+        "primitive": {
+          "kind": "cylinder",
+          "radius": {
+            "offset": 0.01073,
+            "terms": []
+          },
+          "length": {
+            "offset": 0.00191,
+            "terms": []
+          }
+        },
+        "operation": "add",
+        "position": {
+          "x": {
+            "offset": 0.0,
+            "terms": []
+          },
+          "y": {
+            "offset": 0.0,
+            "terms": []
+          },
+          "z": {
+            "offset": 0.02590785714285714,
+            "terms": []
+          }
+        },
+        "orientation": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 1.0
+        }
+      },
+      {
+        "id": "core_4",
+        "primitive": {
+          "kind": "cylinder",
+          "radius": {
+            "offset": 0.004,
+            "terms": []
+          },
+          "length": {
+            "offset": 0.0050742857142857135,
+            "terms": []
+          }
+        },
+        "operation": "add",
+        "position": {
+          "x": {
+            "offset": 0.0,
+            "terms": []
+          },
+          "y": {
+            "offset": 0.0,
+            "terms": []
+          },
+          "z": {
+            "offset": 0.029399999999999992,
+            "terms": []
+          }
+        },
+        "orientation": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 1.0
+        }
+      },
+      {
+        "id": "turn_5",
+        "primitive": {
+          "kind": "cylinder",
+          "radius": {
+            "offset": 0.01073,
+            "terms": []
+          },
+          "length": {
+            "offset": 0.00191,
+            "terms": []
+          }
+        },
+        "operation": "add",
+        "position": {
+          "x": {
+            "offset": 0.0,
+            "terms": []
+          },
+          "y": {
+            "offset": 0.0,
+            "terms": []
+          },
+          "z": {
+            "offset": 0.03289214285714285,
+            "terms": []
+          }
+        },
+        "orientation": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 1.0
+        }
+      },
+      {
+        "id": "core_5",
+        "primitive": {
+          "kind": "cylinder",
+          "radius": {
+            "offset": 0.004,
+            "terms": []
+          },
+          "length": {
+            "offset": 0.0050742857142857135,
+            "terms": []
+          }
+        },
+        "operation": "add",
+        "position": {
+          "x": {
+            "offset": 0.0,
+            "terms": []
+          },
+          "y": {
+            "offset": 0.0,
+            "terms": []
+          },
+          "z": {
+            "offset": 0.03638428571428571,
+            "terms": []
+          }
+        },
+        "orientation": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 1.0
+        }
+      },
+      {
+        "id": "turn_6",
+        "primitive": {
+          "kind": "cylinder",
+          "radius": {
+            "offset": 0.01073,
+            "terms": []
+          },
+          "length": {
+            "offset": 0.00191,
+            "terms": []
+          }
+        },
+        "operation": "add",
+        "position": {
+          "x": {
+            "offset": 0.0,
+            "terms": []
+          },
+          "y": {
+            "offset": 0.0,
+            "terms": []
+          },
+          "z": {
+            "offset": 0.03987642857142856,
+            "terms": []
+          }
+        },
+        "orientation": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 1.0
+        }
+      },
+      {
+        "id": "core_6",
+        "primitive": {
+          "kind": "cylinder",
+          "radius": {
+            "offset": 0.004,
+            "terms": []
+          },
+          "length": {
+            "offset": 0.0050742857142857135,
+            "terms": []
+          }
+        },
+        "operation": "add",
+        "position": {
+          "x": {
+            "offset": 0.0,
+            "terms": []
+          },
+          "y": {
+            "offset": 0.0,
+            "terms": []
+          },
+          "z": {
+            "offset": 0.04336857142857142,
+            "terms": []
+          }
+        },
+        "orientation": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 1.0
+        }
+      },
+      {
+        "id": "turn_7",
+        "primitive": {
+          "kind": "cylinder",
+          "radius": {
+            "offset": 0.01073,
+            "terms": []
+          },
+          "length": {
+            "offset": 0.00191,
+            "terms": []
+          }
+        },
+        "operation": "add",
+        "position": {
+          "x": {
+            "offset": 0.0,
+            "terms": []
+          },
+          "y": {
+            "offset": 0.0,
+            "terms": []
+          },
+          "z": {
+            "offset": 0.046860714285714276,
+            "terms": []
+          }
+        },
+        "orientation": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 1.0
+        }
+      },
+      {
+        "id": "core_7",
+        "primitive": {
+          "kind": "cylinder",
+          "radius": {
+            "offset": 0.004,
+            "terms": []
+          },
+          "length": {
+            "offset": 0.0050742857142857135,
+            "terms": []
+          }
+        },
+        "operation": "add",
+        "position": {
+          "x": {
+            "offset": 0.0,
+            "terms": []
+          },
+          "y": {
+            "offset": 0.0,
+            "terms": []
+          },
+          "z": {
+            "offset": 0.05035285714285714,
+            "terms": []
+          }
+        },
+        "orientation": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 1.0
+        }
+      },
+      {
+        "id": "turn_8",
+        "primitive": {
+          "kind": "cylinder",
+          "radius": {
+            "offset": 0.01073,
+            "terms": []
+          },
+          "length": {
+            "offset": 0.00191,
+            "terms": []
+          }
+        },
+        "operation": "add",
+        "position": {
+          "x": {
+            "offset": 0.0,
+            "terms": []
+          },
+          "y": {
+            "offset": 0.0,
+            "terms": []
+          },
+          "z": {
+            "offset": 0.05384499999999999,
+            "terms": []
+          }
+        },
+        "orientation": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 1.0
+        }
+      },
+      {
+        "id": "top_cap",
+        "primitive": {
+          "kind": "cylinder",
+          "radius": {
+            "offset": 0.0125,
+            "terms": []
+          },
+          "length": {
+            "offset": 0.004,
+            "terms": []
+          }
+        },
+        "operation": "add",
+        "position": {
+          "x": {
+            "offset": 0.0,
+            "terms": []
+          },
+          "y": {
+            "offset": 0.0,
+            "terms": []
+          },
+          "z": {
+            "offset": 0.056799999999999996,
+            "terms": []
+          }
+        },
+        "orientation": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 1.0
+        }
+      }
+    ]
+  },
+  "mass_parameter": "mass",
+  "role": "spring_damper",
+  "curves": []
+}

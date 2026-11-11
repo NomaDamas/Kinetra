@@ -366,6 +366,87 @@ def test_designspec_rejects_limits_with_mixed_units():
     reject(d, "share a unit")
 
 
+def spring_dict(k, c, k_unit, c_unit, k_badge="declared", c_badge="declared"):
+    return {"stiffness": q(k, k_unit, k_badge), "damping": q(c, c_unit, c_badge)}
+
+
+def test_designspec_accepts_a_spring_on_a_hinge_and_on_a_slider():
+    d = four_wheel_car()
+    d["joints"][4]["spring"] = spring_dict(0.5, 0.02, "N*m/rad", "N*m*s/rad", c_badge="estimate")
+    spec = DesignSpec.model_validate(d)
+    sp = next(j for j in spec.joints if j.id == "axle-fl").spring
+    assert (sp.stiffness.value, sp.stiffness.unit) == (0.5, Unit.N_M_PER_RAD)
+    assert (sp.damping.value, sp.damping.unit) == (0.02, Unit.N_M_S_PER_RAD)
+    assert sp.stiffness.badge is Badge.DECLARED and sp.damping.badge is Badge.ESTIMATE  # each value has its own badge
+    d["joints"][4]["kind"] = "slider"
+    d["joints"][4]["spring"] = spring_dict(2770.0, 20.0, "N/m", "N*s/m")
+    assert DesignSpec.model_validate(d).joints[4].spring.stiffness.unit is Unit.N_PER_M
+    assert DesignSpec().joints == ()
+
+
+def test_designspec_a_joint_without_a_spring_has_none():
+    assert all(j.spring is None for j in DesignSpec.model_validate(four_wheel_car()).joints)
+
+
+def test_designspec_spring_may_be_a_pure_spring_or_a_pure_damper_but_not_neither():
+    d = four_wheel_car()
+    d["joints"][4]["spring"] = spring_dict(0.5, 0.0, "N*m/rad", "N*m*s/rad")
+    DesignSpec.model_validate(d)
+    d["joints"][4]["spring"] = spring_dict(0.0, 0.5, "N*m/rad", "N*m*s/rad")
+    DesignSpec.model_validate(d)
+    d["joints"][4]["spring"] = spring_dict(0.0, 0.0, "N*m/rad", "N*m*s/rad")
+    reject(d, "both 0")
+
+
+@pytest.mark.parametrize("value", [-1.0, -1e-9])
+def test_designspec_spring_values_are_not_negative(value):
+    d = four_wheel_car()
+    d["joints"][4]["spring"] = spring_dict(value, 0.1, "N*m/rad", "N*m*s/rad")
+    reject(d, "greater than or equal to 0")
+    d["joints"][4]["spring"] = spring_dict(0.1, value, "N*m/rad", "N*m*s/rad")
+    reject(d, "greater than or equal to 0")
+
+
+@pytest.mark.parametrize(
+    "kind,k_unit,c_unit,match",
+    [
+        ("hinge", "N/m", "N*s/m", "spring of a hinge joint is in 'N\\*m/rad' and 'N\\*m\\*s/rad'"),
+        ("slider", "N*m/rad", "N*m*s/rad", "spring of a slider joint is in 'N/m' and 'N\\*s/m'"),
+        ("hinge", "N*m/rad", "N*s/m", "matching unit"),
+        ("hinge", "N", "N*m*s/rad", "stiffness"),
+        ("hinge", "N*m/rad", "N", "damping"),
+        ("hinge", "m", "m", "stiffness"),
+    ],
+)
+def test_designspec_rejects_a_spring_in_the_wrong_units_for_the_joint(kind, k_unit, c_unit, match):
+    d = four_wheel_car()
+    d["joints"][4]["kind"] = kind
+    d["joints"][4]["spring"] = spring_dict(1.0, 0.1, k_unit, c_unit)
+    reject(d, match)
+
+
+def test_designspec_fixed_joint_has_no_spring():
+    d = four_wheel_car()
+    d["joints"][0]["spring"] = spring_dict(1.0, 0.1, "N/m", "N*s/m")
+    reject(d, "a fixed joint has no spring")
+
+
+def test_designspec_rejects_a_spring_value_without_a_source_or_with_a_bare_number():
+    d = four_wheel_car()
+    d["joints"][4]["spring"] = spring_dict(1.0, 0.1, "N*m/rad", "N*m*s/rad")
+    del d["joints"][4]["spring"]["stiffness"]["source"]
+    reject(d, "source")
+    d["joints"][4]["spring"] = {"stiffness": 1.0, "damping": q(0.1, "N*m*s/rad")}
+    reject(d, "stiffness")
+
+
+def test_designspec_spring_json_schema_names_the_units():
+    defs = DesignSpec.model_json_schema()["$defs"]
+    assert set(defs["SpringStiffness"]["properties"]["unit"]["enum"]) == {"N/m", "N*m/rad"}
+    assert set(defs["SpringDamping"]["properties"]["unit"]["enum"]) == {"N*s/m", "N*m*s/rad"}
+    assert defs["SpringStiffness"]["properties"]["value"]["minimum"] == 0
+
+
 @pytest.mark.parametrize("value,unit", [(0.0, "N"), (-5.0, "N"), (500.0, "N*m"), (500.0, "m")])
 def test_designspec_rejects_bad_break_threshold(value, unit):
     d = four_wheel_car()
