@@ -137,9 +137,12 @@ def test_hash_text_is_utf8_unescaped_and_not_normalised():
 
 
 def _shuffle_lists(node, rng: random.Random):
-    """Reorder every list in a JSON tree. Every list in a Project is a collection, none is a coordinate."""
+    """Reorder collections whose written order is free; keep a Curve's x-ordered point sequence valid."""
     if isinstance(node, dict):
-        return {k: _shuffle_lists(v, rng) for k, v in node.items()}
+        return {
+            k: copy.deepcopy(v) if k == "points" and {"x_unit", "y_unit"} <= node.keys() else _shuffle_lists(v, rng)
+            for k, v in node.items()
+        }
     if isinstance(node, list):
         out = [_shuffle_lists(v, rng) for v in node]
         rng.shuffle(out)
