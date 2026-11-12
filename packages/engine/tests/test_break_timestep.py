@@ -25,6 +25,7 @@ import math
 from pathlib import Path
 
 import mujoco
+import numpy as np
 import pytest
 
 from kinetra_core import (
@@ -57,7 +58,7 @@ from kinetra_engine.parts import mass_properties
 from kinetra_engine.run import PreviewRun, compile_project
 from kinetra_engine.run import preview as preview_module
 from pydantic import ValidationError
-from test_break_runtime import BOB_KG, FLIP, G_EARTH, HANGING_KG, SRC, _actuate, _with, box, instance, q, snap, swing
+from test_break_runtime import BOB_KG, FLIP, G_EARTH, G_MOON, HANGING_KG, SRC, TOP_KG, _actuate, _with, box, breakable_tower, instance, q, snap, swing
 from test_thrust import rocket
 
 WINDOW = BREAK_LOAD_WINDOW.value.value
@@ -208,6 +209,43 @@ def test_break_timestep_window_mean_of_a_steady_force_is_that_force(timestep):
     assert watch.loads["seat"] == pytest.approx(1.0 * g, rel=1e-6)
 
 
+def test_break_timestep_a_one_step_spike_over_the_threshold_does_not_break_a_sustained_force_does():
+    """The X-04b tower on the Moon at rest (weld load m g = 6.48 N), threshold m g + 50 N. A 100 N push down on the top block for
+    one step: that step's force is about m g + 100 N, over the threshold, but the window mean is m g + 100 N x 0.002 / 0.02
+    (about 16.5 N) and nothing breaks, then or after. The same push held: the window mean rises by about 10 N a step and the
+    weld breaks at the first step where it is over the threshold, the 6th (m g + 60 N by hand; 65.8 N measured)."""
+    force = 100.0
+    threshold = TOP_KG * G_MOON + 0.5 * force
+    compiled = compile_project(breakable_tower(threshold))
+    model, data = compiled.model, mujoco.MjData(compiled.model)
+    watch = BreakWatch(compiled.tree, model, WINDOW)
+    top = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_BODY, "top")
+    for _ in range(500):  # 1 s: settled, the window holds m g
+        mujoco.mj_step(model, data)
+        assert watch.over(model, data) == ()
+    data.xfrc_applied[top, 2] = -force
+    mujoco.mj_step(model, data)
+    assert watch.over(model, data) == ()
+    instantaneous = float(np.linalg.norm(data.cfrc_int[top, 3:6]))
+    assert instantaneous > threshold  # X-04b's one-step load would have broken here
+    assert watch.loads["weld"] == pytest.approx(TOP_KG * G_MOON + force * MAX_TIMESTEP_S / WINDOW, rel=0.05)
+    data.xfrc_applied[top] = 0.0
+    for _ in range(round(WINDOW / MAX_TIMESTEP_S) * 3):
+        mujoco.mj_step(model, data)
+        assert watch.over(model, data) == ()
+    loads = []
+    for step in range(1, 11):
+        data.xfrc_applied[top, 2] = -force
+        mujoco.mj_step(model, data)
+        over = watch.over(model, data)
+        loads.append(watch.loads["weld"])
+        if over:
+            break
+    assert step == 6 and [o.joint for o in over] == ["weld"] and over[0].load == loads[-1]
+    assert loads[-2] <= threshold < loads[-1]
+    assert all(b > a for a, b in zip(loads, loads[1:]))
+
+
 # --- the time step of a run --------------------------------------------------------------------------------------------
 
 
@@ -343,6 +381,30 @@ def test_break_timestep_a_run_out_of_range_says_its_breaks_are_weak_evidence():
     assert label.startswith(TIMESTEP_SENSITIVE_LABEL) and "질량비" in label and "break-timestep.md" in label
     _, _, ended = run(rig(travel=0.2, load_density=heavy, threshold=None), 0.05, MAX_TIMESTEP_S)
     assert ended.labels == ()
+
+
+def test_break_timestep_out_of_range_after_a_recompile_is_caught_mid_run(monkeypatch):
+    """The sensitivity is read again on every step from the model the run is on, so a model compiled again after a break is
+    checked too. The drop scene starts in range; here the model compiled after `pin` breaks makes the 1 kg tip block 5000 times
+    heavier (mass and inertia, so 5000 kg against the 0.48 kg arm: heaviest / lightest over `MASS_RATIO_LIMIT`), and the run
+    ends with the label. A break itself does not change a
+    body's mass (the bodies are the same before and after, F8), so the test changes the recompiled model to stand for any
+    out-of-range model a recompile could bring (a separation, X-08)."""
+    project, _, _, _, duration = SCENES["drop"]
+    assert TimestepSensitivity(compile_project(project).model).reasons == []
+    real = preview_module.carry_state
+
+    def heavier(old_model, old_data, new_model):
+        row = mujoco.mj_name2id(new_model, mujoco.mjtObj.mjOBJ_BODY, "bob-tip")
+        new_model.body_mass[row] *= 5000.0
+        new_model.body_inertia[row] *= 5000.0
+        return real(old_model, old_data, new_model)
+
+    monkeypatch.setattr(preview_module, "carry_state", heavier)
+    _, frames, ended = run(project, duration, MAX_TIMESTEP_S)
+    assert broken(frames)[0].joint == "pin"
+    (label,) = ended.labels
+    assert label.startswith(TIMESTEP_SENSITIVE_LABEL) and "질량비" in label
 
 
 # --- bracing is a part with mass ----------------------------------------------------------------------------------------

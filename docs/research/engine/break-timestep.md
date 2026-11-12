@@ -94,7 +94,7 @@
 
 ## 4. 실행의 표시
 
-`TimestepSensitivity`(`compiler/breaks.py`)가 임계가 있는 결합이 하나라도 있는 실행에서 질량비와 스프링을 한 번(추진제를 실은 모델에서), 속도를 매 스텝(풀릴 결합이 남아 있는 동안) 본다. 경계를 넘으면 `run_ended.labels`에 `시간 간격 민감: 파단 결과가 약한 증거 (이유; docs/research/engine/break-timestep.md)`가 붙는다. 기준 장면 3종은 붙지 않는다(테스트).
+`TimestepSensitivity`(`compiler/breaks.py`)가 임계가 있는 결합이 하나라도 있는 실행에서 질량비, 스프링, 속도를 실행 시작과 매 스텝(풀릴 결합이 남아 있는 동안) 그때의 모델로 본다(해제 뒤 다시 컴파일한 모델, 추진제가 줄어든 질량 포함). 경계를 넘으면 `run_ended.labels`에 `시간 간격 민감: 파단 결과가 약한 증거 (이유; docs/research/engine/break-timestep.md)`가 붙는다. 기준 장면 3종은 붙지 않는다(테스트).
 
 ## 5. 하지 않은 것과 열린 질문
 

@@ -29,8 +29,9 @@ model is the same text for the same tree, so the same project and the same ticks
 
 **Time-step sensitivity (X-10).** With the window, the three reference scenes break the same joints at the time step,
 half and a quarter of it and their window loads agree within 10 %. `docs/research/engine/break-timestep.md` measured where
-that stops holding; `TimestepSensitivity` checks a run against those numbers (the mass ratio and the springs once, the
-speed every step while a joint can still break) and its `reasons` are why the run's breaks are weak evidence
+that stops holding; `TimestepSensitivity` checks a run against those numbers (mass ratio, springs and speed at the start and
+after every step while a joint can still break, on the model the run is on, also one compiled again after a break) and its
+`reasons` are why the run's breaks are weak evidence
 (`TIMESTEP_SENSITIVE_LABEL`).
 
 This is a simplified model (plan 4.6, `break-threshold.md`): one scalar force against one scalar threshold. No torque, no
@@ -204,36 +205,54 @@ def carry_state(old_model: mujoco.MjModel, old_data: mujoco.MjData, new_model: m
 
 class TimestepSensitivity:
     """Whether a run is where the measurements of `break-timestep.md` did not keep breaks time-step invariant: a mass ratio over
-    `MASS_RATIO_LIMIT` or a slider spring over `SPRING_LIMIT` (read once, from the model with its propellant on), or a body faster
-    than `SPEED_LIMIT_M_S` (read after every step while a joint can still break, `observe`). `reasons` says which, once each."""
+    `MASS_RATIO_LIMIT`, a slider spring over `SPRING_LIMIT` or a body faster than `SPEED_LIMIT_M_S`. All three are read from the
+    model and state of the run at construction and after every step (`observe`): the model may be one compiled again after a
+    break, and the masses change as tanks drain. `reasons` says which, each kind (and each spring) once, at its first value
+    out of range."""
 
     def __init__(self, model: mujoco.MjModel) -> None:
-        self.reasons: list[str] = []
-        self._fastest = 0.0
-        masses = model.body_mass[1:]
-        if masses.size >= 2 and masses.min() > 0.0 and masses.max() / masses.min() > MASS_RATIO_LIMIT:
-            self.reasons.append(f"질량비 {masses.max() / masses.min():.4g} > {MASS_RATIO_LIMIT:g}")
+        self._found: dict[str, str] = {}
+        self._check_model(model)
+
+    @property
+    def reasons(self) -> list[str]:
+        return list(self._found.values())
+
+    def _report(self, kind: str, text: str) -> None:
+        self._found.setdefault(kind, text)
+
+    def _check_model(self, model: mujoco.MjModel) -> None:
+        masses = np.asarray(model.body_mass, dtype=float)
+        bodies = masses[1:]
+        if bodies.size >= 2 and bodies.min() > 0.0 and bodies.max() / bodies.min() > MASS_RATIO_LIMIT:
+            self._report("mass", f"질량비 {bodies.max() / bodies.min():.4g} > {MASS_RATIO_LIMIT:g}")
+        if not np.any(model.jnt_stiffness > 0.0):
+            return
+        subtree = masses.copy()  # from the current masses (propellant on), not the compiled `body_subtreemass`
+        for b in range(model.nbody - 1, 0, -1):
+            subtree[model.body_parentid[b]] += subtree[b]
         dt = float(model.opt.timestep)
         for j in range(model.njnt):
             k = float(model.jnt_stiffness[j])
             if k <= 0.0 or model.jnt_type[j] != mujoco.mjtJoint.mjJNT_SLIDE:  # springs are on sliders only (`drives.py`)
                 continue
-            held = float(model.body_subtreemass[model.jnt_bodyid[j]])
-            root = float(model.body_subtreemass[model.body_rootid[model.jnt_bodyid[j]]])
+            body = int(model.jnt_bodyid[j])
+            held, root = float(subtree[body]), float(subtree[model.body_rootid[body]])
             reduced = held * (root - held) / root if root > held else held  # the two sides of the spring; a root slider holds all
             ratio = math.sqrt(k / reduced) * dt
             if ratio > SPRING_LIMIT:
                 name = mujoco.mj_id2name(model, mujoco.mjtObj.mjOBJ_JOINT, j)
-                self.reasons.append(f"스프링 {name}: omega * 시간 간격 {ratio:.3g} > {SPRING_LIMIT:g}")
+                self._report(f"spring:{name}", f"스프링 {name}: omega * 시간 간격 {ratio:.3g} > {SPRING_LIMIT:g}")
 
     def observe(self, model: mujoco.MjModel, data: mujoco.MjData) -> None:
-        """After a step: the fastest body's speed at its centre of mass [m/s] (from the step's `cvel`), against `SPEED_LIMIT_M_S`."""
+        """After a step, on the model the run is on now: the mass ratio and the springs again, and the fastest body's speed at
+        its centre of mass [m/s] (from the step's `cvel`)."""
+        self._check_model(model)
         r = data.xipos[1:] - data.subtree_com[model.body_rootid[1:]]
         v = data.cvel[1:, 3:] - np.cross(r, data.cvel[1:, :3])
         fastest = float(np.sqrt((v * v).sum(axis=1)).max()) if len(v) else 0.0
-        if fastest > SPEED_LIMIT_M_S and self._fastest <= SPEED_LIMIT_M_S:
-            self.reasons.append(f"속도 {fastest:.4g} m/s > {SPEED_LIMIT_M_S:g} m/s")
-        self._fastest = max(self._fastest, fastest)
+        if fastest > SPEED_LIMIT_M_S:
+            self._report("speed", f"속도 {fastest:.4g} m/s > {SPEED_LIMIT_M_S:g} m/s")
 
     def label(self) -> str | None:
         """`TIMESTEP_SENSITIVE_LABEL` with the reasons, or `None` when the run stayed inside the measured range."""
