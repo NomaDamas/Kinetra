@@ -168,7 +168,9 @@ _COMPILE_REASONS = {CompileErrorCode.SNAP_MISMATCH: ReasonCode.INVALID_SNAP, Com
 code; every other compile error is `invalid_project`. The `CompileErrorCode` itself leads the sentence (`<code>: ...`)."""
 
 
-def _compile_refused(request_id: str, error: CompileError) -> Rejected:
+def compile_reasons(error: CompileError) -> tuple[Reason, ...]:
+    """The reason a `CompileError` is refused with, wherever a core path refuses a design that does not compile (a run
+    request here, the agent's query tools G-02b): its `CompileErrorCode` leads the sentence, its ids are typed refs."""
     ids = (
         tuple(Ref(kind=RefKind.INSTANCE, id=i) for i in error.instances)
         + tuple(Ref(kind=RefKind.PART, id=p) for p in error.parts)
@@ -176,7 +178,11 @@ def _compile_refused(request_id: str, error: CompileError) -> Rejected:
         + tuple(Ref(kind=RefKind.ACTUATOR, id=a) for a in error.actuators)
     )
     code = _COMPILE_REASONS.get(error.code, ReasonCode.INVALID_PROJECT)
-    return _refuse(request_id, code, f"{error.code.value}: the design does not compile: {error}", ids)
+    return (Reason(code=code, message=f"{error.code.value}: the design does not compile: {error}", ids=ids),)
+
+
+def _compile_refused(request_id: str, error: CompileError) -> Rejected:
+    return Rejected(type="rejected", id=request_id, reasons=compile_reasons(error))
 
 
 class Hub:

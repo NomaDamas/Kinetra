@@ -2,7 +2,7 @@
 
 - 상태: 구현됨. 코드는 `packages/engine/src/kinetra_engine/mcp/`(`server.py`, `__main__.py`), 테스트는 `packages/engine/tests/test_mcp_server.py`(`uv run pytest packages/engine -q -k mcp`).
 - 근거: `docs/plan/studio-plan.md` 4.4절("같은 명령을 MCP 서버로 내보내 Claude Code에서도 Studio를 조작한다")과 불변 결정 2("모든 편집은 Command다(MCP로도 노출)"), `docs/architecture/client-adapter.md` C1과 "프로세스 안의 발행자", `docs/architecture/agent-edit-tools.md`, 이슈 #155.
-- 범위 밖: MCP를 통한 판정 변경(이슈의 범위 밖). 조회 도구(G-02b), 실행·판정 요청 도구(G-02c)는 그 이슈들이 도구를 더하면 이 서버의 목록에도 그대로 나온다.
+- 범위 밖: MCP를 통한 판정 변경(이슈의 범위 밖). 조회 도구(G-02b, [`agent-query-tools.md`](agent-query-tools.md))는 아직 이 서버의 목록에 없다(MCP 노출은 #558). 실행·판정 요청 도구(G-02c)도 그 이슈가 정한다.
 
 ## 규칙
 
