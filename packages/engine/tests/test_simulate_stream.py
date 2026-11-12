@@ -484,3 +484,32 @@ def test_simulate_stream_an_internal_error_before_the_first_frame_opens_no_strea
     assert not any(isinstance(m, (RunStarted, RunEnded, Frame)) for m in received)
     error = next(m for m in received if m.type == "error")
     assert "early" in error.message and "secret" not in error.message
+
+
+def test_simulate_stream_a_thruster_run_climbs_as_the_rocket_equation_says():
+    """X-01c in the run: `test_thrust.rocket` (tank on the 2 lbf thruster, exhaust down) burns at command 1 over [0, 0.5) s.
+    Gravity acts the same with and without the burn, so the height the burn adds at tick n is the sum over the steps of
+    `dt x` the rocket equation's speed, `v_e ln(m0 / m(t))`, with `m(t) = m0 - J(t) / v_e` and `J(t)` the curve's impulse
+    (a 7 ms linear ramp, then F). That sum is the semi-implicit Euler position of the speed the rocket equation gives;
+    it is computed here by hand, not by the code under test. No label says the thruster is not applied."""
+    from test_thrust import CAPACITY, F, M_TANK, M_THRUSTER, T_OPEN, V_E, entry, rocket
+
+    burning = run_of(rocket([entry("burn", "main", 0.0, 0.5, 1.0)]), duration_s=0.5)
+    coasting = run_of(rocket([]), duration_s=0.5)
+    assert not any("추력기" in label for label in burning.started.model_labels)
+    frames, ended = split(burning)
+    check_run(burning.started, frames, ended)
+    still, _ = split(coasting)
+    dt = burning.started.timestep_s
+    m0 = M_TANK + M_THRUSTER + CAPACITY
+
+    def impulse(t):
+        return F * t * t / (2 * T_OPEN) if t < T_OPEN else F * (t - T_OPEN / 2)
+
+    for frame, ref in zip(frames, still):
+        assert frame.tick == ref.tick
+        n = frame.tick
+        added = math.fsum(dt * V_E * math.log(m0 / (m0 - impulse(k * dt) / V_E)) for k in range(1, n + 1))
+        rise = frame.poses[0].position.z - ref.poses[0].position.z
+        assert rise == pytest.approx(added, rel=1e-9, abs=1e-15)  # measured 4e-12
+    assert frames[-1].poses[0].position.z - still[-1].poses[0].position.z > 0.0
