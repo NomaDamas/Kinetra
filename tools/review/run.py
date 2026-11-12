@@ -42,7 +42,7 @@ def run(pr: int, repo: str, *, do_post: bool = True, out_dir: Path = DEFAULT_OUT
     bundle = collect.collect(pr, repo, gh)
     n_diff = sum(len(p) for p in bundle.diff_parts)
     print(f"run: 수집 완료: 파일 {len(bundle.files)}개, diff {n_diff}자 {len(bundle.diff_parts)}부분, 계획 절 {len(bundle.plan_sections)}개, 이슈 {[i['number'] for i in bundle.issues]}", file=sys.stderr)
-    print(f"run: {call.MODEL} reasoning high 호출", file=sys.stderr)
+    print(f"run: {call.model()} reasoning {call.effort()} 호출", file=sys.stderr)
     result = call.review_bundle(bundle, transport=transport, cost_log=cost_log)
     u = result.usage
     cost = u.cost_text()

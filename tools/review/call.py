@@ -32,6 +32,35 @@ from . import common
 MODEL = "openai/gpt-6.1-sol"
 ENDPOINT = "https://openrouter.ai/api/v1/chat/completions"
 REASONING = {"effort": "high"}
+# 다른 OpenAI 호환 끝점(같은 모델의 다른 경로)으로 돌릴 때만 쓰는 환경 변수. 없으면 위 기본값이다.
+# 키는 그대로 `OPENROUTER_API_KEY` 환경 변수로만 받는다(이름은 기존 계약, 값은 그 끝점의 키).
+ENDPOINT_ENV = "KINETRA_REVIEW_ENDPOINT"
+MODEL_ENV = "KINETRA_REVIEW_MODEL"
+EFFORT_ENV = "KINETRA_REVIEW_EFFORT"
+EFFORTS = ("low", "medium", "high")
+
+
+def endpoint() -> str:
+    url = os.environ.get(ENDPOINT_ENV) or ENDPOINT
+    if not re.fullmatch(r"https://[^\s/]+(/[^\s]*)?", url):
+        raise common.ReviewError(f"{ENDPOINT_ENV} 는 https:// 로 시작하는 URL 이어야 한다")
+    return url
+
+
+def model() -> str:
+    name = os.environ.get(MODEL_ENV) or MODEL
+    if not re.fullmatch(r"[A-Za-z0-9._/:-]{1,128}", name):
+        raise common.ReviewError(f"{MODEL_ENV} 가 모델 이름 모양이 아니다")
+    return name
+
+
+def effort() -> str:
+    level = os.environ.get(EFFORT_ENV) or REASONING["effort"]
+    if level not in EFFORTS:
+        raise common.ReviewError(f"{EFFORT_ENV} 는 {', '.join(EFFORTS)} 중 하나여야 한다")
+    return level
+
+
 MAX_TOKENS = 16000
 CURL_MAX_TIME = 900
 ATTEMPTS = 2  # 첫 시도 + 재시도 1회
@@ -270,6 +299,7 @@ class Result:
     parts: int
     attempts: int  # 모델 요청 총 횟수(재시도·전송 실패 포함)
     errors: list[str] = field(default_factory=list)  # 재시도를 부른 실패(마스킹됨)
+    effort: str = "high"
 
     def to_json(self) -> str:
         return json.dumps(asdict(self), ensure_ascii=False, indent=1)
@@ -296,7 +326,7 @@ def curl_transport(payload: dict, key: str) -> tuple[int, str]:
         argv = [
             "curl", "-sS", "--max-time", str(CURL_MAX_TIME), "--config", "-", "-X", "POST",
             "-H", "Content-Type: application/json", "--data-binary", f"@{path}",
-            "-w", "\n%{http_code}", ENDPOINT,
+            "-w", "\n%{http_code}", endpoint(),
         ]  # fmt: skip
         try:
             p = subprocess.run(argv, input=cfg, capture_output=True, text=True, check=False)
@@ -317,8 +347,8 @@ def build_payload(system: str, user: str, extra_user: str | None = None) -> dict
     if extra_user:
         messages.append({"role": "user", "content": extra_user})
     return {
-        "model": MODEL,
-        "reasoning": REASONING,
+        "model": model(),
+        "reasoning": {"effort": effort()},
         "max_tokens": MAX_TOKENS,
         "response_format": {"type": "json_object"},
         "usage": {"include": True},
@@ -392,7 +422,7 @@ def review_bundle(
         for attempt in range(1, ATTEMPTS + 1):
             attempts += 1
             spent: list[dict] = []
-            entry = {"ts": time.strftime("%Y-%m-%dT%H:%M:%S%z"), "pr": bundle.pr["number"], "part": part + 1, "attempt": attempt, "model": MODEL}
+            entry = {"ts": time.strftime("%Y-%m-%dT%H:%M:%S%z"), "pr": bundle.pr["number"], "part": part + 1, "attempt": attempt, "model": model()}
             try:
                 review, one = _once(build_payload(system, user, extra), key, transport, usage, items, spent)
             except common.ReviewError as e:
@@ -411,7 +441,7 @@ def review_bundle(
             log_cost(cost_log, {**entry, "ok": True, **one})
             reviews.append(review)
             break
-    return Result(MODEL, merge(reviews), usage, n_parts, attempts, errors)
+    return Result(model(), merge(reviews), usage, n_parts, attempts, errors, effort())
 
 
 def usage_line(u: Usage) -> str:
@@ -419,7 +449,7 @@ def usage_line(u: Usage) -> str:
 
 
 def main(argv: list[str] | None = None) -> int:
-    ap = argparse.ArgumentParser(description="PR 리뷰를 OpenRouter(openai/gpt-6.1-sol, reasoning high)에 요청해 검증된 JSON 을 출력한다")
+    ap = argparse.ArgumentParser(description="PR 리뷰를 OpenRouter(openai/gpt-6.1-sol, reasoning high, 환경 변수로 다른 OpenAI 호환 끝점·모델·effort 가능)에 요청해 검증된 JSON 을 출력한다")
     ap.add_argument("pr", type=int)
     ap.add_argument("--repo", help="OWNER/REPO (기본: 현재 디렉터리의 gh 저장소)")
     ap.add_argument("--cost-log", type=Path, default=DEFAULT_COST_LOG, help="호출마다 토큰·비용을 덧붙이는 JSONL (기본: out/review-cost.jsonl)")
