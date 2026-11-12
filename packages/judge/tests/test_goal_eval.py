@@ -72,8 +72,7 @@ def trajectory(vx: float, vz0: float, turns: float, break_tick: int | None = Non
         events += [(0, "begin"), (1, "end"), (down, "begin")]
         events = [{"kind": "contact", "tick": t, "phase": p, "body": "wheel-1", "other": {"kind": "ground"}} for t, p in events]
     if break_tick is not None:
-        events.append({"kind": "break", "tick": break_tick, "joint": "mount", "crossing_time_s": (break_tick - 0.5) * DT,
-                       "load": {"value": 1.0, "unit": "N"}, "release_load": {"value": 2.0, "unit": "N"}, "threshold": {"value": 1.0, "unit": "N"}})
+        events.append({"kind": "break", "tick": break_tick, "joint": "mount", "load": {"value": 2.0, "unit": "N"}, "threshold": {"value": 1.0, "unit": "N"}})
     ticks = [*range(0, last + 1, every), *([last] if last % every else [])]
     frames, previous = [], -1
     for tick in ticks:
@@ -149,7 +148,7 @@ def test_goal_eval_failure_trajectory_fails_each_condition_at_its_tick():
     assert "기울기" in landing.reason and "속도" in landing.reason
     assert (c["within-1s"].status, c["within-1s"].tick) == (Status.FAILED, 500)  # 1.0 s / 0.002 s
     assert (c["mount-holds"].status, c["mount-holds"].tick) == (Status.FAILED, 200)
-    assert c["mount-holds"].measured == {"load_n": 1.0, "threshold_n": 1.0}
+    assert c["mount-holds"].measured == {"load_n": 2.0, "threshold_n": 1.0}
     assert (c["axle-holds"].status, c["axle-holds"].tick) == (Status.MET, LAST)  # another joint's break does not count
 
 

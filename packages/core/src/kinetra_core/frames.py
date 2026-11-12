@@ -302,16 +302,12 @@ class ContactEvent(_Obj):
 
 
 class BreakEvent(_Obj):
-    """Joint `joint` released at `tick` after its window load crossed `threshold` (loads in N; plan 4.6, simplified model).
-    `load` is the linearly interpolated load at `crossing_time_s` in the preceding step; `release_load` is the sampled load
-    at the actual release tick. The crossing estimate does not mean the body was released between ticks."""
+    """Joint `joint` released: the load on it reached its break threshold (both in N; plan 4.6, a simplified model)."""
 
     kind: Literal["break"]
     tick: _Tick
     joint: _Id
-    crossing_time_s: _NonNegative
     load: ForceN
-    release_load: ForceN
     threshold: ForceN
 
 
@@ -366,11 +362,6 @@ def check_frame(run: RunStarted, frame: Frame, *, final: bool = False) -> None:
     if not math.isclose(frame.sim_time_s, frame.tick * run.timestep_s, rel_tol=1e-9, abs_tol=1e-12):
         raise ValueError(f"sim_time_s {frame.sim_time_s} is not tick {frame.tick} x timestep_s {run.timestep_s}")
     for e in frame.events:
-        if isinstance(e, BreakEvent):
-            lower = (e.tick - 1) * run.timestep_s if e.tick else 0.0
-            upper = e.tick * run.timestep_s
-            if not lower <= e.crossing_time_s <= upper:
-                raise ValueError(f"break crossing_time_s {e.crossing_time_s} is outside the step before release tick {e.tick}")
         named = [e.body] if isinstance(e, ContactEvent) else []
         if isinstance(e, ContactEvent) and isinstance(e.other, BodyTarget):
             named.append(e.other.id)

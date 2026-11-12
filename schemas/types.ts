@@ -210,18 +210,12 @@ export interface Box {
   size_z: AxisExpr;
 }
 
-/**
- * Joint `joint` released at `tick` after its window load crossed `threshold` (loads in N; plan 4.6, simplified model).
- * `load` is the linearly interpolated load at `crossing_time_s` in the preceding step; `release_load` is the sampled load
- * at the actual release tick. The crossing estimate does not mean the body was released between ticks.
- */
+/** Joint `joint` released: the load on it reached its break threshold (both in N; plan 4.6, a simplified model). */
 export interface BreakEvent {
   kind: "break";
   tick: number;
   joint: string;
-  crossing_time_s: number;
   load: ForceN;
-  release_load: ForceN;
   threshold: ForceN;
 }
 

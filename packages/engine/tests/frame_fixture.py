@@ -105,9 +105,7 @@ def frame(tick: int) -> dict:
                 "kind": "break",
                 "tick": BREAK_TICK,
                 "joint": "axle-fl",
-                "crossing_time_s": (BREAK_TICK - 0.5) * TIMESTEP,
-                "load": {"value": 120.0, "unit": "N"},
-                "release_load": {"value": 150.0, "unit": "N"},
+                "load": {"value": 150.0, "unit": "N"},
                 "threshold": {"value": 120.0, "unit": "N"},
             }
         )
