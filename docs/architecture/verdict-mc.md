@@ -1,6 +1,6 @@
 # 몬테카를로 판정: p_success와 95% 신뢰구간 (J-01a)
 
-- 상태: 구현됨. `packages/judge/src/kinetra_judge/mc.py`(`sample_assumptions`, `wilson_ci`, `monte_carlo`, `run_verdict`, `Verdict`, `compare_verdicts`), 엔진 쪽은 `PreviewRun(..., ground_friction=μ)`(`packages/engine/src/kinetra_engine/run/preview.py`). 테스트 `packages/judge/tests/test_mc.py`(`uv run pytest packages/judge -q -k mc`).
+- 상태: 구현됨. `packages/judge/src/kinetra_judge/mc.py`(`sample_assumptions`, `wilson_ci`, `monte_carlo`, `run_verdict`, `Verdict`, `compare_verdicts`, `goal_hash`, `assumptions_hash`), 엔진 쪽은 `PreviewRun(..., ground_friction=μ)`(`packages/engine/src/kinetra_engine/run/preview.py`). 테스트 `packages/judge/tests/test_mc.py`(`uv run pytest packages/judge -q -k mc`).
 - 근거: 이슈 #162, `docs/plan/studio-plan.md` 4.5절과 J-01 행, `docs/decisions/engine.md` 5.4절(H1~H6), 조건 평가기([`goal-eval.md`](goal-eval.md), J-02a), 판정 가정표의 합성([`bodies.md`](bodies.md) W-03c), 핵심 가치 V1. legacy 원본은 `legacy-v0:packages/engine/src/kinetra_engine/mc.py`.
 - 범위 밖: 민감도 순위(J-03, legacy의 한 번에 하나씩 흔들기), 실패 원인 묶음 집계(J-06), 판정 카드 화면(J-04a), 에이전트 도구에 판정기 연결(J-01d), 프로젝트 가정 행의 바인딩(#571), 기준 플랫폼(#478).
 
@@ -13,7 +13,7 @@
 3. 표본 i마다 엔진을 한 번 돌린다: `PreviewRun` 종류 `verdict_sample`, 실행 id `verdict-{seed}-{i}`, 판정의 시드, 틱마다 프레임(조건을 틱 단위로 본다, goal-eval.md 2), 지면 마찰은 그 표본의 `ground_friction`(`to_mjcf(..., ground_friction=μ)`, 결합이 풀려 다시 컴파일할 때도 같은 값).
 4. 스트림마다 `evaluate_goal`(J-02a)이 `met`, `failed`, `undetermined`를 낸다. p_success = `met / (met + failed)`, 95% 신뢰구간은 같은 분모의 Wilson 점수 구간(z = 1.959963984540054, p를 품도록 넓힌다. legacy `wilson_ci`).
 
-`monte_carlo(table, goal, n=, seed=, applied=, run_sample=)`는 엔진과 무관한 같은 루프다. `run_sample(i, values)`가 실행 스트림 하나를 돌려준다.
+`monte_carlo(table, goal, n=, seed=, duration_s=, applied=, run_sample=)`는 엔진과 무관한 같은 루프다. `run_sample(i, values)`가 실행 스트림 하나를 돌려준다.
 
 ## 기록 (`Verdict`)
 
@@ -21,7 +21,7 @@
 |---|---|
 | `p_success`, `ci_low`, `ci_high`, `ci_method` `wilson_95` | 판단된 표본(`n_met + n_failed`)의 비율과 구간. 판단된 표본이 없으면 셋 다 `null` |
 | `n_samples`, `n_met`, `n_failed`, `n_undetermined` | 표본 수와 결과별 개수. 합이 `n_samples`가 아니면 거부 |
-| `seed`, `definition_hash`, `planet` | 요청: 같은 세 값과 같은 `n_samples`일 때만 두 판정을 견준다 |
+| 요청(`REQUEST_FIELDS`): `definition_hash`(프로젝트), `goal_hash`(조건 집합의 정규 JSON SHA-256), `assumptions_hash`(판정 가정표: 행성과 행 전체의 정규 JSON SHA-256), `duration_s`, `timestep_s`, `n_samples`, `seed` | 일곱 값이 모두 같을 때만 두 판정이 서로의 재현이다. `planet`도 기록한다(가정표 해시에 든다) |
 | `platform` | 표본 실행의 플랫폼 태그(H1). 필수이고, 표본 사이에 태그가 다르면 판정을 만들지 않는다(`ValueError`) |
 | `sampled`, `not_applied` | 분포가 있는 행 가운데 모델에 표본이 들어간 행과 들어가지 않은 행 |
 | `model_labels`, `labels` | 실행들의 모델 라벨(처음 나온 순서)과 판정의 라벨 |
@@ -39,7 +39,7 @@
 ## 플랫폼 태그와 재현 (engine.md 5.4, A0-05)
 
 - **H1.** 판정은 표본 실행의 플랫폼 태그와 함께 기록된다. 태그가 없는 기록은 `Verdict`가 아니다.
-- **H2, H5.** `compare_verdicts(a, b)`: 같은 요청(`definition_hash`, `seed`, `n_samples`)이 아니면 `ValueError`. 태그가 다르면 p_success를 보지 않고 `not_comparable`. 같으면 기록 전체가 같을 때 `match`, 아니면 `mismatch`. 라벨: "이 p_success는 함께 기록한 플랫폼 태그에서 낸 값이다. 태그가 다른 실행의 p_success와 같은 값이라고 보지 않는다".
+- **H2, H5.** `compare_verdicts(a, b)`는 `VerdictComparisonResult(status, differs)`를 낸다. 요청 필드가 하나라도 다르거나 태그가 다르면 p_success를 보지 않고 `not_comparable`이고, `differs`에 다른 요청 필드(그 순서대로)와 태그가 다르면 `platform`을 싣는다. 모두 같으면 기록 전체가 같을 때 `match`(`differs` 빔), 아니면 `mismatch`(다른 기록 필드). 라벨: "이 p_success는 함께 기록한 플랫폼 태그에서 낸 값이다. 태그가 다른 실행의 p_success와 같은 값이라고 보지 않는다".
 - **H6, 시드 고정 재현.** 테스트는 한 프로세스(같은 태그) 안에서 같은 요청을 두 번 돌려 기록 전체가 비트 단위로 같음(`match`)을 단언한다. "태그가 같으면 결과가 같다"는 가정은 #432가 검증한다.
 - **커밋한 기준값 없음.** 기준 플랫폼(Linux x86-64 고정 이미지, H3)은 아직 없다(#478 열림). 그래서 저장소에 p_success 기록값을 커밋하지 않았고, 태그가 다른 실행을 허용 한계로 비교하는 테스트도 없다. 기준값과 그 비교는 기준 플랫폼이 선 뒤에 그 플랫폼에서 내서 태그와 함께 커밋한다(J-05).
 

@@ -2,9 +2,9 @@
 
     sample_assumptions(rows, n, seed) -> {key: (x_0 .. x_{n-1})}       # one RNG stream per row, from (seed, key)
     wilson_ci(k, n) -> (low, high)                                    # 95% Wilson score interval
-    monte_carlo(table, goal, n=, seed=, applied=, run_sample=) -> Verdict
+    monte_carlo(table, goal, n=, seed=, duration_s=, applied=, run_sample=) -> Verdict
     run_verdict(project, goal, n=, seed=, duration_s=, project_id=, revision=) -> Verdict   # the engine's samples
-    compare_verdicts(a, b) -> VerdictComparison                       # match | mismatch | not_comparable (H2, H5)
+    compare_verdicts(a, b) -> VerdictComparisonResult                 # match | mismatch | not_comparable, and what differs
 
 Port of the legacy sampler (`legacy-v0:packages/engine/src/kinetra_engine/mc.py`: `derive_seed`, `sample_assumption`,
 `wilson_ci`, `feasibility_fields`). Kept as it was: each row draws from its own NumPy `default_rng` stream seeded by
@@ -19,8 +19,9 @@ tick) with the values of row i, and `evaluate_goal` (J-02a) says `met`, `failed`
 sample does not enter the model is not shaken and says so (`not_applied`): the engine reads only `ENGINE_APPLIED` today.
 
 Platform (engine.md 5.4): a verdict carries the platform tag of its runs (H1); every sample must have the same tag, else
-there is no verdict. Two verdicts are compared only under the same tag (H2); under different tags their p_success is not
-called the same value (H5) and `compare_verdicts` says `not_comparable` without looking at it.
+there is no verdict. Two verdicts are compared only when they answer the same request (`REQUEST_FIELDS`: project, goal,
+assumption table, duration, time step, sample count, seed) under the same tag (H2); otherwise their p_success is not called
+the same value (H5) and `compare_verdicts` says `not_comparable`, naming what differs, without looking at it.
 """
 
 from __future__ import annotations
@@ -134,17 +135,40 @@ def wilson_ci(k: int, n: int, z: float = Z_95) -> tuple[float, float]:
 # --- the verdict -------------------------------------------------------------------------------------------------
 
 
+REQUEST_FIELDS = ("definition_hash", "goal_hash", "assumptions_hash", "duration_s", "timestep_s", "n_samples", "seed")
+"""What a verdict was asked: the project, the condition set, the assumption table, the run length and step, the sample count and
+the seed. Two verdicts are a reproduction of each other only when all of these are equal (`compare_verdicts`)."""
+
+
+def _sha256(obj: Any) -> str:
+    return "sha256:" + hashlib.sha256(_canonical_json(obj).encode()).hexdigest()
+
+
+def goal_hash(goal: Goal) -> str:
+    """SHA-256 over the canonical JSON of the goal's conditions."""
+    return _sha256(goal.model_dump(mode="json"))
+
+
+def assumptions_hash(table: VerdictAssumptionTable) -> str:
+    """SHA-256 over the canonical JSON of the verdict table: its planet and its rows in order (nominal, distribution, badges)."""
+    return _sha256({"planet": table.planet, "rows": [a.model_dump(mode="json") for a in table.rows]})
+
+
 class Verdict(BaseModel):
-    """A Monte Carlo verdict, recorded with the platform tag of its runs (engine.md 5.4 H1). `p_success`, `ci_low`, `ci_high`
-    are over the determined samples (`n_met + n_failed`) and `None` when there is none. `sampled` are the shaken rows that
-    entered the model, `not_applied` the shaken rows that did not. `model_labels` are the runs' (`RunStarted.model_labels`,
-    in first-seen order), `labels` the verdict's own."""
+    """A Monte Carlo verdict, recorded with the platform tag of its runs (engine.md 5.4 H1) and its request (`REQUEST_FIELDS`).
+    `p_success`, `ci_low`, `ci_high` are over the determined samples (`n_met + n_failed`) and `None` when there is none.
+    `sampled` are the shaken rows that entered the model, `not_applied` the shaken rows that did not. `model_labels` are the
+    runs' (`RunStarted.model_labels`, in first-seen order), `labels` the verdict's own."""
 
     model_config = ConfigDict(extra="forbid", frozen=True)
 
     badge: Literal["sim"]
     planet: str
     definition_hash: str
+    goal_hash: str
+    assumptions_hash: str
+    duration_s: float
+    timestep_s: float
     seed: int
     n_samples: int
     n_met: int
@@ -184,13 +208,15 @@ def monte_carlo(
     *,
     n: int,
     seed: int,
+    duration_s: float,
     applied: frozenset[str],
     run_sample: RunSample,
 ) -> Verdict:
-    """Draw `n` samples of `table` under `seed`, run each with `run_sample`, evaluate `goal` on each stream, and count.
+    """Draw `n` samples of `table` under `seed`, run each with `run_sample` (runs of `duration_s`), evaluate `goal` on each
+    stream, and count.
 
     Raises `ValueError` when a run is not a `verdict_sample`, or the runs disagree on the platform tag, the project
-    (`definition_hash`) or the planet, or the planet is not the table's: such runs do not make one verdict."""
+    (`definition_hash`), the planet or the time step, or the planet is not the table's: such runs do not make one verdict."""
     if not 1 <= n:
         raise ValueError(f"n must be at least 1, got {n}")
     if not 0 <= seed <= MAX_SEED:
@@ -210,8 +236,8 @@ def monte_carlo(
                 raise ValueError(f"sample {i}: run on {started.planet!r}, table of {table.planet!r}")
         elif started.platform != first.platform:
             raise ValueError(f"sample {i}: platform tag differs from sample 0; one verdict has one tag (engine.md 5.4 H1)")
-        elif (started.definition_hash, started.planet) != (first.definition_hash, first.planet):
-            raise ValueError(f"sample {i}: a different project or planet than sample 0")
+        elif (started.definition_hash, started.planet, started.timestep_s) != (first.definition_hash, first.planet, first.timestep_s):
+            raise ValueError(f"sample {i}: a different project, planet or time step than sample 0")
         model_labels.update(dict.fromkeys(started.model_labels))
         counts[evaluate_goal(goal, started, frames, ended).status] += 1
     assert first is not None  # n >= 1
@@ -229,6 +255,10 @@ def monte_carlo(
         badge="sim",
         planet=first.planet,
         definition_hash=first.definition_hash,
+        goal_hash=goal_hash(goal),
+        assumptions_hash=assumptions_hash(table),
+        duration_s=duration_s,
+        timestep_s=first.timestep_s,
         seed=seed,
         n_samples=n,
         n_met=met,
@@ -278,7 +308,7 @@ def run_verdict(
         stream = list(run)
         return run.started, stream[:-1], stream[-1]
 
-    return monte_carlo(table, goal, n=n, seed=seed, applied=ENGINE_APPLIED, run_sample=run_sample)
+    return monte_carlo(table, goal, n=n, seed=seed, duration_s=duration_s, applied=ENGINE_APPLIED, run_sample=run_sample)
 
 
 class VerdictComparison(StrEnum):
@@ -287,12 +317,22 @@ class VerdictComparison(StrEnum):
     NOT_COMPARABLE = "not_comparable"
 
 
-def compare_verdicts(a: Verdict, b: Verdict) -> VerdictComparison:
-    """Two verdicts of the same request (project, seed, sample count): `not_comparable` when their platform tags differ
-    (p_success is then not looked at, H5), else `match` when every recorded field is equal and `mismatch` otherwise (H2).
-    Raises `ValueError` for verdicts of different requests, which are not a reproduction of each other."""
-    if (a.definition_hash, a.seed, a.n_samples) != (b.definition_hash, b.seed, b.n_samples):
-        raise ValueError("not the same verdict request: definition_hash, seed and n_samples must be equal")
-    if a.platform != b.platform:
-        return VerdictComparison.NOT_COMPARABLE
-    return VerdictComparison.MATCH if a == b else VerdictComparison.MISMATCH
+class VerdictComparisonResult(BaseModel):
+    """`status` and the fields behind it: for `not_comparable` the request fields that differ (then `platform` when the tags
+    differ too, or `platform` alone); for `mismatch` the recorded fields that differ; empty for `match`."""
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    status: VerdictComparison
+    differs: tuple[str, ...]
+
+
+def compare_verdicts(a: Verdict, b: Verdict) -> VerdictComparisonResult:
+    """Whether `b` reproduces `a`. `not_comparable` when they were not the same request (`REQUEST_FIELDS`) or their platform
+    tags differ: p_success is then not looked at (H5). Else `match` when every recorded field is equal, `mismatch` otherwise (H2)."""
+    differs = tuple(f for f in REQUEST_FIELDS if getattr(a, f) != getattr(b, f))
+    differs += ("platform",) if a.platform != b.platform else ()
+    if differs:
+        return VerdictComparisonResult(status=VerdictComparison.NOT_COMPARABLE, differs=differs)
+    differs = tuple(f for f in Verdict.model_fields if getattr(a, f) != getattr(b, f))
+    return VerdictComparisonResult(status=VerdictComparison.MISMATCH if differs else VerdictComparison.MATCH, differs=differs)

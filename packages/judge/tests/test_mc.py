@@ -29,7 +29,10 @@ from kinetra_judge import (
     Goal,
     Verdict,
     VerdictComparison,
+    VerdictComparisonResult,
+    assumptions_hash,
     compare_verdicts,
+    goal_hash,
     monte_carlo,
     run_verdict,
     sample_assumptions,
@@ -156,7 +159,7 @@ def test_mc_seed_reproduction_within_the_same_tag(ramp_verdict):
     again = run_verdict(project, slid_goal(project), n=N, seed=SEED, duration_s=DURATION_S, project_id="ramp", revision=0)
     assert again.platform == ramp_verdict.platform  # same tag: bit equality is asserted (H6)
     assert again == ramp_verdict
-    assert compare_verdicts(again, ramp_verdict) is VerdictComparison.MATCH
+    assert compare_verdicts(again, ramp_verdict) == VerdictComparisonResult(status=VerdictComparison.MATCH, differs=())
 
 
 def test_mc_verdicts_under_different_tags_are_not_called_the_same(ramp_verdict):
@@ -164,13 +167,44 @@ def test_mc_verdicts_under_different_tags_are_not_called_the_same(ramp_verdict):
     other_cpu = {**record, "platform": {**record["platform"], "cpu": {**record["platform"]["cpu"], "model": "another cpu"}}}
     elsewhere = Verdict.model_validate(other_cpu)
     assert elsewhere.p_success == ramp_verdict.p_success
-    assert compare_verdicts(elsewhere, ramp_verdict) is VerdictComparison.NOT_COMPARABLE  # H5: not looked at
+    assert compare_verdicts(elsewhere, ramp_verdict) == VerdictComparisonResult(status=VerdictComparison.NOT_COMPARABLE, differs=("platform",))
     k = ramp_verdict.n_met - 1
     fewer = Verdict.model_validate({**record, "n_met": k, "n_failed": N - k, "p_success": k / N,
                                     "ci_low": wilson_ci(k, N)[0], "ci_high": wilson_ci(k, N)[1]})
-    assert compare_verdicts(fewer, ramp_verdict) is VerdictComparison.MISMATCH  # same tag, different numbers (H2)
-    with pytest.raises(ValueError):
-        compare_verdicts(Verdict.model_validate({**record, "seed": SEED + 1}), ramp_verdict)  # a different request
+    assert compare_verdicts(fewer, ramp_verdict) == VerdictComparisonResult(  # same request, same tag, other numbers (H2)
+        status=VerdictComparison.MISMATCH, differs=("n_met", "n_failed", "p_success", "ci_low", "ci_high"))
+
+
+def test_mc_verdicts_of_different_requests_are_not_comparable(ramp_verdict):
+    project = block_on_ramp()
+    assert ramp_verdict.goal_hash == goal_hash(slid_goal(project))
+    assert ramp_verdict.assumptions_hash == assumptions_hash(table_of(project))
+    assert ramp_verdict.duration_s == DURATION_S and ramp_verdict.timestep_s == ramp_verdict.platform.compute.timestep_s
+    mass = {"key": "vehicle_mass", "label": "Vehicle mass", "value": q(10.0, "kg"), "confidence": "med"}
+    other_goal = Goal.model_validate({"conditions": [{"kind": "no_break", "id": "whole"}]})
+    record = ramp_verdict.model_dump(mode="json")
+    changes = {
+        "definition_hash": "sha256:" + "0" * 64,
+        "goal_hash": goal_hash(other_goal),
+        "assumptions_hash": assumptions_hash(table_of(block_on_ramp([mass]))),
+        "duration_s": 2.0,
+        "timestep_s": 0.001,
+        "seed": SEED + 1,
+    }
+    for field, value in changes.items():
+        other = Verdict.model_validate({**record, field: value})
+        assert compare_verdicts(other, ramp_verdict) == VerdictComparisonResult(status=VerdictComparison.NOT_COMPARABLE, differs=(field,))
+    # another sample count, with its own consistent numbers: still a different request
+    other_n = Verdict.model_validate({**record, "n_samples": N + 1, "n_failed": record["n_failed"] + 1,
+                                      "p_success": ramp_verdict.n_met / (N + 1),
+                                      "ci_low": wilson_ci(ramp_verdict.n_met, N + 1)[0], "ci_high": wilson_ci(ramp_verdict.n_met, N + 1)[1]})
+    assert compare_verdicts(other_n, ramp_verdict).differs == ("n_samples",)
+    both = Verdict.model_validate({**other_cpu_record(record), "seed": SEED + 1})
+    assert compare_verdicts(both, ramp_verdict) == VerdictComparisonResult(status=VerdictComparison.NOT_COMPARABLE, differs=("seed", "platform"))
+
+
+def other_cpu_record(record: dict) -> dict:
+    return {**record, "platform": {**record["platform"], "cpu": {**record["platform"]["cpu"], "model": "another cpu"}}}
 
 
 def test_mc_verdict_refuses_inconsistent_numbers(ramp_verdict):
@@ -208,14 +242,14 @@ def test_mc_names_rows_the_model_does_not_read():
     mass = {"key": "vehicle_mass", "label": "Vehicle mass", "value": q(10.0, "kg"), "confidence": "med",
             "distribution": {"kind": "uniform", "low": 9.0, "high": 11.0, "badge": "estimate", "source": SRC}}
     project = block_on_ramp([mass])
-    v = monte_carlo(table_of(project), slid_goal(project), n=2, seed=SEED, applied=ENGINE_APPLIED, run_sample=engine_sample(project))
+    v = monte_carlo(table_of(project), slid_goal(project), n=2, seed=SEED, duration_s=0.1, applied=ENGINE_APPLIED, run_sample=engine_sample(project))
     assert v.sampled == ("ground_friction",) and v.not_applied == ("vehicle_mass",)
     assert "미적용: 가정 'vehicle_mass'의 분포는 모델이 읽지 않아 흔들지 않았다" in v.labels
 
 
 def test_mc_undetermined_samples_are_counted_and_left_out_of_p():
     project = block_on_ramp()
-    v = monte_carlo(table_of(project), slid_goal(project), n=3, seed=SEED, applied=ENGINE_APPLIED,
+    v = monte_carlo(table_of(project), slid_goal(project), n=3, seed=SEED, duration_s=0.02, applied=ENGINE_APPLIED,
                     run_sample=engine_sample(project, stopped=True, duration_s=0.02))
     assert (v.n_met, v.n_failed, v.n_undetermined) == (0, 0, 3)  # stopped at 0.02 s before anything slid 0.02 m
     assert (v.p_success, v.ci_low, v.ci_high) == (None, None, None)
@@ -226,7 +260,7 @@ def test_mc_counts_only_verdict_samples_of_one_tag():
     project = block_on_ramp()
     table, goal = table_of(project), slid_goal(project)
     with pytest.raises(ValueError, match="verdict_sample"):
-        monte_carlo(table, goal, n=1, seed=SEED, applied=ENGINE_APPLIED, run_sample=engine_sample(project, kind=RunKind.PREVIEW))
+        monte_carlo(table, goal, n=1, seed=SEED, duration_s=0.1, applied=ENGINE_APPLIED, run_sample=engine_sample(project, kind=RunKind.PREVIEW))
     real = engine_sample(project)
 
     def second_elsewhere(i, values):
@@ -237,6 +271,6 @@ def test_mc_counts_only_verdict_samples_of_one_tag():
         return started, frames, ended
 
     with pytest.raises(ValueError, match="platform tag"):
-        monte_carlo(table, goal, n=2, seed=SEED, applied=ENGINE_APPLIED, run_sample=second_elsewhere)
+        monte_carlo(table, goal, n=2, seed=SEED, duration_s=0.1, applied=ENGINE_APPLIED, run_sample=second_elsewhere)
     with pytest.raises(ValueError):
-        monte_carlo(table, goal, n=0, seed=SEED, applied=ENGINE_APPLIED, run_sample=real)
+        monte_carlo(table, goal, n=0, seed=SEED, duration_s=0.1, applied=ENGINE_APPLIED, run_sample=real)
