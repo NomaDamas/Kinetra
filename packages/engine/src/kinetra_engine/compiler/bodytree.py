@@ -6,25 +6,29 @@
 components of a shape recipe and every other collection are in the order of their ids, whatever order the file had. So two
 projects with the same `project_hash` give the same bodies, the same float sums and the same MJCF, bit for bit.
 
-**Rigid bodies.** A `fixed` joint welds its two instances: they are one rigid body that moves as one (the same grouping the stream
-frames name, `bodies[].instances`, `client-adapter.md` F8). The body's id is the smallest instance id of the group and its
-frame is that instance's frame. Its mass, centre of mass and inertia are the sum of the instances' `MassProperties`
-(parallel-axis theorem, in the body frame). They are never read from the collision proxy.
+**Rigid bodies.** A `fixed` joint without a `break_threshold` welds its two instances: they are one rigid body that moves as one
+(the same grouping the stream frames name, `bodies[].instances`, `client-adapter.md` F8). The body's id is the smallest instance
+id of the group and its frame is that instance's frame. Its mass, centre of mass and inertia are the sum of the instances'
+`MassProperties` (parallel-axis theorem, in the body frame). They are never read from the collision proxy. A `fixed` joint
+**with** a `break_threshold` (X-04b) does not weld: its two sides stay two bodies, joined in the tree by that fixed joint, so the
+run can read the force through it and release it (`breaks.py`).
 
-**Tree.** `hinge` and `slider` joints connect bodies. The bodies and these joints must form one tree: a loop, a joint inside
-one rigid body and a second assembly the first is not joined to are `CompileError`s naming the instances and joints. The
-root is the smallest-id body that is no joint's `b` side (the `a` side is the parent by convention); the tree is then walked
-from it, and a joint met from its `b` side is reversed: the axis changes sign and the coordinate and its limits stay the
-joint's own (`b` turning by q relative to `a` is `a` turning by q about the opposite axis). The root is free (6 degrees of freedom); every other body has the one degree of freedom of its joint.
+**Tree.** `hinge`, `slider` and breakable `fixed` joints connect bodies. The bodies and these joints must form one tree: a loop,
+a joint inside one rigid body and a second assembly the first is not joined to are `CompileError`s naming the instances and
+joints. The root is the smallest-id body that is no joint's `b` side (the `a` side is the parent by convention); the tree is
+then walked from it, and a joint met from its `b` side is reversed: the axis changes sign and the coordinate and its limits
+stay the joint's own (`b` turning by q relative to `a` is `a` turning by q about the opposite axis). The root is free (6
+degrees of freedom); every other body has the one degree of freedom of its hinge or slider, or none (a breakable fixed joint:
+held to its parent until it breaks).
 
 **Frames.** SI, right-handed, +Z up; quaternions are `(w, x, y, z)` here because MuJoCo orders them so (`collision-proxy.md`,
 mapping table). A body's `pos`/`quat` are relative to its parent body (the root's to the world). A joint's `pos` and `axis` are
 in the frame of the body it belongs to (the child): the point is the world position of the `a` snap point, the axis is
-`R(a instance) R(a snap point) axis` turned into the child's frame.
+`R(a instance) R(a snap point) axis` turned into the child's frame (a fixed joint has no axis: `(0, 0, 0)`).
 
-Not here: the springs, dampers, motors and actuator limits of a joint (X-01b), thrusters and propellant (X-01c), what a joint's
-`break_threshold` does (X-04b), contact friction and parameters (X-01e, `contact.py`). A joint that carries a `break_threshold` or an actuator is
-compiled without it (the MJCF has neither yet).
+Not here: the springs, dampers, motors and actuator limits of a joint (X-01b), thrusters and propellant (X-01c), measuring and
+releasing a breakable joint during a run (X-04b, `breaks.py`), contact friction and parameters (X-01e, `contact.py`). The tree
+carries no threshold: the run reads it from `tree.joints`.
 
 **Planet (W-03a).** The tree also carries the gravity and atmosphere density of `project.world.planet`, read from
 `data/bodies` by `planet_physics` (`planet.py`) and nowhere else; a planet without readable data is a `CompileError`.
@@ -174,9 +178,10 @@ class BodyGeom:
 
 @dataclass(frozen=True)
 class BodyJoint:
-    """The one degree of freedom a body has relative to its parent. `axis` and `pos` are in this body's frame, `range` is
-    the joint's travel limit (rad or m, `None` = unlimited), the same coordinate as the project's joint. `reversed`: the body is
-    the joint's `a` side, so `axis` is the joint's with the sign flipped (and the coordinate keeps its meaning and its limits)."""
+    """What holds a body to its parent: one hinge or slider degree of freedom, or a breakable fixed joint (no degree of freedom,
+    `axis` `(0, 0, 0)`). `axis` and `pos` are in this body's frame, `range` is the joint's travel limit (rad or m, `None` =
+    unlimited), the same coordinate as the project's joint. `reversed`: the body is the joint's `a` side, so `axis` is the
+    joint's with the sign flipped (and the coordinate keeps its meaning and its limits)."""
 
     id: str
     kind: JointKind
@@ -197,7 +202,7 @@ class Body:
     id: str
     instances: tuple[str, ...]
     parent: str | None
-    joint: BodyJoint | None  # None for the root, which is free
+    joint: BodyJoint | None  # None for a root, which is free
     pos: Vec
     quat: Quat
     mass: float
@@ -208,8 +213,9 @@ class Body:
 
 @dataclass(frozen=True)
 class BodyTree:
-    """`bodies` in tree order (parents before children, siblings by id); `bodies[0]` is the root. `planet`: the constants
-    of `project.world.planet` from `data/bodies` (W-03a)."""
+    """`bodies` in tree order (parents before children, siblings by id); `bodies[0]` is the root. A tree built from a project
+    has one root; a run that released joints (`breaks.release`) has more, each a free body hung from the world. `planet`: the
+    constants of `project.world.planet` from `data/bodies` (W-03a)."""
 
     bodies: tuple[Body, ...]
     instances: tuple[CompiledInstance, ...]  # canonical (id) order
@@ -220,6 +226,11 @@ class BodyTree:
     @property
     def root(self) -> Body:
         return self.bodies[0]
+
+    @property
+    def roots(self) -> tuple[Body, ...]:
+        """The free bodies, in tree order: the root, then the bodies of released joints."""
+        return tuple(b for b in self.bodies if b.parent is None)
 
     def body(self, body_id: str) -> Body:
         return next(b for b in self.bodies if b.id == body_id)
@@ -233,6 +244,11 @@ class BodyTree:
 
 def _parameter_values(part: PartDef, inst: Instance) -> dict[str, float]:
     return {p.name: p.default.value for p in part.parameters} | {p.name: p.value for p in inst.parameters}
+
+
+def _welds(joint: Joint) -> bool:
+    """A fixed joint that never breaks makes its two instances one rigid body; a breakable one keeps them two bodies."""
+    return joint.kind is JointKind.FIXED and joint.break_threshold is None
 
 
 def _compile_instance(
@@ -318,10 +334,10 @@ def build_body_tree(
     check_snaps(design, findings)
     check_axes(design)
 
-    # rigid bodies: instances welded by fixed joints
+    # rigid bodies: instances welded by fixed joints that never break
     groups = _Groups(list(by_id))
     for joint in design.joints:
-        if joint.kind is JointKind.FIXED and not groups.union(joint.a.instance, joint.b.instance):
+        if _welds(joint) and not groups.union(joint.a.instance, joint.b.instance):
             raise CompileError(
                 f"fixed joint {joint.id!r} closes a loop of fixed joints between instances {joint.a.instance!r} and {joint.b.instance!r}: "
                 "they are already one rigid body",
@@ -339,13 +355,14 @@ def build_body_tree(
     adjacency: dict[str, list[tuple[str, Joint, bool]]] = {g: [] for g in members}  # (other body, joint, other is the joint's a side)
     targets: set[str] = set()
     for joint in design.joints:
-        if joint.kind is JointKind.FIXED:
+        if _welds(joint):
             continue
         ga, gb = groups.find(joint.a.instance), groups.find(joint.b.instance)
         if ga == gb:
+            could_not = "break apart" if joint.kind is JointKind.FIXED else "move"
             raise CompileError(
                 f"{joint.kind.value} joint {joint.id!r} joins instances {joint.a.instance!r} and {joint.b.instance!r}, "
-                f"which fixed joints already weld into one rigid body {ga!r}: it could not move",
+                f"which fixed joints already weld into one rigid body {ga!r}: it could not {could_not}",
                 code=CompileErrorCode.WELDED_JOINT,
                 instances=(joint.a.instance, joint.b.instance),
                 parts=parts_of(joint.a.instance, joint.b.instance),
@@ -464,9 +481,12 @@ def build_body_tree(
             pos, quat = mtv(rot(qp), vsub(tb, tp)), qnorm(qmul(qconj(qp), qb))
             assert joint is not None
             ap = snap_world(joint.a.instance, joint.a.snap_point)[0]
-            axis_world = mv(rot(snap_world(joint.a.instance, joint.a.snap_point)[1]), joint.unit_axis)  # the joint is never fixed here
-            sign = -1.0 if rev else 1.0
-            axis = mtv(rb, (sign * axis_world[0], sign * axis_world[1], sign * axis_world[2]))
+            if joint.kind is JointKind.FIXED:  # breakable: no degree of freedom, so no axis
+                axis: Vec = (0.0, 0.0, 0.0)
+            else:
+                axis_world = mv(rot(snap_world(joint.a.instance, joint.a.snap_point)[1]), joint.unit_axis)
+                sign = -1.0 if rev else 1.0
+                axis = mtv(rb, (sign * axis_world[0], sign * axis_world[1], sign * axis_world[2]))
             # Reversed (this body is the joint's `a` side): `b` moving by q about/along u relative to `a` is `a` moving by -q,
             # i.e. by q about/along -u. So the axis flips and the coordinate, hence its limits, stays the joint's own.
             limits = None if joint.limits is None else (joint.limits.lower.value, joint.limits.upper.value)

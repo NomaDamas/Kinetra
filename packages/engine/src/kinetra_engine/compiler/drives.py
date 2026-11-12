@@ -52,7 +52,7 @@ curve at the motor's rated voltage, whatever the battery's nominal voltage is).
 from __future__ import annotations
 
 import math
-from collections.abc import Mapping
+from collections.abc import Collection, Mapping
 from dataclasses import dataclass
 
 from kinetra_core import ActuatorKind, JointKind, PartDef, PartRole, Quantity
@@ -146,6 +146,13 @@ class Drives:
         """The hinge damping [N*m*s/rad] the motors on `joint_id` add (0 when none drives it)."""
         return math.fsum(m.back_emf_damping for m in self.motors if m.joint == joint_id)
 
+    def without_joints(self, joints: Collection[str]) -> Drives:
+        """These drives with the springs and motors on `joints` taken away (joints that broke, X-04b); supplies stay."""
+        gone = set(joints)
+        return Drives(
+            tuple(s for s in self.springs if s.joint not in gone), tuple(m for m in self.motors if m.joint not in gone), self.supplies
+        )
+
 
 def _spec(part: PartDef, name: str) -> float | None:
     return next((s.value for s in part.specs if s.name == name), None)
@@ -231,19 +238,27 @@ class DriveRuntime:
     battery instances (default: `drives.supplies`)."""
 
     def __init__(self, model, drives: Drives, supplies: Mapping[str, Supply] | None = None) -> None:
-        import mujoco
-
         self.drives = drives
         self.supplies: dict[str, Supply] = dict(drives.supplies) | dict(supplies or {})
         self._rows: list[tuple[MotorDrive, int, int]] = []
+        self.energy: dict[str, float] = {m.actuator: 0.0 for m in drives.motors}
+        """Energy [J] each metered motor has taken so far."""
+        self.rebind(model, drives)
+
+    def rebind(self, model, drives: Drives) -> None:
+        """Drive `model` (compiled again after a joint broke, X-04b) with `drives` (`Drives.without_joints`), keeping the
+        batteries and the energy taken so far. A motor not in `drives` writes nothing more and draws nothing more."""
+        import mujoco
+
+        rows = []
         for m in drives.motors:
             act = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_ACTUATOR, m.actuator)
             jnt = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_JOINT, m.joint)
             if act < 0 or jnt < 0:
                 raise ValueError(f"motor {m.actuator!r}: the model has no actuator or joint of that name (compile it with drives)")
-            self._rows.append((m, act, int(model.jnt_dofadr[jnt])))
-        self.energy: dict[str, float] = {m.actuator: 0.0 for m in drives.motors}
-        """Energy [J] each metered motor has taken so far."""
+            rows.append((m, act, int(model.jnt_dofadr[jnt])))
+        self.drives = drives
+        self._rows = rows
 
     def apply(self, data, commands: Mapping[str, float], dt: float) -> None:
         """Set each motor's `ctrl` for the next step of `dt` seconds from its command (absent: 0) and its joint speed now (the
