@@ -3,7 +3,7 @@ name = "kinetra-judge"
 version = "0.0.0"
 description = "Judgment: necessary-condition screen, search, Monte-Carlo verdicts"
 requires-python = ">=3.11"
-dependencies = []
+dependencies = ["kinetra-core", "pydantic>=2.14,<3"]
 
 [build-system]
 requires = ["hatchling"]
