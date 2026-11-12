@@ -79,7 +79,7 @@ from .partdef import PartDef
 from .project import Project
 from .world import World
 
-PROTOCOL_VERSION = 1
+PROTOCOL_VERSION = 2
 """The one protocol number this code speaks. Raised when a message gains a required field or changes meaning."""
 
 _ProjectId = Annotated[str, Field(pattern=ID_PATTERN)]

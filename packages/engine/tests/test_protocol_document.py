@@ -354,11 +354,13 @@ def test_protocol_document_bad_input_is_answered_not_crashed(project):
             assert (await c.recv()).type == "error"
             await c.send(wire_publish("c2", move()))  # the connection is still usable
             assert (await c.recv()).type == "applied"
-        async with dial() as ws:
-            c = Client(ws)
-            await c.send({"type": "hello", "protocol": PROTOCOL_VERSION + 1})
-            e = await c.recv()
-            assert e.type == "error" and e.fatal and "protocol" in e.message
+        for version in (PROTOCOL_VERSION - 1, PROTOCOL_VERSION + 1):
+            async with dial() as ws:
+                c = Client(ws)
+                await c.send({"type": "hello", "protocol": version})
+                e = await c.recv()
+                assert e.type == "error" and e.fatal
+                assert e.message == f"protocol {version} is not served; this core speaks {PROTOCOL_VERSION}"
         async with dial() as ws:
             c = Client(ws)  # publish without subscribing
             await c.send({"type": "hello", "protocol": PROTOCOL_VERSION})
