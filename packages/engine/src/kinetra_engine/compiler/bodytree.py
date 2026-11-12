@@ -381,10 +381,11 @@ def build_body_tree(project: Project, cache: PartCache | None = None, tolerance:
         for _, m, c, r, props in rel:
             t = _congruent(r, _inertia_matrix(props))
             d = vsub(c, com)  # type: ignore[arg-type]
-            d2 = d[0] * d[0] + d[1] * d[1] + d[2] * d[2]
-            entries[0].append(t[0][0] + m * (d2 - d[0] * d[0]))
-            entries[1].append(t[1][1] + m * (d2 - d[1] * d[1]))
-            entries[2].append(t[2][2] + m * (d2 - d[2] * d[2]))
+            # Each diagonal term from the other two offset components: |d|^2 - d_i^2 would cancel a small perpendicular
+            # offset along a long one to nothing (the same rule as `parts.mass`, B-01a).
+            entries[0].append(t[0][0] + m * (d[1] * d[1] + d[2] * d[2]))
+            entries[1].append(t[1][1] + m * (d[0] * d[0] + d[2] * d[2]))
+            entries[2].append(t[2][2] + m * (d[0] * d[0] + d[1] * d[1]))
             entries[3].append(t[0][1] - m * d[0] * d[1])
             entries[4].append(t[0][2] - m * d[0] * d[2])
             entries[5].append(t[1][2] - m * d[1] * d[2])

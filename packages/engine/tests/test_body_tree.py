@@ -164,6 +164,22 @@ def test_body_tree_inertia_of_the_welded_body_is_the_parallel_axis_sum():
     assert model.body_mass[welded] == pytest.approx(M_BLOCK + M_BALL, rel=1e-12)
 
 
+def test_body_tree_parallel_axis_keeps_a_small_perpendicular_offset_along_a_long_one():
+    # two equal small balls welded 1e4 m apart along x and 1e-3 m apart along y. About their common centre each is
+    # (+-5e3, +-5e-4, 0) away: Ixx gets 2 m (5e-4)^2, which |d|^2 - dx^2 (|d|^2 ~ 2.5e7) would round away entirely.
+    L, h, r = 1.0e4, 1.0e-3, 0.01
+    parts = [part("ball", [sphere("s", r)])]
+    instances = [instance("p", "ball", (0, 0, 0)), instance("q", "ball", (L, h, 0))]
+    tree = build_body_tree(project(parts, instances, [joint("w", "fixed", ("p", "s1"), ("q", "s1"))]))
+    (body,) = tree.bodies
+    m = tree.instances[0].properties.mass.value
+    own = 0.4 * m * r * r
+    hand = (2 * own + 2 * m * (h / 2) ** 2, 2 * own + 2 * m * (L / 2) ** 2, 2 * own + 2 * m * ((L / 2) ** 2 + (h / 2) ** 2))
+    assert body.inertia[:3] == pytest.approx(hand, rel=1e-9)
+    assert body.inertia[0] - 2 * own == pytest.approx(2 * m * (h / 2) ** 2, rel=1e-6)  # the small term itself survives
+    assert body.inertia[3] == pytest.approx(-2 * m * (L / 2) * (h / 2), rel=1e-9)  # ixy = -sum m dx dy
+
+
 def test_body_tree_hinge_axis_pos_and_limits_in_the_world():
     tree = build_body_tree(chain())
     model = mj(tree)
