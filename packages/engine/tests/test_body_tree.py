@@ -91,6 +91,9 @@ def mj(tree):
     return mujoco.MjModel.from_xml_string(to_mjcf(tree))
 
 
+G = 1  # the first part geom: geom 0 is the ground plane (X-01e, `GROUND_GEOM`)
+
+
 def body_row(model, name):
     return mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_BODY, name)
 
@@ -278,10 +281,10 @@ def one(components, at=(0, 0, 0), quat=None):
 def test_body_tree_box_proxy_maps_to_half_extents_mass_and_volume():
     tree = one([box("b", 0.2, 0.1, 0.3, at=(0.1, 0.0, 0.15))])
     model = mj(tree)
-    assert model.ngeom == 1 and model.geom_type[0] == mujoco.mjtGeom.mjGEOM_BOX
-    assert list(model.geom_size[0]) == pytest.approx([0.1, 0.05, 0.15], rel=1e-15)  # half of the full extents 0.2 0.1 0.3
-    assert list(model.geom_pos[0]) == pytest.approx([0.1, 0.0, 0.15], rel=1e-15)
-    volume = 8 * model.geom_size[0].prod()  # the box volume read back from MuJoCo's size
+    assert model.ngeom == 2 and model.geom_type[G] == mujoco.mjtGeom.mjGEOM_BOX
+    assert list(model.geom_size[G]) == pytest.approx([0.1, 0.05, 0.15], rel=1e-15)  # half of the full extents 0.2 0.1 0.3
+    assert list(model.geom_pos[G]) == pytest.approx([0.1, 0.0, 0.15], rel=1e-15)
+    volume = 8 * model.geom_size[G].prod()  # the box volume read back from MuJoCo's size
     assert volume == pytest.approx(0.2 * 0.1 * 0.3, rel=1e-12)
     assert model.body_mass[1] == pytest.approx(RHO * 0.006, rel=1e-12)
     assert tree.instances[0].properties.volume.value == pytest.approx(0.006, rel=1e-12)
@@ -294,14 +297,14 @@ def test_body_tree_box_proxy_maps_to_half_extents_mass_and_volume():
 def test_body_tree_cylinder_proxy_maps_to_radius_half_length_and_wxyz_quaternion():
     tree = one([cyl("c", 0.05, 0.4, at=(0.0, 0.0, 0.05), quat=ROT_X90)])  # the axis (part z) turned onto -y, lying on the ground
     model = mj(tree)
-    assert model.geom_type[0] == mujoco.mjtGeom.mjGEOM_CYLINDER
-    assert list(model.geom_size[0][:2]) == pytest.approx([0.05, 0.2], rel=1e-15)  # radius, half of the length 0.4
-    assert list(model.geom_quat[0]) == pytest.approx([S2, S2, 0.0, 0.0], rel=1e-15)  # w x y z, the scalar first
+    assert model.geom_type[G] == mujoco.mjtGeom.mjGEOM_CYLINDER
+    assert list(model.geom_size[G][:2]) == pytest.approx([0.05, 0.2], rel=1e-15)  # radius, half of the length 0.4
+    assert list(model.geom_quat[G]) == pytest.approx([S2, S2, 0.0, 0.0], rel=1e-15)  # w x y z, the scalar first
     data = mujoco.MjData(model)
     mujoco.mj_forward(model, data)
-    axis = data.geom_xmat[0].reshape(3, 3)[:, 2]  # the geom's local z in the world: the cylinder's axis
+    axis = data.geom_xmat[G].reshape(3, 3)[:, 2]  # the geom's local z in the world: the cylinder's axis
     assert axis == pytest.approx([0.0, -1.0, 0.0], abs=1e-12)  # Rx(90): z -> -y
-    assert math.pi * model.geom_size[0][0] ** 2 * 2 * model.geom_size[0][1] == pytest.approx(math.pi * 0.0025 * 0.4, rel=1e-12)
+    assert math.pi * model.geom_size[G][0] ** 2 * 2 * model.geom_size[G][1] == pytest.approx(math.pi * 0.0025 * 0.4, rel=1e-12)
     m = RHO * math.pi * 0.0025 * 0.4
     assert model.body_mass[1] == pytest.approx(m, rel=1e-12)
     hand = sorted([m * (3 * 0.05**2 + 0.4**2) / 12, m * (3 * 0.05**2 + 0.4**2) / 12, m * 0.05**2 / 2])
@@ -313,10 +316,10 @@ def test_body_tree_sphere_proxy_maps_to_its_radius_and_the_instance_pose_compose
     model = mj(tree)
     data = mujoco.MjData(model)
     mujoco.mj_forward(model, data)
-    assert model.geom_type[0] == mujoco.mjtGeom.mjGEOM_SPHERE and model.geom_size[0][0] == pytest.approx(0.1, rel=1e-15)
-    assert 4 / 3 * math.pi * model.geom_size[0][0] ** 3 == pytest.approx(4 / 3 * math.pi * 1e-3, rel=1e-12)
+    assert model.geom_type[G] == mujoco.mjtGeom.mjGEOM_SPHERE and model.geom_size[G][0] == pytest.approx(0.1, rel=1e-15)
+    assert 4 / 3 * math.pi * model.geom_size[G][0] ** 3 == pytest.approx(4 / 3 * math.pi * 1e-3, rel=1e-12)
     assert model.body_mass[1] == pytest.approx(RHO * 4 / 3 * math.pi * 1e-3, rel=1e-12)
-    assert list(data.geom_xpos[0]) == pytest.approx([1.0, 2.1, 0.1], abs=1e-12)  # (0.1, 0, 0) turned onto +y, then moved
+    assert list(data.geom_xpos[G]) == pytest.approx([1.0, 2.1, 0.1], abs=1e-12)  # (0.1, 0, 0) turned onto +y, then moved
     assert list(data.xipos[1]) == pytest.approx([1.0, 2.1, 0.1], abs=1e-12)  # the inertial frame is MassProperties' centre
     assert model.body_mass[1] == pytest.approx(RHO * (4 / 3) * math.pi * 0.1**3, rel=1e-12)
 
@@ -329,7 +332,7 @@ def test_body_tree_mass_and_inertia_come_from_mass_properties_not_from_the_proxy
     recipe = 0.3 * 0.2 * 0.02 - math.pi * 0.05**2 * 0.01
     assert model.body_mass[1] == pytest.approx(RHO * recipe, rel=1e-12)
     assert model.body_mass[1] < RHO * 0.3 * 0.2 * 0.02  # not the filled proxy's mass
-    assert list(model.geom_size[0]) == pytest.approx([0.15, 0.1, 0.01], rel=1e-15)  # one box: the pocket is not a geom
+    assert list(model.geom_size[G]) == pytest.approx([0.15, 0.1, 0.01], rel=1e-15)  # one box: the pocket is not a geom
     c = tree.instances[0].properties.center_of_mass
     assert list(model.body_ipos[1]) == pytest.approx([c.x, c.y, c.z], rel=1e-12)
     assert c.x < 0.0  # the pocket on +x moves the centre of mass towards -x: the inertial frame is not the box's centre

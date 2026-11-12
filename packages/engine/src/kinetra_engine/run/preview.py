@@ -28,10 +28,11 @@ float64 generalized positions of every tick from 0 to the end, in order, tagged 
 is a hash of this run's stream, kept by the core (F7); how two hashes are compared (match, mismatch, not comparable) is
 X-02d.
 
-**Model labels.** The proxy approximation labels of the compile (`proxy_labels`), and what the compiled model does not
-apply of the planet, read from the model itself so a label goes away once a leaf sets it: the planet's gravity when the
-model's gravity differs from the planet's `data/bodies` value (W-03a sets it, so this label does not appear today), and
-the ground when the model has none.
+**Model labels.** The proxy approximation labels of the compile (`proxy_labels`), the contact labels (`contact_labels`, X-01e:
+the friction rule, slow slip, no rolling friction, tread and default friction per instance), and what the compiled model
+does not apply of the planet, read from the model itself so a label goes away once a leaf sets it: the planet's gravity
+when the model's gravity differs from the planet's `data/bodies` value (W-03a sets it, so this label does not appear
+today), and the ground when the model has none (X-01e compiles it, so this label does not appear today either).
 
 **Drives (X-01b) and thrust (X-01c).** The model is compiled from `compile_thrust` (the body tree with its thrusters and the
 propellant of its tanks) and `compile_drives` (springs on sliders, one motor per motor actuator). This run owns the step
@@ -88,6 +89,8 @@ from ..compiler import (
     carry_state,
     compile_drives,
     compile_thrust,
+    contact_friction,
+    contact_labels,
     proxy_labels,
     release,
     to_mjcf,
@@ -211,7 +214,10 @@ class PreviewRun:
                 "timestep_s": timestep_s,
                 "frame_every_ticks": frame_every_ticks or default_frame_every_ticks(timestep_s),
                 "bodies": [{"id": b.id, "instances": list(b.instances)} for b in bodies],
-                "model_labels": [label.text for label in proxy_labels(compiled.tree)] + list(environment_labels(project, model)) + breakable,
+                "model_labels": [label.text for label in proxy_labels(compiled.tree)]
+                + [label.text for label in contact_labels(contact_friction(compiled.tree))]
+                + list(environment_labels(project, model))
+                + breakable,
                 "platform": tag,
             }
         )

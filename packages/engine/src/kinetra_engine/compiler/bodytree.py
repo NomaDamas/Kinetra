@@ -27,8 +27,8 @@ in the frame of the body it belongs to (the child): the point is the world posit
 `R(a instance) R(a snap point) axis` turned into the child's frame (a fixed joint has no axis: `(0, 0, 0)`).
 
 Not here: the springs, dampers, motors and actuator limits of a joint (X-01b), thrusters and propellant (X-01c), measuring and
-releasing a breakable joint during a run (X-04b, `breaks.py`), contact parameters (X-01b). The tree carries no threshold: the
-run reads it from `tree.joints`.
+releasing a breakable joint during a run (X-04b, `breaks.py`), contact friction and parameters (X-01e, `contact.py`). The tree
+carries no threshold: the run reads it from `tree.joints`.
 
 **Planet (W-03a).** The tree also carries the gravity and atmosphere density of `project.world.planet`, read from
 `data/bodies` by `planet_physics` (`planet.py`) and nowhere else; a planet without readable data is a `CompileError`.
