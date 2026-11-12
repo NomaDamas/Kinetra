@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>S16 실행 막음 팝오버</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="/_blob/1b63cce74a7cba46d15c994ab634270a">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div class="k-root" style="width:1084px;height:910px">
+
+<div class="k-note"><span><strong>S16 실행 막음</strong> · 상단바 조각 4장: 실행하기, 판정 실행, 내보내기, 엔진 오프라인</span><span>조각마다 primary 1 · 팝오버 안 (a) 3 (c) 3</span></div>
+
+<div class="k-main">
+<div class="k-ann">
+<div class="k-map" aria-hidden="true"><i class="on" style="left:0;right:0;top:0;height:8px"></i><i style="left:0;top:9px;bottom:16px;width:40px;border-right-width:1px"></i><i style="right:0;top:9px;bottom:16px;width:53px;border-left-width:1px"></i><i style="left:0;right:0;bottom:6px;height:9px;border-top-width:1px"></i><i style="left:0;right:0;bottom:0;height:5px;border-top-width:1px"></i></div>
+<p><strong>셸 안의 위치: SC-01 상단바 오른쪽</strong><br>새 요소는 없고 모드 주 행동(primary 하나) 옆에 이유 글자가 붙습니다. 그린 것은 상단바의 오른쪽 760 px 조각입니다.</p>
+<p>막히면 주 행동은 <span class="k-hi">aria-disabled</span>(포커스 가능)이고 옆에 "실행을 막는 이유 N건"이 보입니다. 진짜 disabled로 이유를 못 읽게 하지 않습니다 [제안]. 누르면 팝오버가 열립니다.</p>
+<p><strong>팝오버</strong>: 막음 줄 목록(L0 점검이 먼저) + 빠진 정의 ID 목록(줄마다 <span class="k-hi">다시 연결</span>, <span class="k-hi">지우기</span>) + <span class="k-hi">점검 보기</span>(ghost, 오른쪽 패널을 조립 보조로 바꾸고 점검 머리를 엽니다).</p>
+<p><strong>(a)</strong>는 S1 상태에 정의 없음 부품 하나가 더해진 모습입니다(이유 2건). S1만이면 "실행을 막는 이유 1건"입니다.</p>
+<p><strong>(c)</strong> 내보내기는 정의 없음만 막습니다. 추진제 점검은 내보내기를 막지 않는 것으로 그렸습니다 [제안: X-11].</p>
+<p><strong>(d)</strong> 엔진 오프라인의 이유는 SC-01 S9 그대로입니다.</p>
+<p>패널 · 카드 · 도구줄 안 primary 0. 이 아트보드만 상단바를 그려 조각마다 primary가 정확히 1입니다.</p>
+</div>
+
+<div class="k-col">
+<div class="k-lbl">(a) 조립 · 실행하기 막힘 · 팝오버 열림</div>
+<div data-unit="S16a 상단바" style="display:flex;flex-direction:column;gap:8px">
+<div class="k-bar" data-outside="1" style="width:760px">
+<div role="tablist" aria-label="모드" data-ctl="모드 전환기" style="display:inline-flex;gap:2px"><button type="button" role="tab" aria-selected="true" style="height:28px;padding:0 14px;border:0;border-radius:4px 4px 0 0;font-size:12px;font-weight:500;background:#22324A;color:#E8EDF2;box-shadow:inset 0 -2px 0 #5B9DFF">조립</button><button type="button" role="tab" aria-selected="false" tabindex="-1" style="height:28px;padding:0 14px;border:0;border-radius:4px 4px 0 0;font-size:12px;font-weight:500;background:transparent;color:#A9B4C0">실행</button><button type="button" role="tab" aria-selected="false" tabindex="-1" style="height:28px;padding:0 14px;border:0;border-radius:4px 4px 0 0;font-size:12px;font-weight:500;background:transparent;color:#A9B4C0">판정</button><button type="button" role="tab" aria-selected="false" tabindex="-1" style="height:28px;padding:0 14px;border:0;border-radius:4px 4px 0 0;font-size:12px;font-weight:500;background:transparent;color:#A9B4C0">Halo</button></div>
+<span style="flex:1 1 0"></span>
+<span id="s16a-why" class="k-why">실행을 막는 이유 2건</span>
+<button type="button" class="k-prim" data-ctl="실행하기" data-primary="1" aria-disabled="true" aria-describedby="s16a-why" aria-haspopup="dialog" aria-expanded="true" aria-controls="s16a-pop">실행하기</button>
+<button type="button" class="k-btn" data-ctl="공유" aria-haspopup="dialog" aria-expanded="false">공유</button>
+<button type="button" class="k-ib" data-ctl="더보기" aria-label="더보기" aria-haspopup="menu" aria-expanded="false"><svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor" aria-hidden="true"><circle cx="2.5" cy="7" r="1.3"/><circle cx="7" cy="7" r="1.3"/><circle cx="11.5" cy="7" r="1.3"/></svg></button>
+</div>
+<div id="s16a-pop" class="k-pop" role="dialog" aria-label="실행을 막는 이유" data-transient="1" style="width:380px;margin-left:300px">
+<h3>실행을 막는 이유 2건</h3>
+<span class="k-cap">L0 점검</span>
+<ul class="k-list" style="gap:6px">
+<li style="display:flex;flex-direction:column;gap:2px"><span class="k-tags"><span class="k-l0">L0</span><span class="k-kind"><svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><rect x="1" y="1" width="8" height="8" fill="currentColor"/></svg>실행을 막음</span></span><span>추진제 없는 추력기 · 냉가스 추력기 ×2</span></li>
+<li style="display:flex;flex-direction:column;gap:2px"><span class="k-tags"><span class="k-l0">L0</span><span class="k-kind"><svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><rect x="1" y="1" width="8" height="8" fill="currentColor"/></svg>실행을 막음</span></span><span>정의 없음 · 부품 1개</span></li>
+</ul>
+<span class="k-cap" style="margin-top:2px">빠진 정의 ID 1</span>
+<div style="display:flex;align-items:center;gap:6px"><code class="k-code">def-7f3a</code><span class="k-ex">예시</span><span style="flex:1 1 0"></span><button type="button" class="k-btn sm" data-ctl="다시 연결">다시 연결</button><button type="button" class="k-btn danger sm" data-ctl="지우기">지우기</button></div>
+<div style="display:flex;align-items:center;gap:8px;border-top:1px solid #3A4654;padding-top:8px"><button type="button" class="k-btn ghost sm" data-ctl="점검 보기">점검 보기</button><span class="k-cap">오른쪽 패널을 조립 보조로 바꿉니다</span></div>
+</div>
+</div>
+
+<div class="k-lbl" style="margin-top:24px">(b) 판정 모드 · 판정 실행 막힘 · 팝오버 닫힘</div>
+<div data-unit="S16b 상단바" style="display:flex;flex-direction:column;gap:6px">
+<div class="k-bar" data-outside="1" style="width:760px">
+<div role="tablist" aria-label="모드" data-ctl="모드 전환기" style="display:inline-flex;gap:2px"><button type="button" role="tab" aria-selected="false" tabindex="-1" style="height:28px;padding:0 14px;border:0;border-radius:4px 4px 0 0;font-size:12px;font-weight:500;background:transparent;color:#A9B4C0">조립</button><button type="button" role="tab" aria-selected="false" tabindex="-1" style="height:28px;padding:0 14px;border:0;border-radius:4px 4px 0 0;font-size:12px;font-weight:500;background:transparent;color:#A9B4C0">실행</button><button type="button" role="tab" aria-selected="true" style="height:28px;padding:0 14px;border:0;border-radius:4px 4px 0 0;font-size:12px;font-weight:500;background:#22324A;color:#E8EDF2;box-shadow:inset 0 -2px 0 #5B9DFF">판정</button><button type="button" role="tab" aria-selected="false" tabindex="-1" style="height:28px;padding:0 14px;border:0;border-radius:4px 4px 0 0;font-size:12px;font-weight:500;background:transparent;color:#A9B4C0">Halo</button></div>
+<span style="flex:1 1 0"></span>
+<span id="s16b-why" class="k-why">실행을 막는 이유 2건</span>
+<button type="button" class="k-prim" data-ctl="판정 실행" data-primary="1" aria-disabled="true" aria-describedby="s16b-why" aria-haspopup="dialog" aria-expanded="false">판정 실행</button>
+<button type="button" class="k-btn" data-ctl="공유" aria-haspopup="dialog" aria-expanded="false">공유</button>
+<button type="button" class="k-ib" data-ctl="더보기" aria-label="더보기" aria-haspopup="menu" aria-expanded="false"><svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor" aria-hidden="true"><circle cx="2.5" cy="7" r="1.3"/><circle cx="7" cy="7" r="1.3"/><circle cx="11.5" cy="7" r="1.3"/></svg></button>
+</div>
+<span class="k-cap">누르면 (a)와 같은 팝오버가 열립니다.</span>
+</div>
+
+<div class="k-lbl" style="margin-top:24px">(c) Halo 모드 · 내보내기 막힘 · 팝오버 열림</div>
+<div data-unit="S16c 상단바" style="display:flex;flex-direction:column;gap:8px">
+<div class="k-bar" data-outside="1" style="width:760px">
+<div role="tablist" aria-label="모드" data-ctl="모드 전환기" style="display:inline-flex;gap:2px"><button type="button" role="tab" aria-selected="false" tabindex="-1" style="height:28px;padding:0 14px;border:0;border-radius:4px 4px 0 0;font-size:12px;font-weight:500;background:transparent;color:#A9B4C0">조립</button><button type="button" role="tab" aria-selected="false" tabindex="-1" style="height:28px;padding:0 14px;border:0;border-radius:4px 4px 0 0;font-size:12px;font-weight:500;background:transparent;color:#A9B4C0">실행</button><button type="button" role="tab" aria-selected="false" tabindex="-1" style="height:28px;padding:0 14px;border:0;border-radius:4px 4px 0 0;font-size:12px;font-weight:500;background:transparent;color:#A9B4C0">판정</button><button type="button" role="tab" aria-selected="true" style="height:28px;padding:0 14px;border:0;border-radius:4px 4px 0 0;font-size:12px;font-weight:500;background:#22324A;color:#E8EDF2;box-shadow:inset 0 -2px 0 #5B9DFF">Halo</button></div>
+<span style="flex:1 1 0"></span>
+<span id="s16c-why" class="k-why">실행을 막는 이유 1건</span>
+<button type="button" class="k-prim" data-ctl="내보내기" data-primary="1" aria-disabled="true" aria-describedby="s16c-why" aria-haspopup="dialog" aria-expanded="true" aria-controls="s16c-pop">내보내기</button>
+<button type="button" class="k-btn" data-ctl="공유" aria-haspopup="dialog" aria-expanded="false">공유</button>
+<button type="button" class="k-ib" data-ctl="더보기" aria-label="더보기" aria-haspopup="menu" aria-expanded="false"><svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor" aria-hidden="true"><circle cx="2.5" cy="7" r="1.3"/><circle cx="7" cy="7" r="1.3"/><circle cx="11.5" cy="7" r="1.3"/></svg></button>
+</div>
+<div id="s16c-pop" class="k-pop" role="dialog" aria-label="내보내기를 막는 이유" data-transient="1" style="width:380px;margin-left:300px">
+<h3>실행을 막는 이유 1건</h3>
+<span class="k-tags"><span class="k-l0">L0</span><span class="k-kind"><svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><rect x="1" y="1" width="8" height="8" fill="currentColor"/></svg>실행을 막음</span></span>
+<span>정의 없음 · 부품 1개</span>
+<div style="display:flex;align-items:center;gap:6px"><code class="k-code">def-7f3a</code><span class="k-ex">예시</span><span style="flex:1 1 0"></span><button type="button" class="k-btn sm" data-ctl="다시 연결">다시 연결</button><button type="button" class="k-btn danger sm" data-ctl="지우기">지우기</button></div>
+<div style="display:flex;align-items:center;gap:8px;border-top:1px solid #3A4654;padding-top:8px"><button type="button" class="k-btn ghost sm" data-ctl="점검 보기">점검 보기</button><span class="k-cap">오른쪽 패널을 조립 보조로 바꿉니다</span></div>
+</div>
+</div>
+
+<div class="k-lbl" style="margin-top:24px">(d) 엔진 오프라인 · SC-01 S9 그대로</div>
+<div data-unit="S16d 상단바">
+<div class="k-bar" data-outside="1" style="width:760px">
+<div role="tablist" aria-label="모드" data-ctl="모드 전환기" style="display:inline-flex;gap:2px"><button type="button" role="tab" aria-selected="true" style="height:28px;padding:0 14px;border:0;border-radius:4px 4px 0 0;font-size:12px;font-weight:500;background:#22324A;color:#E8EDF2;box-shadow:inset 0 -2px 0 #5B9DFF">조립</button><button type="button" role="tab" aria-selected="false" tabindex="-1" style="height:28px;padding:0 14px;border:0;border-radius:4px 4px 0 0;font-size:12px;font-weight:500;background:transparent;color:#A9B4C0">실행</button><button type="button" role="tab" aria-selected="false" tabindex="-1" style="height:28px;padding:0 14px;border:0;border-radius:4px 4px 0 0;font-size:12px;font-weight:500;background:transparent;color:#A9B4C0">판정</button><button type="button" role="tab" aria-selected="false" tabindex="-1" style="height:28px;padding:0 14px;border:0;border-radius:4px 4px 0 0;font-size:12px;font-weight:500;background:transparent;color:#A9B4C0">Halo</button></div>
+<span style="flex:1 1 0"></span>
+<span id="s16d-why" class="k-why">엔진에 연결되어야 실행할 수 있습니다</span>
+<button type="button" class="k-prim" data-ctl="실행하기" data-primary="1" aria-disabled="true" aria-describedby="s16d-why">실행하기</button>
+<button type="button" class="k-btn" data-ctl="다시 연결">다시 연결</button>
+<button type="button" class="k-ib" data-ctl="더보기" aria-label="더보기" aria-haspopup="menu" aria-expanded="false"><svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor" aria-hidden="true"><circle cx="2.5" cy="7" r="1.3"/><circle cx="7" cy="7" r="1.3"/><circle cx="11.5" cy="7" r="1.3"/></svg></button>
+</div>
+</div>
+</div>
+</div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1084,"height":910}}'>
+class Component extends DCLogic {
+renderVals() {
+return {};
+}
+}
+</script>
+</body>
+</html>

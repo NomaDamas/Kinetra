@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>S14 인스펙터 분리기</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="/_blob/1b63cce74a7cba46d15c994ab634270a">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div class="k-root" style="width:1332px;height:882px">
+
+<div class="k-note"><span><strong>S14 인스펙터 · 분리기</strong> · (a) 분리 시점 열림 (b) 항목 없음 (c) 거부 2종</span><span>상시 8 · 열린 머리 안 (a) 4 (b) 1 (c) 3 · 인스펙터 primary 0</span></div>
+
+<div class="k-main">
+<div class="k-ann">
+<div class="k-map" aria-hidden="true"><i style="left:0;right:0;top:0;height:8px;border-bottom-width:1px"></i><i style="left:0;top:9px;bottom:16px;width:40px;border-right-width:1px"></i><i class="on" style="right:0;top:9px;bottom:16px;width:53px"></i><i style="left:0;right:0;bottom:6px;height:9px;border-top-width:1px"></i><i style="left:0;right:0;bottom:0;height:5px;border-top-width:1px"></i></div>
+<p><strong>셸 안의 위치: SC-01 오른쪽 패널 · 인스펙터</strong><br>분리기를 고르면 열립니다(1단계). 분리 시점 항목은 머리 안입니다(2단계).</p>
+<p><strong>사양은 셋뿐</strong>: 질량, 치수, <span class="k-hi">선언 분리 충격량 [N·s]</span>(0 허용). 배지는 사용자 선언 또는 기본값. 에너지원(화약, 가스, 스프링 등) 필드와 문구는 없습니다. "단순화 모델: 선언 분리 충격량"이 항상 붙습니다.</p>
+<p><strong>분리 항목</strong>은 제어 스케줄의 한 줄입니다. 같은 항목이 제어 스케줄 표(SC-02 S4)에 종류 <span class="k-hi">분리</span>로 한 줄 나옵니다. 단 번호 목록은 없습니다.</p>
+<p>같은 시점에 추력기가 작동하면 <span class="k-hi">알림</span> 포인터와 <span class="k-hi">점검 보기</span>(ghost, 조립 보조로 이동)가 붙습니다. 이 화면이 판정하지 않습니다.</p>
+<p><span class="k-hi">분리 항목 지우기</span>는 브리프 5.2절 S14가 ghost라 했지만 0절 3의 "지우기는 danger"를 따랐습니다(NOTES 참조).</p>
+<p>값은 모두 <span class="k-ex">예시</span>입니다.</p>
+</div>
+
+<div class="k-cols">
+
+<div class="k-col">
+<div class="k-lbl">(a) 분리 시점 열림</div>
+<aside class="k-panel" data-panel="S14a" data-unit="S14a" aria-label="인스펙터">
+<div class="k-pbar"><button type="button" class="k-ib" data-ctl="패널 접기" aria-label="오른쪽 패널 접기" aria-expanded="true"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 2.5L8 6l-3.5 3.5"/></svg></button><div class="k-seg" role="radiogroup" aria-label="오른쪽 패널 보기" data-ctl="패널 전환기"><button type="button" role="radio" aria-checked="true">인스펙터</button><button type="button" role="radio" aria-checked="false" tabindex="-1">조립 보조</button></div></div>
+<div class="k-ptitle"><h2>분리기</h2><span class="k-kind2">· 차체와 빔 사이</span></div>
+<div class="k-body" style="padding-top:4px">
+<div class="k-row"><label for="s14a-m" class="k-lab">질량</label><input id="s14a-m" class="k-in" data-ctl="질량 값 입력" value="0.20"><span class="k-unit">kg</span><button type="button" class="kb kb-def" data-ctl="질량 값 배지" data-badge="기본값" aria-haspopup="dialog" aria-expanded="false" aria-label="값 배지 기본값. 누르면 근거를 엽니다"><span class="kp"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><circle cx="6" cy="6" r="3.5"/></svg>기본값</span></button></div>
+<div class="k-row"><span class="k-lab">치수</span><span class="k-val">0.30 × 0.05</span><span class="k-unit">m</span><button type="button" class="kb kb-def" data-ctl="치수 값 배지" data-badge="기본값" aria-haspopup="dialog" aria-expanded="false" aria-label="값 배지 기본값. 누르면 근거를 엽니다"><span class="kp"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><circle cx="6" cy="6" r="3.5"/></svg>기본값</span></button></div>
+<div class="k-help">지름 × 높이 · 읽기 전용 <span class="k-ex">예시</span></div>
+<div class="k-row"><label for="s14a-i" class="k-lab">분리 충격량</label><input id="s14a-i" class="k-in" data-ctl="선언 분리 충격량 입력" value="5.0" aria-describedby="s14a-ih"><span class="k-unit">N·s</span><button type="button" class="kb kb-decl" data-ctl="충격량 값 배지" data-badge="사용자 선언" aria-haspopup="dialog" aria-expanded="false" aria-label="값 배지 사용자 선언. 누르면 근거를 엽니다"><span class="kp"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 10l.6-2.6 5.6-5.6 2 2-5.6 5.6z"/></svg>사용자 선언</span></button></div>
+<div id="s14a-ih" class="k-help">선언 분리 충격량 · 0 허용</div>
+<div class="k-line hi">단순화 모델: 선언 분리 충격량</div>
+<div class="k-sep"></div>
+<button type="button" class="k-head" data-ctl="분리 시점 머리" aria-expanded="true" aria-controls="s14a-r"><svg class="k-chev" width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 2.5L8 6l-3.5 3.5"/></svg>분리 시점 · 1개</button>
+<div id="s14a-r" class="k-region" role="region" aria-label="분리 시점" data-transient="1">
+<div class="k-row"><label for="s14a-t" class="k-lab">시점</label><input id="s14a-t" class="k-in" data-ctl="분리 시점 입력" value="1.20"><span class="k-unit">s</span><button type="button" class="kb kb-decl" data-ctl="시점 값 배지" data-badge="사용자 선언" aria-haspopup="dialog" aria-expanded="false" aria-label="값 배지 사용자 선언. 누르면 근거를 엽니다"><span class="kp"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 10l.6-2.6 5.6-5.6 2 2-5.6 5.6z"/></svg>사용자 선언</span></button></div>
+<div class="k-row"><span class="k-lab">연결</span><span style="grid-column:2 / 5;font-size:12px;line-height:16px;font-weight:500">차체 ↔ 빔 <span class="k-unit" style="font-weight:400">· 읽기 전용</span></span></div>
+<div style="display:flex;flex-direction:column;gap:4px;margin:4px 8px;padding:8px;border-radius:4px;background:#1B2129;font-size:12px;line-height:16px">
+<span style="display:flex;align-items:center;gap:6px"><span class="k-l0">L0</span><span class="k-kind"><svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><circle cx="5" cy="5" r="3.5" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>알림</span></span>
+<span>같은 시점에 추력기 1이 작동합니다 · 점검 알림 1건</span>
+<button type="button" class="k-btn ghost sm" data-ctl="점검 보기" style="align-self:flex-start;margin-left:-8px">점검 보기</button>
+</div>
+<div style="padding:2px 8px"><button type="button" class="k-btn danger sm" data-ctl="분리 항목 지우기">분리 항목 지우기</button></div>
+</div>
+<div class="k-sep"></div>
+</div>
+<div class="k-foot"><span class="k-kbd">Enter</span>확정<span class="k-kbd">Esc</span>취소 · 되돌리기는 ⋯ 메뉴</div>
+</aside>
+</div>
+
+<div class="k-col">
+<div class="k-lbl">(b) 분리 시점 · 항목 없음</div>
+<aside class="k-panel" data-panel="S14b" data-unit="S14b" aria-label="인스펙터">
+<div class="k-pbar"><button type="button" class="k-ib" data-ctl="패널 접기" aria-label="오른쪽 패널 접기" aria-expanded="true"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 2.5L8 6l-3.5 3.5"/></svg></button><div class="k-seg" role="radiogroup" aria-label="오른쪽 패널 보기" data-ctl="패널 전환기"><button type="button" role="radio" aria-checked="true">인스펙터</button><button type="button" role="radio" aria-checked="false" tabindex="-1">조립 보조</button></div></div>
+<div class="k-ptitle"><h2>분리기</h2><span class="k-kind2">· 차체와 빔 사이</span></div>
+<div class="k-body" style="padding-top:4px">
+<div class="k-row"><label for="s14b-m" class="k-lab">질량</label><input id="s14b-m" class="k-in" data-ctl="질량 값 입력" value="0.20"><span class="k-unit">kg</span><button type="button" class="kb kb-def" data-ctl="질량 값 배지" data-badge="기본값" aria-haspopup="dialog" aria-expanded="false" aria-label="값 배지 기본값. 누르면 근거를 엽니다"><span class="kp"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><circle cx="6" cy="6" r="3.5"/></svg>기본값</span></button></div>
+<div class="k-row"><span class="k-lab">치수</span><span class="k-val">0.30 × 0.05</span><span class="k-unit">m</span><button type="button" class="kb kb-def" data-ctl="치수 값 배지" data-badge="기본값" aria-haspopup="dialog" aria-expanded="false" aria-label="값 배지 기본값. 누르면 근거를 엽니다"><span class="kp"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><circle cx="6" cy="6" r="3.5"/></svg>기본값</span></button></div>
+<div class="k-help">지름 × 높이 · 읽기 전용 <span class="k-ex">예시</span></div>
+<div class="k-row"><label for="s14b-i" class="k-lab">분리 충격량</label><input id="s14b-i" class="k-in" data-ctl="선언 분리 충격량 입력" value="0"><span class="k-unit">N·s</span><button type="button" class="kb kb-def" data-ctl="충격량 값 배지" data-badge="기본값" aria-haspopup="dialog" aria-expanded="false" aria-label="값 배지 기본값. 누르면 근거를 엽니다"><span class="kp"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><circle cx="6" cy="6" r="3.5"/></svg>기본값</span></button></div>
+<div class="k-help">선언 분리 충격량 · 0 허용</div>
+<div class="k-line hi">단순화 모델: 선언 분리 충격량</div>
+<div class="k-sep"></div>
+<button type="button" class="k-head" data-ctl="분리 시점 머리" aria-expanded="true" aria-controls="s14b-r"><svg class="k-chev" width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 2.5L8 6l-3.5 3.5"/></svg>분리 시점 · 항목 없음</button>
+<div id="s14b-r" class="k-region" role="region" aria-label="분리 시점" data-transient="1">
+<div class="k-line">분리 항목이 없어 이 분리기는 실행 중에 분리되지 않습니다.</div>
+<div style="padding:2px 8px"><button type="button" class="k-btn" data-ctl="분리 항목 추가">분리 항목 추가</button></div>
+</div>
+<div class="k-sep"></div>
+</div>
+</aside>
+</div>
+
+<div class="k-col">
+<div class="k-lbl">(c) 거부: 충격량 음수, 두 번째 분리</div>
+<aside class="k-panel" data-panel="S14c" data-unit="S14c" aria-label="인스펙터">
+<div class="k-pbar"><button type="button" class="k-ib" data-ctl="패널 접기" aria-label="오른쪽 패널 접기" aria-expanded="true"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 2.5L8 6l-3.5 3.5"/></svg></button><div class="k-seg" role="radiogroup" aria-label="오른쪽 패널 보기" data-ctl="패널 전환기"><button type="button" role="radio" aria-checked="true">인스펙터</button><button type="button" role="radio" aria-checked="false" tabindex="-1">조립 보조</button></div></div>
+<div class="k-ptitle"><h2>분리기</h2><span class="k-kind2">· 차체와 빔 사이</span></div>
+<div class="k-body" style="padding-top:4px">
+<div class="k-row"><label for="s14c-m" class="k-lab">질량</label><input id="s14c-m" class="k-in" data-ctl="질량 값 입력" value="0.20"><span class="k-unit">kg</span><button type="button" class="kb kb-def" data-ctl="질량 값 배지" data-badge="기본값" aria-haspopup="dialog" aria-expanded="false" aria-label="값 배지 기본값. 누르면 근거를 엽니다"><span class="kp"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><circle cx="6" cy="6" r="3.5"/></svg>기본값</span></button></div>
+<div class="k-row"><span class="k-lab">치수</span><span class="k-val">0.30 × 0.05</span><span class="k-unit">m</span><button type="button" class="kb kb-def" data-ctl="치수 값 배지" data-badge="기본값" aria-haspopup="dialog" aria-expanded="false" aria-label="값 배지 기본값. 누르면 근거를 엽니다"><span class="kp"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><circle cx="6" cy="6" r="3.5"/></svg>기본값</span></button></div>
+<div class="k-help">지름 × 높이 · 읽기 전용 <span class="k-ex">예시</span></div>
+<div class="k-row"><label for="s14c-i" class="k-lab">분리 충격량</label><input id="s14c-i" class="k-in" data-ctl="선언 분리 충격량 입력(거부)" value="-1.0" aria-invalid="true" aria-describedby="s14c-ie"><span class="k-unit">N·s</span><button type="button" class="kb kb-decl" data-ctl="충격량 값 배지" data-badge="사용자 선언" aria-haspopup="dialog" aria-expanded="false" aria-label="값 배지 사용자 선언. 누르면 근거를 엽니다"><span class="kp"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 10l.6-2.6 5.6-5.6 2 2-5.6 5.6z"/></svg>사용자 선언</span></button></div>
+<div id="s14c-ie" role="alert" class="k-help" style="color:#E8EDF2;font-weight:500">0 이상이어야 합니다. 값을 저장하지 않았습니다(이전 값 그대로)</div>
+<div class="k-line hi">단순화 모델: 선언 분리 충격량</div>
+<div class="k-sep"></div>
+<button type="button" class="k-head" data-ctl="분리 시점 머리" aria-expanded="true" aria-controls="s14c-r"><svg class="k-chev" width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 2.5L8 6l-3.5 3.5"/></svg>분리 시점 · 1개</button>
+<div id="s14c-r" class="k-region" role="region" aria-label="분리 시점" data-transient="1">
+<div class="k-row"><label for="s14c-t" class="k-lab">시점</label><input id="s14c-t" class="k-in" data-ctl="분리 시점 입력" value="1.20"><span class="k-unit">s</span><button type="button" class="kb kb-decl" data-ctl="시점 값 배지" data-badge="사용자 선언" aria-haspopup="dialog" aria-expanded="false" aria-label="값 배지 사용자 선언. 누르면 근거를 엽니다"><span class="kp"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 10l.6-2.6 5.6-5.6 2 2-5.6 5.6z"/></svg>사용자 선언</span></button></div>
+<div class="k-row"><span class="k-lab">연결</span><span style="grid-column:2 / 5;font-size:12px;line-height:16px;font-weight:500">차체 ↔ 빔 <span class="k-unit" style="font-weight:400">· 읽기 전용</span></span></div>
+<div role="alert" style="display:flex;flex-direction:column;gap:4px;margin:4px 8px;padding:8px;border:1px solid #FF7B72;border-radius:4px;font-size:12px;line-height:16px">
+<span style="font-weight:600">두 번째 분리 항목을 추가하지 않았습니다</span>
+<span>이미 분리 항목이 있습니다. 분리는 되돌릴 수 없어 한 번만 둘 수 있습니다</span>
+<span class="k-unit" style="font-weight:400;white-space:normal">제어 스케줄 표나 변경안에서 추가하려 할 때도 같습니다</span>
+</div>
+<div style="padding:2px 8px"><button type="button" class="k-btn danger sm" data-ctl="분리 항목 지우기">분리 항목 지우기</button></div>
+</div>
+<div class="k-sep"></div>
+</div>
+</aside>
+</div>
+
+</div>
+</div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1332,"height":882}}'>
+class Component extends DCLogic {
+renderVals() {
+return {};
+}
+}
+</script>
+</body>
+</html>

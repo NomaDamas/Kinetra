@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>S8 배치 안내 카드</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="/_blob/1b63cce74a7cba46d15c994ab634270a">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div class="k-root" style="width:1084px;height:820px">
+
+<div class="k-note"><span><strong>S8 배치 안내 카드</strong> · (a) 붙을 위치 (b) 임계 없음 (c)~(e) 붙지 않음 3종</span><span>뷰포트 (a) 4 · 카드 (b) 0 · (c)~(e) 각 1 · primary 0</span></div>
+
+<div class="k-main">
+<div class="k-ann">
+<div class="k-map" aria-hidden="true"><i style="left:0;right:0;top:0;height:8px;border-bottom-width:1px"></i><i style="left:0;top:9px;bottom:16px;width:40px;border-right-width:1px"></i><i style="right:0;top:9px;bottom:16px;width:53px;border-left-width:1px"></i><i style="left:0;right:0;bottom:6px;height:9px;border-top-width:1px"></i><i style="left:0;right:0;bottom:0;height:5px;border-top-width:1px"></i><i class="on" style="left:43px;top:12px;width:22px;height:26px"></i><i class="on" style="left:96px;top:12px;width:38px;height:16px"></i></div>
+<p><strong>셸 안의 위치: SC-01 뷰포트 위 2D</strong><br>도구줄은 왼쪽 위, 배치 안내 카드는 위 가운데입니다. 둘 다 불투명 <span class="k-hi">color.bg.panel</span> 면입니다. 아래쪽은 SC-03 변경안 카드 자리라 비웁니다 [제안].</p>
+<p>카드는 <span class="k-hi">부품을 끄는 중이거나 거부됐을 때만</span> 나옵니다. 부품 선택도 끌기도 없으면 뷰포트 위 2D 요소는 하나도 없습니다. 카드는 한 번에 하나입니다.</p>
+<p><strong>(a) 붙을 수 있음</strong>: 중립 선택 표시(<span class="k-hi">color.accent.primary</span> 테두리)이고 성공색이 아닙니다. 파단 임계는 값 · 단위 · 배지와 "단순화 모델"이 함께 붙습니다.</p>
+<p><strong>(b)</strong> 임계 필드가 비면 "임계 없음"만 씁니다.</p>
+<p><strong>(c)~(e) 붙지 않음</strong>: 아이콘(⊘) + 라벨 + 사유 문장 + 다음 행동 한 줄. <span class="k-hi">color.status.danger</span>는 카드 테두리에만 씁니다. 색만으로 알리지 않습니다.</p>
+<p>카드는 <span class="k-hi">aria-live="polite"</span>로 읽어 주고 포커스를 옮기지 않습니다. 저절로 사라지지 않고 닫기 단추나 <span class="k-kbd">Esc</span>로 닫을 때까지 남습니다. <span class="k-hi">prefers-reduced-motion</span>이면 등장은 불투명도 전환만.</p>
+<p>뷰포트 안의 고스트, 스냅 표식의 모양과 색은 코드 프로토타입이 정합니다(4.7). 여기서는 그리지 않습니다.</p>
+<p>결합 종류와 임계 값은 <span class="k-ex">예시</span>입니다.</p>
+</div>
+
+<div class="k-col">
+<div class="k-lbl">(a) 끄는 중: 붙을 위치 · 뷰포트 조각 760 × 400</div>
+<div class="k-vp" data-unit="S8a 뷰포트" aria-label="3D 뷰포트 조각">
+<div class="k-ground" aria-hidden="true"></div>
+<span class="k-vpl">3D 뷰포트 · 코드 프로토타입으로 검증</span>
+<div class="k-tb" role="toolbar" aria-label="배치 도구">
+<button type="button" class="k-tog" data-ctl="각도 스냅" aria-pressed="true"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1.5 10.5h9M1.5 10.5L8 2.5M5 10.5a3.5 3.5 0 0 0-1-2.5"/></svg>각도 스냅<span class="k-st">켬</span></button>
+<div class="k-tbrow"><span class="k-cap">단위</span><span class="k-val">15</span><span class="k-unit">°</span><button type="button" class="kb kb-def" data-ctl="각도 스냅 단위 배지" data-badge="기본값" aria-haspopup="dialog" aria-expanded="false" aria-label="값 배지 기본값. 누르면 근거를 엽니다"><span class="kp"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><circle cx="6" cy="6" r="3.5"/></svg>기본값</span></button><span class="k-ex">예시</span></div>
+<div class="k-tsep"></div>
+<span class="k-cap" id="s8-sym">대칭</span>
+<div class="k-seg" role="radiogroup" aria-labelledby="s8-sym" data-ctl="대칭"><button type="button" role="radio" aria-checked="true">없음</button><button type="button" role="radio" aria-checked="false" tabindex="-1">평면</button><button type="button" role="radio" aria-checked="false" tabindex="-1">방사</button></div>
+</div>
+<div class="k-card ok" role="status" aria-live="polite" aria-label="배치 안내">
+<div class="k-ct"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="#5B9DFF" stroke-width="1.5" aria-hidden="true"><rect x="1.5" y="1.5" width="11" height="11" rx="1"/><path d="M7 4.5v5M4.5 7h5"/></svg>붙을 위치: 차체 · 위쪽 스냅</div>
+<div class="k-kv">
+<span class="k-lab">결합 종류</span><span style="display:flex;align-items:center;gap:6px">고정 결합<span class="k-ex">예시</span></span>
+<span class="k-lab">파단 임계</span><span style="display:flex;align-items:center;flex-wrap:wrap;gap:4px 6px"><span class="k-val">1200</span><span class="k-unit">N</span><button type="button" class="kb kb-def" data-ctl="파단 임계 배지" data-badge="기본값" aria-haspopup="dialog" aria-expanded="false" aria-label="값 배지 기본값. 누르면 근거를 엽니다"><span class="kp"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><circle cx="6" cy="6" r="3.5"/></svg>기본값</span></button><span class="k-ex">예시</span></span>
+</div>
+<span class="k-cap" style="color:#E8EDF2">단순화 모델: 결합부 임계값</span>
+<span class="k-cap" style="display:flex;align-items:center;gap:6px">놓으면 붙습니다 · <span class="k-kbd">Esc</span>끌기 취소</span>
+</div>
+</div>
+
+<div class="k-lbl" style="margin-top:24px">(b)~(e) 같은 자리(위 가운데)의 카드 변형 · 실제 크기 300 px</div>
+<div style="display:grid;grid-template-columns:repeat(2,300px);gap:16px 24px;align-items:start">
+
+<div style="display:flex;flex-direction:column;gap:6px" data-unit="S8b 카드"><span class="k-cap">(b) 임계 필드 없음</span>
+<div class="k-card static ok" role="status" aria-live="polite" aria-label="배치 안내">
+<div class="k-ct"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="#5B9DFF" stroke-width="1.5" aria-hidden="true"><rect x="1.5" y="1.5" width="11" height="11" rx="1"/><path d="M7 4.5v5M4.5 7h5"/></svg>붙을 위치: 차체 · 앞쪽 스냅</div>
+<div class="k-kv">
+<span class="k-lab">결합 종류</span><span style="display:flex;align-items:center;gap:6px">고정 결합<span class="k-ex">예시</span></span>
+<span class="k-lab">파단 임계</span><span style="font-weight:500">임계 없음</span>
+</div>
+<span class="k-cap" style="display:flex;align-items:center;gap:6px">놓으면 붙습니다 · <span class="k-kbd">Esc</span>끌기 취소</span>
+</div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:6px" data-unit="S8c 카드"><span class="k-cap">(c) 호환되지 않는 스냅</span>
+<div class="k-card static no" role="status" aria-live="polite" aria-label="배치 안내">
+<div class="k-ct"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="7" cy="7" r="5.5"/><path d="M3.2 10.8l7.6-7.6"/></svg>붙지 않음<button type="button" class="k-ib sm" data-ctl="안내 닫기" aria-label="안내 닫기"><svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M2 2l6 6M8 2l-6 6"/></svg></button></div>
+<p style="margin:0;font-size:13px;line-height:20px">이 스냅 포인트는 바퀴 축용이고 놓은 부품은 빔입니다</p>
+<span class="k-cap" style="display:flex;align-items:center;flex-wrap:wrap;gap:4px">다른 스냅 포인트로 옮기거나 <span class="k-kbd">Esc</span>로 취소</span>
+</div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:6px" data-unit="S8d 카드"><span class="k-cap">(d) 겹침</span>
+<div class="k-card static no" role="status" aria-live="polite" aria-label="배치 안내">
+<div class="k-ct"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="7" cy="7" r="5.5"/><path d="M3.2 10.8l7.6-7.6"/></svg>붙지 않음<button type="button" class="k-ib sm" data-ctl="안내 닫기" aria-label="안내 닫기"><svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M2 2l6 6M8 2l-6 6"/></svg></button></div>
+<p style="margin:0;font-size:13px;line-height:20px">차체와 겹칩니다</p>
+<span class="k-cap" style="display:flex;align-items:center;flex-wrap:wrap;gap:4px">다른 스냅 포인트로 옮기거나 <span class="k-kbd">Esc</span>로 취소</span>
+</div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:6px" data-unit="S8e 카드"><span class="k-cap">(e) 뜬 부품</span>
+<div class="k-card static no" role="status" aria-live="polite" aria-label="배치 안내">
+<div class="k-ct"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="7" cy="7" r="5.5"/><path d="M3.2 10.8l7.6-7.6"/></svg>붙지 않음<button type="button" class="k-ib sm" data-ctl="안내 닫기" aria-label="안내 닫기"><svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M2 2l6 6M8 2l-6 6"/></svg></button></div>
+<p style="margin:0;font-size:13px;line-height:20px">이 위치에서는 어느 부품에도 결합되지 않습니다</p>
+<span class="k-cap" style="display:flex;align-items:center;flex-wrap:wrap;gap:4px">다른 스냅 포인트로 옮기거나 <span class="k-kbd">Esc</span>로 취소</span>
+</div>
+</div>
+
+</div>
+</div>
+</div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1084,"height":820}}'>
+class Component extends DCLogic {
+renderVals() {
+return {};
+}
+}
+</script>
+</body>
+</html>

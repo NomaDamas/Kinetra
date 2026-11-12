@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>S10 방사 대칭</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="/_blob/1b63cce74a7cba46d15c994ab634270a">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div class="k-root" style="width:1084px;height:840px">
+
+<div class="k-note"><span><strong>S10 방사 대칭</strong> · (a) 입력 (b) 거부 2종 (c) 부모 스냅 포인트 없음</span><span>(a) 6 · (b) 5, 6 · (c) 3 · primary 0</span></div>
+
+<div class="k-main">
+<div class="k-ann">
+<div class="k-map" aria-hidden="true"><i style="left:0;right:0;top:0;height:8px;border-bottom-width:1px"></i><i style="left:0;top:9px;bottom:16px;width:40px;border-right-width:1px"></i><i style="right:0;top:9px;bottom:16px;width:53px;border-left-width:1px"></i><i style="left:0;right:0;bottom:6px;height:9px;border-top-width:1px"></i><i style="left:0;right:0;bottom:0;height:5px;border-top-width:1px"></i><i class="on" style="left:43px;top:12px;width:22px;height:46px"></i></div>
+<p><strong>셸 안의 위치: SC-01 뷰포트 왼쪽 위 도구줄</strong><br>대칭에서 <span class="k-hi">방사</span>를 고르면 도구줄이 한 단 늘어납니다(1단계). 다른 대칭을 고르면 다시 줄어듭니다.</p>
+<p><strong>(a)</strong> 개수 n 입력, 축(읽기 전용), 각 간격(시뮬), <span class="k-hi">적용</span>(secondary), "복제는 한 번에 되돌립니다". 적용은 Enter로도 됩니다.</p>
+<p><strong>n을 바꾸면 간격 값만 바뀝니다</strong> <span class="k-ex">예시</span><br>n = 3 → 120 ° · n = 4 → 90 ° · n = 6 → 60 °</p>
+<p>라벨 "개수 n · 원본 포함"은 n이 원본을 포함한다고 읽은 것입니다 [확인 필요: B-11].</p>
+<p><strong>(b) 거부</strong>: 입력에 <span class="k-hi">status.danger</span> 테두리와 이유 한 줄, 적용하지 않음. 상한 값은 설정 값이고 시안의 12는 <span class="k-ex">예시</span>입니다(B-11).</p>
+<p><strong>(c)</strong> 부모 스냅 포인트가 없으면 <span class="k-hi">방사</span>는 비활성(포커스는 됨)이고 이유가 붙습니다.</p>
+<p>적용 뒤 묶음 거부와 되돌리기는 S11.</p>
+</div>
+
+<div class="k-col">
+<div class="k-lbl">(a) 방사 선택: 도구줄이 한 단 늘어남</div>
+<div class="k-vp" data-unit="S10a 도구줄" aria-label="3D 뷰포트 조각">
+<div class="k-ground" aria-hidden="true"></div>
+<span class="k-vpl">3D 뷰포트 · 코드 프로토타입으로 검증</span>
+<div class="k-tb" role="toolbar" aria-label="배치 도구">
+<button type="button" class="k-tog" data-ctl="각도 스냅" aria-pressed="true"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1.5 10.5h9M1.5 10.5L8 2.5M5 10.5a3.5 3.5 0 0 0-1-2.5"/></svg>각도 스냅<span class="k-st">켬</span></button>
+<div class="k-tbrow"><span class="k-cap">단위</span><span class="k-val">15</span><span class="k-unit">°</span><button type="button" class="kb kb-def" data-ctl="각도 스냅 단위 배지" data-badge="기본값" aria-haspopup="dialog" aria-expanded="false" aria-label="값 배지 기본값. 누르면 근거를 엽니다"><span class="kp"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><circle cx="6" cy="6" r="3.5"/></svg>기본값</span></button><span class="k-ex">예시</span></div>
+<div class="k-tsep"></div>
+<span class="k-cap" id="s10a-sym">대칭</span>
+<div class="k-seg" role="radiogroup" aria-labelledby="s10a-sym" data-ctl="대칭"><button type="button" role="radio" aria-checked="false" tabindex="-1">없음</button><button type="button" role="radio" aria-checked="false" tabindex="-1">평면</button><button type="button" role="radio" aria-checked="true">방사</button></div>
+<div class="k-tsep"></div>
+<div class="k-tbrow"><label for="s10a-n" class="k-cap">개수 n · 원본 포함</label><input id="s10a-n" class="k-in" style="width:48px" value="3" inputmode="numeric" data-ctl="방사 개수 n"><span class="k-ex">예시</span></div>
+<span class="k-cap">축: 부모 스냅 포인트의 축</span>
+<div class="k-tbrow"><span class="k-cap">간격</span><span class="k-val">120</span><span class="k-unit">°</span><button type="button" class="kb kb-sim" data-ctl="간격 배지" data-badge="시뮬" aria-haspopup="dialog" aria-expanded="false" aria-label="값 배지 시뮬. 누르면 근거를 엽니다"><span class="kp"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 6q1.25-5 2.5 0t2.5 0t2.5 0t2.5 0"/></svg>시뮬</span></button><span class="k-ex">예시</span></div>
+<button type="button" class="k-btn" data-ctl="적용">적용</button>
+<span class="k-cap">복제는 한 번에 되돌립니다</span>
+</div>
+</div>
+
+<div class="k-lbl" style="margin-top:24px">(b) 거부 · (c) 방사 비활성 · 실제 크기</div>
+<div style="display:flex;gap:24px;align-items:flex-start">
+
+<div data-unit="S10b1 n 2 미만" style="display:flex;flex-direction:column;gap:6px"><span class="k-cap">(b) 2 미만</span>
+<div class="k-tb static" role="toolbar" aria-label="배치 도구">
+<button type="button" class="k-tog" data-ctl="각도 스냅" aria-pressed="true"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1.5 10.5h9M1.5 10.5L8 2.5M5 10.5a3.5 3.5 0 0 0-1-2.5"/></svg>각도 스냅<span class="k-st">켬</span></button>
+<div class="k-tbrow"><span class="k-cap">단위</span><span class="k-val">15</span><span class="k-unit">°</span><button type="button" class="kb kb-def" data-ctl="각도 스냅 단위 배지" data-badge="기본값" aria-haspopup="dialog" aria-expanded="false" aria-label="값 배지 기본값. 누르면 근거를 엽니다"><span class="kp"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><circle cx="6" cy="6" r="3.5"/></svg>기본값</span></button><span class="k-ex">예시</span></div>
+<div class="k-seg" role="radiogroup" aria-label="대칭" data-ctl="대칭"><button type="button" role="radio" aria-checked="false" tabindex="-1">없음</button><button type="button" role="radio" aria-checked="false" tabindex="-1">평면</button><button type="button" role="radio" aria-checked="true">방사</button></div>
+<div class="k-tsep"></div>
+<div class="k-tbrow"><label for="s10b-n" class="k-cap">개수 n · 원본 포함</label><input id="s10b-n" class="k-in" style="width:48px" value="1" inputmode="numeric" aria-invalid="true" aria-describedby="s10b-e" data-ctl="방사 개수 n(거부)"></div>
+<span id="s10b-e" role="alert" class="k-cap" style="color:#E8EDF2">2 이상이어야 합니다. 적용하지 않았습니다</span>
+<div class="k-tbrow"><span class="k-cap">간격</span><span class="k-cap">계산 안 함</span></div>
+<button type="button" class="k-btn" data-ctl="적용">적용</button>
+</div>
+</div>
+
+<div data-unit="S10b2 상한 초과" style="display:flex;flex-direction:column;gap:6px"><span class="k-cap">(b) 상한 초과</span>
+<div class="k-tb static" role="toolbar" aria-label="배치 도구">
+<button type="button" class="k-tog" data-ctl="각도 스냅" aria-pressed="true"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1.5 10.5h9M1.5 10.5L8 2.5M5 10.5a3.5 3.5 0 0 0-1-2.5"/></svg>각도 스냅<span class="k-st">켬</span></button>
+<div class="k-tbrow"><span class="k-cap">단위</span><span class="k-val">15</span><span class="k-unit">°</span><button type="button" class="kb kb-def" data-ctl="각도 스냅 단위 배지" data-badge="기본값" aria-haspopup="dialog" aria-expanded="false" aria-label="값 배지 기본값. 누르면 근거를 엽니다"><span class="kp"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><circle cx="6" cy="6" r="3.5"/></svg>기본값</span></button><span class="k-ex">예시</span></div>
+<div class="k-seg" role="radiogroup" aria-label="대칭" data-ctl="대칭"><button type="button" role="radio" aria-checked="false" tabindex="-1">없음</button><button type="button" role="radio" aria-checked="false" tabindex="-1">평면</button><button type="button" role="radio" aria-checked="true">방사</button></div>
+<div class="k-tsep"></div>
+<div class="k-tbrow"><label for="s10c-n" class="k-cap">개수 n · 원본 포함</label><input id="s10c-n" class="k-in" style="width:48px" value="13" inputmode="numeric" aria-invalid="true" aria-describedby="s10c-e" data-ctl="방사 개수 n(거부)"></div>
+<p id="s10c-e" role="alert" class="k-cap" style="margin:0;color:#E8EDF2;line-height:24px">상한 <span class="k-val" style="font-size:11px;line-height:16px">12</span> <span class="k-ex">예시</span>을 넘습니다. 상한은 설정 값입니다 <button type="button" class="kb kb-def" data-ctl="상한 배지" data-badge="기본값" aria-haspopup="dialog" aria-expanded="false" aria-label="값 배지 기본값. 누르면 근거를 엽니다"><span class="kp"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><circle cx="6" cy="6" r="3.5"/></svg>기본값</span></button></p>
+<span class="k-cap">적용하지 않았습니다</span>
+<button type="button" class="k-btn" data-ctl="적용">적용</button>
+</div>
+</div>
+
+<div data-unit="S10c 방사 비활성" style="display:flex;flex-direction:column;gap:6px"><span class="k-cap">(c) 부모 스냅 포인트 없음</span>
+<div class="k-tb static" role="toolbar" aria-label="배치 도구">
+<button type="button" class="k-tog" data-ctl="각도 스냅" aria-pressed="true"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1.5 10.5h9M1.5 10.5L8 2.5M5 10.5a3.5 3.5 0 0 0-1-2.5"/></svg>각도 스냅<span class="k-st">켬</span></button>
+<div class="k-tbrow"><span class="k-cap">단위</span><span class="k-val">15</span><span class="k-unit">°</span><button type="button" class="kb kb-def" data-ctl="각도 스냅 단위 배지" data-badge="기본값" aria-haspopup="dialog" aria-expanded="false" aria-label="값 배지 기본값. 누르면 근거를 엽니다"><span class="kp"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><circle cx="6" cy="6" r="3.5"/></svg>기본값</span></button><span class="k-ex">예시</span></div>
+<div class="k-tsep"></div>
+<span class="k-cap" id="s10d-sym">대칭</span>
+<div class="k-seg" role="radiogroup" aria-labelledby="s10d-sym" aria-describedby="s10d-why" data-ctl="대칭"><button type="button" role="radio" aria-checked="true">없음</button><button type="button" role="radio" aria-checked="false" tabindex="-1">평면</button><button type="button" role="radio" aria-checked="false" aria-disabled="true" tabindex="-1">방사</button></div>
+<span id="s10d-why" class="k-cap" style="color:#E8EDF2">방사: 부모 스냅 포인트가 없어 쓸 수 없습니다</span>
+</div>
+</div>
+
+</div>
+</div>
+</div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1084,"height":840}}'>
+class Component extends DCLogic {
+renderVals() {
+return {};
+}
+}
+</script>
+</body>
+</html>

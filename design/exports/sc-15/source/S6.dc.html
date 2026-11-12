@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>S6 점검 목록 변형 3종</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="/_blob/1b63cce74a7cba46d15c994ab634270a">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div class="k-root" style="width:1332px;height:882px">
+
+<div class="k-note"><span><strong>S6 실행 전 점검 변형</strong> · (a) 줄 펼침 (b) 알림만 (c) 걸린 항목 없음</span><span>(a) 10 · (b) 8 · (c) 6 · 패널 primary 0</span></div>
+
+<div class="k-main">
+<div class="k-ann">
+<div class="k-map" aria-hidden="true"><i style="left:0;right:0;top:0;height:8px;border-bottom-width:1px"></i><i style="left:0;top:9px;bottom:16px;width:40px;border-right-width:1px"></i><i class="on" style="right:0;top:9px;bottom:16px;width:53px"></i><i style="left:0;right:0;bottom:6px;height:9px;border-top-width:1px"></i><i style="left:0;right:0;bottom:0;height:5px;border-top-width:1px"></i></div>
+<p><strong>셸 안의 위치: SC-01 오른쪽 패널 · 조립 보조, 점검 머리(기본 열림)</strong></p>
+<p><strong>(a) 줄 펼침</strong>: 막음 줄을 누르면 뷰포트에서 부품이 강조되고(1단계) 패널은 "뷰포트에서 강조 중" 한 줄만 더합니다. 강조된 줄에만 생기는 <span class="k-hi">자세히</span>(→ 키)를 열면 대상 목록과 해결 안내 한 줄이 보입니다(2단계). 자동 수정 단추는 없습니다. 같은 원인은 한 줄이고 대상 수를 <span class="k-hi">×2</span>로 적습니다.</p>
+<p><strong>(b) 알림만</strong>: 막음 0. 상단바 <span class="k-hi">실행하기</span>는 막히지 않습니다(이유 글자 없음). 알림은 실행 전에 읽을 거리일 뿐입니다.</p>
+<p><strong>(c) 걸린 항목 없음</strong>: 정해진 문장 한 줄. 초록 확인 표시를 그리지 않습니다.</p>
+<p>분류 [제안: X-11]: 컴파일 오류와 정의 없음은 <span class="k-hi">실행을 막음</span>, 정역학 경고 · 추력 점검 · 분리기와 추력기의 같은 시점 작동은 <span class="k-hi">알림</span>.</p>
+<p>점검 줄은 SC-15가 정의 없음과 추진제를 다루는 예로 그렸고, 에이전트는 이 점검을 인용만 합니다("L0 점검: …").</p>
+</div>
+
+<div class="k-cols">
+
+<div class="k-col">
+<div class="k-lbl">(a) 막음 줄 강조 + 자세히 열림</div>
+<aside class="k-panel" data-panel="S6a" data-unit="S6a" aria-label="조립 보조">
+<div class="k-pbar"><button type="button" class="k-ib" data-ctl="패널 접기" aria-label="오른쪽 패널 접기" aria-expanded="true"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 2.5L8 6l-3.5 3.5"/></svg></button><div class="k-seg" role="radiogroup" aria-label="오른쪽 패널 보기" data-ctl="패널 전환기"><button type="button" role="radio" aria-checked="false" tabindex="-1">인스펙터</button><button type="button" role="radio" aria-checked="true">조립 보조</button></div></div>
+<div class="k-ptitle"><h2>조립 보조</h2><button type="button" class="k-ev" data-ctl="L0 증거 칩" aria-haspopup="dialog" aria-expanded="false" aria-label="증거 단계 L0 해석 계산. 누르면 근거를 엽니다"><svg width="25" height="10" viewBox="0 0 30 12" aria-hidden="true"><path d="M0 0h6v12H0z" fill="currentColor"/><path d="M8.5.5h5v11h-5zM16.5.5h5v11h-5zM24.5.5h5v11h-5z" fill="none" stroke="currentColor"/></svg>L0 해석 계산</button></div>
+<div class="k-honest">이 패널의 값은 모두 L0 해석 계산입니다. 판정이 아닙니다.</div>
+<div class="k-body">
+<button type="button" class="k-head" data-ctl="실행 전 점검 · 3건 머리" aria-expanded="true" aria-controls="s6a-chk"><svg class="k-chev" width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 2.5L8 6l-3.5 3.5"/></svg>실행 전 점검 · 3건<span class="k-meta">막음 1 · 알림 2</span></button>
+<div id="s6a-chk" class="k-region" role="region" aria-label="실행 전 점검">
+<ul class="k-list" aria-label="점검 줄 3건, 막음이 먼저">
+<li><button type="button" class="k-chk" data-ctl="점검 줄: 추진제 없는 추력기(강조 중)" aria-pressed="true"><span class="k-tags"><span class="k-l0">L0</span><span class="k-kind"><svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><rect x="1" y="1" width="8" height="8" fill="currentColor"/></svg>실행을 막음</span></span><span class="k-msg">추진제 없는 추력기</span><span class="k-tgt">냉가스 추력기 ×2</span></button>
+<div role="status" class="k-line hi" style="padding:4px 8px 0"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><rect x="1.5" y="1.5" width="9" height="9" rx="1" stroke-dasharray="2 1.5"/></svg>뷰포트에서 강조 중</div>
+<div style="padding:2px 8px 0"><button type="button" class="k-rowbtn" data-ctl="자세히(펼침)" aria-expanded="true" aria-controls="s6a-d" style="width:auto;min-height:24px;padding:0 6px"><svg class="k-chev" width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 2.5L8 6l-3.5 3.5"/></svg>자세히</button></div>
+<div id="s6a-d" class="k-detail" style="margin:4px 8px 6px" data-transient="1">
+<span class="k-cap">대상 2</span>
+<ul style="margin:0;padding-left:16px;display:flex;flex-direction:column;gap:2px"><li>냉가스 추력기 1 · 차체 왼쪽</li><li>냉가스 추력기 2 · 차체 오른쪽</li></ul>
+<span class="k-cap" style="margin-top:4px">해결 안내</span>
+<span>추진제 탱크를 결합하거나 추력기의 추진제 질량을 입력하세요. 자동으로 고치지 않습니다.</span>
+</div>
+</li>
+<li><button type="button" class="k-chk" data-ctl="점검 줄: 무게중심이 지지 다각형 밖" aria-pressed="false" tabindex="-1"><span class="k-tags"><span class="k-l0">L0</span><span class="k-kind"><svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><circle cx="5" cy="5" r="3.5" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>알림</span></span><span class="k-msg">무게중심이 지지 다각형 밖입니다. 이 모델에서는 전복할 수 있습니다</span><span class="k-tgt">조립체 전체</span></button></li>
+<li><button type="button" class="k-chk" data-ctl="점검 줄: 추력선이 무게중심에서 벗어남" aria-pressed="false" tabindex="-1"><span class="k-tags"><span class="k-l0">L0</span><span class="k-kind"><svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><circle cx="5" cy="5" r="3.5" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>알림</span></span><span class="k-msg">추력선이 무게중심에서 벗어나 토크가 생깁니다</span><span class="k-tgt">냉가스 추력기 ×2</span></button></li>
+</ul>
+</div>
+<div class="k-sep"></div>
+<button type="button" class="k-head" data-ctl="추력 · 스케줄 없음 머리" aria-expanded="false"><svg class="k-chev" width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 2.5L8 6l-3.5 3.5"/></svg>추력 · 스케줄 없음</button>
+<div class="k-sep"></div>
+<button type="button" class="k-head" data-ctl="추력 대 중량비 · 세 행성 머리" aria-expanded="false"><svg class="k-chev" width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 2.5L8 6l-3.5 3.5"/></svg>추력 대 중량비 · 세 행성</button>
+<div class="k-sep"></div>
+</div>
+<div class="k-foot"><span class="k-kbd">→</span>자세히<span class="k-kbd">←</span>접기<span class="k-kbd">Esc</span>강조 끝</div>
+</aside>
+</div>
+
+<div class="k-col">
+<div class="k-lbl">(b) 알림만: 막음 0</div>
+<aside class="k-panel" data-panel="S6b" data-unit="S6b" aria-label="조립 보조">
+<div class="k-pbar"><button type="button" class="k-ib" data-ctl="패널 접기" aria-label="오른쪽 패널 접기" aria-expanded="true"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 2.5L8 6l-3.5 3.5"/></svg></button><div class="k-seg" role="radiogroup" aria-label="오른쪽 패널 보기" data-ctl="패널 전환기"><button type="button" role="radio" aria-checked="false" tabindex="-1">인스펙터</button><button type="button" role="radio" aria-checked="true">조립 보조</button></div></div>
+<div class="k-ptitle"><h2>조립 보조</h2><button type="button" class="k-ev" data-ctl="L0 증거 칩" aria-haspopup="dialog" aria-expanded="false" aria-label="증거 단계 L0 해석 계산. 누르면 근거를 엽니다"><svg width="25" height="10" viewBox="0 0 30 12" aria-hidden="true"><path d="M0 0h6v12H0z" fill="currentColor"/><path d="M8.5.5h5v11h-5zM16.5.5h5v11h-5zM24.5.5h5v11h-5z" fill="none" stroke="currentColor"/></svg>L0 해석 계산</button></div>
+<div class="k-honest">이 패널의 값은 모두 L0 해석 계산입니다. 판정이 아닙니다.</div>
+<div class="k-body">
+<button type="button" class="k-head" data-ctl="실행 전 점검 · 2건 머리" aria-expanded="true" aria-controls="s6b-chk"><svg class="k-chev" width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 2.5L8 6l-3.5 3.5"/></svg>실행 전 점검 · 2건<span class="k-meta">막음 0 · 알림 2</span></button>
+<div id="s6b-chk" class="k-region" role="region" aria-label="실행 전 점검">
+<div class="k-line hi">실행을 막는 점검이 없습니다. 실행하기는 막히지 않습니다</div>
+<ul class="k-list" aria-label="점검 줄 2건">
+<li><button type="button" class="k-chk" data-ctl="점검 줄: 무게중심이 지지 다각형 밖" aria-pressed="false"><span class="k-tags"><span class="k-l0">L0</span><span class="k-kind"><svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><circle cx="5" cy="5" r="3.5" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>알림</span></span><span class="k-msg">무게중심이 지지 다각형 밖입니다. 이 모델에서는 전복할 수 있습니다</span><span class="k-tgt">조립체 전체</span></button></li>
+<li><button type="button" class="k-chk" data-ctl="점검 줄: 분리기와 추력기가 같은 시점에 작동" aria-pressed="false" tabindex="-1"><span class="k-tags"><span class="k-l0">L0</span><span class="k-kind"><svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><circle cx="5" cy="5" r="3.5" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>알림</span></span><span class="k-msg">분리기와 추력기가 같은 시점에 작동합니다</span><span class="k-tgt">분리기 · 냉가스 추력기 1 · 같은 스케줄 시점</span></button></li>
+</ul>
+<div class="k-line">줄을 누르면 뷰포트에서 강조합니다. 고쳐 주지는 않습니다.</div>
+</div>
+<div class="k-sep"></div>
+<button type="button" class="k-head" data-ctl="추력 · 스케줄 있음 머리" aria-expanded="false"><svg class="k-chev" width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 2.5L8 6l-3.5 3.5"/></svg>추력 · 스케줄 있음</button>
+<div class="k-sep"></div>
+<button type="button" class="k-head" data-ctl="추력 대 중량비 · 세 행성 머리" aria-expanded="false"><svg class="k-chev" width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 2.5L8 6l-3.5 3.5"/></svg>추력 대 중량비 · 세 행성</button>
+<div class="k-sep"></div>
+</div>
+</aside>
+</div>
+
+<div class="k-col">
+<div class="k-lbl">(c) 걸린 항목 없음</div>
+<aside class="k-panel" data-panel="S6c" data-unit="S6c" aria-label="조립 보조">
+<div class="k-pbar"><button type="button" class="k-ib" data-ctl="패널 접기" aria-label="오른쪽 패널 접기" aria-expanded="true"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 2.5L8 6l-3.5 3.5"/></svg></button><div class="k-seg" role="radiogroup" aria-label="오른쪽 패널 보기" data-ctl="패널 전환기"><button type="button" role="radio" aria-checked="false" tabindex="-1">인스펙터</button><button type="button" role="radio" aria-checked="true">조립 보조</button></div></div>
+<div class="k-ptitle"><h2>조립 보조</h2><button type="button" class="k-ev" data-ctl="L0 증거 칩" aria-haspopup="dialog" aria-expanded="false" aria-label="증거 단계 L0 해석 계산. 누르면 근거를 엽니다"><svg width="25" height="10" viewBox="0 0 30 12" aria-hidden="true"><path d="M0 0h6v12H0z" fill="currentColor"/><path d="M8.5.5h5v11h-5zM16.5.5h5v11h-5zM24.5.5h5v11h-5z" fill="none" stroke="currentColor"/></svg>L0 해석 계산</button></div>
+<div class="k-honest">이 패널의 값은 모두 L0 해석 계산입니다. 판정이 아닙니다.</div>
+<div class="k-body">
+<button type="button" class="k-head" data-ctl="실행 전 점검 · 0건 머리" aria-expanded="true" aria-controls="s6c-chk"><svg class="k-chev" width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 2.5L8 6l-3.5 3.5"/></svg>실행 전 점검 · 0건<span class="k-meta">막음 0 · 알림 0</span></button>
+<div id="s6c-chk" class="k-region" role="region" aria-label="실행 전 점검">
+<div style="display:flex;align-items:flex-start;gap:8px;padding:4px 8px"><span class="k-l0" style="margin-top:1px">L0</span><span style="font-size:13px;line-height:20px">이 점검이 보는 범위에서 걸린 항목이 없습니다. 판정이 아닙니다</span></div>
+</div>
+<div class="k-sep"></div>
+<button type="button" class="k-head" data-ctl="추력 · 스케줄 있음 머리" aria-expanded="false"><svg class="k-chev" width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 2.5L8 6l-3.5 3.5"/></svg>추력 · 스케줄 있음</button>
+<div class="k-sep"></div>
+<button type="button" class="k-head" data-ctl="추력 대 중량비 · 세 행성 머리" aria-expanded="false"><svg class="k-chev" width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 2.5L8 6l-3.5 3.5"/></svg>추력 대 중량비 · 세 행성</button>
+<div class="k-sep"></div>
+</div>
+</aside>
+</div>
+
+</div>
+</div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1332,"height":882}}'>
+class Component extends DCLogic {
+renderVals() {
+return {};
+}
+}
+</script>
+</body>
+</html>
