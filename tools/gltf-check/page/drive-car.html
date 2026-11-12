@@ -1,0 +1,28 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>B-03 drive car: glb per instance placed by pose, with the drive parts' specs and sources</title>
+<style>
+html,body{margin:0;background:#14181f;color:#ddd;font:13px/1.35 system-ui,sans-serif}
+#wrap{display:flex;align-items:flex-start;width:1680px}
+#view{position:relative;flex:none}
+canvas{display:block}
+#label{position:absolute;left:8px;top:6px;width:900px}
+#side{padding:8px 12px;width:696px;flex:none}
+#side table{border-collapse:collapse;margin:4px 0 10px;width:100%}
+#side td,#side th{padding:2px 8px 2px 0;text-align:left;vertical-align:top;font-variant-numeric:tabular-nums}
+#side th{color:#9aa;font-weight:normal;border-bottom:1px solid #445}
+#side td.n{text-align:right;white-space:nowrap}
+#side td.src{color:#aab;font-size:11px}
+.badge{display:inline-block;padding:0 6px;border-radius:8px;font-size:11px;white-space:nowrap;color:#111}
+.badge.cite{background:#7fc6a4}.badge.estimate{background:#e0b860}.badge.declared{background:#9ab8f0}.badge.default{background:#c0c0c0}.badge.sim{background:#d59ae0}
+#note{color:#9aa;margin-top:4px}
+</style>
+<div id="wrap">
+  <div id="view">
+    <canvas id="c" width="960" height="680"></canvas>
+    <div id="label">B-03: 휠·모터·추력기·배터리·탱크·스프링-댐퍼를 단 차. 인스턴스마다 glb를 자세(pose)대로 놓았습니다. 시각 메시이며 판정이 아닙니다</div>
+  </div>
+  <div id="side"></div>
+</div>
+<script type="importmap">{"imports":{"three":"/node_modules/three/build/three.module.js","three/addons/":"/node_modules/three/examples/jsm/"}}</script>
+<script type="module" src="/page/drive-car.js"></script>
