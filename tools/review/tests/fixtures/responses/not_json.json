@@ -1,0 +1,23 @@
+{
+ "status": 200,
+ "body": {
+  "id": "gen-1",
+  "model": "openai/gpt-6.1-sol",
+  "choices": [
+   {
+    "message": {
+     "role": "assistant",
+     "content": "리뷰 결과입니다: 문제 없음"
+    }
+   }
+  ],
+  "usage": {
+   "prompt_tokens": 1200,
+   "completion_tokens": 800,
+   "completion_tokens_details": {
+    "reasoning_tokens": 500
+   },
+   "cost": 0.0123
+  }
+ }
+}

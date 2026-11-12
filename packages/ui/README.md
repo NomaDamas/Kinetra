@@ -23,4 +23,4 @@ Use: `import "@kinetra/ui/tokens.css"; import "@kinetra/ui/components.css"; impo
 
 ## `/design-sync` round trip
 
-Not done yet. It needs the interactive `claude` and a claude.ai login, so it is run from a PTY (`docs/decisions/design-pty.md`) and recorded in #34. After it runs, the repository tokens and the Claude Design project should show no difference; record the result there.
+omp completed the PTY `/design-sync` upload on 2026-11-11 and separately compared all 75 `--kin-*` declarations, their values, and the focus/reduced-motion rules with `design/exports/design-system/tokens.{json,css}`: no value or rule differences (only the generated file headers differ). Evidence: #34 comments 6789726052 and 6790338209. Founder confirmation and review of the uploaded Claude Design project cards remain pending; this record is not founder approval.

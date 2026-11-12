@@ -1,0 +1,497 @@
+{
+  "id": "spring-damper-lee-lc032b08",
+  "name": "Spring-damper, Lee Spring LC 032B 08 S316 spring (5.99 N/mm) with a damping coefficient",
+  "parameters": [
+    {
+      "name": "stiffness",
+      "unit": "N/m",
+      "default": {
+        "badge": "cite",
+        "source": {
+          "ref": "Lee Spring standard compression spring LC 032B 08 S316 (stainless steel type 316, squared and ground), Lee Spring product page",
+          "locator": "Rate (N/mm): 5.99 (Rate (lb/inch): 34.2)",
+          "url": "https://www.leespring.com/compression-specific/331081"
+        },
+        "value": 5990.0,
+        "unit": "N/m"
+      },
+      "min": {
+        "badge": "default",
+        "source": {
+          "ref": "B-03e: tuning range chosen by Kinetra for game-scale suspensions (a hobby-size spring up to a car-size spring); not a datasheet value"
+        },
+        "value": 100.0,
+        "unit": "N/m"
+      },
+      "max": {
+        "badge": "default",
+        "source": {
+          "ref": "B-03e: tuning range chosen by Kinetra for game-scale suspensions (a hobby-size spring up to a car-size spring); not a datasheet value"
+        },
+        "value": 100000.0,
+        "unit": "N/m"
+      }
+    },
+    {
+      "name": "damping",
+      "unit": "N*s/m",
+      "default": {
+        "badge": "default",
+        "source": {
+          "ref": "B-03e: Kinetra default. The datasheet of a coil spring has no damping; 20 N*s/m gives a damping ratio of about 0.18 (zeta = c / (2 sqrt(k m))) for a 0.5 kg load on the cited 5990 N/m spring. Not measured; tune it"
+        },
+        "value": 20.0,
+        "unit": "N*s/m"
+      },
+      "min": {
+        "badge": "default",
+        "source": {
+          "ref": "B-03e: tuning range chosen by Kinetra for game-scale suspensions; not a datasheet value. 0 is an undamped spring"
+        },
+        "value": 0.0,
+        "unit": "N*s/m"
+      },
+      "max": {
+        "badge": "default",
+        "source": {
+          "ref": "B-03e: tuning range chosen by Kinetra for game-scale suspensions; not a datasheet value. 0 is an undamped spring"
+        },
+        "value": 500.0,
+        "unit": "N*s/m"
+      }
+    },
+    {
+      "name": "mass",
+      "unit": "kg",
+      "default": {
+        "badge": "estimate",
+        "source": {
+          "ref": "B-03e estimate: the product page gives no weight. Wire length = pi (OD - d) x total coils = pi (4.57 - 0.81) mm x 13.82 = 163.3 mm; wire volume = pi/4 d^2 x length = 84.1 mm^3; x 8000 kg/m^3 (generic austenitic stainless steel, not the supplier's value) = 0.67 g. Inputs from the same page"
+        },
+        "value": 0.000673,
+        "unit": "kg"
+      },
+      "min": {
+        "badge": "estimate",
+        "source": {
+          "ref": "B-03e estimate: the product page gives no weight. Wire length = pi (OD - d) x total coils = pi (4.57 - 0.81) mm x 13.82 = 163.3 mm; wire volume = pi/4 d^2 x length = 84.1 mm^3; x 8000 kg/m^3 (generic austenitic stainless steel, not the supplier's value) = 0.67 g. Inputs from the same page"
+        },
+        "value": 0.000673,
+        "unit": "kg"
+      },
+      "max": {
+        "badge": "estimate",
+        "source": {
+          "ref": "B-03e estimate: the product page gives no weight. Wire length = pi (OD - d) x total coils = pi (4.57 - 0.81) mm x 13.82 = 163.3 mm; wire volume = pi/4 d^2 x length = 84.1 mm^3; x 8000 kg/m^3 (generic austenitic stainless steel, not the supplier's value) = 0.67 g. Inputs from the same page"
+        },
+        "value": 0.000673,
+        "unit": "kg"
+      }
+    }
+  ],
+  "snap_points": [
+    {
+      "badge": "declared",
+      "source": {
+        "ref": "Kinetra: centre of the spring's lower end face; the part's z axis is the spring axis, the spring acts along it; the part origin is the middle of the free length",
+        "declared_by": "kinetra-b03e",
+        "declared_at": "2026-11-12T00:00:00Z"
+      },
+      "id": "end_a",
+      "kind": "spring_end",
+      "accepts": [
+        "spring_end"
+      ],
+      "position": {
+        "x": {
+          "offset": 0.0,
+          "terms": []
+        },
+        "y": {
+          "offset": 0.0,
+          "terms": []
+        },
+        "z": {
+          "offset": -0.009525,
+          "terms": []
+        }
+      },
+      "orientation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0,
+        "w": 1.0
+      }
+    },
+    {
+      "badge": "declared",
+      "source": {
+        "ref": "Kinetra: centre of the spring's upper end face (z = +free length / 2), the other end of the spring axis",
+        "declared_by": "kinetra-b03e",
+        "declared_at": "2026-11-12T00:00:00Z"
+      },
+      "id": "end_b",
+      "kind": "spring_end",
+      "accepts": [
+        "spring_end"
+      ],
+      "position": {
+        "x": {
+          "offset": 0.0,
+          "terms": []
+        },
+        "y": {
+          "offset": 0.0,
+          "terms": []
+        },
+        "z": {
+          "offset": 0.009525,
+          "terms": []
+        }
+      },
+      "orientation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0,
+        "w": 1.0
+      }
+    }
+  ],
+  "specs": [
+    {
+      "badge": "cite",
+      "source": {
+        "ref": "Lee Spring standard compression spring LC 032B 08 S316 (stainless steel type 316, squared and ground), Lee Spring product page",
+        "locator": "Free Length (mm): 19.05 (0.75 in)",
+        "url": "https://www.leespring.com/compression-specific/331081"
+      },
+      "value": 0.01905,
+      "unit": "m",
+      "name": "free_length"
+    },
+    {
+      "badge": "cite",
+      "source": {
+        "ref": "Lee Spring standard compression spring LC 032B 08 S316 (stainless steel type 316, squared and ground), Lee Spring product page",
+        "locator": "Solid Height (mm): 11.43 (0.45 in)",
+        "url": "https://www.leespring.com/compression-specific/331081"
+      },
+      "value": 0.01143,
+      "unit": "m",
+      "name": "solid_height"
+    },
+    {
+      "badge": "cite",
+      "source": {
+        "ref": "Lee Spring standard compression spring LC 032B 08 S316 (stainless steel type 316, squared and ground), Lee Spring product page",
+        "locator": "Outside Diameter (mm): 4.57 (0.18 in)",
+        "url": "https://www.leespring.com/compression-specific/331081"
+      },
+      "value": 0.00457,
+      "unit": "m",
+      "name": "outside_diameter"
+    },
+    {
+      "badge": "cite",
+      "source": {
+        "ref": "Lee Spring standard compression spring LC 032B 08 S316 (stainless steel type 316, squared and ground), Lee Spring product page",
+        "locator": "Wire Diameter (mm): 0.81 (0.032 in)",
+        "url": "https://www.leespring.com/compression-specific/331081"
+      },
+      "value": 0.00081,
+      "unit": "m",
+      "name": "wire_diameter"
+    },
+    {
+      "badge": "cite",
+      "source": {
+        "ref": "Lee Spring standard compression spring LC 032B 08 S316 (stainless steel type 316, squared and ground), Lee Spring product page",
+        "locator": "Active Coils: 11.82",
+        "url": "https://www.leespring.com/compression-specific/331081"
+      },
+      "value": 11.82,
+      "unit": "1",
+      "name": "active_coils"
+    },
+    {
+      "badge": "cite",
+      "source": {
+        "ref": "Lee Spring standard compression spring LC 032B 08 S316 (stainless steel type 316, squared and ground), Lee Spring product page",
+        "locator": "Total Coils: 13.82",
+        "url": "https://www.leespring.com/compression-specific/331081"
+      },
+      "value": 13.82,
+      "unit": "1",
+      "name": "total_coils"
+    },
+    {
+      "badge": "cite",
+      "source": {
+        "ref": "Lee Spring standard compression spring LC 032B 08 S316 (stainless steel type 316, squared and ground), Lee Spring product page",
+        "locator": "Load at Solid Height (N): 45.64 (10.26 lb)",
+        "url": "https://www.leespring.com/compression-specific/331081"
+      },
+      "value": 45.64,
+      "unit": "N",
+      "name": "load_at_solid_height"
+    }
+  ],
+  "shape": {
+    "badge": "declared",
+    "source": {
+      "ref": "Kinetra drawing of the spring: the envelope is the cited outside diameter 4.57 mm and free length 19.05 mm (Lee Spring product page); seven discs stand for the coil turns, each 1/13 of the free length with a gap of the same size between them. The wire, its helix and the ground ends are not modelled",
+      "declared_by": "kinetra-b03e",
+      "declared_at": "2026-11-12T00:00:00Z"
+    },
+    "components": [
+      {
+        "id": "turn1",
+        "primitive": {
+          "kind": "cylinder",
+          "radius": {
+            "offset": 0.002285,
+            "terms": []
+          },
+          "length": {
+            "offset": 0.0014653846153846154,
+            "terms": []
+          }
+        },
+        "operation": "add",
+        "position": {
+          "x": {
+            "offset": 0.0,
+            "terms": []
+          },
+          "y": {
+            "offset": 0.0,
+            "terms": []
+          },
+          "z": {
+            "offset": -0.008792307692307693,
+            "terms": []
+          }
+        },
+        "orientation": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 1.0
+        }
+      },
+      {
+        "id": "turn2",
+        "primitive": {
+          "kind": "cylinder",
+          "radius": {
+            "offset": 0.002285,
+            "terms": []
+          },
+          "length": {
+            "offset": 0.0014653846153846154,
+            "terms": []
+          }
+        },
+        "operation": "add",
+        "position": {
+          "x": {
+            "offset": 0.0,
+            "terms": []
+          },
+          "y": {
+            "offset": 0.0,
+            "terms": []
+          },
+          "z": {
+            "offset": -0.005861538461538462,
+            "terms": []
+          }
+        },
+        "orientation": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 1.0
+        }
+      },
+      {
+        "id": "turn3",
+        "primitive": {
+          "kind": "cylinder",
+          "radius": {
+            "offset": 0.002285,
+            "terms": []
+          },
+          "length": {
+            "offset": 0.0014653846153846154,
+            "terms": []
+          }
+        },
+        "operation": "add",
+        "position": {
+          "x": {
+            "offset": 0.0,
+            "terms": []
+          },
+          "y": {
+            "offset": 0.0,
+            "terms": []
+          },
+          "z": {
+            "offset": -0.0029307692307692316,
+            "terms": []
+          }
+        },
+        "orientation": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 1.0
+        }
+      },
+      {
+        "id": "turn4",
+        "primitive": {
+          "kind": "cylinder",
+          "radius": {
+            "offset": 0.002285,
+            "terms": []
+          },
+          "length": {
+            "offset": 0.0014653846153846154,
+            "terms": []
+          }
+        },
+        "operation": "add",
+        "position": {
+          "x": {
+            "offset": 0.0,
+            "terms": []
+          },
+          "y": {
+            "offset": 0.0,
+            "terms": []
+          },
+          "z": {
+            "offset": 0.0,
+            "terms": []
+          }
+        },
+        "orientation": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 1.0
+        }
+      },
+      {
+        "id": "turn5",
+        "primitive": {
+          "kind": "cylinder",
+          "radius": {
+            "offset": 0.002285,
+            "terms": []
+          },
+          "length": {
+            "offset": 0.0014653846153846154,
+            "terms": []
+          }
+        },
+        "operation": "add",
+        "position": {
+          "x": {
+            "offset": 0.0,
+            "terms": []
+          },
+          "y": {
+            "offset": 0.0,
+            "terms": []
+          },
+          "z": {
+            "offset": 0.00293076923076923,
+            "terms": []
+          }
+        },
+        "orientation": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 1.0
+        }
+      },
+      {
+        "id": "turn6",
+        "primitive": {
+          "kind": "cylinder",
+          "radius": {
+            "offset": 0.002285,
+            "terms": []
+          },
+          "length": {
+            "offset": 0.0014653846153846154,
+            "terms": []
+          }
+        },
+        "operation": "add",
+        "position": {
+          "x": {
+            "offset": 0.0,
+            "terms": []
+          },
+          "y": {
+            "offset": 0.0,
+            "terms": []
+          },
+          "z": {
+            "offset": 0.00586153846153846,
+            "terms": []
+          }
+        },
+        "orientation": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 1.0
+        }
+      },
+      {
+        "id": "turn7",
+        "primitive": {
+          "kind": "cylinder",
+          "radius": {
+            "offset": 0.002285,
+            "terms": []
+          },
+          "length": {
+            "offset": 0.0014653846153846154,
+            "terms": []
+          }
+        },
+        "operation": "add",
+        "position": {
+          "x": {
+            "offset": 0.0,
+            "terms": []
+          },
+          "y": {
+            "offset": 0.0,
+            "terms": []
+          },
+          "z": {
+            "offset": 0.008792307692307693,
+            "terms": []
+          }
+        },
+        "orientation": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 1.0
+        }
+      }
+    ]
+  },
+  "mass_parameter": "mass",
+  "role": "spring_damper",
+  "curves": []
+}

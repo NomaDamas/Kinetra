@@ -1,0 +1,321 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "type": {
+      "const": "add_instance",
+      "title": "Type",
+      "type": "string"
+    },
+    "instance": {
+      "$ref": "#/$defs/Instance"
+    },
+    "index": {
+      "anyOf": [
+        {
+          "minimum": 0,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Index"
+    }
+  },
+  "required": [
+    "type",
+    "instance"
+  ],
+  "title": "AddInstance",
+  "type": "object",
+  "$defs": {
+    "Badge": {
+      "enum": [
+        "sim",
+        "cite",
+        "default",
+        "declared",
+        "estimate"
+      ],
+      "title": "Badge",
+      "type": "string"
+    },
+    "Instance": {
+      "additionalProperties": false,
+      "description": "One placed part. Parameters not listed take the `PartDef` default. `material` is optional: a part whose\nmass is declared by its own specs needs none; `None` means no material is assigned.",
+      "properties": {
+        "id": {
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "part": {
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+          "title": "Part",
+          "type": "string"
+        },
+        "parameters": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/ParamValue"
+          },
+          "title": "Parameters",
+          "type": "array"
+        },
+        "material": {
+          "anyOf": [
+            {
+              "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Material"
+        },
+        "pose": {
+          "$ref": "#/$defs/Pose"
+        }
+      },
+      "required": [
+        "id",
+        "part",
+        "pose"
+      ],
+      "title": "Instance",
+      "type": "object"
+    },
+    "ParamValue": {
+      "additionalProperties": false,
+      "description": "The value of one of the part's parameters for this instance. Unit and range are the `ParamDef`'s.",
+      "properties": {
+        "badge": {
+          "$ref": "#/$defs/Badge"
+        },
+        "source": {
+          "$ref": "#/$defs/Source"
+        },
+        "value": {
+          "title": "Value",
+          "type": "number"
+        },
+        "unit": {
+          "$ref": "#/$defs/Unit"
+        },
+        "name": {
+          "pattern": "^[a-z][a-z0-9_]{0,63}$",
+          "title": "Name",
+          "type": "string"
+        }
+      },
+      "required": [
+        "badge",
+        "source",
+        "value",
+        "unit",
+        "name"
+      ],
+      "title": "ParamValue",
+      "type": "object"
+    },
+    "Pose": {
+      "additionalProperties": false,
+      "description": "World pose of an instance's part frame. One badge and source cover the whole pose.",
+      "properties": {
+        "badge": {
+          "$ref": "#/$defs/Badge"
+        },
+        "source": {
+          "$ref": "#/$defs/Source"
+        },
+        "position": {
+          "$ref": "#/$defs/WorldPosition"
+        },
+        "orientation": {
+          "$ref": "#/$defs/Quaternion"
+        }
+      },
+      "required": [
+        "badge",
+        "source",
+        "position",
+        "orientation"
+      ],
+      "title": "Pose",
+      "type": "object"
+    },
+    "Quaternion": {
+      "additionalProperties": false,
+      "description": "Unit quaternion with named components (`conventions.py`).",
+      "properties": {
+        "x": {
+          "title": "X",
+          "type": "number"
+        },
+        "y": {
+          "title": "Y",
+          "type": "number"
+        },
+        "z": {
+          "title": "Z",
+          "type": "number"
+        },
+        "w": {
+          "title": "W",
+          "type": "number"
+        }
+      },
+      "required": [
+        "x",
+        "y",
+        "z",
+        "w"
+      ],
+      "title": "Quaternion",
+      "type": "object"
+    },
+    "Source": {
+      "additionalProperties": false,
+      "description": "Where a value comes from.\n\n`ref` is what was cited, declared or run: a document, a datasheet, a run id, or the reason a default was chosen\n(for an estimate: the method and its inputs). `locator` is where inside it (table, page, section). `url` is a\nlink when there is one. `license` (SPDX expression over the repo allowlist, `spdx.py`) and `declared_by` / `declared_at` feed the badge popover\n(`ValueBadges`, 인용 and 사용자 선언); `Provenance` allows each only on its own badge.",
+      "properties": {
+        "ref": {
+          "maxLength": 500,
+          "minLength": 1,
+          "title": "Ref",
+          "type": "string"
+        },
+        "locator": {
+          "anyOf": [
+            {
+              "maxLength": 200,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Locator"
+        },
+        "url": {
+          "anyOf": [
+            {
+              "maxLength": 2000,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Url"
+        },
+        "license": {
+          "anyOf": [
+            {
+              "maxLength": 200,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "License"
+        },
+        "declared_by": {
+          "anyOf": [
+            {
+              "maxLength": 200,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Declared By"
+        },
+        "declared_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Declared At"
+        }
+      },
+      "required": [
+        "ref"
+      ],
+      "title": "Source",
+      "type": "object"
+    },
+    "Unit": {
+      "description": "Closed unit vocabulary (SI, written the way the JSON carries it).",
+      "enum": [
+        "1",
+        "m",
+        "m^2",
+        "m^3",
+        "kg",
+        "kg/s",
+        "s",
+        "rad",
+        "m/s",
+        "m/s^2",
+        "rad/s",
+        "N",
+        "N*s",
+        "N*m",
+        "N/m",
+        "N*s/m",
+        "N*m/rad",
+        "Pa",
+        "kg/m^3",
+        "kg*m^2",
+        "J",
+        "W",
+        "W/m^2",
+        "V",
+        "A"
+      ],
+      "title": "Unit",
+      "type": "string"
+    },
+    "WorldPosition": {
+      "additionalProperties": false,
+      "description": "A position in metres, world frame.",
+      "properties": {
+        "x": {
+          "title": "X",
+          "type": "number"
+        },
+        "y": {
+          "title": "Y",
+          "type": "number"
+        },
+        "z": {
+          "title": "Z",
+          "type": "number"
+        }
+      },
+      "required": [
+        "x",
+        "y",
+        "z"
+      ],
+      "title": "WorldPosition",
+      "type": "object"
+    }
+  }
+}

@@ -1,0 +1,1134 @@
+{
+ "engine": {
+  "version": "4.0.0",
+  "load_ms": 66.09999990463257,
+  "package": "@mujoco/mujoco 4.0.0"
+ },
+ "env": {
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/158.0.8127.18 Safari/537.36",
+  "hardwareConcurrency": 10,
+  "crossOriginIsolated": false,
+  "devicePixelRatio": 1,
+  "visibility": "visible"
+ },
+ "manifest_summary": {
+  "native_version": "4.0.0",
+  "dt": 0.004,
+  "n_steps": 1125,
+  "model_sha256": "83b4990f9e0cb742f41299886410132641f42f42ef8e1d13ea9bb49909932cd9",
+  "served_model_sha256": "83b4990f9e0cb742f41299886410132641f42f42ef8e1d13ea9bb49909932cd9",
+  "legacy_model_hash": "83b4990f9e0cb742f41299886410132641f42f42ef8e1d13ea9bb49909932cd9",
+  "seed": 0
+ },
+ "integrity": {
+  "model_hash_ok": true,
+  "reference_hash_ok_scenarios": 23,
+  "control_hash_ok_scenarios": 21
+ },
+ "parity": [
+  {
+   "id": "nominal",
+   "kind": "legacy-hero-8000N",
+   "ref": "native",
+   "ctrl_sha256_wasm": "4b243bc6e5b47a7fdbd287643e17cfd84c0b1089478142e0b365efd8079858ae",
+   "ctrl_sha256_native": "4b243bc6e5b47a7fdbd287643e17cfd84c0b1089478142e0b365efd8079858ae",
+   "ctrl_equal": true,
+   "first_contact_step_native": 551,
+   "first_contact_step_wasm": 551,
+   "wasm_repeat_bitwise_equal": true,
+   "wasm_qpos_sha256": "656e75bb42df3c668431f181a1cede9ab2ee956b24d168de358fecdc9861cb95",
+   "native_qpos_sha256": "69fba6b754f4e3b6861a8fa9f4a8254278296fc941d75774d203e045c23aecf7",
+   "max_pos_err_m": 0.000006143668209613551,
+   "max_pos_err_step": 1084,
+   "max_ang_err_rad": 0.000004093419936875872,
+   "max_ang_err_step": 1084,
+   "max_wheel_err_rad": 0.0003988784173429849,
+   "max_wheel_err_step": 1085,
+   "pre_touchdown": {
+    "max_pos_err_m": 6.457080399900232e-14,
+    "max_ang_err_rad": 6.579015752684311e-14
+   },
+   "post_touchdown": {
+    "max_pos_err_m": 0.000006143668209613551,
+    "max_ang_err_rad": 0.000004093419936875872
+   },
+   "at_touchdown": {
+    "pos_m": 6.538120264972631e-14,
+    "ang_rad": 6.675878704070868e-14
+   },
+   "final": {
+    "pos_m": 0.0000019734528261046624,
+    "ang_rad": 1.4221524451495873e-7
+   },
+   "bitwise_equal_prefix_rows": 1,
+   "bitwise_identical": false,
+   "first_step_pos_err_exceeds": {
+    "1e-9": 904,
+    "0.000001": 1030,
+    "0.001": null,
+    "0.01": null,
+    "0.1": null
+   }
+  },
+  {
+   "id": "var1",
+   "kind": "seeded-variant",
+   "ref": "native",
+   "ctrl_sha256_wasm": "70e4f3e217fea68a12f67d4e54e01ef627977db20d0829ed27bda13cc1ab8332",
+   "ctrl_sha256_native": "70e4f3e217fea68a12f67d4e54e01ef627977db20d0829ed27bda13cc1ab8332",
+   "ctrl_equal": true,
+   "first_contact_step_native": 550,
+   "first_contact_step_wasm": 550,
+   "wasm_repeat_bitwise_equal": true,
+   "wasm_qpos_sha256": "19a4a8c1d24e8580f5400a46c98baa015967b57a0e206332da462f32ce618c27",
+   "native_qpos_sha256": "45cf5f457c16cea861b6d7ea7e2df85a911c457feac12d56923a9a281310e55f",
+   "max_pos_err_m": 3.2696415647203238e-9,
+   "max_pos_err_step": 1125,
+   "max_ang_err_rad": 1.4702619840724294e-8,
+   "max_ang_err_step": 1125,
+   "max_wheel_err_rad": 4.061632807861315e-9,
+   "max_wheel_err_step": 1125,
+   "pre_touchdown": {
+    "max_pos_err_m": 6.406785316286012e-14,
+    "max_ang_err_rad": 5.3490737755102146e-14
+   },
+   "post_touchdown": {
+    "max_pos_err_m": 3.2696415647203238e-9,
+    "max_ang_err_rad": 1.4702619840724294e-8
+   },
+   "at_touchdown": {
+    "pos_m": 6.474770803147384e-14,
+    "ang_rad": 5.3714802375355385e-14
+   },
+   "final": {
+    "pos_m": 3.2696415647203238e-9,
+    "ang_rad": 1.4702619840724294e-8
+   },
+   "bitwise_equal_prefix_rows": 1,
+   "bitwise_identical": false,
+   "first_step_pos_err_exceeds": {
+    "1e-9": 1071,
+    "0.000001": null,
+    "0.001": null,
+    "0.01": null,
+    "0.1": null
+   }
+  },
+  {
+   "id": "var2",
+   "kind": "seeded-variant",
+   "ref": "native",
+   "ctrl_sha256_wasm": "48555c479f13854bf1e7f8f22d062e51b63c5b152e69b08653cc4a57b8ad2920",
+   "ctrl_sha256_native": "48555c479f13854bf1e7f8f22d062e51b63c5b152e69b08653cc4a57b8ad2920",
+   "ctrl_equal": true,
+   "first_contact_step_native": 475,
+   "first_contact_step_wasm": 475,
+   "wasm_repeat_bitwise_equal": true,
+   "wasm_qpos_sha256": "f2236e4607eb8fcd94a367af4244fcd40b2b56521c3cc282c4ca70611de07e7e",
+   "native_qpos_sha256": "9410daaf40fc69cec9259e9952980faa16c016637b81ffdf958acb125af9e04e",
+   "max_pos_err_m": 3.619742400389558e-10,
+   "max_pos_err_step": 1125,
+   "max_ang_err_rad": 2.23956509750803e-10,
+   "max_ang_err_step": 1125,
+   "max_wheel_err_rad": 1.8871446627599653e-9,
+   "max_wheel_err_step": 1125,
+   "pre_touchdown": {
+    "max_pos_err_m": 1.544128260874241e-14,
+    "max_ang_err_rad": 1.3965520927164772e-14
+   },
+   "post_touchdown": {
+    "max_pos_err_m": 3.619742400389558e-10,
+    "max_ang_err_rad": 2.23956509750803e-10
+   },
+   "at_touchdown": {
+    "pos_m": 1.5458933726596452e-14,
+    "ang_rad": 1.4610609784800554e-14
+   },
+   "final": {
+    "pos_m": 3.619742400389558e-10,
+    "ang_rad": 2.23956509750803e-10
+   },
+   "bitwise_equal_prefix_rows": 1,
+   "bitwise_identical": false,
+   "first_step_pos_err_exceeds": {
+    "1e-9": null,
+    "0.000001": null,
+    "0.001": null,
+    "0.01": null,
+    "0.1": null
+   }
+  },
+  {
+   "id": "var3",
+   "kind": "seeded-variant",
+   "ref": "native",
+   "ctrl_sha256_wasm": "be2e2eed5225a7673c69b04d30a788aa8e0355c84ebed503fd6e9aa564211d30",
+   "ctrl_sha256_native": "be2e2eed5225a7673c69b04d30a788aa8e0355c84ebed503fd6e9aa564211d30",
+   "ctrl_equal": true,
+   "first_contact_step_native": 525,
+   "first_contact_step_wasm": 525,
+   "wasm_repeat_bitwise_equal": true,
+   "wasm_qpos_sha256": "10cb296b1126dba65e75529b370c9eb64ff7578bbb37085d4a7f09a5e7323048",
+   "native_qpos_sha256": "0245662ca318feccf61c1c6e5e2c0ed79ea8b54b8736d900782c42ee796c4edb",
+   "max_pos_err_m": 6.673174915025738e-8,
+   "max_pos_err_step": 1125,
+   "max_ang_err_rad": 5.54765527280169e-8,
+   "max_ang_err_step": 1125,
+   "max_wheel_err_rad": 3.063977089823311e-7,
+   "max_wheel_err_step": 1125,
+   "pre_touchdown": {
+    "max_pos_err_m": 4.8656656113849504e-14,
+    "max_ang_err_rad": 5.746773836878255e-14
+   },
+   "post_touchdown": {
+    "max_pos_err_m": 6.673174915025738e-8,
+    "max_ang_err_rad": 5.54765527280169e-8
+   },
+   "at_touchdown": {
+    "pos_m": 4.784017873370103e-14,
+    "ang_rad": 5.752958961174967e-14
+   },
+   "final": {
+    "pos_m": 6.673174915025738e-8,
+    "ang_rad": 5.54765527280169e-8
+   },
+   "bitwise_equal_prefix_rows": 1,
+   "bitwise_identical": false,
+   "first_step_pos_err_exceeds": {
+    "1e-9": 1014,
+    "0.000001": null,
+    "0.001": null,
+    "0.01": null,
+    "0.1": null
+   }
+  },
+  {
+   "id": "var4",
+   "kind": "seeded-variant",
+   "ref": "native",
+   "ctrl_sha256_wasm": "27c3ae20f003b7535d72bdd4baec82dab07c6cd6daf498f17854ec15e803e2fa",
+   "ctrl_sha256_native": "27c3ae20f003b7535d72bdd4baec82dab07c6cd6daf498f17854ec15e803e2fa",
+   "ctrl_equal": true,
+   "first_contact_step_native": 515,
+   "first_contact_step_wasm": 515,
+   "wasm_repeat_bitwise_equal": true,
+   "wasm_qpos_sha256": "f917b77f75ec8fdc173e1097af2ad4b8ef9a64706f7dd1452d43a9bcbb9bcc57",
+   "native_qpos_sha256": "9ca4765d865a10bb04614feb8ac7a6a11df573d5060ba07b72dc885b9661fad5",
+   "max_pos_err_m": 1.2305208390286575e-9,
+   "max_pos_err_step": 1125,
+   "max_ang_err_rad": 4.1268617196793764e-10,
+   "max_ang_err_step": 1125,
+   "max_wheel_err_rad": 3.7184122447797563e-10,
+   "max_wheel_err_step": 1125,
+   "pre_touchdown": {
+    "max_pos_err_m": 9.73283205817571e-14,
+    "max_ang_err_rad": 1.4064055013023718e-13
+   },
+   "post_touchdown": {
+    "max_pos_err_m": 1.2305208390286575e-9,
+    "max_ang_err_rad": 4.1268617196793764e-10
+   },
+   "at_touchdown": {
+    "pos_m": 9.545464878326025e-14,
+    "ang_rad": 1.4123643037640601e-13
+   },
+   "final": {
+    "pos_m": 1.2305208390286575e-9,
+    "ang_rad": 4.1268617196793764e-10
+   },
+   "bitwise_equal_prefix_rows": 1,
+   "bitwise_identical": false,
+   "first_step_pos_err_exceeds": {
+    "1e-9": 1110,
+    "0.000001": null,
+    "0.001": null,
+    "0.01": null,
+    "0.1": null
+   }
+  },
+  {
+   "id": "var5",
+   "kind": "seeded-variant",
+   "ref": "native",
+   "ctrl_sha256_wasm": "339c89653179cadfd8ad9b29fb49e442bdfa6b94618c418123df4e407ca8a12f",
+   "ctrl_sha256_native": "339c89653179cadfd8ad9b29fb49e442bdfa6b94618c418123df4e407ca8a12f",
+   "ctrl_equal": true,
+   "first_contact_step_native": 470,
+   "first_contact_step_wasm": 470,
+   "wasm_repeat_bitwise_equal": true,
+   "wasm_qpos_sha256": "994ca00434e6a3ad7fedc65d866d974cd6116e3813ee818dc87fa88d302201e5",
+   "native_qpos_sha256": "86a47de32a6c5548639f19f18187ad4fa7adc2883e7071f934f5ffd1fd60d3bd",
+   "max_pos_err_m": 1.8417501621350283e-11,
+   "max_pos_err_step": 1090,
+   "max_ang_err_rad": 1.8825152673614352e-11,
+   "max_ang_err_step": 1125,
+   "max_wheel_err_rad": 6.30961949354969e-12,
+   "max_wheel_err_step": 1125,
+   "pre_touchdown": {
+    "max_pos_err_m": 1.8446628889832358e-15,
+    "max_ang_err_rad": 1.0983041634312568e-14
+   },
+   "post_touchdown": {
+    "max_pos_err_m": 1.8417501621350283e-11,
+    "max_ang_err_rad": 1.8825152673614352e-11
+   },
+   "at_touchdown": {
+    "pos_m": 3.3306690738754696e-16,
+    "ang_rad": 1.118009779598021e-14
+   },
+   "final": {
+    "pos_m": 1.3571791912970775e-11,
+    "ang_rad": 1.8825152673614352e-11
+   },
+   "bitwise_equal_prefix_rows": 1,
+   "bitwise_identical": false,
+   "first_step_pos_err_exceeds": {
+    "1e-9": null,
+    "0.000001": null,
+    "0.001": null,
+    "0.01": null,
+    "0.1": null
+   }
+  },
+  {
+   "id": "var6",
+   "kind": "seeded-variant",
+   "ref": "native",
+   "ctrl_sha256_wasm": "5a6428b3163da1445c711c87c33212eec37037b2bf3ee1c82b5a02440c8a7264",
+   "ctrl_sha256_native": "5a6428b3163da1445c711c87c33212eec37037b2bf3ee1c82b5a02440c8a7264",
+   "ctrl_equal": true,
+   "first_contact_step_native": 475,
+   "first_contact_step_wasm": 475,
+   "wasm_repeat_bitwise_equal": true,
+   "wasm_qpos_sha256": "2a059a8a4889f06594bec0a35c2c3614d161da81f1956dd59ccf7f3c23ba3c9f",
+   "native_qpos_sha256": "a8b687ee4a106bc5a13fb18f727d4f8ea8de7c8ebb49e1d78809ae5b32a1efb3",
+   "max_pos_err_m": 5.776883966634711e-12,
+   "max_pos_err_step": 847,
+   "max_ang_err_rad": 3.931280058965137e-12,
+   "max_ang_err_step": 847,
+   "max_wheel_err_rad": 4.519051799434237e-12,
+   "max_wheel_err_step": 823,
+   "pre_touchdown": {
+    "max_pos_err_m": 6.657231369590614e-15,
+    "max_ang_err_rad": 2.0281271119970974e-14
+   },
+   "post_touchdown": {
+    "max_pos_err_m": 5.776883966634711e-12,
+    "max_ang_err_rad": 3.931280058965137e-12
+   },
+   "at_touchdown": {
+    "pos_m": 6.706533392315004e-15,
+    "ang_rad": 2.0141438539686948e-14
+   },
+   "final": {
+    "pos_m": 4.8797338417757205e-12,
+    "ang_rad": 1.8931115647215165e-13
+   },
+   "bitwise_equal_prefix_rows": 1,
+   "bitwise_identical": false,
+   "first_step_pos_err_exceeds": {
+    "1e-9": null,
+    "0.000001": null,
+    "0.001": null,
+    "0.01": null,
+    "0.1": null
+   }
+  },
+  {
+   "id": "var7",
+   "kind": "seeded-variant",
+   "ref": "native",
+   "ctrl_sha256_wasm": "750c6d08273bacb6ebcefe42f7bc0791ea4b87b4028554a9fc1f4658f9875fe3",
+   "ctrl_sha256_native": "750c6d08273bacb6ebcefe42f7bc0791ea4b87b4028554a9fc1f4658f9875fe3",
+   "ctrl_equal": true,
+   "first_contact_step_native": 556,
+   "first_contact_step_wasm": 556,
+   "wasm_repeat_bitwise_equal": true,
+   "wasm_qpos_sha256": "6ca3f6fe7c7dd3f1b345f5e7b9610fd33b92e9169c13956bfe379376e05d7c89",
+   "native_qpos_sha256": "3a10559ad7b2e937e9f3b07f6e9c9d502ccb000fc8510d1848647c55b0c33d53",
+   "max_pos_err_m": 3.269224350076514e-11,
+   "max_pos_err_step": 1099,
+   "max_ang_err_rad": 2.3003926697961416e-11,
+   "max_ang_err_step": 1100,
+   "max_wheel_err_rad": 1.4335910236695781e-10,
+   "max_wheel_err_step": 1124,
+   "pre_touchdown": {
+    "max_pos_err_m": 2.063223366433912e-14,
+    "max_ang_err_rad": 2.1764535105686962e-14
+   },
+   "post_touchdown": {
+    "max_pos_err_m": 3.269224350076514e-11,
+    "max_ang_err_rad": 2.3003926697961416e-11
+   },
+   "at_touchdown": {
+    "pos_m": 2.090995353219958e-14,
+    "ang_rad": 2.212023714400869e-14
+   },
+   "final": {
+    "pos_m": 5.800712086796829e-12,
+    "ang_rad": 1.495163228387311e-11
+   },
+   "bitwise_equal_prefix_rows": 1,
+   "bitwise_identical": false,
+   "first_step_pos_err_exceeds": {
+    "1e-9": null,
+    "0.000001": null,
+    "0.001": null,
+    "0.01": null,
+    "0.1": null
+   }
+  },
+  {
+   "id": "var8",
+   "kind": "seeded-variant",
+   "ref": "native",
+   "ctrl_sha256_wasm": "01755c378e8b62441ff92bcac07629097221fee577b77da32acb8e222a67900f",
+   "ctrl_sha256_native": "01755c378e8b62441ff92bcac07629097221fee577b77da32acb8e222a67900f",
+   "ctrl_equal": true,
+   "first_contact_step_native": 478,
+   "first_contact_step_wasm": 478,
+   "wasm_repeat_bitwise_equal": true,
+   "wasm_qpos_sha256": "fe3c0a38e89748e701ab4268a6c77cd3d1b818fe9d6c3c02cf7809a353250073",
+   "native_qpos_sha256": "834b8c06290b73fcc951d8b5d69e4ff011eb85ebe428e7f2027ddce5afbfc722",
+   "max_pos_err_m": 2.971704900502724e-11,
+   "max_pos_err_step": 1125,
+   "max_ang_err_rad": 7.931326449410544e-12,
+   "max_ang_err_step": 1125,
+   "max_wheel_err_rad": 6.934897101018578e-12,
+   "max_wheel_err_step": 1125,
+   "pre_touchdown": {
+    "max_pos_err_m": 7.334407574076367e-15,
+    "max_ang_err_rad": 5.230214006912005e-15
+   },
+   "post_touchdown": {
+    "max_pos_err_m": 2.971704900502724e-11,
+    "max_ang_err_rad": 7.931326449410544e-12
+   },
+   "at_touchdown": {
+    "pos_m": 7.242875823676482e-15,
+    "ang_rad": 4.9042617708973855e-15
+   },
+   "final": {
+    "pos_m": 2.971704900502724e-11,
+    "ang_rad": 7.931326449410544e-12
+   },
+   "bitwise_equal_prefix_rows": 1,
+   "bitwise_identical": false,
+   "first_step_pos_err_exceeds": {
+    "1e-9": null,
+    "0.000001": null,
+    "0.001": null,
+    "0.01": null,
+    "0.1": null
+   }
+  },
+  {
+   "id": "var9",
+   "kind": "seeded-variant",
+   "ref": "native",
+   "ctrl_sha256_wasm": "05f12a60978c1aac86f49f1a9f80ff1c92a0ae1958b3111738f513a0e07d8ab7",
+   "ctrl_sha256_native": "05f12a60978c1aac86f49f1a9f80ff1c92a0ae1958b3111738f513a0e07d8ab7",
+   "ctrl_equal": true,
+   "first_contact_step_native": 520,
+   "first_contact_step_wasm": 520,
+   "wasm_repeat_bitwise_equal": true,
+   "wasm_qpos_sha256": "8d358a6e429a43a9a1025250e56a5671aa34e0ba570107a15788542b170701da",
+   "native_qpos_sha256": "4b19a9d0ad4940514fcfa99904cb1a2a6eb555eab04703288348fa77012fda0c",
+   "max_pos_err_m": 3.077319749286522e-11,
+   "max_pos_err_step": 1125,
+   "max_ang_err_rad": 4.290700136145999e-11,
+   "max_ang_err_step": 1125,
+   "max_wheel_err_rad": 1.7905676941154525e-10,
+   "max_wheel_err_step": 1125,
+   "pre_touchdown": {
+    "max_pos_err_m": 2.3246118945493615e-14,
+    "max_ang_err_rad": 3.8227318099325144e-14
+   },
+   "post_touchdown": {
+    "max_pos_err_m": 3.077319749286522e-11,
+    "max_ang_err_rad": 4.290700136145999e-11
+   },
+   "at_touchdown": {
+    "pos_m": 2.2057703625869652e-14,
+    "ang_rad": 3.806247885913529e-14
+   },
+   "final": {
+    "pos_m": 3.077319749286522e-11,
+    "ang_rad": 4.290700136145999e-11
+   },
+   "bitwise_equal_prefix_rows": 1,
+   "bitwise_identical": false,
+   "first_step_pos_err_exceeds": {
+    "1e-9": null,
+    "0.000001": null,
+    "0.001": null,
+    "0.01": null,
+    "0.1": null
+   }
+  },
+  {
+   "id": "var10",
+   "kind": "seeded-variant",
+   "ref": "native",
+   "ctrl_sha256_wasm": "d607053978bac3b01681bd2fc31d8a62c948a0a02381de2d8fd514bc836552a9",
+   "ctrl_sha256_native": "d607053978bac3b01681bd2fc31d8a62c948a0a02381de2d8fd514bc836552a9",
+   "ctrl_equal": true,
+   "first_contact_step_native": 504,
+   "first_contact_step_wasm": 504,
+   "wasm_repeat_bitwise_equal": true,
+   "wasm_qpos_sha256": "7b206258e9dcdb4e692220d111c21de9edb0a6c7cecdc70aba476fb53d6b8bf7",
+   "native_qpos_sha256": "651ee03b0d80f4d308dc6251d6f4097c9c980aaf21ff92342b9e6e157ac2aff3",
+   "max_pos_err_m": 5.5392796247803195e-11,
+   "max_pos_err_step": 1125,
+   "max_ang_err_rad": 4.659964162919927e-11,
+   "max_ang_err_step": 1125,
+   "max_wheel_err_rad": 1.6655121726216748e-11,
+   "max_wheel_err_step": 1051,
+   "pre_touchdown": {
+    "max_pos_err_m": 4.2876031275714634e-14,
+    "max_ang_err_rad": 5.338043049889415e-14
+   },
+   "post_touchdown": {
+    "max_pos_err_m": 5.5392796247803195e-11,
+    "max_ang_err_rad": 4.659964162919927e-11
+   },
+   "at_touchdown": {
+    "pos_m": 4.171839369083926e-14,
+    "ang_rad": 5.337809250738057e-14
+   },
+   "final": {
+    "pos_m": 5.5392796247803195e-11,
+    "ang_rad": 4.659964162919927e-11
+   },
+   "bitwise_equal_prefix_rows": 1,
+   "bitwise_identical": false,
+   "first_step_pos_err_exceeds": {
+    "1e-9": null,
+    "0.000001": null,
+    "0.001": null,
+    "0.01": null,
+    "0.1": null
+   }
+  },
+  {
+   "id": "var11",
+   "kind": "seeded-variant",
+   "ref": "native",
+   "ctrl_sha256_wasm": "56711b0b17e3c5594f401f6059b82857fcc5297f71b0286d69c3e838dd428e45",
+   "ctrl_sha256_native": "56711b0b17e3c5594f401f6059b82857fcc5297f71b0286d69c3e838dd428e45",
+   "ctrl_equal": true,
+   "first_contact_step_native": 475,
+   "first_contact_step_wasm": 475,
+   "wasm_repeat_bitwise_equal": true,
+   "wasm_qpos_sha256": "a2222122e371eda2b60b36c4992273b624e1f8066b0994a9ef5621c122d33f63",
+   "native_qpos_sha256": "bb86a6a03f696ebbcd049f5dab75428af98170ef47a9aca9c9a99c05063d93f2",
+   "max_pos_err_m": 1.540765024650838e-11,
+   "max_pos_err_step": 1125,
+   "max_ang_err_rad": 7.393535174209995e-12,
+   "max_ang_err_step": 1006,
+   "max_wheel_err_rad": 7.906919563538395e-11,
+   "max_wheel_err_step": 1007,
+   "pre_touchdown": {
+    "max_pos_err_m": 7.656427226081064e-15,
+    "max_ang_err_rad": 1.059899633381056e-14
+   },
+   "post_touchdown": {
+    "max_pos_err_m": 1.540765024650838e-11,
+    "max_ang_err_rad": 7.393535174209995e-12
+   },
+   "at_touchdown": {
+    "pos_m": 7.655151318974824e-15,
+    "ang_rad": 1.0699441399734618e-14
+   },
+   "final": {
+    "pos_m": 1.540765024650838e-11,
+    "ang_rad": 3.687355977102715e-12
+   },
+   "bitwise_equal_prefix_rows": 1,
+   "bitwise_identical": false,
+   "first_step_pos_err_exceeds": {
+    "1e-9": null,
+    "0.000001": null,
+    "0.001": null,
+    "0.01": null,
+    "0.1": null
+   }
+  },
+  {
+   "id": "var12",
+   "kind": "seeded-variant",
+   "ref": "native",
+   "ctrl_sha256_wasm": "f979522669e8c99b84262044f4bcb171c4820da33ed1538650166a9859ffddbf",
+   "ctrl_sha256_native": "f979522669e8c99b84262044f4bcb171c4820da33ed1538650166a9859ffddbf",
+   "ctrl_equal": true,
+   "first_contact_step_native": 468,
+   "first_contact_step_wasm": 468,
+   "wasm_repeat_bitwise_equal": true,
+   "wasm_qpos_sha256": "007bfd050ea2175e926d10e7d79116a69af98dc4a61c25f54c0ec1be0ee4833b",
+   "native_qpos_sha256": "1cea39a83efd97faf1b4feaab0325b2efca0b438f68f0acb68cf98ec38936927",
+   "max_pos_err_m": 3.5932307183702585e-12,
+   "max_pos_err_step": 1122,
+   "max_ang_err_rad": 4.456973735329143e-12,
+   "max_ang_err_step": 1125,
+   "max_wheel_err_rad": 1.2960299500264227e-11,
+   "max_wheel_err_step": 1125,
+   "pre_touchdown": {
+    "max_pos_err_m": 1.8194811887695705e-14,
+    "max_ang_err_rad": 8.502679474871917e-15
+   },
+   "post_touchdown": {
+    "max_pos_err_m": 3.5932307183702585e-12,
+    "max_ang_err_rad": 4.456973735329143e-12
+   },
+   "at_touchdown": {
+    "pos_m": 1.795131415197181e-14,
+    "ang_rad": 8.470499661777924e-15
+   },
+   "final": {
+    "pos_m": 3.256257724995707e-12,
+    "ang_rad": 4.456973735329143e-12
+   },
+   "bitwise_equal_prefix_rows": 1,
+   "bitwise_identical": false,
+   "first_step_pos_err_exceeds": {
+    "1e-9": null,
+    "0.000001": null,
+    "0.001": null,
+    "0.01": null,
+    "0.1": null
+   }
+  },
+  {
+   "id": "var13",
+   "kind": "seeded-variant",
+   "ref": "native",
+   "ctrl_sha256_wasm": "dc4b37e8164642ef65de9c7ab708237ac3f3836c6755a66e7db6597319890e0d",
+   "ctrl_sha256_native": "dc4b37e8164642ef65de9c7ab708237ac3f3836c6755a66e7db6597319890e0d",
+   "ctrl_equal": true,
+   "first_contact_step_native": 488,
+   "first_contact_step_wasm": 488,
+   "wasm_repeat_bitwise_equal": true,
+   "wasm_qpos_sha256": "34ebdccd6d11b983000e3c2f1c1c57c54c9859d3e2caada917882e8908d2feae",
+   "native_qpos_sha256": "819051f3e62322c6e0f0465355032a302510c0afb51e866f89939ee4f2bc2868",
+   "max_pos_err_m": 2.303889081140614e-11,
+   "max_pos_err_step": 1098,
+   "max_ang_err_rad": 3.4302967188188236e-11,
+   "max_ang_err_step": 1125,
+   "max_wheel_err_rad": 1.9974777387687936e-10,
+   "max_wheel_err_step": 1092,
+   "pre_touchdown": {
+    "max_pos_err_m": 1.476262683328914e-14,
+    "max_ang_err_rad": 9.026107857539889e-15
+   },
+   "post_touchdown": {
+    "max_pos_err_m": 2.303889081140614e-11,
+    "max_ang_err_rad": 3.4302967188188236e-11
+   },
+   "at_touchdown": {
+    "pos_m": 1.4705322017681554e-14,
+    "ang_rad": 5.655875352612912e-15
+   },
+   "final": {
+    "pos_m": 1.987539815979519e-11,
+    "ang_rad": 3.4302967188188236e-11
+   },
+   "bitwise_equal_prefix_rows": 1,
+   "bitwise_identical": false,
+   "first_step_pos_err_exceeds": {
+    "1e-9": null,
+    "0.000001": null,
+    "0.001": null,
+    "0.01": null,
+    "0.1": null
+   }
+  },
+  {
+   "id": "var14",
+   "kind": "seeded-variant",
+   "ref": "native",
+   "ctrl_sha256_wasm": "5bdc7170207e38bdf01cc7264e75bf5817ff0d3767b6f5bd8de2d8d3f93da1ef",
+   "ctrl_sha256_native": "5bdc7170207e38bdf01cc7264e75bf5817ff0d3767b6f5bd8de2d8d3f93da1ef",
+   "ctrl_equal": true,
+   "first_contact_step_native": 470,
+   "first_contact_step_wasm": 470,
+   "wasm_repeat_bitwise_equal": true,
+   "wasm_qpos_sha256": "0a5ef49ec233f1d246defb6543b05c49a7c3bfadd5e0c67a8dac6dd1acb7b725",
+   "native_qpos_sha256": "f38bd97f71736fff9ec15e539e75fb5b90ff09d49ca83ba105164c4767aff56b",
+   "max_pos_err_m": 4.4021344823364254e-11,
+   "max_pos_err_step": 1125,
+   "max_ang_err_rad": 5.30007545596481e-11,
+   "max_ang_err_step": 1125,
+   "max_wheel_err_rad": 4.121147867408581e-11,
+   "max_wheel_err_step": 1125,
+   "pre_touchdown": {
+    "max_pos_err_m": 9.74391848613228e-15,
+    "max_ang_err_rad": 9.733623544816607e-15
+   },
+   "post_touchdown": {
+    "max_pos_err_m": 4.4021344823364254e-11,
+    "max_ang_err_rad": 5.30007545596481e-11
+   },
+   "at_touchdown": {
+    "pos_m": 9.750726195562848e-15,
+    "ang_rad": 9.540169125328679e-15
+   },
+   "final": {
+    "pos_m": 4.4021344823364254e-11,
+    "ang_rad": 5.30007545596481e-11
+   },
+   "bitwise_equal_prefix_rows": 1,
+   "bitwise_identical": false,
+   "first_step_pos_err_exceeds": {
+    "1e-9": null,
+    "0.000001": null,
+    "0.001": null,
+    "0.01": null,
+    "0.1": null
+   }
+  },
+  {
+   "id": "var15",
+   "kind": "seeded-variant",
+   "ref": "native",
+   "ctrl_sha256_wasm": "035b332823cfd33f18e9b7a2d3f5ccca7dfd07fa83976fb27ce297a2f6a9e7d5",
+   "ctrl_sha256_native": "035b332823cfd33f18e9b7a2d3f5ccca7dfd07fa83976fb27ce297a2f6a9e7d5",
+   "ctrl_equal": true,
+   "first_contact_step_native": 501,
+   "first_contact_step_wasm": 501,
+   "wasm_repeat_bitwise_equal": true,
+   "wasm_qpos_sha256": "64c651d58a71edfc4ee3510536e7d66d77786d38d0ad22d77d48b1dff5006e72",
+   "native_qpos_sha256": "66ea36762e07878d04fc9c12c31745decbe46ac2308270a308aa938474ec019c",
+   "max_pos_err_m": 2.078602665392178e-11,
+   "max_pos_err_step": 1105,
+   "max_ang_err_rad": 1.6576875779779242e-11,
+   "max_ang_err_step": 1125,
+   "max_wheel_err_rad": 1.5518253349000588e-11,
+   "max_wheel_err_step": 1125,
+   "pre_touchdown": {
+    "max_pos_err_m": 2.885213112119229e-14,
+    "max_ang_err_rad": 1.3618374363215715e-14
+   },
+   "post_touchdown": {
+    "max_pos_err_m": 2.078602665392178e-11,
+    "max_ang_err_rad": 1.6576875779779242e-11
+   },
+   "at_touchdown": {
+    "pos_m": 2.885063584347777e-14,
+    "ang_rad": 1.3793711286883736e-14
+   },
+   "final": {
+    "pos_m": 1.458367320540027e-11,
+    "ang_rad": 1.6576875779779242e-11
+   },
+   "bitwise_equal_prefix_rows": 1,
+   "bitwise_identical": false,
+   "first_step_pos_err_exceeds": {
+    "1e-9": null,
+    "0.000001": null,
+    "0.001": null,
+    "0.01": null,
+    "0.1": null
+   }
+  },
+  {
+   "id": "var16",
+   "kind": "seeded-variant",
+   "ref": "native",
+   "ctrl_sha256_wasm": "ea835783ad9f96d7f2b5f6f98fcfc7311510dd4d6920baff1dd99d594fbbbe13",
+   "ctrl_sha256_native": "ea835783ad9f96d7f2b5f6f98fcfc7311510dd4d6920baff1dd99d594fbbbe13",
+   "ctrl_equal": true,
+   "first_contact_step_native": 510,
+   "first_contact_step_wasm": 510,
+   "wasm_repeat_bitwise_equal": true,
+   "wasm_qpos_sha256": "f3fca4bdd26c32bef3b31ab714448ab876ea6143cd6c2a94bb235d08717db33c",
+   "native_qpos_sha256": "9e35608fab9e28a079b0b7527dcdb672587964109a6ccbd4a6dcd93ad3fa872c",
+   "max_pos_err_m": 6.063480975799235e-8,
+   "max_pos_err_step": 1090,
+   "max_ang_err_rad": 6.794069545768518e-8,
+   "max_ang_err_step": 1119,
+   "max_wheel_err_rad": 2.17116792100569e-7,
+   "max_wheel_err_step": 1125,
+   "pre_touchdown": {
+    "max_pos_err_m": 3.3670339000606254e-14,
+    "max_ang_err_rad": 5.5459071652802664e-14
+   },
+   "post_touchdown": {
+    "max_pos_err_m": 6.063480975799235e-8,
+    "max_ang_err_rad": 6.794069545768518e-8
+   },
+   "at_touchdown": {
+    "pos_m": 3.334016564467889e-14,
+    "ang_rad": 5.6219714145592036e-14
+   },
+   "final": {
+    "pos_m": 4.2655649119287986e-8,
+    "ang_rad": 6.435854214995904e-8
+   },
+   "bitwise_equal_prefix_rows": 1,
+   "bitwise_identical": false,
+   "first_step_pos_err_exceeds": {
+    "1e-9": 970,
+    "0.000001": null,
+    "0.001": null,
+    "0.01": null,
+    "0.1": null
+   }
+  },
+  {
+   "id": "var17",
+   "kind": "seeded-variant",
+   "ref": "native",
+   "ctrl_sha256_wasm": "d9170cac75c93201e8040fcaffaff376821611b690cf53037be2d7ee1da12e07",
+   "ctrl_sha256_native": "d9170cac75c93201e8040fcaffaff376821611b690cf53037be2d7ee1da12e07",
+   "ctrl_equal": true,
+   "first_contact_step_native": 482,
+   "first_contact_step_wasm": 482,
+   "wasm_repeat_bitwise_equal": true,
+   "wasm_qpos_sha256": "dc06296078c9b5a3548a1327f1f4ae20c52c9ef29e5f54a10f4ce4cfc955c285",
+   "native_qpos_sha256": "504bbdc7ac778288906d4bd3e7aa358743ea15c670529414ad3f57a56a311ca3",
+   "max_pos_err_m": 1.6552438776154874e-11,
+   "max_pos_err_step": 934,
+   "max_ang_err_rad": 1.6189870803430677e-11,
+   "max_ang_err_step": 934,
+   "max_wheel_err_rad": 1.3523049346986227e-10,
+   "max_wheel_err_step": 934,
+   "pre_touchdown": {
+    "max_pos_err_m": 1.212940884065331e-14,
+    "max_ang_err_rad": 1.4565966360715568e-14
+   },
+   "post_touchdown": {
+    "max_pos_err_m": 1.6552438776154874e-11,
+    "max_ang_err_rad": 1.6189870803430677e-11
+   },
+   "at_touchdown": {
+    "pos_m": 1.212940884065331e-14,
+    "ang_rad": 1.4763676997653838e-14
+   },
+   "final": {
+    "pos_m": 1.3681325093189441e-11,
+    "ang_rad": 1.6392449016873279e-12
+   },
+   "bitwise_equal_prefix_rows": 1,
+   "bitwise_identical": false,
+   "first_step_pos_err_exceeds": {
+    "1e-9": null,
+    "0.000001": null,
+    "0.001": null,
+    "0.01": null,
+    "0.1": null
+   }
+  },
+  {
+   "id": "var18",
+   "kind": "seeded-variant",
+   "ref": "native",
+   "ctrl_sha256_wasm": "63f945b0256cbd5a18fde08d61c565da7c7bd759f1e27bf775548272eb9ffa20",
+   "ctrl_sha256_native": "63f945b0256cbd5a18fde08d61c565da7c7bd759f1e27bf775548272eb9ffa20",
+   "ctrl_equal": true,
+   "first_contact_step_native": 475,
+   "first_contact_step_wasm": 475,
+   "wasm_repeat_bitwise_equal": true,
+   "wasm_qpos_sha256": "f53baf645a6f8cbeb11bc0a4b5b643bf7951768903c0537aa5216119f9fb2235",
+   "native_qpos_sha256": "a7f913865425d9a747cb0d92806af23f0a935a4e25ee1e6ddba487981f758cc6",
+   "max_pos_err_m": 1.2084857944379363e-13,
+   "max_pos_err_step": 1125,
+   "max_ang_err_rad": 9.994808600087235e-14,
+   "max_ang_err_step": 1116,
+   "max_wheel_err_rad": 1.5347723092418164e-12,
+   "max_wheel_err_step": 1124,
+   "pre_touchdown": {
+    "max_pos_err_m": 8.89287949701369e-15,
+    "max_ang_err_rad": 3.3613193866021896e-15
+   },
+   "post_touchdown": {
+    "max_pos_err_m": 1.2084857944379363e-13,
+    "max_ang_err_rad": 9.994808600087235e-14
+   },
+   "at_touchdown": {
+    "pos_m": 8.634081047997269e-15,
+    "ang_rad": 6.479604369685056e-16
+   },
+   "final": {
+    "pos_m": 1.2084857944379363e-13,
+    "ang_rad": 9.96219179930069e-14
+   },
+   "bitwise_equal_prefix_rows": 1,
+   "bitwise_identical": false,
+   "first_step_pos_err_exceeds": {
+    "1e-9": null,
+    "0.000001": null,
+    "0.001": null,
+    "0.01": null,
+    "0.1": null
+   }
+  },
+  {
+   "id": "var19",
+   "kind": "seeded-variant",
+   "ref": "native",
+   "ctrl_sha256_wasm": "f292f134f5231b959e2e9eabd6b319f5051abb085f2181a919e9b731a39bff84",
+   "ctrl_sha256_native": "f292f134f5231b959e2e9eabd6b319f5051abb085f2181a919e9b731a39bff84",
+   "ctrl_equal": true,
+   "first_contact_step_native": 490,
+   "first_contact_step_wasm": 490,
+   "wasm_repeat_bitwise_equal": true,
+   "wasm_qpos_sha256": "419d03f8e0dd4bf552563cbe147e91a540fdbf3a4a7343d857eb1630ea8cae31",
+   "native_qpos_sha256": "fcfda6a3cc0c284a4be13e76776047691b0cfb1dfac3c8520f41b1eac2926a6a",
+   "max_pos_err_m": 5.449505651146877e-11,
+   "max_pos_err_step": 1036,
+   "max_ang_err_rad": 3.393279364075429e-11,
+   "max_ang_err_step": 1034,
+   "max_wheel_err_rad": 2.8137492336099967e-11,
+   "max_wheel_err_step": 1003,
+   "pre_touchdown": {
+    "max_pos_err_m": 3.5556311531396715e-14,
+    "max_ang_err_rad": 1.1179040474817793e-14
+   },
+   "post_touchdown": {
+    "max_pos_err_m": 5.449505651146877e-11,
+    "max_ang_err_rad": 3.393279364075429e-11
+   },
+   "at_touchdown": {
+    "pos_m": 3.5558348100685905e-14,
+    "ang_rad": 1.1498001070710764e-14
+   },
+   "final": {
+    "pos_m": 5.03104682927669e-11,
+    "ang_rad": 2.610023916639799e-11
+   },
+   "bitwise_equal_prefix_rows": 1,
+   "bitwise_identical": false,
+   "first_step_pos_err_exceeds": {
+    "1e-9": null,
+    "0.000001": null,
+    "0.001": null,
+    "0.01": null,
+    "0.1": null
+   }
+  },
+  {
+   "id": "var20",
+   "kind": "seeded-variant",
+   "ref": "native",
+   "ctrl_sha256_wasm": "cff4e647f19944c3b389e3446b10f8951f1a68c467df44b9c7d401a3eb50a5d7",
+   "ctrl_sha256_native": "cff4e647f19944c3b389e3446b10f8951f1a68c467df44b9c7d401a3eb50a5d7",
+   "ctrl_equal": true,
+   "first_contact_step_native": 470,
+   "first_contact_step_wasm": 470,
+   "wasm_repeat_bitwise_equal": true,
+   "wasm_qpos_sha256": "aa7868de433017aa129fd069297c69cc1f40126f99176d03ccd22ea8820e9eed",
+   "native_qpos_sha256": "e9044db48c3eb0143a63c48a4585990d04fbc7d412570ae2f1e2e5fcfc6be05c",
+   "max_pos_err_m": 7.677810675309057e-12,
+   "max_pos_err_step": 1125,
+   "max_ang_err_rad": 4.170724084920084e-12,
+   "max_ang_err_step": 1125,
+   "max_wheel_err_rad": 5.7980287238024175e-12,
+   "max_wheel_err_step": 1121,
+   "pre_touchdown": {
+    "max_pos_err_m": 9.430896250939485e-15,
+    "max_ang_err_rad": 4.317843470257597e-15
+   },
+   "post_touchdown": {
+    "max_pos_err_m": 7.677810675309057e-12,
+    "max_ang_err_rad": 4.170724084920084e-12
+   },
+   "at_touchdown": {
+    "pos_m": 9.449706110653888e-15,
+    "ang_rad": 3.863612016359377e-15
+   },
+   "final": {
+    "pos_m": 7.677810675309057e-12,
+    "ang_rad": 4.170724084920084e-12
+   },
+   "bitwise_equal_prefix_rows": 1,
+   "bitwise_identical": false,
+   "first_step_pos_err_exceeds": {
+    "1e-9": null,
+    "0.000001": null,
+    "0.001": null,
+    "0.01": null,
+    "0.1": null
+   }
+  },
+  {
+   "id": "native-perturbed-1e-12",
+   "kind": "native-only-control",
+   "ref": "native nominal",
+   "first_contact_step": 551,
+   "max_pos_err_m": 6.359055570041876e-7,
+   "max_pos_err_step": 1084,
+   "max_ang_err_rad": 4.2236312348529835e-7,
+   "max_ang_err_step": 1084,
+   "max_wheel_err_rad": 0.00004373503298893411,
+   "max_wheel_err_step": 1085,
+   "pre_touchdown": {
+    "max_pos_err_m": 1.0000892951281037e-12,
+    "max_ang_err_rad": 4.171725801620467e-14
+   },
+   "post_touchdown": {
+    "max_pos_err_m": 6.359055570041876e-7,
+    "max_ang_err_rad": 4.2236312348529835e-7
+   },
+   "at_touchdown": {
+    "pos_m": 9.679873664168136e-13,
+    "ang_rad": 3.0766484365642854e-14
+   },
+   "final": {
+    "pos_m": 2.0899719927966382e-7,
+    "ang_rad": 1.599327016835803e-8
+   },
+   "bitwise_equal_prefix_rows": 0,
+   "bitwise_identical": false,
+   "first_step_pos_err_exceeds": {
+    "1e-9": 971,
+    "0.000001": null,
+    "0.001": null,
+    "0.01": null,
+    "0.1": null
+   }
+  },
+  {
+   "id": "native-perturbed-1e-9",
+   "kind": "native-only-control",
+   "ref": "native nominal",
+   "first_contact_step": 551,
+   "max_pos_err_m": 0.010082857206982933,
+   "max_pos_err_step": 1082,
+   "max_ang_err_rad": 0.007670120192314984,
+   "max_ang_err_step": 1082,
+   "max_wheel_err_rad": 0.144572411783372,
+   "max_wheel_err_step": 1084,
+   "pre_touchdown": {
+    "max_pos_err_m": 1.0000010821680939e-9,
+    "max_ang_err_rad": 2.047177389217505e-14
+   },
+   "post_touchdown": {
+    "max_pos_err_m": 0.010082857206982933,
+    "max_ang_err_rad": 0.007670120192314984
+   },
+   "at_touchdown": {
+    "pos_m": 9.876682128182915e-10,
+    "ang_rad": 1.9291195832487752e-11
+   },
+   "final": {
+    "pos_m": 0.0009806499819735202,
+    "ang_rad": 0.00035386083151145843
+   },
+   "bitwise_equal_prefix_rows": 0,
+   "bitwise_identical": false,
+   "first_step_pos_err_exceeds": {
+    "1e-9": 0,
+    "0.000001": 951,
+    "0.001": 1045,
+    "0.01": 1082,
+    "0.1": null
+   }
+  }
+ ],
+ "bare": {
+  "what": "mj_step loop only (ctrl copy + mj_step), nominal scenario, fresh model/data per repeat, performance.now",
+  "repeats": 7,
+  "steps": 1125,
+  "sim_seconds": 4.5,
+  "wall_ms": {
+   "n": 7,
+   "min": 6.299999952316284,
+   "median": 6.299999952316284,
+   "p95": 6.3999998569488525,
+   "p99": 6.3999998569488525,
+   "max": 6.3999998569488525,
+   "mean": 6.3142856529780795
+  },
+  "steps_per_s_median": 178571.42992300782,
+  "rtf_median": 714.2857196920313,
+  "reps_ms": [
+   6.3999998569488525,
+   6.299999952316284,
+   6.299999952316284,
+   6.299999952316284,
+   6.299999952316284,
+   6.299999952316284,
+   6.299999952316284
+  ]
+ },
+ "frames": {
+  "what": "requestAnimationFrame loop: accumulate real time, fixed 4 ms mj_step per accumulated 4 ms, canvas-2D draw each frame, scenario replayed back-to-back",
+  "loops": 3,
+  "frames": 811,
+  "wall_ms": 13516.1,
+  "sim_steps": 3379,
+  "sim_seconds": 13.516,
+  "sim_over_wall": 0.999992601416089,
+  "mean_fps": 60.002515518529755,
+  "frame_interval_ms": {
+   "n": 811,
+   "min": 16.5,
+   "median": 16.699999999999818,
+   "p95": 16.700000000000728,
+   "p99": 16.800000000000182,
+   "max": 16.80000000000109,
+   "mean": 16.665967940813896
+  },
+  "work_ms_per_frame": {
+   "n": 811,
+   "min": 0,
+   "median": 0.10000014305114746,
+   "p95": 0.20000004768371582,
+   "p99": 0.2999999523162842,
+   "max": 0.6999998092651367,
+   "mean": 0.13662145758086744
+  },
+  "steps_per_frame": {
+   "n": 811,
+   "min": 4,
+   "median": 4,
+   "p95": 5,
+   "p99": 5,
+   "max": 5,
+   "mean": 4.1664611590628855
+  },
+  "frames_over_20ms": 0,
+  "frames_over_33ms": 0,
+  "catchup_capped_frames": 0,
+  "catchup_dropped_sim_s": 0,
+  "catchup_max_steps_per_frame": 25
+ },
+ "uncapped": {
+  "what": "uncapped: 4 mj_step + canvas-2D draw per frame, back-to-back, no vsync wait (max frames/s the main thread can produce)",
+  "frames": 843,
+  "wall_ms": 24.09999990463257,
+  "frames_per_s": 34979.25325045152,
+  "frame_ms": {
+   "n": 843,
+   "min": 0,
+   "median": 0,
+   "p95": 0.10000014305114746,
+   "p99": 0.10000014305114746,
+   "max": 0.2999999523162842,
+   "mean": 0.02799525492838976
+  }
+ },
+ "browser": {
+  "name": "chromium-headless-shell (playwright 1.65.0)",
+  "version": "158.0.8127.18"
+ },
+ "machine": {
+  "cpu": "Apple M2 Pro",
+  "ncpu": 10,
+  "platform": "Darwin 24.6.0 arm64",
+  "load_avg_before": [
+   123.8837890625,
+   129.5966796875,
+   135.5810546875
+  ],
+  "load_avg_after": [
+   112.68505859375,
+   126.89208984375,
+   134.51416015625
+  ],
+  "swap": "total = 18432.00M  used = 17595.56M  free = 836.44M  (encrypted)",
+  "node": "v22.22.2"
+ },
+ "query": "",
+ "console": []
+}

@@ -1,0 +1,97 @@
+{
+  "planet": "mars",
+  "terrain_props": [
+    {
+      "kind": "ramp",
+      "id": "prop-a",
+      "material": "example-material",
+      "placement": {
+        "x": 2.0,
+        "y": 0.0,
+        "yaw": 0.0,
+        "badge": "declared",
+        "source": {
+          "ref": "Kinetra schema example: illustrative value, not a measured part",
+          "declared_by": "kinetra-docs",
+          "declared_at": "2026-11-11T00:00:00Z"
+        }
+      },
+      "length": {
+        "value": 3.0,
+        "unit": "m",
+        "badge": "declared",
+        "source": {
+          "ref": "Kinetra schema example: illustrative value, not a measured part",
+          "declared_by": "kinetra-docs",
+          "declared_at": "2026-11-11T00:00:00Z"
+        }
+      },
+      "width": {
+        "value": 1.0,
+        "unit": "m",
+        "badge": "declared",
+        "source": {
+          "ref": "Kinetra schema example: illustrative value, not a measured part",
+          "declared_by": "kinetra-docs",
+          "declared_at": "2026-11-11T00:00:00Z"
+        }
+      },
+      "incline": {
+        "value": 0.3,
+        "unit": "rad",
+        "badge": "declared",
+        "source": {
+          "ref": "Kinetra schema example: illustrative value, not a measured part",
+          "declared_by": "kinetra-docs",
+          "declared_at": "2026-11-11T00:00:00Z"
+        }
+      }
+    },
+    {
+      "kind": "step",
+      "id": "prop-b",
+      "material": "example-material",
+      "placement": {
+        "x": 2.0,
+        "y": 0.0,
+        "yaw": 0.0,
+        "badge": "declared",
+        "source": {
+          "ref": "Kinetra schema example: illustrative value, not a measured part",
+          "declared_by": "kinetra-docs",
+          "declared_at": "2026-11-11T00:00:00Z"
+        }
+      },
+      "length": {
+        "value": 3.0,
+        "unit": "m",
+        "badge": "declared",
+        "source": {
+          "ref": "Kinetra schema example: illustrative value, not a measured part",
+          "declared_by": "kinetra-docs",
+          "declared_at": "2026-11-11T00:00:00Z"
+        }
+      },
+      "width": {
+        "value": 1.0,
+        "unit": "m",
+        "badge": "declared",
+        "source": {
+          "ref": "Kinetra schema example: illustrative value, not a measured part",
+          "declared_by": "kinetra-docs",
+          "declared_at": "2026-11-11T00:00:00Z"
+        }
+      },
+      "height": {
+        "value": 0.2,
+        "unit": "m",
+        "badge": "declared",
+        "source": {
+          "ref": "Kinetra schema example: illustrative value, not a measured part",
+          "declared_by": "kinetra-docs",
+          "declared_at": "2026-11-11T00:00:00Z"
+        }
+      }
+    }
+  ]
+}

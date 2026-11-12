@@ -1,0 +1,50 @@
+{
+  "type": "frame",
+  "run_id": "separation-run",
+  "tick": 9,
+  "sim_time_s": 0.018,
+  "poses": [
+    {
+      "body": "b",
+      "position": {
+        "x": -0.122,
+        "y": 0.0,
+        "z": 0.0500005
+      },
+      "orientation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0,
+        "w": 1.0
+      }
+    },
+    {
+      "body": "a",
+      "position": {
+        "x": 0.1232,
+        "y": 0.0,
+        "z": 0.0500005
+      },
+      "orientation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0,
+        "w": 1.0
+      }
+    }
+  ],
+  "events": [
+    {
+      "kind": "separation",
+      "tick": 6,
+      "reason": "intended_separation",
+      "separator": "sep",
+      "joint": "hold-b",
+      "entry": "stage",
+      "impulse": {
+        "value": 1.0,
+        "unit": "N*s"
+      }
+    }
+  ]
+}

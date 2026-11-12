@@ -1,0 +1,202 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "A curve a part defines under a name (`torque_speed` for a motor, `thrust` for a thruster).",
+  "properties": {
+    "name": {
+      "pattern": "^[a-z][a-z0-9_]{0,63}$",
+      "title": "Name",
+      "type": "string"
+    },
+    "curve": {
+      "$ref": "#/$defs/Curve"
+    }
+  },
+  "required": [
+    "name",
+    "curve"
+  ],
+  "title": "NamedCurve",
+  "type": "object",
+  "$defs": {
+    "Badge": {
+      "enum": [
+        "sim",
+        "cite",
+        "default",
+        "declared",
+        "estimate"
+      ],
+      "title": "Badge",
+      "type": "string"
+    },
+    "Curve": {
+      "additionalProperties": false,
+      "description": "Piecewise-linear `y(x)`: at least two points, `x` strictly increasing, in `x_unit` and `y_unit`.",
+      "properties": {
+        "badge": {
+          "$ref": "#/$defs/Badge"
+        },
+        "source": {
+          "$ref": "#/$defs/Source"
+        },
+        "x_unit": {
+          "$ref": "#/$defs/Unit"
+        },
+        "y_unit": {
+          "$ref": "#/$defs/Unit"
+        },
+        "points": {
+          "items": {
+            "$ref": "#/$defs/CurvePoint"
+          },
+          "minItems": 2,
+          "title": "Points",
+          "type": "array"
+        }
+      },
+      "required": [
+        "badge",
+        "source",
+        "x_unit",
+        "y_unit",
+        "points"
+      ],
+      "title": "Curve",
+      "type": "object"
+    },
+    "CurvePoint": {
+      "additionalProperties": false,
+      "properties": {
+        "x": {
+          "title": "X",
+          "type": "number"
+        },
+        "y": {
+          "title": "Y",
+          "type": "number"
+        }
+      },
+      "required": [
+        "x",
+        "y"
+      ],
+      "title": "CurvePoint",
+      "type": "object"
+    },
+    "Source": {
+      "additionalProperties": false,
+      "description": "Where a value comes from.\n\n`ref` is what was cited, declared or run: a document, a datasheet, a run id, or the reason a default was chosen\n(for an estimate: the method and its inputs). `locator` is where inside it (table, page, section). `url` is a\nlink when there is one. `license` (SPDX expression over the repo allowlist, `spdx.py`) and `declared_by` / `declared_at` feed the badge popover\n(`ValueBadges`, 인용 and 사용자 선언); `Provenance` allows each only on its own badge.",
+      "properties": {
+        "ref": {
+          "maxLength": 500,
+          "minLength": 1,
+          "title": "Ref",
+          "type": "string"
+        },
+        "locator": {
+          "anyOf": [
+            {
+              "maxLength": 200,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Locator"
+        },
+        "url": {
+          "anyOf": [
+            {
+              "maxLength": 2000,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Url"
+        },
+        "license": {
+          "anyOf": [
+            {
+              "maxLength": 200,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "License"
+        },
+        "declared_by": {
+          "anyOf": [
+            {
+              "maxLength": 200,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Declared By"
+        },
+        "declared_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Declared At"
+        }
+      },
+      "required": [
+        "ref"
+      ],
+      "title": "Source",
+      "type": "object"
+    },
+    "Unit": {
+      "description": "Closed unit vocabulary (SI, written the way the JSON carries it).",
+      "enum": [
+        "1",
+        "m",
+        "m^2",
+        "m^3",
+        "kg",
+        "kg/s",
+        "s",
+        "rad",
+        "m/s",
+        "m/s^2",
+        "rad/s",
+        "N",
+        "N*s",
+        "N*m",
+        "N/m",
+        "N*s/m",
+        "N*m/rad",
+        "Pa",
+        "kg/m^3",
+        "kg*m^2",
+        "J",
+        "W",
+        "W/m^2",
+        "V",
+        "A"
+      ],
+      "title": "Unit",
+      "type": "string"
+    }
+  }
+}

@@ -1,0 +1,464 @@
+{
+  "id": "beam",
+  "name": "I-beam",
+  "parameters": [
+    {
+      "name": "length",
+      "unit": "m",
+      "default": {
+        "badge": "default",
+        "source": {
+          "ref": "B-02a: generic structural part, range chosen by Kinetra for game-scale builds; not a datasheet value and not a standard section; along local x"
+        },
+        "value": 0.5,
+        "unit": "m"
+      },
+      "min": {
+        "badge": "default",
+        "source": {
+          "ref": "B-02a: generic structural part, range chosen by Kinetra for game-scale builds; not a datasheet value and not a standard section; along local x"
+        },
+        "value": 0.1,
+        "unit": "m"
+      },
+      "max": {
+        "badge": "default",
+        "source": {
+          "ref": "B-02a: generic structural part, range chosen by Kinetra for game-scale builds; not a datasheet value and not a standard section; along local x"
+        },
+        "value": 2.0,
+        "unit": "m"
+      }
+    },
+    {
+      "name": "height",
+      "unit": "m",
+      "default": {
+        "badge": "default",
+        "source": {
+          "ref": "B-02a: generic structural part, range chosen by Kinetra for game-scale builds; not a datasheet value and not a standard section; section depth along local z; stays above twice the largest thickness"
+        },
+        "value": 0.06,
+        "unit": "m"
+      },
+      "min": {
+        "badge": "default",
+        "source": {
+          "ref": "B-02a: generic structural part, range chosen by Kinetra for game-scale builds; not a datasheet value and not a standard section; section depth along local z; stays above twice the largest thickness"
+        },
+        "value": 0.02,
+        "unit": "m"
+      },
+      "max": {
+        "badge": "default",
+        "source": {
+          "ref": "B-02a: generic structural part, range chosen by Kinetra for game-scale builds; not a datasheet value and not a standard section; section depth along local z; stays above twice the largest thickness"
+        },
+        "value": 0.2,
+        "unit": "m"
+      }
+    },
+    {
+      "name": "flange_width",
+      "unit": "m",
+      "default": {
+        "badge": "default",
+        "source": {
+          "ref": "B-02a: generic structural part, range chosen by Kinetra for game-scale builds; not a datasheet value and not a standard section; section width along local y"
+        },
+        "value": 0.04,
+        "unit": "m"
+      },
+      "min": {
+        "badge": "default",
+        "source": {
+          "ref": "B-02a: generic structural part, range chosen by Kinetra for game-scale builds; not a datasheet value and not a standard section; section width along local y"
+        },
+        "value": 0.02,
+        "unit": "m"
+      },
+      "max": {
+        "badge": "default",
+        "source": {
+          "ref": "B-02a: generic structural part, range chosen by Kinetra for game-scale builds; not a datasheet value and not a standard section; section width along local y"
+        },
+        "value": 0.15,
+        "unit": "m"
+      }
+    },
+    {
+      "name": "thickness",
+      "unit": "m",
+      "default": {
+        "badge": "default",
+        "source": {
+          "ref": "B-02a: generic structural part, range chosen by Kinetra for game-scale builds; not a datasheet value and not a standard section; flange and web thickness"
+        },
+        "value": 0.004,
+        "unit": "m"
+      },
+      "min": {
+        "badge": "default",
+        "source": {
+          "ref": "B-02a: generic structural part, range chosen by Kinetra for game-scale builds; not a datasheet value and not a standard section; flange and web thickness"
+        },
+        "value": 0.002,
+        "unit": "m"
+      },
+      "max": {
+        "badge": "default",
+        "source": {
+          "ref": "B-02a: generic structural part, range chosen by Kinetra for game-scale builds; not a datasheet value and not a standard section; flange and web thickness"
+        },
+        "value": 0.008,
+        "unit": "m"
+      }
+    }
+  ],
+  "snap_points": [
+    {
+      "badge": "default",
+      "source": {
+        "ref": "B-02a: snap frame convention chosen by Kinetra: +Z of the snap frame points out of the part surface; tags are a first proposal for B-04b; #541: an end also accepts a face (a post butted onto a face)"
+      },
+      "id": "end-a",
+      "kind": "end",
+      "accepts": [
+        "end",
+        "edge",
+        "face"
+      ],
+      "position": {
+        "x": {
+          "offset": 0.0,
+          "terms": [
+            {
+              "param": "length",
+              "factor": -0.5
+            }
+          ]
+        },
+        "y": {
+          "offset": 0.0,
+          "terms": []
+        },
+        "z": {
+          "offset": 0.0,
+          "terms": []
+        }
+      },
+      "orientation": {
+        "x": 0.0,
+        "y": -0.7071067811865476,
+        "z": 0.0,
+        "w": 0.7071067811865476
+      }
+    },
+    {
+      "badge": "default",
+      "source": {
+        "ref": "B-02a: snap frame convention chosen by Kinetra: +Z of the snap frame points out of the part surface; tags are a first proposal for B-04b; #541: an end also accepts a face (a post butted onto a face)"
+      },
+      "id": "end-b",
+      "kind": "end",
+      "accepts": [
+        "end",
+        "edge",
+        "face"
+      ],
+      "position": {
+        "x": {
+          "offset": 0.0,
+          "terms": [
+            {
+              "param": "length",
+              "factor": 0.5
+            }
+          ]
+        },
+        "y": {
+          "offset": 0.0,
+          "terms": []
+        },
+        "z": {
+          "offset": 0.0,
+          "terms": []
+        }
+      },
+      "orientation": {
+        "x": 0.0,
+        "y": 0.7071067811865476,
+        "z": 0.0,
+        "w": 0.7071067811865476
+      }
+    },
+    {
+      "badge": "default",
+      "source": {
+        "ref": "B-02a: snap frame convention chosen by Kinetra: +Z of the snap frame points out of the part surface; tags are a first proposal for B-04b; #541: a face also accepts a beam end (a post butted onto the face)"
+      },
+      "id": "top",
+      "kind": "face",
+      "accepts": [
+        "face",
+        "end"
+      ],
+      "position": {
+        "x": {
+          "offset": 0.0,
+          "terms": []
+        },
+        "y": {
+          "offset": 0.0,
+          "terms": []
+        },
+        "z": {
+          "offset": 0.0,
+          "terms": [
+            {
+              "param": "height",
+              "factor": 0.5
+            }
+          ]
+        }
+      },
+      "orientation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0,
+        "w": 1.0
+      }
+    },
+    {
+      "badge": "default",
+      "source": {
+        "ref": "B-02a: snap frame convention chosen by Kinetra: +Z of the snap frame points out of the part surface; tags are a first proposal for B-04b; #541: a face also accepts a beam end (a post butted onto the face)"
+      },
+      "id": "bottom",
+      "kind": "face",
+      "accepts": [
+        "face",
+        "end"
+      ],
+      "position": {
+        "x": {
+          "offset": 0.0,
+          "terms": []
+        },
+        "y": {
+          "offset": 0.0,
+          "terms": []
+        },
+        "z": {
+          "offset": 0.0,
+          "terms": [
+            {
+              "param": "height",
+              "factor": -0.5
+            }
+          ]
+        }
+      },
+      "orientation": {
+        "x": 1.0,
+        "y": 0.0,
+        "z": 0.0,
+        "w": 0.0
+      }
+    }
+  ],
+  "specs": [],
+  "shape": {
+    "badge": "default",
+    "source": {
+      "ref": "B-02a: generic profile drawn by Kinetra from boxes (not a standard section designation, no catalogue dimensions); dimensions follow the parameters"
+    },
+    "components": [
+      {
+        "id": "flange_top",
+        "primitive": {
+          "kind": "box",
+          "size_x": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "length",
+                "factor": 1.0
+              }
+            ]
+          },
+          "size_y": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "flange_width",
+                "factor": 1.0
+              }
+            ]
+          },
+          "size_z": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "thickness",
+                "factor": 1.0
+              }
+            ]
+          }
+        },
+        "operation": "add",
+        "position": {
+          "x": {
+            "offset": 0.0,
+            "terms": []
+          },
+          "y": {
+            "offset": 0.0,
+            "terms": []
+          },
+          "z": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "height",
+                "factor": 0.5
+              },
+              {
+                "param": "thickness",
+                "factor": -0.5
+              }
+            ]
+          }
+        },
+        "orientation": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 1.0
+        }
+      },
+      {
+        "id": "flange_bottom",
+        "primitive": {
+          "kind": "box",
+          "size_x": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "length",
+                "factor": 1.0
+              }
+            ]
+          },
+          "size_y": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "flange_width",
+                "factor": 1.0
+              }
+            ]
+          },
+          "size_z": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "thickness",
+                "factor": 1.0
+              }
+            ]
+          }
+        },
+        "operation": "add",
+        "position": {
+          "x": {
+            "offset": 0.0,
+            "terms": []
+          },
+          "y": {
+            "offset": 0.0,
+            "terms": []
+          },
+          "z": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "height",
+                "factor": -0.5
+              },
+              {
+                "param": "thickness",
+                "factor": 0.5
+              }
+            ]
+          }
+        },
+        "orientation": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 1.0
+        }
+      },
+      {
+        "id": "web",
+        "primitive": {
+          "kind": "box",
+          "size_x": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "length",
+                "factor": 1.0
+              }
+            ]
+          },
+          "size_y": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "thickness",
+                "factor": 1.0
+              }
+            ]
+          },
+          "size_z": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "height",
+                "factor": 1.0
+              },
+              {
+                "param": "thickness",
+                "factor": -2.0
+              }
+            ]
+          }
+        },
+        "operation": "add",
+        "position": {
+          "x": {
+            "offset": 0.0,
+            "terms": []
+          },
+          "y": {
+            "offset": 0.0,
+            "terms": []
+          },
+          "z": {
+            "offset": 0.0,
+            "terms": []
+          }
+        },
+        "orientation": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 1.0
+        }
+      }
+    ]
+  },
+  "curves": []
+}

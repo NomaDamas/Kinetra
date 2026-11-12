@@ -1,0 +1,605 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "The collision proxy of one part.\n\n`proxy_volume` and `recipe_volume` are the volumes of the proxy (the union of its geoms) and of the shape recipe (added\nminus voids, the volume `MassProperties` reports); `volume_error` is `(proxy - recipe) / recipe`, dimensionless and\n**signed**. In every proxy `proxy_volume - recipe_volume` = the sum of `filled_voids` volumes + the sum of\n`union_volume - (host_volume - volume)` over `decomposed_voids`.\n\n- `added-primitives`: `decomposed_voids` is empty, every geom is its component unchanged (`id == component`), the\n  geoms do not overlap each other and `proxy_volume` is their sum; the error is never negative.\n- `void-decomposition`: `decomposed_voids` is not empty. A host's geoms are its pieces (`component` = the host's id), the\n  rest are components unchanged. `|error|` of each decomposed host is within `derivation.tolerance`. The decomposition the\n  engine builds is inside the recipe's material, so each host's error is never positive; the model does not require it.\n\nMass, centre of mass and inertia never come from the proxy; they come from `MassProperties` (B-01a).",
+  "properties": {
+    "badge": {
+      "const": "sim",
+      "title": "Badge",
+      "type": "string"
+    },
+    "source": {
+      "$ref": "#/$defs/Source"
+    },
+    "part_id": {
+      "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+      "title": "Part Id",
+      "type": "string"
+    },
+    "geoms": {
+      "items": {
+        "$ref": "#/$defs/ProxyGeom"
+      },
+      "minItems": 1,
+      "title": "Geoms",
+      "type": "array"
+    },
+    "filled_voids": {
+      "items": {
+        "$ref": "#/$defs/FilledVoid"
+      },
+      "title": "Filled Voids",
+      "type": "array"
+    },
+    "decomposed_voids": {
+      "items": {
+        "$ref": "#/$defs/DecomposedVoid"
+      },
+      "title": "Decomposed Voids",
+      "type": "array"
+    },
+    "proxy_volume": {
+      "$ref": "#/$defs/DerivedScalar"
+    },
+    "recipe_volume": {
+      "$ref": "#/$defs/DerivedScalar"
+    },
+    "volume_error": {
+      "$ref": "#/$defs/DerivedScalar"
+    },
+    "derivation": {
+      "$ref": "#/$defs/ProxyDerivation"
+    }
+  },
+  "required": [
+    "badge",
+    "source",
+    "part_id",
+    "geoms",
+    "filled_voids",
+    "decomposed_voids",
+    "proxy_volume",
+    "recipe_volume",
+    "volume_error",
+    "derivation"
+  ],
+  "title": "CollisionProxy",
+  "type": "object",
+  "$defs": {
+    "Badge": {
+      "enum": [
+        "sim",
+        "cite",
+        "default",
+        "declared",
+        "estimate"
+      ],
+      "title": "Badge",
+      "type": "string"
+    },
+    "DecomposedVoid": {
+      "additionalProperties": false,
+      "description": "A subtracted shape component the proxy kept as a gap: the pieces of its `host` (the added component that contains\nit) leave this void empty.\n\n`volume` is the void's volume, `host_volume` the host primitive's, `union_volume` the volume of the union of the host's\npieces (all in m^3), and `error` = `(union_volume - (host_volume - volume)) / (host_volume - volume)` the signed error\nof this host alone. `layout`: `strips` (disjoint boxes cut across a plate) or `ring` (boxes around a tube's axis,\noverlapping; `ring` then carries the report).",
+      "properties": {
+        "id": {
+          "pattern": "^[a-z][a-z0-9_]{0,63}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "primitive": {
+          "enum": [
+            "box",
+            "cylinder",
+            "sphere"
+          ],
+          "title": "Primitive",
+          "type": "string"
+        },
+        "host": {
+          "pattern": "^[a-z][a-z0-9_]{0,63}$",
+          "title": "Host",
+          "type": "string"
+        },
+        "volume": {
+          "exclusiveMinimum": 0.0,
+          "title": "Volume",
+          "type": "number"
+        },
+        "host_volume": {
+          "exclusiveMinimum": 0.0,
+          "title": "Host Volume",
+          "type": "number"
+        },
+        "union_volume": {
+          "exclusiveMinimum": 0.0,
+          "title": "Union Volume",
+          "type": "number"
+        },
+        "error": {
+          "title": "Error",
+          "type": "number"
+        },
+        "layout": {
+          "enum": [
+            "strips",
+            "ring"
+          ],
+          "title": "Layout",
+          "type": "string"
+        },
+        "ring": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RingReport"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "id",
+        "primitive",
+        "host",
+        "volume",
+        "host_volume",
+        "union_volume",
+        "error",
+        "layout"
+      ],
+      "title": "DecomposedVoid",
+      "type": "object"
+    },
+    "DerivedScalar": {
+      "additionalProperties": false,
+      "properties": {
+        "badge": {
+          "const": "sim",
+          "title": "Badge",
+          "type": "string"
+        },
+        "source": {
+          "$ref": "#/$defs/Source"
+        },
+        "value": {
+          "title": "Value",
+          "type": "number"
+        },
+        "unit": {
+          "$ref": "#/$defs/Unit"
+        }
+      },
+      "required": [
+        "badge",
+        "source",
+        "value",
+        "unit"
+      ],
+      "title": "DerivedScalar",
+      "type": "object"
+    },
+    "Dimension": {
+      "additionalProperties": false,
+      "description": "One resolved length of a primitive, in metres, under the field name `shape.py` gives it.",
+      "properties": {
+        "name": {
+          "pattern": "^[a-z][a-z0-9_]{0,63}$",
+          "title": "Name",
+          "type": "string"
+        },
+        "value": {
+          "title": "Value",
+          "type": "number"
+        }
+      },
+      "required": [
+        "name",
+        "value"
+      ],
+      "title": "Dimension",
+      "type": "object"
+    },
+    "FilledVoid": {
+      "additionalProperties": false,
+      "description": "A subtracted shape component the proxy could not keep: it is solid in the proxy. `volume` [m^3] is what the proxy\ngained from it.",
+      "properties": {
+        "id": {
+          "pattern": "^[a-z][a-z0-9_]{0,63}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "primitive": {
+          "enum": [
+            "box",
+            "cylinder",
+            "sphere"
+          ],
+          "title": "Primitive",
+          "type": "string"
+        },
+        "volume": {
+          "exclusiveMinimum": 0.0,
+          "title": "Volume",
+          "type": "number"
+        }
+      },
+      "required": [
+        "id",
+        "primitive",
+        "volume"
+      ],
+      "title": "FilledVoid",
+      "type": "object"
+    },
+    "ParameterUse": {
+      "additionalProperties": false,
+      "description": "The value one length parameter had in this computation, with the badge and source it came with.",
+      "properties": {
+        "name": {
+          "pattern": "^[a-z][a-z0-9_]{0,63}$",
+          "title": "Name",
+          "type": "string"
+        },
+        "value": {
+          "$ref": "#/$defs/Quantity"
+        }
+      },
+      "required": [
+        "name",
+        "value"
+      ],
+      "title": "ParameterUse",
+      "type": "object"
+    },
+    "Provenance": {
+      "additionalProperties": false,
+      "description": "Badge and source, both required.\n\nA cited (`cite`) value must say where in the source (locator or url). `license` belongs to cited values only;\n`declared_by` and `declared_at` belong to declared values only.",
+      "properties": {
+        "badge": {
+          "$ref": "#/$defs/Badge"
+        },
+        "source": {
+          "$ref": "#/$defs/Source"
+        }
+      },
+      "required": [
+        "badge",
+        "source"
+      ],
+      "title": "Provenance",
+      "type": "object"
+    },
+    "ProxyDerivation": {
+      "additionalProperties": false,
+      "description": "What the proxy was derived from: the recipe and the parameter values, with their badges, and how the voids were\nhandled. `tolerance` (a fraction, unit `1`, badge `default` when the engine's default, otherwise the caller's) is the\nbound on every decomposed host's `|error|`; it is present exactly when `method` is `void-decomposition`.",
+      "properties": {
+        "method": {
+          "enum": [
+            "added-primitives",
+            "void-decomposition"
+          ],
+          "title": "Method",
+          "type": "string"
+        },
+        "tolerance": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Quantity"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "shape": {
+          "$ref": "#/$defs/Provenance"
+        },
+        "parameters": {
+          "items": {
+            "$ref": "#/$defs/ParameterUse"
+          },
+          "title": "Parameters",
+          "type": "array"
+        },
+        "input_badges": {
+          "items": {
+            "$ref": "#/$defs/Badge"
+          },
+          "title": "Input Badges",
+          "type": "array"
+        },
+        "assumptions": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Assumptions",
+          "type": "array"
+        }
+      },
+      "required": [
+        "method",
+        "shape",
+        "parameters",
+        "input_badges",
+        "assumptions"
+      ],
+      "title": "ProxyDerivation",
+      "type": "object"
+    },
+    "ProxyGeom": {
+      "additionalProperties": false,
+      "description": "One convex primitive of the proxy, in the part frame.\n\n`dimensions` are resolved lengths in metres under the names `shape.py` gives them (`size_x`, `radius`, `length`, ...),\n`center` its centre in metres and `orientation` its rotation about that centre. `component` is the id of the added\nshape component the geom belongs to. With method `added-primitives` the geom is that component's primitive unchanged\nand `id == component`; with `void-decomposition` a component that has voids is several geoms (pieces), each with\nits own `id`. `volume` is in m^3.",
+      "properties": {
+        "id": {
+          "pattern": "^[a-z][a-z0-9_]{0,63}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "component": {
+          "pattern": "^[a-z][a-z0-9_]{0,63}$",
+          "title": "Component",
+          "type": "string"
+        },
+        "primitive": {
+          "enum": [
+            "box",
+            "cylinder",
+            "sphere"
+          ],
+          "title": "Primitive",
+          "type": "string"
+        },
+        "dimensions": {
+          "items": {
+            "$ref": "#/$defs/Dimension"
+          },
+          "title": "Dimensions",
+          "type": "array"
+        },
+        "center": {
+          "maxItems": 3,
+          "minItems": 3,
+          "prefixItems": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            }
+          ],
+          "title": "Center",
+          "type": "array"
+        },
+        "orientation": {
+          "$ref": "#/$defs/Quaternion"
+        },
+        "volume": {
+          "exclusiveMinimum": 0.0,
+          "title": "Volume",
+          "type": "number"
+        }
+      },
+      "required": [
+        "id",
+        "component",
+        "primitive",
+        "dimensions",
+        "center",
+        "orientation",
+        "volume"
+      ],
+      "title": "ProxyGeom",
+      "type": "object"
+    },
+    "Quantity": {
+      "additionalProperties": false,
+      "description": "One physical number with its unit, badge and source.",
+      "properties": {
+        "badge": {
+          "$ref": "#/$defs/Badge"
+        },
+        "source": {
+          "$ref": "#/$defs/Source"
+        },
+        "value": {
+          "title": "Value",
+          "type": "number"
+        },
+        "unit": {
+          "$ref": "#/$defs/Unit"
+        }
+      },
+      "required": [
+        "badge",
+        "source",
+        "value",
+        "unit"
+      ],
+      "title": "Quantity",
+      "type": "object"
+    },
+    "Quaternion": {
+      "additionalProperties": false,
+      "description": "Unit quaternion with named components (`conventions.py`).",
+      "properties": {
+        "x": {
+          "title": "X",
+          "type": "number"
+        },
+        "y": {
+          "title": "Y",
+          "type": "number"
+        },
+        "z": {
+          "title": "Z",
+          "type": "number"
+        },
+        "w": {
+          "title": "W",
+          "type": "number"
+        }
+      },
+      "required": [
+        "x",
+        "y",
+        "z",
+        "w"
+      ],
+      "title": "Quaternion",
+      "type": "object"
+    },
+    "RingReport": {
+      "additionalProperties": false,
+      "description": "How a tube's ring of boxes sits against the real tube. `wall_closed`: every ray from the axis enters the wall once\nand leaves once, so there is no radial slit (the model rejects `False`). `inner_deviation` [m] is the largest radial\ndistance the proxy's bore wall is from the real bore (towards the wall); `outer_deviation` [m] the largest the\nproxy's outer surface is inside the real outer cylinder (the notches between boxes).",
+      "properties": {
+        "staves": {
+          "minimum": 3,
+          "title": "Staves",
+          "type": "integer"
+        },
+        "wall_closed": {
+          "title": "Wall Closed",
+          "type": "boolean"
+        },
+        "inner_deviation": {
+          "minimum": 0.0,
+          "title": "Inner Deviation",
+          "type": "number"
+        },
+        "outer_deviation": {
+          "minimum": 0.0,
+          "title": "Outer Deviation",
+          "type": "number"
+        }
+      },
+      "required": [
+        "staves",
+        "wall_closed",
+        "inner_deviation",
+        "outer_deviation"
+      ],
+      "title": "RingReport",
+      "type": "object"
+    },
+    "Source": {
+      "additionalProperties": false,
+      "description": "Where a value comes from.\n\n`ref` is what was cited, declared or run: a document, a datasheet, a run id, or the reason a default was chosen\n(for an estimate: the method and its inputs). `locator` is where inside it (table, page, section). `url` is a\nlink when there is one. `license` (SPDX expression over the repo allowlist, `spdx.py`) and `declared_by` / `declared_at` feed the badge popover\n(`ValueBadges`, 인용 and 사용자 선언); `Provenance` allows each only on its own badge.",
+      "properties": {
+        "ref": {
+          "maxLength": 500,
+          "minLength": 1,
+          "title": "Ref",
+          "type": "string"
+        },
+        "locator": {
+          "anyOf": [
+            {
+              "maxLength": 200,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Locator"
+        },
+        "url": {
+          "anyOf": [
+            {
+              "maxLength": 2000,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Url"
+        },
+        "license": {
+          "anyOf": [
+            {
+              "maxLength": 200,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "License"
+        },
+        "declared_by": {
+          "anyOf": [
+            {
+              "maxLength": 200,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Declared By"
+        },
+        "declared_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Declared At"
+        }
+      },
+      "required": [
+        "ref"
+      ],
+      "title": "Source",
+      "type": "object"
+    },
+    "Unit": {
+      "description": "Closed unit vocabulary (SI, written the way the JSON carries it).",
+      "enum": [
+        "1",
+        "m",
+        "m^2",
+        "m^3",
+        "kg",
+        "kg/s",
+        "s",
+        "rad",
+        "m/s",
+        "m/s^2",
+        "rad/s",
+        "N",
+        "N*s",
+        "N*m",
+        "N/m",
+        "N*s/m",
+        "N*m/rad",
+        "Pa",
+        "kg/m^3",
+        "kg*m^2",
+        "J",
+        "W",
+        "W/m^2",
+        "V",
+        "A"
+      ],
+      "title": "Unit",
+      "type": "string"
+    }
+  }
+}

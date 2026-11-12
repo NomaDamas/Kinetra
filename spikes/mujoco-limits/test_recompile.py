@@ -79,7 +79,11 @@ class RunOnceTest(unittest.TestCase):
     def test_records_load_and_swap(self):
         for k in ("load_before", "load_after"):
             self.assertEqual(len(self.r[k]["loadavg"]), 3)
-            self.assertIn("total", self.r[k]["swap"])
+            swap = self.r[k]["swap"]
+            if sys.platform == "darwin":  # `sysctl -n vm.swapusage` exists only on macOS; elsewhere recompile.py records ""
+                self.assertIn("total", swap)
+            else:
+                self.assertIsInstance(swap, str)
 
 
 class FailurePathTest(unittest.TestCase):

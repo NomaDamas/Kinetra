@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "No spread: Monte-Carlo uses the nominal.",
+  "properties": {
+    "kind": {
+      "const": "fixed",
+      "title": "Kind",
+      "type": "string"
+    }
+  },
+  "required": [
+    "kind"
+  ],
+  "title": "FixedDistribution",
+  "type": "object"
+}

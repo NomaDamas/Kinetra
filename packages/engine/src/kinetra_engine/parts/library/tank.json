@@ -1,0 +1,494 @@
+{
+  "id": "tank",
+  "name": "Propellant tank",
+  "parameters": [
+    {
+      "name": "radius",
+      "unit": "m",
+      "default": {
+        "badge": "default",
+        "source": {
+          "ref": "B-03d: generic propellant tank, a game-level storage vessel chosen by Kinetra; not a datasheet value, no real vessel, no pressure rating; outer radius of the body"
+        },
+        "value": 0.06,
+        "unit": "m"
+      },
+      "min": {
+        "badge": "default",
+        "source": {
+          "ref": "B-03d: generic propellant tank, a game-level storage vessel chosen by Kinetra; not a datasheet value, no real vessel, no pressure rating; outer radius of the body"
+        },
+        "value": 0.03,
+        "unit": "m"
+      },
+      "max": {
+        "badge": "default",
+        "source": {
+          "ref": "B-03d: generic propellant tank, a game-level storage vessel chosen by Kinetra; not a datasheet value, no real vessel, no pressure rating; outer radius of the body"
+        },
+        "value": 0.15,
+        "unit": "m"
+      }
+    },
+    {
+      "name": "length",
+      "unit": "m",
+      "default": {
+        "badge": "default",
+        "source": {
+          "ref": "B-03d: generic propellant tank, a game-level storage vessel chosen by Kinetra; not a datasheet value, no real vessel, no pressure rating; length of the cylindrical body along local z"
+        },
+        "value": 0.2,
+        "unit": "m"
+      },
+      "min": {
+        "badge": "default",
+        "source": {
+          "ref": "B-03d: generic propellant tank, a game-level storage vessel chosen by Kinetra; not a datasheet value, no real vessel, no pressure rating; length of the cylindrical body along local z"
+        },
+        "value": 0.05,
+        "unit": "m"
+      },
+      "max": {
+        "badge": "default",
+        "source": {
+          "ref": "B-03d: generic propellant tank, a game-level storage vessel chosen by Kinetra; not a datasheet value, no real vessel, no pressure rating; length of the cylindrical body along local z"
+        },
+        "value": 0.6,
+        "unit": "m"
+      }
+    },
+    {
+      "name": "propellant_density",
+      "unit": "kg/m^3",
+      "default": {
+        "badge": "default",
+        "source": {
+          "ref": "B-03d: generic propellant tank, a game-level storage vessel chosen by Kinetra; not a datasheet value, no real vessel, no pressure rating; mean density of what the tank holds when full. 1000 kg/m^3 is a placeholder (liquid-like), NOT a propellant: set the value of what you model. Capacity [kg] = this x inside volume. The range spans compressed gas to a dense liquid"
+        },
+        "value": 1000.0,
+        "unit": "kg/m^3"
+      },
+      "min": {
+        "badge": "default",
+        "source": {
+          "ref": "B-03d: generic propellant tank, a game-level storage vessel chosen by Kinetra; not a datasheet value, no real vessel, no pressure rating; mean density of what the tank holds when full. 1000 kg/m^3 is a placeholder (liquid-like), NOT a propellant: set the value of what you model. Capacity [kg] = this x inside volume. The range spans compressed gas to a dense liquid"
+        },
+        "value": 1.0,
+        "unit": "kg/m^3"
+      },
+      "max": {
+        "badge": "default",
+        "source": {
+          "ref": "B-03d: generic propellant tank, a game-level storage vessel chosen by Kinetra; not a datasheet value, no real vessel, no pressure rating; mean density of what the tank holds when full. 1000 kg/m^3 is a placeholder (liquid-like), NOT a propellant: set the value of what you model. Capacity [kg] = this x inside volume. The range spans compressed gas to a dense liquid"
+        },
+        "value": 2000.0,
+        "unit": "kg/m^3"
+      }
+    },
+    {
+      "name": "initial_fill",
+      "unit": "1",
+      "default": {
+        "badge": "default",
+        "source": {
+          "ref": "B-03d: generic propellant tank, a game-level storage vessel chosen by Kinetra; not a datasheet value, no real vessel, no pressure rating; fraction of the capacity the tank starts with; 1 = full"
+        },
+        "value": 1.0,
+        "unit": "1"
+      },
+      "min": {
+        "badge": "default",
+        "source": {
+          "ref": "B-03d: generic propellant tank, a game-level storage vessel chosen by Kinetra; not a datasheet value, no real vessel, no pressure rating; fraction of the capacity the tank starts with; 1 = full"
+        },
+        "value": 0.0,
+        "unit": "1"
+      },
+      "max": {
+        "badge": "default",
+        "source": {
+          "ref": "B-03d: generic propellant tank, a game-level storage vessel chosen by Kinetra; not a datasheet value, no real vessel, no pressure rating; fraction of the capacity the tank starts with; 1 = full"
+        },
+        "value": 1.0,
+        "unit": "1"
+      }
+    }
+  ],
+  "snap_points": [
+    {
+      "badge": "default",
+      "source": {
+        "ref": "B-03d: snap frame convention chosen by Kinetra: +Z of the snap frame points out of the part surface; tags are a first proposal for B-04b"
+      },
+      "id": "bottom",
+      "kind": "face",
+      "accepts": [
+        "face"
+      ],
+      "position": {
+        "x": {
+          "offset": 0.0,
+          "terms": []
+        },
+        "y": {
+          "offset": 0.0,
+          "terms": []
+        },
+        "z": {
+          "offset": -0.01,
+          "terms": [
+            {
+              "param": "length",
+              "factor": -0.5
+            }
+          ]
+        }
+      },
+      "orientation": {
+        "x": 1.0,
+        "y": 0.0,
+        "z": 0.0,
+        "w": 0.0
+      }
+    },
+    {
+      "badge": "default",
+      "source": {
+        "ref": "B-03d: snap frame convention chosen by Kinetra: +Z of the snap frame points out of the part surface; tags are a first proposal for B-04b"
+      },
+      "id": "outlet",
+      "kind": "feed",
+      "accepts": [
+        "feed"
+      ],
+      "position": {
+        "x": {
+          "offset": 0.0,
+          "terms": []
+        },
+        "y": {
+          "offset": 0.0,
+          "terms": []
+        },
+        "z": {
+          "offset": 0.045,
+          "terms": [
+            {
+              "param": "length",
+              "factor": 0.5
+            }
+          ]
+        }
+      },
+      "orientation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0,
+        "w": 1.0
+      }
+    },
+    {
+      "badge": "default",
+      "source": {
+        "ref": "B-03d: snap frame convention chosen by Kinetra: +Z of the snap frame points out of the part surface; tags are a first proposal for B-04b"
+      },
+      "id": "side-xp",
+      "kind": "face",
+      "accepts": [
+        "face"
+      ],
+      "position": {
+        "x": {
+          "offset": 0.0,
+          "terms": [
+            {
+              "param": "radius",
+              "factor": 1.0
+            }
+          ]
+        },
+        "y": {
+          "offset": 0.0,
+          "terms": []
+        },
+        "z": {
+          "offset": 0.0,
+          "terms": []
+        }
+      },
+      "orientation": {
+        "x": 0.0,
+        "y": 0.7071067811865476,
+        "z": 0.0,
+        "w": 0.7071067811865476
+      }
+    },
+    {
+      "badge": "default",
+      "source": {
+        "ref": "B-03d: snap frame convention chosen by Kinetra: +Z of the snap frame points out of the part surface; tags are a first proposal for B-04b"
+      },
+      "id": "side-xn",
+      "kind": "face",
+      "accepts": [
+        "face"
+      ],
+      "position": {
+        "x": {
+          "offset": 0.0,
+          "terms": [
+            {
+              "param": "radius",
+              "factor": -1.0
+            }
+          ]
+        },
+        "y": {
+          "offset": 0.0,
+          "terms": []
+        },
+        "z": {
+          "offset": 0.0,
+          "terms": []
+        }
+      },
+      "orientation": {
+        "x": 0.0,
+        "y": -0.7071067811865476,
+        "z": 0.0,
+        "w": 0.7071067811865476
+      }
+    }
+  ],
+  "specs": [],
+  "shape": {
+    "badge": "default",
+    "source": {
+      "ref": "B-03d: generic propellant tank, a game-level storage vessel chosen by Kinetra; not a datasheet value, no real vessel, no pressure rating; a closed cylindrical shell: wall 3 mm fixed, a valve neck 24 mm diameter x 30 mm and a 30 x 30 x 15 mm cap on top, a skirt 0.8 x the radius x 10 mm below. The inside (the void) is what holds the propellant"
+    },
+    "components": [
+      {
+        "id": "body",
+        "primitive": {
+          "kind": "cylinder",
+          "radius": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "radius",
+                "factor": 1.0
+              }
+            ]
+          },
+          "length": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "length",
+                "factor": 1.0
+              }
+            ]
+          }
+        },
+        "operation": "add",
+        "position": {
+          "x": {
+            "offset": 0.0,
+            "terms": []
+          },
+          "y": {
+            "offset": 0.0,
+            "terms": []
+          },
+          "z": {
+            "offset": 0.0,
+            "terms": []
+          }
+        },
+        "orientation": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 1.0
+        }
+      },
+      {
+        "id": "inside",
+        "primitive": {
+          "kind": "cylinder",
+          "radius": {
+            "offset": -0.003,
+            "terms": [
+              {
+                "param": "radius",
+                "factor": 1.0
+              }
+            ]
+          },
+          "length": {
+            "offset": -0.006,
+            "terms": [
+              {
+                "param": "length",
+                "factor": 1.0
+              }
+            ]
+          }
+        },
+        "operation": "subtract",
+        "position": {
+          "x": {
+            "offset": 0.0,
+            "terms": []
+          },
+          "y": {
+            "offset": 0.0,
+            "terms": []
+          },
+          "z": {
+            "offset": 0.0,
+            "terms": []
+          }
+        },
+        "orientation": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 1.0
+        }
+      },
+      {
+        "id": "neck",
+        "primitive": {
+          "kind": "cylinder",
+          "radius": {
+            "offset": 0.012,
+            "terms": []
+          },
+          "length": {
+            "offset": 0.03,
+            "terms": []
+          }
+        },
+        "operation": "add",
+        "position": {
+          "x": {
+            "offset": 0.0,
+            "terms": []
+          },
+          "y": {
+            "offset": 0.0,
+            "terms": []
+          },
+          "z": {
+            "offset": 0.015,
+            "terms": [
+              {
+                "param": "length",
+                "factor": 0.5
+              }
+            ]
+          }
+        },
+        "orientation": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 1.0
+        }
+      },
+      {
+        "id": "cap",
+        "primitive": {
+          "kind": "box",
+          "size_x": {
+            "offset": 0.03,
+            "terms": []
+          },
+          "size_y": {
+            "offset": 0.03,
+            "terms": []
+          },
+          "size_z": {
+            "offset": 0.015,
+            "terms": []
+          }
+        },
+        "operation": "add",
+        "position": {
+          "x": {
+            "offset": 0.0,
+            "terms": []
+          },
+          "y": {
+            "offset": 0.0,
+            "terms": []
+          },
+          "z": {
+            "offset": 0.0375,
+            "terms": [
+              {
+                "param": "length",
+                "factor": 0.5
+              }
+            ]
+          }
+        },
+        "orientation": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 1.0
+        }
+      },
+      {
+        "id": "skirt",
+        "primitive": {
+          "kind": "cylinder",
+          "radius": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "radius",
+                "factor": 0.8
+              }
+            ]
+          },
+          "length": {
+            "offset": 0.01,
+            "terms": []
+          }
+        },
+        "operation": "add",
+        "position": {
+          "x": {
+            "offset": 0.0,
+            "terms": []
+          },
+          "y": {
+            "offset": 0.0,
+            "terms": []
+          },
+          "z": {
+            "offset": -0.005,
+            "terms": [
+              {
+                "param": "length",
+                "factor": -0.5
+              }
+            ]
+          }
+        },
+        "orientation": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 1.0
+        }
+      }
+    ]
+  },
+  "role": "tank",
+  "curves": []
+}

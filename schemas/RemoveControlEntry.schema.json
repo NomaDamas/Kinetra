@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Remove the schedule entry with this id.",
+  "properties": {
+    "type": {
+      "const": "remove_control_entry",
+      "title": "Type",
+      "type": "string"
+    },
+    "id": {
+      "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+      "title": "Id",
+      "type": "string"
+    }
+  },
+  "required": [
+    "type",
+    "id"
+  ],
+  "title": "RemoveControlEntry",
+  "type": "object"
+}

@@ -1,0 +1,173 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Travel limits of the joint coordinate: rad for a hinge, m for a slider. `lower < upper`.\n\nThe coordinate is 0 at the saved pose, so the saved pose must be inside its own limits: `lower <= 0 <= upper`\n(a joint saved outside its travel would start in violation of its own limit). Both ends are inclusive.",
+  "properties": {
+    "lower": {
+      "$ref": "#/$defs/Quantity"
+    },
+    "upper": {
+      "$ref": "#/$defs/Quantity"
+    }
+  },
+  "required": [
+    "lower",
+    "upper"
+  ],
+  "title": "JointLimits",
+  "type": "object",
+  "$defs": {
+    "Badge": {
+      "enum": [
+        "sim",
+        "cite",
+        "default",
+        "declared",
+        "estimate"
+      ],
+      "title": "Badge",
+      "type": "string"
+    },
+    "Quantity": {
+      "additionalProperties": false,
+      "description": "One physical number with its unit, badge and source.",
+      "properties": {
+        "badge": {
+          "$ref": "#/$defs/Badge"
+        },
+        "source": {
+          "$ref": "#/$defs/Source"
+        },
+        "value": {
+          "title": "Value",
+          "type": "number"
+        },
+        "unit": {
+          "$ref": "#/$defs/Unit"
+        }
+      },
+      "required": [
+        "badge",
+        "source",
+        "value",
+        "unit"
+      ],
+      "title": "Quantity",
+      "type": "object"
+    },
+    "Source": {
+      "additionalProperties": false,
+      "description": "Where a value comes from.\n\n`ref` is what was cited, declared or run: a document, a datasheet, a run id, or the reason a default was chosen\n(for an estimate: the method and its inputs). `locator` is where inside it (table, page, section). `url` is a\nlink when there is one. `license` (SPDX expression over the repo allowlist, `spdx.py`) and `declared_by` / `declared_at` feed the badge popover\n(`ValueBadges`, 인용 and 사용자 선언); `Provenance` allows each only on its own badge.",
+      "properties": {
+        "ref": {
+          "maxLength": 500,
+          "minLength": 1,
+          "title": "Ref",
+          "type": "string"
+        },
+        "locator": {
+          "anyOf": [
+            {
+              "maxLength": 200,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Locator"
+        },
+        "url": {
+          "anyOf": [
+            {
+              "maxLength": 2000,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Url"
+        },
+        "license": {
+          "anyOf": [
+            {
+              "maxLength": 200,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "License"
+        },
+        "declared_by": {
+          "anyOf": [
+            {
+              "maxLength": 200,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Declared By"
+        },
+        "declared_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Declared At"
+        }
+      },
+      "required": [
+        "ref"
+      ],
+      "title": "Source",
+      "type": "object"
+    },
+    "Unit": {
+      "description": "Closed unit vocabulary (SI, written the way the JSON carries it).",
+      "enum": [
+        "1",
+        "m",
+        "m^2",
+        "m^3",
+        "kg",
+        "kg/s",
+        "s",
+        "rad",
+        "m/s",
+        "m/s^2",
+        "rad/s",
+        "N",
+        "N*s",
+        "N*m",
+        "N/m",
+        "N*s/m",
+        "N*m/rad",
+        "Pa",
+        "kg/m^3",
+        "kg*m^2",
+        "J",
+        "W",
+        "W/m^2",
+        "V",
+        "A"
+      ],
+      "title": "Unit",
+      "type": "string"
+    }
+  }
+}

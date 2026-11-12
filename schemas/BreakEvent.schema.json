@@ -1,0 +1,66 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Joint `joint` released because the load on it went over its break threshold (both in N; plan 4.6, a simplified\nmodel). `reason` is the release's cause, `over_threshold` (\"임계 초과\"): only this one is a break (X-08).",
+  "properties": {
+    "kind": {
+      "const": "break",
+      "title": "Kind",
+      "type": "string"
+    },
+    "tick": {
+      "maximum": 4294967295,
+      "minimum": 0,
+      "title": "Tick",
+      "type": "integer"
+    },
+    "reason": {
+      "const": "over_threshold",
+      "title": "Reason",
+      "type": "string"
+    },
+    "joint": {
+      "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+      "title": "Joint",
+      "type": "string"
+    },
+    "load": {
+      "$ref": "#/$defs/ForceN"
+    },
+    "threshold": {
+      "$ref": "#/$defs/ForceN"
+    }
+  },
+  "required": [
+    "kind",
+    "tick",
+    "reason",
+    "joint",
+    "load",
+    "threshold"
+  ],
+  "title": "BreakEvent",
+  "type": "object",
+  "$defs": {
+    "ForceN": {
+      "description": "A force in newtons (`unit` is always `N`, so a client never guesses).",
+      "properties": {
+        "value": {
+          "minimum": 0,
+          "title": "Value",
+          "type": "number"
+        },
+        "unit": {
+          "const": "N",
+          "title": "Unit",
+          "type": "string"
+        }
+      },
+      "required": [
+        "value",
+        "unit"
+      ],
+      "title": "ForceN",
+      "type": "object"
+    }
+  }
+}

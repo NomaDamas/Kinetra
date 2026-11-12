@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "The connection broke the protocol (not a rejected command): bad JSON, a message that is no known message,\na `publish` before `hello` or `subscribe`, an unknown project, a protocol number the core does not speak. A\nfatal error is followed by the core closing the connection.",
+  "properties": {
+    "type": {
+      "const": "error",
+      "title": "Type",
+      "type": "string"
+    },
+    "message": {
+      "minLength": 1,
+      "title": "Message",
+      "type": "string"
+    },
+    "fatal": {
+      "title": "Fatal",
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "type",
+    "message",
+    "fatal"
+  ],
+  "title": "ProtocolError",
+  "type": "object"
+}

@@ -1,0 +1,29 @@
+{
+  "assumptions": [
+    {
+      "key": "vehicle_mass",
+      "label": "Vehicle mass",
+      "value": {
+        "value": 1300.0,
+        "unit": "kg",
+        "badge": "declared",
+        "source": {
+          "ref": "Kinetra schema example: illustrative value, not a measured part",
+          "declared_by": "kinetra-docs",
+          "declared_at": "2026-11-11T00:00:00Z"
+        }
+      },
+      "distribution": {
+        "kind": "normal",
+        "mean": 1300.0,
+        "std": 50.0,
+        "clip_low": 1000.0,
+        "badge": "estimate",
+        "source": {
+          "ref": "Kinetra schema example: illustrative spread, not a measurement"
+        }
+      },
+      "confidence": "med"
+    }
+  ]
+}

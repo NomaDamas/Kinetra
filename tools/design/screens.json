@@ -1,0 +1,29 @@
+{
+  "_trial": {
+    "pairs": [
+      {
+        "name": "b-value-badges",
+        "approved": { "url": "design/exports/design-system/index.html", "selector": "#valuebadges" },
+        "implemented": { "url": "design/exports/design-system/index.html", "selector": "#valuebadges" }
+      },
+      {
+        "name": "c-evidence",
+        "approved": { "url": "design/exports/design-system/index.html", "selector": "#evidence" },
+        "implemented": { "url": "design/exports/design-system/index.html", "selector": "#evidence" }
+      }
+    ]
+  },
+  "_trial-shifted": {
+    "pairs": [
+      {
+        "name": "b-value-badges",
+        "approved": { "url": "design/exports/design-system/index.html", "selector": "#valuebadges" },
+        "implemented": {
+          "url": "design/exports/design-system/index.html",
+          "selector": "#valuebadges",
+          "css": "#valuebadges > :first-child { position: relative; left: 6px; top: 4px; }"
+        }
+      }
+    ]
+  }
+}

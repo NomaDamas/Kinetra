@@ -3,7 +3,16 @@ name = "kinetra-engine"
 version = "0.0.0"
 description = "Physics engine adapters (compile Project to engine, run)"
 requires-python = ">=3.11"
-dependencies = []
+dependencies = [
+    "faster-whisper==1.2.1",
+    # faster-whisper 1.2.1 calls av.open(metadata_errors=...), which av 19 removed; it declares only av>=11
+    "av>=11,<19",
+    # C-05a: the WebSocket transport of the document channel (kinetra_engine.protocol); BSD-3-Clause
+    "websockets==17.4",
+    # X-01a: the physics core (docs/decisions/engine.md). The `mujoco-core` bindings (numpy only) load the compiled MJCF and run
+    # mj_forward; the `mujoco` meta-package would add the viewer (mujoco-studio, glfw, pyopengl), which nothing here uses. Apache-2.0
+    "mujoco-core==4.0.0",
+]
 
 [build-system]
 requires = ["hatchling"]

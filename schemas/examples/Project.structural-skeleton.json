@@ -1,0 +1,4977 @@
+{
+  "design": {
+    "materials": [
+      {
+        "id": "al6061-t6",
+        "name": "Aluminum 6061-T6",
+        "density": {
+          "badge": "cite",
+          "source": {
+            "ref": "Kaiser Aluminum, Rod & Bar Alloy 6061 Technical Data (KA-RBH-6061-8.10), typical values; accessed 2026-11-11. Nominal Density (68 F / 20 C) 0.098 lb/in3 = 2.70 Mg/m3. Chosen 2700 kg/m^3 = the printed SI value; no range given.",
+            "locator": "Typical Physical Properties, Nominal Density (page 2)",
+            "url": "https://online.kaiseraluminum.com/depot/PublicProductInformation/Document/1025/Kaiser_Aluminum_6061_Rod_and_Bar.pdf",
+            "license": null,
+            "declared_by": null,
+            "declared_at": null
+          },
+          "value": 2700.0,
+          "unit": "kg/m^3"
+        },
+        "yield_strength": {
+          "badge": "cite",
+          "source": {
+            "ref": "Kaiser Aluminum, Rod & Bar Alloy 6061 Technical Data (KA-RBH-6061-8.10), typical values; accessed 2026-11-11. Basis: TYPICAL (not a guaranteed minimum). Temper T6, T651: tensile yield 40 ksi = 276 MPa (ultimate 45 ksi = 310 MPa). Chosen 276 MPa = the printed SI value; the Kaiser Sheet, Coil & Plate 6061 sheet (Rev. 05/06) is the same document family.",
+            "locator": "Typical Mechanical Properties, row T6, T651, Yield MPa (page 1)",
+            "url": "https://online.kaiseraluminum.com/depot/PublicProductInformation/Document/1025/Kaiser_Aluminum_6061_Rod_and_Bar.pdf",
+            "license": null,
+            "declared_by": null,
+            "declared_at": null
+          },
+          "value": 276000000.0,
+          "unit": "Pa"
+        },
+        "elastic_modulus": {
+          "badge": "cite",
+          "source": {
+            "ref": "Kaiser Aluminum, Rod & Bar Alloy 6061 Technical Data (KA-RBH-6061-8.10), typical values; accessed 2026-11-11. Modulus of Elasticity printed as 10.0 x 10^3 ksi (US column) and 68.3 GPa (metric column). The two disagree: 10.0 x 10^3 ksi x 6.894757 MPa/ksi = 68.95 GPa, 0.95% above the printed 68.3 GPa. Chosen 68.95 GPa, the exact conversion of the primary US value; range 68.3 to 68.95 GPa.",
+            "locator": "Typical Mechanical Properties, row T6, T651, Modulus KSI x 10^3 and GPa (page 1)",
+            "url": "https://online.kaiseraluminum.com/depot/PublicProductInformation/Document/1025/Kaiser_Aluminum_6061_Rod_and_Bar.pdf",
+            "license": null,
+            "declared_by": null,
+            "declared_at": null
+          },
+          "value": 68950000000.0,
+          "unit": "Pa"
+        },
+        "friction": {
+          "badge": "cite",
+          "source": {
+            "ref": "Blau, 'Appendix: Static and Kinetic Friction Coefficients for Selected Materials', ASM Handbook Vol. 18, ASM Intl 1992, ISBN 0-87170-380-7 (dry, room temp.). Rule (all metals): steel 1032 fixed, test material moving, kinetic; Magnaplate 1988 rig, 1.96 N, 54% RH. Steel 1032 / Al 6061-T6: static 0.47, kinetic 0.38. Reverse (Al fixed / steel moving): 0.35, 0.25. Engineering ToolBox Al on mild steel kinetic 0.47. Range 0.25 to 0.47.",
+            "locator": "ASM Hb 18 pp. 70-75, Table 1, row Steel 1032 / Al alloy 6061-T6, Kinetic",
+            "url": null,
+            "license": null,
+            "declared_by": null,
+            "declared_at": null
+          },
+          "value": 0.38,
+          "unit": "1"
+        }
+      }
+    ],
+    "parts": [
+      {
+        "id": "beam",
+        "name": "I-beam",
+        "parameters": [
+          {
+            "name": "length",
+            "unit": "m",
+            "default": {
+              "badge": "default",
+              "source": {
+                "ref": "B-02a: generic structural part, range chosen by Kinetra for game-scale builds; not a datasheet value and not a standard section; along local x",
+                "locator": null,
+                "url": null,
+                "license": null,
+                "declared_by": null,
+                "declared_at": null
+              },
+              "value": 0.5,
+              "unit": "m"
+            },
+            "min": {
+              "badge": "default",
+              "source": {
+                "ref": "B-02a: generic structural part, range chosen by Kinetra for game-scale builds; not a datasheet value and not a standard section; along local x",
+                "locator": null,
+                "url": null,
+                "license": null,
+                "declared_by": null,
+                "declared_at": null
+              },
+              "value": 0.1,
+              "unit": "m"
+            },
+            "max": {
+              "badge": "default",
+              "source": {
+                "ref": "B-02a: generic structural part, range chosen by Kinetra for game-scale builds; not a datasheet value and not a standard section; along local x",
+                "locator": null,
+                "url": null,
+                "license": null,
+                "declared_by": null,
+                "declared_at": null
+              },
+              "value": 2.0,
+              "unit": "m"
+            }
+          },
+          {
+            "name": "height",
+            "unit": "m",
+            "default": {
+              "badge": "default",
+              "source": {
+                "ref": "B-02a: generic structural part, range chosen by Kinetra for game-scale builds; not a datasheet value and not a standard section; section depth along local z; stays above twice the largest thickness",
+                "locator": null,
+                "url": null,
+                "license": null,
+                "declared_by": null,
+                "declared_at": null
+              },
+              "value": 0.06,
+              "unit": "m"
+            },
+            "min": {
+              "badge": "default",
+              "source": {
+                "ref": "B-02a: generic structural part, range chosen by Kinetra for game-scale builds; not a datasheet value and not a standard section; section depth along local z; stays above twice the largest thickness",
+                "locator": null,
+                "url": null,
+                "license": null,
+                "declared_by": null,
+                "declared_at": null
+              },
+              "value": 0.02,
+              "unit": "m"
+            },
+            "max": {
+              "badge": "default",
+              "source": {
+                "ref": "B-02a: generic structural part, range chosen by Kinetra for game-scale builds; not a datasheet value and not a standard section; section depth along local z; stays above twice the largest thickness",
+                "locator": null,
+                "url": null,
+                "license": null,
+                "declared_by": null,
+                "declared_at": null
+              },
+              "value": 0.2,
+              "unit": "m"
+            }
+          },
+          {
+            "name": "flange_width",
+            "unit": "m",
+            "default": {
+              "badge": "default",
+              "source": {
+                "ref": "B-02a: generic structural part, range chosen by Kinetra for game-scale builds; not a datasheet value and not a standard section; section width along local y",
+                "locator": null,
+                "url": null,
+                "license": null,
+                "declared_by": null,
+                "declared_at": null
+              },
+              "value": 0.04,
+              "unit": "m"
+            },
+            "min": {
+              "badge": "default",
+              "source": {
+                "ref": "B-02a: generic structural part, range chosen by Kinetra for game-scale builds; not a datasheet value and not a standard section; section width along local y",
+                "locator": null,
+                "url": null,
+                "license": null,
+                "declared_by": null,
+                "declared_at": null
+              },
+              "value": 0.02,
+              "unit": "m"
+            },
+            "max": {
+              "badge": "default",
+              "source": {
+                "ref": "B-02a: generic structural part, range chosen by Kinetra for game-scale builds; not a datasheet value and not a standard section; section width along local y",
+                "locator": null,
+                "url": null,
+                "license": null,
+                "declared_by": null,
+                "declared_at": null
+              },
+              "value": 0.15,
+              "unit": "m"
+            }
+          },
+          {
+            "name": "thickness",
+            "unit": "m",
+            "default": {
+              "badge": "default",
+              "source": {
+                "ref": "B-02a: generic structural part, range chosen by Kinetra for game-scale builds; not a datasheet value and not a standard section; flange and web thickness",
+                "locator": null,
+                "url": null,
+                "license": null,
+                "declared_by": null,
+                "declared_at": null
+              },
+              "value": 0.004,
+              "unit": "m"
+            },
+            "min": {
+              "badge": "default",
+              "source": {
+                "ref": "B-02a: generic structural part, range chosen by Kinetra for game-scale builds; not a datasheet value and not a standard section; flange and web thickness",
+                "locator": null,
+                "url": null,
+                "license": null,
+                "declared_by": null,
+                "declared_at": null
+              },
+              "value": 0.002,
+              "unit": "m"
+            },
+            "max": {
+              "badge": "default",
+              "source": {
+                "ref": "B-02a: generic structural part, range chosen by Kinetra for game-scale builds; not a datasheet value and not a standard section; flange and web thickness",
+                "locator": null,
+                "url": null,
+                "license": null,
+                "declared_by": null,
+                "declared_at": null
+              },
+              "value": 0.008,
+              "unit": "m"
+            }
+          }
+        ],
+        "snap_points": [
+          {
+            "badge": "default",
+            "source": {
+              "ref": "B-02a: snap frame convention chosen by Kinetra: +Z of the snap frame points out of the part surface; tags are a first proposal for B-04b; #541: an end also accepts a face (a post butted onto a face)",
+              "locator": null,
+              "url": null,
+              "license": null,
+              "declared_by": null,
+              "declared_at": null
+            },
+            "id": "end-a",
+            "kind": "end",
+            "accepts": [
+              "end",
+              "edge",
+              "face"
+            ],
+            "position": {
+              "x": {
+                "offset": 0.0,
+                "terms": [
+                  {
+                    "param": "length",
+                    "factor": -0.5
+                  }
+                ]
+              },
+              "y": {
+                "offset": 0.0,
+                "terms": []
+              },
+              "z": {
+                "offset": 0.0,
+                "terms": []
+              }
+            },
+            "orientation": {
+              "x": 0.0,
+              "y": -0.7071067811865476,
+              "z": 0.0,
+              "w": 0.7071067811865476
+            }
+          },
+          {
+            "badge": "default",
+            "source": {
+              "ref": "B-02a: snap frame convention chosen by Kinetra: +Z of the snap frame points out of the part surface; tags are a first proposal for B-04b; #541: an end also accepts a face (a post butted onto a face)",
+              "locator": null,
+              "url": null,
+              "license": null,
+              "declared_by": null,
+              "declared_at": null
+            },
+            "id": "end-b",
+            "kind": "end",
+            "accepts": [
+              "end",
+              "edge",
+              "face"
+            ],
+            "position": {
+              "x": {
+                "offset": 0.0,
+                "terms": [
+                  {
+                    "param": "length",
+                    "factor": 0.5
+                  }
+                ]
+              },
+              "y": {
+                "offset": 0.0,
+                "terms": []
+              },
+              "z": {
+                "offset": 0.0,
+                "terms": []
+              }
+            },
+            "orientation": {
+              "x": 0.0,
+              "y": 0.7071067811865476,
+              "z": 0.0,
+              "w": 0.7071067811865476
+            }
+          },
+          {
+            "badge": "default",
+            "source": {
+              "ref": "B-02a: snap frame convention chosen by Kinetra: +Z of the snap frame points out of the part surface; tags are a first proposal for B-04b; #541: a face also accepts a beam end (a post butted onto the face)",
+              "locator": null,
+              "url": null,
+              "license": null,
+              "declared_by": null,
+              "declared_at": null
+            },
+            "id": "top",
+            "kind": "face",
+            "accepts": [
+              "face",
+              "end"
+            ],
+            "position": {
+              "x": {
+                "offset": 0.0,
+                "terms": []
+              },
+              "y": {
+                "offset": 0.0,
+                "terms": []
+              },
+              "z": {
+                "offset": 0.0,
+                "terms": [
+                  {
+                    "param": "height",
+                    "factor": 0.5
+                  }
+                ]
+              }
+            },
+            "orientation": {
+              "x": 0.0,
+              "y": 0.0,
+              "z": 0.0,
+              "w": 1.0
+            }
+          },
+          {
+            "badge": "default",
+            "source": {
+              "ref": "B-02a: snap frame convention chosen by Kinetra: +Z of the snap frame points out of the part surface; tags are a first proposal for B-04b; #541: a face also accepts a beam end (a post butted onto the face)",
+              "locator": null,
+              "url": null,
+              "license": null,
+              "declared_by": null,
+              "declared_at": null
+            },
+            "id": "bottom",
+            "kind": "face",
+            "accepts": [
+              "face",
+              "end"
+            ],
+            "position": {
+              "x": {
+                "offset": 0.0,
+                "terms": []
+              },
+              "y": {
+                "offset": 0.0,
+                "terms": []
+              },
+              "z": {
+                "offset": 0.0,
+                "terms": [
+                  {
+                    "param": "height",
+                    "factor": -0.5
+                  }
+                ]
+              }
+            },
+            "orientation": {
+              "x": 1.0,
+              "y": 0.0,
+              "z": 0.0,
+              "w": 0.0
+            }
+          }
+        ],
+        "specs": [],
+        "shape": {
+          "badge": "default",
+          "source": {
+            "ref": "B-02a: generic profile drawn by Kinetra from boxes (not a standard section designation, no catalogue dimensions); dimensions follow the parameters",
+            "locator": null,
+            "url": null,
+            "license": null,
+            "declared_by": null,
+            "declared_at": null
+          },
+          "components": [
+            {
+              "id": "flange_top",
+              "primitive": {
+                "kind": "box",
+                "size_x": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "length",
+                      "factor": 1.0
+                    }
+                  ]
+                },
+                "size_y": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "flange_width",
+                      "factor": 1.0
+                    }
+                  ]
+                },
+                "size_z": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "thickness",
+                      "factor": 1.0
+                    }
+                  ]
+                }
+              },
+              "operation": "add",
+              "position": {
+                "x": {
+                  "offset": 0.0,
+                  "terms": []
+                },
+                "y": {
+                  "offset": 0.0,
+                  "terms": []
+                },
+                "z": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "height",
+                      "factor": 0.5
+                    },
+                    {
+                      "param": "thickness",
+                      "factor": -0.5
+                    }
+                  ]
+                }
+              },
+              "orientation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+              }
+            },
+            {
+              "id": "flange_bottom",
+              "primitive": {
+                "kind": "box",
+                "size_x": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "length",
+                      "factor": 1.0
+                    }
+                  ]
+                },
+                "size_y": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "flange_width",
+                      "factor": 1.0
+                    }
+                  ]
+                },
+                "size_z": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "thickness",
+                      "factor": 1.0
+                    }
+                  ]
+                }
+              },
+              "operation": "add",
+              "position": {
+                "x": {
+                  "offset": 0.0,
+                  "terms": []
+                },
+                "y": {
+                  "offset": 0.0,
+                  "terms": []
+                },
+                "z": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "height",
+                      "factor": -0.5
+                    },
+                    {
+                      "param": "thickness",
+                      "factor": 0.5
+                    }
+                  ]
+                }
+              },
+              "orientation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+              }
+            },
+            {
+              "id": "web",
+              "primitive": {
+                "kind": "box",
+                "size_x": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "length",
+                      "factor": 1.0
+                    }
+                  ]
+                },
+                "size_y": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "thickness",
+                      "factor": 1.0
+                    }
+                  ]
+                },
+                "size_z": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "height",
+                      "factor": 1.0
+                    },
+                    {
+                      "param": "thickness",
+                      "factor": -2.0
+                    }
+                  ]
+                }
+              },
+              "operation": "add",
+              "position": {
+                "x": {
+                  "offset": 0.0,
+                  "terms": []
+                },
+                "y": {
+                  "offset": 0.0,
+                  "terms": []
+                },
+                "z": {
+                  "offset": 0.0,
+                  "terms": []
+                }
+              },
+              "orientation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+              }
+            }
+          ]
+        },
+        "mass_parameter": null,
+        "role": null,
+        "curves": []
+      },
+      {
+        "id": "plate",
+        "name": "Plate with edge rim",
+        "parameters": [
+          {
+            "name": "length",
+            "unit": "m",
+            "default": {
+              "badge": "default",
+              "source": {
+                "ref": "B-02a: generic structural part, range chosen by Kinetra for game-scale builds; not a datasheet value and not a standard section; along local x",
+                "locator": null,
+                "url": null,
+                "license": null,
+                "declared_by": null,
+                "declared_at": null
+              },
+              "value": 0.3,
+              "unit": "m"
+            },
+            "min": {
+              "badge": "default",
+              "source": {
+                "ref": "B-02a: generic structural part, range chosen by Kinetra for game-scale builds; not a datasheet value and not a standard section; along local x",
+                "locator": null,
+                "url": null,
+                "license": null,
+                "declared_by": null,
+                "declared_at": null
+              },
+              "value": 0.05,
+              "unit": "m"
+            },
+            "max": {
+              "badge": "default",
+              "source": {
+                "ref": "B-02a: generic structural part, range chosen by Kinetra for game-scale builds; not a datasheet value and not a standard section; along local x",
+                "locator": null,
+                "url": null,
+                "license": null,
+                "declared_by": null,
+                "declared_at": null
+              },
+              "value": 1.0,
+              "unit": "m"
+            }
+          },
+          {
+            "name": "width",
+            "unit": "m",
+            "default": {
+              "badge": "default",
+              "source": {
+                "ref": "B-02a: generic structural part, range chosen by Kinetra for game-scale builds; not a datasheet value and not a standard section; along local y",
+                "locator": null,
+                "url": null,
+                "license": null,
+                "declared_by": null,
+                "declared_at": null
+              },
+              "value": 0.2,
+              "unit": "m"
+            },
+            "min": {
+              "badge": "default",
+              "source": {
+                "ref": "B-02a: generic structural part, range chosen by Kinetra for game-scale builds; not a datasheet value and not a standard section; along local y",
+                "locator": null,
+                "url": null,
+                "license": null,
+                "declared_by": null,
+                "declared_at": null
+              },
+              "value": 0.05,
+              "unit": "m"
+            },
+            "max": {
+              "badge": "default",
+              "source": {
+                "ref": "B-02a: generic structural part, range chosen by Kinetra for game-scale builds; not a datasheet value and not a standard section; along local y",
+                "locator": null,
+                "url": null,
+                "license": null,
+                "declared_by": null,
+                "declared_at": null
+              },
+              "value": 1.0,
+              "unit": "m"
+            }
+          },
+          {
+            "name": "thickness",
+            "unit": "m",
+            "default": {
+              "badge": "default",
+              "source": {
+                "ref": "B-02a: generic structural part, range chosen by Kinetra for game-scale builds; not a datasheet value and not a standard section; slab thickness; the rim is as thick as the slab and twice as high",
+                "locator": null,
+                "url": null,
+                "license": null,
+                "declared_by": null,
+                "declared_at": null
+              },
+              "value": 0.005,
+              "unit": "m"
+            },
+            "min": {
+              "badge": "default",
+              "source": {
+                "ref": "B-02a: generic structural part, range chosen by Kinetra for game-scale builds; not a datasheet value and not a standard section; slab thickness; the rim is as thick as the slab and twice as high",
+                "locator": null,
+                "url": null,
+                "license": null,
+                "declared_by": null,
+                "declared_at": null
+              },
+              "value": 0.002,
+              "unit": "m"
+            },
+            "max": {
+              "badge": "default",
+              "source": {
+                "ref": "B-02a: generic structural part, range chosen by Kinetra for game-scale builds; not a datasheet value and not a standard section; slab thickness; the rim is as thick as the slab and twice as high",
+                "locator": null,
+                "url": null,
+                "license": null,
+                "declared_by": null,
+                "declared_at": null
+              },
+              "value": 0.02,
+              "unit": "m"
+            }
+          }
+        ],
+        "snap_points": [
+          {
+            "badge": "default",
+            "source": {
+              "ref": "B-02a: snap frame convention chosen by Kinetra: +Z of the snap frame points out of the part surface; tags are a first proposal for B-04b; #541: a face also accepts a beam end (a post butted onto the face)",
+              "locator": null,
+              "url": null,
+              "license": null,
+              "declared_by": null,
+              "declared_at": null
+            },
+            "id": "top",
+            "kind": "face",
+            "accepts": [
+              "face",
+              "end"
+            ],
+            "position": {
+              "x": {
+                "offset": 0.0,
+                "terms": []
+              },
+              "y": {
+                "offset": 0.0,
+                "terms": []
+              },
+              "z": {
+                "offset": 0.0,
+                "terms": [
+                  {
+                    "param": "thickness",
+                    "factor": 0.5
+                  }
+                ]
+              }
+            },
+            "orientation": {
+              "x": 0.0,
+              "y": 0.0,
+              "z": 0.0,
+              "w": 1.0
+            }
+          },
+          {
+            "badge": "default",
+            "source": {
+              "ref": "B-02a: snap frame convention chosen by Kinetra: +Z of the snap frame points out of the part surface; tags are a first proposal for B-04b; #541: a face also accepts a beam end (a post butted onto the face)",
+              "locator": null,
+              "url": null,
+              "license": null,
+              "declared_by": null,
+              "declared_at": null
+            },
+            "id": "bottom",
+            "kind": "face",
+            "accepts": [
+              "face",
+              "end"
+            ],
+            "position": {
+              "x": {
+                "offset": 0.0,
+                "terms": []
+              },
+              "y": {
+                "offset": 0.0,
+                "terms": []
+              },
+              "z": {
+                "offset": 0.0,
+                "terms": [
+                  {
+                    "param": "thickness",
+                    "factor": -0.5
+                  }
+                ]
+              }
+            },
+            "orientation": {
+              "x": 1.0,
+              "y": 0.0,
+              "z": 0.0,
+              "w": 0.0
+            }
+          },
+          {
+            "badge": "default",
+            "source": {
+              "ref": "B-02a: snap frame convention chosen by Kinetra: +Z of the snap frame points out of the part surface; tags are a first proposal for B-04b",
+              "locator": null,
+              "url": null,
+              "license": null,
+              "declared_by": null,
+              "declared_at": null
+            },
+            "id": "edge-xp",
+            "kind": "edge",
+            "accepts": [
+              "end",
+              "edge"
+            ],
+            "position": {
+              "x": {
+                "offset": 0.0,
+                "terms": [
+                  {
+                    "param": "length",
+                    "factor": 0.5
+                  }
+                ]
+              },
+              "y": {
+                "offset": 0.0,
+                "terms": []
+              },
+              "z": {
+                "offset": 0.0,
+                "terms": []
+              }
+            },
+            "orientation": {
+              "x": 0.0,
+              "y": 0.7071067811865476,
+              "z": 0.0,
+              "w": 0.7071067811865476
+            }
+          },
+          {
+            "badge": "default",
+            "source": {
+              "ref": "B-02a: snap frame convention chosen by Kinetra: +Z of the snap frame points out of the part surface; tags are a first proposal for B-04b",
+              "locator": null,
+              "url": null,
+              "license": null,
+              "declared_by": null,
+              "declared_at": null
+            },
+            "id": "edge-xn",
+            "kind": "edge",
+            "accepts": [
+              "end",
+              "edge"
+            ],
+            "position": {
+              "x": {
+                "offset": 0.0,
+                "terms": [
+                  {
+                    "param": "length",
+                    "factor": -0.5
+                  }
+                ]
+              },
+              "y": {
+                "offset": 0.0,
+                "terms": []
+              },
+              "z": {
+                "offset": 0.0,
+                "terms": []
+              }
+            },
+            "orientation": {
+              "x": 0.0,
+              "y": -0.7071067811865476,
+              "z": 0.0,
+              "w": 0.7071067811865476
+            }
+          },
+          {
+            "badge": "default",
+            "source": {
+              "ref": "B-02a: snap frame convention chosen by Kinetra: +Z of the snap frame points out of the part surface; tags are a first proposal for B-04b",
+              "locator": null,
+              "url": null,
+              "license": null,
+              "declared_by": null,
+              "declared_at": null
+            },
+            "id": "edge-yp",
+            "kind": "edge",
+            "accepts": [
+              "end",
+              "edge"
+            ],
+            "position": {
+              "x": {
+                "offset": 0.0,
+                "terms": []
+              },
+              "y": {
+                "offset": 0.0,
+                "terms": [
+                  {
+                    "param": "width",
+                    "factor": 0.5
+                  }
+                ]
+              },
+              "z": {
+                "offset": 0.0,
+                "terms": []
+              }
+            },
+            "orientation": {
+              "x": -0.7071067811865476,
+              "y": 0.0,
+              "z": 0.0,
+              "w": 0.7071067811865476
+            }
+          },
+          {
+            "badge": "default",
+            "source": {
+              "ref": "B-02a: snap frame convention chosen by Kinetra: +Z of the snap frame points out of the part surface; tags are a first proposal for B-04b",
+              "locator": null,
+              "url": null,
+              "license": null,
+              "declared_by": null,
+              "declared_at": null
+            },
+            "id": "edge-yn",
+            "kind": "edge",
+            "accepts": [
+              "end",
+              "edge"
+            ],
+            "position": {
+              "x": {
+                "offset": 0.0,
+                "terms": []
+              },
+              "y": {
+                "offset": 0.0,
+                "terms": [
+                  {
+                    "param": "width",
+                    "factor": -0.5
+                  }
+                ]
+              },
+              "z": {
+                "offset": 0.0,
+                "terms": []
+              }
+            },
+            "orientation": {
+              "x": 0.7071067811865476,
+              "y": 0.0,
+              "z": 0.0,
+              "w": 0.7071067811865476
+            }
+          }
+        ],
+        "specs": [],
+        "shape": {
+          "badge": "default",
+          "source": {
+            "ref": "B-02a: generic flat plate with a raised edge rim drawn by Kinetra from boxes (not a standard section designation, no catalogue dimensions); dimensions follow the parameters",
+            "locator": null,
+            "url": null,
+            "license": null,
+            "declared_by": null,
+            "declared_at": null
+          },
+          "components": [
+            {
+              "id": "slab",
+              "primitive": {
+                "kind": "box",
+                "size_x": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "length",
+                      "factor": 1.0
+                    }
+                  ]
+                },
+                "size_y": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "width",
+                      "factor": 1.0
+                    }
+                  ]
+                },
+                "size_z": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "thickness",
+                      "factor": 1.0
+                    }
+                  ]
+                }
+              },
+              "operation": "add",
+              "position": {
+                "x": {
+                  "offset": 0.0,
+                  "terms": []
+                },
+                "y": {
+                  "offset": 0.0,
+                  "terms": []
+                },
+                "z": {
+                  "offset": 0.0,
+                  "terms": []
+                }
+              },
+              "orientation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+              }
+            },
+            {
+              "id": "rim_yp",
+              "primitive": {
+                "kind": "box",
+                "size_x": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "length",
+                      "factor": 1.0
+                    }
+                  ]
+                },
+                "size_y": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "thickness",
+                      "factor": 1.0
+                    }
+                  ]
+                },
+                "size_z": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "thickness",
+                      "factor": 2.0
+                    }
+                  ]
+                }
+              },
+              "operation": "add",
+              "position": {
+                "x": {
+                  "offset": 0.0,
+                  "terms": []
+                },
+                "y": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "width",
+                      "factor": 0.5
+                    },
+                    {
+                      "param": "thickness",
+                      "factor": -0.5
+                    }
+                  ]
+                },
+                "z": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "thickness",
+                      "factor": 1.5
+                    }
+                  ]
+                }
+              },
+              "orientation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+              }
+            },
+            {
+              "id": "rim_yn",
+              "primitive": {
+                "kind": "box",
+                "size_x": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "length",
+                      "factor": 1.0
+                    }
+                  ]
+                },
+                "size_y": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "thickness",
+                      "factor": 1.0
+                    }
+                  ]
+                },
+                "size_z": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "thickness",
+                      "factor": 2.0
+                    }
+                  ]
+                }
+              },
+              "operation": "add",
+              "position": {
+                "x": {
+                  "offset": 0.0,
+                  "terms": []
+                },
+                "y": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "width",
+                      "factor": -0.5
+                    },
+                    {
+                      "param": "thickness",
+                      "factor": 0.5
+                    }
+                  ]
+                },
+                "z": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "thickness",
+                      "factor": 1.5
+                    }
+                  ]
+                }
+              },
+              "orientation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+              }
+            },
+            {
+              "id": "rim_xp",
+              "primitive": {
+                "kind": "box",
+                "size_x": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "thickness",
+                      "factor": 1.0
+                    }
+                  ]
+                },
+                "size_y": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "width",
+                      "factor": 1.0
+                    },
+                    {
+                      "param": "thickness",
+                      "factor": -2.0
+                    }
+                  ]
+                },
+                "size_z": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "thickness",
+                      "factor": 2.0
+                    }
+                  ]
+                }
+              },
+              "operation": "add",
+              "position": {
+                "x": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "length",
+                      "factor": 0.5
+                    },
+                    {
+                      "param": "thickness",
+                      "factor": -0.5
+                    }
+                  ]
+                },
+                "y": {
+                  "offset": 0.0,
+                  "terms": []
+                },
+                "z": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "thickness",
+                      "factor": 1.5
+                    }
+                  ]
+                }
+              },
+              "orientation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+              }
+            },
+            {
+              "id": "rim_xn",
+              "primitive": {
+                "kind": "box",
+                "size_x": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "thickness",
+                      "factor": 1.0
+                    }
+                  ]
+                },
+                "size_y": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "width",
+                      "factor": 1.0
+                    },
+                    {
+                      "param": "thickness",
+                      "factor": -2.0
+                    }
+                  ]
+                },
+                "size_z": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "thickness",
+                      "factor": 2.0
+                    }
+                  ]
+                }
+              },
+              "operation": "add",
+              "position": {
+                "x": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "length",
+                      "factor": -0.5
+                    },
+                    {
+                      "param": "thickness",
+                      "factor": 0.5
+                    }
+                  ]
+                },
+                "y": {
+                  "offset": 0.0,
+                  "terms": []
+                },
+                "z": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "thickness",
+                      "factor": 1.5
+                    }
+                  ]
+                }
+              },
+              "orientation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+              }
+            }
+          ]
+        },
+        "mass_parameter": null,
+        "role": null,
+        "curves": []
+      },
+      {
+        "id": "shell",
+        "name": "Body shell",
+        "parameters": [
+          {
+            "name": "length",
+            "unit": "m",
+            "default": {
+              "badge": "default",
+              "source": {
+                "ref": "B-02b: dimensions chosen by Kinetra for game-scale vehicles (an original body, not any real vehicle); not a datasheet or standard value",
+                "locator": null,
+                "url": null,
+                "license": null,
+                "declared_by": null,
+                "declared_at": null
+              },
+              "value": 0.4,
+              "unit": "m"
+            },
+            "min": {
+              "badge": "default",
+              "source": {
+                "ref": "B-02b: dimensions chosen by Kinetra for game-scale vehicles (an original body, not any real vehicle); not a datasheet or standard value",
+                "locator": null,
+                "url": null,
+                "license": null,
+                "declared_by": null,
+                "declared_at": null
+              },
+              "value": 0.2,
+              "unit": "m"
+            },
+            "max": {
+              "badge": "default",
+              "source": {
+                "ref": "B-02b: dimensions chosen by Kinetra for game-scale vehicles (an original body, not any real vehicle); not a datasheet or standard value",
+                "locator": null,
+                "url": null,
+                "license": null,
+                "declared_by": null,
+                "declared_at": null
+              },
+              "value": 0.8,
+              "unit": "m"
+            }
+          },
+          {
+            "name": "width",
+            "unit": "m",
+            "default": {
+              "badge": "default",
+              "source": {
+                "ref": "B-02b: dimensions chosen by Kinetra for game-scale vehicles (an original body, not any real vehicle); not a datasheet or standard value",
+                "locator": null,
+                "url": null,
+                "license": null,
+                "declared_by": null,
+                "declared_at": null
+              },
+              "value": 0.2,
+              "unit": "m"
+            },
+            "min": {
+              "badge": "default",
+              "source": {
+                "ref": "B-02b: dimensions chosen by Kinetra for game-scale vehicles (an original body, not any real vehicle); not a datasheet or standard value",
+                "locator": null,
+                "url": null,
+                "license": null,
+                "declared_by": null,
+                "declared_at": null
+              },
+              "value": 0.1,
+              "unit": "m"
+            },
+            "max": {
+              "badge": "default",
+              "source": {
+                "ref": "B-02b: dimensions chosen by Kinetra for game-scale vehicles (an original body, not any real vehicle); not a datasheet or standard value",
+                "locator": null,
+                "url": null,
+                "license": null,
+                "declared_by": null,
+                "declared_at": null
+              },
+              "value": 0.4,
+              "unit": "m"
+            }
+          },
+          {
+            "name": "height",
+            "unit": "m",
+            "default": {
+              "badge": "default",
+              "source": {
+                "ref": "B-02b: dimensions chosen by Kinetra for game-scale vehicles (an original body, not any real vehicle); not a datasheet or standard value",
+                "locator": null,
+                "url": null,
+                "license": null,
+                "declared_by": null,
+                "declared_at": null
+              },
+              "value": 0.12,
+              "unit": "m"
+            },
+            "min": {
+              "badge": "default",
+              "source": {
+                "ref": "B-02b: dimensions chosen by Kinetra for game-scale vehicles (an original body, not any real vehicle); not a datasheet or standard value",
+                "locator": null,
+                "url": null,
+                "license": null,
+                "declared_by": null,
+                "declared_at": null
+              },
+              "value": 0.06,
+              "unit": "m"
+            },
+            "max": {
+              "badge": "default",
+              "source": {
+                "ref": "B-02b: dimensions chosen by Kinetra for game-scale vehicles (an original body, not any real vehicle); not a datasheet or standard value",
+                "locator": null,
+                "url": null,
+                "license": null,
+                "declared_by": null,
+                "declared_at": null
+              },
+              "value": 0.3,
+              "unit": "m"
+            }
+          },
+          {
+            "name": "thickness",
+            "unit": "m",
+            "default": {
+              "badge": "default",
+              "source": {
+                "ref": "B-02b: dimensions chosen by Kinetra for game-scale vehicles (an original body, not any real vehicle); not a datasheet or standard value",
+                "locator": null,
+                "url": null,
+                "license": null,
+                "declared_by": null,
+                "declared_at": null
+              },
+              "value": 0.004,
+              "unit": "m"
+            },
+            "min": {
+              "badge": "default",
+              "source": {
+                "ref": "B-02b: dimensions chosen by Kinetra for game-scale vehicles (an original body, not any real vehicle); not a datasheet or standard value",
+                "locator": null,
+                "url": null,
+                "license": null,
+                "declared_by": null,
+                "declared_at": null
+              },
+              "value": 0.002,
+              "unit": "m"
+            },
+            "max": {
+              "badge": "default",
+              "source": {
+                "ref": "B-02b: dimensions chosen by Kinetra for game-scale vehicles (an original body, not any real vehicle); not a datasheet or standard value",
+                "locator": null,
+                "url": null,
+                "license": null,
+                "declared_by": null,
+                "declared_at": null
+              },
+              "value": 0.01,
+              "unit": "m"
+            }
+          }
+        ],
+        "snap_points": [
+          {
+            "badge": "default",
+            "source": {
+              "ref": "B-02b: snap frame convention chosen by Kinetra: +Z of the snap frame points out of the part surface; the axle position is the middle of the wheel opening; tags are a first proposal for B-04b",
+              "locator": null,
+              "url": null,
+              "license": null,
+              "declared_by": null,
+              "declared_at": null
+            },
+            "id": "bed",
+            "kind": "payload_seat",
+            "accepts": [
+              "payload_base"
+            ],
+            "position": {
+              "x": {
+                "offset": 0.0,
+                "terms": [
+                  {
+                    "param": "length",
+                    "factor": -0.325
+                  },
+                  {
+                    "param": "thickness",
+                    "factor": 0.5
+                  }
+                ]
+              },
+              "y": {
+                "offset": 0.0,
+                "terms": []
+              },
+              "z": {
+                "offset": 0.0,
+                "terms": [
+                  {
+                    "param": "height",
+                    "factor": -0.5
+                  },
+                  {
+                    "param": "thickness",
+                    "factor": 1.0
+                  }
+                ]
+              }
+            },
+            "orientation": {
+              "x": 0.0,
+              "y": 0.0,
+              "z": 0.0,
+              "w": 1.0
+            }
+          },
+          {
+            "badge": "default",
+            "source": {
+              "ref": "B-02b: snap frame convention chosen by Kinetra: +Z of the snap frame points out of the part surface; the axle position is the middle of the wheel opening; tags are a first proposal for B-04b",
+              "locator": null,
+              "url": null,
+              "license": null,
+              "declared_by": null,
+              "declared_at": null
+            },
+            "id": "underside",
+            "kind": "face",
+            "accepts": [
+              "face"
+            ],
+            "position": {
+              "x": {
+                "offset": 0.0,
+                "terms": []
+              },
+              "y": {
+                "offset": 0.0,
+                "terms": []
+              },
+              "z": {
+                "offset": 0.0,
+                "terms": [
+                  {
+                    "param": "height",
+                    "factor": -0.5
+                  }
+                ]
+              }
+            },
+            "orientation": {
+              "x": 1.0,
+              "y": 0.0,
+              "z": 0.0,
+              "w": 0.0
+            }
+          },
+          {
+            "badge": "default",
+            "source": {
+              "ref": "B-02b: snap frame convention chosen by Kinetra: +Z of the snap frame points out of the part surface; the axle position is the middle of the wheel opening; tags are a first proposal for B-04b",
+              "locator": null,
+              "url": null,
+              "license": null,
+              "declared_by": null,
+              "declared_at": null
+            },
+            "id": "roof",
+            "kind": "face",
+            "accepts": [
+              "face"
+            ],
+            "position": {
+              "x": {
+                "offset": 0.0,
+                "terms": [
+                  {
+                    "param": "length",
+                    "factor": -0.025
+                  }
+                ]
+              },
+              "y": {
+                "offset": 0.0,
+                "terms": []
+              },
+              "z": {
+                "offset": 0.0,
+                "terms": [
+                  {
+                    "param": "height",
+                    "factor": 0.5
+                  }
+                ]
+              }
+            },
+            "orientation": {
+              "x": 0.0,
+              "y": 0.0,
+              "z": 0.0,
+              "w": 1.0
+            }
+          },
+          {
+            "badge": "default",
+            "source": {
+              "ref": "B-02b: snap frame convention chosen by Kinetra: +Z of the snap frame points out of the part surface; the axle position is the middle of the wheel opening; tags are a first proposal for B-04b",
+              "locator": null,
+              "url": null,
+              "license": null,
+              "declared_by": null,
+              "declared_at": null
+            },
+            "id": "nose",
+            "kind": "edge",
+            "accepts": [
+              "end",
+              "edge"
+            ],
+            "position": {
+              "x": {
+                "offset": 0.0,
+                "terms": [
+                  {
+                    "param": "length",
+                    "factor": 0.5
+                  }
+                ]
+              },
+              "y": {
+                "offset": 0.0,
+                "terms": []
+              },
+              "z": {
+                "offset": 0.0,
+                "terms": [
+                  {
+                    "param": "height",
+                    "factor": -0.25
+                  },
+                  {
+                    "param": "thickness",
+                    "factor": 0.5
+                  }
+                ]
+              }
+            },
+            "orientation": {
+              "x": 0.0,
+              "y": 0.7071067811865476,
+              "z": 0.0,
+              "w": 0.7071067811865476
+            }
+          },
+          {
+            "badge": "default",
+            "source": {
+              "ref": "B-02b: snap frame convention chosen by Kinetra: +Z of the snap frame points out of the part surface; the axle position is the middle of the wheel opening; tags are a first proposal for B-04b",
+              "locator": null,
+              "url": null,
+              "license": null,
+              "declared_by": null,
+              "declared_at": null
+            },
+            "id": "tail",
+            "kind": "edge",
+            "accepts": [
+              "end",
+              "edge"
+            ],
+            "position": {
+              "x": {
+                "offset": 0.0,
+                "terms": [
+                  {
+                    "param": "length",
+                    "factor": -0.5
+                  }
+                ]
+              },
+              "y": {
+                "offset": 0.0,
+                "terms": []
+              },
+              "z": {
+                "offset": 0.0,
+                "terms": [
+                  {
+                    "param": "height",
+                    "factor": -0.25
+                  },
+                  {
+                    "param": "thickness",
+                    "factor": 0.5
+                  }
+                ]
+              }
+            },
+            "orientation": {
+              "x": 0.0,
+              "y": -0.7071067811865476,
+              "z": 0.0,
+              "w": 0.7071067811865476
+            }
+          },
+          {
+            "badge": "default",
+            "source": {
+              "ref": "B-02b: snap frame convention chosen by Kinetra: +Z of the snap frame points out of the part surface; the axle position is the middle of the wheel opening; tags are a first proposal for B-04b",
+              "locator": null,
+              "url": null,
+              "license": null,
+              "declared_by": null,
+              "declared_at": null
+            },
+            "id": "axle-fl",
+            "kind": "axle_mount",
+            "accepts": [
+              "shaft"
+            ],
+            "position": {
+              "x": {
+                "offset": 0.0,
+                "terms": [
+                  {
+                    "param": "length",
+                    "factor": 0.32
+                  }
+                ]
+              },
+              "y": {
+                "offset": 0.0,
+                "terms": [
+                  {
+                    "param": "width",
+                    "factor": 0.5
+                  }
+                ]
+              },
+              "z": {
+                "offset": 0.0,
+                "terms": [
+                  {
+                    "param": "height",
+                    "factor": -0.375
+                  },
+                  {
+                    "param": "thickness",
+                    "factor": 0.75
+                  }
+                ]
+              }
+            },
+            "orientation": {
+              "x": -0.7071067811865476,
+              "y": 0.0,
+              "z": 0.0,
+              "w": 0.7071067811865476
+            }
+          },
+          {
+            "badge": "default",
+            "source": {
+              "ref": "B-02b: snap frame convention chosen by Kinetra: +Z of the snap frame points out of the part surface; the axle position is the middle of the wheel opening; tags are a first proposal for B-04b",
+              "locator": null,
+              "url": null,
+              "license": null,
+              "declared_by": null,
+              "declared_at": null
+            },
+            "id": "axle-fr",
+            "kind": "axle_mount",
+            "accepts": [
+              "shaft"
+            ],
+            "position": {
+              "x": {
+                "offset": 0.0,
+                "terms": [
+                  {
+                    "param": "length",
+                    "factor": 0.32
+                  }
+                ]
+              },
+              "y": {
+                "offset": 0.0,
+                "terms": [
+                  {
+                    "param": "width",
+                    "factor": -0.5
+                  }
+                ]
+              },
+              "z": {
+                "offset": 0.0,
+                "terms": [
+                  {
+                    "param": "height",
+                    "factor": -0.375
+                  },
+                  {
+                    "param": "thickness",
+                    "factor": 0.75
+                  }
+                ]
+              }
+            },
+            "orientation": {
+              "x": 0.7071067811865476,
+              "y": 0.0,
+              "z": 0.0,
+              "w": 0.7071067811865476
+            }
+          },
+          {
+            "badge": "default",
+            "source": {
+              "ref": "B-02b: snap frame convention chosen by Kinetra: +Z of the snap frame points out of the part surface; the axle position is the middle of the wheel opening; tags are a first proposal for B-04b",
+              "locator": null,
+              "url": null,
+              "license": null,
+              "declared_by": null,
+              "declared_at": null
+            },
+            "id": "axle-rl",
+            "kind": "axle_mount",
+            "accepts": [
+              "shaft"
+            ],
+            "position": {
+              "x": {
+                "offset": 0.0,
+                "terms": [
+                  {
+                    "param": "length",
+                    "factor": -0.32
+                  }
+                ]
+              },
+              "y": {
+                "offset": 0.0,
+                "terms": [
+                  {
+                    "param": "width",
+                    "factor": 0.5
+                  }
+                ]
+              },
+              "z": {
+                "offset": 0.0,
+                "terms": [
+                  {
+                    "param": "height",
+                    "factor": -0.375
+                  },
+                  {
+                    "param": "thickness",
+                    "factor": 0.75
+                  }
+                ]
+              }
+            },
+            "orientation": {
+              "x": -0.7071067811865476,
+              "y": 0.0,
+              "z": 0.0,
+              "w": 0.7071067811865476
+            }
+          },
+          {
+            "badge": "default",
+            "source": {
+              "ref": "B-02b: snap frame convention chosen by Kinetra: +Z of the snap frame points out of the part surface; the axle position is the middle of the wheel opening; tags are a first proposal for B-04b",
+              "locator": null,
+              "url": null,
+              "license": null,
+              "declared_by": null,
+              "declared_at": null
+            },
+            "id": "axle-rr",
+            "kind": "axle_mount",
+            "accepts": [
+              "shaft"
+            ],
+            "position": {
+              "x": {
+                "offset": 0.0,
+                "terms": [
+                  {
+                    "param": "length",
+                    "factor": -0.32
+                  }
+                ]
+              },
+              "y": {
+                "offset": 0.0,
+                "terms": [
+                  {
+                    "param": "width",
+                    "factor": -0.5
+                  }
+                ]
+              },
+              "z": {
+                "offset": 0.0,
+                "terms": [
+                  {
+                    "param": "height",
+                    "factor": -0.375
+                  },
+                  {
+                    "param": "thickness",
+                    "factor": 0.75
+                  }
+                ]
+              }
+            },
+            "orientation": {
+              "x": 0.7071067811865476,
+              "y": 0.0,
+              "z": 0.0,
+              "w": 0.7071067811865476
+            }
+          }
+        ],
+        "specs": [],
+        "shape": {
+          "badge": "default",
+          "source": {
+            "ref": "B-02b: station fractions of the length and the wall layout chosen by Kinetra to give an original body outline (tub with wheel openings, hood, cabin, roof, rear deck); not a real vehicle, not a datasheet value",
+            "locator": null,
+            "url": null,
+            "license": null,
+            "declared_by": null,
+            "declared_at": null
+          },
+          "components": [
+            {
+              "id": "floor",
+              "primitive": {
+                "kind": "box",
+                "size_x": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "length",
+                      "factor": 1.0
+                    }
+                  ]
+                },
+                "size_y": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "width",
+                      "factor": 1.0
+                    }
+                  ]
+                },
+                "size_z": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "thickness",
+                      "factor": 1.0
+                    }
+                  ]
+                }
+              },
+              "operation": "add",
+              "position": {
+                "x": {
+                  "offset": 0.0,
+                  "terms": []
+                },
+                "y": {
+                  "offset": 0.0,
+                  "terms": []
+                },
+                "z": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "height",
+                      "factor": -0.5
+                    },
+                    {
+                      "param": "thickness",
+                      "factor": 0.5
+                    }
+                  ]
+                }
+              },
+              "orientation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+              }
+            },
+            {
+              "id": "wall_l_rear",
+              "primitive": {
+                "kind": "box",
+                "size_x": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "length",
+                      "factor": 0.08
+                    }
+                  ]
+                },
+                "size_y": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "thickness",
+                      "factor": 1.0
+                    }
+                  ]
+                },
+                "size_z": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "height",
+                      "factor": 0.5
+                    },
+                    {
+                      "param": "thickness",
+                      "factor": -1.0
+                    }
+                  ]
+                }
+              },
+              "operation": "add",
+              "position": {
+                "x": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "length",
+                      "factor": -0.46
+                    }
+                  ]
+                },
+                "y": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "width",
+                      "factor": 0.5
+                    },
+                    {
+                      "param": "thickness",
+                      "factor": -0.5
+                    }
+                  ]
+                },
+                "z": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "height",
+                      "factor": -0.25
+                    },
+                    {
+                      "param": "thickness",
+                      "factor": 0.5
+                    }
+                  ]
+                }
+              },
+              "orientation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+              }
+            },
+            {
+              "id": "wall_l_mid",
+              "primitive": {
+                "kind": "box",
+                "size_x": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "length",
+                      "factor": 0.44
+                    }
+                  ]
+                },
+                "size_y": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "thickness",
+                      "factor": 1.0
+                    }
+                  ]
+                },
+                "size_z": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "height",
+                      "factor": 0.5
+                    },
+                    {
+                      "param": "thickness",
+                      "factor": -1.0
+                    }
+                  ]
+                }
+              },
+              "operation": "add",
+              "position": {
+                "x": {
+                  "offset": 0.0,
+                  "terms": []
+                },
+                "y": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "width",
+                      "factor": 0.5
+                    },
+                    {
+                      "param": "thickness",
+                      "factor": -0.5
+                    }
+                  ]
+                },
+                "z": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "height",
+                      "factor": -0.25
+                    },
+                    {
+                      "param": "thickness",
+                      "factor": 0.5
+                    }
+                  ]
+                }
+              },
+              "orientation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+              }
+            },
+            {
+              "id": "wall_l_front",
+              "primitive": {
+                "kind": "box",
+                "size_x": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "length",
+                      "factor": 0.08
+                    }
+                  ]
+                },
+                "size_y": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "thickness",
+                      "factor": 1.0
+                    }
+                  ]
+                },
+                "size_z": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "height",
+                      "factor": 0.5
+                    },
+                    {
+                      "param": "thickness",
+                      "factor": -1.0
+                    }
+                  ]
+                }
+              },
+              "operation": "add",
+              "position": {
+                "x": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "length",
+                      "factor": 0.46
+                    }
+                  ]
+                },
+                "y": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "width",
+                      "factor": 0.5
+                    },
+                    {
+                      "param": "thickness",
+                      "factor": -0.5
+                    }
+                  ]
+                },
+                "z": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "height",
+                      "factor": -0.25
+                    },
+                    {
+                      "param": "thickness",
+                      "factor": 0.5
+                    }
+                  ]
+                }
+              },
+              "orientation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+              }
+            },
+            {
+              "id": "arch_l_rear",
+              "primitive": {
+                "kind": "box",
+                "size_x": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "length",
+                      "factor": 0.2
+                    }
+                  ]
+                },
+                "size_y": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "thickness",
+                      "factor": 1.0
+                    }
+                  ]
+                },
+                "size_z": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "height",
+                      "factor": 0.25
+                    },
+                    {
+                      "param": "thickness",
+                      "factor": -0.5
+                    }
+                  ]
+                }
+              },
+              "operation": "add",
+              "position": {
+                "x": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "length",
+                      "factor": -0.32
+                    }
+                  ]
+                },
+                "y": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "width",
+                      "factor": 0.5
+                    },
+                    {
+                      "param": "thickness",
+                      "factor": -0.5
+                    }
+                  ]
+                },
+                "z": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "height",
+                      "factor": -0.125
+                    },
+                    {
+                      "param": "thickness",
+                      "factor": 0.25
+                    }
+                  ]
+                }
+              },
+              "orientation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+              }
+            },
+            {
+              "id": "arch_l_front",
+              "primitive": {
+                "kind": "box",
+                "size_x": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "length",
+                      "factor": 0.2
+                    }
+                  ]
+                },
+                "size_y": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "thickness",
+                      "factor": 1.0
+                    }
+                  ]
+                },
+                "size_z": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "height",
+                      "factor": 0.25
+                    },
+                    {
+                      "param": "thickness",
+                      "factor": -0.5
+                    }
+                  ]
+                }
+              },
+              "operation": "add",
+              "position": {
+                "x": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "length",
+                      "factor": 0.32
+                    }
+                  ]
+                },
+                "y": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "width",
+                      "factor": 0.5
+                    },
+                    {
+                      "param": "thickness",
+                      "factor": -0.5
+                    }
+                  ]
+                },
+                "z": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "height",
+                      "factor": -0.125
+                    },
+                    {
+                      "param": "thickness",
+                      "factor": 0.25
+                    }
+                  ]
+                }
+              },
+              "orientation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+              }
+            },
+            {
+              "id": "cabin_l",
+              "primitive": {
+                "kind": "box",
+                "size_x": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "length",
+                      "factor": 0.25
+                    }
+                  ]
+                },
+                "size_y": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "thickness",
+                      "factor": 1.0
+                    }
+                  ]
+                },
+                "size_z": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "height",
+                      "factor": 0.5
+                    },
+                    {
+                      "param": "thickness",
+                      "factor": -1.0
+                    }
+                  ]
+                }
+              },
+              "operation": "add",
+              "position": {
+                "x": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "length",
+                      "factor": -0.025
+                    }
+                  ]
+                },
+                "y": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "width",
+                      "factor": 0.5
+                    },
+                    {
+                      "param": "thickness",
+                      "factor": -0.5
+                    }
+                  ]
+                },
+                "z": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "height",
+                      "factor": 0.25
+                    },
+                    {
+                      "param": "thickness",
+                      "factor": -0.5
+                    }
+                  ]
+                }
+              },
+              "orientation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+              }
+            },
+            {
+              "id": "wall_r_rear",
+              "primitive": {
+                "kind": "box",
+                "size_x": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "length",
+                      "factor": 0.08
+                    }
+                  ]
+                },
+                "size_y": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "thickness",
+                      "factor": 1.0
+                    }
+                  ]
+                },
+                "size_z": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "height",
+                      "factor": 0.5
+                    },
+                    {
+                      "param": "thickness",
+                      "factor": -1.0
+                    }
+                  ]
+                }
+              },
+              "operation": "add",
+              "position": {
+                "x": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "length",
+                      "factor": -0.46
+                    }
+                  ]
+                },
+                "y": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "width",
+                      "factor": -0.5
+                    },
+                    {
+                      "param": "thickness",
+                      "factor": 0.5
+                    }
+                  ]
+                },
+                "z": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "height",
+                      "factor": -0.25
+                    },
+                    {
+                      "param": "thickness",
+                      "factor": 0.5
+                    }
+                  ]
+                }
+              },
+              "orientation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+              }
+            },
+            {
+              "id": "wall_r_mid",
+              "primitive": {
+                "kind": "box",
+                "size_x": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "length",
+                      "factor": 0.44
+                    }
+                  ]
+                },
+                "size_y": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "thickness",
+                      "factor": 1.0
+                    }
+                  ]
+                },
+                "size_z": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "height",
+                      "factor": 0.5
+                    },
+                    {
+                      "param": "thickness",
+                      "factor": -1.0
+                    }
+                  ]
+                }
+              },
+              "operation": "add",
+              "position": {
+                "x": {
+                  "offset": 0.0,
+                  "terms": []
+                },
+                "y": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "width",
+                      "factor": -0.5
+                    },
+                    {
+                      "param": "thickness",
+                      "factor": 0.5
+                    }
+                  ]
+                },
+                "z": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "height",
+                      "factor": -0.25
+                    },
+                    {
+                      "param": "thickness",
+                      "factor": 0.5
+                    }
+                  ]
+                }
+              },
+              "orientation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+              }
+            },
+            {
+              "id": "wall_r_front",
+              "primitive": {
+                "kind": "box",
+                "size_x": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "length",
+                      "factor": 0.08
+                    }
+                  ]
+                },
+                "size_y": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "thickness",
+                      "factor": 1.0
+                    }
+                  ]
+                },
+                "size_z": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "height",
+                      "factor": 0.5
+                    },
+                    {
+                      "param": "thickness",
+                      "factor": -1.0
+                    }
+                  ]
+                }
+              },
+              "operation": "add",
+              "position": {
+                "x": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "length",
+                      "factor": 0.46
+                    }
+                  ]
+                },
+                "y": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "width",
+                      "factor": -0.5
+                    },
+                    {
+                      "param": "thickness",
+                      "factor": 0.5
+                    }
+                  ]
+                },
+                "z": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "height",
+                      "factor": -0.25
+                    },
+                    {
+                      "param": "thickness",
+                      "factor": 0.5
+                    }
+                  ]
+                }
+              },
+              "orientation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+              }
+            },
+            {
+              "id": "arch_r_rear",
+              "primitive": {
+                "kind": "box",
+                "size_x": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "length",
+                      "factor": 0.2
+                    }
+                  ]
+                },
+                "size_y": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "thickness",
+                      "factor": 1.0
+                    }
+                  ]
+                },
+                "size_z": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "height",
+                      "factor": 0.25
+                    },
+                    {
+                      "param": "thickness",
+                      "factor": -0.5
+                    }
+                  ]
+                }
+              },
+              "operation": "add",
+              "position": {
+                "x": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "length",
+                      "factor": -0.32
+                    }
+                  ]
+                },
+                "y": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "width",
+                      "factor": -0.5
+                    },
+                    {
+                      "param": "thickness",
+                      "factor": 0.5
+                    }
+                  ]
+                },
+                "z": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "height",
+                      "factor": -0.125
+                    },
+                    {
+                      "param": "thickness",
+                      "factor": 0.25
+                    }
+                  ]
+                }
+              },
+              "orientation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+              }
+            },
+            {
+              "id": "arch_r_front",
+              "primitive": {
+                "kind": "box",
+                "size_x": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "length",
+                      "factor": 0.2
+                    }
+                  ]
+                },
+                "size_y": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "thickness",
+                      "factor": 1.0
+                    }
+                  ]
+                },
+                "size_z": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "height",
+                      "factor": 0.25
+                    },
+                    {
+                      "param": "thickness",
+                      "factor": -0.5
+                    }
+                  ]
+                }
+              },
+              "operation": "add",
+              "position": {
+                "x": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "length",
+                      "factor": 0.32
+                    }
+                  ]
+                },
+                "y": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "width",
+                      "factor": -0.5
+                    },
+                    {
+                      "param": "thickness",
+                      "factor": 0.5
+                    }
+                  ]
+                },
+                "z": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "height",
+                      "factor": -0.125
+                    },
+                    {
+                      "param": "thickness",
+                      "factor": 0.25
+                    }
+                  ]
+                }
+              },
+              "orientation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+              }
+            },
+            {
+              "id": "cabin_r",
+              "primitive": {
+                "kind": "box",
+                "size_x": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "length",
+                      "factor": 0.25
+                    }
+                  ]
+                },
+                "size_y": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "thickness",
+                      "factor": 1.0
+                    }
+                  ]
+                },
+                "size_z": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "height",
+                      "factor": 0.5
+                    },
+                    {
+                      "param": "thickness",
+                      "factor": -1.0
+                    }
+                  ]
+                }
+              },
+              "operation": "add",
+              "position": {
+                "x": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "length",
+                      "factor": -0.025
+                    }
+                  ]
+                },
+                "y": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "width",
+                      "factor": -0.5
+                    },
+                    {
+                      "param": "thickness",
+                      "factor": 0.5
+                    }
+                  ]
+                },
+                "z": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "height",
+                      "factor": 0.25
+                    },
+                    {
+                      "param": "thickness",
+                      "factor": -0.5
+                    }
+                  ]
+                }
+              },
+              "orientation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+              }
+            },
+            {
+              "id": "nose",
+              "primitive": {
+                "kind": "box",
+                "size_x": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "thickness",
+                      "factor": 1.0
+                    }
+                  ]
+                },
+                "size_y": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "width",
+                      "factor": 1.0
+                    },
+                    {
+                      "param": "thickness",
+                      "factor": -2.0
+                    }
+                  ]
+                },
+                "size_z": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "height",
+                      "factor": 0.5
+                    },
+                    {
+                      "param": "thickness",
+                      "factor": -1.0
+                    }
+                  ]
+                }
+              },
+              "operation": "add",
+              "position": {
+                "x": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "length",
+                      "factor": 0.5
+                    },
+                    {
+                      "param": "thickness",
+                      "factor": -0.5
+                    }
+                  ]
+                },
+                "y": {
+                  "offset": 0.0,
+                  "terms": []
+                },
+                "z": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "height",
+                      "factor": -0.25
+                    },
+                    {
+                      "param": "thickness",
+                      "factor": 0.5
+                    }
+                  ]
+                }
+              },
+              "orientation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+              }
+            },
+            {
+              "id": "tail",
+              "primitive": {
+                "kind": "box",
+                "size_x": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "thickness",
+                      "factor": 1.0
+                    }
+                  ]
+                },
+                "size_y": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "width",
+                      "factor": 1.0
+                    },
+                    {
+                      "param": "thickness",
+                      "factor": -2.0
+                    }
+                  ]
+                },
+                "size_z": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "height",
+                      "factor": 0.5
+                    },
+                    {
+                      "param": "thickness",
+                      "factor": -1.0
+                    }
+                  ]
+                }
+              },
+              "operation": "add",
+              "position": {
+                "x": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "length",
+                      "factor": -0.5
+                    },
+                    {
+                      "param": "thickness",
+                      "factor": 0.5
+                    }
+                  ]
+                },
+                "y": {
+                  "offset": 0.0,
+                  "terms": []
+                },
+                "z": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "height",
+                      "factor": -0.25
+                    },
+                    {
+                      "param": "thickness",
+                      "factor": 0.5
+                    }
+                  ]
+                }
+              },
+              "orientation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+              }
+            },
+            {
+              "id": "hood",
+              "primitive": {
+                "kind": "box",
+                "size_x": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "length",
+                      "factor": 0.4
+                    },
+                    {
+                      "param": "thickness",
+                      "factor": -1.0
+                    }
+                  ]
+                },
+                "size_y": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "width",
+                      "factor": 1.0
+                    },
+                    {
+                      "param": "thickness",
+                      "factor": -2.0
+                    }
+                  ]
+                },
+                "size_z": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "thickness",
+                      "factor": 1.0
+                    }
+                  ]
+                }
+              },
+              "operation": "add",
+              "position": {
+                "x": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "length",
+                      "factor": 0.3
+                    },
+                    {
+                      "param": "thickness",
+                      "factor": -0.5
+                    }
+                  ]
+                },
+                "y": {
+                  "offset": 0.0,
+                  "terms": []
+                },
+                "z": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "thickness",
+                      "factor": -0.5
+                    }
+                  ]
+                }
+              },
+              "orientation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+              }
+            },
+            {
+              "id": "windscreen",
+              "primitive": {
+                "kind": "box",
+                "size_x": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "thickness",
+                      "factor": 1.0
+                    }
+                  ]
+                },
+                "size_y": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "width",
+                      "factor": 1.0
+                    },
+                    {
+                      "param": "thickness",
+                      "factor": -2.0
+                    }
+                  ]
+                },
+                "size_z": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "height",
+                      "factor": 0.5
+                    },
+                    {
+                      "param": "thickness",
+                      "factor": -1.0
+                    }
+                  ]
+                }
+              },
+              "operation": "add",
+              "position": {
+                "x": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "length",
+                      "factor": 0.1
+                    },
+                    {
+                      "param": "thickness",
+                      "factor": -0.5
+                    }
+                  ]
+                },
+                "y": {
+                  "offset": 0.0,
+                  "terms": []
+                },
+                "z": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "height",
+                      "factor": 0.25
+                    },
+                    {
+                      "param": "thickness",
+                      "factor": -0.5
+                    }
+                  ]
+                }
+              },
+              "orientation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+              }
+            },
+            {
+              "id": "cabin_back",
+              "primitive": {
+                "kind": "box",
+                "size_x": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "thickness",
+                      "factor": 1.0
+                    }
+                  ]
+                },
+                "size_y": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "width",
+                      "factor": 1.0
+                    },
+                    {
+                      "param": "thickness",
+                      "factor": -2.0
+                    }
+                  ]
+                },
+                "size_z": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "height",
+                      "factor": 0.5
+                    },
+                    {
+                      "param": "thickness",
+                      "factor": -1.0
+                    }
+                  ]
+                }
+              },
+              "operation": "add",
+              "position": {
+                "x": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "length",
+                      "factor": -0.15
+                    },
+                    {
+                      "param": "thickness",
+                      "factor": 0.5
+                    }
+                  ]
+                },
+                "y": {
+                  "offset": 0.0,
+                  "terms": []
+                },
+                "z": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "height",
+                      "factor": 0.25
+                    },
+                    {
+                      "param": "thickness",
+                      "factor": -0.5
+                    }
+                  ]
+                }
+              },
+              "orientation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+              }
+            },
+            {
+              "id": "roof",
+              "primitive": {
+                "kind": "box",
+                "size_x": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "length",
+                      "factor": 0.25
+                    }
+                  ]
+                },
+                "size_y": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "width",
+                      "factor": 1.0
+                    }
+                  ]
+                },
+                "size_z": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "thickness",
+                      "factor": 1.0
+                    }
+                  ]
+                }
+              },
+              "operation": "add",
+              "position": {
+                "x": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "length",
+                      "factor": -0.025
+                    }
+                  ]
+                },
+                "y": {
+                  "offset": 0.0,
+                  "terms": []
+                },
+                "z": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "height",
+                      "factor": 0.5
+                    },
+                    {
+                      "param": "thickness",
+                      "factor": -0.5
+                    }
+                  ]
+                }
+              },
+              "orientation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+              }
+            }
+          ]
+        },
+        "mass_parameter": null,
+        "role": null,
+        "curves": []
+      },
+      {
+        "id": "payload",
+        "name": "Payload (declared mass)",
+        "parameters": [
+          {
+            "name": "mass",
+            "unit": "kg",
+            "default": {
+              "badge": "default",
+              "source": {
+                "ref": "B-02c payload: PLACEHOLDER initial value so a new payload has a mass; the user declares the real mass on the instance (then badge 사용자 선언). The range is a modelling limit, not a product limit",
+                "locator": null,
+                "url": null,
+                "license": null,
+                "declared_by": null,
+                "declared_at": null
+              },
+              "value": 1.0,
+              "unit": "kg"
+            },
+            "min": {
+              "badge": "default",
+              "source": {
+                "ref": "B-02c payload: PLACEHOLDER initial value so a new payload has a mass; the user declares the real mass on the instance (then badge 사용자 선언). The range is a modelling limit, not a product limit",
+                "locator": null,
+                "url": null,
+                "license": null,
+                "declared_by": null,
+                "declared_at": null
+              },
+              "value": 0.01,
+              "unit": "kg"
+            },
+            "max": {
+              "badge": "default",
+              "source": {
+                "ref": "B-02c payload: PLACEHOLDER initial value so a new payload has a mass; the user declares the real mass on the instance (then badge 사용자 선언). The range is a modelling limit, not a product limit",
+                "locator": null,
+                "url": null,
+                "license": null,
+                "declared_by": null,
+                "declared_at": null
+              },
+              "value": 200.0,
+              "unit": "kg"
+            }
+          },
+          {
+            "name": "length",
+            "unit": "m",
+            "default": {
+              "badge": "default",
+              "source": {
+                "ref": "B-02c payload: dimension range chosen by us so the part stays a visible block from a 6 cm instrument to a 40 cm crate; not a real product",
+                "locator": null,
+                "url": null,
+                "license": null,
+                "declared_by": null,
+                "declared_at": null
+              },
+              "value": 0.12,
+              "unit": "m"
+            },
+            "min": {
+              "badge": "default",
+              "source": {
+                "ref": "B-02c payload: dimension range chosen by us so the part stays a visible block from a 6 cm instrument to a 40 cm crate; not a real product",
+                "locator": null,
+                "url": null,
+                "license": null,
+                "declared_by": null,
+                "declared_at": null
+              },
+              "value": 0.06,
+              "unit": "m"
+            },
+            "max": {
+              "badge": "default",
+              "source": {
+                "ref": "B-02c payload: dimension range chosen by us so the part stays a visible block from a 6 cm instrument to a 40 cm crate; not a real product",
+                "locator": null,
+                "url": null,
+                "license": null,
+                "declared_by": null,
+                "declared_at": null
+              },
+              "value": 0.4,
+              "unit": "m"
+            }
+          },
+          {
+            "name": "width",
+            "unit": "m",
+            "default": {
+              "badge": "default",
+              "source": {
+                "ref": "B-02c payload: dimension range chosen by us so the part stays a visible block from a 6 cm instrument to a 40 cm crate; not a real product",
+                "locator": null,
+                "url": null,
+                "license": null,
+                "declared_by": null,
+                "declared_at": null
+              },
+              "value": 0.08,
+              "unit": "m"
+            },
+            "min": {
+              "badge": "default",
+              "source": {
+                "ref": "B-02c payload: dimension range chosen by us so the part stays a visible block from a 6 cm instrument to a 40 cm crate; not a real product",
+                "locator": null,
+                "url": null,
+                "license": null,
+                "declared_by": null,
+                "declared_at": null
+              },
+              "value": 0.04,
+              "unit": "m"
+            },
+            "max": {
+              "badge": "default",
+              "source": {
+                "ref": "B-02c payload: dimension range chosen by us so the part stays a visible block from a 6 cm instrument to a 40 cm crate; not a real product",
+                "locator": null,
+                "url": null,
+                "license": null,
+                "declared_by": null,
+                "declared_at": null
+              },
+              "value": 0.3,
+              "unit": "m"
+            }
+          },
+          {
+            "name": "height",
+            "unit": "m",
+            "default": {
+              "badge": "default",
+              "source": {
+                "ref": "B-02c payload: dimension range chosen by us so the part stays a visible block from a 6 cm instrument to a 40 cm crate; not a real product",
+                "locator": null,
+                "url": null,
+                "license": null,
+                "declared_by": null,
+                "declared_at": null
+              },
+              "value": 0.06,
+              "unit": "m"
+            },
+            "min": {
+              "badge": "default",
+              "source": {
+                "ref": "B-02c payload: dimension range chosen by us so the part stays a visible block from a 6 cm instrument to a 40 cm crate; not a real product",
+                "locator": null,
+                "url": null,
+                "license": null,
+                "declared_by": null,
+                "declared_at": null
+              },
+              "value": 0.03,
+              "unit": "m"
+            },
+            "max": {
+              "badge": "default",
+              "source": {
+                "ref": "B-02c payload: dimension range chosen by us so the part stays a visible block from a 6 cm instrument to a 40 cm crate; not a real product",
+                "locator": null,
+                "url": null,
+                "license": null,
+                "declared_by": null,
+                "declared_at": null
+              },
+              "value": 0.3,
+              "unit": "m"
+            }
+          }
+        ],
+        "snap_points": [
+          {
+            "badge": "default",
+            "source": {
+              "ref": "B-02c: snap frame convention chosen here: the snap frame's +z is the outward normal of the face the point sits on, position on that face; B-04b may refine the compatibility tags",
+              "locator": null,
+              "url": null,
+              "license": null,
+              "declared_by": null,
+              "declared_at": null
+            },
+            "id": "base",
+            "kind": "payload_base",
+            "accepts": [
+              "payload_seat",
+              "surface"
+            ],
+            "position": {
+              "x": {
+                "offset": 0.0,
+                "terms": []
+              },
+              "y": {
+                "offset": 0.0,
+                "terms": []
+              },
+              "z": {
+                "offset": 0.0,
+                "terms": []
+              }
+            },
+            "orientation": {
+              "x": 1.0,
+              "y": 0.0,
+              "z": 0.0,
+              "w": 0.0
+            }
+          },
+          {
+            "badge": "default",
+            "source": {
+              "ref": "B-02c: snap frame convention chosen here: the snap frame's +z is the outward normal of the face the point sits on, position on that face; B-04b may refine the compatibility tags",
+              "locator": null,
+              "url": null,
+              "license": null,
+              "declared_by": null,
+              "declared_at": null
+            },
+            "id": "top",
+            "kind": "surface",
+            "accepts": [
+              "surface"
+            ],
+            "position": {
+              "x": {
+                "offset": 0.0,
+                "terms": []
+              },
+              "y": {
+                "offset": 0.0,
+                "terms": []
+              },
+              "z": {
+                "offset": 0.02,
+                "terms": [
+                  {
+                    "param": "height",
+                    "factor": 1.0
+                  }
+                ]
+              }
+            },
+            "orientation": {
+              "x": 0.0,
+              "y": 0.0,
+              "z": 0.0,
+              "w": 1.0
+            }
+          }
+        ],
+        "specs": [],
+        "shape": {
+          "badge": "default",
+          "source": {
+            "ref": "B-02c payload: silhouette drawn by us from boxes and a cylinder (instrument case: body, stepped lid, sensor boss); proportions are ours, not a real product",
+            "locator": null,
+            "url": null,
+            "license": null,
+            "declared_by": null,
+            "declared_at": null
+          },
+          "components": [
+            {
+              "id": "body",
+              "primitive": {
+                "kind": "box",
+                "size_x": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "length",
+                      "factor": 1.0
+                    }
+                  ]
+                },
+                "size_y": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "width",
+                      "factor": 1.0
+                    }
+                  ]
+                },
+                "size_z": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "height",
+                      "factor": 0.8
+                    }
+                  ]
+                }
+              },
+              "operation": "add",
+              "position": {
+                "x": {
+                  "offset": 0.0,
+                  "terms": []
+                },
+                "y": {
+                  "offset": 0.0,
+                  "terms": []
+                },
+                "z": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "height",
+                      "factor": 0.4
+                    }
+                  ]
+                }
+              },
+              "orientation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+              }
+            },
+            {
+              "id": "lid",
+              "primitive": {
+                "kind": "box",
+                "size_x": {
+                  "offset": -0.016,
+                  "terms": [
+                    {
+                      "param": "length",
+                      "factor": 1.0
+                    }
+                  ]
+                },
+                "size_y": {
+                  "offset": -0.016,
+                  "terms": [
+                    {
+                      "param": "width",
+                      "factor": 1.0
+                    }
+                  ]
+                },
+                "size_z": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "height",
+                      "factor": 0.2
+                    }
+                  ]
+                }
+              },
+              "operation": "add",
+              "position": {
+                "x": {
+                  "offset": 0.0,
+                  "terms": []
+                },
+                "y": {
+                  "offset": 0.0,
+                  "terms": []
+                },
+                "z": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "height",
+                      "factor": 0.9
+                    }
+                  ]
+                }
+              },
+              "orientation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+              }
+            },
+            {
+              "id": "boss",
+              "primitive": {
+                "kind": "cylinder",
+                "radius": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "width",
+                      "factor": 0.2
+                    }
+                  ]
+                },
+                "length": {
+                  "offset": 0.02,
+                  "terms": []
+                }
+              },
+              "operation": "add",
+              "position": {
+                "x": {
+                  "offset": 0.0,
+                  "terms": []
+                },
+                "y": {
+                  "offset": 0.0,
+                  "terms": []
+                },
+                "z": {
+                  "offset": 0.01,
+                  "terms": [
+                    {
+                      "param": "height",
+                      "factor": 1.0
+                    }
+                  ]
+                }
+              },
+              "orientation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+              }
+            }
+          ]
+        },
+        "mass_parameter": "mass",
+        "role": null,
+        "curves": []
+      },
+      {
+        "id": "payload-mount",
+        "name": "Payload mount (cradle)",
+        "parameters": [
+          {
+            "name": "length",
+            "unit": "m",
+            "default": {
+              "badge": "default",
+              "source": {
+                "ref": "B-02c payload-mount: dimension range chosen by us so it can hold the payload and ballast ranges; not a real product (inside length: the payload's length)",
+                "locator": null,
+                "url": null,
+                "license": null,
+                "declared_by": null,
+                "declared_at": null
+              },
+              "value": 0.12,
+              "unit": "m"
+            },
+            "min": {
+              "badge": "default",
+              "source": {
+                "ref": "B-02c payload-mount: dimension range chosen by us so it can hold the payload and ballast ranges; not a real product (inside length: the payload's length)",
+                "locator": null,
+                "url": null,
+                "license": null,
+                "declared_by": null,
+                "declared_at": null
+              },
+              "value": 0.06,
+              "unit": "m"
+            },
+            "max": {
+              "badge": "default",
+              "source": {
+                "ref": "B-02c payload-mount: dimension range chosen by us so it can hold the payload and ballast ranges; not a real product (inside length: the payload's length)",
+                "locator": null,
+                "url": null,
+                "license": null,
+                "declared_by": null,
+                "declared_at": null
+              },
+              "value": 0.4,
+              "unit": "m"
+            }
+          },
+          {
+            "name": "width",
+            "unit": "m",
+            "default": {
+              "badge": "default",
+              "source": {
+                "ref": "B-02c payload-mount: dimension range chosen by us so it can hold the payload and ballast ranges; not a real product (inside width: the payload's width)",
+                "locator": null,
+                "url": null,
+                "license": null,
+                "declared_by": null,
+                "declared_at": null
+              },
+              "value": 0.08,
+              "unit": "m"
+            },
+            "min": {
+              "badge": "default",
+              "source": {
+                "ref": "B-02c payload-mount: dimension range chosen by us so it can hold the payload and ballast ranges; not a real product (inside width: the payload's width)",
+                "locator": null,
+                "url": null,
+                "license": null,
+                "declared_by": null,
+                "declared_at": null
+              },
+              "value": 0.04,
+              "unit": "m"
+            },
+            "max": {
+              "badge": "default",
+              "source": {
+                "ref": "B-02c payload-mount: dimension range chosen by us so it can hold the payload and ballast ranges; not a real product (inside width: the payload's width)",
+                "locator": null,
+                "url": null,
+                "license": null,
+                "declared_by": null,
+                "declared_at": null
+              },
+              "value": 0.3,
+              "unit": "m"
+            }
+          },
+          {
+            "name": "wall_height",
+            "unit": "m",
+            "default": {
+              "badge": "default",
+              "source": {
+                "ref": "B-02c payload-mount: dimension range chosen by us so it can hold the payload and ballast ranges; not a real product",
+                "locator": null,
+                "url": null,
+                "license": null,
+                "declared_by": null,
+                "declared_at": null
+              },
+              "value": 0.04,
+              "unit": "m"
+            },
+            "min": {
+              "badge": "default",
+              "source": {
+                "ref": "B-02c payload-mount: dimension range chosen by us so it can hold the payload and ballast ranges; not a real product",
+                "locator": null,
+                "url": null,
+                "license": null,
+                "declared_by": null,
+                "declared_at": null
+              },
+              "value": 0.02,
+              "unit": "m"
+            },
+            "max": {
+              "badge": "default",
+              "source": {
+                "ref": "B-02c payload-mount: dimension range chosen by us so it can hold the payload and ballast ranges; not a real product",
+                "locator": null,
+                "url": null,
+                "license": null,
+                "declared_by": null,
+                "declared_at": null
+              },
+              "value": 0.2,
+              "unit": "m"
+            }
+          }
+        ],
+        "snap_points": [
+          {
+            "badge": "default",
+            "source": {
+              "ref": "B-02c: snap frame convention chosen here: the snap frame's +z is the outward normal of the face the point sits on, position on that face; B-04b may refine the compatibility tags",
+              "locator": null,
+              "url": null,
+              "license": null,
+              "declared_by": null,
+              "declared_at": null
+            },
+            "id": "seat",
+            "kind": "payload_seat",
+            "accepts": [
+              "payload_base"
+            ],
+            "position": {
+              "x": {
+                "offset": 0.0,
+                "terms": []
+              },
+              "y": {
+                "offset": 0.0,
+                "terms": []
+              },
+              "z": {
+                "offset": 0.006,
+                "terms": []
+              }
+            },
+            "orientation": {
+              "x": 0.0,
+              "y": 0.0,
+              "z": 0.0,
+              "w": 1.0
+            }
+          },
+          {
+            "badge": "default",
+            "source": {
+              "ref": "B-02c: snap frame convention chosen here: the snap frame's +z is the outward normal of the face the point sits on, position on that face; B-04b may refine the compatibility tags",
+              "locator": null,
+              "url": null,
+              "license": null,
+              "declared_by": null,
+              "declared_at": null
+            },
+            "id": "bottom",
+            "kind": "surface",
+            "accepts": [
+              "surface"
+            ],
+            "position": {
+              "x": {
+                "offset": 0.0,
+                "terms": []
+              },
+              "y": {
+                "offset": 0.0,
+                "terms": []
+              },
+              "z": {
+                "offset": 0.0,
+                "terms": []
+              }
+            },
+            "orientation": {
+              "x": 1.0,
+              "y": 0.0,
+              "z": 0.0,
+              "w": 0.0
+            }
+          },
+          {
+            "badge": "default",
+            "source": {
+              "ref": "B-02c: snap frame convention chosen here: the snap frame's +z is the outward normal of the face the point sits on, position on that face; B-04b may refine the compatibility tags",
+              "locator": null,
+              "url": null,
+              "license": null,
+              "declared_by": null,
+              "declared_at": null
+            },
+            "id": "side-left",
+            "kind": "surface",
+            "accepts": [
+              "surface"
+            ],
+            "position": {
+              "x": {
+                "offset": 0.0,
+                "terms": []
+              },
+              "y": {
+                "offset": 0.004,
+                "terms": [
+                  {
+                    "param": "width",
+                    "factor": 0.5
+                  }
+                ]
+              },
+              "z": {
+                "offset": 0.006,
+                "terms": [
+                  {
+                    "param": "wall_height",
+                    "factor": 0.5
+                  }
+                ]
+              }
+            },
+            "orientation": {
+              "x": -0.7071067811865476,
+              "y": 0.0,
+              "z": 0.0,
+              "w": 0.7071067811865476
+            }
+          },
+          {
+            "badge": "default",
+            "source": {
+              "ref": "B-02c: snap frame convention chosen here: the snap frame's +z is the outward normal of the face the point sits on, position on that face; B-04b may refine the compatibility tags",
+              "locator": null,
+              "url": null,
+              "license": null,
+              "declared_by": null,
+              "declared_at": null
+            },
+            "id": "side-right",
+            "kind": "surface",
+            "accepts": [
+              "surface"
+            ],
+            "position": {
+              "x": {
+                "offset": 0.0,
+                "terms": []
+              },
+              "y": {
+                "offset": -0.004,
+                "terms": [
+                  {
+                    "param": "width",
+                    "factor": -0.5
+                  }
+                ]
+              },
+              "z": {
+                "offset": 0.006,
+                "terms": [
+                  {
+                    "param": "wall_height",
+                    "factor": 0.5
+                  }
+                ]
+              }
+            },
+            "orientation": {
+              "x": 0.7071067811865476,
+              "y": 0.0,
+              "z": 0.0,
+              "w": 0.7071067811865476
+            }
+          }
+        ],
+        "specs": [],
+        "shape": {
+          "badge": "default",
+          "source": {
+            "ref": "B-02c payload-mount: silhouette drawn by us: base plate 0.006 m thick, two side rails and two low end walls 0.004 m thick; thicknesses are our choice, not a real product",
+            "locator": null,
+            "url": null,
+            "license": null,
+            "declared_by": null,
+            "declared_at": null
+          },
+          "components": [
+            {
+              "id": "plate",
+              "primitive": {
+                "kind": "box",
+                "size_x": {
+                  "offset": 0.008,
+                  "terms": [
+                    {
+                      "param": "length",
+                      "factor": 1.0
+                    }
+                  ]
+                },
+                "size_y": {
+                  "offset": 0.008,
+                  "terms": [
+                    {
+                      "param": "width",
+                      "factor": 1.0
+                    }
+                  ]
+                },
+                "size_z": {
+                  "offset": 0.006,
+                  "terms": []
+                }
+              },
+              "operation": "add",
+              "position": {
+                "x": {
+                  "offset": 0.0,
+                  "terms": []
+                },
+                "y": {
+                  "offset": 0.0,
+                  "terms": []
+                },
+                "z": {
+                  "offset": 0.003,
+                  "terms": []
+                }
+              },
+              "orientation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+              }
+            },
+            {
+              "id": "rail_left",
+              "primitive": {
+                "kind": "box",
+                "size_x": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "length",
+                      "factor": 1.0
+                    }
+                  ]
+                },
+                "size_y": {
+                  "offset": 0.004,
+                  "terms": []
+                },
+                "size_z": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "wall_height",
+                      "factor": 1.0
+                    }
+                  ]
+                }
+              },
+              "operation": "add",
+              "position": {
+                "x": {
+                  "offset": 0.0,
+                  "terms": []
+                },
+                "y": {
+                  "offset": 0.002,
+                  "terms": [
+                    {
+                      "param": "width",
+                      "factor": 0.5
+                    }
+                  ]
+                },
+                "z": {
+                  "offset": 0.006,
+                  "terms": [
+                    {
+                      "param": "wall_height",
+                      "factor": 0.5
+                    }
+                  ]
+                }
+              },
+              "orientation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+              }
+            },
+            {
+              "id": "rail_right",
+              "primitive": {
+                "kind": "box",
+                "size_x": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "length",
+                      "factor": 1.0
+                    }
+                  ]
+                },
+                "size_y": {
+                  "offset": 0.004,
+                  "terms": []
+                },
+                "size_z": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "wall_height",
+                      "factor": 1.0
+                    }
+                  ]
+                }
+              },
+              "operation": "add",
+              "position": {
+                "x": {
+                  "offset": 0.0,
+                  "terms": []
+                },
+                "y": {
+                  "offset": -0.002,
+                  "terms": [
+                    {
+                      "param": "width",
+                      "factor": -0.5
+                    }
+                  ]
+                },
+                "z": {
+                  "offset": 0.006,
+                  "terms": [
+                    {
+                      "param": "wall_height",
+                      "factor": 0.5
+                    }
+                  ]
+                }
+              },
+              "orientation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+              }
+            },
+            {
+              "id": "end_front",
+              "primitive": {
+                "kind": "box",
+                "size_x": {
+                  "offset": 0.004,
+                  "terms": []
+                },
+                "size_y": {
+                  "offset": 0.008,
+                  "terms": [
+                    {
+                      "param": "width",
+                      "factor": 1.0
+                    }
+                  ]
+                },
+                "size_z": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "wall_height",
+                      "factor": 0.5
+                    }
+                  ]
+                }
+              },
+              "operation": "add",
+              "position": {
+                "x": {
+                  "offset": 0.002,
+                  "terms": [
+                    {
+                      "param": "length",
+                      "factor": 0.5
+                    }
+                  ]
+                },
+                "y": {
+                  "offset": 0.0,
+                  "terms": []
+                },
+                "z": {
+                  "offset": 0.006,
+                  "terms": [
+                    {
+                      "param": "wall_height",
+                      "factor": 0.25
+                    }
+                  ]
+                }
+              },
+              "orientation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+              }
+            },
+            {
+              "id": "end_back",
+              "primitive": {
+                "kind": "box",
+                "size_x": {
+                  "offset": 0.004,
+                  "terms": []
+                },
+                "size_y": {
+                  "offset": 0.008,
+                  "terms": [
+                    {
+                      "param": "width",
+                      "factor": 1.0
+                    }
+                  ]
+                },
+                "size_z": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "wall_height",
+                      "factor": 0.5
+                    }
+                  ]
+                }
+              },
+              "operation": "add",
+              "position": {
+                "x": {
+                  "offset": -0.002,
+                  "terms": [
+                    {
+                      "param": "length",
+                      "factor": -0.5
+                    }
+                  ]
+                },
+                "y": {
+                  "offset": 0.0,
+                  "terms": []
+                },
+                "z": {
+                  "offset": 0.006,
+                  "terms": [
+                    {
+                      "param": "wall_height",
+                      "factor": 0.25
+                    }
+                  ]
+                }
+              },
+              "orientation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+              }
+            }
+          ]
+        },
+        "mass_parameter": null,
+        "role": null,
+        "curves": []
+      }
+    ],
+    "instances": [
+      {
+        "id": "keel-beam",
+        "part": "beam",
+        "parameters": [
+          {
+            "badge": "declared",
+            "source": {
+              "ref": "B-02 skeleton example: length chosen by the example, not a measured part",
+              "locator": null,
+              "url": null,
+              "license": null,
+              "declared_by": "kinetra-b02-skeleton",
+              "declared_at": "2026-11-12T00:00:00Z"
+            },
+            "value": 0.4,
+            "unit": "m",
+            "name": "length"
+          }
+        ],
+        "material": "al6061-t6",
+        "pose": {
+          "badge": "declared",
+          "source": {
+            "ref": "B-02 skeleton example: placed by solving the joints so that joined snap points meet",
+            "locator": null,
+            "url": null,
+            "license": null,
+            "declared_by": "kinetra-b02-skeleton",
+            "declared_at": "2026-11-12T00:00:00Z"
+          },
+          "position": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.03
+          },
+          "orientation": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0,
+            "w": 1.0
+          }
+        }
+      },
+      {
+        "id": "deck-plate",
+        "part": "plate",
+        "parameters": [
+          {
+            "badge": "declared",
+            "source": {
+              "ref": "B-02 skeleton example: length chosen by the example, not a measured part",
+              "locator": null,
+              "url": null,
+              "license": null,
+              "declared_by": "kinetra-b02-skeleton",
+              "declared_at": "2026-11-12T00:00:00Z"
+            },
+            "value": 0.5,
+            "unit": "m",
+            "name": "length"
+          },
+          {
+            "badge": "declared",
+            "source": {
+              "ref": "B-02 skeleton example: width chosen by the example, not a measured part",
+              "locator": null,
+              "url": null,
+              "license": null,
+              "declared_by": "kinetra-b02-skeleton",
+              "declared_at": "2026-11-12T00:00:00Z"
+            },
+            "value": 0.3,
+            "unit": "m",
+            "name": "width"
+          }
+        ],
+        "material": "al6061-t6",
+        "pose": {
+          "badge": "declared",
+          "source": {
+            "ref": "B-02 skeleton example: placed by solving the joints so that joined snap points meet",
+            "locator": null,
+            "url": null,
+            "license": null,
+            "declared_by": "kinetra-b02-skeleton",
+            "declared_at": "2026-11-12T00:00:00Z"
+          },
+          "position": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0625
+          },
+          "orientation": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0,
+            "w": 1.0
+          }
+        }
+      },
+      {
+        "id": "body-shell",
+        "part": "shell",
+        "parameters": [],
+        "material": "al6061-t6",
+        "pose": {
+          "badge": "declared",
+          "source": {
+            "ref": "B-02 skeleton example: placed by solving the joints so that joined snap points meet",
+            "locator": null,
+            "url": null,
+            "license": null,
+            "declared_by": "kinetra-b02-skeleton",
+            "declared_at": "2026-11-12T00:00:00Z"
+          },
+          "position": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.125
+          },
+          "orientation": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0,
+            "w": 1.0
+          }
+        }
+      },
+      {
+        "id": "payload-main",
+        "part": "payload",
+        "parameters": [
+          {
+            "badge": "declared",
+            "source": {
+              "ref": "B-02 skeleton example: mass chosen by the example, not a measured part",
+              "locator": null,
+              "url": null,
+              "license": null,
+              "declared_by": "kinetra-b02-skeleton",
+              "declared_at": "2026-11-12T00:00:00Z"
+            },
+            "value": 3.0,
+            "unit": "kg",
+            "name": "mass"
+          }
+        ],
+        "material": null,
+        "pose": {
+          "badge": "declared",
+          "source": {
+            "ref": "B-02 skeleton example: placed by solving the joints so that joined snap points meet",
+            "locator": null,
+            "url": null,
+            "license": null,
+            "declared_by": "kinetra-b02-skeleton",
+            "declared_at": "2026-11-12T00:00:00Z"
+          },
+          "position": {
+            "x": -0.128,
+            "y": 0.0,
+            "z": 0.069
+          },
+          "orientation": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0,
+            "w": 1.0
+          }
+        }
+      },
+      {
+        "id": "payload-mount",
+        "part": "payload-mount",
+        "parameters": [],
+        "material": "al6061-t6",
+        "pose": {
+          "badge": "declared",
+          "source": {
+            "ref": "B-02 skeleton example: placed by solving the joints so that joined snap points meet",
+            "locator": null,
+            "url": null,
+            "license": null,
+            "declared_by": "kinetra-b02-skeleton",
+            "declared_at": "2026-11-12T00:00:00Z"
+          },
+          "position": {
+            "x": -0.128,
+            "y": 0.0,
+            "z": 0.14900000000000002
+          },
+          "orientation": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0,
+            "w": 1.0
+          }
+        }
+      },
+      {
+        "id": "payload-sensor",
+        "part": "payload",
+        "parameters": [
+          {
+            "badge": "declared",
+            "source": {
+              "ref": "B-02 skeleton example: mass chosen by the example, not a measured part",
+              "locator": null,
+              "url": null,
+              "license": null,
+              "declared_by": "kinetra-b02-skeleton",
+              "declared_at": "2026-11-12T00:00:00Z"
+            },
+            "value": 0.75,
+            "unit": "kg",
+            "name": "mass"
+          },
+          {
+            "badge": "declared",
+            "source": {
+              "ref": "B-02 skeleton example: length chosen by the example, not a measured part",
+              "locator": null,
+              "url": null,
+              "license": null,
+              "declared_by": "kinetra-b02-skeleton",
+              "declared_at": "2026-11-12T00:00:00Z"
+            },
+            "value": 0.1,
+            "unit": "m",
+            "name": "length"
+          },
+          {
+            "badge": "declared",
+            "source": {
+              "ref": "B-02 skeleton example: width chosen by the example, not a measured part",
+              "locator": null,
+              "url": null,
+              "license": null,
+              "declared_by": "kinetra-b02-skeleton",
+              "declared_at": "2026-11-12T00:00:00Z"
+            },
+            "value": 0.07,
+            "unit": "m",
+            "name": "width"
+          },
+          {
+            "badge": "declared",
+            "source": {
+              "ref": "B-02 skeleton example: height chosen by the example, not a measured part",
+              "locator": null,
+              "url": null,
+              "license": null,
+              "declared_by": "kinetra-b02-skeleton",
+              "declared_at": "2026-11-12T00:00:00Z"
+            },
+            "value": 0.05,
+            "unit": "m",
+            "name": "height"
+          }
+        ],
+        "material": null,
+        "pose": {
+          "badge": "declared",
+          "source": {
+            "ref": "B-02 skeleton example: placed by solving the joints so that joined snap points meet",
+            "locator": null,
+            "url": null,
+            "license": null,
+            "declared_by": "kinetra-b02-skeleton",
+            "declared_at": "2026-11-12T00:00:00Z"
+          },
+          "position": {
+            "x": -0.128,
+            "y": 0.0,
+            "z": 0.15500000000000003
+          },
+          "orientation": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0,
+            "w": 1.0
+          }
+        }
+      },
+      {
+        "id": "boom-beam",
+        "part": "beam",
+        "parameters": [
+          {
+            "badge": "declared",
+            "source": {
+              "ref": "B-02 skeleton example: length chosen by the example, not a measured part",
+              "locator": null,
+              "url": null,
+              "license": null,
+              "declared_by": "kinetra-b02-skeleton",
+              "declared_at": "2026-11-12T00:00:00Z"
+            },
+            "value": 0.3,
+            "unit": "m",
+            "name": "length"
+          }
+        ],
+        "material": "al6061-t6",
+        "pose": {
+          "badge": "declared",
+          "source": {
+            "ref": "B-02 skeleton example: placed by solving the joints so that joined snap points meet",
+            "locator": null,
+            "url": null,
+            "license": null,
+            "declared_by": "kinetra-b02-skeleton",
+            "declared_at": "2026-11-12T00:00:00Z"
+          },
+          "position": {
+            "x": 0.4,
+            "y": 0.0,
+            "z": 0.0625
+          },
+          "orientation": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0,
+            "w": 1.0
+          }
+        }
+      }
+    ],
+    "joints": [
+      {
+        "id": "keel-deck",
+        "kind": "fixed",
+        "a": {
+          "instance": "keel-beam",
+          "snap_point": "top"
+        },
+        "b": {
+          "instance": "deck-plate",
+          "snap_point": "bottom"
+        },
+        "axis": null,
+        "limits": null,
+        "break_threshold": null
+      },
+      {
+        "id": "deck-shell",
+        "kind": "fixed",
+        "a": {
+          "instance": "deck-plate",
+          "snap_point": "top"
+        },
+        "b": {
+          "instance": "body-shell",
+          "snap_point": "underside"
+        },
+        "axis": null,
+        "limits": null,
+        "break_threshold": null
+      },
+      {
+        "id": "shell-payload",
+        "kind": "fixed",
+        "a": {
+          "instance": "body-shell",
+          "snap_point": "bed"
+        },
+        "b": {
+          "instance": "payload-main",
+          "snap_point": "base"
+        },
+        "axis": null,
+        "limits": null,
+        "break_threshold": null
+      },
+      {
+        "id": "payload-mount",
+        "kind": "fixed",
+        "a": {
+          "instance": "payload-main",
+          "snap_point": "top"
+        },
+        "b": {
+          "instance": "payload-mount",
+          "snap_point": "bottom"
+        },
+        "axis": null,
+        "limits": null,
+        "break_threshold": null
+      },
+      {
+        "id": "mount-sensor",
+        "kind": "fixed",
+        "a": {
+          "instance": "payload-mount",
+          "snap_point": "seat"
+        },
+        "b": {
+          "instance": "payload-sensor",
+          "snap_point": "base"
+        },
+        "axis": null,
+        "limits": null,
+        "break_threshold": null
+      },
+      {
+        "id": "deck-boom",
+        "kind": "fixed",
+        "a": {
+          "instance": "deck-plate",
+          "snap_point": "edge-xp"
+        },
+        "b": {
+          "instance": "boom-beam",
+          "snap_point": "end-a"
+        },
+        "axis": null,
+        "limits": null,
+        "break_threshold": null
+      }
+    ],
+    "actuators": [],
+    "schedule": {
+      "entries": []
+    }
+  },
+  "world": {
+    "planet": "earth",
+    "terrain_props": []
+  },
+  "assumptions": {
+    "assumptions": []
+  }
+}

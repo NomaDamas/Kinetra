@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Unset a parameter of an instance: it takes the part's default again.",
+  "properties": {
+    "type": {
+      "const": "clear_parameter",
+      "title": "Type",
+      "type": "string"
+    },
+    "instance": {
+      "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+      "title": "Instance",
+      "type": "string"
+    },
+    "name": {
+      "pattern": "^[a-z][a-z0-9_]{0,63}$",
+      "title": "Name",
+      "type": "string"
+    }
+  },
+  "required": [
+    "type",
+    "instance",
+    "name"
+  ],
+  "title": "ClearParameter",
+  "type": "object"
+}

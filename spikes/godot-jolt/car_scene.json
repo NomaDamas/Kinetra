@@ -1,0 +1,104 @@
+{
+ "dt": 0.002,
+ "gravity": 9.80665,
+ "friction": 1.0,
+ "restitution": 0.0,
+ "chassis": {
+  "half_extents": [
+   0.5,
+   0.25,
+   0.1
+  ],
+  "mass": 10.0
+ },
+ "wheel": {
+  "radius": 0.15,
+  "half_width": 0.05,
+  "mass": 1.0,
+  "positions": {
+   "front_left": [
+    0.35,
+    0.3,
+    -0.05
+   ],
+   "front_right": [
+    0.35,
+    -0.3,
+    -0.05
+   ],
+   "rear_left": [
+    -0.35,
+    0.3,
+    -0.05
+   ],
+   "rear_right": [
+    -0.35,
+    -0.3,
+    -0.05
+   ]
+  },
+  "drive_wheels": [
+   "rear_left",
+   "rear_right"
+  ],
+  "axis_in_chassis": [
+   0,
+   1,
+   0
+  ]
+ },
+ "scenes": {
+  "slope": {
+   "steps": 2000,
+   "ground_quat_wxyz": [
+    0.9961946980917455,
+    -0.0,
+    -0.08715574274765817,
+    -0.0
+   ],
+   "chassis_pos": [
+    -1.0196242126344277,
+    0.0,
+    0.0238057768120174
+   ],
+   "chassis_quat_wxyz": [
+    0.9961946980917455,
+    -0.0,
+    -0.08715574274765817,
+    -0.0
+   ],
+   "chassis_linvel": [
+    0,
+    0,
+    0
+   ],
+   "drive_torque_per_wheel": 3.0
+  },
+  "drop": {
+   "steps": 1500,
+   "ground_quat_wxyz": [
+    1,
+    0,
+    0,
+    0
+   ],
+   "chassis_pos": [
+    0,
+    0,
+    1.2
+   ],
+   "chassis_quat_wxyz": [
+    0.9987058727081077,
+    0.026152033653420895,
+    0.043604440090704404,
+    -0.0011418224482834958
+   ],
+   "chassis_linvel": [
+    1.0,
+    0,
+    0
+   ],
+   "drive_torque_per_wheel": 0.0
+  }
+ }
+}

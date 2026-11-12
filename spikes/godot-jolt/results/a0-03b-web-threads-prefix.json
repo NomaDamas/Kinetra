@@ -1,0 +1,81 @@
+{
+ "name": "threads-prefix",
+ "cross_origin_isolated_headers": true,
+ "files": [
+  {
+   "file": "index.audio.position.worklet.js",
+   "bytes": 2973,
+   "gzip_bytes": 1173,
+   "brotli_bytes": 895
+  },
+  {
+   "file": "index.audio.worklet.js",
+   "bytes": 7298,
+   "gzip_bytes": 2202,
+   "brotli_bytes": 1820
+  },
+  {
+   "file": "index.html",
+   "bytes": 5305,
+   "gzip_bytes": 2125,
+   "brotli_bytes": 1630
+  },
+  {
+   "file": "index.js",
+   "bytes": 314653,
+   "gzip_bytes": 75003,
+   "brotli_bytes": 63750
+  },
+  {
+   "file": "index.pck",
+   "bytes": 3944,
+   "gzip_bytes": 3017,
+   "brotli_bytes": 2817
+  },
+  {
+   "file": "index.png",
+   "bytes": 21443,
+   "gzip_bytes": 19474,
+   "brotli_bytes": 19366
+  },
+  {
+   "file": "index.wasm",
+   "bytes": 38820072,
+   "gzip_bytes": 10222942,
+   "brotli_bytes": 7082995
+  }
+ ],
+ "total_bytes": 39175688,
+ "total_gzip_bytes": 10325936,
+ "total_brotli_bytes": 7173273,
+ "browser": {
+  "name": "chromium-headless-shell (playwright-core 1.65.0)",
+  "version": "158.0.8127.18"
+ },
+ "load_event_ms": 58,
+ "cross_origin_isolated": true,
+ "shared_array_buffer": true,
+ "ran": false,
+ "ms_to_result": 120069,
+ "page_result": null,
+ "console": [
+  "Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org",
+  "OpenGL API OpenGL ES 3.0 (WebGL 2.0 (OpenGL ES 3.0 Chromium)) - Compatibility - Using Device: WebKit - WebKit WebGL",
+  "Build configuration: Emscripten 4.0.20, multi-threaded, no GDExtension support.",
+  "WARNING: 'res://main.tscn': In external resource #0, invalid UID: 'uid://bkrcbtqr5n6p5' - using text path instead: 'res://main.gd'.",
+  "   at: open (core/io/resource_format_binary.cpp:1028)",
+  "KINETRA ready physics_engine=Jolt Physics version=4.7.2-stable (official) ready_ms=539",
+  "[.WebGL-0x13400858e00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+  "[.WebGL-0x13400858e00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+  "[.WebGL-0x13400858e00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+  "[.WebGL-0x13400858e00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels (this message will no longer repeat)",
+  "PAGEERROR null function"
+ ],
+ "engine_clock_ready_ms": null,
+ "ready_since_navigation_ms_in_page": null,
+ "ready_since_navigation_ms_harness": 760,
+ "navigation_timing": {
+  "dom_content_loaded_ms": 54,
+  "load_event_ms": 54
+ }
+}
