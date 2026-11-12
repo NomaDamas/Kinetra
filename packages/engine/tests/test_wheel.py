@@ -201,12 +201,26 @@ def test_wheel_side_discs_are_inside_the_tread_radius_and_beside_the_tread(wheel
 
 
 def test_wheel_hub_snap_point_is_on_the_axle_at_the_centre_of_mass_and_points_along_it(wheel):
-    (hub,) = wheel.snap_points
+    hub = next(s for s in wheel.snap_points if s.id == "hub")
     values = {"diameter": 0.2, "width": 0.1}
     assert hub.id == "hub" and hub.kind == "shaft" and {"shaft", "axle_mount"} <= set(hub.accepts)
     assert hub.position.evaluate(values) == (0.0, 0.0, 0.0)  # independent of the dimensions
     assert rotate(quat(hub.orientation), (0.0, 0.0, 1.0)) == pytest.approx((0.0, 1.0, 0.0), abs=1e-12)  # snap +Z = the axle = part +y
     assert mass_properties(wheel, POM, params(**values)).center_of_mass.y == pytest.approx(0.0, abs=1e-12)
+
+
+def test_wheel_mount_snap_point_is_on_the_inner_face_of_the_inner_hub_and_points_out_of_it(wheel):
+    # #541: a body's axle point is on the body's side (shell `axle-*` at y = +-W/2); the wheel meets it with this face so it stands beside
+    # the body. The inner hub boss is centred at y = -0.76 width and is 0.2 width long, so its inner face is at y = -0.86 width
+    assert sorted(s.id for s in wheel.snap_points) == ["hub", "mount"]
+    mount = next(s for s in wheel.snap_points if s.id == "mount")
+    assert mount.kind == "shaft" and mount.accepts == ("axle_mount",)
+    for values in ({"diameter": 0.1, "width": 0.04}, {"diameter": 0.2, "width": 0.1}):
+        proxy = collision_proxy(wheel, params(**values))
+        innermost = min(g.center[1] - next(d.value for d in g.dimensions if d.name == "length") / 2 for g in proxy.geoms)
+        assert mount.position.evaluate(values) == pytest.approx((0.0, innermost, 0.0), abs=1e-15)
+        assert innermost == pytest.approx(-0.86 * values["width"], abs=1e-15)
+    assert rotate(quat(mount.orientation), (0.0, 0.0, 1.0)) == pytest.approx((0.0, -1.0, 0.0), abs=1e-12)  # snap +Z out of the face = part -y
 
 
 # ---- friction material ---------------------------------------------------------------------------------------------------

@@ -72,7 +72,7 @@
 | `axle-fl`, `axle-fr` | `axle_mount` | `shaft` | $(0.32L,\ \pm W/2,\ -3H/8+3t/4)$ | $\pm y$ |
 | `axle-rl`, `axle-rr` | `axle_mount` | `shaft` | $(-0.32L,\ \pm W/2,\ -3H/8+3t/4)$ | $\pm y$ |
 
-- `axle-*`의 $z$는 바퀴 홈의 한가운데(바닥 윗면과 홈 위 벽 아랫면의 중간)이고 $x=\pm0.32L$은 홈의 한가운데다. `kind`와 `accepts`(`axle_mount`가 `shaft`를 받음)는 `schemas/examples/DesignSpec.four-wheel-car.json`의 섀시와 같다(`test_shell_snap_kinds_and_tags_agree_with_the_four_wheel_car_example`).
+- `axle-*`의 $z$는 바퀴 홈의 한가운데(바닥 윗면과 홈 위 벽 아랫면의 중간)이고 $x=\pm0.32L$은 홈의 한가운데다. `kind`와 `accepts`(`axle_mount`가 `shaft`를 받음)는 `schemas/examples/DesignSpec.four-wheel-car.json`의 섀시와 같다(`test_shell_snap_kinds_and_tags_agree_with_the_four_wheel_car_example`). 라이브러리 바퀴는 중심(`hub`)이 아니라 안쪽 허브 끝면(`mount`, #541)으로 이 자리에 대야 몸체 밖에 선다. 축이 쉘 밑면에서 $H/8+3t/4$(기본 0.018 m) 위라 기본 바퀴(반지름 0.05 m)가 쉘을 들어 올리므로 바퀴를 먼저 지면에 놓고 쉘을 거기에 단다([`agent-edit-tools.md`](agent-edit-tools.md) "라이브러리만으로 짓는 조립 두 가지").
 - `bed`는 B-02c 탑재체의 `base`(`payload_base`)가 받는 `payload_seat`이다. `nose`와 `tail`은 B-02a의 `end`·`edge` 태그를 받는다(빔 끝, 판 변이 붙는 자리).
 - 스냅 위치가 충돌 프록시의 바깥 끝에 있는지 테스트가 본다(`underside`, `roof`, `nose`, `tail`, `axle-*`의 $y$). `bed`는 바닥 상자의 윗면 위에 있고 어느 상자의 속에도 있지 않다.
 

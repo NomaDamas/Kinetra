@@ -25,10 +25,10 @@
 
 | id | 종류 | 받는 태그 | 위치 | 법선 |
 |---|---|---|---|---|
-| `end-a` | `end` | `end`, `edge` | $(-L/2,0,0)$ | $-x$ |
-| `end-b` | `end` | `end`, `edge` | $(L/2,0,0)$ | $+x$ |
-| `top` | `face` | `face` | $(0,0,h/2)$ | $+z$ |
-| `bottom` | `face` | `face` | $(0,0,-h/2)$ | $-z$ |
+| `end-a` | `end` | `end`, `edge`, `face` | $(-L/2,0,0)$ | $-x$ |
+| `end-b` | `end` | `end`, `edge`, `face` | $(L/2,0,0)$ | $+x$ |
+| `top` | `face` | `face`, `end` | $(0,0,h/2)$ | $+z$ |
+| `bottom` | `face` | `face`, `end` | $(0,0,-h/2)$ | $-z$ |
 
 ## `plate` (가장자리 테두리가 있는 판)
 
@@ -42,7 +42,7 @@
 
 부피 $V = LWt + 2\cdot L\,t\,(2t) + 2\cdot t(W-2t)(2t)$. 기본값에서 $3.49\times10^{-4}$ m³(슬래브 $3.0\times10^{-4}$ + 테두리 $4.9\times10^{-5}$), 알루미늄이면 0.9423 kg. 테두리가 위로만 얹혀서 무게중심 z는 0이 아니라 $4.9\times10^{-5}\cdot0.0075/3.49\times10^{-4}\approx1.05$ mm다. 범위 전체에서 $W-2t\ge0.05-0.04>0$이다.
 
-스냅 포인트 여섯: `top`(슬래브 윗면 $(0,0,t/2)$, 법선 +z. 테두리 안쪽 바닥이다), `bottom`(아랫면, 법선 −z), `edge-xp`, `edge-xn`, `edge-yp`, `edge-yn`(각 변의 중심 높이 0, 법선은 그 변의 바깥). 종류는 `face`, `edge`이고 `edge`는 `end`, `edge`를 받는다.
+스냅 포인트 여섯: `top`(슬래브 윗면 $(0,0,t/2)$, 법선 +z. 테두리 안쪽 바닥이다), `bottom`(아랫면, 법선 −z), `edge-xp`, `edge-xn`, `edge-yp`, `edge-yn`(각 변의 중심 높이 0, 법선은 그 변의 바깥). 종류는 `face`, `edge`이고 `face`는 `face`, `end`를, `edge`는 `end`, `edge`를 받는다.
 
 ## 근사와 한계 (숨기지 않는다)
 
@@ -51,4 +51,5 @@
 - 판에 볼트 구멍이 없다. 구멍 난 판은 #496(시각)과 #484/B-01f(질량)를 기다린다.
 - 단면은 일반 I형이다. 어느 규격 단면(W, IPE 등)의 치수·단면 성질을 재현하지 않는다.
 - 스냅 `kind`와 `accepts` 태그(`face`, `end`, `edge`)는 B-04b가 호환 규칙을 정하기 전의 첫 제안이다. B-04b가 바꾸면 이 두 파일의 태그만 고치면 된다.
+- (#541) 빔 끝(`end`)과 빔·판의 면(`face`)은 서로를 받는다: 기둥은 빔 끝을 판 윗면에 맞대어 세운다(`opposed`, [`agent-edit-tools.md`](agent-edit-tools.md) "라이브러리만으로 짓는 조립 두 가지"). 검증기는 두 방향을 모두 요구하므로(`b.kind in a.accepts`, `a.kind in b.accepts`) 양쪽 태그를 함께 더했다(`test_beam_ends_and_beam_or_plate_faces_accept_each_other`).
 - 고정 glb는 알루미늄(`al6061-t6`)의 카탈로그 외형이다. 보이는 모습이 맞는지는 CI `screenshots`의 `gltf-check/parts-gltf.png`가 증거다.

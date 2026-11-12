@@ -261,6 +261,16 @@ def test_plate_snap_points_follow_the_dimensions_and_face_outwards(plate):
             assert rotate(s.orientation.model_dump(), (0.0, 0.0, 1.0)) == pytest.approx(normal, abs=1e-12), s.id
 
 
+def test_beam_ends_and_beam_or_plate_faces_accept_each_other(beam, plate):
+    # #541: a post is a beam end butted onto a face, so `end` and `face` accept each other (the validator wants both directions)
+    tags = {(p.id, s.id): (s.kind, s.accepts) for p in (beam, plate) for s in p.snap_points}
+    assert tags[("beam", "end-a")] == tags[("beam", "end-b")] == ("end", ("end", "edge", "face"))
+    for face in (("beam", "top"), ("beam", "bottom"), ("plate", "top"), ("plate", "bottom")):
+        assert tags[face] == ("face", ("face", "end")), face
+    for edge in ("edge-xp", "edge-xn", "edge-yp", "edge-yn"):
+        assert tags[("plate", edge)] == ("edge", ("end", "edge")), edge
+
+
 def test_plate_edge_snap_points_lie_on_the_extremes_of_the_collision_proxy(plate):
     values = {"length": 0.7, "width": 0.4, "thickness": 0.01}
     proxy = collision_proxy(plate, params(**values))
