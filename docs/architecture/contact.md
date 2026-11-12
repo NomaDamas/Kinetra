@@ -3,6 +3,7 @@
 - 상태: 구현됨. 코드는 `packages/engine/src/kinetra_engine/compiler/contact.py`(`contact_friction`, `ContactFriction`, `GeomFriction`, `CONTACT_PARAMETERS`, `contact_labels`), MJCF에 쓰는 곳은 `mjcf.py`(`to_mjcf(tree, ..., ground_friction=None)`), 행성 지면 마찰은 `planet.py`(`PlanetPhysics.ground_friction`). 테스트 `packages/engine/tests/test_contact_friction.py`(`uv run pytest packages/engine -q -k contact_friction`). 결정론적이라 시드가 없다(난수를 쓰지 않는다).
 - 근거: 이슈 #545, `materials.md`(`Material.friction`, 마찰 계수 절), `parts-wheel.md`(트레드 마찰 사양), `bodies.md`(지면 마찰 분포와 "tan φ는 상한"), `body-tree.md`, MuJoCo 문서 [XML reference](https://mujoco.readthedocs.io/en/stable/XMLreference.html)(`geom/friction`·`priority`·`condim`, `option/cone`·`impratio`)와 [Modeling: Contact parameters, Slow slippage](https://mujoco.readthedocs.io/en/stable/modeling.html), 2026-11-12에 읽음. MuJoCo는 4.0.0(`docs/decisions/engine.md`).
 - 범위 밖: 지면 마찰의 분포에서 표본을 뽑는 일, 몬테카를로, 판정 가정표의 행성 행 합성(W-03c). 두 재료 쌍별 마찰표(재료 DB, S2). 타이어 변형·미끄럼비 곡선.
+- 지형 소품(W-05, [`terrain-props.md`](terrain-props.md)): 경사로·턱 geom도 같은 규칙을 탄다. 재료가 있으면 `Material.friction`, 없으면(`material` None) 행성 지면이라 지면 평면과 같은 계수(공칭 또는 `ground_friction` 표본)다. `ContactFriction.props`(`PropFriction`)가 소품마다 출처(`ground`/`material`)와 계수를 갖고, priority 순위에 소품 계수도 들어간다.
 - 실행(X-02a `PreviewRun`): `run_started.model_labels`가 `model_labels(tree)`(`proxy_labels`, `contact_labels`, W-03b의 `drag_labels` 순)를 싣는다. 컴파일된 모델에 지면이 있으므로 "미적용: 지면 없음" 라벨은 나오지 않는다(`test_simulate_stream`이 둘 다 확인).
 
 ## 쓰는 법
@@ -33,7 +34,7 @@ labels = contact_labels(friction)                        # 근사 라벨(ModelLa
 
 ## 두 면의 합성: 작은 쪽(min)
 
-접촉하는 두 면의 계수가 $\mu_1, \mu_2$이면 접촉의 계수는 $\min(\mu_1, \mu_2)$이다. 부품끼리도, 부품과 지면도 같다.
+접촉하는 두 면의 계수가 $\mu_1, \mu_2$이면 접촉의 계수는 $\min(\mu_1, \mu_2)$이다. 부품끼리도, 부품과 지면도, 부품과 지형 소품도 같다.
 
 - **MuJoCo의 기본은 max다.** 두 geom의 `priority`가 같으면 원소별 최댓값, 다르면 높은 priority geom의 값을 쓴다(Modeling, "Contact parameters"). 컴파일러는 모델의 서로 다른 계수(지면 포함)를 큰 것부터 줄 세워 그 순번을 `priority`로 준다. 작은 계수일수록 priority가 높아 접촉마다 작은 쪽이 이긴다. 계수가 같으면 priority도 같고 max = min이다. 테스트가 모든 geom 쌍에 대해 MuJoCo 규칙으로 고른 값이 min임을, 그리고 실행 중 `data.contact[].friction`이 정확히 min임을 확인한다.
 - **왜 min인가.** (1) 지면 값 tan φ는 흙 대 흙의 내부 마찰각이고 부품이 흙 위를 미끄러질 때의 계면 값의 **상한**이다(`bodies.md`: 계면 δ < φ). max는 0.21인 POM 부품에게 흙의 0.56을 줘 이 상한을 무시한다. (2) 판정이 묻는 것은 주로 그립(오르막, 제동)이고 작은 계수가 그쪽의 보수적인 값이다. (3) 재료 값은 "대 강철"의 쌍 값이다(`materials.md`). 두 재료가 만나는 실제 값은 표에 없고 어느 규칙도 물리적으로 맞다고 말할 수 없다. 그래서 규칙을 라벨로 드러낸다.

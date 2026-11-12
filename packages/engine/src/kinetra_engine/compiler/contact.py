@@ -17,8 +17,11 @@ one of a tread (1.0) is not used (a label says so).
 **Ground.** The ground's coefficient is the planet's `ground_friction` (`data/bodies`, W-01, carried on `tree.planet`): its nominal
 by default, or a value a Monte Carlo sample gives (W-03c), which must lie inside the distribution's support.
 
+**Terrain props (W-05, `terrain.py`).** A ramp or step with a `material` has `Material.friction`; one without (`material` None) is
+the planet's ground (`world.py`) and has the ground's coefficient, the same value the ground plane has (nominal or sample).
+
 **Combination: the smaller of the two.** MuJoCo takes the larger (`max`) of two geoms of equal `priority` and the parameters of the
-higher-priority geom otherwise. The compiler ranks every distinct coefficient (ground included) and gives the smaller coefficient the
+higher-priority geom otherwise. The compiler ranks every distinct coefficient (ground and props included) and gives the smaller coefficient the
 higher priority, so every contact pair uses `min(mu_1, mu_2)`. Why `min`, not `max`: the ground's tan(phi) is an upper bound for a
 part sliding on soil (`bodies.md`: the interface angle delta is below phi), which `max` would break by giving a 0.21 POM part on soil
 the soil's 0.56; and a smaller coefficient is the conservative side for a vehicle's grip, the verdict this feeds.
@@ -123,18 +126,31 @@ class GeomFriction:
 
 
 @dataclass(frozen=True)
+class PropFriction:
+    """The friction of one terrain prop's geom (`terrain.py`): `origin` `ground` (no material: the planet's ground, `mu` the
+    ground's coefficient of this model) or `material` (`quantity` its `Material.friction`, with badge and source)."""
+
+    prop: str
+    geom: str
+    origin: Literal["ground", "material"]
+    mu: float
+    quantity: Quantity | None
+
+
+@dataclass(frozen=True)
 class ContactFriction:
-    """Every geom's friction (tree order) and the ground's. `ground_assumption` is the planet's `ground_friction` (its nominal,
-    distribution, badge and source); `ground` the coefficient this model uses."""
+    """Every geom's friction (tree order), the ground's and the terrain props' (`tree.terrain` order). `ground_assumption` is the
+    planet's `ground_friction` (its nominal, distribution, badge and source); `ground` the coefficient this model uses."""
 
     geoms: tuple[GeomFriction, ...]
     ground: float
     ground_assumption: Assumption
+    props: tuple[PropFriction, ...]
 
     @cached_property
     def levels(self) -> tuple[float, ...]:
-        """The distinct coefficients of the model (ground included), largest first."""
-        return tuple(sorted({g.mu for g in self.geoms} | {self.ground}, reverse=True))
+        """The distinct coefficients of the model (ground and props included), largest first."""
+        return tuple(sorted({g.mu for g in self.geoms} | {self.ground} | {p.mu for p in self.props}, reverse=True))
 
     def priority(self, mu: float) -> int:
         """MuJoCo `priority` of a geom with coefficient `mu`: its index in `levels` (the number of distinct coefficients above it),
@@ -157,7 +173,7 @@ def _in_support(value: float, a: Assumption) -> bool:
 
 
 def contact_friction(tree: BodyTree, ground_friction: float | None = None) -> ContactFriction:
-    """The friction of every geom of `tree` and of the ground. `ground_friction` is the ground's coefficient (a Monte Carlo sample,
+    """The friction of every geom of `tree`, of the ground and of the terrain props. `ground_friction` is the ground's coefficient (a Monte Carlo sample,
     W-03c); `None` is the planet's nominal. Raises `ValueError` for a value outside the planet's distribution: a sample comes from
     the planet's data, never from the caller's choice (rule C4)."""
     assumption = tree.planet.ground_friction
@@ -183,7 +199,13 @@ def contact_friction(tree: BodyTree, ground_friction: float | None = None) -> Co
     geoms = tuple(
         GeomFriction(g.name, g.instance, part_of[g.instance], *per_instance[g.instance]) for body in tree.bodies for g in body.geoms
     )
-    return ContactFriction(geoms, ground, assumption)
+    props = tuple(
+        PropFriction(t.prop, t.name, "ground", ground, None)
+        if t.material is None
+        else PropFriction(t.prop, t.name, "material", materials[t.material].friction.value, materials[t.material].friction)
+        for t in tree.terrain
+    )
+    return ContactFriction(geoms, ground, assumption, props)
 
 
 FRICTION_RULE_LABEL = "근사: 접촉 마찰은 두 면 중 작은 계수, 정지·운동 구분 없이 운동 마찰 계수 하나"

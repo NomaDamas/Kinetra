@@ -32,6 +32,10 @@ distribution). Every geom has `friction="mu"` (its sliding coefficient; torsiona
 condim 3) and `priority`, ranked so the smaller coefficient of two touching geoms wins (`min`). `<option cone="elliptic">` and a
 `<default><geom condim solref solimp/>` write the contact parameters of `CONTACT_PARAMETERS`.
 
+Terrain props (W-05, `terrain.py`): after the ground, one static geom per prop of `tree.terrain` (id order), named
+`__kinetra_prop_<id>`: a step is a `box`, a ramp a `mesh` of the same name declared in `<asset>` by its six vertices. Each has
+its friction and priority like any geom (`contact.py`: the material's, or the ground's for a prop without one).
+
 With `drives` (`compile_drives`, X-01b) a slider that carries a spring-damper gets `stiffness` and `damping` (the spring's force is 0
 at coordinate 0, `springref` 0); a hinge a motor drives gets the motor's back-EMF as `damping` (`T0/omega0`, #546) and each motor
 actuator is a `<motor joint gear="1" ctrllimited="false">` whose `ctrl` [N*m] `DriveRuntime` writes every step (`drives.py`;
@@ -47,6 +51,7 @@ from kinetra_core import JointKind
 from .bodytree import Body, BodyGeom, BodyTree
 from .contact import CONTACT_PARAMETERS, GROUND_GEOM, ContactFriction, contact_friction
 from .drives import Drives
+from .terrain import TerrainGeom
 
 ROOT_JOINT_PREFIX = "__kinetra_root_"
 """The root's free joint is named `__kinetra_root_<body id>`. A project id cannot start with `_` (`ID_PATTERN`), so this name
@@ -69,6 +74,14 @@ def _geom(g: BodyGeom, pad: str, contact: ContactFriction, mu: float) -> str:
     return (
         f"{pad}<geom {_attr('name', g.name)} type={quoteattr(g.type)} size={quoteattr(_n(g.size))} pos={quoteattr(_n(g.pos))} "
         f"quat={quoteattr(_n(g.quat))} {_friction(contact, mu)}/>"
+    )
+
+
+def _prop(t: TerrainGeom, contact: ContactFriction, mu: float) -> str:
+    shape = f"mesh={quoteattr(t.name)}" if t.type == "mesh" else f"size={quoteattr(_n(t.size))}"
+    return (
+        f"    <geom {_attr('name', t.name)} type={quoteattr(t.type)} {shape} pos={quoteattr(_n(t.pos))} quat={quoteattr(_n(t.quat))} "
+        f"{_friction(contact, mu)}/>"
     )
 
 
@@ -111,9 +124,17 @@ def to_mjcf(tree: BodyTree, name: str = "kinetra", drives: Drives | None = None,
         "  <default>",
         f"    <geom condim={quoteattr(params['condim'])} solref={quoteattr(params['solref'])} solimp={quoteattr(params['solimp'])}/>",
         "  </default>",
+    ]
+    meshes = [t for t in tree.terrain if t.type == "mesh"]
+    if meshes:
+        lines.append("  <asset>")
+        lines.extend(f"    <mesh {_attr('name', t.name)} vertex={quoteattr(_n(c for v in t.vertices for c in v))}/>" for t in meshes)
+        lines.append("  </asset>")
+    lines += [
         "  <worldbody>",
         f"    <geom {_attr('name', GROUND_GEOM)} type=\"plane\" size=\"0 0 1\" {_friction(contact, contact.ground)}/>",
     ]
+    lines.extend(_prop(t, contact, pf.mu) for t, pf in zip(tree.terrain, contact.props, strict=True))
     mu = {g.geom: g.mu for g in contact.geoms}
     for root in tree.roots:
         lines.extend(_body(tree, root, 2, drives, contact, mu))

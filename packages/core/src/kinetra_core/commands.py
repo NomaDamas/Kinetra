@@ -30,7 +30,7 @@ Shape rules (read by C-02b, C-02c, C-03, C-05a, XR-02):
   (`in_use`), because the user never deleted the users. A definition that is in use cannot be removed by any
   command; it can be replaced in place (next point).
 - Lists keep order (`project-model.md`: order is part of the value). `ReplacePartDef`, `ReplaceMaterialDef`,
-  `ReplaceJoint`, `ReplaceControlEntry`, `SetAssumption` change the item with the same id in place: position and
+  `ReplaceJoint`, `ReplaceControlEntry`, `ReplaceTerrainProp`, `SetAssumption` change the item with the same id in place: position and
   everything that references the id stay. The whole project is validated again, so a replacement that breaks a
   user (a part without a parameter an instance sets, a joint that is fixed now under a motor, an instance
   parameter outside the new range) is rejected with the validator's sentence and the ref of what broke.
@@ -57,7 +57,7 @@ Shape rules (read by C-02b, C-02c, C-03, C-05a, XR-02):
   review of #497). Tracked in its own issue; it does not change the command shapes.
 
 Not here: the issuer and history (C-02b), policy checks and placement (C-02c, `validator.py`), save format
-and hashes (C-03), the wire messages (C-05a), terrain prop edits (W-05), water (FL-02b), release entries (X-08).
+and hashes (C-03), the wire messages (C-05a), water (FL-02b), release entries (X-08).
 """
 
 from __future__ import annotations
@@ -76,6 +76,7 @@ from .missing import MissingDefinition
 from .partdef import PartDef
 from .project import Project
 from .refs import Ref, RefError, RefKind
+from .world import TerrainProp
 
 _Id = Annotated[str, Field(pattern=ID_PATTERN)]
 _Index = Annotated[int, Field(strict=True, ge=0)]
@@ -335,6 +336,28 @@ class SelectPlanet(_Cmd):
     planet: _Id
 
 
+class AddTerrainProp(_Cmd):
+    """Place a terrain prop (ramp or step) on the planet's ground. `index` is only where it goes in the list."""
+
+    type: Literal["add_terrain_prop"]
+    prop: TerrainProp
+    index: _Index | None = None
+
+
+class ReplaceTerrainProp(_Cmd):
+    """Replace the prop with the same id (`prop.id`), in place: move it, resize it, change its incline, height or surface."""
+
+    type: Literal["replace_terrain_prop"]
+    prop: TerrainProp
+
+
+class RemoveTerrainProp(_Cmd):
+    """Remove the prop with this id."""
+
+    type: Literal["remove_terrain_prop"]
+    id: _Id
+
+
 _EditCommands = Union[
     AddPartDef,
     ReplacePartDef,
@@ -361,6 +384,9 @@ _EditCommands = Union[
     SetAssumption,
     RemoveAssumption,
     SelectPlanet,
+    AddTerrainProp,
+    ReplaceTerrainProp,
+    RemoveTerrainProp,
 ]
 
 EditCommand = Annotated[_EditCommands, Field(discriminator="type")]
@@ -717,6 +743,27 @@ def _apply_edit(project: Project, c: EditCommand) -> tuple[Project, tuple[EditCo
         case SelectPlanet():
             new = _rebuild(project, lambda x: x["world"].update(planet=c.planet), (_ref(RefKind.PLANET, c.planet),))
             return new, (SelectPlanet(type="select_planet", planet=project.world.planet),)
+
+        case AddTerrainProp():
+            props = project.world.terrain_props
+            ref = _ref(RefKind.PROP, c.prop.id)
+            _absent(props, c.prop.id, RefKind.PROP, "terrain prop")
+            at = _slot(c.index, len(props), "terrain props", ref)
+            new = _rebuild(project, lambda x: x["world"]["terrain_props"].insert(at, _dump(c.prop)), (ref,))
+            return new, (RemoveTerrainProp(type="remove_terrain_prop", id=c.prop.id),)
+
+        case ReplaceTerrainProp():
+            props = project.world.terrain_props
+            ref = _ref(RefKind.PROP, c.prop.id)
+            at = _find(props, c.prop.id, RefKind.PROP, "terrain prop")
+            new = _replace_in_place(project, (ref,), lambda x: x["world"]["terrain_props"], c.prop.id, c.prop)
+            return new, (ReplaceTerrainProp(type="replace_terrain_prop", prop=props[at]),)
+
+        case RemoveTerrainProp():
+            props = project.world.terrain_props
+            at = _find(props, c.id, RefKind.PROP, "terrain prop")
+            new = _rebuild(project, lambda x: x["world"]["terrain_props"].pop(at), (_ref(RefKind.PROP, c.id),))
+            return new, (AddTerrainProp(type="add_terrain_prop", prop=props[at], index=at),)
 
     raise AssertionError(f"unhandled command {type(c).__name__}")  # pragma: no cover  (the union is closed)
 

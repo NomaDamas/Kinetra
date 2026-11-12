@@ -100,6 +100,13 @@ export interface AddPartDef {
   index?: number | null;
 }
 
+/** Place a terrain prop (ramp or step) on the planet's ground. `index` is only where it goes in the list. */
+export interface AddTerrainProp {
+  type: "add_terrain_prop";
+  prop: RampProp | StepProp;
+  index?: number | null;
+}
+
 /**
  * Revision `revision` of the document exists: `command` (as applied) from `origin` changed it as `changes`
  * says, and the verdict is now `verdict`. Sent to every subscriber, the publisher included, in revision order.
@@ -110,7 +117,7 @@ export interface Applied {
   id: string;
   cause: "publish" | "undo" | "redo";
   origin: Origin;
-  command: AddPartDef | ReplacePartDef | RemovePartDef | AddMaterialDef | ReplaceMaterialDef | RemoveMaterialDef | AddInstance | RemoveInstance | MoveInstance | SetParameter | ClearParameter | SetInstanceMaterial | RelinkInstance | AddJoint | ReplaceJoint | RemoveJoint | AddActuator | RemoveActuator | AddControlEntry | RemoveControlEntry | ReplaceControlEntry | AddAssumption | SetAssumption | RemoveAssumption | SelectPlanet | CommandBatch;
+  command: AddPartDef | ReplacePartDef | RemovePartDef | AddMaterialDef | ReplaceMaterialDef | RemoveMaterialDef | AddInstance | RemoveInstance | MoveInstance | SetParameter | ClearParameter | SetInstanceMaterial | RelinkInstance | AddJoint | ReplaceJoint | RemoveJoint | AddActuator | RemoveActuator | AddControlEntry | RemoveControlEntry | ReplaceControlEntry | AddAssumption | SetAssumption | RemoveAssumption | SelectPlanet | AddTerrainProp | ReplaceTerrainProp | RemoveTerrainProp | CommandBatch;
   changes: ProjectChanges;
   verdict: VerdictState;
 }
@@ -121,7 +128,7 @@ export interface Applied {
  */
 export interface ApplyResult {
   project: Project;
-  inverse: AddPartDef | ReplacePartDef | RemovePartDef | AddMaterialDef | ReplaceMaterialDef | RemoveMaterialDef | AddInstance | RemoveInstance | MoveInstance | SetParameter | ClearParameter | SetInstanceMaterial | RelinkInstance | AddJoint | ReplaceJoint | RemoveJoint | AddActuator | RemoveActuator | AddControlEntry | RemoveControlEntry | ReplaceControlEntry | AddAssumption | SetAssumption | RemoveAssumption | SelectPlanet | CommandBatch;
+  inverse: AddPartDef | ReplacePartDef | RemovePartDef | AddMaterialDef | ReplaceMaterialDef | RemoveMaterialDef | AddInstance | RemoveInstance | MoveInstance | SetParameter | ClearParameter | SetInstanceMaterial | RelinkInstance | AddJoint | ReplaceJoint | RemoveJoint | AddActuator | RemoveActuator | AddControlEntry | RemoveControlEntry | ReplaceControlEntry | AddAssumption | SetAssumption | RemoveAssumption | SelectPlanet | AddTerrainProp | ReplaceTerrainProp | RemoveTerrainProp | CommandBatch;
 }
 
 /** One assumption of the verdict, as the human-review panel shows it. */
@@ -278,7 +285,7 @@ export interface CollisionProxy {
  */
 export interface CommandBatch {
   type: "batch";
-  commands: (AddPartDef | ReplacePartDef | RemovePartDef | AddMaterialDef | ReplaceMaterialDef | RemoveMaterialDef | AddInstance | RemoveInstance | MoveInstance | SetParameter | ClearParameter | SetInstanceMaterial | RelinkInstance | AddJoint | ReplaceJoint | RemoveJoint | AddActuator | RemoveActuator | AddControlEntry | RemoveControlEntry | ReplaceControlEntry | AddAssumption | SetAssumption | RemoveAssumption | SelectPlanet)[];
+  commands: (AddPartDef | ReplacePartDef | RemovePartDef | AddMaterialDef | ReplaceMaterialDef | RemoveMaterialDef | AddInstance | RemoveInstance | MoveInstance | SetParameter | ClearParameter | SetInstanceMaterial | RelinkInstance | AddJoint | ReplaceJoint | RemoveJoint | AddActuator | RemoveActuator | AddControlEntry | RemoveControlEntry | ReplaceControlEntry | AddAssumption | SetAssumption | RemoveAssumption | SelectPlanet | AddTerrainProp | ReplaceTerrainProp | RemoveTerrainProp)[];
 }
 
 /**
@@ -563,8 +570,8 @@ export interface History {
 /** One undo step: `command` as it was applied, its `inverse`, and the `origin` it came from. */
 export interface HistoryEntry {
   origin: Origin;
-  command: AddPartDef | ReplacePartDef | RemovePartDef | AddMaterialDef | ReplaceMaterialDef | RemoveMaterialDef | AddInstance | RemoveInstance | MoveInstance | SetParameter | ClearParameter | SetInstanceMaterial | RelinkInstance | AddJoint | ReplaceJoint | RemoveJoint | AddActuator | RemoveActuator | AddControlEntry | RemoveControlEntry | ReplaceControlEntry | AddAssumption | SetAssumption | RemoveAssumption | SelectPlanet | CommandBatch;
-  inverse: AddPartDef | ReplacePartDef | RemovePartDef | AddMaterialDef | ReplaceMaterialDef | RemoveMaterialDef | AddInstance | RemoveInstance | MoveInstance | SetParameter | ClearParameter | SetInstanceMaterial | RelinkInstance | AddJoint | ReplaceJoint | RemoveJoint | AddActuator | RemoveActuator | AddControlEntry | RemoveControlEntry | ReplaceControlEntry | AddAssumption | SetAssumption | RemoveAssumption | SelectPlanet | CommandBatch;
+  command: AddPartDef | ReplacePartDef | RemovePartDef | AddMaterialDef | ReplaceMaterialDef | RemoveMaterialDef | AddInstance | RemoveInstance | MoveInstance | SetParameter | ClearParameter | SetInstanceMaterial | RelinkInstance | AddJoint | ReplaceJoint | RemoveJoint | AddActuator | RemoveActuator | AddControlEntry | RemoveControlEntry | ReplaceControlEntry | AddAssumption | SetAssumption | RemoveAssumption | SelectPlanet | AddTerrainProp | ReplaceTerrainProp | RemoveTerrainProp | CommandBatch;
+  inverse: AddPartDef | ReplacePartDef | RemovePartDef | AddMaterialDef | ReplaceMaterialDef | RemoveMaterialDef | AddInstance | RemoveInstance | MoveInstance | SetParameter | ClearParameter | SetInstanceMaterial | RelinkInstance | AddJoint | ReplaceJoint | RemoveJoint | AddActuator | RemoveActuator | AddControlEntry | RemoveControlEntry | ReplaceControlEntry | AddAssumption | SetAssumption | RemoveAssumption | SelectPlanet | AddTerrainProp | ReplaceTerrainProp | RemoveTerrainProp | CommandBatch;
 }
 
 /** Slope angle above the ground in radians, strictly between 0 and pi/2. */
@@ -942,7 +949,7 @@ export interface Publish {
   type: "publish";
   id: string;
   base_revision: number;
-  command: AddPartDef | ReplacePartDef | RemovePartDef | AddMaterialDef | ReplaceMaterialDef | RemoveMaterialDef | AddInstance | RemoveInstance | MoveInstance | SetParameter | ClearParameter | SetInstanceMaterial | RelinkInstance | AddJoint | ReplaceJoint | RemoveJoint | AddActuator | RemoveActuator | AddControlEntry | RemoveControlEntry | ReplaceControlEntry | AddAssumption | SetAssumption | RemoveAssumption | SelectPlanet | CommandBatch;
+  command: AddPartDef | ReplacePartDef | RemovePartDef | AddMaterialDef | ReplaceMaterialDef | RemoveMaterialDef | AddInstance | RemoveInstance | MoveInstance | SetParameter | ClearParameter | SetInstanceMaterial | RelinkInstance | AddJoint | ReplaceJoint | RemoveJoint | AddActuator | RemoveActuator | AddControlEntry | RemoveControlEntry | ReplaceControlEntry | AddAssumption | SetAssumption | RemoveAssumption | SelectPlanet | AddTerrainProp | ReplaceTerrainProp | RemoveTerrainProp | CommandBatch;
   origin: Origin;
 }
 
@@ -1073,6 +1080,12 @@ export interface RemovePartDef {
   unlink?: boolean;
 }
 
+/** Remove the prop with this id. */
+export interface RemoveTerrainProp {
+  type: "remove_terrain_prop";
+  id: string;
+}
+
 /** Replace the schedule entry with the same id (`entry.id`), in place. */
 export interface ReplaceControlEntry {
   type: "replace_control_entry";
@@ -1103,6 +1116,12 @@ export interface ReplaceMaterialDef {
 export interface ReplacePartDef {
   type: "replace_part_def";
   part: PartDef;
+}
+
+/** Replace the prop with the same id (`prop.id`), in place: move it, resize it, change its incline, height or surface. */
+export interface ReplaceTerrainProp {
+  type: "replace_terrain_prop";
+  prop: RampProp | StepProp;
 }
 
 /**
@@ -1457,13 +1476,13 @@ export interface YieldStrength {
 
 export type ClientMessage = Hello | Subscribe | Publish | Request | RunRequest;
 
-export type Command = AddPartDef | ReplacePartDef | RemovePartDef | AddMaterialDef | ReplaceMaterialDef | RemoveMaterialDef | AddInstance | RemoveInstance | MoveInstance | SetParameter | ClearParameter | SetInstanceMaterial | RelinkInstance | AddJoint | ReplaceJoint | RemoveJoint | AddActuator | RemoveActuator | AddControlEntry | RemoveControlEntry | ReplaceControlEntry | AddAssumption | SetAssumption | RemoveAssumption | SelectPlanet | CommandBatch;
+export type Command = AddPartDef | ReplacePartDef | RemovePartDef | AddMaterialDef | ReplaceMaterialDef | RemoveMaterialDef | AddInstance | RemoveInstance | MoveInstance | SetParameter | ClearParameter | SetInstanceMaterial | RelinkInstance | AddJoint | ReplaceJoint | RemoveJoint | AddActuator | RemoveActuator | AddControlEntry | RemoveControlEntry | ReplaceControlEntry | AddAssumption | SetAssumption | RemoveAssumption | SelectPlanet | AddTerrainProp | ReplaceTerrainProp | RemoveTerrainProp | CommandBatch;
 
 export type ContactTarget = BodyTarget | PropTarget | GroundTarget;
 
 export type Distribution = FixedDistribution | UniformDistribution | NormalDistribution;
 
-export type EditCommand = AddPartDef | ReplacePartDef | RemovePartDef | AddMaterialDef | ReplaceMaterialDef | RemoveMaterialDef | AddInstance | RemoveInstance | MoveInstance | SetParameter | ClearParameter | SetInstanceMaterial | RelinkInstance | AddJoint | ReplaceJoint | RemoveJoint | AddActuator | RemoveActuator | AddControlEntry | RemoveControlEntry | ReplaceControlEntry | AddAssumption | SetAssumption | RemoveAssumption | SelectPlanet;
+export type EditCommand = AddPartDef | ReplacePartDef | RemovePartDef | AddMaterialDef | ReplaceMaterialDef | RemoveMaterialDef | AddInstance | RemoveInstance | MoveInstance | SetParameter | ClearParameter | SetInstanceMaterial | RelinkInstance | AddJoint | ReplaceJoint | RemoveJoint | AddActuator | RemoveActuator | AddControlEntry | RemoveControlEntry | ReplaceControlEntry | AddAssumption | SetAssumption | RemoveAssumption | SelectPlanet | AddTerrainProp | ReplaceTerrainProp | RemoveTerrainProp;
 
 export type EngineTag = WheelEngine | WasmEngine | CustomBuildEngine;
 
