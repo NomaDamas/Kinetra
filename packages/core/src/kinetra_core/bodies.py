@@ -14,7 +14,8 @@ them. The distribution's bounds are an `estimate` unless a source prints a distr
 the files to the same rules the tests state: badges only `cite`, `default` or `estimate` (a planet constant is never
 `sim` or `declared`), the friction distribution is `uniform` or `normal`, and `editable` is `False` (the user does not
 edit a planet; `docs/architecture/client-adapter.md` rule C4). That `Assumption` is not a row of the project's
-`AssumptionTable`, which rejects planet keys; see `docs/architecture/bodies.md`, "Gravity and the verdict's table".
+`AssumptionTable`, which rejects planet keys; the verdict's table adds it at judge time (`verdict_assumption_table`, W-03c).
+See `docs/architecture/bodies.md`, "가정표에서의 자리".
 
 `unverified` lists the constants whose value is not a cited number (badge `estimate` or `default`): a value that is a
 modelling choice, or a proxy for something no source measured. The loader requires the list to match the badges, so a
@@ -39,10 +40,10 @@ from typing import Annotated, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
-from .assumption import Assumption
+from .assumption import Assumption, AssumptionTable
 from .conventions import ID_PATTERN, Unit
 from .provenance import Badge, Quantity
-from .world import World
+from .world import PLANET_CONSTANT_NAMES, World
 
 BODY_IDS = ("earth", "mars", "moon")
 """The three planets of S1, in the order the studio shows them."""
@@ -192,6 +193,55 @@ def load_body(body_id: str, *, directory: Path | None = None) -> Body:
 def load_bodies(*, directory: Path | None = None) -> Mapping[str, Body]:
     """All three planets by id."""
     return {i: load_body(i, directory=directory) for i in BODY_IDS}
+
+
+class VerdictAssumptionTable(BaseModel):
+    """The assumption table a verdict carries (W-03c): the planet's rows read from `data/bodies`, then the project's rows.
+
+    Composed at judge time by `verdict_assumption_table`, never stored in a project: the project's `AssumptionTable`
+    keeps rejecting planet keys (rule C4). A planet row is read-only (`editable` False) and keeps the badges and sources
+    of the data file. Today the planet rows are the ground friction alone; the "근사: 균일 중력" label is W-06's.
+    `rows` is the table in the order the panel shows it; Monte-Carlo samples each row's `distribution` and the deterministic
+    search uses its `value` (the ground friction enters the model as `to_mjcf(tree, ground_friction=...)`, X-01e/W-03c).
+    """
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    planet: str = Field(pattern=ID_PATTERN)
+    planet_rows: tuple[Assumption, ...]
+    project: AssumptionTable
+
+    @model_validator(mode="after")
+    def _planet_rows_are_the_planets(self) -> "VerdictAssumptionTable":
+        keys = [a.key for a in self.planet_rows]
+        if len(set(keys)) != len(keys):
+            raise ValueError("duplicate planet row")
+        for a in self.planet_rows:
+            if a.key not in PLANET_CONSTANT_NAMES:
+                raise ValueError(f"planet row {a.key!r} is not a planet constant")
+            if a.editable:
+                raise ValueError(f"planet row {a.key!r} must be read-only (editable false): the user does not edit a planet")
+        return self
+
+    @property
+    def rows(self) -> tuple[Assumption, ...]:
+        """Planet rows first, then the project's rows in their stored order. Keys are unique across both: the project
+        table cannot hold a planet key."""
+        return self.planet_rows + self.project.assumptions
+
+    def row(self, key: str) -> Assumption:
+        """The row with `key`; `KeyError` when there is none."""
+        for a in self.rows:
+            if a.key == key:
+                return a
+        raise KeyError(f"no assumption {key!r} in the verdict's table")
+
+
+def verdict_assumption_table(table: AssumptionTable, body: Body) -> VerdictAssumptionTable:
+    """The verdict's table for a project with assumption table `table` on planet `body` (`load_body(project.world.planet)`):
+    `body.ground_friction` (nominal, uniform or normal distribution, `confidence`, badges and sources as in the data file),
+    then the project's rows unchanged."""
+    return VerdictAssumptionTable(planet=body.id, planet_rows=(body.ground_friction,), project=table)
 
 
 def check_world_references(world: World, *, planets: Iterable[str], materials: Iterable[str]) -> None:
