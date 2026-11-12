@@ -2,7 +2,7 @@
 
 - 상태: 구현됨. 코드는 `packages/engine/src/kinetra_engine/agent/`(`edit_tools.py`, `snapmath.py`, `guard.py`, `run_tools.py`), 테스트는 `packages/engine/tests/test_edit_tools.py`(`uv run pytest packages/engine -q -k edit_tools`), `test_agent_guard.py`(`uv run pytest packages/engine -q -k guard`), `test_run_tools.py`(`uv run pytest packages/engine -q -k run_tools`).
 - 근거: `docs/plan/studio-plan.md` 4.4절(에이전트와의 협업)과 위험 3("에이전트가 3D 편집을 망친다": 자유 좌표가 아닌 스냅 포인트 기반 명령), `docs/architecture/client-adapter.md` C1·C4·C7·F6, 이슈 #144(G-02a), #151(G-04), #146(G-02c).
-- 범위 밖: 조회 도구(G-02b), 변경안과 재시도(G-03a, [`agent-proposal.md`](agent-proposal.md)), MCP 서버(G-08: 편집 도구를 그대로 MCP로 내보낸다, `mcp-server.md`. 실행·판정 요청 도구의 MCP 노출은 #555), 판정 엔진(J-01: J-01d가 판정 요청 도구에 연결한다), UI, 카탈로그 확장.
+- 범위 밖: 조회 도구(G-02b, [`agent-query-tools.md`](agent-query-tools.md)), 변경안과 재시도(G-03a, [`agent-proposal.md`](agent-proposal.md)), MCP 서버(G-08: 편집 도구를 그대로 MCP로 내보낸다, `mcp-server.md`. 실행·판정 요청 도구의 MCP 노출은 #555), 판정 엔진(J-01: J-01d가 판정 요청 도구에 연결한다), UI, 카탈로그 확장.
 
 ## 규칙
 
