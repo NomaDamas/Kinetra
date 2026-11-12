@@ -21,7 +21,7 @@ labels = proxy_labels(tree)                                    # 근사 라벨(M
 - **월드 축.** 결합 축은 `a` 인스턴스 자세 × `a` 스냅 포인트 자세 × `Joint.unit_axis`(`project-model.md`의 B-04a 문단이 이 계산을 X-01a의 몫으로 남겼다)이고 MJCF에는 자식 강체 좌표계로 옮겨 적는다. 결합점은 `a` 스냅 포인트의 월드 위치다. 두 스냅 포인트가 저장된 자세에서 실제로 겹치는지는 배치 검사(C-02c)이고 여기서 다시 보지 않는다. 결합의 `a` 쪽 위치를 기준으로 하므로 `b` 쪽이 어긋나 있어도 컴파일은 저장된 자세를 그대로 쓴다(자세가 권위다).
 - **프록시 → `geom`**(`collision-proxy.md`의 매핑 표): 상자는 반치수, 원기둥은 `(반지름, 반길이)`, 구는 반지름, 중심은 `pos`, 방향은 `quat="w x y z"`. 강체 안의 다른 인스턴스의 geom은 강체 좌표계로 옮긴다. `geom` 이름은 `<인스턴스>/<프록시 geom id>`.
 - **`<inertial>`.** `mass`, `pos`(`MassProperties.center_of_mass`), `fullinertia`(`Ixx Iyy Izz Ixy Ixz Iyz`, 질량 중심 둘레, 강체 축)를 `MassProperties`에서 명시한다. `inertiafromgeom="false"`라 `<inertial>`이 없는 바디는 MuJoCo가 거절한다(프록시의 메운 빈 곳이 질량에 들어가지 않는다는 보증).
-- **MJCF에 아직 없는 것**: `<option>`(중력, 시간 간격, 적분기), 접촉 매개변수, 액추에이터, 결합의 스프링·댐퍼. 그래서 이 MJCF는 "그 행성의 물리"가 아니라 구조(바디, 결합, 질량, 충돌 도형)다. `break_threshold`와 액추에이터는 이 MJCF에 들어가지 않는다(각각 X-04b, X-01b가 더한다).
+- **MJCF에 아직 없는 것**: `<option>`(중력, 시간 간격, 적분기), 접촉 매개변수. 그래서 이 MJCF는 "그 행성의 물리"가 아니라 구조(바디, 결합, 질량, 충돌 도형)다. `break_threshold`는 이 MJCF에 들어가지 않는다(X-04b). 결합의 스프링·댐퍼와 모터는 `to_mjcf(tree, drives=compile_drives(tree))`가 더한다(X-01b, [`joints-actuators.md`](joints-actuators.md)).
 
 ## 근사 라벨
 
@@ -36,6 +36,6 @@ labels = proxy_labels(tree)                                    # 근사 라벨(M
 
 ## 한계와 열린 질문 (숨기지 않는다)
 
-- 이 MJCF를 돌려 본 것은 적재(`MjModel.from_xml_string`)와 `mj_forward`까지다. 접촉과 구름은 X-01b·X-02의 몫이고 이 PR은 시뮬레이션 궤적을 주장하지 않는다.
+- 이 PR(X-01a)이 돌려 본 것은 적재(`MjModel.from_xml_string`)와 `mj_forward`까지다. 구름과 모터·스프링의 궤적 시험은 X-01b(`joints-actuators.md`)가 했다. 접촉 매개변수는 아직 컴파일하지 않는다.
 - 같은 인스턴스를 두 번 컴파일하지 않으려면 `cache`(`PartCache`)를 넘긴다. 캐시 키는 `part_key`(엄격)다. 정규 순서로 읽은 부품은 순서만 다른 정의가 같은 키에 닿는다.
 - 구조적 오류는 `CompileError`(인스턴스·결합·부품 ID를 가진다)로 낸다. 오류 형식과 경고의 완성은 X-01d다.

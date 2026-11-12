@@ -20,7 +20,11 @@ centre of mass in the body frame, the same signs as `MassProperties`. Angles are
 other body has the one `hinge` or `slider` joint of its tree joint, `pos`/`axis` in the body frame, `range` the limits (the
 coordinate is 0 at the saved pose, which is also the model's reference pose). Numbers are written with `repr`, so they read
 back as the same doubles; bodies, joints and geoms are in tree order. No `<option>`: gravity, time step, integrator and contact
-parameters are not set here (W-03a, X-01b, X-02), so MuJoCo's own defaults stand until those leaves set them.
+parameters are not set here (W-03a, X-02), so MuJoCo's own defaults stand until those leaves set them.
+
+With `drives` (`compile_drives`, X-01b) a slider that carries a spring-damper gets `stiffness` and `damping` (the spring's force is 0
+at coordinate 0, `springref` 0) and each motor actuator is a `<motor joint gear="1">` whose `ctrl` is the joint torque in N*m,
+`ctrlrange` +- its stall torque; `DriveRuntime` writes `ctrl` every step (`drives.py`).
 """
 
 from __future__ import annotations
@@ -30,6 +34,7 @@ from xml.sax.saxutils import quoteattr
 from kinetra_core import JointKind
 
 from .bodytree import Body, BodyGeom, BodyTree
+from .drives import Drives
 
 ROOT_JOINT_PREFIX = "__kinetra_root_"
 """The root's free joint is named `__kinetra_root_<body id>`. A project id cannot start with `_` (`ID_PATTERN`), so this name
@@ -48,7 +53,7 @@ def _geom(g: BodyGeom, pad: str) -> str:
     return f"{pad}<geom {_attr('name', g.name)} type={quoteattr(g.type)} size={quoteattr(_n(g.size))} pos={quoteattr(_n(g.pos))} quat={quoteattr(_n(g.quat))}/>"
 
 
-def _body(tree: BodyTree, b: Body, depth: int) -> list[str]:
+def _body(tree: BodyTree, b: Body, depth: int, drives: Drives | None) -> list[str]:
     pad = "  " * depth
     lines = [f"{pad}<body {_attr('name', b.id)} pos={quoteattr(_n(b.pos))} quat={quoteattr(_n(b.quat))}>"]
     ixx, iyy, izz, ixy, ixz, iyz = b.inertia
@@ -59,22 +64,33 @@ def _body(tree: BodyTree, b: Body, depth: int) -> list[str]:
         j = b.joint
         kind = "hinge" if j.kind is JointKind.HINGE else "slide"
         rng = "" if j.range is None else f" limited=\"true\" range={quoteattr(_n(j.range))}"
-        lines.append(f"{pad}  <joint {_attr('name', j.id)} type={quoteattr(kind)} pos={quoteattr(_n(j.pos))} axis={quoteattr(_n(j.axis))}{rng}/>")
+        spring = None if drives is None else drives.spring(j.id)
+        sd = "" if spring is None else f" stiffness={quoteattr(_n([spring.stiffness]))} damping={quoteattr(_n([spring.damping]))}"
+        lines.append(f"{pad}  <joint {_attr('name', j.id)} type={quoteattr(kind)} pos={quoteattr(_n(j.pos))} axis={quoteattr(_n(j.axis))}{rng}{sd}/>")
     lines.extend(_geom(g, pad + "  ") for g in b.geoms)
     for child in tree.bodies:
         if child.parent == b.id:
-            lines.extend(_body(tree, child, depth + 1))
+            lines.extend(_body(tree, child, depth + 1, drives))
     lines.append(f"{pad}</body>")
     return lines
 
 
-def to_mjcf(tree: BodyTree, name: str = "kinetra") -> str:
-    """The MJCF text of `tree`. The same tree gives the same text, byte for byte."""
+def to_mjcf(tree: BodyTree, name: str = "kinetra", drives: Drives | None = None) -> str:
+    """The MJCF text of `tree`, with the springs and motors of `drives` when given. The same input gives the same text, byte for byte."""
     lines = [
         f"<mujoco model={quoteattr(name)}>",
         '  <compiler angle="radian" inertiafromgeom="false"/>',
         "  <worldbody>",
     ]
-    lines.extend(_body(tree, tree.root, 2))
-    lines.extend(["  </worldbody>", "</mujoco>", ""])
+    lines.extend(_body(tree, tree.root, 2, drives))
+    lines.append("  </worldbody>")
+    if drives is not None and drives.motors:
+        lines.append("  <actuator>")
+        for m in drives.motors:
+            lines.append(
+                f"    <motor {_attr('name', m.actuator)} {_attr('joint', m.joint)} gear=\"1\" ctrllimited=\"true\" "
+                f"ctrlrange={quoteattr(_n([-m.stall_torque, m.stall_torque]))}/>"
+            )
+        lines.append("  </actuator>")
+    lines.extend(["</mujoco>", ""])
     return "\n".join(lines)
