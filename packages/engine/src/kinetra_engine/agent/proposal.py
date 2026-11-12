@@ -72,6 +72,11 @@ VERDICT_NOTICE = "판정은 실행 뒤 시뮬로만 나옵니다"
 _CLAIM_WORDS = re.compile(
     r"\d\s*%|퍼센트|percent|likel(?:y|ihood)"
     r"|(?:성공|통과|작동)(?:합니다|할 것|한다|해요|할 겁니다|됩니다)|버팁니다|견딥니다|버틸 것|견딜 것|보장합니다"
+    # an outcome bound to the verdict ("판정은 통과입니다", "verdict: pass", "합격입니다", "it passes"): never spared by a refusal or a
+    # deferral elsewhere in the clause ("시뮬레이션으로만 정해지는 판정은 통과입니다")
+    r"|(?:판정|결과|verdict|result|outcome)\s*(?:[은는이가]|:|=|is|was|will be)?\s*(?:an?\s+)?(?:통과|실패|성공|합격|불합격|pass|fail|success)"
+    r"|(?:통과|실패|성공|합격|불합격)(?:입니다|이다|이에요|예요|였|이었|으로 나|로 나|했|하였|합니다|할 겁니다)|버팀|버텼|견뎠"
+    r"|\b(?:passes|passed|fails|failed|succeeds|succeeded|works|holds|held up)\b|\b(?:is|was|will be)\s+an?\s+(?:pass|fail|failure|success)\b"
     # a probability given a value or a size, even beside a refusal ("확률은 높지만", "probability is 0.9")
     r"|(?:확률|probability|chances?|odds)\s*(?:[이은는도가]|is|are|of)?\s*(?:높|낮|크|큽|커|클|작|적|희박|거의|\d|high|low|good|slim|about|around)"
     r"|(?:high|low|good|slim)\s+(?:probability|chances?|odds)"

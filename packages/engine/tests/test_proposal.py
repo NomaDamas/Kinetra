@@ -315,6 +315,15 @@ def test_proposal_a_sentence_refusing_or_deferring_the_verdict_is_kept(refusal):
         "시뮬레이션에서만 확인되는 판정은 통과입니다.",
         "Only in simulation does the verdict look like a pass.",
         "The verdict is pass only by simulation.",
+        # a verdict asserted inside a refusing or deferring clause (second review of #570)
+        "판정할 수 없지만 판정은 통과입니다.",
+        "판정할 수 없으나 판정은 통과입니다.",
+        "시뮬레이션으로만 정해지는 판정은 통과입니다.",
+        "판정은 시뮬레이션으로만 정해지며 이 설계는 합격입니다.",
+        "보장할 수는 없는 판정이지만 결과는 성공입니다.",
+        "The verdict comes only from simulation and it passes.",
+        "I cannot give a verdict: pass.",
+        "Only a simulation can tell the verdict, which is a pass.",
     ],
 )
 def test_proposal_a_claim_beside_a_refusal_is_still_removed(claim):
