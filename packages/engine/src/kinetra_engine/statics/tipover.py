@@ -15,8 +15,8 @@ stored pose. A point of a geom whose height is within `tolerance` of z = 0 is a 
 - box: every corner within `tolerance` (a face gives 4, an edge 2, a corner 1);
 - cylinder: the exact lowest point of each end rim, and `RIM_SEGMENTS` points spaced evenly on each rim. A standing
   cylinder rests on a disk; the evenly spaced rim points give the inscribed polygon of that disk, which is inside the
-  disk, so the margin is never overstated. The understatement is at most `r (1 - cos(pi / RIM_SEGMENTS))` per disk and the
-  result names it (`approximations`).
+  disk, so the margin is never overstated. The understatement is at most `r (1 - cos(pi / RIM_SEGMENTS))` per disk plus
+  `tolerance` (support points closer than `tolerance` are merged, `_hull`), and the result names that bound (`approximations`).
 
 A geom that reaches below z = -`tolerance` is a `TipoverError`: it is in the ground (`overlap` of `check_placement`), and a
 contact patch through the ground is not a set of points.
@@ -150,8 +150,11 @@ def tipover(tree: BodyTree, *, tolerance: float = PLACEMENT_TOLERANCE) -> Tipove
 
     approximations = ()
     if disk_radii:
-        loss = max(disk_radii) * (1.0 - math.cos(math.pi / RIM_SEGMENTS))
-        approximations = (f"근사: 원판 접촉을 내접 {RIM_SEGMENTS}각형으로 셈(여유를 최대 {loss:.3g} m 작게 냄)",)
+        # inscribed polygon of the largest disk, plus the merge of support points closer than `tolerance` (`_hull`)
+        loss = max(disk_radii) * (1.0 - math.cos(math.pi / RIM_SEGMENTS)) + tolerance
+        approximations = (
+            f"근사: 원판 접촉을 내접 {RIM_SEGMENTS}각형으로 셈(내접 다각형과 허용치 {tolerance:.3g} m 안 점 합치기로 여유를 최대 {loss:.3g} m 작게 냄)",
+        )
     return Tipover(
         mass=mass,
         center_of_mass=com,

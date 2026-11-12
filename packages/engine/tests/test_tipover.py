@@ -8,6 +8,7 @@ the code under test. Dimensions, densities and poses are fixtures declared by th
 from __future__ import annotations
 
 import math
+import re
 
 import pytest
 from test_body_tree import ROT_X90, ROT_Z90, SRC, box, cyl, instance, joint, part, project, q, snap, sphere
@@ -127,6 +128,18 @@ def test_tipover_disk_keeps_every_rim_vertex_when_the_tolerance_is_coarser_than_
     assert len(t.polygon) == RIM_SEGMENTS
     assert t.margin == pytest.approx(r * math.cos(math.pi / RIM_SEGMENTS), rel=1e-9)
     assert r - t.margin <= r * (1.0 - math.cos(math.pi / RIM_SEGMENTS)) * (1 + 1e-9)  # the loss the result states
+
+
+def test_tipover_stated_disk_loss_includes_the_merge_of_points_within_tolerance():
+    # A 12 mm tolerance is coarser than the 9.8 mm rim spacing (2 pi 0.1 / 64): merged rim points lose 0.48 mm of margin,
+    # more than the inscribed-polygon term r (1 - cos(pi / 64)) = 0.12 mm alone. The stated bound adds the tolerance.
+    r, length, tol = 0.1, 0.4, 0.012
+    tree = build_body_tree(project([part("can", [cyl("c", r, length, at=(0, 0, length / 2))])], [instance("i", "can")]))
+    t = tipover(tree, tolerance=tol)
+    polygon_only, bound = r * (1.0 - math.cos(math.pi / RIM_SEGMENTS)), r * (1.0 - math.cos(math.pi / RIM_SEGMENTS)) + tol
+    assert polygon_only < r - t.margin <= bound
+    stated = float(re.search(r"최대 ([0-9.e+-]+) m", t.approximations[0]).group(1))
+    assert stated == pytest.approx(bound, rel=5e-3)  # three significant digits
 
 
 # --- degenerate supports, floating, below the ground ----------------------------------------------------------------
