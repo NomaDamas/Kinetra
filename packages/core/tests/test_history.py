@@ -17,6 +17,7 @@ from kinetra_core import (
     History,
     HistoryEntry,
     Origin,
+    Pose,
     Project,
     ReasonCode,
     apply_command,
@@ -100,7 +101,7 @@ def test_command_epic_add_move_join_then_three_undos_restore_the_original_projec
     without_joint = current.history.undo(current.project)
     assert without_joint.project.design.joints == ()
     before_move = without_joint.history.undo(without_joint.project)
-    assert pose_of(before_move.project, "spare").model_dump(mode="json") == spare["pose"]
+    assert pose_of(before_move.project, "spare") == Pose.model_validate(spare["pose"])
     restored = before_move.history.undo(before_move.project)
 
     assert restored.project == project
