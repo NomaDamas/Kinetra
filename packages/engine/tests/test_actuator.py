@@ -4,8 +4,8 @@ Expected numbers are written out by hand from the datasheet values the parts cit
 `parts-battery-tank.md`) and from textbook formulas; MuJoCo 4.0.0 runs the compiled MJCF. Poses, the test blocks and the incline
 angle are fixtures declared by the test (`사용자 선언`). The test anchors a rig's root body to the world by removing its free
 joint from the MJCF (a bench clamp; the project has no "fixed to the ground" yet), sets the gravity it needs on the loaded model
-(overriding the planet gravity of the MJCF `<option>`, W-03a), turns contact off on the clamped rigs (nothing in them touches anything) and, for the
-rolling test, adds the ground plane.
+(overriding the planet gravity of the MJCF `<option>`, W-03a) and turns contact off on the clamped rigs (nothing in them touches
+anything). The rolling test uses the compiled ground plane and friction (X-01e).
 """
 
 from __future__ import annotations
@@ -80,11 +80,11 @@ MAT = {"id": "mat", "name": "Test material", "density": q(1000.0, "kg/m^3"), "yi
        "elastic_modulus": q(1.0e9, "Pa"), "friction": q(0.5, "1")}
 
 
-def project(parts, instances, joints=(), actuators=(), materials=(MAT,)):
+def project(parts, instances, joints=(), actuators=(), materials=(MAT,), planet="earth"):
     dump = [p if isinstance(p, dict) else p.model_dump(mode="json") for p in parts]
     mats = [m if isinstance(m, dict) else m.model_dump(mode="json") for m in materials]
     return Project.model_validate({"design": {"materials": mats, "parts": dump, "instances": list(instances), "joints": list(joints), "actuators": list(actuators)},
-                                   "world": {"planet": "earth"}})
+                                   "world": {"planet": planet}})
 
 
 def anchored(xml: str) -> str:
@@ -150,8 +150,14 @@ def test_actuator_motor_drive_takes_the_part_curve():
     assert (m.actuator, m.joint, m.instance, m.supply) == ("drive", "axle", "m1", None)
     assert m.stall_torque == pytest.approx(T0, rel=1e-12) and m.no_load_speed == pytest.approx(W0, rel=1e-12) and m.rated_voltage == VOLT
     act = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_ACTUATOR, "drive")
-    assert model.actuator_ctrlrange[act] == pytest.approx([-T0, T0], rel=1e-12)
-    assert model.actuator_gear[act][0] == 1.0
+    assert not model.actuator_ctrllimited[act] and model.actuator_gear[act][0] == 1.0
+    # the back-EMF is the hinge's damping: T0 / W0, the slope of the datasheet line (#546)
+    assert model.dof_damping[dof(model, "axle")] == pytest.approx(T0 / W0, rel=1e-12)
+
+
+def motor_torque(model, data, joint_id="axle"):
+    """The motor's torque on the hinge: the actuator's part plus the back-EMF the hinge's damping applies."""
+    return float(data.actuator_force[0] + data.qfrc_damper[dof(model, joint_id)])
 
 
 @pytest.mark.parametrize("command", [1.0, 0.5, -1.0, -0.25])
@@ -161,7 +167,26 @@ def test_actuator_no_load_speed_is_the_datasheet_speed_times_the_command(command
     runtime = DriveRuntime(model, drives)
     run(model, data, runtime, {"drive": command}, 1.0)
     assert data.qvel[dof(model, "axle")] == pytest.approx(command * W0, rel=1e-6)
-    assert data.actuator_force[0] == pytest.approx(0.0, abs=1e-6 * T0)
+    assert motor_torque(model, data) == pytest.approx(0.0, abs=1e-6 * T0)
+
+
+@pytest.mark.parametrize("command", [1.0, 0.5, -1.0])
+def test_actuator_free_rig_never_spins_the_hinge_past_the_no_load_speed(command):
+    """#546: the same rig not clamped (free root, no gravity). The motor body's own inertia about the axle is tiny (3e-5 kg*m^2),
+    so an explicit stall torque from the step's starting speed threw the hinge to ~137 rad/s in one step. With the back-EMF as
+    implicit joint damping the relative speed rises to |u| x 20.944 rad/s and never past it: every step's speed is at most
+    |u| W0 (1 + 1e-9) (stated tolerance, rounding), and after 0.2 s it is |u| W0 within 1e-6."""
+    model, data, drives = load(motor_rig(), anchor=False)
+    runtime = DriveRuntime(model, drives)
+    d = dof(model, "axle")
+    peak = 0.0
+    for _ in range(round(0.2 / model.opt.timestep)):
+        runtime.apply(data, {"drive": command}, model.opt.timestep)
+        mujoco.mj_step(model, data)
+        peak = max(peak, abs(float(data.qvel[d])))
+        assert math.copysign(1.0, command) * data.qvel[d] >= 0.0  # never turns against the command
+    assert peak <= abs(command) * W0 * (1 + 1e-9)
+    assert data.qvel[d] == pytest.approx(command * W0, rel=1e-6)
 
 
 @pytest.mark.parametrize("command", [1.0, 0.5])
@@ -172,24 +197,30 @@ def test_actuator_stall_torque_against_the_joint_limit_is_the_datasheet_stall_to
     run(model, data, runtime, {"drive": command}, 0.5)
     d = dof(model, "axle")
     assert abs(data.qvel[d]) < 1e-4
-    assert data.actuator_force[0] == pytest.approx(command * T0, rel=1e-4)
+    assert motor_torque(model, data) == pytest.approx(command * T0, rel=1e-4)
     assert data.qfrc_constraint[d] == pytest.approx(-command * T0, rel=1e-4)  # the limit takes it
 
 
 def test_actuator_torque_speed_limit_follows_the_curve():
     (m,) = compile_drives(build_body_tree(motor_rig())).motors
-    # full command: the straight line from (0, T0) to (W0, 0), nothing beyond, stall torque when driven backwards
+    # full command: the curve from (0, T0) to (W0, 0); outside it the DC motor's line T0 (u - w / W0): braking past the
+    # no-load speed, more than the stall torque when driven backwards (#546)
     assert m.torque(1.0, 0.0) == pytest.approx(T0, rel=1e-12)
     assert m.torque(1.0, W0 / 2) == pytest.approx(T0 / 2, rel=1e-12)
-    assert m.torque(1.0, W0) == 0.0 and m.torque(1.0, 3 * W0) == 0.0
-    assert m.torque(1.0, -5.0) == pytest.approx(T0, rel=1e-12)
+    assert m.torque(1.0, W0) == pytest.approx(0.0, abs=1e-12)
+    assert m.torque(1.0, 3 * W0) == pytest.approx(-2 * T0, rel=1e-12)
+    assert m.torque(1.0, -5.0) == pytest.approx(T0 * (1 + 5 / W0), rel=1e-12)
     # half command: half the voltage, the line scaled by 1/2 on both axes: T0 (u - w / W0)
     assert m.torque(0.5, W0 / 4) == pytest.approx(T0 * (0.5 - 0.25), rel=1e-12)
-    assert m.torque(0.5, W0 / 2) == 0.0
+    assert m.torque(0.5, W0 / 2) == pytest.approx(0.0, abs=1e-12)
     # sign: the same curve the other way round
     assert m.torque(-1.0, -W0 / 2) == pytest.approx(-T0 / 2, rel=1e-12)
-    assert m.torque(-1.0, W0) == pytest.approx(-T0, rel=1e-12)
-    assert m.torque(0.0, 3.0) == 0.0
+    assert m.torque(-1.0, W0) == pytest.approx(-2 * T0, rel=1e-12)
+    # command 0 is 0 V: the shorted motor brakes
+    assert m.torque(0.0, 3.0) == pytest.approx(-T0 * 3 / W0, rel=1e-12)
+    # what the actuator applies on top of the hinge damping: u T0 at every speed for this linear curve
+    for u, w in ((1.0, 0.0), (1.0, 7.0), (0.5, -3.0), (-0.25, 30.0), (0.0, 5.0)):
+        assert m.ctrl(u, w) == pytest.approx(u * T0, abs=1e-12)
     with pytest.raises(ValueError):
         m.torque(1.5, 0.0)
 
@@ -221,12 +252,12 @@ def test_actuator_an_empty_battery_drives_nothing():
     model, data, drives = load(motor_rig(limits=(-1.0, 0.0), supply=True, charge=1e-4))
     runtime = DriveRuntime(model, drives)
     run(model, data, runtime, {"drive": 1.0}, 0.06)
-    assert data.actuator_force[0] > 0.99 * T0 and not runtime.supplies["b1"].empty
+    assert motor_torque(model, data) > 0.99 * T0 and not runtime.supplies["b1"].empty
     run(model, data, runtime, {"drive": 1.0}, 0.01)
     assert runtime.supplies["b1"].empty
     assert runtime.energy["drive"] == pytest.approx(CELL_ENERGY * 1e-4, rel=1e-12)
     run(model, data, runtime, {"drive": 1.0}, 0.01)
-    assert data.actuator_force[0] == 0.0
+    assert data.actuator_force[0] == 0.0  # the driving part is gone; only the back-EMF damping is left
 
 
 def test_actuator_motor_without_current_specs_cannot_be_metered():
@@ -352,14 +383,18 @@ THETA = math.radians(30.0)
 def rolling(planet):
     """The B-03a wheel (POM) alone, standing on the ground plane z = 0 (lowest point on it), axis (its y) horizontal, at rest. The
     30 deg incline is the planet's gravity turned by 30 deg about the wheel's axis, `g (sin, 0, -cos)`: in the plane's frame that
-    is the same problem as the plane tilted under vertical gravity, and the wheel stays a grounded assembly. Ground and tread
-    friction are MuJoCo's default 1 (contact parameters are not compiled yet)."""
+    is the same problem as the plane tilted under vertical gravity, and the wheel stays a grounded assembly. Friction is the compiled
+    contact (X-01e) of the project's planet: min(tread 0.7, that planet's nominal ground friction) = the ground's nominal, each planet
+    its own (asserted below). The model's gravity is the compiled planet's, turned."""
     r = WHEEL.parameters[0].default.value / 2  # diameter 0.1 m
-    proj = project([WHEEL], [instance("w1", WHEEL.id, (0.0, 0.0, r), material=POM.id)], materials=(POM,))
+    proj = project([WHEEL], [instance("w1", WHEEL.id, (0.0, 0.0, r), material=POM.id)], materials=(POM,), planet=planet)
     tree = build_body_tree(proj)
-    xml = to_mjcf(tree, drives=compile_drives(tree)).replace("<worldbody>", '<worldbody>\n    <geom name="ground" type="plane" size="0 0 1"/>', 1)
+    xml = to_mjcf(tree, drives=compile_drives(tree))
     model = mujoco.MjModel.from_xml_string(xml)
+    ground = load_body(planet).ground_friction.value.value
+    assert model.geom_friction[0][0] == ground and min(model.geom_friction[i][0] for i in range(model.ngeom)) == ground
     g = load_body(planet).gravity.value
+    assert tuple(model.opt.gravity) == (0.0, 0.0, -g)  # compiled for this planet (W-03a)
     model.opt.gravity[:] = (g * math.sin(THETA), 0.0, -g * math.cos(THETA))
     data = mujoco.MjData(model)
     t, v, spin = [], [], []
@@ -380,6 +415,6 @@ def test_actuator_wheel_rolls_down_an_incline_at_g_sin_theta_over_one_plus_k(pla
     hand = g * math.sin(THETA) / (1.0 + k)
     window = t >= 0.2  # after the contact has settled
     slope = np.polyfit(t[window], v[window], 1)[0]
-    assert slope == pytest.approx(hand, rel=2e-3)  # measured: -0.12 % (earth), -0.045 % (mars), -0.020 % (moon)
+    assert slope == pytest.approx(hand, rel=2e-3)  # measured: -0.115 % (earth), -0.045 % (mars), -0.020 % (moon)
     # rolling, not sliding: the contact point is at rest, v = omega r
-    assert spin[-1] * r == pytest.approx(v[-1], rel=2e-3)  # measured: 0.13 %, 0.023 %, 0.018 % of v
+    assert spin[-1] * r == pytest.approx(v[-1], rel=2e-3)  # measured: 0.16 %, 0.047 %, 0.007 % of v

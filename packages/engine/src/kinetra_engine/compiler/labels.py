@@ -1,6 +1,6 @@
 """Model labels of a compile (X-01a, W-03b): the approximations the model makes, stated where the user reads the assumptions.
 
-    model_labels(tree) -> tuple[ModelLabel, ...]    # proxy labels, then the drag label
+    model_labels(tree) -> tuple[ModelLabel, ...]    # proxy labels, contact labels (X-01e), then the drag label
     proxy_labels(tree) -> tuple[ModelLabel, ...]
     drag_labels(tree) -> tuple[ModelLabel, ...]
 
@@ -38,12 +38,13 @@ DECOMPOSED_PREFIX = "근사: 충돌 프록시가 빈 곳을 상자 조각으로 
 
 @dataclass(frozen=True)
 class ModelLabel:
-    """One approximation label. `kind` `filled`, `decomposed` or `drag`; `instance` and `part` say whose proxy it is (`None`
-    for `drag`, which is about every body); `host` is the decomposed host component (`None` otherwise); `percent` is N, the
-    number in the text (percent, signed for `decomposed`; `None` for `drag`, whose text has no number)."""
+    """One approximation label. `kind` `filled` or `decomposed` (collision proxy, here), `contact` (`contact.contact_labels`,
+    X-01e) or `drag` (`drag_labels`, W-03b); `instance` and `part` say whose proxy or friction it is (`None` for a model-wide
+    label); `host` is the decomposed host component (`None` otherwise); `percent` is N, the number in the text (percent,
+    signed for `decomposed`; `None` for `contact` and `drag`)."""
 
     text: str
-    kind: Literal["filled", "decomposed", "drag"]
+    kind: Literal["filled", "decomposed", "contact", "drag"]
     instance: str | None
     part: str | None
     host: str | None
@@ -86,6 +87,8 @@ def drag_labels(tree: BodyTree) -> tuple[ModelLabel, ...]:
 
 
 def model_labels(tree: BodyTree) -> tuple[ModelLabel, ...]:
-    """Every model label of the compile: `proxy_labels`, then `drag_labels`. The list the run's `model_labels` and the
-    verdict's assumption table show."""
-    return proxy_labels(tree) + drag_labels(tree)
+    """Every model label of the compile: `proxy_labels`, the contact labels (`contact.contact_labels` of the nominal ground
+    friction, X-01e), then `drag_labels`. The list the run's `model_labels` and the verdict's assumption table show."""
+    from .contact import contact_friction, contact_labels  # contact.py imports ModelLabel from here
+
+    return proxy_labels(tree) + contact_labels(contact_friction(tree)) + drag_labels(tree)

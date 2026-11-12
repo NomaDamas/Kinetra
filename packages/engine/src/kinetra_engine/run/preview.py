@@ -28,10 +28,11 @@ float64 generalized positions of every tick from 0 to the end, in order, tagged 
 is a hash of this run's stream, kept by the core (F7); how two hashes are compared (match, mismatch, not comparable) is
 X-02d.
 
-**Model labels.** The model labels of the compile (`model_labels`: the proxy approximations, and `근사: 집중 항력` where the
-planet has air, W-03b), and what the compiled model does not apply of the planet, read from the model itself so a label goes
-away once a leaf sets it: the planet's gravity when the model's gravity differs from the planet's `data/bodies` value (W-03a
-sets it, so this label does not appear today), and the ground when the model has none.
+**Model labels.** The model labels of the compile (`model_labels`: the proxy approximations, the contact labels of
+X-01e — the friction rule, slow slip, no rolling friction, tread and default friction per instance — and `근사: 집중 항력`
+where the planet has air, W-03b), and what the compiled model does not apply of the planet, read from the model itself so a label goes away once a leaf sets it: the planet's gravity
+when the model's gravity differs from the planet's `data/bodies` value (W-03a sets it, so this label does not appear
+today), and the ground when the model has none (X-01e compiles it, so this label does not appear today either).
 
 **Drives (X-01b), thrust (X-01c) and drag (W-03b).** The model is compiled from `compile_thrust` (the body tree with its
 thrusters and the propellant of its tanks), `compile_drives` (springs on sliders, one motor per motor actuator) and

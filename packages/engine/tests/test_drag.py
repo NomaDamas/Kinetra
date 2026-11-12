@@ -61,12 +61,18 @@ def ball(planet: str, density: float = 50.0) -> Project:
                                    "world": {"planet": planet}})
 
 
+def airborne(model: mujoco.MjModel) -> mujoco.MjModel:
+    """Contact off (X-01e compiles a ground at z = 0 under the resting ball): the ball falls freely, drag and gravity only."""
+    model.opt.disableflags |= mujoco.mjtDisableBit.mjDSBL_CONTACT
+    return model
+
+
 def run(planet: str, density: float, seconds: float, timestep: float | None = None):
     """Drop the ball from rest with drag for `seconds` (a whole number of steps); returns (model, data, [(t, vz)] every step).
-    There is no ground plane in the model. Counted in steps, not in `data.time`: MuJoCo resets the data (time 0) when the
+    Contact is off (`airborne`). Counted in steps, not in `data.time`: MuJoCo resets the data (time 0) when the
     state blows up."""
     tree = build_body_tree(ball(planet, density))
-    model = mujoco.MjModel.from_xml_string(to_mjcf(tree))
+    model = airborne(mujoco.MjModel.from_xml_string(to_mjcf(tree)))
     if timestep is not None:
         model.opt.timestep = timestep
     data = mujoco.MjData(model)
@@ -127,7 +133,7 @@ def test_drag_area_of_each_shape_is_the_mean_over_its_three_axes():
 def test_drag_moon_is_zero_and_the_trajectory_is_the_one_without_drag():
     tree = build_body_tree(ball("moon"))
     assert load_body("moon").atmosphere_density.value == 0.0
-    model = mujoco.MjModel.from_xml_string(to_mjcf(tree))
+    model = airborne(mujoco.MjModel.from_xml_string(to_mjcf(tree)))
     with_drag, plain = mujoco.MjData(model), mujoco.MjData(model)
     runtime = DragRuntime(model, compile_drag(tree))
     for _ in range(2000):
@@ -153,7 +159,7 @@ def test_drag_label_is_in_the_model_labels_where_there_is_air(planet):
 def test_drag_is_not_mujocos_medium():
     """The decision (`drag.py`): MuJoCo's global medium stays off; the force is ours, so without the runtime there is none."""
     tree = build_body_tree(ball("earth"))
-    model = mujoco.MjModel.from_xml_string(to_mjcf(tree))
+    model = airborne(mujoco.MjModel.from_xml_string(to_mjcf(tree)))
     assert model.opt.density == 0.0 and model.opt.viscosity == 0.0
     data = mujoco.MjData(model)
     for _ in range(500):
@@ -164,7 +170,7 @@ def test_drag_is_not_mujocos_medium():
 def test_drag_keeps_a_force_another_writer_put_in_xfrc_applied():
     """`step` adds drag for this step only: a force someone else keeps in the row is neither cleared nor accumulated."""
     tree = build_body_tree(ball("earth"))
-    model = mujoco.MjModel.from_xml_string(to_mjcf(tree))
+    model = airborne(mujoco.MjModel.from_xml_string(to_mjcf(tree)))
     data = mujoco.MjData(model)
     body = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_BODY, tree.root.id)
     data.xfrc_applied[body, 0] = 0.25
@@ -199,20 +205,30 @@ def test_drag_explicit_step_stability_limit_is_v_t_over_g():
 # --- the run stream (X-02a's PreviewRun owns the step loop) ---------------------------------------------------------
 
 
-def stream(planet: str, density: float, duration_s: float):
+def _airborne_compiled(compiled):
+    airborne(compiled.model)
+    return compiled
+
+
+def stream(monkeypatch, planet: str, density: float, duration_s: float):
+    """A `PreviewRun` of the ball with contact off (`airborne`); drag is the run's own, untouched."""
+    import kinetra_engine.run.preview as preview
     from kinetra_engine.run import PreviewRun
+
+    real = preview.compile_project
+    monkeypatch.setattr(preview, "compile_project", lambda project, cache=None: _airborne_compiled(real(project, cache)))
 
     run = PreviewRun(ball(planet, density), run_id="run-1", project_id="ball", revision=1, duration_s=duration_s)
     items = list(run)
     return run, items[:-1], items[-1]
 
 
-def test_drag_run_stream_on_earth_approaches_the_hand_terminal_speed():
+def test_drag_run_stream_on_earth_approaches_the_hand_terminal_speed(monkeypatch):
     """The run's frames: the sphere's speed between the last two frames is the hand terminal speed (8 tau of fall), and the
     stream says `근사: 집중 항력`."""
     vt = HAND_VT["earth"]
     tau = vt / load_body("earth").gravity.value
-    run, frames, ended = stream("earth", DENSITY["earth"], 8.0 * tau)
+    run, frames, ended = stream(monkeypatch, "earth", DENSITY["earth"], 8.0 * tau)
     assert ended.end.reason == "completed"
     assert DRAG_LABEL in run.started.model_labels
     a, b = frames[-2], frames[-1]
@@ -222,11 +238,11 @@ def test_drag_run_stream_on_earth_approaches_the_hand_terminal_speed():
     assert b.sim_time_s * load_body("earth").gravity.value > 7.0 * vt
 
 
-def test_drag_run_stream_on_the_moon_is_the_no_drag_stream_bit_for_bit():
+def test_drag_run_stream_on_the_moon_is_the_no_drag_stream_bit_for_bit(monkeypatch):
     """Moon: air density 0. The run's trajectory hash and every frame pose equal a plain `mj_step` loop of the same model."""
     import hashlib
 
-    run, frames, ended = stream("moon", DENSITY["earth"], 1.0)
+    run, frames, ended = stream(monkeypatch, "moon", DENSITY["earth"], 1.0)
     assert DRAG_LABEL not in run.started.model_labels
     model = run.compiled.model
     data = mujoco.MjData(model)

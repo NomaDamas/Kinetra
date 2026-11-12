@@ -3,9 +3,10 @@
 `uv run pytest packages/engine -q -k "simulate and stream"`
 
 The project is two blocks welded on top of each other on the moon, standing on the ground plane z = 0 (the joined snap
-points meet at the saved pose, the placement checks pass). The compiled model has the moon's gravity (W-03a) and no
-ground yet, so the body falls; the stream says so in `model_labels`. Values are the test's own choices (`SRC`), not
-data.
+points meet at the saved pose, the placement checks pass). The compiled model has the moon's gravity (W-03a) and the
+ground (X-01e), so the body stands. Tests of free motion (falling, the rocket's climb against the coasting rocket) turn
+contact off on the compiled model (`free_flight`), as `test_actuator` does for its clamped rigs. Values are the test's own
+choices (`SRC`), not data.
 """
 
 from __future__ import annotations
@@ -13,6 +14,7 @@ from __future__ import annotations
 import asyncio
 import json
 import math
+import re
 import time
 from pathlib import Path
 
@@ -42,6 +44,7 @@ from kinetra_core import (
 )
 from kinetra_core.bodies import load_body
 from kinetra_core.frames import MAX_TICK
+from kinetra_engine.compiler import GROUND_GEOM, contact_friction, contact_labels
 from kinetra_engine.protocol import CoreError, Hub, ReferenceClient
 from kinetra_engine.run import (
     FRAME_RATE_CEILING_HZ,
@@ -118,6 +121,20 @@ def split(run):
     return items[:-1], items[-1]
 
 
+def free_flight(monkeypatch):
+    """Runs compile with MuJoCo's contact off: nothing touches the ground, so a body moves only by gravity and thrust."""
+    import kinetra_engine.run.preview as preview
+
+    real = preview.compile_project
+
+    def compiled(project, cache=None):
+        c = real(project, cache)
+        c.model.opt.disableflags |= mujoco.mjtDisableBit.mjDSBL_CONTACT
+        return c
+
+    monkeypatch.setattr(preview, "compile_project", compiled)
+
+
 # --- the run itself ----------------------------------------------------------------------------------------------
 
 
@@ -142,10 +159,15 @@ def test_simulate_stream_run_started_names_the_document_platform_and_bodies():
     assert tag.compute.integrator == mujoco.mjtIntegrator(model.opt.integrator).name.removeprefix("mjINT_").lower()
     assert tag.compute.solver["iterations"] == model.opt.iterations
     assert (tag.threads.physics, tag.threads.solver) == (1, 1)
-    # the model runs with the moon's gravity (W-03a), so no gravity label; it has no ground, and the label says so
+    # the model runs with the moon's gravity (W-03a) and has the ground (X-01e): neither label; the contact labels are there
     assert tuple(model.opt.gravity) == (0.0, 0.0, -load_body("moon").gravity.value)
     assert not any("중력" in label for label in s.model_labels)
-    assert any("지면 없음" in label for label in s.model_labels)
+    assert not any("지면 없음" in label for label in s.model_labels)
+    assert list(s.model_labels) == [label.text for label in contact_labels(contact_friction(run.compiled.tree))]
+    assert "근사: 접촉 마찰은 두 면 중 작은 계수, 정지·운동 구분 없이 운동 마찰 계수 하나" in s.model_labels
+    # a model without the ground is labelled (read from the model, not assumed)
+    groundless = mujoco.MjModel.from_xml_string(re.sub(rf'\s*<geom name="{GROUND_GEOM}"[^>]*/>', "", run.compiled.mjcf, count=1))
+    assert any("지면 없음" in label for label in environment_labels(project, groundless))
     # a model whose gravity is not the planet's is labelled (read from the model, not assumed)
     model.opt.gravity[:] = (0.0, 0.0, -9.81)
     assert any("중력" in label and "9.81" in label for label in environment_labels(project, model))
@@ -165,7 +187,16 @@ def test_simulate_stream_frames_pass_check_run_with_the_end_frame_off_the_grid()
     assert ended.last_tick == last
 
 
-def test_simulate_stream_poses_are_the_engine_state_falling_under_the_model_gravity():
+def test_simulate_stream_the_tower_stands_on_the_ground():
+    run = run_of(tower(), duration_s=0.25)
+    frames, _ = split(run)
+    # soft contact: the body settles a few hundredths of a millimetre into the plane and stays (measured -1.8e-5 m)
+    assert all(abs(f.poses[0].position.z) < 1e-4 for f in frames)
+    assert frames[-1].poses[0].orientation.w == pytest.approx(1.0)
+
+
+def test_simulate_stream_poses_are_the_engine_state_falling_under_the_model_gravity(monkeypatch):
+    free_flight(monkeypatch)
     run = run_of(tower(), duration_s=0.2)
     frames, _ = split(run)
     g = run.compiled.model.opt.gravity[2]
@@ -486,17 +517,19 @@ def test_simulate_stream_an_internal_error_before_the_first_frame_opens_no_strea
     assert "early" in error.message and "secret" not in error.message
 
 
-def test_simulate_stream_a_thruster_run_climbs_as_the_rocket_equation_says():
+def test_simulate_stream_a_thruster_run_climbs_as_the_rocket_equation_says(monkeypatch):
     """X-01c in the run: `test_thrust.rocket` (tank on the 2 lbf thruster, exhaust down) burns at command 1 over [0, 0.5) s.
     Gravity acts the same with and without the burn, so the height the burn adds at tick n is the sum over the steps of
     `dt x` the rocket equation's speed, `v_e ln(m0 / m(t))`, with `m(t) = m0 - J(t) / v_e` and `J(t)` the curve's impulse
     (a 7 ms linear ramp, then F). That sum is the semi-implicit Euler position of the speed the rocket equation gives;
-    it is computed here by hand, not by the code under test. No label says the thruster is not applied."""
+    it is computed here by hand, not by the code under test. No label says the thruster is not applied. Contact is off
+    (`free_flight`): the coasting rocket must fall freely for the difference to be the burn's alone."""
     from test_thrust import CAPACITY, F, M_TANK, M_THRUSTER, T_OPEN, V_E, entry, rocket
 
     def airless(project):  # the rocket equation has no air: on the Moon the run applies no drag (W-03b), Earth's would
         return project.model_copy(update={"world": project.world.model_copy(update={"planet": "moon"})})
 
+    free_flight(monkeypatch)
     burning = run_of(airless(rocket([entry("burn", "main", 0.0, 0.5, 1.0)])), duration_s=0.5)
     coasting = run_of(airless(rocket([])), duration_s=0.5)
     assert not any("추력기" in label for label in burning.started.model_labels)
