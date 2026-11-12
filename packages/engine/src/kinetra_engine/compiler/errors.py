@@ -18,6 +18,9 @@ a project with a placeholder is refused before anything is read, by `require_com
 | `loop` | the hinges and sliders close a loop between bodies |
 | `not_one_piece` | the assembly is two or more pieces with no joint between them |
 | `floating` | the assembly touches neither the ground nor a terrain prop |
+| `spring_joint` | a spring-damper instance is not at exactly one slider, or a slider has one at both ends (`compile_drives`, X-01b) |
+| `motor_joint` | a motor actuator drives a slider: its curve is torque against angular speed (`compile_drives`, X-01b) |
+| `no_current` | a motor that draws from a battery is a part without the specs `no_load_current` and `stall_current` (`compile_drives`, X-01b) |
 """
 
 from __future__ import annotations
@@ -37,6 +40,9 @@ class CompileErrorCode(StrEnum):
     LOOP = "loop"
     NOT_ONE_PIECE = "not_one_piece"
     FLOATING = "floating"
+    SPRING_JOINT = "spring_joint"
+    MOTOR_JOINT = "motor_joint"
+    NO_CURRENT = "no_current"
 
 
 class CompileError(ValueError):

@@ -22,7 +22,7 @@ labels = proxy_labels(tree)                                    # 근사 라벨(M
 - **프록시 → `geom`**(`collision-proxy.md`의 매핑 표): 상자는 반치수, 원기둥은 `(반지름, 반길이)`, 구는 반지름, 중심은 `pos`, 방향은 `quat="w x y z"`. 강체 안의 다른 인스턴스의 geom은 강체 좌표계로 옮긴다. `geom` 이름은 `<인스턴스>/<프록시 geom id>`.
 - **`<inertial>`.** `mass`, `pos`(`MassProperties.center_of_mass`), `fullinertia`(`Ixx Iyy Izz Ixy Ixz Iyz`, 질량 중심 둘레, 강체 축)를 `MassProperties`에서 명시한다. `inertiafromgeom="false"`라 `<inertial>`이 없는 바디는 MuJoCo가 거절한다(프록시의 메운 빈 곳이 질량에 들어가지 않는다는 보증).
 - **`<option>`(W-03a)**: 중력은 `data/bodies`의 그 행성 값, MuJoCo 매질(`density`, `viscosity`)은 0이다(이유는 `bodies.md`의 "엔진이 읽는 법"). 시간 간격과 적분기는 아직 MuJoCo 기본값이다(X-02).
-- **MJCF에 아직 없는 것**: 시간 간격·적분기 설정, 공기 항력(W-03b), 접촉 매개변수, 액추에이터, 결합의 스프링·댐퍼. `break_threshold`와 액추에이터는 이 MJCF에 들어가지 않는다(각각 X-04b, X-01b가 더한다).
+- **MJCF에 아직 없는 것**: 시간 간격·적분기 설정, 공기 항력(W-03b), 접촉 매개변수. `break_threshold`는 이 MJCF에 들어가지 않는다(X-04b). 결합의 스프링·댐퍼와 모터는 `to_mjcf(tree, drives=compile_drives(tree))`가 더한다(X-01b, [`joints-actuators.md`](joints-actuators.md)).
 
 ## 근사 라벨
 
@@ -37,7 +37,7 @@ labels = proxy_labels(tree)                                    # 근사 라벨(M
 
 ## 한계와 열린 질문 (숨기지 않는다)
 
-- 이 MJCF를 돌려 본 것은 적재(`MjModel.from_xml_string`)와 `mj_forward`까지다. 접촉과 구름은 X-01b·X-02의 몫이고 이 PR은 시뮬레이션 궤적을 주장하지 않는다.
+- 이 PR(X-01a)이 돌려 본 것은 적재(`MjModel.from_xml_string`)와 `mj_forward`까지다. 구름과 모터·스프링의 궤적 시험은 X-01b(`joints-actuators.md`)가 했다. 접촉 매개변수는 아직 컴파일하지 않는다.
 - 같은 인스턴스를 두 번 컴파일하지 않으려면 `cache`(`PartCache`)를 넘긴다. 캐시 키는 `part_key`(엄격)다. 정규 순서로 읽은 부품은 순서만 다른 정의가 같은 키에 닿는다.
 - 구조적 오류도 아래의 `CompileError`다.
 
@@ -64,6 +64,9 @@ labels = proxy_labels(tree)                                    # 근사 라벨(M
 | `loop` | 힌지·슬라이더가 강체 사이에 고리를 닫는다 | 결합, 인스턴스, 부품 |
 | `not_one_piece` | 조립이 결합 없이 두 덩어리 이상이다 | 두 덩어리의 대표 인스턴스, 부품 |
 | `floating` | 조립이 지면에도 지형 소품에도 닿지 않는다. 문장은 검증기의 `floating` 문장 + "시작 높이는 아직 프로젝트에 없다(J-02)" | 인스턴스, 부품 |
+| `spring_joint` | 스프링-댐퍼 인스턴스가 슬라이더 정확히 하나에 걸려 있지 않거나(없음, 둘 이상, 힌지) 한 슬라이더의 양끝이 모두 스프링이다(`compile_drives`, X-01b, `joints-actuators.md`) | 인스턴스, 부품, 결합 |
+| `motor_joint` | 모터 액추에이터가 슬라이더를 구동한다(곡선은 토크 대 각속도, `compile_drives`) | 액추에이터, 인스턴스, 부품, 결합 |
+| `no_current` | 배터리에서 꺼내는 모터의 부품에 사양 `no_load_current`, `stall_current`가 없다(`compile_drives`) | 액추에이터, 인스턴스, 부품, 결합 |
 
 결정(X-01a 리뷰와 C-02c가 남긴 것):
 
