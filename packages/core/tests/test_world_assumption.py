@@ -262,8 +262,9 @@ LEGACY_NORMAL_FIELDS = {"kind", "mean", "std", "clip_low", "clip_high"}
 
 
 def test_assumption_structure_is_the_legacy_one_with_value_unit_source_in_a_quantity():
-    # legacy value, unit and source (free text) became one Quantity: value, unit, badge, source
-    assert set(Assumption.model_fields) == LEGACY_ASSUMPTION_FIELDS - {"unit", "source"}
+    # Legacy value/unit/source became Quantity; #571 adds the explicit optional design-value binding.
+    assert set(Assumption.model_fields) == (LEGACY_ASSUMPTION_FIELDS - {"unit", "source"}) | {"binding"}
+    assert Assumption.model_validate(assumption_dict()).binding is None
     assert Assumption.model_fields["value"].annotation is Quantity
     assert {c.value for c in Confidence} == {"low", "med", "high"}
     defs = AssumptionTable.model_json_schema()["$defs"]
