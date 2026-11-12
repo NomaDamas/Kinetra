@@ -133,6 +133,7 @@ def test_call_endpoint_model_and_effort_follow_the_environment(fake_env, curl_qu
     assert (res.model, res.effort) == ("gpt-6.1-sol", "medium")
     rows = [json.loads(ln) for ln in (tmp_path / "cost.jsonl").read_text().splitlines()]
     assert rows[0]["model"] == "gpt-6.1-sol" and rows[0]["effort"] == "medium"
+    assert "--globoff" in c["argv"]
 
 
 @pytest.mark.parametrize(
@@ -140,6 +141,8 @@ def test_call_endpoint_model_and_effort_follow_the_environment(fake_env, curl_qu
     [
         ("KINETRA_REVIEW_ENDPOINT", "http://proxy.example.org/v1/chat/completions"),
         ("KINETRA_REVIEW_ENDPOINT", "https://evil.example.org/x -o /tmp/y"),
+        ("KINETRA_REVIEW_ENDPOINT", "https://proxy.example.org/v1/{a,b}"),
+        ("KINETRA_REVIEW_ENDPOINT", "https://proxy.example.org/v1/[1-9]"),
         ("KINETRA_REVIEW_MODEL", "gpt 6"),
         ("KINETRA_REVIEW_EFFORT", "max"),
     ],

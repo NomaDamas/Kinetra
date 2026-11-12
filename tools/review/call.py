@@ -42,8 +42,9 @@ EFFORTS = ("low", "medium", "high")
 
 def endpoint() -> str:
     url = os.environ.get(ENDPOINT_ENV) or ENDPOINT
-    if not re.fullmatch(r"https://[^\s/]+(/[^\s]*)?", url):
-        raise common.ReviewError(f"{ENDPOINT_ENV} 는 https:// 로 시작하는 URL 이어야 한다")
+    # curl 은 --globoff 로 부르지만, 끝점 하나가 여러 요청이 되지 않도록 glob 문자({}[])와 공백도 받지 않는다.
+    if not re.fullmatch(r"https://[^\s/{}\[\]]+(/[^\s{}\[\]]*)?", url):
+        raise common.ReviewError(f"{ENDPOINT_ENV} 는 https:// 로 시작하고 공백·{{}}·[] 가 없는 URL 이어야 한다")
     return url
 
 
@@ -324,7 +325,7 @@ def curl_transport(payload: dict, key: str) -> tuple[int, str]:
             json.dump(payload, f, ensure_ascii=False)
         cfg = f'header = "Authorization: Bearer {key}"\n'
         argv = [
-            "curl", "-sS", "--max-time", str(CURL_MAX_TIME), "--config", "-", "-X", "POST",
+            "curl", "-sS", "--globoff", "--max-time", str(CURL_MAX_TIME), "--config", "-", "-X", "POST",
             "-H", "Content-Type: application/json", "--data-binary", f"@{path}",
             "-w", "\n%{http_code}", endpoint(),
         ]  # fmt: skip
