@@ -51,6 +51,14 @@ def newton(value):
     return q(value, "N")
 
 
+def grounded_pair(kind="fixed"):
+    """Two 8 kg, 0.2 m cubes side by side, joined at (0.1, 0, 0.1), each with a 0.2 m square ground patch."""
+    parts = [part("cube", [box("c", 0.2, 0.2, 0.2)], [snap("px", (0.1, 0, 0)), snap("nx", (-0.1, 0, 0))])]
+    instances = [instance("l", "cube", (0, 0, 0.1)), instance("r", "cube", (0.2, 0, 0.1))]
+    axis = (0, 1, 0) if kind == "hinge" else None
+    return project(parts, instances, [joint("weld", kind, ("l", "px"), ("r", "nx"), axis=axis)])
+
+
 def test_static_load_cantilever_matches_the_hand_shear_and_bending_moment():
     s = static_loads(cantilever())
     assert s.planet == "earth" and s.gravity == G_EARTH and s.caveats == ()
@@ -71,6 +79,7 @@ def test_static_load_cantilever_matches_the_hand_shear_and_bending_moment():
     # no threshold: never breaks, no margin
     assert root.threshold is None and root.margin is None and root.utilization is None and not root.exceeds
     assert root.axis is None and root.axis_load is None
+    assert root.force_interval is None and root.moment_interval is None and root.load_interval is None
 
 
 def test_static_load_margin_to_a_threshold_and_an_exceeded_one():
@@ -138,12 +147,12 @@ def test_static_load_hinge_names_the_moment_its_free_axis_cannot_hold():
 
 
 def test_static_load_both_sides_on_the_ground_is_indeterminate_and_floating_has_none():
-    # two 0.2 m cubes side by side on the ground, welded: ground and weld share the weight, statics cannot split it
-    parts = [part("cube", [box("c", 0.2, 0.2, 0.2)], [snap("px", (0.1, 0, 0)), snap("nx", (-0.1, 0, 0))])]
-    pair = project(parts, [instance("l", "cube", (0, 0, 0.1)), instance("r", "cube", (0.2, 0, 0.1))], [joint("weld", "fixed", ("l", "px"), ("r", "nx"))])
+    # Ground and weld share the weight, so there is still no unique point result.
+    pair = grounded_pair()
     weld = static_loads(build_body_tree(pair)).joint("weld")
     assert weld.status is LoadStatus.INDETERMINATE and "부정정" in weld.reason
     assert weld.load is None and weld.force is None and weld.margin is None and not weld.exceeds
+    assert weld.load_interval is not None and weld.force_interval is not None and weld.moment_interval is not None
     # the same pair resting only on a terrain step: nothing on z = 0
     on_step = pair.model_dump(mode="json")
     for inst in on_step["design"]["instances"]:
@@ -152,6 +161,42 @@ def test_static_load_both_sides_on_the_ground_is_indeterminate_and_floating_has_
                                           "length": q(1.0), "width": q(1.0), "height": q(1.0)}]
     s = static_loads(build_body_tree(Project.model_validate(on_step)))
     assert s.joint("weld").status is LoadStatus.UNSUPPORTED and s.joint("weld").load is None and s.caveats == ()
+    assert s.joint("weld").force_interval is None and s.joint("weld").load_interval is None
+
+
+def test_static_load_indeterminate_intervals_match_hand_reaction_bounds():
+    # Hand calculation for grounded_pair: m_a = m_b = 8 kg, W = 16g, p = (0.1, 0, 0.1), and the b-side
+    # contact coordinates relative to p are dx = {0, 0.2}, dy = {-0.1, 0.1}, dz = -0.1. The global normal
+    # sum on b lies in [0, W], so F_z = R_b,z - 8g lies in [-8g, 8g]. Each tangent component is bounded by
+    # mu W, where mu is the smaller of default geom friction 1 and Earth ground friction.
+    mu = load_body("earth").ground_friction.value.value
+    s = static_loads(build_body_tree(grounded_pair()))
+    weld = s.joint("weld")
+    assert s.tolerance == 1e-6  # numerical placement/contact tolerance [m], not a force tolerance
+    assert weld.force is None and weld.moment is None and weld.load is None
+    fx, fy, fz = weld.force_interval
+    for component in (fx, fy):
+        assert component.lower == pytest.approx(-16 * mu * G_EARTH, rel=1e-12)
+        assert component.upper == pytest.approx(16 * mu * G_EARTH, rel=1e-12)
+    assert fz.lower == pytest.approx(-8 * G_EARTH, rel=1e-12)
+    assert fz.upper == pytest.approx(8 * G_EARTH, rel=1e-12)
+    # M_x = sum(dy R_z - dz R_y); M_y = sum(dz R_x - dx R_z) + 0.1*8g;
+    # M_z = sum(dx R_y - dy R_x). Independent cone-component relaxation gives the following conservative bounds.
+    mx, my, mz = weld.moment_interval
+    assert mx.lower == pytest.approx(-1.6 * (1 + mu) * G_EARTH, rel=1e-12)
+    assert mx.upper == pytest.approx(1.6 * (1 + mu) * G_EARTH, rel=1e-12)
+    assert my.lower == pytest.approx(-(2.4 + 1.6 * mu) * G_EARTH, rel=1e-12)
+    assert my.upper == pytest.approx((0.8 + 1.6 * mu) * G_EARTH, rel=1e-12)
+    assert mz.lower == pytest.approx(-4.8 * mu * G_EARTH, rel=1e-12)
+    assert mz.upper == pytest.approx(4.8 * mu * G_EARTH, rel=1e-12)
+    assert weld.load_interval.lower == pytest.approx(0.0, abs=1e-12)
+    expected_max = G_EARTH * math.sqrt(2 * (16 * mu) ** 2 + 8**2)
+    assert weld.load_interval.upper == pytest.approx(expected_max, rel=1e-12)
+    # The +y hinge projection is exactly the hand-bounded M_y interval, still not a unique axis torque.
+    hinge = static_loads(build_body_tree(grounded_pair("hinge"))).joint("weld")
+    assert hinge.axis_load is None
+    assert hinge.axis_load_interval.lower == pytest.approx(my.lower, rel=1e-12)
+    assert hinge.axis_load_interval.upper == pytest.approx(my.upper, rel=1e-12)
 
 
 def test_static_load_says_when_the_design_is_not_at_rest():

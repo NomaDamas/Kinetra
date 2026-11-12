@@ -2,7 +2,7 @@
 joint load against the break threshold (X-03b); thrust-to-weight on each planet and burn time (X-07); thrust centre,
 thrust line and torque about the centre of mass at a moment of the schedule (X-06)."""
 
-from .static_load import JointLoad, LoadStatus, StaticLoads, static_loads
+from .static_load import JointLoad, LoadInterval, LoadStatus, StaticLoads, static_loads
 from .thrust_center import ThrustCenter, ThrusterForce, thrust_center
 from .tipover import RIM_SEGMENTS, SupportEdge, SupportPoint, Tipover, TipoverError, tipover
 from .twr import (
@@ -23,6 +23,7 @@ __all__ = [
     "AnalyticValue",
     "InputBadges",
     "JointLoad",
+    "LoadInterval",
     "LoadStatus",
     "NoValue",
     "PlanetRatio",
