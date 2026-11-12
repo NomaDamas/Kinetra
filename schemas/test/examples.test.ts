@@ -83,10 +83,12 @@ test("every number in the examples has a badge from the closed vocabulary and a 
   }
 });
 
-test("a fixture carries no real-performance claim: no cite and no sim badge", () => {
+test("fixture values are illustrative or cited library inputs, never claimed simulation results", () => {
   for (const name of ["four-wheel-car", "rocket-car-skeleton"]) {
     for (const q of quantities(readProject(name))) {
-      assert.ok(q.badge === "declared" || q.badge === "default", `${name}: ${q.badge}`);
+      assert.ok(q.badge !== "sim", `${name}: ${q.badge}`);
+      if (q.badge === "declared") assert.match(q.source.ref, /illustrative/, `${name}: ${q.source.ref}`);
+      if (q.badge === "cite") assert.ok(q.source.url && q.source.locator, `${name}: cited library input needs its evidence`);
     }
   }
 });

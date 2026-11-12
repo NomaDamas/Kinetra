@@ -5,42 +5,56 @@
         "id": "example-material",
         "name": "example-material",
         "density": {
-          "value": 1000.0,
-          "unit": "kg/m^3",
           "badge": "declared",
           "source": {
             "ref": "Kinetra schema example: illustrative value, not a measured part",
+            "locator": null,
+            "url": null,
+            "license": null,
             "declared_by": "kinetra-docs",
             "declared_at": "2026-11-11T00:00:00Z"
-          }
+          },
+          "value": 1000.0,
+          "unit": "kg/m^3"
         },
         "yield_strength": {
-          "value": 10000000.0,
-          "unit": "Pa",
           "badge": "declared",
           "source": {
             "ref": "Kinetra schema example: illustrative value, not a measured part",
+            "locator": null,
+            "url": null,
+            "license": null,
             "declared_by": "kinetra-docs",
             "declared_at": "2026-11-11T00:00:00Z"
-          }
+          },
+          "value": 10000000.0,
+          "unit": "Pa"
         },
         "elastic_modulus": {
-          "value": 1000000000.0,
-          "unit": "Pa",
           "badge": "declared",
           "source": {
             "ref": "Kinetra schema example: illustrative value, not a measured part",
+            "locator": null,
+            "url": null,
+            "license": null,
             "declared_by": "kinetra-docs",
             "declared_at": "2026-11-11T00:00:00Z"
-          }
+          },
+          "value": 1000000000.0,
+          "unit": "Pa"
         },
         "friction": {
-          "value": 0.5,
-          "unit": "1",
           "badge": "default",
           "source": {
-            "ref": "Kinetra schema example: illustrative default"
-          }
+            "ref": "Kinetra schema example: illustrative default",
+            "locator": null,
+            "url": null,
+            "license": null,
+            "declared_by": null,
+            "declared_at": null
+          },
+          "value": 0.5,
+          "unit": "1"
         }
       }
     ],
@@ -53,39 +67,57 @@
             "name": "length",
             "unit": "m",
             "default": {
-              "value": 0.4,
-              "unit": "m",
               "badge": "declared",
               "source": {
                 "ref": "Kinetra schema example: illustrative value, not a measured part",
+                "locator": null,
+                "url": null,
+                "license": null,
                 "declared_by": "kinetra-docs",
                 "declared_at": "2026-11-11T00:00:00Z"
-              }
+              },
+              "value": 0.4,
+              "unit": "m"
             },
             "min": {
-              "value": 0.2,
-              "unit": "m",
               "badge": "declared",
               "source": {
                 "ref": "Kinetra schema example: illustrative value, not a measured part",
+                "locator": null,
+                "url": null,
+                "license": null,
                 "declared_by": "kinetra-docs",
                 "declared_at": "2026-11-11T00:00:00Z"
-              }
+              },
+              "value": 0.2,
+              "unit": "m"
             },
             "max": {
-              "value": 0.8,
-              "unit": "m",
               "badge": "declared",
               "source": {
                 "ref": "Kinetra schema example: illustrative value, not a measured part",
+                "locator": null,
+                "url": null,
+                "license": null,
                 "declared_by": "kinetra-docs",
                 "declared_at": "2026-11-11T00:00:00Z"
-              }
+              },
+              "value": 0.8,
+              "unit": "m"
             }
           }
         ],
         "snap_points": [
           {
+            "badge": "declared",
+            "source": {
+              "ref": "Kinetra schema example: illustrative value, not a measured part",
+              "locator": null,
+              "url": null,
+              "license": null,
+              "declared_by": "kinetra-docs",
+              "declared_at": "2026-11-11T00:00:00Z"
+            },
             "id": "axle-fl",
             "kind": "axle_mount",
             "accepts": [
@@ -110,15 +142,18 @@
               "y": 0.0,
               "z": 0.0,
               "w": 1.0
-            },
-            "badge": "declared",
-            "source": {
-              "ref": "Kinetra schema example: illustrative value, not a measured part",
-              "declared_by": "kinetra-docs",
-              "declared_at": "2026-11-11T00:00:00Z"
             }
           },
           {
+            "badge": "declared",
+            "source": {
+              "ref": "Kinetra schema example: illustrative value, not a measured part",
+              "locator": null,
+              "url": null,
+              "license": null,
+              "declared_by": "kinetra-docs",
+              "declared_at": "2026-11-11T00:00:00Z"
+            },
             "id": "axle-fr",
             "kind": "axle_mount",
             "accepts": [
@@ -143,15 +178,18 @@
               "y": 0.0,
               "z": 0.0,
               "w": 1.0
-            },
-            "badge": "declared",
-            "source": {
-              "ref": "Kinetra schema example: illustrative value, not a measured part",
-              "declared_by": "kinetra-docs",
-              "declared_at": "2026-11-11T00:00:00Z"
             }
           },
           {
+            "badge": "declared",
+            "source": {
+              "ref": "Kinetra schema example: illustrative value, not a measured part",
+              "locator": null,
+              "url": null,
+              "license": null,
+              "declared_by": "kinetra-docs",
+              "declared_at": "2026-11-11T00:00:00Z"
+            },
             "id": "axle-rl",
             "kind": "axle_mount",
             "accepts": [
@@ -176,15 +214,18 @@
               "y": 0.0,
               "z": 0.0,
               "w": 1.0
-            },
-            "badge": "declared",
-            "source": {
-              "ref": "Kinetra schema example: illustrative value, not a measured part",
-              "declared_by": "kinetra-docs",
-              "declared_at": "2026-11-11T00:00:00Z"
             }
           },
           {
+            "badge": "declared",
+            "source": {
+              "ref": "Kinetra schema example: illustrative value, not a measured part",
+              "locator": null,
+              "url": null,
+              "license": null,
+              "declared_by": "kinetra-docs",
+              "declared_at": "2026-11-11T00:00:00Z"
+            },
             "id": "axle-rr",
             "kind": "axle_mount",
             "accepts": [
@@ -209,15 +250,18 @@
               "y": 0.0,
               "z": 0.0,
               "w": 1.0
-            },
-            "badge": "declared",
-            "source": {
-              "ref": "Kinetra schema example: illustrative value, not a measured part",
-              "declared_by": "kinetra-docs",
-              "declared_at": "2026-11-11T00:00:00Z"
             }
           },
           {
+            "badge": "declared",
+            "source": {
+              "ref": "Kinetra schema example: illustrative value, not a measured part",
+              "locator": null,
+              "url": null,
+              "license": null,
+              "declared_by": "kinetra-docs",
+              "declared_at": "2026-11-11T00:00:00Z"
+            },
             "id": "thruster-mount",
             "kind": "thruster_mount",
             "accepts": [
@@ -242,15 +286,70 @@
               "y": 0.0,
               "z": 0.0,
               "w": 1.0
-            },
-            "badge": "declared",
-            "source": {
-              "ref": "Kinetra schema example: illustrative value, not a measured part",
-              "declared_by": "kinetra-docs",
-              "declared_at": "2026-11-11T00:00:00Z"
             }
           }
-        ]
+        ],
+        "specs": [],
+        "shape": {
+          "badge": "declared",
+          "source": {
+            "ref": "Kinetra schema example: illustrative 0.12 m wide, 0.02 m thick box chassis; its length remains the existing length parameter, not a measured part",
+            "locator": null,
+            "url": null,
+            "license": null,
+            "declared_by": "kinetra-docs",
+            "declared_at": "2026-11-11T00:00:00Z"
+          },
+          "components": [
+            {
+              "id": "deck",
+              "primitive": {
+                "kind": "box",
+                "size_x": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "length",
+                      "factor": 1.0
+                    }
+                  ]
+                },
+                "size_y": {
+                  "offset": 0.12,
+                  "terms": []
+                },
+                "size_z": {
+                  "offset": 0.02,
+                  "terms": []
+                }
+              },
+              "operation": "add",
+              "position": {
+                "x": {
+                  "offset": 0.0,
+                  "terms": []
+                },
+                "y": {
+                  "offset": 0.0,
+                  "terms": []
+                },
+                "z": {
+                  "offset": 0.0,
+                  "terms": []
+                }
+              },
+              "orientation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+              }
+            }
+          ]
+        },
+        "mass_parameter": null,
+        "role": null,
+        "curves": []
       },
       {
         "id": "wheel",
@@ -260,39 +359,100 @@
             "name": "diameter",
             "unit": "m",
             "default": {
-              "value": 0.1,
-              "unit": "m",
               "badge": "declared",
               "source": {
                 "ref": "Kinetra schema example: illustrative value, not a measured part",
+                "locator": null,
+                "url": null,
+                "license": null,
                 "declared_by": "kinetra-docs",
                 "declared_at": "2026-11-11T00:00:00Z"
-              }
+              },
+              "value": 0.1,
+              "unit": "m"
             },
             "min": {
-              "value": 0.05,
-              "unit": "m",
               "badge": "declared",
               "source": {
                 "ref": "Kinetra schema example: illustrative value, not a measured part",
+                "locator": null,
+                "url": null,
+                "license": null,
                 "declared_by": "kinetra-docs",
                 "declared_at": "2026-11-11T00:00:00Z"
-              }
+              },
+              "value": 0.05,
+              "unit": "m"
             },
             "max": {
-              "value": 0.2,
-              "unit": "m",
               "badge": "declared",
               "source": {
                 "ref": "Kinetra schema example: illustrative value, not a measured part",
+                "locator": null,
+                "url": null,
+                "license": null,
                 "declared_by": "kinetra-docs",
                 "declared_at": "2026-11-11T00:00:00Z"
-              }
+              },
+              "value": 0.2,
+              "unit": "m"
+            }
+          },
+          {
+            "name": "width",
+            "unit": "m",
+            "default": {
+              "badge": "default",
+              "source": {
+                "ref": "B-03a: tread width (the contact width along the axle), chosen by Kinetra for game-scale cars; not a datasheet value and not a standard tire size; the sidewalls, rims and hub bosses are added beside it and are not part of this width",
+                "locator": null,
+                "url": null,
+                "license": null,
+                "declared_by": null,
+                "declared_at": null
+              },
+              "value": 0.04,
+              "unit": "m"
+            },
+            "min": {
+              "badge": "default",
+              "source": {
+                "ref": "B-03a: tread width (the contact width along the axle), chosen by Kinetra for game-scale cars; not a datasheet value and not a standard tire size; the sidewalls, rims and hub bosses are added beside it and are not part of this width",
+                "locator": null,
+                "url": null,
+                "license": null,
+                "declared_by": null,
+                "declared_at": null
+              },
+              "value": 0.01,
+              "unit": "m"
+            },
+            "max": {
+              "badge": "default",
+              "source": {
+                "ref": "B-03a: tread width (the contact width along the axle), chosen by Kinetra for game-scale cars; not a datasheet value and not a standard tire size; the sidewalls, rims and hub bosses are added beside it and are not part of this width",
+                "locator": null,
+                "url": null,
+                "license": null,
+                "declared_by": null,
+                "declared_at": null
+              },
+              "value": 0.12,
+              "unit": "m"
             }
           }
         ],
         "snap_points": [
           {
+            "badge": "declared",
+            "source": {
+              "ref": "Kinetra schema example: illustrative value, not a measured part",
+              "locator": null,
+              "url": null,
+              "license": null,
+              "declared_by": "kinetra-docs",
+              "declared_at": "2026-11-11T00:00:00Z"
+            },
             "id": "hub",
             "kind": "shaft",
             "accepts": [
@@ -318,21 +478,416 @@
               "y": 0.0,
               "z": 0.0,
               "w": 1.0
-            },
-            "badge": "declared",
-            "source": {
-              "ref": "Kinetra schema example: illustrative value, not a measured part",
-              "declared_by": "kinetra-docs",
-              "declared_at": "2026-11-11T00:00:00Z"
             }
           }
-        ]
+        ],
+        "specs": [
+          {
+            "badge": "cite",
+            "source": {
+              "ref": "OpenStax College Physics 2e, 5.1 Friction, Table 5.1, 'Rubber on dry concrete', static 1.0 (the book gives one digit and says the values are approximate). A reference pair for a rubber tread, not this wheel on any Kinetra planet's ground (that is planet data in data/bodies; how the two combine is X-01's rule). Book licence CC BY-NC-SA 4.0; only factual values cited, no text or table copied. Accessed 2026-11-11",
+              "locator": "Table 5.1, row 'Rubber on dry concrete', column 'Static friction'",
+              "url": "https://openstax.org/books/college-physics-2e/pages/5-1-friction",
+              "license": null,
+              "declared_by": null,
+              "declared_at": null
+            },
+            "value": 1.0,
+            "unit": "1",
+            "name": "tread_friction_static"
+          },
+          {
+            "badge": "cite",
+            "source": {
+              "ref": "OpenStax College Physics 2e, 5.1 Friction, Table 5.1, 'Rubber on dry concrete', kinetic 0.7 (one digit, approximate). Same reference-pair caveat as tread_friction_static. Book licence CC BY-NC-SA 4.0; only factual values cited, no text or table copied. Wikipedia 'Friction', approximate coefficients, concrete/rubber, dry kinetic 0.6-0.85, contains it (cross-check only). Accessed 2026-11-11",
+              "locator": "Table 5.1, row 'Rubber on dry concrete', column 'Kinetic friction'",
+              "url": "https://openstax.org/books/college-physics-2e/pages/5-1-friction",
+              "license": null,
+              "declared_by": null,
+              "declared_at": null
+            },
+            "value": 0.7,
+            "unit": "1",
+            "name": "tread_friction_kinetic"
+          }
+        ],
+        "shape": {
+          "badge": "default",
+          "source": {
+            "ref": "B-03a: drawn by Kinetra as a game-scale wheel, axle along part y. The tire (full diameter, the one element that touches flat ground) has on each side a sidewall (0.84 of the diameter, 0.06 of the tread width thick), a rim (0.64, 0.10) and a hub boss (0.2, 0.20); the proportions are Kinetra's choice, not a datasheet or a standard wheel. Solid discs: no spokes, no hollow rim, no tread pattern, no tire deformation",
+            "locator": null,
+            "url": null,
+            "license": null,
+            "declared_by": null,
+            "declared_at": null
+          },
+          "components": [
+            {
+              "id": "tire",
+              "primitive": {
+                "kind": "cylinder",
+                "radius": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "diameter",
+                      "factor": 0.5
+                    }
+                  ]
+                },
+                "length": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "width",
+                      "factor": 1.0
+                    }
+                  ]
+                }
+              },
+              "operation": "add",
+              "position": {
+                "x": {
+                  "offset": 0.0,
+                  "terms": []
+                },
+                "y": {
+                  "offset": 0.0,
+                  "terms": []
+                },
+                "z": {
+                  "offset": 0.0,
+                  "terms": []
+                }
+              },
+              "orientation": {
+                "x": -0.7071067811865476,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 0.7071067811865476
+              }
+            },
+            {
+              "id": "sidewall_out",
+              "primitive": {
+                "kind": "cylinder",
+                "radius": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "diameter",
+                      "factor": 0.42
+                    }
+                  ]
+                },
+                "length": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "width",
+                      "factor": 0.06
+                    }
+                  ]
+                }
+              },
+              "operation": "add",
+              "position": {
+                "x": {
+                  "offset": 0.0,
+                  "terms": []
+                },
+                "y": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "width",
+                      "factor": 0.53
+                    }
+                  ]
+                },
+                "z": {
+                  "offset": 0.0,
+                  "terms": []
+                }
+              },
+              "orientation": {
+                "x": -0.7071067811865476,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 0.7071067811865476
+              }
+            },
+            {
+              "id": "rim_out",
+              "primitive": {
+                "kind": "cylinder",
+                "radius": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "diameter",
+                      "factor": 0.32
+                    }
+                  ]
+                },
+                "length": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "width",
+                      "factor": 0.1
+                    }
+                  ]
+                }
+              },
+              "operation": "add",
+              "position": {
+                "x": {
+                  "offset": 0.0,
+                  "terms": []
+                },
+                "y": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "width",
+                      "factor": 0.61
+                    }
+                  ]
+                },
+                "z": {
+                  "offset": 0.0,
+                  "terms": []
+                }
+              },
+              "orientation": {
+                "x": -0.7071067811865476,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 0.7071067811865476
+              }
+            },
+            {
+              "id": "hub_out",
+              "primitive": {
+                "kind": "cylinder",
+                "radius": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "diameter",
+                      "factor": 0.1
+                    }
+                  ]
+                },
+                "length": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "width",
+                      "factor": 0.2
+                    }
+                  ]
+                }
+              },
+              "operation": "add",
+              "position": {
+                "x": {
+                  "offset": 0.0,
+                  "terms": []
+                },
+                "y": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "width",
+                      "factor": 0.76
+                    }
+                  ]
+                },
+                "z": {
+                  "offset": 0.0,
+                  "terms": []
+                }
+              },
+              "orientation": {
+                "x": -0.7071067811865476,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 0.7071067811865476
+              }
+            },
+            {
+              "id": "sidewall_in",
+              "primitive": {
+                "kind": "cylinder",
+                "radius": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "diameter",
+                      "factor": 0.42
+                    }
+                  ]
+                },
+                "length": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "width",
+                      "factor": 0.06
+                    }
+                  ]
+                }
+              },
+              "operation": "add",
+              "position": {
+                "x": {
+                  "offset": 0.0,
+                  "terms": []
+                },
+                "y": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "width",
+                      "factor": -0.53
+                    }
+                  ]
+                },
+                "z": {
+                  "offset": 0.0,
+                  "terms": []
+                }
+              },
+              "orientation": {
+                "x": -0.7071067811865476,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 0.7071067811865476
+              }
+            },
+            {
+              "id": "rim_in",
+              "primitive": {
+                "kind": "cylinder",
+                "radius": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "diameter",
+                      "factor": 0.32
+                    }
+                  ]
+                },
+                "length": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "width",
+                      "factor": 0.1
+                    }
+                  ]
+                }
+              },
+              "operation": "add",
+              "position": {
+                "x": {
+                  "offset": 0.0,
+                  "terms": []
+                },
+                "y": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "width",
+                      "factor": -0.61
+                    }
+                  ]
+                },
+                "z": {
+                  "offset": 0.0,
+                  "terms": []
+                }
+              },
+              "orientation": {
+                "x": -0.7071067811865476,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 0.7071067811865476
+              }
+            },
+            {
+              "id": "hub_in",
+              "primitive": {
+                "kind": "cylinder",
+                "radius": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "diameter",
+                      "factor": 0.1
+                    }
+                  ]
+                },
+                "length": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "width",
+                      "factor": 0.2
+                    }
+                  ]
+                }
+              },
+              "operation": "add",
+              "position": {
+                "x": {
+                  "offset": 0.0,
+                  "terms": []
+                },
+                "y": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "width",
+                      "factor": -0.76
+                    }
+                  ]
+                },
+                "z": {
+                  "offset": 0.0,
+                  "terms": []
+                }
+              },
+              "orientation": {
+                "x": -0.7071067811865476,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 0.7071067811865476
+              }
+            }
+          ]
+        },
+        "mass_parameter": null,
+        "role": "wheel",
+        "curves": []
       },
       {
         "id": "rocket",
         "name": "Rocket",
+        "parameters": [],
         "snap_points": [
           {
+            "badge": "declared",
+            "source": {
+              "ref": "Kinetra schema example: illustrative value, not a measured part",
+              "locator": null,
+              "url": null,
+              "license": null,
+              "declared_by": "kinetra-docs",
+              "declared_at": "2026-11-11T00:00:00Z"
+            },
             "id": "mount",
             "kind": "thruster_mount",
             "accepts": [
@@ -357,25 +912,148 @@
               "y": 0.0,
               "z": 0.0,
               "w": 1.0
-            },
+            }
+          },
+          {
             "badge": "declared",
             "source": {
-              "ref": "Kinetra schema example: illustrative value, not a measured part",
+              "ref": "Kinetra schema example: illustrative generic thruster nozzle at the aft face; +Z is exhaust towards local -X, not a measured part",
+              "locator": null,
+              "url": null,
+              "license": null,
               "declared_by": "kinetra-docs",
               "declared_at": "2026-11-11T00:00:00Z"
+            },
+            "id": "nozzle",
+            "kind": "nozzle",
+            "accepts": [],
+            "position": {
+              "x": {
+                "offset": -0.1,
+                "terms": []
+              },
+              "y": {
+                "offset": 0.0,
+                "terms": []
+              },
+              "z": {
+                "offset": 0.0,
+                "terms": []
+              }
+            },
+            "orientation": {
+              "x": 0.0,
+              "y": -0.7071067811865476,
+              "z": 0.0,
+              "w": 0.7071067811865476
             }
           }
         ],
         "specs": [
           {
-            "name": "rated_thrust",
-            "value": 5.0,
-            "unit": "N",
             "badge": "declared",
             "source": {
               "ref": "Kinetra schema example: illustrative value, not a measured part",
+              "locator": null,
+              "url": null,
+              "license": null,
               "declared_by": "kinetra-docs",
               "declared_at": "2026-11-11T00:00:00Z"
+            },
+            "value": 5.0,
+            "unit": "N",
+            "name": "rated_thrust"
+          },
+          {
+            "badge": "declared",
+            "source": {
+              "ref": "Kinetra schema example: illustrative generic thruster propellant mass flow at rated thrust, not a measured part",
+              "locator": null,
+              "url": null,
+              "license": null,
+              "declared_by": "kinetra-docs",
+              "declared_at": "2026-11-11T00:00:00Z"
+            },
+            "value": 0.01,
+            "unit": "kg/s",
+            "name": "propellant_flow"
+          }
+        ],
+        "shape": {
+          "badge": "declared",
+          "source": {
+            "ref": "Kinetra schema example: illustrative generic 0.1 m long, 0.01 m radius cylindrical thruster envelope aft of its mount, not a measured part",
+            "locator": null,
+            "url": null,
+            "license": null,
+            "declared_by": "kinetra-docs",
+            "declared_at": "2026-11-11T00:00:00Z"
+          },
+          "components": [
+            {
+              "id": "body",
+              "primitive": {
+                "kind": "cylinder",
+                "radius": {
+                  "offset": 0.01,
+                  "terms": []
+                },
+                "length": {
+                  "offset": 0.1,
+                  "terms": []
+                }
+              },
+              "operation": "add",
+              "position": {
+                "x": {
+                  "offset": -0.05,
+                  "terms": []
+                },
+                "y": {
+                  "offset": 0.0,
+                  "terms": []
+                },
+                "z": {
+                  "offset": 0.0,
+                  "terms": []
+                }
+              },
+              "orientation": {
+                "x": 0.0,
+                "y": -0.7071067811865476,
+                "z": 0.0,
+                "w": 0.7071067811865476
+              }
+            }
+          ]
+        },
+        "mass_parameter": null,
+        "role": "thruster",
+        "curves": [
+          {
+            "name": "thrust",
+            "curve": {
+              "badge": "declared",
+              "source": {
+                "ref": "Kinetra schema example: illustrative generic 0.05 s linear opening to the existing user-declared 5 N steady thrust, not a measured part",
+                "locator": null,
+                "url": null,
+                "license": null,
+                "declared_by": "kinetra-docs",
+                "declared_at": "2026-11-11T00:00:00Z"
+              },
+              "x_unit": "s",
+              "y_unit": "N",
+              "points": [
+                {
+                  "x": 0.0,
+                  "y": 0.0
+                },
+                {
+                  "x": 0.05,
+                  "y": 5.0
+                }
+              ]
             }
           }
         ]
@@ -385,8 +1063,18 @@
       {
         "id": "chassis-1",
         "part": "chassis",
+        "parameters": [],
         "material": "example-material",
         "pose": {
+          "badge": "declared",
+          "source": {
+            "ref": "Kinetra schema example: illustrative value, not a measured part",
+            "locator": null,
+            "url": null,
+            "license": null,
+            "declared_by": "kinetra-docs",
+            "declared_at": "2026-11-11T00:00:00Z"
+          },
           "position": {
             "x": 0.0,
             "y": 0.0,
@@ -397,19 +1085,24 @@
             "y": 0.0,
             "z": 0.0,
             "w": 1.0
-          },
-          "badge": "declared",
-          "source": {
-            "ref": "Kinetra schema example: illustrative value, not a measured part",
-            "declared_by": "kinetra-docs",
-            "declared_at": "2026-11-11T00:00:00Z"
           }
         }
       },
       {
         "id": "wheel-fl",
         "part": "wheel",
+        "parameters": [],
+        "material": "example-material",
         "pose": {
+          "badge": "declared",
+          "source": {
+            "ref": "Kinetra schema example: illustrative value, not a measured part",
+            "locator": null,
+            "url": null,
+            "license": null,
+            "declared_by": "kinetra-docs",
+            "declared_at": "2026-11-11T00:00:00Z"
+          },
           "position": {
             "x": 0.1,
             "y": 0.1,
@@ -420,19 +1113,24 @@
             "y": 0.0,
             "z": 0.0,
             "w": 1.0
-          },
-          "badge": "declared",
-          "source": {
-            "ref": "Kinetra schema example: illustrative value, not a measured part",
-            "declared_by": "kinetra-docs",
-            "declared_at": "2026-11-11T00:00:00Z"
           }
         }
       },
       {
         "id": "wheel-fr",
         "part": "wheel",
+        "parameters": [],
+        "material": "example-material",
         "pose": {
+          "badge": "declared",
+          "source": {
+            "ref": "Kinetra schema example: illustrative value, not a measured part",
+            "locator": null,
+            "url": null,
+            "license": null,
+            "declared_by": "kinetra-docs",
+            "declared_at": "2026-11-11T00:00:00Z"
+          },
           "position": {
             "x": 0.1,
             "y": -0.1,
@@ -443,19 +1141,24 @@
             "y": 0.0,
             "z": 0.0,
             "w": 1.0
-          },
-          "badge": "declared",
-          "source": {
-            "ref": "Kinetra schema example: illustrative value, not a measured part",
-            "declared_by": "kinetra-docs",
-            "declared_at": "2026-11-11T00:00:00Z"
           }
         }
       },
       {
         "id": "wheel-rl",
         "part": "wheel",
+        "parameters": [],
+        "material": "example-material",
         "pose": {
+          "badge": "declared",
+          "source": {
+            "ref": "Kinetra schema example: illustrative value, not a measured part",
+            "locator": null,
+            "url": null,
+            "license": null,
+            "declared_by": "kinetra-docs",
+            "declared_at": "2026-11-11T00:00:00Z"
+          },
           "position": {
             "x": -0.1,
             "y": 0.1,
@@ -466,19 +1169,24 @@
             "y": 0.0,
             "z": 0.0,
             "w": 1.0
-          },
-          "badge": "declared",
-          "source": {
-            "ref": "Kinetra schema example: illustrative value, not a measured part",
-            "declared_by": "kinetra-docs",
-            "declared_at": "2026-11-11T00:00:00Z"
           }
         }
       },
       {
         "id": "wheel-rr",
         "part": "wheel",
+        "parameters": [],
+        "material": "example-material",
         "pose": {
+          "badge": "declared",
+          "source": {
+            "ref": "Kinetra schema example: illustrative value, not a measured part",
+            "locator": null,
+            "url": null,
+            "license": null,
+            "declared_by": "kinetra-docs",
+            "declared_at": "2026-11-11T00:00:00Z"
+          },
           "position": {
             "x": -0.1,
             "y": -0.1,
@@ -489,19 +1197,24 @@
             "y": 0.0,
             "z": 0.0,
             "w": 1.0
-          },
-          "badge": "declared",
-          "source": {
-            "ref": "Kinetra schema example: illustrative value, not a measured part",
-            "declared_by": "kinetra-docs",
-            "declared_at": "2026-11-11T00:00:00Z"
           }
         }
       },
       {
         "id": "rocket-1",
         "part": "rocket",
+        "parameters": [],
+        "material": "example-material",
         "pose": {
+          "badge": "declared",
+          "source": {
+            "ref": "Kinetra schema example: illustrative value, not a measured part",
+            "locator": null,
+            "url": null,
+            "license": null,
+            "declared_by": "kinetra-docs",
+            "declared_at": "2026-11-11T00:00:00Z"
+          },
           "position": {
             "x": -0.2,
             "y": 0.0,
@@ -512,12 +1225,6 @@
             "y": 0.0,
             "z": 0.0,
             "w": 1.0
-          },
-          "badge": "declared",
-          "source": {
-            "ref": "Kinetra schema example: illustrative value, not a measured part",
-            "declared_by": "kinetra-docs",
-            "declared_at": "2026-11-11T00:00:00Z"
           }
         }
       }
@@ -535,16 +1242,21 @@
           "snap_point": "hub"
         },
         "axis": {
-          "x": 0.0,
-          "y": 1.0,
-          "z": 0.0,
           "badge": "declared",
           "source": {
             "ref": "Kinetra schema example: illustrative value, not a measured part",
+            "locator": null,
+            "url": null,
+            "license": null,
             "declared_by": "kinetra-docs",
             "declared_at": "2026-11-11T00:00:00Z"
-          }
-        }
+          },
+          "x": 0.0,
+          "y": 1.0,
+          "z": 0.0
+        },
+        "limits": null,
+        "break_threshold": null
       },
       {
         "id": "axle-fr",
@@ -558,16 +1270,21 @@
           "snap_point": "hub"
         },
         "axis": {
-          "x": 0.0,
-          "y": 1.0,
-          "z": 0.0,
           "badge": "declared",
           "source": {
             "ref": "Kinetra schema example: illustrative value, not a measured part",
+            "locator": null,
+            "url": null,
+            "license": null,
             "declared_by": "kinetra-docs",
             "declared_at": "2026-11-11T00:00:00Z"
-          }
-        }
+          },
+          "x": 0.0,
+          "y": 1.0,
+          "z": 0.0
+        },
+        "limits": null,
+        "break_threshold": null
       },
       {
         "id": "axle-rl",
@@ -581,16 +1298,21 @@
           "snap_point": "hub"
         },
         "axis": {
-          "x": 0.0,
-          "y": 1.0,
-          "z": 0.0,
           "badge": "declared",
           "source": {
             "ref": "Kinetra schema example: illustrative value, not a measured part",
+            "locator": null,
+            "url": null,
+            "license": null,
             "declared_by": "kinetra-docs",
             "declared_at": "2026-11-11T00:00:00Z"
-          }
-        }
+          },
+          "x": 0.0,
+          "y": 1.0,
+          "z": 0.0
+        },
+        "limits": null,
+        "break_threshold": null
       },
       {
         "id": "axle-rr",
@@ -604,16 +1326,21 @@
           "snap_point": "hub"
         },
         "axis": {
-          "x": 0.0,
-          "y": 1.0,
-          "z": 0.0,
           "badge": "declared",
           "source": {
             "ref": "Kinetra schema example: illustrative value, not a measured part",
+            "locator": null,
+            "url": null,
+            "license": null,
             "declared_by": "kinetra-docs",
             "declared_at": "2026-11-11T00:00:00Z"
-          }
-        }
+          },
+          "x": 0.0,
+          "y": 1.0,
+          "z": 0.0
+        },
+        "limits": null,
+        "break_threshold": null
       },
       {
         "id": "weld-rocket",
@@ -625,37 +1352,46 @@
         "b": {
           "instance": "rocket-1",
           "snap_point": "mount"
-        }
+        },
+        "axis": null,
+        "limits": null,
+        "break_threshold": null
       }
     ],
     "actuators": [
       {
         "id": "thrust-1",
         "kind": "thruster",
-        "instance": "rocket-1"
+        "instance": "rocket-1",
+        "joint": null,
+        "supply": null
       }
     ],
     "schedule": {
       "entries": [
         {
+          "badge": "declared",
+          "source": {
+            "ref": "Kinetra schema example: illustrative value, not a measured part",
+            "locator": null,
+            "url": null,
+            "license": null,
+            "declared_by": "kinetra-docs",
+            "declared_at": "2026-11-11T00:00:00Z"
+          },
           "type": "actuate",
           "id": "burn-1",
           "actuator": "thrust-1",
           "start": 0.0,
           "end": 2.0,
-          "command": 1.0,
-          "badge": "declared",
-          "source": {
-            "ref": "Kinetra schema example: illustrative value, not a measured part",
-            "declared_by": "kinetra-docs",
-            "declared_at": "2026-11-11T00:00:00Z"
-          }
+          "command": 1.0
         }
       ]
     }
   },
   "world": {
-    "planet": "moon"
+    "planet": "moon",
+    "terrain_props": []
   },
   "assumptions": {
     "assumptions": [
@@ -663,16 +1399,24 @@
         "key": "vehicle_mass",
         "label": "Vehicle mass",
         "value": {
-          "value": 2.0,
-          "unit": "kg",
           "badge": "declared",
           "source": {
             "ref": "Kinetra schema example: illustrative value, not a measured part",
+            "locator": null,
+            "url": null,
+            "license": null,
             "declared_by": "kinetra-docs",
             "declared_at": "2026-11-11T00:00:00Z"
-          }
+          },
+          "value": 2.0,
+          "unit": "kg"
         },
-        "confidence": "low"
+        "distribution": {
+          "kind": "fixed"
+        },
+        "confidence": "low",
+        "editable": true,
+        "binding": null
       }
     ]
   }

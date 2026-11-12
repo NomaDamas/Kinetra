@@ -186,20 +186,23 @@ def test_a_command_applies_to_an_example_project_and_inverts():
 
 
 @pytest.mark.parametrize("name", [CAR, ROCKET, EMPTY])
-def test_example_numbers_make_no_real_performance_claim(name):
-    """These are fixtures. `cite` would claim a document, `sim` a computed result; neither is true here."""
+def test_example_numbers_make_no_unsupported_performance_claim(name):
+    """Fixture values are illustrative; the library wheel/motor additions keep their cited evidence. Nothing claims a sim result."""
     for path, node in numbers_with_badges(load(name)):
-        assert node["badge"] in {"declared", "default", "estimate"}, (name, path, node["badge"])
+        assert node["badge"] in {"declared", "default", "estimate", "cite"}, (name, path, node["badge"])
+        source = node["source"]
         if node["badge"] == "declared":
-            assert node["source"]["declared_by"] == "kinetra-docs" and "illustrative" in node["source"]["ref"], (name, path)
+            assert source["declared_by"] == "kinetra-docs" and "illustrative" in source["ref"], (name, path)
+        elif node["badge"] == "cite":
+            assert source["url"] and source["locator"], (name, path)
         else:
-            assert "illustrative" in node["source"]["ref"], (name, path)
+            assert "illustrative" in source["ref"] or source["ref"].startswith("B-03"), (name, path)
 
 
 def test_the_rocket_thrust_is_a_declared_fixture_not_a_performance_claim():
     rocket = next(p for p in project(ROCKET).design.parts if p.id == "rocket")
-    (spec,) = rocket.specs
-    assert spec.name == "rated_thrust" and spec.badge == "declared" and math.isfinite(spec.value)
+    spec = next(s for s in rocket.specs if s.name == "rated_thrust")
+    assert spec.value == 5.0 and spec.badge == "declared" and math.isfinite(spec.value)
     assert "not a measured part" in spec.source.ref
 
 

@@ -112,8 +112,9 @@ def test_hash_of_the_empty_project_is_pinned():
 
 
 def test_hash_of_the_example_projects_is_pinned():
-    assert project_hash(project_of(load(CAR))) == "sha256:4c3283f83994dcb269b7fb6350aed31c841b60cc02ac3409de0e81e0ee30c66d"
-    assert project_hash(project_of(load(ROCKET))) == "sha256:5f6f172996fa79cc910c6d28aa44a892af7f9b0e0b46160c5ea4cafa3c5dec13"
+    # #122 added the real geometry/drive definitions to the schema-only projects; the canonical rules did not change.
+    assert project_hash(project_of(load(CAR))) == "sha256:52a65aaa5603e958b3dada6fa0d83e302d3e853b640d519e26e76fb54c66aa40"
+    assert project_hash(project_of(load(ROCKET))) == "sha256:73071e74ad7c407be8abfbd1c8f58781ed91aeae3e11a823dba912f6e0bcebb9"
 
 
 def test_hash_is_a_sha256_of_the_canonical_text(example):
@@ -136,9 +137,12 @@ def test_hash_text_is_utf8_unescaped_and_not_normalised():
 
 
 def _shuffle_lists(node, rng: random.Random):
-    """Reorder every list in a JSON tree. Every list in a Project is a collection, none is a coordinate."""
+    """Reorder collections whose written order is free; keep a Curve's x-ordered point sequence valid."""
     if isinstance(node, dict):
-        return {k: _shuffle_lists(v, rng) for k, v in node.items()}
+        return {
+            k: copy.deepcopy(v) if k == "points" and {"x_unit", "y_unit"} <= node.keys() else _shuffle_lists(v, rng)
+            for k, v in node.items()
+        }
     if isinstance(node, list):
         out = [_shuffle_lists(v, rng) for v in node]
         rng.shuffle(out)
@@ -872,10 +876,10 @@ def test_hash_a_timestamp_that_overflows_utc_is_a_canonical_error_not_an_overflo
 
     def walk(node):
         if isinstance(node, dict):
-            if "declared_at" in node:
-                node["declared_at"] = stamp
+            source = node.get("source")
+            if node.get("badge") == "declared" and isinstance(source, dict) and "declared_at" in source:
+                source["declared_at"] = stamp
                 walk_stamp.append(1)
-                return
             for v in node.values():
                 walk(v)
         elif isinstance(node, list):
