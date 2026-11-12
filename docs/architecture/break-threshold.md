@@ -2,7 +2,7 @@
 
 - 상태: 구현됨. 임계: `packages/engine/src/kinetra_engine/break_threshold.py`(`critical_load`), 테스트 `packages/engine/tests/test_break_threshold.py`(`uv run pytest packages/engine -q -k break_threshold`). 런타임 해제: `packages/engine/src/kinetra_engine/compiler/breaks.py`와 `run/preview.py`, 테스트 `packages/engine/tests/test_break_runtime.py`(`uv run pytest packages/engine -q -k break_runtime`).
 - 근거: 이슈 #137, #138, `docs/plan/studio-plan.md` 4.6절("파단은 FEM이 아니라 결합부 임계값(물성 × 단면, '단순화 모델' 표시)"), `materials.md`(강도 기준 혼재), `project-model.md`(`Joint.break_threshold`), `client-adapter.md`(`break` 이벤트, F8), 핵심 가치 V1·V5.
-- 범위 밖: FEM, 피로, 균열(이슈). 정지 하중과 임계의 비교(X-03b). `critical_load`는 하중을 받지 않고 임계만 낸다. 파단 표시는 X-04c.
+- 범위 밖: FEM, 피로, 균열(이슈). 정지 하중과 임계의 비교(X-03b, 구현됨: [`static-load.md`](static-load.md)). `critical_load`는 하중을 받지 않고 임계만 낸다. 파단 표시는 X-04c.
 
 ## 하는 일
 
@@ -39,7 +39,7 @@
 ## 열린 질문
 
 - 이방성(CFRP)과 취성 재료의 강도 필드의 뜻과 기준 혼재의 정리는 #481에서 정한다. 그 결정 전까지 이 모듈은 위 4·2번대로 읽는다.
-- 호출 쪽(어느 결합에 어느 단면을 쓰는지)은 이 이슈 밖이다. X-03b·HW-03a가 정한다. X-04b는 저장된 `Joint.break_threshold`를 그대로 읽고 단면을 고르지 않는다.
+- 호출 쪽(어느 결합에 어느 단면을 쓰는지)은 이 이슈 밖이다. X-03b·HW-03a가 정한다. X-04b는 저장된 `Joint.break_threshold`를 그대로 읽고 단면을 고르지 않는다. X-03b도 단면을 고르지 않고 결합에 이미 들어 있는 `break_threshold`를 정지 하중과 비교한다([`static-load.md`](static-load.md)).
 
 ## 런타임 결합 해제 (X-04b)
 
