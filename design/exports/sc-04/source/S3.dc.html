@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>S3 민감도 순위 펼침</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+button,input{font-family:inherit}
+input::placeholder{color:#93A0AE;opacity:1}
+:focus-visible{outline:2px solid #A8CBFF;outline-offset:2px}
+@media (prefers-reduced-motion:reduce){*{transition-property:opacity!important;animation:none!important}}
+</style>
+</helmet>
+<div style="width:600px;height:840px;box-sizing:border-box;padding:24px;background:#0F1216;color:#E8EDF2;font-family:Pretendard,'Pretendard Variable',-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Malgun Gothic','Noto Sans KR',sans-serif;font-size:13px;line-height:20px;font-variant-numeric:tabular-nums;display:flex;gap:32px">
+
+<div data-note="1" style="flex:none;width:200px;display:flex;flex-direction:column;gap:12px;font-size:12px;line-height:16px;color:#A9B4C0">
+<div style="font-size:11px;font-weight:500;color:#93A0AE">셸 안의 위치: SC-01 오른쪽 패널 (320 px)</div>
+<div style="font-size:16px;line-height:24px;font-weight:600;color:#E8EDF2">S3 민감도 순위 펼침</div>
+<div><span style="color:#E8EDF2">민감도 1위</span> 줄을 한 번 누른 모습(1단계). 가정 하나를 바꿔 다시 계산한 <span style="font-family:'JetBrains Mono',monospace">p_success</span>를 순서대로 보입니다.</div>
+<div>세 결과 모두 FEASIBLE_FOUND라서 판정 코드는 바뀌지 않았습니다. 그래서 "판정을 뒤집는다"고 쓰지 않고 보인 것만 씁니다.</div>
+<div>세 막대는 같은 L2 색입니다. 차이는 숫자와 막대 위치가 말합니다.</div>
+<div>순위는 비교한 가정 2개를 지금 확률과의 차이가 큰 순서로 놓았습니다. 카드 위쪽의 15.2%와 1위의 0.8%만 시연 값이고, 2위 차체 질량(+10%)의 값은 계산하지 않은 시안용 수치라 <span style="color:#E8EDF2">예시</span>를 붙였습니다.</div>
+<div>각 순위 줄은 그 가정을 바꿨을 때의 값 · 95% CI · 표본 수 · 배지만 보입니다. 지금 값은 카드 위쪽에 한 번 있습니다. 그래서 두 순위가 접힌 머리 위에 함께 보입니다.</div>
+<div>열린 내용 아래의 접힌 머리는 본문 아래쪽에 붙어 스크롤해도 이름과 개수가 늘 보입니다 [제안].</div>
+<div style="color:#E8EDF2;font-weight:600">상시 조작 요소 10 · 카드 안 primary 0</div>
+<div>S1 대비 +2: 순위 안의 시뮬 배지 2 (1위, 2위).</div>
+</div>
+
+<aside data-screen="1" aria-label="판정" style="flex:none;width:320px;height:790px;box-sizing:border-box;display:flex;flex-direction:column;background:#151A20;border:1px solid #26303A">
+<div style="flex:none;display:flex;align-items:center;justify-content:space-between;height:40px;padding:0 8px 0 16px;border-bottom:1px solid #26303A"><span style="font-size:16px;line-height:24px;font-weight:600">판정</span><button type="button" data-ctl="패널 접기" aria-label="판정 패널 접기" aria-expanded="true" style="width:28px;height:28px;padding:0;border:1px solid transparent;border-radius:4px;background:transparent;color:#E8EDF2;display:inline-flex;align-items:center;justify-content:center"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 2.5L8 6l-3.5 3.5"/></svg></button></div>
+<div style="flex:1 1 0;min-height:0;padding:12px;display:flex;flex-direction:column">
+<article aria-label="판정 카드" style="max-height:100%;min-height:0;box-sizing:border-box;background:#1B2129;border:1px solid #3A4654;border-radius:6px;display:flex;flex-direction:column">
+
+<div style="flex:none;padding:12px;display:flex;flex-direction:column;gap:12px;border-bottom:1px solid #26303A">
+<button type="button" data-ctl="증거 배지" aria-haspopup="dialog" aria-expanded="false" aria-label="증거 단계 L2 판정, 탐색과 몬테카를로. 누르면 근거를 엽니다" style="align-self:flex-start;display:inline-flex;align-items:center;height:24px;padding:0;border:0;background:none;color:#D2BFFF;font-size:11px;line-height:16px;font-weight:500;cursor:pointer"><span style="display:inline-flex;align-items:center;gap:6px;height:20px;box-sizing:border-box;padding:0 8px;border-radius:999px;background:#322858;border:1px solid #D2BFFF"><svg width="30" height="12" viewBox="0 0 30 12" aria-hidden="true"><path d="M0 0h6v12H0zM8 0h6v12H8zM16 0h6v12h-6z" fill="currentColor"/><path d="M24.5.5h5v11h-5z" fill="none" stroke="currentColor"/></svg>L2 판정 · 탐색 + 몬테카를로</span></button>
+<div><div style="display:flex;align-items:center;gap:8px;font-family:'JetBrains Mono',monospace;font-weight:500"><svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><circle cx="6" cy="6" r="4.5" fill="currentColor"/></svg>FEASIBLE_FOUND</div><div>이 모델에서는 성공 사례를 찾았습니다.</div></div>
+<div style="display:flex;flex-direction:column;gap:6px"><div style="font-size:11px;line-height:16px;font-weight:500;color:#A9B4C0">확률 · <span style="font-family:'JetBrains Mono',monospace">p_success</span></div>
+<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><span style="font-size:28px;line-height:36px;font-weight:600">15.2%</span><span style="font-family:'JetBrains Mono',monospace;font-weight:500">[12.3, 18.6]</span><button type="button" data-ctl="p_success 값 배지" aria-label="값 배지 시뮬. 누르면 근거를 엽니다" style="display:inline-flex;align-items:center;height:24px;padding:0;border:0;background:none;color:#E8EDF2;font-size:11px;line-height:16px;font-weight:500;white-space:nowrap;cursor:pointer"><span style="display:inline-flex;align-items:center;gap:4px;height:20px;box-sizing:border-box;padding:0 8px;border-radius:999px;background:#303B49"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 6q1.25-5 2.5 0t2.5 0t2.5 0t2.5 0"/></svg>시뮬</span></button></div>
+<div role="img" aria-label="신뢰구간 막대: 12.3%에서 18.6%, 점 추정 15.2%. 눈금 0%에서 25%" style="position:relative;height:16px"><div style="position:absolute;left:0;right:0;top:4px;height:8px;box-sizing:border-box;background:#0F1318;border:1px solid #7A899B;border-radius:2px"></div><div style="position:absolute;left:49.2%;width:25.2%;top:4px;height:8px;background:#D2BFFF"></div><div style="position:absolute;left:60.8%;top:0;width:2px;height:16px;background:#E8EDF2"></div></div>
+<div style="display:flex;justify-content:space-between;font-family:'JetBrains Mono',monospace;font-size:11px;line-height:16px;color:#A9B4C0"><span>0%</span><span>95% CI · n = 500 표본</span><span>25%</span></div></div>
+</div>
+
+<div style="flex:1 1 auto;min-height:0;overflow-y:auto;padding:4px 8px;display:grid;grid-template-columns:minmax(0,1fr);align-content:start;gap:2px">
+<button type="button" data-ctl="민감도 1위" aria-expanded="true" aria-controls="s3-sens" style="display:flex;align-items:center;gap:8px;width:100%;min-height:44px;box-sizing:border-box;padding:4px;border:0;border-radius:4px;background:transparent;color:#E8EDF2;text-align:left;cursor:pointer"><span style="flex:1 1 auto;min-width:0;display:flex;flex-direction:column"><span style="font-size:11px;line-height:16px;font-weight:500;color:#A9B4C0">민감도 1위 · 확률을 가장 크게 바꾼 가정</span><span style="font-size:12px;line-height:16px;font-weight:600">노즐별 추력 잡음</span></span><span style="flex:none;font-size:11px;line-height:16px;font-weight:500;color:#A9B4C0">순위</span><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 4.5L6 8l3.5-3.5"/></svg></button>
+
+<div id="s3-sens" role="region" aria-label="민감도 순위" style="padding:0 4px 8px;display:flex;flex-direction:column;gap:8px">
+<div style="font-size:11px;line-height:16px;font-weight:500;color:#A9B4C0">가정 하나를 바꿔 다시 계산한 <span style="font-family:'JetBrains Mono',monospace">p_success</span> · 95% CI · 표본 수</div>
+<ol style="margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:8px">
+<li style="display:flex;flex-direction:column;gap:4px;padding:8px;border:1px solid #26303A;border-radius:4px">
+<div style="display:flex;align-items:center;gap:6px;font-size:12px;line-height:16px;font-weight:600"><span style="font-family:'JetBrains Mono',monospace;color:#A9B4C0;font-weight:500">1</span><span style="flex:1 1 auto;min-width:0">노즐별 추력 잡음</span><span style="font-size:11px;font-weight:500;color:#A9B4C0">없음 → ±10%</span></div>
+<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><span style="font-family:'JetBrains Mono',monospace;font-weight:500">0.8% [0.3, 2.0]</span><button type="button" data-ctl="값 배지: 잡음 ±10%" aria-label="값 배지 시뮬. 누르면 근거를 엽니다" style="display:inline-flex;align-items:center;height:24px;padding:0;border:0;background:none;color:#E8EDF2;font-size:11px;line-height:16px;font-weight:500;white-space:nowrap;cursor:pointer"><span style="display:inline-flex;align-items:center;gap:4px;height:20px;box-sizing:border-box;padding:0 8px;border-radius:999px;background:#303B49"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 6q1.25-5 2.5 0t2.5 0t2.5 0t2.5 0"/></svg>시뮬</span></button></div>
+<div role="img" aria-label="1위 노즐별 추력 잡음 ±10%: 0.3%에서 2.0%, 점 추정 0.8%. 눈금 0%에서 25%" style="position:relative;height:12px"><div style="position:absolute;left:0;right:0;top:3px;height:6px;box-sizing:border-box;background:#0F1318;border:1px solid #7A899B;border-radius:2px"></div><div style="position:absolute;left:1.2%;width:6.8%;top:3px;height:6px;background:#D2BFFF"></div><div style="position:absolute;left:3.2%;top:0;width:2px;height:12px;background:#E8EDF2"></div></div>
+<div style="display:flex;justify-content:space-between;font-family:'JetBrains Mono',monospace;font-size:11px;line-height:16px;color:#A9B4C0"><span>0%</span><span>95% CI · n = 500 표본</span><span>25%</span></div>
+</li>
+<li style="display:flex;flex-direction:column;gap:4px;padding:8px;border:1px solid #26303A;border-radius:4px">
+<div style="display:flex;align-items:center;gap:6px;font-size:12px;line-height:16px;font-weight:600"><span style="font-family:'JetBrains Mono',monospace;color:#A9B4C0;font-weight:500">2</span><span style="flex:1 1 auto;min-width:0">차체 질량</span><span style="font-size:11px;font-weight:500;color:#A9B4C0">+10%</span><span style="font-size:11px;line-height:16px;font-weight:400;color:#93A0AE;border:1px dotted #7A899B;border-radius:2px;padding:0 4px">예시</span></div>
+<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><span style="font-family:'JetBrains Mono',monospace;font-weight:500">11.4% [8.9, 14.5]</span><button type="button" data-ctl="값 배지: 차체 질량 +10%" aria-label="값 배지 시뮬. 시안용 예시 값입니다. 누르면 근거를 엽니다" style="display:inline-flex;align-items:center;height:24px;padding:0;border:0;background:none;color:#E8EDF2;font-size:11px;line-height:16px;font-weight:500;white-space:nowrap;cursor:pointer"><span style="display:inline-flex;align-items:center;gap:4px;height:20px;box-sizing:border-box;padding:0 8px;border-radius:999px;background:#303B49"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 6q1.25-5 2.5 0t2.5 0t2.5 0t2.5 0"/></svg>시뮬</span></button><span style="font-size:11px;line-height:16px;font-weight:400;color:#93A0AE;border:1px dotted #7A899B;border-radius:2px;padding:0 4px">예시</span></div>
+<div role="img" aria-label="2위 차체 질량 +10%, 예시: 8.9%에서 14.5%, 점 추정 11.4%. 눈금 0%에서 25%" style="position:relative;height:12px"><div style="position:absolute;left:0;right:0;top:3px;height:6px;box-sizing:border-box;background:#0F1318;border:1px solid #7A899B;border-radius:2px"></div><div style="position:absolute;left:35.6%;width:22.4%;top:3px;height:6px;background:#D2BFFF"></div><div style="position:absolute;left:45.6%;top:0;width:2px;height:12px;background:#E8EDF2"></div></div>
+<div style="display:flex;justify-content:space-between;font-family:'JetBrains Mono',monospace;font-size:11px;line-height:16px;color:#A9B4C0"><span>0%</span><span>95% CI · n = 500 표본</span><span>25%</span></div>
+</li>
+</ol>
+<div style="font-size:12px;line-height:16px">이 시연에서 비교한 가정은 2개이고, 노즐별 추력 잡음이 성공 확률을 더 크게 바꿉니다. 결과는 모두 FEASIBLE_FOUND입니다. 2위의 값은 계산하지 않은 시안용 예시입니다.</div>
+</div>
+
+<div data-sticky-heads="1" style="position:sticky;bottom:-4px;display:grid;grid-template-columns:minmax(0,1fr);gap:2px;margin:0 -8px;padding:2px 8px 4px;background:#1B2129;border-top:1px solid #26303A">
+<button type="button" data-ctl="가정표 머리" aria-expanded="false" style="display:flex;align-items:center;gap:8px;width:100%;height:36px;box-sizing:border-box;padding:0 4px;border:0;border-radius:4px;background:transparent;color:#E8EDF2;font-size:12px;line-height:16px;font-weight:500;text-align:left;cursor:pointer"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 2.5L8 6l-3.5 3.5"/></svg><span style="flex:1 1 auto">가정표</span><span style="font-size:11px;color:#A9B4C0">가정 4개</span></button>
+<div aria-hidden="true" style="height:1px;background:#26303A;margin:0 4px"></div>
+<button type="button" data-ctl="이 모델이 보지 않는 것 머리" aria-expanded="false" style="display:flex;align-items:center;gap:8px;width:100%;height:36px;box-sizing:border-box;padding:0 4px;border:0;border-radius:4px;background:transparent;color:#E8EDF2;font-size:12px;line-height:16px;font-weight:500;text-align:left;cursor:pointer"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 2.5L8 6l-3.5 3.5"/></svg><span style="flex:1 1 auto">이 모델이 보지 않는 것</span><span style="font-size:11px;color:#A9B4C0">4개</span></button>
+<div aria-hidden="true" style="height:1px;background:#26303A;margin:0 4px"></div>
+<button type="button" data-ctl="실행 정보 머리" aria-expanded="false" style="display:flex;align-items:center;gap:8px;width:100%;height:36px;box-sizing:border-box;padding:0 4px;border:0;border-radius:4px;background:transparent;color:#E8EDF2;font-size:12px;line-height:16px;font-weight:500;text-align:left;cursor:pointer"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 2.5L8 6l-3.5 3.5"/></svg><span style="flex:1 1 auto">실행 정보</span><span style="font-size:11px;color:#A9B4C0">시드 · 표본 수 · 소요 시간</span></button>
+</div>
+</div>
+
+<div style="flex:none;padding:8px 12px 12px;display:flex;flex-direction:column;gap:8px;border-top:1px solid #26303A">
+<div style="display:flex;align-items:center;gap:6px;font-size:11px;line-height:16px;font-weight:500;color:#93A0AE"><svg width="30" height="12" viewBox="0 0 30 12" role="img" aria-label="증거 강도 0/4"><path d="M.5.5h5v11h-5zM8.5.5h5v11h-5zM16.5.5h5v11h-5zM24.5.5h5v11h-5z" fill="none" stroke="currentColor"/></svg><span style="font-family:'JetBrains Mono',monospace">L3</span>실물 검증 없음 (실측 0건)</div>
+<button type="button" data-ctl="다시 판정" style="align-self:flex-start;display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 12px 0 8px;border:1px solid transparent;border-radius:4px;background:transparent;color:#E8EDF2;font-size:12px;font-weight:500;cursor:pointer"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 6a4 4 0 1 1-1.2-2.85M10 1.5v2.5H7.5"/></svg>다시 판정</button>
+</div>
+
+</article>
+</div>
+</aside>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":600,"height":840}}'>
+class Component extends DCLogic {
+renderVals() {
+return {};
+}
+}
+</script>
+</body>
+</html>
