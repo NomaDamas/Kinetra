@@ -29,8 +29,9 @@ is a hash of this run's stream, kept by the core (F7); how two hashes are compar
 X-02d.
 
 **Model labels.** The proxy approximation labels of the compile (`proxy_labels`), and what the compiled model does not
-apply yet, read from the model itself so a label goes away once a leaf sets it: the planet's gravity (W-03a) when the
-model's gravity differs from the planet's `data/bodies` value, and the ground when the model has none.
+apply of the planet, read from the model itself so a label goes away once a leaf sets it: the planet's gravity when the
+model's gravity differs from the planet's `data/bodies` value (W-03a sets it, so this label does not appear today), and
+the ground when the model has none.
 
 **Events.** The stream carries no events yet: contacts, breaks (X-04b) and met conditions are added by their leaves.
 """
@@ -116,7 +117,7 @@ def environment_labels(project: Project, model: mujoco.MjModel) -> tuple[str, ..
     g_planet = planet.gravity.value
     if not math.isclose(g_model, g_planet, rel_tol=1e-9):
         labels.append(
-            f"미적용: {planet.name}의 중력 {g_planet:g} m/s²가 아니라 엔진 기본 중력 {g_model:g} m/s²로 실행(W-03a 전)"
+            f"미적용: {planet.name}의 중력 {g_planet:g} m/s²가 아니라 엔진 기본 중력 {g_model:g} m/s²로 실행"
         )
     if not any(model.geom_bodyid[g] == 0 for g in range(model.ngeom)):
         labels.append("미적용: 지면 없음. 몸체는 아무것에도 닿지 않고 떨어진다")

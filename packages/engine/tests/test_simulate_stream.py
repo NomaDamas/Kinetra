@@ -2,10 +2,10 @@
 
 `uv run pytest packages/engine -q -k "simulate and stream"`
 
-The project is two blocks welded on top of each other, standing on the ground plane z = 0 (the joined snap points meet
-at the saved pose, the placement checks pass). The compiled model has no ground and the engine's default gravity
-(W-03a has not landed), so the body falls; the stream says so in `model_labels`. Values are the test's own choices
-(`SRC`), not data.
+The project is two blocks welded on top of each other on the moon, standing on the ground plane z = 0 (the joined snap
+points meet at the saved pose, the placement checks pass). The compiled model has the moon's gravity (W-03a) and no
+ground yet, so the body falls; the stream says so in `model_labels`. Values are the test's own choices (`SRC`), not
+data.
 """
 
 from __future__ import annotations
@@ -40,8 +40,16 @@ from kinetra_core import (
     decode_frame,
     project_hash,
 )
-from kinetra_engine.protocol import Hub
-from kinetra_engine.run import FRAME_RATE_CEILING_HZ, PreviewRun, compile_project, default_frame_every_ticks, end_tick
+from kinetra_core.bodies import load_body
+from kinetra_engine.protocol import Hub, ReferenceClient
+from kinetra_engine.run import (
+    FRAME_RATE_CEILING_HZ,
+    PreviewRun,
+    compile_project,
+    default_frame_every_ticks,
+    end_tick,
+    environment_labels,
+)
 from kinetra_engine.run.platform_tag import _wheel_tags
 
 SERVER = TypeAdapter(ServerMessage)
@@ -133,9 +141,13 @@ def test_simulate_stream_run_started_names_the_document_platform_and_bodies():
     assert tag.compute.integrator == mujoco.mjtIntegrator(model.opt.integrator).name.removeprefix("mjINT_").lower()
     assert tag.compute.solver["iterations"] == model.opt.iterations
     assert (tag.threads.physics, tag.threads.solver) == (1, 1)
-    # the planet is the moon, the model has the engine's default gravity and no ground: the labels say both
-    assert any("중력" in label and "W-03a" in label for label in s.model_labels)
+    # the model runs with the moon's gravity (W-03a), so no gravity label; it has no ground, and the label says so
+    assert tuple(model.opt.gravity) == (0.0, 0.0, -load_body("moon").gravity.value)
+    assert not any("중력" in label for label in s.model_labels)
     assert any("지면 없음" in label for label in s.model_labels)
+    # a model whose gravity is not the planet's is labelled (read from the model, not assumed)
+    model.opt.gravity[:] = (0.0, 0.0, -9.81)
+    assert any("중력" in label and "9.81" in label for label in environment_labels(project, model))
 
 
 def test_simulate_stream_frames_pass_check_run_with_the_end_frame_off_the_grid():
@@ -313,3 +325,26 @@ def test_simulate_stream_platform_tag_names_the_locked_engine_wheel_and_the_comm
     lock = (Path(__file__).resolve().parents[3] / "uv.lock").read_text(encoding="utf-8")
     assert f'hash = "{tag.engine.artifact_hash}"' in lock  # the hash of a wheel file uv.lock pins
     assert len(tag.core_build.commit) in (40, 64)
+
+
+def test_simulate_stream_the_c05c_reference_client_receives_the_run():
+    """The C-05c headless reference client (protocol only, `check_frame` on every frame, `check_run` at the end, the
+    ordering rules) receives a run the core computes."""
+
+    async def scenario():
+        hub = Hub({"tower": tower()})
+        async with hub.serve(allowed_origins=[None]) as server:
+            client = ReferenceClient(f"ws://127.0.0.1:{server.sockets[0].getsockname()[1]}")
+            await client.connect()
+            try:
+                assert await client.subscribe("tower") == "snapshot"
+                await client.ws.send(json.dumps({"type": "run", "id": "ref-run", "duration_s": 0.25, "speed": 0}))
+                return client, await client.receive_run()
+            finally:
+                await client.close()
+
+    client, record = asyncio.run(scenario())
+    assert record.started.run_id == record.ended.run_id == "ref-run"
+    assert isinstance(record.ended.end, RunCompleted)
+    assert record.frames[-1].tick == record.ended.last_tick == end_tick(0.25, record.started.timestep_s)
+    assert client.errors == [] and client.interrupted_runs == []
