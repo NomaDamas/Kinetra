@@ -180,7 +180,7 @@ a{{color:#5B9DFF}}a:hover{{color:#A8CBFF}}
 <body>
 <header class="kin-top">
 <h1>Kinetra Studio SC-04 판정 카드·가정표·민감도</h1>
-<p>아트보드 S1~S13. 규격: design/briefs/sc-04.md. 토큰과 컴포넌트: design/exports/design-system/ (VerdictCards). 셸 안의 자리: design/exports/sc-01/ 오른쪽 패널 320 px. 각 아트보드 왼쪽 200 px 열은 주석입니다.</p>
+<p>아트보드 S1~S13. 규격: design/briefs/sc-04.md. 토큰과 컴포넌트: design/exports/design-system/ (VerdictCards). 셸 안의 자리: design/exports/sc-01/ 오른쪽 패널 320 px. 각 아트보드 왼쪽 200 px 열은 주석입니다. 수정 2(#439, design/briefs/sc-04-revision-2.md): S3 민감도 순위를 비교한 가정 2개로 그렸습니다. 2위(차체 질량 +10%)의 값은 계산하지 않은 시안용 예시입니다.</p>
 <nav class="kin-nav" aria-label="아트보드 목차">{nav}</nav>
 </header>
 <main>{sections}</main>
