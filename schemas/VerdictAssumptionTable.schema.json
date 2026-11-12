@@ -1,0 +1,374 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "The assumption table a verdict carries (W-03c): the planet's rows read from `data/bodies`, then the project's rows.\n\nComposed at judge time by `verdict_assumption_table`, never stored in a project: the project's `AssumptionTable`\nkeeps rejecting planet keys (rule C4). A planet row is read-only (`editable` False) and keeps the badges and sources\nof the data file. Today the planet rows are the ground friction alone; the \"근사: 균일 중력\" label is W-06's.\n`rows` is the table in the order the panel shows it; Monte-Carlo samples each row's `distribution` and the deterministic\nsearch uses its `value` (the ground friction enters the model as `to_mjcf(tree, ground_friction=...)`, X-01e/W-03c).",
+  "properties": {
+    "planet": {
+      "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+      "title": "Planet",
+      "type": "string"
+    },
+    "planet_rows": {
+      "items": {
+        "$ref": "#/$defs/Assumption"
+      },
+      "title": "Planet Rows",
+      "type": "array"
+    },
+    "project": {
+      "$ref": "#/$defs/AssumptionTable"
+    }
+  },
+  "required": [
+    "planet",
+    "planet_rows",
+    "project"
+  ],
+  "title": "VerdictAssumptionTable",
+  "type": "object",
+  "$defs": {
+    "Assumption": {
+      "additionalProperties": false,
+      "description": "One assumption of the verdict, as the human-review panel shows it.",
+      "properties": {
+        "key": {
+          "description": "Stable machine key, e.g. 'vehicle_mass'. Verdict sensitivities cite it.",
+          "pattern": "^[a-z][a-z0-9_]{0,63}$",
+          "title": "Key",
+          "type": "string"
+        },
+        "label": {
+          "description": "Name shown in the panel.",
+          "maxLength": 100,
+          "minLength": 1,
+          "title": "Label",
+          "type": "string"
+        },
+        "value": {
+          "$ref": "#/$defs/Quantity"
+        },
+        "distribution": {
+          "discriminator": {
+            "mapping": {
+              "fixed": "#/$defs/FixedDistribution",
+              "normal": "#/$defs/NormalDistribution",
+              "uniform": "#/$defs/UniformDistribution"
+            },
+            "propertyName": "kind"
+          },
+          "oneOf": [
+            {
+              "$ref": "#/$defs/FixedDistribution"
+            },
+            {
+              "$ref": "#/$defs/UniformDistribution"
+            },
+            {
+              "$ref": "#/$defs/NormalDistribution"
+            }
+          ],
+          "title": "Distribution"
+        },
+        "confidence": {
+          "$ref": "#/$defs/Confidence"
+        },
+        "editable": {
+          "default": true,
+          "title": "Editable",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "key",
+        "label",
+        "value",
+        "confidence"
+      ],
+      "title": "Assumption",
+      "type": "object"
+    },
+    "AssumptionTable": {
+      "additionalProperties": false,
+      "properties": {
+        "assumptions": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/Assumption"
+          },
+          "title": "Assumptions",
+          "type": "array"
+        }
+      },
+      "title": "AssumptionTable",
+      "type": "object"
+    },
+    "Badge": {
+      "enum": [
+        "sim",
+        "cite",
+        "default",
+        "declared",
+        "estimate"
+      ],
+      "title": "Badge",
+      "type": "string"
+    },
+    "Confidence": {
+      "enum": [
+        "low",
+        "med",
+        "high"
+      ],
+      "title": "Confidence",
+      "type": "string"
+    },
+    "FixedDistribution": {
+      "additionalProperties": false,
+      "description": "No spread: Monte-Carlo uses the nominal.",
+      "properties": {
+        "kind": {
+          "const": "fixed",
+          "title": "Kind",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind"
+      ],
+      "title": "FixedDistribution",
+      "type": "object"
+    },
+    "NormalDistribution": {
+      "additionalProperties": false,
+      "properties": {
+        "badge": {
+          "$ref": "#/$defs/Badge"
+        },
+        "source": {
+          "$ref": "#/$defs/Source"
+        },
+        "kind": {
+          "const": "normal",
+          "title": "Kind",
+          "type": "string"
+        },
+        "mean": {
+          "title": "Mean",
+          "type": "number"
+        },
+        "std": {
+          "minimum": 0,
+          "title": "Std",
+          "type": "number"
+        },
+        "clip_low": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Clip Low"
+        },
+        "clip_high": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Clip High"
+        }
+      },
+      "required": [
+        "badge",
+        "source",
+        "kind",
+        "mean",
+        "std"
+      ],
+      "title": "NormalDistribution",
+      "type": "object"
+    },
+    "Quantity": {
+      "additionalProperties": false,
+      "description": "One physical number with its unit, badge and source.",
+      "properties": {
+        "badge": {
+          "$ref": "#/$defs/Badge"
+        },
+        "source": {
+          "$ref": "#/$defs/Source"
+        },
+        "value": {
+          "title": "Value",
+          "type": "number"
+        },
+        "unit": {
+          "$ref": "#/$defs/Unit"
+        }
+      },
+      "required": [
+        "badge",
+        "source",
+        "value",
+        "unit"
+      ],
+      "title": "Quantity",
+      "type": "object"
+    },
+    "Source": {
+      "additionalProperties": false,
+      "description": "Where a value comes from.\n\n`ref` is what was cited, declared or run: a document, a datasheet, a run id, or the reason a default was chosen\n(for an estimate: the method and its inputs). `locator` is where inside it (table, page, section). `url` is a\nlink when there is one. `license` (SPDX expression over the repo allowlist, `spdx.py`) and `declared_by` / `declared_at` feed the badge popover\n(`ValueBadges`, 인용 and 사용자 선언); `Provenance` allows each only on its own badge.",
+      "properties": {
+        "ref": {
+          "maxLength": 500,
+          "minLength": 1,
+          "title": "Ref",
+          "type": "string"
+        },
+        "locator": {
+          "anyOf": [
+            {
+              "maxLength": 200,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Locator"
+        },
+        "url": {
+          "anyOf": [
+            {
+              "maxLength": 2000,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Url"
+        },
+        "license": {
+          "anyOf": [
+            {
+              "maxLength": 200,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "License"
+        },
+        "declared_by": {
+          "anyOf": [
+            {
+              "maxLength": 200,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Declared By"
+        },
+        "declared_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Declared At"
+        }
+      },
+      "required": [
+        "ref"
+      ],
+      "title": "Source",
+      "type": "object"
+    },
+    "UniformDistribution": {
+      "additionalProperties": false,
+      "properties": {
+        "badge": {
+          "$ref": "#/$defs/Badge"
+        },
+        "source": {
+          "$ref": "#/$defs/Source"
+        },
+        "kind": {
+          "const": "uniform",
+          "title": "Kind",
+          "type": "string"
+        },
+        "low": {
+          "title": "Low",
+          "type": "number"
+        },
+        "high": {
+          "title": "High",
+          "type": "number"
+        }
+      },
+      "required": [
+        "badge",
+        "source",
+        "kind",
+        "low",
+        "high"
+      ],
+      "title": "UniformDistribution",
+      "type": "object"
+    },
+    "Unit": {
+      "description": "Closed unit vocabulary (SI, written the way the JSON carries it).",
+      "enum": [
+        "1",
+        "m",
+        "m^2",
+        "m^3",
+        "kg",
+        "kg/s",
+        "s",
+        "rad",
+        "m/s",
+        "m/s^2",
+        "rad/s",
+        "N",
+        "N*s",
+        "N*m",
+        "N/m",
+        "N*s/m",
+        "N*m/rad",
+        "Pa",
+        "kg/m^3",
+        "kg*m^2",
+        "J",
+        "W",
+        "W/m^2",
+        "V",
+        "A"
+      ],
+      "title": "Unit",
+      "type": "string"
+    }
+  }
+}
