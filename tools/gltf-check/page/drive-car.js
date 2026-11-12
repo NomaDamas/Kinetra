@@ -56,7 +56,7 @@ try {
     `<b>부품 목록</b><table><tr><th>부품</th><th>역할</th><th>수</th><th>인스턴스</th></tr>${partRows}</table>` +
     `<b>구동 부품의 주요 사양 (부품 정의의 값·배지·출처)</b>` +
     `<table><tr><th>부품</th><th>사양</th><th>값</th><th>배지</th><th>출처</th></tr>${specRows}</table>` +
-    `<div id="note">공급: ${supplies}. 결합: ${manifest.joints.filter((j) => j.kind === "hinge").length}개 힌지, ${manifest.joints.filter((j) => j.kind === "fixed").length}개 고정. ` +
+    `<div id="note">공급: ${supplies}. 결합: ${manifest.joints.filter((j) => j.kind === "hinge").length}개 힌지, ${manifest.joints.filter((j) => j.kind === "slider").length}개 슬라이더, ${manifest.joints.filter((j) => j.kind === "fixed").length}개 고정. ` +
     `배지: 인용 = 출처 문서의 값, 추정 = 방법을 적은 계산, 기본값 = Kinetra가 고른 값, 시뮬 = 엔진이 계산한 값. 차대와 축 토막은 이 예시의 사용자 선언 부품이고 치수는 실제 차량의 값이 아닙니다</div>`;
 
   const { cam, bounds, dist, reach } = fitCamera(scene, canvas.width / canvas.height, FIT, [0.62, 0.5, 0.72]);
