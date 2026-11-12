@@ -95,6 +95,12 @@ def new_wheel():
     return wheel
 
 
+def new_step(id="prop-c"):
+    """A 0.1 m step without a material (the planet's ground), clear of the car and of the example's props."""
+    placement = {"x": -3.0, "y": 2.0, "yaw": 0.5, "badge": "declared", "source": SRC}
+    return {"kind": "step", "id": id, "placement": placement, "length": q(1.0, "m"), "width": q(0.5, "m"), "height": q(0.1, "m")}
+
+
 COMMANDS = {
     "add_part_def": lambda: dict(
         type="add_part_def",
@@ -153,6 +159,12 @@ COMMANDS = {
     ),
     "remove_assumption": lambda: dict(type="remove_assumption", key="vehicle_mass"),
     "select_planet": lambda: dict(type="select_planet", planet="moon"),
+    "add_terrain_prop": lambda: dict(type="add_terrain_prop", index=1, prop=new_step()),
+    "replace_terrain_prop": lambda: dict(
+        type="replace_terrain_prop",
+        prop={**load("World.ramp-and-step.json")["terrain_props"][0], "incline": q(0.4, "rad"), "material": None},
+    ),
+    "remove_terrain_prop": lambda: dict(type="remove_terrain_prop", id="prop-b"),
 }
 
 
@@ -285,6 +297,8 @@ def test_apply_removals_leave_no_dangling_reference_whatever_is_removed(project)
         dict(type="replace_joint", joint={"id": "ghost", "kind": "fixed", "a": {"instance": "chassis-1", "snap_point": "motor-l"}, "b": {"instance": "motor-l", "snap_point": "mount"}}),
         dict(type="replace_part_def", part={"id": "ghost", "name": "Ghost", "snap_points": []}),
         dict(type="replace_material_def", material={**load("Material.example.json"), "id": "ghost"}),
+        dict(type="replace_terrain_prop", prop=new_step("ghost")),
+        dict(type="remove_terrain_prop", id="ghost"),
     ],
 )
 def test_apply_rejects_unknown_ids(project, command):
@@ -297,6 +311,7 @@ def test_apply_rejects_duplicate_ids(project):
     wheel["id"] = "wheel-fl"
     rejected(project, cmd(type="add_instance", instance=wheel), ReasonCode.DUPLICATE_ID)
     rejected(project, cmd(type="add_assumption", assumption=project_data()["assumptions"]["assumptions"][0]), ReasonCode.DUPLICATE_ID)
+    rejected(project, cmd(type="add_terrain_prop", prop=new_step("prop-a")), ReasonCode.DUPLICATE_ID)
 
 
 def test_apply_rejects_removing_a_definition_that_is_in_use(project):
@@ -459,7 +474,25 @@ def test_command_set_covers_the_dod_list():
         "add_joint", "remove_joint",
         "add_actuator", "remove_actuator", "add_control_entry", "replace_control_entry",
         "set_assumption", "add_assumption", "select_planet", "batch",
+        "add_terrain_prop", "replace_terrain_prop", "remove_terrain_prop",  # W-05: place, move or resize, remove ramps and steps
     } <= tags  # fmt: skip
+
+
+def test_apply_terrain_prop_edits_keep_the_world_and_its_order(project):
+    added = apply_command(project, cmd(type="add_terrain_prop", index=1, prop=new_step()))
+    assert ids(added.project.world.terrain_props) == ["prop-a", "prop-c", "prop-b"]
+    assert added.project.world.planet == project.world.planet and added.project.design == project.design
+    moved = apply_command(added.project, cmd(type="replace_terrain_prop", prop={**new_step(), "placement": {**new_step()["placement"], "x": 4.0}}))
+    assert ids(moved.project.world.terrain_props) == ["prop-a", "prop-c", "prop-b"]  # in place
+    assert moved.project.world.terrain_props[1].placement.x == 4.0
+    assert moved.inverse == cmd(type="replace_terrain_prop", prop=new_step())
+    removed = apply_command(project, cmd(type="remove_terrain_prop", id="prop-a"))
+    assert removed.inverse == cmd(type="add_terrain_prop", prop=project_data()["world"]["terrain_props"][0], index=0)
+
+
+def test_apply_terrain_prop_with_a_material_the_project_lacks_is_rejected(project):
+    err = rejected(project, cmd(type="add_terrain_prop", prop={**new_step(), "material": "unobtainium"}), ReasonCode.INVALID_PROJECT)
+    assert "unknown material 'unobtainium'" in err.reasons[0].message
 
 
 def test_project_rejects_a_terrain_prop_with_an_unknown_material():

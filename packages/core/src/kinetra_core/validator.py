@@ -50,7 +50,8 @@ Placement rules (frame and units are `conventions.py`; ground is the plane z = 0
   step), so `[add_instance, add_joint]` or "move every part of an assembly" works though the middle state is loose.
 
 Not here: the issuer and policy by origin (C-02b records it; nothing is allowed for one origin and refused for another),
-snap orientation and joint axes (B-04a, B-04b), compile errors (X-01d), terrain prop edits (W-05).
+snap orientation and joint axes (B-04a, B-04b), compile errors (X-01d). Terrain props are placed
+and edited by commands (`add_terrain_prop`, `replace_terrain_prop`, `remove_terrain_prop`, W-05) and checked here like any edit.
 """
 
 from __future__ import annotations

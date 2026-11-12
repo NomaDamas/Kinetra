@@ -121,6 +121,7 @@ uv run python packages/core/scripts/export_schemas.py --check  # 쓰지 않고 �
 | `add_control_entry`, `remove_control_entry`(`id`), `replace_control_entry`(`entry.id`가 같은 항목을 제자리에서) | 제어 스케줄 항목. `add`의 `index`는 위치일 뿐이다 | `remove`의 역은 원래 위치에 `add` |
 | `add_assumption`, `set_assumption`(같은 `key`를 제자리에서 교체), `remove_assumption`(`key`) | 가정표 편집. `editable: false`인 가정은 바꾸거나 지울 수 없고(`not_editable`), `set_assumption`으로 `editable`을 뒤집을 수 없으며 `editable: false`인 가정을 새로 넣을 수도 없다(넣으면 다시 바꿀 수 없어 역명령이 성립하지 않는다) | 서로의 역 |
 | `select_planet` | `world.planet`을 ID로 바꾼다. 행성 상수는 어떤 명령에도 실리지 않는다(`client-adapter.md` C4) | 이전 행성 |
+| `add_terrain_prop`(`prop`, `index`) / `replace_terrain_prop`(같은 `prop.id`를 제자리에서) / `remove_terrain_prop`(`id`) | 지형 소품(경사로·턱, W-05)을 놓고, 옮기거나 크기·경사·높이·표면 재료를 바꾸고, 치운다. 다른 편집처럼 검증기(C-02c)를 지나므로 부품을 파고드는 소품은 `overlap`이다. 컴파일은 [`terrain-props.md`](terrain-props.md) | `remove_terrain_prop` / 이전 소품의 `replace_terrain_prop` / 원래 위치에 `add_terrain_prop` |
 | `add_*_def`, `replace_part_def`, `replace_material_def`, `remove_*_def` | 프로젝트가 담는 정의(재료·부품). 삭제는 쓰는 곳이 있으면 `in_use`로 거부한다(사용자가 지우지 않은 것을 지우지 않는다). 쓰이는 정의는 삭제할 수 없으므로 명령으로 바꾸는 길은 `replace_*`(같은 ID, 제자리, 목록 위치 유지)뿐이다. 프로젝트 전체를 다시 검증하므로 쓰는 곳을 깨는 정의(인스턴스가 정한 파라미터가 없어짐, 범위 밖이 됨, 결합이 쓰는 스냅 포인트가 없어짐)는 그 사유와 깨진 대상의 참조와 함께 거부된다. 출처(발행자)로 허용을 나누지 않는다: 검증기는 발행자를 받지 않는다(C-02c) | `add`↔`remove` / 이전 정의의 `replace` |
 | `batch` | 편집 명령을 순서대로 모두 적용하거나 모두 거부한다(C2). 중첩은 없다. 사유의 문장 앞에 `commands[n] (type):`이 붙는다. **최종 상태만이 아니라 모든 중간 상태가 유효한 `Project`여야 한다**: 한 액추에이터의 두 구간을 맞바꾸는 묶음은 첫 명령에서 겹침으로 거부된다. 줄이거나 지우는 명령을 먼저 두거나 `replace_*`를 쓴다(에이전트 재시도 G-03a, 대칭 복제 B-11이 알아야 한다) | 역명령들의 역순 묶음 |
 
@@ -129,7 +130,7 @@ uv run python packages/core/scripts/export_schemas.py --check  # 쓰지 않고 �
 - 편집마다 프로젝트 전체를 JSON으로 덤프하고 다시 검증하므로 편집 하나는 프로젝트 크기에 비례하고 묶음은 n배다(리뷰 측정: 인스턴스 200개에서 단일 이동 약 11 ms, 200건 묶음 약 1.1 s; 1,000개에서 25 ms, 4 s). 명령의 모양과 무관한 내부 문제라서 별도 이슈로 추적한다.
 - 역명령은 목록의 절대 위치(`index`)를 담는다. 한 줄로 선형인 이력(S1)에서는 역명령이 늘 자기가 계산된 상태에 적용되므로 정확하다. 다른 편집이 끼어드는 사용자별 되돌리기(N-04)는 위치가 아니라 이웃을 가리키는 방식이 필요하다.
 - 삭제가 연쇄를 일으켜도 한 명령이고 한 역명령이다(#476 리뷰: 끊긴 상태를 만들지 않는다). 이력에서 한 칸이 되는 단위는 아래 "되돌리기와 이력"이 정한다.
-- 이 PR에 없는 것: 배치 검사와 행성 상수·물성 DB·판정 결과를 바꾸려는 시도의 거부(C-02c, 아래 "검증기"), 지형 소품 편집(W-05), 수역(FL-02b), 분리 항목(X-08이 더했다: `add_control_entry`·`replace_control_entry`가 분리 항목도 싣고, `remove_instance`가 분리기의 분리 항목을 함께 지운다), 정의가 없는 인스턴스(C-06: `relink_instance`와 `missing-definitions.md`). 이 PR의 예시 수치는 모두 테스트가 선언한 값이다.
+- 이 PR에 없는 것: 배치 검사와 행성 상수·물성 DB·판정 결과를 바꾸려는 시도의 거부(C-02c, 아래 "검증기"), 수역(FL-02b), 분리 항목(X-08이 더했다: `add_control_entry`·`replace_control_entry`가 분리 항목도 싣고, `remove_instance`가 분리기의 분리 항목을 함께 지운다), 정의가 없는 인스턴스(C-06: `relink_instance`와 `missing-definitions.md`). 이 PR의 예시 수치는 모두 테스트가 선언한 값이다.
 
 ## 되돌리기와 이력 (C-02b)
 
@@ -213,7 +214,7 @@ uv run python packages/core/scripts/export_schemas.py --check  # 쓰지 않고 �
 - **되돌리기와 다시 실행은 배치 검사를 다시 하지 않는다.** `History.undo/redo`(C-02b)는 `apply_command`만 부른다. 되돌리기는 이전에 받아들여진 상태로, 다시 실행은 받아들여진 명령으로 돌아가는 것이라서(선형 이력, 역명령은 계산된 바로 그 상태에 적용된다) 배치 규칙이 그 사이에 바뀌지 않는 한 같은 답이다. 이미 겹친 프로젝트를 고친 편집을 되돌리면 겹친 상태가 돌아오는데, 그 상태는 사용자가 가졌던 것이다("새로 만든 문제만 거부한다"의 같은 근거). 새 편집은 문을 지난다: `History.execute`가 `validate_command`를 부르므로 거부된 명령(`forbidden`, `overlap` ...)은 프로젝트도 이력도 바꾸지 못한다(`test_history_execute_*`).
 - 허용 오차 `PLACEMENT_TOLERANCE` = 1 µm는 저장된 double을 위한 수치 허용치이지 물리적 주장이 아니다.
 - **명령이 새로 만든 문제만 거부한다.** 이미 겹침이 있는 프로젝트(파일에서 연 것)도 다른 곳은 고칠 수 있다. 묶음은 구조(`apply_command`)를 단계마다, 배치는 **끝 상태**로 본다: `add_instance` 뒤 `add_joint`, 조립 전체의 이동이 중간 상태가 헐거워도 된다.
-- 스냅의 방향(쿼터니언)과 결합 축은 비교하지 않는다(결합 축의 월드 방향은 X-01a, 스냅 호환은 B-04b). 컴파일 오류는 X-01d, 지형 소품 편집은 W-05.
+- 스냅의 방향(쿼터니언)과 결합 축은 비교하지 않는다(결합 축의 월드 방향은 X-01a, 스냅 호환은 B-04b). 컴파일 오류는 X-01d. 지형 소품을 놓는 명령(W-05)도 이 검사를 지난다.
 
 ## 알려진 확장 (이 PR 범위 밖, 뒤 잎이 더한다)
 

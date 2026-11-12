@@ -16,6 +16,7 @@
           "add_joint": "#/$defs/AddJoint",
           "add_material_def": "#/$defs/AddMaterialDef",
           "add_part_def": "#/$defs/AddPartDef",
+          "add_terrain_prop": "#/$defs/AddTerrainProp",
           "batch": "#/$defs/CommandBatch",
           "clear_parameter": "#/$defs/ClearParameter",
           "move_instance": "#/$defs/MoveInstance",
@@ -27,10 +28,12 @@
           "remove_joint": "#/$defs/RemoveJoint",
           "remove_material_def": "#/$defs/RemoveMaterialDef",
           "remove_part_def": "#/$defs/RemovePartDef",
+          "remove_terrain_prop": "#/$defs/RemoveTerrainProp",
           "replace_control_entry": "#/$defs/ReplaceControlEntry",
           "replace_joint": "#/$defs/ReplaceJoint",
           "replace_material_def": "#/$defs/ReplaceMaterialDef",
           "replace_part_def": "#/$defs/ReplacePartDef",
+          "replace_terrain_prop": "#/$defs/ReplaceTerrainProp",
           "select_planet": "#/$defs/SelectPlanet",
           "set_assumption": "#/$defs/SetAssumption",
           "set_instance_material": "#/$defs/SetInstanceMaterial",
@@ -113,6 +116,15 @@
         },
         {
           "$ref": "#/$defs/SelectPlanet"
+        },
+        {
+          "$ref": "#/$defs/AddTerrainProp"
+        },
+        {
+          "$ref": "#/$defs/ReplaceTerrainProp"
+        },
+        {
+          "$ref": "#/$defs/RemoveTerrainProp"
         },
         {
           "$ref": "#/$defs/CommandBatch"
@@ -485,6 +497,54 @@
       "title": "AddPartDef",
       "type": "object"
     },
+    "AddTerrainProp": {
+      "additionalProperties": false,
+      "description": "Place a terrain prop (ramp or step) on the planet's ground. `index` is only where it goes in the list.",
+      "properties": {
+        "type": {
+          "const": "add_terrain_prop",
+          "title": "Type",
+          "type": "string"
+        },
+        "prop": {
+          "discriminator": {
+            "mapping": {
+              "ramp": "#/$defs/RampProp",
+              "step": "#/$defs/StepProp"
+            },
+            "propertyName": "kind"
+          },
+          "oneOf": [
+            {
+              "$ref": "#/$defs/RampProp"
+            },
+            {
+              "$ref": "#/$defs/StepProp"
+            }
+          ],
+          "title": "Prop"
+        },
+        "index": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Index"
+        }
+      },
+      "required": [
+        "type",
+        "prop"
+      ],
+      "title": "AddTerrainProp",
+      "type": "object"
+    },
     "Assumption": {
       "additionalProperties": false,
       "description": "One assumption of the verdict, as the human-review panel shows it.",
@@ -700,6 +760,7 @@
                 "add_joint": "#/$defs/AddJoint",
                 "add_material_def": "#/$defs/AddMaterialDef",
                 "add_part_def": "#/$defs/AddPartDef",
+                "add_terrain_prop": "#/$defs/AddTerrainProp",
                 "clear_parameter": "#/$defs/ClearParameter",
                 "move_instance": "#/$defs/MoveInstance",
                 "relink_instance": "#/$defs/RelinkInstance",
@@ -710,10 +771,12 @@
                 "remove_joint": "#/$defs/RemoveJoint",
                 "remove_material_def": "#/$defs/RemoveMaterialDef",
                 "remove_part_def": "#/$defs/RemovePartDef",
+                "remove_terrain_prop": "#/$defs/RemoveTerrainProp",
                 "replace_control_entry": "#/$defs/ReplaceControlEntry",
                 "replace_joint": "#/$defs/ReplaceJoint",
                 "replace_material_def": "#/$defs/ReplaceMaterialDef",
                 "replace_part_def": "#/$defs/ReplacePartDef",
+                "replace_terrain_prop": "#/$defs/ReplaceTerrainProp",
                 "select_planet": "#/$defs/SelectPlanet",
                 "set_assumption": "#/$defs/SetAssumption",
                 "set_instance_material": "#/$defs/SetInstanceMaterial",
@@ -796,6 +859,15 @@
               },
               {
                 "$ref": "#/$defs/SelectPlanet"
+              },
+              {
+                "$ref": "#/$defs/AddTerrainProp"
+              },
+              {
+                "$ref": "#/$defs/ReplaceTerrainProp"
+              },
+              {
+                "$ref": "#/$defs/RemoveTerrainProp"
               }
             ]
           },
@@ -2058,6 +2130,28 @@
       "title": "RemovePartDef",
       "type": "object"
     },
+    "RemoveTerrainProp": {
+      "additionalProperties": false,
+      "description": "Remove the prop with this id.",
+      "properties": {
+        "type": {
+          "const": "remove_terrain_prop",
+          "title": "Type",
+          "type": "string"
+        },
+        "id": {
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+          "title": "Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "id"
+      ],
+      "title": "RemoveTerrainProp",
+      "type": "object"
+    },
     "ReplaceControlEntry": {
       "additionalProperties": false,
       "description": "Replace the schedule entry with the same id (`entry.id`), in place. The new entry may be of the other type.",
@@ -2151,6 +2245,41 @@
         "part"
       ],
       "title": "ReplacePartDef",
+      "type": "object"
+    },
+    "ReplaceTerrainProp": {
+      "additionalProperties": false,
+      "description": "Replace the prop with the same id (`prop.id`), in place: move it, resize it, change its incline, height or surface.",
+      "properties": {
+        "type": {
+          "const": "replace_terrain_prop",
+          "title": "Type",
+          "type": "string"
+        },
+        "prop": {
+          "discriminator": {
+            "mapping": {
+              "ramp": "#/$defs/RampProp",
+              "step": "#/$defs/StepProp"
+            },
+            "propertyName": "kind"
+          },
+          "oneOf": [
+            {
+              "$ref": "#/$defs/RampProp"
+            },
+            {
+              "$ref": "#/$defs/StepProp"
+            }
+          ],
+          "title": "Prop"
+        }
+      },
+      "required": [
+        "type",
+        "prop"
+      ],
+      "title": "ReplaceTerrainProp",
       "type": "object"
     },
     "SelectPlanet": {

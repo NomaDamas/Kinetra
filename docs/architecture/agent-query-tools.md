@@ -2,7 +2,7 @@
 
 - 상태: 구현됨. 코드는 `packages/engine/src/kinetra_engine/agent/query_tools.py`, 테스트는 `packages/engine/tests/test_query_tools.py`(`uv run pytest packages/engine -q -k query_tools`).
 - 근거: `docs/plan/studio-plan.md` 4.4절(에이전트와의 협업, "롤아웃 수치만 인용한 실패 설명"), 이슈 #145(G-02b). 읽는 코어 계산은 B-02 질량([`part-mass.md`](part-mass.md), `assembly_mass`), X-01a 바디 트리([`body-tree.md`](body-tree.md)), X-01c 추진제([`thrust.md`](thrust.md)), X-03a 정역학([`statics-tipover.md`](statics-tipover.md)), X-02a 실행 스트림([`client-adapter.md`](client-adapter.md) 3.3).
-- 범위 밖: UI. 편집 도구(G-02a, [`agent-edit-tools.md`](agent-edit-tools.md)), 실행·판정 요청 도구(G-02c), 실패 설명(G-05: 이 도구의 수치만 인용한다). MCP 노출과 실행 기록 연결은 #558.
+- 범위 밖: UI. 편집 도구(G-02a, [`agent-edit-tools.md`](agent-edit-tools.md)), 실행·판정 요청 도구(G-02c), 실패 설명(G-05, [`agent-explain.md`](agent-explain.md): 이 도구의 수치만 인용한다). MCP 노출과 실행 기록 연결은 #558.
 
 ## 쓰는 법
 

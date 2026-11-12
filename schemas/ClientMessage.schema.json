@@ -385,6 +385,54 @@
       "title": "AddPartDef",
       "type": "object"
     },
+    "AddTerrainProp": {
+      "additionalProperties": false,
+      "description": "Place a terrain prop (ramp or step) on the planet's ground. `index` is only where it goes in the list.",
+      "properties": {
+        "type": {
+          "const": "add_terrain_prop",
+          "title": "Type",
+          "type": "string"
+        },
+        "prop": {
+          "discriminator": {
+            "mapping": {
+              "ramp": "#/$defs/RampProp",
+              "step": "#/$defs/StepProp"
+            },
+            "propertyName": "kind"
+          },
+          "oneOf": [
+            {
+              "$ref": "#/$defs/RampProp"
+            },
+            {
+              "$ref": "#/$defs/StepProp"
+            }
+          ],
+          "title": "Prop"
+        },
+        "index": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Index"
+        }
+      },
+      "required": [
+        "type",
+        "prop"
+      ],
+      "title": "AddTerrainProp",
+      "type": "object"
+    },
     "Assumption": {
       "additionalProperties": false,
       "description": "One assumption of the verdict, as the human-review panel shows it.",
@@ -585,6 +633,7 @@
                 "add_joint": "#/$defs/AddJoint",
                 "add_material_def": "#/$defs/AddMaterialDef",
                 "add_part_def": "#/$defs/AddPartDef",
+                "add_terrain_prop": "#/$defs/AddTerrainProp",
                 "clear_parameter": "#/$defs/ClearParameter",
                 "move_instance": "#/$defs/MoveInstance",
                 "relink_instance": "#/$defs/RelinkInstance",
@@ -595,10 +644,12 @@
                 "remove_joint": "#/$defs/RemoveJoint",
                 "remove_material_def": "#/$defs/RemoveMaterialDef",
                 "remove_part_def": "#/$defs/RemovePartDef",
+                "remove_terrain_prop": "#/$defs/RemoveTerrainProp",
                 "replace_control_entry": "#/$defs/ReplaceControlEntry",
                 "replace_joint": "#/$defs/ReplaceJoint",
                 "replace_material_def": "#/$defs/ReplaceMaterialDef",
                 "replace_part_def": "#/$defs/ReplacePartDef",
+                "replace_terrain_prop": "#/$defs/ReplaceTerrainProp",
                 "select_planet": "#/$defs/SelectPlanet",
                 "set_assumption": "#/$defs/SetAssumption",
                 "set_instance_material": "#/$defs/SetInstanceMaterial",
@@ -681,6 +732,15 @@
               },
               {
                 "$ref": "#/$defs/SelectPlanet"
+              },
+              {
+                "$ref": "#/$defs/AddTerrainProp"
+              },
+              {
+                "$ref": "#/$defs/ReplaceTerrainProp"
+              },
+              {
+                "$ref": "#/$defs/RemoveTerrainProp"
               }
             ]
           },
@@ -906,6 +966,37 @@
         "protocol"
       ],
       "title": "Hello",
+      "type": "object"
+    },
+    "Incline": {
+      "additionalProperties": false,
+      "description": "Slope angle above the ground in radians, strictly between 0 and pi/2.",
+      "properties": {
+        "badge": {
+          "$ref": "#/$defs/Badge"
+        },
+        "source": {
+          "$ref": "#/$defs/Source"
+        },
+        "value": {
+          "exclusiveMaximum": 1.5707963267948966,
+          "exclusiveMinimum": 0,
+          "title": "Value",
+          "type": "number"
+        },
+        "unit": {
+          "const": "rad",
+          "title": "Unit",
+          "type": "string"
+        }
+      },
+      "required": [
+        "badge",
+        "source",
+        "value",
+        "unit"
+      ],
+      "title": "Incline",
       "type": "object"
     },
     "Instance": {
@@ -1419,6 +1510,39 @@
       "title": "PartRole",
       "type": "string"
     },
+    "Placement": {
+      "additionalProperties": false,
+      "description": "Where a prop stands on the ground: centre `x`, `y` [m] and rotation `yaw` [rad] about +Z (counter-clockwise\nseen from above). One badge and source cover the whole placement.",
+      "properties": {
+        "badge": {
+          "$ref": "#/$defs/Badge"
+        },
+        "source": {
+          "$ref": "#/$defs/Source"
+        },
+        "x": {
+          "title": "X",
+          "type": "number"
+        },
+        "y": {
+          "title": "Y",
+          "type": "number"
+        },
+        "yaw": {
+          "title": "Yaw",
+          "type": "number"
+        }
+      },
+      "required": [
+        "badge",
+        "source",
+        "x",
+        "y",
+        "yaw"
+      ],
+      "title": "Placement",
+      "type": "object"
+    },
     "Pose": {
       "additionalProperties": false,
       "description": "World pose of an instance's part frame. One badge and source cover the whole pose.",
@@ -1466,6 +1590,36 @@
       "title": "Position",
       "type": "object"
     },
+    "PropSize": {
+      "additionalProperties": false,
+      "description": "A prop dimension in metres, > 0.",
+      "properties": {
+        "badge": {
+          "$ref": "#/$defs/Badge"
+        },
+        "source": {
+          "$ref": "#/$defs/Source"
+        },
+        "value": {
+          "exclusiveMinimum": 0,
+          "title": "Value",
+          "type": "number"
+        },
+        "unit": {
+          "const": "m",
+          "title": "Unit",
+          "type": "string"
+        }
+      },
+      "required": [
+        "badge",
+        "source",
+        "value",
+        "unit"
+      ],
+      "title": "PropSize",
+      "type": "object"
+    },
     "Publish": {
       "description": "Send a command (one edit or a batch, all or nothing: C2). `id` is the publisher's command id (C6),\n`base_revision` the revision the publisher saw (C5), `origin` the input path (`client-adapter.md` 3.5).",
       "properties": {
@@ -1495,6 +1649,7 @@
               "add_joint": "#/$defs/AddJoint",
               "add_material_def": "#/$defs/AddMaterialDef",
               "add_part_def": "#/$defs/AddPartDef",
+              "add_terrain_prop": "#/$defs/AddTerrainProp",
               "batch": "#/$defs/CommandBatch",
               "clear_parameter": "#/$defs/ClearParameter",
               "move_instance": "#/$defs/MoveInstance",
@@ -1506,10 +1661,12 @@
               "remove_joint": "#/$defs/RemoveJoint",
               "remove_material_def": "#/$defs/RemoveMaterialDef",
               "remove_part_def": "#/$defs/RemovePartDef",
+              "remove_terrain_prop": "#/$defs/RemoveTerrainProp",
               "replace_control_entry": "#/$defs/ReplaceControlEntry",
               "replace_joint": "#/$defs/ReplaceJoint",
               "replace_material_def": "#/$defs/ReplaceMaterialDef",
               "replace_part_def": "#/$defs/ReplacePartDef",
+              "replace_terrain_prop": "#/$defs/ReplaceTerrainProp",
               "select_planet": "#/$defs/SelectPlanet",
               "set_assumption": "#/$defs/SetAssumption",
               "set_instance_material": "#/$defs/SetInstanceMaterial",
@@ -1594,6 +1751,15 @@
               "$ref": "#/$defs/SelectPlanet"
             },
             {
+              "$ref": "#/$defs/AddTerrainProp"
+            },
+            {
+              "$ref": "#/$defs/ReplaceTerrainProp"
+            },
+            {
+              "$ref": "#/$defs/RemoveTerrainProp"
+            },
+            {
               "$ref": "#/$defs/CommandBatch"
             }
           ],
@@ -1668,6 +1834,58 @@
         "w"
       ],
       "title": "Quaternion",
+      "type": "object"
+    },
+    "RampProp": {
+      "additionalProperties": false,
+      "description": "Rises along local +x. `length` is the horizontal run.",
+      "properties": {
+        "id": {
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "material": {
+          "anyOf": [
+            {
+              "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "ID of the Material of the prop's surface; None is the planet's ground.",
+          "title": "Material"
+        },
+        "placement": {
+          "$ref": "#/$defs/Placement"
+        },
+        "length": {
+          "$ref": "#/$defs/PropSize"
+        },
+        "width": {
+          "$ref": "#/$defs/PropSize"
+        },
+        "kind": {
+          "const": "ramp",
+          "title": "Kind",
+          "type": "string"
+        },
+        "incline": {
+          "$ref": "#/$defs/Incline"
+        }
+      },
+      "required": [
+        "id",
+        "placement",
+        "length",
+        "width",
+        "kind",
+        "incline"
+      ],
+      "title": "RampProp",
       "type": "object"
     },
     "RelinkInstance": {
@@ -1862,6 +2080,28 @@
       "title": "RemovePartDef",
       "type": "object"
     },
+    "RemoveTerrainProp": {
+      "additionalProperties": false,
+      "description": "Remove the prop with this id.",
+      "properties": {
+        "type": {
+          "const": "remove_terrain_prop",
+          "title": "Type",
+          "type": "string"
+        },
+        "id": {
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+          "title": "Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "id"
+      ],
+      "title": "RemoveTerrainProp",
+      "type": "object"
+    },
     "ReplaceControlEntry": {
       "additionalProperties": false,
       "description": "Replace the schedule entry with the same id (`entry.id`), in place. The new entry may be of the other type.",
@@ -1955,6 +2195,41 @@
         "part"
       ],
       "title": "ReplacePartDef",
+      "type": "object"
+    },
+    "ReplaceTerrainProp": {
+      "additionalProperties": false,
+      "description": "Replace the prop with the same id (`prop.id`), in place: move it, resize it, change its incline, height or surface.",
+      "properties": {
+        "type": {
+          "const": "replace_terrain_prop",
+          "title": "Type",
+          "type": "string"
+        },
+        "prop": {
+          "discriminator": {
+            "mapping": {
+              "ramp": "#/$defs/RampProp",
+              "step": "#/$defs/StepProp"
+            },
+            "propertyName": "kind"
+          },
+          "oneOf": [
+            {
+              "$ref": "#/$defs/RampProp"
+            },
+            {
+              "$ref": "#/$defs/StepProp"
+            }
+          ],
+          "title": "Prop"
+        }
+      },
+      "required": [
+        "type",
+        "prop"
+      ],
+      "title": "ReplaceTerrainProp",
       "type": "object"
     },
     "Request": {
@@ -2477,6 +2752,58 @@
         "radius"
       ],
       "title": "Sphere",
+      "type": "object"
+    },
+    "StepProp": {
+      "additionalProperties": false,
+      "description": "A box `height` tall (턱).",
+      "properties": {
+        "id": {
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "material": {
+          "anyOf": [
+            {
+              "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "ID of the Material of the prop's surface; None is the planet's ground.",
+          "title": "Material"
+        },
+        "placement": {
+          "$ref": "#/$defs/Placement"
+        },
+        "length": {
+          "$ref": "#/$defs/PropSize"
+        },
+        "width": {
+          "$ref": "#/$defs/PropSize"
+        },
+        "kind": {
+          "const": "step",
+          "title": "Kind",
+          "type": "string"
+        },
+        "height": {
+          "$ref": "#/$defs/PropSize"
+        }
+      },
+      "required": [
+        "id",
+        "placement",
+        "length",
+        "width",
+        "kind",
+        "height"
+      ],
+      "title": "StepProp",
       "type": "object"
     },
     "Subscribe": {
