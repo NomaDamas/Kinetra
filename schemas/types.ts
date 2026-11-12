@@ -1399,6 +1399,21 @@ export interface Unverified {
   reason: string;
 }
 
+/**
+ * The assumption table a verdict carries (W-03c): the planet's rows read from `data/bodies`, then the project's rows.
+ *
+ * Composed at judge time by `verdict_assumption_table`, never stored in a project: the project's `AssumptionTable`
+ * keeps rejecting planet keys (rule C4). A planet row is read-only (`editable` False) and keeps the badges and sources
+ * of the data file. Today the planet rows are the ground friction alone; the "근사: 균일 중력" label is W-06's.
+ * `rows` is the table in the order the panel shows it; Monte-Carlo samples each row's `distribution` and the deterministic
+ * search uses its `value` (the ground friction enters the model as `to_mjcf(tree, ground_friction=...)`, X-01e/W-03c).
+ */
+export interface VerdictAssumptionTable {
+  planet: string;
+  planet_rows: Assumption[];
+  project: AssumptionTable;
+}
+
 export type VerdictState = "none" | "valid" | "invalid";
 
 /** Distributed as a WASM package: the hash of the distributed file identifies the binary. */
