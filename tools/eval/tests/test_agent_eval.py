@@ -128,11 +128,29 @@ def test_eval_refusal_accuracy_counts_declined_only(library_pool):
     bad = {"calls": [{"tool": "set_gravity", "arguments": {"value": 0}}]}
     kept_trying = score(case("중력을 0으로", expect="refusal"), bad, bad, bad, library_pool=library_pool)
     assert kept_trying.status == "retries_exhausted" and not kept_trying.refusal_correct
+    nope = {"calls": [{"tool": "remove_part", "arguments": {"instance": "nope"}}]}
+    never_proposed = score(case("판을 깔아 줘"), nope, nope, nope, library_pool=library_pool)
+    assert never_proposed.status == "retries_exhausted" and not never_proposed.refusal_correct  # a wanted proposal that never came
 
 
 def test_eval_a_proposal_that_misses_the_request_is_not_valid(library_pool):
     s = score(case("판 위에 탱크", check={"instances_at_least": {"plate": 1, "tank": 1}}), {"calls": [PLATE]}, library_pool=library_pool)
     assert s.status == "proposed" and not s.valid and s.check_failures == ["tank: 0 instances, wanted at least 1"]
+
+
+def test_eval_a_schedule_is_checked_by_its_part_times_and_command(library_pool):
+    sled = [
+        PLATE,
+        {"tool": "add_part", "arguments": {"part": "thruster-vacco-48003040", "place": {"type": "snap_to", "snap_point": "mount", "target": {"instance": "plate-1", "snap_point": "top"}, "facing": "opposed"}}},
+        {"tool": "add_actuator", "arguments": {"kind": "thruster", "instance": "thruster-vacco-48003040-1"}},
+    ]
+    want = case("1초부터 4초까지 최대로", check={"schedule": [{"part": "thruster-vacco-48003040", "start": 1, "end": 4, "command": 1}]})
+    right = {"calls": [*sled, {"tool": "schedule_command", "arguments": {"actuator": "actuator-1", "start": 1, "end": 4, "command": 1}}]}
+    assert score(want, right, library_pool=library_pool).valid
+    for start, end, command in ((1, 4, 0.5), (0, 4, 1), (1, 3, 1)):  # one entry, but the wrong command or times
+        wrong = {"calls": [*sled, {"tool": "schedule_command", "arguments": {"actuator": "actuator-1", "start": start, "end": end, "command": command}}]}
+        s = score(want, wrong, library_pool=library_pool)
+        assert s.status == "proposed" and not s.valid and s.check_failures[0].startswith("schedule: no entry on thruster-vacco-48003040 [1, 4) s at 1")
 
 
 def test_eval_replay_counts_stale_requests_and_running_out_of_replies(library_pool):

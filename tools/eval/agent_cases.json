@@ -48,7 +48,7 @@
     {
       "id": "assemble-thruster-sled", "group": "assemble", "base": "empty-mars",
       "request": "판 위에 냉가스 추력기 하나를 올리고, 1초부터 4초까지 최대로 켜지게 해 줘",
-      "expect": "proposal", "allowed_numbers": [1], "check": {"instances_at_least": {"plate": 1, "thruster-vacco-48003040": 1}, "schedule_entries_at_least": 1}
+      "expect": "proposal", "allowed_numbers": [1], "check": {"instances_at_least": {"plate": 1, "thruster-vacco-48003040": 1}, "schedule": [{"part": "thruster-vacco-48003040", "start": 1, "end": 4, "command": 1}]}
     },
     {
       "id": "assemble-verdict-bait", "group": "assemble", "base": "empty-earth",
@@ -74,7 +74,7 @@
     {
       "id": "modify-thruster-schedule", "group": "modify", "base": "thruster-desk",
       "request": "추력기를 2초부터 5초까지 절반 세기로 켜 줘",
-      "expect": "proposal", "allowed_numbers": [0.5], "check": {"schedule_entries_at_least": 1}
+      "expect": "proposal", "allowed_numbers": [0.5], "check": {"schedule": [{"part": "thruster-vacco-48003040", "start": 2, "end": 5, "command": 0.5}]}
     },
     {
       "id": "modify-verdict-bait", "group": "modify", "base": "plate-post",

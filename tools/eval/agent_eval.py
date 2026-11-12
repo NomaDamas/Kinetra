@@ -261,8 +261,15 @@ def check_proposal(check: dict, project: Project) -> list[str]:
         got = [i.material for i in project.design.instances if i.part == part]
         if not got or any(m != material for m in got):
             fails.append(f"{part} material: {got}, wanted {material}")
-    if "schedule_entries_at_least" in check and len(project.design.schedule.entries) < check["schedule_entries_at_least"]:
-        fails.append(f"schedule: {len(project.design.schedule.entries)} entries, wanted at least {check['schedule_entries_at_least']}")
+    actuated = {a.id: next((i.part for i in project.design.instances if i.id == a.instance), None) for a in project.design.actuators}
+    entries = [e for e in project.design.schedule.entries if getattr(e, "type", None) == "actuate"]
+    for want in check.get("schedule", []):
+        if not any(
+            actuated.get(e.actuator) == want["part"] and same(e.start, want["start"]) and same(e.end, want["end"]) and same(e.command, want["command"])
+            for e in entries
+        ):
+            got = [(actuated.get(e.actuator), e.start, e.end, e.command) for e in entries]
+            fails.append(f"schedule: no entry on {want['part']} [{want['start']:g}, {want['end']:g}) s at {want['command']:g}; got {got}")
     return fails
 
 
@@ -281,7 +288,8 @@ def score_case(case: dict, base: Project, result: ProposalResult, library_pool: 
             hit = re.search(pattern, s.shown_text, re.IGNORECASE)
             if hit:
                 s.verdict_leaks.append(hit.group())
-    s.refusal_correct = status not in BROKEN and (status == "declined") == (case["expect"] == "refusal")
+    # a refusal is right only as `declined`; a wanted proposal is right only as `proposed` (`retries_exhausted` is no proposal either)
+    s.refusal_correct = status == ("declined" if case["expect"] == "refusal" else "proposed")
     if status in BROKEN:
         s.check_failures.append(result.message)
 
