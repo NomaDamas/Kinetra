@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>S13 재생 속도</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="kin-sc06.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div class="k-root" style="width:1440px;height:980px">
+
+<div class="k-note"><span><strong>S13 재생 속도 (X-12)</strong> · 같은 실행을 느리게 · 1× · 빠르게로 3장(크롭: 뷰포트 위 HUD + 타임라인 전체 폭). 재생 중, 재생 위치 2.4 s</span><span>세 장 모두 상시 조작 요소 10 (HUD 0 + 타임라인 10) · 배율 0.25× · 1× · 2×는 예시</span></div>
+
+<div style="flex:1 1 0;min-height:0;display:flex;flex-direction:column;gap:12px;padding:12px 0 0">
+
+<div style="padding:0 16px;font-size:12px;line-height:16px;color:#A9B4C0">재생 속도는 <span class="k-hi">보는 속도</span>일 뿐입니다. 물리 시간 간격과 궤적 해시를 바꾸지 않고 실행 요청에 속도가 실리지 않습니다. 그래서 세 장의 <span class="k-hi">눈금, 표식 시점, L1 문구가 같습니다</span>. 달라지는 것은 분할 컨트롤의 선택, 속도 옆 글자의 배율, HUD의 속도 칩(1×에는 없음)뿐입니다. 정확도를 바꾸는 물리 시간 조절은 컨트롤도 이름도 없습니다.</div>
+
+<div class="k-lbl" style="padding:0 16px">① 느리게 · 0.25× <span class="k-ex">예시</span></div>
+<div data-unit="S13 느리게" style="display:flex;flex-direction:column">
+<div class="k-vp" style="flex:none;height:56px;border-top:1px solid #26303A"><div class="k-hud" role="group" aria-label="실행 HUD" style="top:8px"><div class="k-hrow"><span class="k-chip"><svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><path d="M1.5 1.5h7v7h-7z" fill="currentColor"/></svg>끝남</span><span class="k-chip">보는 속도 느리게 <span class="k-mono">0.25×</span></span><span class="k-ex">예시</span><span class="k-ev"><svg width="30" height="12" viewBox="0 0 30 12" role="img" aria-label="증거 강도 2/4"><path d="M0 0h6v12H0zM8 0h6v12H8z" fill="currentColor"/><path d="M16.5.5h5v11h-5zM24.5.5h5v11h-5z" fill="none" stroke="currentColor"/></svg>L1 · 1회 실행. 판정이 아닙니다</span></div></div></div>
+<div class="k-tl" role="group" aria-label="타임라인">
+<div class="k-tlh"><button type="button" class="k-fold" data-ctl="타임라인 접기" aria-expanded="true" aria-label="타임라인 접기"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 4.5L6 8l3.5-3.5"/></svg>타임라인</button><span class="k-ev"><svg width="30" height="12" viewBox="0 0 30 12" role="img" aria-label="증거 강도 2/4"><path d="M0 0h6v12H0zM8 0h6v12H8z" fill="currentColor"/><path d="M16.5.5h5v11h-5zM24.5.5h5v11h-5z" fill="none" stroke="currentColor"/></svg>L1 · 1회 실행. 판정이 아닙니다</span></div>
+<div class="k-tlb">
+<div class="k-ctl">
+<div class="k-crow">
+<button type="button" class="k-ib sm" data-ctl="재생/일시정지" aria-label="일시정지" aria-keyshortcuts="Space"><svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><path d="M2 1h2v8H2zM6 1h2v8H6z" fill="currentColor"/></svg></button>
+<button type="button" class="k-ib sm" data-ctl="처음으로" aria-label="처음으로" aria-keyshortcuts="Home"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 2L1.5 4.5 4 7M1.5 4.5h5.5a3 3 0 0 1 0 6H4"/></svg></button>
+<div class="k-seg" role="radiogroup" aria-label="재생 속도. 보는 속도입니다. 물리 계산은 같습니다" data-ctl="재생 속도" style="margin-left:8px"><button type="button" role="radio" aria-checked="true">느리게</button><button type="button" role="radio" aria-checked="false" tabindex="-1">1×</button><button type="button" role="radio" aria-checked="false" tabindex="-1">빠르게</button></div>
+<button type="button" class="kb kb-def" data-ctl="속도 기본값 배지" aria-haspopup="dialog" aria-expanded="false" aria-label="값 배지 기본값. 속도 단계는 설정 값입니다. 누르면 근거를 엽니다" style="margin-left:4px"><span class="kp"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><circle cx="6" cy="6" r="4"/></svg>기본값</span></button>
+<span class="k-ex">예시</span>
+</div>
+<div class="k-why2"><span class="k-mono k-hi">0.25×</span> · 보는 속도입니다. 물리 계산은 같습니다</div>
+</div>
+<div class="k-trk">
+<div class="k-ticks" aria-hidden="true"><span class="k-tk first" style="left:0">0 s</span><span class="k-tk" style="left:20%">1 s</span><span class="k-tk" style="left:40%">2 s</span><span class="k-tk" style="left:60%">3 s</span><span class="k-tk" style="left:80%">4 s</span><span class="k-tk last" style="left:100%">5 s</span></div>
+<div class="k-phl" style="left:48%"></div>
+<div class="k-scrub" role="slider" tabindex="0" data-ctl="시간 탐색 스크러버" aria-label="시간 탐색" aria-valuemin="0" aria-valuemax="5" aria-valuenow="2.4" aria-valuetext="2.4 초"><div class="k-rail"></div><div class="k-done" style="width:100%"></div><div class="k-thumb" style="left:48%"></div></div>
+<div class="k-lanes" role="toolbar" aria-label="표식 줄" data-ctl="표식 줄">
+<div class="k-lane up"><div class="k-mk" style="left:30%"><button type="button" class="k-mkb" aria-label="분리 표식, 1.5 초"><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M7 1.5L12.5 7 7 12.5 1.5 7z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg></button><span class="k-mkl">분리</span></div></div>
+<div class="k-lane dn"><div class="k-mk" style="left:48%"><button type="button" class="k-mkb" tabindex="-1" aria-label="실패 표식 전복, 2.4 초"><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M7 1.5l6 11H1z" fill="currentColor"/></svg></button><span class="k-mkl">전복</span></div><div class="k-mk" style="left:62%"><button type="button" class="k-mkb" tabindex="-1" aria-label="파단 표식, 3.1 초"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M2.5 2.5l9 9M11.5 2.5l-9 9"/></svg></button><span class="k-mkl">파단</span></div></div>
+</div>
+</div>
+<div class="k-tsim"><button type="button" class="kb kb-sim" data-ctl="눈금 시뮬 배지" aria-label="값 배지 시뮬. 시간의 근거를 엽니다"><span class="kp"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 6q1.25-5 2.5 0t2.5 0t2.5 0t2.5 0"/></svg>시뮬</span></button><span class="k-ex">예시</span></div>
+</div>
+<div class="k-tlr"><button type="button" class="k-btn sm" data-ctl="실패 리포트 · 원인 2건" aria-haspopup="dialog" aria-expanded="false">실패 리포트 · 원인 2건</button><button type="button" class="k-btn sm" data-ctl="판정 카드 열기">판정 카드 열기</button><span class="k-l3"><svg width="30" height="12" viewBox="0 0 30 12" role="img" aria-label="증거 강도 0/4"><path d="M.5.5h5v11h-5zM8.5.5h5v11h-5zM16.5.5h5v11h-5zM24.5.5h5v11h-5z" fill="none" stroke="currentColor"/></svg><span class="k-mono">L3</span>실물 검증 없음</span></div>
+</div>
+</div>
+
+<div class="k-lbl" style="padding:0 16px">② 1× · 속도 칩 없음</div>
+<div data-unit="S13 1×" style="display:flex;flex-direction:column">
+<div class="k-vp" style="flex:none;height:56px;border-top:1px solid #26303A"><div class="k-hud" role="group" aria-label="실행 HUD" style="top:8px"><div class="k-hrow"><span class="k-chip"><svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><path d="M1.5 1.5h7v7h-7z" fill="currentColor"/></svg>끝남</span><span class="k-ev"><svg width="30" height="12" viewBox="0 0 30 12" role="img" aria-label="증거 강도 2/4"><path d="M0 0h6v12H0zM8 0h6v12H8z" fill="currentColor"/><path d="M16.5.5h5v11h-5zM24.5.5h5v11h-5z" fill="none" stroke="currentColor"/></svg>L1 · 1회 실행. 판정이 아닙니다</span></div></div></div>
+<div class="k-tl" role="group" aria-label="타임라인">
+<div class="k-tlh"><button type="button" class="k-fold" data-ctl="타임라인 접기" aria-expanded="true" aria-label="타임라인 접기"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 4.5L6 8l3.5-3.5"/></svg>타임라인</button><span class="k-ev"><svg width="30" height="12" viewBox="0 0 30 12" role="img" aria-label="증거 강도 2/4"><path d="M0 0h6v12H0zM8 0h6v12H8z" fill="currentColor"/><path d="M16.5.5h5v11h-5zM24.5.5h5v11h-5z" fill="none" stroke="currentColor"/></svg>L1 · 1회 실행. 판정이 아닙니다</span></div>
+<div class="k-tlb">
+<div class="k-ctl">
+<div class="k-crow">
+<button type="button" class="k-ib sm" data-ctl="재생/일시정지" aria-label="일시정지" aria-keyshortcuts="Space"><svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><path d="M2 1h2v8H2zM6 1h2v8H6z" fill="currentColor"/></svg></button>
+<button type="button" class="k-ib sm" data-ctl="처음으로" aria-label="처음으로" aria-keyshortcuts="Home"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 2L1.5 4.5 4 7M1.5 4.5h5.5a3 3 0 0 1 0 6H4"/></svg></button>
+<div class="k-seg" role="radiogroup" aria-label="재생 속도. 보는 속도입니다. 물리 계산은 같습니다" data-ctl="재생 속도" style="margin-left:8px"><button type="button" role="radio" aria-checked="false" tabindex="-1">느리게</button><button type="button" role="radio" aria-checked="true">1×</button><button type="button" role="radio" aria-checked="false" tabindex="-1">빠르게</button></div>
+<button type="button" class="kb kb-def" data-ctl="속도 기본값 배지" aria-haspopup="dialog" aria-expanded="true" aria-controls="s13-pop" aria-label="값 배지 기본값. 속도 단계는 설정 값입니다. 근거가 열려 있습니다" style="margin-left:4px;outline:2px solid #A8CBFF;outline-offset:2px;border-radius:999px"><span class="kp"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><circle cx="6" cy="6" r="4"/></svg>기본값</span></button>
+<span class="k-ex">예시</span>
+</div>
+<div class="k-why2"><span class="k-mono k-hi">1×</span> · 보는 속도입니다. 물리 계산은 같습니다</div>
+</div>
+<div class="k-trk">
+<div class="k-ticks" aria-hidden="true"><span class="k-tk first" style="left:0">0 s</span><span class="k-tk" style="left:20%">1 s</span><span class="k-tk" style="left:40%">2 s</span><span class="k-tk" style="left:60%">3 s</span><span class="k-tk" style="left:80%">4 s</span><span class="k-tk last" style="left:100%">5 s</span></div>
+<div class="k-phl" style="left:48%"></div>
+<div class="k-scrub" role="slider" tabindex="0" data-ctl="시간 탐색 스크러버" aria-label="시간 탐색" aria-valuemin="0" aria-valuemax="5" aria-valuenow="2.4" aria-valuetext="2.4 초"><div class="k-rail"></div><div class="k-done" style="width:100%"></div><div class="k-thumb" style="left:48%"></div></div>
+<div class="k-lanes" role="toolbar" aria-label="표식 줄" data-ctl="표식 줄">
+<div class="k-lane up"><div class="k-mk" style="left:30%"><button type="button" class="k-mkb" aria-label="분리 표식, 1.5 초"><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M7 1.5L12.5 7 7 12.5 1.5 7z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg></button><span class="k-mkl">분리</span></div></div>
+<div class="k-lane dn"><div class="k-mk" style="left:48%"><button type="button" class="k-mkb" tabindex="-1" aria-label="실패 표식 전복, 2.4 초"><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M7 1.5l6 11H1z" fill="currentColor"/></svg></button><span class="k-mkl">전복</span></div><div class="k-mk" style="left:62%"><button type="button" class="k-mkb" tabindex="-1" aria-label="파단 표식, 3.1 초"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M2.5 2.5l9 9M11.5 2.5l-9 9"/></svg></button><span class="k-mkl">파단</span></div></div>
+</div>
+</div>
+<div class="k-tsim"><button type="button" class="kb kb-sim" data-ctl="눈금 시뮬 배지" aria-label="값 배지 시뮬. 시간의 근거를 엽니다"><span class="kp"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 6q1.25-5 2.5 0t2.5 0t2.5 0t2.5 0"/></svg>시뮬</span></button><span class="k-ex">예시</span></div>
+</div>
+<div class="k-tlr"><button type="button" class="k-btn sm" data-ctl="실패 리포트 · 원인 2건" aria-haspopup="dialog" aria-expanded="false">실패 리포트 · 원인 2건</button><button type="button" class="k-btn sm" data-ctl="판정 카드 열기">판정 카드 열기</button><span class="k-l3"><svg width="30" height="12" viewBox="0 0 30 12" role="img" aria-label="증거 강도 0/4"><path d="M.5.5h5v11h-5zM8.5.5h5v11h-5zM16.5.5h5v11h-5zM24.5.5h5v11h-5z" fill="none" stroke="currentColor"/></svg><span class="k-mono">L3</span>실물 검증 없음</span></div>
+</div>
+</div>
+
+<div class="k-lbl" style="padding:0 16px">③ 빠르게 · 2× <span class="k-ex">예시</span></div>
+<div data-unit="S13 빠르게" style="display:flex;flex-direction:column">
+<div class="k-vp" style="flex:none;height:56px;border-top:1px solid #26303A"><div class="k-hud" role="group" aria-label="실행 HUD" style="top:8px"><div class="k-hrow"><span class="k-chip"><svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><path d="M1.5 1.5h7v7h-7z" fill="currentColor"/></svg>끝남</span><span class="k-chip">보는 속도 빠르게 <span class="k-mono">2×</span></span><span class="k-ex">예시</span><span class="k-ev"><svg width="30" height="12" viewBox="0 0 30 12" role="img" aria-label="증거 강도 2/4"><path d="M0 0h6v12H0zM8 0h6v12H8z" fill="currentColor"/><path d="M16.5.5h5v11h-5zM24.5.5h5v11h-5z" fill="none" stroke="currentColor"/></svg>L1 · 1회 실행. 판정이 아닙니다</span></div></div></div>
+<div class="k-tl" role="group" aria-label="타임라인">
+<div class="k-tlh"><button type="button" class="k-fold" data-ctl="타임라인 접기" aria-expanded="true" aria-label="타임라인 접기"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 4.5L6 8l3.5-3.5"/></svg>타임라인</button><span class="k-ev"><svg width="30" height="12" viewBox="0 0 30 12" role="img" aria-label="증거 강도 2/4"><path d="M0 0h6v12H0zM8 0h6v12H8z" fill="currentColor"/><path d="M16.5.5h5v11h-5zM24.5.5h5v11h-5z" fill="none" stroke="currentColor"/></svg>L1 · 1회 실행. 판정이 아닙니다</span></div>
+<div class="k-tlb">
+<div class="k-ctl">
+<div class="k-crow">
+<button type="button" class="k-ib sm" data-ctl="재생/일시정지" aria-label="일시정지" aria-keyshortcuts="Space"><svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><path d="M2 1h2v8H2zM6 1h2v8H6z" fill="currentColor"/></svg></button>
+<button type="button" class="k-ib sm" data-ctl="처음으로" aria-label="처음으로" aria-keyshortcuts="Home"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 2L1.5 4.5 4 7M1.5 4.5h5.5a3 3 0 0 1 0 6H4"/></svg></button>
+<div class="k-seg" role="radiogroup" aria-label="재생 속도. 보는 속도입니다. 물리 계산은 같습니다" data-ctl="재생 속도" style="margin-left:8px"><button type="button" role="radio" aria-checked="false" tabindex="-1">느리게</button><button type="button" role="radio" aria-checked="false" tabindex="-1">1×</button><button type="button" role="radio" aria-checked="true">빠르게</button></div>
+<button type="button" class="kb kb-def" data-ctl="속도 기본값 배지" aria-haspopup="dialog" aria-expanded="false" aria-label="값 배지 기본값. 속도 단계는 설정 값입니다. 누르면 근거를 엽니다" style="margin-left:4px"><span class="kp"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><circle cx="6" cy="6" r="4"/></svg>기본값</span></button>
+<span class="k-ex">예시</span>
+</div>
+<div class="k-why2"><span class="k-mono k-hi">2×</span> · 보는 속도입니다. 물리 계산은 같습니다</div>
+</div>
+<div class="k-trk">
+<div class="k-ticks" aria-hidden="true"><span class="k-tk first" style="left:0">0 s</span><span class="k-tk" style="left:20%">1 s</span><span class="k-tk" style="left:40%">2 s</span><span class="k-tk" style="left:60%">3 s</span><span class="k-tk" style="left:80%">4 s</span><span class="k-tk last" style="left:100%">5 s</span></div>
+<div class="k-phl" style="left:48%"></div>
+<div class="k-scrub" role="slider" tabindex="0" data-ctl="시간 탐색 스크러버" aria-label="시간 탐색" aria-valuemin="0" aria-valuemax="5" aria-valuenow="2.4" aria-valuetext="2.4 초"><div class="k-rail"></div><div class="k-done" style="width:100%"></div><div class="k-thumb" style="left:48%"></div></div>
+<div class="k-lanes" role="toolbar" aria-label="표식 줄" data-ctl="표식 줄">
+<div class="k-lane up"><div class="k-mk" style="left:30%"><button type="button" class="k-mkb" aria-label="분리 표식, 1.5 초"><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M7 1.5L12.5 7 7 12.5 1.5 7z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg></button><span class="k-mkl">분리</span></div></div>
+<div class="k-lane dn"><div class="k-mk" style="left:48%"><button type="button" class="k-mkb" tabindex="-1" aria-label="실패 표식 전복, 2.4 초"><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M7 1.5l6 11H1z" fill="currentColor"/></svg></button><span class="k-mkl">전복</span></div><div class="k-mk" style="left:62%"><button type="button" class="k-mkb" tabindex="-1" aria-label="파단 표식, 3.1 초"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M2.5 2.5l9 9M11.5 2.5l-9 9"/></svg></button><span class="k-mkl">파단</span></div></div>
+</div>
+</div>
+<div class="k-tsim"><button type="button" class="kb kb-sim" data-ctl="눈금 시뮬 배지" aria-label="값 배지 시뮬. 시간의 근거를 엽니다"><span class="kp"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 6q1.25-5 2.5 0t2.5 0t2.5 0t2.5 0"/></svg>시뮬</span></button><span class="k-ex">예시</span></div>
+</div>
+<div class="k-tlr"><button type="button" class="k-btn sm" data-ctl="실패 리포트 · 원인 2건" aria-haspopup="dialog" aria-expanded="false">실패 리포트 · 원인 2건</button><button type="button" class="k-btn sm" data-ctl="판정 카드 열기">판정 카드 열기</button><span class="k-l3"><svg width="30" height="12" viewBox="0 0 30 12" role="img" aria-label="증거 강도 0/4"><path d="M.5.5h5v11h-5zM8.5.5h5v11h-5zM16.5.5h5v11h-5zM24.5.5h5v11h-5z" fill="none" stroke="currentColor"/></svg><span class="k-mono">L3</span>실물 검증 없음</span></div>
+</div>
+</div>
+
+<div class="k-cols" style="padding:4px 16px 0;gap:32px">
+<div class="k-stack">
+<span class="k-cap">② 1×의 <span class="k-hi">기본값</span> 배지를 누른 모습 · 팝오버</span>
+<div id="s13-pop" class="k-pop" role="dialog" aria-label="재생 속도 근거" data-transient="1" style="width:420px">
+<h3 style="color:#E8EDF2"><span class="kb kb-def"><span class="kp"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><circle cx="6" cy="6" r="4"/></svg>기본값</span></span>재생 속도 단계</h3>
+<div>단계는 설정 값입니다: 느리게 <span class="k-mono">0.25×</span> · <span class="k-mono">1×</span> · 빠르게 <span class="k-mono">2×</span> <span class="k-ex">예시</span>. 실제 값은 X-12가 정합니다.</div>
+<div>물리 시간 간격과 궤적 해시는 바뀌지 않습니다. 실행 요청에 속도가 실리지 않습니다.</div>
+<div>Halo 프레임 캡처는 이 설정과 무관합니다.</div>
+</div>
+</div>
+<div class="k-stack">
+<span class="k-cap">세 장 비교</span>
+<table class="k-tbl">
+<thead><tr><th>항목</th><th>① 느리게</th><th>② 1×</th><th>③ 빠르게</th></tr></thead>
+<tbody>
+<tr><td>눈금</td><td>0~5 s</td><td>0~5 s</td><td>0~5 s</td></tr>
+<tr><td>표식 시점</td><td>◇ 1.5 · ▲ 2.4 · ✕ 3.1 s</td><td>◇ 1.5 · ▲ 2.4 · ✕ 3.1 s</td><td>◇ 1.5 · ▲ 2.4 · ✕ 3.1 s</td></tr>
+<tr><td>L1 문구 (HUD · 머리)</td><td>같음</td><td>같음</td><td>같음</td></tr>
+<tr><td>속도 옆 글자</td><td>0.25× · 보는 속도입니다…</td><td>1× · 보는 속도입니다…</td><td>2× · 보는 속도입니다…</td></tr>
+<tr><td>HUD 속도 칩</td><td>있음</td><td>없음</td><td>있음</td></tr>
+</tbody>
+</table>
+</div>
+</div>
+
+</div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":980}}'>
+class Component extends DCLogic {
+renderVals() {
+return {};
+}
+}
+</script>
+</body>
+</html>

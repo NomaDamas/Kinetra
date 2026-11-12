@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>S7 실패 표식 팝오버 5종</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="kin-sc06.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div class="k-root" style="width:1440px;height:600px">
+
+<div class="k-note"><span><strong>S7 실패 ▲ 표식</strong> · 팝오버 5종 나란히: 전복, 슬립, 토크 부족, 추진제 고갈, 분류되지 않음. 같은 모양 · 같은 색, 이름표로만 다름</span><span>값은 모두 예시 · 팝오버 안 조작 0</span></div>
+
+<div class="k-wrap">
+<div class="k-ann">
+<p><strong>▲ 채운 삼각형</strong> = 성공 조건이 실패한 실행의 원인과 시점. 이름표는 J-06 분류 결과 그대로입니다. 화면이 다시 계산하거나 원인을 지어내지 않습니다.</p>
+<p>성공한 실행의 공중 구간, 스케줄대로 끝난 연소 같은 정상 변화는 표식이 아닙니다.</p>
+<p>팝오버는 한 줄 요약(원인 · 시점 · 임계 대비 여유)입니다. 측정값 · 임계값과 고정 문구는 리포트 카드에만 있습니다(0절 5).</p>
+<p><span class="k-hi">분류되지 않음</span>은 성공 조건이 처음 실패로 확정된 시점에 둡니다 [제안]. 여유 자리는 비우지 않고 이유를 씁니다.</p>
+<p>다섯 장은 서로 다른 실행의 예시라 시점이 같습니다(2.4 s, 예시).</p>
+</div>
+
+<div class="k-pad">
+<div class="k-lbl">이름표 5종 · 같은 ▲, 같은 L1 색, 아래 줄 <span class="k-ev" style="margin-left:8px"><svg width="30" height="12" viewBox="0 0 30 12" role="img" aria-label="증거 강도 2/4"><path d="M0 0h6v12H0zM8 0h6v12H8z" fill="currentColor"/><path d="M16.5.5h5v11h-5zM24.5.5h5v11h-5z" fill="none" stroke="currentColor"/></svg>L1 · 1회 실행. 판정이 아닙니다</span></div>
+<div style="position:relative;height:56px;box-sizing:border-box;border-top:2px solid #3A4654;margin:12px 0 0">
+<div class="k-mk" style="left:9%;top:6px"><span class="k-mkb" style="cursor:default"><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M7 1.5l6 11H1z" fill="currentColor"/></svg></span><span class="k-mkl">전복</span></div>
+<div class="k-mk" style="left:29%;top:6px"><span class="k-mkb" style="cursor:default"><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M7 1.5l6 11H1z" fill="currentColor"/></svg></span><span class="k-mkl">슬립</span></div>
+<div class="k-mk" style="left:49%;top:6px"><span class="k-mkb" style="cursor:default"><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M7 1.5l6 11H1z" fill="currentColor"/></svg></span><span class="k-mkl">토크 부족</span></div>
+<div class="k-mk" style="left:69%;top:6px"><span class="k-mkb" style="cursor:default"><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M7 1.5l6 11H1z" fill="currentColor"/></svg></span><span class="k-mkl">추진제 고갈</span></div>
+<div class="k-mk" style="left:89%;top:6px"><span class="k-mkb" style="cursor:default"><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M7 1.5l6 11H1z" fill="currentColor"/></svg></span><span class="k-mkl">분류되지 않음</span></div>
+</div>
+
+<div style="display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;align-items:start">
+
+<div class="k-pop" role="dialog" aria-label="실패 표식 요약: 전복" data-transient="1">
+<h3><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M7 1.5l6 11H1z" fill="currentColor"/></svg>전복</h3>
+<div class="k-pl"><span class="k-cap">시점</span><span class="k-mono">2.4 <span class="k-u">s</span></span><span class="kb kb-sim"><span class="kp"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 6q1.25-5 2.5 0t2.5 0t2.5 0t2.5 0"/></svg>시뮬</span></span><span class="k-ex">예시</span></div>
+<div class="k-pl"><span class="k-cap">여유</span><span class="k-mono">-12 <span class="k-u">°</span></span><span class="kb kb-sim"><span class="kp"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 6q1.25-5 2.5 0t2.5 0t2.5 0t2.5 0"/></svg>시뮬</span></span><span class="k-ex">예시</span></div>
+<span class="k-small">롤 각 기준 · 자세한 값은 실패 리포트</span>
+</div>
+
+<div class="k-pop" role="dialog" aria-label="실패 표식 요약: 슬립" data-transient="1">
+<h3><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M7 1.5l6 11H1z" fill="currentColor"/></svg>슬립</h3>
+<div class="k-pl"><span class="k-cap">시점</span><span class="k-mono">2.4 <span class="k-u">s</span></span><span class="kb kb-sim"><span class="kp"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 6q1.25-5 2.5 0t2.5 0t2.5 0t2.5 0"/></svg>시뮬</span></span><span class="k-ex">예시</span></div>
+<div class="k-pl"><span class="k-cap">여유</span><span class="k-mono">-0.3 <span class="k-u">m/s</span></span><span class="kb kb-sim"><span class="kp"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 6q1.25-5 2.5 0t2.5 0t2.5 0t2.5 0"/></svg>시뮬</span></span><span class="k-ex">예시</span></div>
+<span class="k-small">미끄럼 속도 기준 · 자세한 값은 실패 리포트</span>
+</div>
+
+<div class="k-pop" role="dialog" aria-label="실패 표식 요약: 토크 부족" data-transient="1">
+<h3><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M7 1.5l6 11H1z" fill="currentColor"/></svg>토크 부족</h3>
+<div class="k-pl"><span class="k-cap">시점</span><span class="k-mono">2.4 <span class="k-u">s</span></span><span class="kb kb-sim"><span class="kp"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 6q1.25-5 2.5 0t2.5 0t2.5 0t2.5 0"/></svg>시뮬</span></span><span class="k-ex">예시</span></div>
+<div class="k-pl"><span class="k-cap">여유</span><span class="k-mono">-0.8 <span class="k-u">N·m</span></span><span class="kb kb-sim"><span class="kp"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 6q1.25-5 2.5 0t2.5 0t2.5 0t2.5 0"/></svg>시뮬</span></span><span class="k-ex">예시</span></div>
+<span class="k-small">필요 토크 기준 · 자세한 값은 실패 리포트</span>
+</div>
+
+<div class="k-pop" role="dialog" aria-label="실패 표식 요약: 추진제 고갈" data-transient="1">
+<h3><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M7 1.5l6 11H1z" fill="currentColor"/></svg>추진제 고갈</h3>
+<div class="k-pl"><span class="k-cap">시점</span><span class="k-mono">2.4 <span class="k-u">s</span></span><span class="kb kb-sim"><span class="kp"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 6q1.25-5 2.5 0t2.5 0t2.5 0t2.5 0"/></svg>시뮬</span></span><span class="k-ex">예시</span></div>
+<div class="k-pl"><span class="k-cap">여유</span><span class="k-mono">0 <span class="k-u">kg</span></span><span class="kb kb-sim"><span class="kp"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 6q1.25-5 2.5 0t2.5 0t2.5 0t2.5 0"/></svg>시뮬</span></span><span class="k-ex">예시</span></div>
+<span class="k-small">남은 추진제 기준 · 자세한 값은 실패 리포트</span>
+</div>
+
+<div class="k-pop" role="dialog" aria-label="실패 표식 요약: 분류되지 않음" data-transient="1">
+<h3><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M7 1.5l6 11H1z" fill="currentColor"/></svg>분류되지 않음</h3>
+<div class="k-pl"><span class="k-cap">시점</span><span class="k-mono">2.4 <span class="k-u">s</span></span><span class="kb kb-sim"><span class="kp"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 6q1.25-5 2.5 0t2.5 0t2.5 0t2.5 0"/></svg>시뮬</span></span><span class="k-ex">예시</span></div>
+<div class="k-pl"><span class="k-cap">여유</span><span>분류된 임계가 없습니다</span></div>
+<span class="k-small">성공 조건이 처음 실패로 확정된 시점입니다</span>
+</div>
+
+</div>
+</div>
+</div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":600}}'>
+class Component extends DCLogic {
+renderVals() {
+return {};
+}
+}
+</script>
+</body>
+</html>

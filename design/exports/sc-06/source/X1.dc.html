@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>기능 대응표</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="kin-sc06.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div class="k-root" style="width:1440px;height:1040px">
+
+<div class="k-note"><span><strong>보충 · 기능 목록과 화면 위치 대응표</strong> · sc-06.md 3절의 전 행. 0 = 기본 화면에 보임, 1 = 한 번, 2 = 두 번(클릭이나 키 입력)</span><span>2 초과 0행 · 숨은 기능마다 여는 곳을 그린 아트보드</span></div>
+
+<div class="k-pad" style="flex-direction:row;gap:32px">
+
+<div class="k-stack" style="flex:1 1 0;min-width:0">
+<div class="k-lbl">3절 기능 → 단계 → 닿는 방법 → 그린 아트보드</div>
+<table class="k-tbl">
+<thead><tr><th>기능</th><th>단계</th><th>닿는 방법</th><th>아트보드</th></tr></thead>
+<tbody>
+<tr><td>1회 실행 시작 · 다시 실행</td><td class="c">0</td><td>상단바 primary <span class="k-hi">▶ 1회 실행</span> (실행 중 비활성 "실행 중…")</td><td>S1 S2 S3 S15</td></tr>
+<tr><td>실행 상태 (실행 전 · 중, 일시정지, 끝남, 취소됨)</td><td class="c">0</td><td>HUD 상태 칩 ○ ● ⏸ ■ ⊘</td><td>S2 S3 S4 S1 S5</td></tr>
+<tr><td>"1회 실행. 판정이 아닙니다"</td><td class="c">0</td><td>HUD, 타임라인 머리(접어도), 상단바 배지</td><td>S5 · 전 아트보드</td></tr>
+<tr><td>실행 진행(계산한 구간, 경과 시간)과 취소</td><td class="c">0</td><td>실행 중 HUD 진행 막대, 경과 시간 + 시뮬, <span class="k-hi">취소</span></td><td>S3 S14</td></tr>
+<tr><td>재생 · 일시정지 / 처음으로</td><td class="c">0</td><td>▶/⏸ 한 버튼(<span class="k-kbd">Space</span>), ↺(<span class="k-kbd">Home</span>)</td><td>S1 S4 S17</td></tr>
+<tr><td>시간 탐색</td><td class="c">0</td><td>스크러버(끌기, <span class="k-kbd">←</span> <span class="k-kbd">→</span>)</td><td>S1 S17</td></tr>
+<tr><td>시간의 근거(시드, 시간 간격)</td><td class="c">1</td><td>눈금 <span class="k-hi">시뮬</span> 배지 → 팝오버</td><td>S1</td></tr>
+<tr><td>재생 속도 고르기</td><td class="c">0</td><td>분할 컨트롤 느리게 · 1× · 빠르게</td><td>S13</td></tr>
+<tr><td>현재 속도, "보는 속도입니다. 물리 계산은 같습니다"</td><td class="c">0</td><td>속도 옆 읽기 전용 글자, 1×가 아니면 HUD 속도 칩</td><td>S13 S5</td></tr>
+<tr><td>속도 단계의 근거, 해시 · 캡처 무관</td><td class="c">1</td><td>속도 <span class="k-hi">기본값</span> 배지 → 팝오버</td><td>S13</td></tr>
+<tr><td>표식 보기 ▲ 실패 · ✕ 파단 · ◇ 분리</td><td class="c">0</td><td>표식 줄(이름표 상시, ◇ 위 줄, ▲ ✕ 아래 줄)</td><td>S1 S8</td></tr>
+<tr><td>표식 사이 이동</td><td class="c">0</td><td>줄 안 <span class="k-kbd">←</span> <span class="k-kbd">→</span>, 어디서든 <span class="k-kbd">[</span> <span class="k-kbd">]</span></td><td>S17</td></tr>
+<tr><td>표식 상세 / 그 시점으로 이동</td><td class="c">1</td><td>hover · 포커스 → 팝오버 / 누름(◇ 포함), 묶음 +n → 목록</td><td>S6 S7 S8</td></tr>
+<tr><td>실패 리포트 열기(원인 n건, 0건 포함)</td><td class="c">1</td><td><span class="k-hi">실패 리포트 · 원인 n건</span>, 또는 ▲ · 원인으로 분류된 ✕ 누름</td><td>S9 S12</td></tr>
+<tr><td>리포트 항목 상세, 시점 → 타임라인</td><td class="c">1 / 2</td><td>표식으로 열면 그 항목이 펼쳐진 채 이동(1). 버튼으로 열면 항목 머리 → 시점 링크(2)</td><td>S9 S10</td></tr>
+<tr><td>리포트 닫기</td><td class="c">1</td><td><span class="k-hi">닫기</span>, <span class="k-kbd">Esc</span> → 인스펙터로</td><td>S9</td></tr>
+<tr><td>판정 카드 열기(SC-04)</td><td class="c">1</td><td>타임라인 <span class="k-hi">판정 카드 열기</span></td><td>S1</td></tr>
+<tr><td>조종 입력 기록 표시(X-02c)</td><td class="c">0</td><td>조종 중 HUD 조종 기록 칩</td><td>S14</td></tr>
+<tr><td>타임라인 접기 · 펼치기</td><td class="c">0</td><td>접기 버튼. 접어도 L1 · L3 문구 유지</td><td>S5</td></tr>
+<tr><td>이전 설계의 기록(무효), 오류, 엔진 끊김</td><td class="c">0</td><td>생기면 타임라인 머리 띠, HUD, 리포트 머리 띠</td><td>S15 S16</td></tr>
+</tbody>
+</table>
+<span class="k-cap">단계 2인 행은 하나(리포트 머리 버튼으로 연 뒤 시점 링크)이고 2를 넘는 행은 없습니다. 이 화면에는 primary가 없고 상단바의 ▶ 1회 실행 하나뿐입니다.</span>
+</div>
+
+<div class="k-stack" style="width:380px">
+<div class="k-lbl">S1 상시 조작 요소 10 (5.1절 이름 그대로)</div>
+<table class="k-tbl">
+<thead><tr><th>#</th><th>요소</th><th>자리</th></tr></thead>
+<tbody>
+<tr><td class="c">1</td><td>타임라인 접기</td><td>머리 왼쪽</td></tr>
+<tr><td class="c">2</td><td>▶/⏸ 한 버튼</td><td>몸통 왼쪽</td></tr>
+<tr><td class="c">3</td><td>처음으로 ↺</td><td>몸통 왼쪽</td></tr>
+<tr><td class="c">4</td><td>재생 속도 분할 컨트롤</td><td>몸통 왼쪽</td></tr>
+<tr><td class="c">5</td><td>속도 기본값 배지</td><td>속도 옆</td></tr>
+<tr><td class="c">6</td><td>시간 탐색 스크러버</td><td>눈금 줄</td></tr>
+<tr><td class="c">7</td><td>표식 줄(목록 하나)</td><td>눈금 위 · 아래 줄</td></tr>
+<tr><td class="c">8</td><td>눈금 시뮬 배지</td><td>눈금 오른쪽</td></tr>
+<tr><td class="c">9</td><td>실패 리포트 · 원인 1건</td><td>머리 오른쪽</td></tr>
+<tr><td class="c">10</td><td>판정 카드 열기</td><td>머리 오른쪽</td></tr>
+</tbody>
+</table>
+<span class="k-cap">HUD는 읽기 전용(0). 셀 때 읽기 전용 글자 · 단위 · 구분선과 SC-01 몫(상단바, 라이브러리, 오른쪽 패널, 에이전트 바)은 빼고, 분할 컨트롤과 표식 줄은 각각 하나로 셉니다.</span>
+<div class="k-lbl" style="margin-top:12px">상태별 수 (HUD + 타임라인)</div>
+<table class="k-tbl">
+<thead><tr><th>아트보드</th><th>수</th><th>S1 대비</th></tr></thead>
+<tbody>
+<tr><td>S1 끝남 · S4 일시정지 · S9 · S15 · S17</td><td class="c">10</td><td>0</td></tr>
+<tr><td>S2 실행 전</td><td class="c">8</td><td>−2 (표식 줄, 눈금 배지 없음)</td></tr>
+<tr><td>S3 실행 중</td><td class="c">11</td><td>+1 (취소, 경과 시간 배지, −표식 줄)</td></tr>
+<tr><td>S14 조종 중</td><td class="c">12</td><td>+2 (취소, 경과 시간 배지)</td></tr>
+</tbody>
+</table>
+<span class="k-cap">열린 리포트 카드 · 팝오버 안의 조작은 따로 셉니다(S9 카드 안 7).</span>
+</div>
+
+</div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1040}}'>
+class Component extends DCLogic {
+renderVals() {
+return {};
+}
+}
+</script>
+</body>
+</html>
