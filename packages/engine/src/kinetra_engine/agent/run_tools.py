@@ -277,7 +277,7 @@ class RunTools:
         try:
             run = PreviewRun(
                 project,
-                run_id=uuid.uuid4().hex,
+                run_id=f"run-{uuid.uuid4().hex}",
                 project_id=self._project_id,
                 revision=revision,
                 duration_s=args.duration_s,

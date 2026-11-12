@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import dataclasses
 import json
+import uuid
 
 import pytest
 from pydantic import ValidationError
@@ -98,7 +99,9 @@ def test_run_tools_a_run_is_one_preview_of_the_document_as_it_is_and_never_a_ver
     json.dumps(out)
 
 
-def test_run_tools_a_finished_run_records_its_whole_stream_in_the_shared_query_tools(hub):
+def test_run_tools_a_finished_run_records_its_whole_stream_in_the_shared_query_tools(hub, monkeypatch):
+    # A bare UUID hex may start with a digit, which rollout_summary's run_id grammar rejects. Generated ids must remain queryable.
+    monkeypatch.setattr(rt.uuid, "uuid4", lambda: uuid.UUID("00000000-0000-4000-8000-000000000001"))
     queries = QueryTools()
     result = RunTools(hub, "car", queries=queries).call("request_run", {"duration_s": 0.05, "seed": 3})
     assert result.ok

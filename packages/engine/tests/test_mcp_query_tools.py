@@ -100,8 +100,9 @@ def test_mcp_a_requested_run_is_queryable_as_the_same_complete_stream():
     expected = expected_store.run(hub.documents["desk"].project, "rollout_summary", {"run_id": started_run["run_id"]}).to_json()
 
     result = call(server, 2, "rollout_summary", {"run_id": started_run["run_id"]})
+    assert expected["ok"]
     assert result["structuredContent"] == expected
-    assert result["structuredContent"]["frames"] == len(frames)
+    assert result["structuredContent"]["data"]["frames"] == len(frames)
     assert result["isError"] is False
     latest = call(server, 3, "rollout_summary", {})
     assert latest["structuredContent"] == expected

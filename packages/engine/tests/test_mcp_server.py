@@ -353,7 +353,7 @@ def test_mcp_the_command_runs_the_core_on_stdio_and_the_screen_follows(tmp_path)
                 init = await ask(rpc(1, "initialize", {"protocolVersion": "2025-11-25", "capabilities": {}, "clientInfo": {"name": "t", "version": "0"}}))
                 assert init["result"]["serverInfo"]["name"] == "kinetra"
                 await ask({"jsonrpc": "2.0", "method": "notifications/initialized"})
-                assert len((await ask(rpc(2, "tools/list")))["result"]["tools"]) == len(TOOL_NAMES) + len(RUN_TOOL_NAMES)
+                assert len((await ask(rpc(2, "tools/list")))["result"]["tools"]) == len(TOOL_NAMES) + len(RUN_TOOL_NAMES) + len(QUERY_TOOL_NAMES)
                 reply = await ask(rpc(3, "tools/call", {"name": "add_part", "arguments": PLATE}))
                 assert reply["result"]["structuredContent"]["revision"] == 1
                 applied = SERVER.validate_json(await asyncio.wait_for(screen.recv(), 5))
