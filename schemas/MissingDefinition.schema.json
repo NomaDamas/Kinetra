@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "A definition the project does not carry, and the instances that use it (in project order).",
+  "properties": {
+    "kind": {
+      "enum": [
+        "material",
+        "part"
+      ],
+      "title": "Kind",
+      "type": "string"
+    },
+    "id": {
+      "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+      "title": "Id",
+      "type": "string"
+    },
+    "instances": {
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Instances",
+      "type": "array"
+    }
+  },
+  "required": [
+    "kind",
+    "id",
+    "instances"
+  ],
+  "title": "MissingDefinition",
+  "type": "object"
+}

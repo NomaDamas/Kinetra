@@ -1,0 +1,299 @@
+{
+  "id": "battery-18650",
+  "name": "Li-ion cell 18650 (Panasonic NCR18650B)",
+  "parameters": [
+    {
+      "name": "mass",
+      "unit": "kg",
+      "default": {
+        "badge": "cite",
+        "source": {
+          "ref": "Panasonic NCR18650B datasheet v13.11 R1 (copy on batteryspace.com; 'For Reference Only'), accessed 2026-11-12. Specifications table, 'Weight (max.)' 48.5 g. A maximum, not a typical value; a fixed value, so min = default = max (the user cannot change the mass of a cited cell).",
+          "locator": "Specifications table, Weight (max.)",
+          "url": "https://www.batteryspace.com/prod-specs/NCR18650B.pdf"
+        },
+        "value": 0.0485,
+        "unit": "kg"
+      },
+      "min": {
+        "badge": "cite",
+        "source": {
+          "ref": "Panasonic NCR18650B datasheet v13.11 R1 (copy on batteryspace.com; 'For Reference Only'), accessed 2026-11-12. Specifications table, 'Weight (max.)' 48.5 g. A maximum, not a typical value; a fixed value, so min = default = max (the user cannot change the mass of a cited cell).",
+          "locator": "Specifications table, Weight (max.)",
+          "url": "https://www.batteryspace.com/prod-specs/NCR18650B.pdf"
+        },
+        "value": 0.0485,
+        "unit": "kg"
+      },
+      "max": {
+        "badge": "cite",
+        "source": {
+          "ref": "Panasonic NCR18650B datasheet v13.11 R1 (copy on batteryspace.com; 'For Reference Only'), accessed 2026-11-12. Specifications table, 'Weight (max.)' 48.5 g. A maximum, not a typical value; a fixed value, so min = default = max (the user cannot change the mass of a cited cell).",
+          "locator": "Specifications table, Weight (max.)",
+          "url": "https://www.batteryspace.com/prod-specs/NCR18650B.pdf"
+        },
+        "value": 0.0485,
+        "unit": "kg"
+      }
+    },
+    {
+      "name": "initial_charge",
+      "unit": "1",
+      "default": {
+        "badge": "default",
+        "source": {
+          "ref": "B-03d: fraction of the capacity the cell starts with; 1 = full. A modelling choice, not a datasheet value"
+        },
+        "value": 1.0,
+        "unit": "1"
+      },
+      "min": {
+        "badge": "default",
+        "source": {
+          "ref": "B-03d: fraction of the capacity the cell starts with; 1 = full. A modelling choice, not a datasheet value"
+        },
+        "value": 0.0,
+        "unit": "1"
+      },
+      "max": {
+        "badge": "default",
+        "source": {
+          "ref": "B-03d: fraction of the capacity the cell starts with; 1 = full. A modelling choice, not a datasheet value"
+        },
+        "value": 1.0,
+        "unit": "1"
+      }
+    }
+  ],
+  "snap_points": [
+    {
+      "badge": "default",
+      "source": {
+        "ref": "B-03d: snap frame convention chosen by Kinetra: +Z of the snap frame points out of the part surface; tags are a first proposal for B-04b"
+      },
+      "id": "plus",
+      "kind": "terminal",
+      "accepts": [
+        "terminal"
+      ],
+      "position": {
+        "x": {
+          "offset": 0.0,
+          "terms": []
+        },
+        "y": {
+          "offset": 0.0,
+          "terms": []
+        },
+        "z": {
+          "offset": 0.03315,
+          "terms": []
+        }
+      },
+      "orientation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0,
+        "w": 1.0
+      }
+    },
+    {
+      "badge": "default",
+      "source": {
+        "ref": "B-03d: snap frame convention chosen by Kinetra: +Z of the snap frame points out of the part surface; tags are a first proposal for B-04b"
+      },
+      "id": "minus",
+      "kind": "terminal",
+      "accepts": [
+        "terminal"
+      ],
+      "position": {
+        "x": {
+          "offset": 0.0,
+          "terms": []
+        },
+        "y": {
+          "offset": 0.0,
+          "terms": []
+        },
+        "z": {
+          "offset": -0.03215,
+          "terms": []
+        }
+      },
+      "orientation": {
+        "x": 1.0,
+        "y": 0.0,
+        "z": 0.0,
+        "w": 0.0
+      }
+    },
+    {
+      "badge": "default",
+      "source": {
+        "ref": "B-03d: snap frame convention chosen by Kinetra: +Z of the snap frame points out of the part surface; tags are a first proposal for B-04b"
+      },
+      "id": "side-xp",
+      "kind": "face",
+      "accepts": [
+        "face"
+      ],
+      "position": {
+        "x": {
+          "offset": 0.00925,
+          "terms": []
+        },
+        "y": {
+          "offset": 0.0,
+          "terms": []
+        },
+        "z": {
+          "offset": 0.0,
+          "terms": []
+        }
+      },
+      "orientation": {
+        "x": 0.0,
+        "y": 0.7071067811865476,
+        "z": 0.0,
+        "w": 0.7071067811865476
+      }
+    },
+    {
+      "badge": "default",
+      "source": {
+        "ref": "B-03d: snap frame convention chosen by Kinetra: +Z of the snap frame points out of the part surface; tags are a first proposal for B-04b"
+      },
+      "id": "side-xn",
+      "kind": "face",
+      "accepts": [
+        "face"
+      ],
+      "position": {
+        "x": {
+          "offset": -0.00925,
+          "terms": []
+        },
+        "y": {
+          "offset": 0.0,
+          "terms": []
+        },
+        "z": {
+          "offset": 0.0,
+          "terms": []
+        }
+      },
+      "orientation": {
+        "x": 0.0,
+        "y": -0.7071067811865476,
+        "z": 0.0,
+        "w": 0.7071067811865476
+      }
+    }
+  ],
+  "specs": [
+    {
+      "badge": "estimate",
+      "source": {
+        "ref": "Method: min capacity 3250 mAh x nominal 3.6 V = 11.7 Wh = 42120 J (our product of two printed values; typ. 3350 mAh would give 43416 J; cross-check 243 Wh/kg x 48.5 g = 11.79 Wh). Capacity is at 25 C (footnote 2); the discharge rate of that footnote is not legible in our copy, and energy falls at higher rates and lower temperatures (datasheet discharge curves). Panasonic NCR18650B datasheet v13.11 R1 (copy on batteryspace.com; 'For Reference Only'), accessed 2026-11-12",
+        "locator": "Specifications table: Capacity (2), Nominal voltage",
+        "url": "https://www.batteryspace.com/prod-specs/NCR18650B.pdf"
+      },
+      "value": 42120.0,
+      "unit": "J",
+      "name": "energy_capacity"
+    },
+    {
+      "badge": "cite",
+      "source": {
+        "ref": "Panasonic NCR18650B datasheet v13.11 R1 (copy on batteryspace.com; 'For Reference Only'), accessed 2026-11-12. Specifications table, 'Nominal voltage' 3.6 V.",
+        "locator": "Specifications table, Nominal voltage",
+        "url": "https://www.batteryspace.com/prod-specs/NCR18650B.pdf"
+      },
+      "value": 3.6,
+      "unit": "V",
+      "name": "nominal_voltage"
+    }
+  ],
+  "shape": {
+    "badge": "default",
+    "source": {
+      "ref": "B-03d: envelope of the NCR18650B: cylinder 18.5 mm diameter x 64.3 mm plus a 6.6 mm button 1.0 mm tall = 65.3 mm total (datasheet Dimensions: max 18.5, max 65.3, button 6.6; the 1.0 mm button height is our choice, not printed). Printed maxima, so the real cell is slightly smaller. Panasonic NCR18650B datasheet v13.11 R1 (copy on batteryspace.com; 'For Reference Only'), accessed 2026-11-12"
+    },
+    "components": [
+      {
+        "id": "body",
+        "primitive": {
+          "kind": "cylinder",
+          "radius": {
+            "offset": 0.00925,
+            "terms": []
+          },
+          "length": {
+            "offset": 0.0643,
+            "terms": []
+          }
+        },
+        "operation": "add",
+        "position": {
+          "x": {
+            "offset": 0.0,
+            "terms": []
+          },
+          "y": {
+            "offset": 0.0,
+            "terms": []
+          },
+          "z": {
+            "offset": 0.0,
+            "terms": []
+          }
+        },
+        "orientation": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 1.0
+        }
+      },
+      {
+        "id": "button",
+        "primitive": {
+          "kind": "cylinder",
+          "radius": {
+            "offset": 0.0033,
+            "terms": []
+          },
+          "length": {
+            "offset": 0.001,
+            "terms": []
+          }
+        },
+        "operation": "add",
+        "position": {
+          "x": {
+            "offset": 0.0,
+            "terms": []
+          },
+          "y": {
+            "offset": 0.0,
+            "terms": []
+          },
+          "z": {
+            "offset": 0.03265,
+            "terms": []
+          }
+        },
+        "orientation": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 1.0
+        }
+      }
+    ]
+  },
+  "role": "battery",
+  "curves": [],
+  "mass_parameter": "mass"
+}

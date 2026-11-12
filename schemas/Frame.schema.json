@@ -1,0 +1,453 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "The state of run `run_id` at `tick` (`sim_time_s` seconds): every body's pose, and the events since the\nprevious frame.",
+  "properties": {
+    "type": {
+      "const": "frame",
+      "title": "Type",
+      "type": "string"
+    },
+    "run_id": {
+      "maxLength": 128,
+      "minLength": 1,
+      "title": "Run Id",
+      "type": "string"
+    },
+    "tick": {
+      "maximum": 4294967295,
+      "minimum": 0,
+      "title": "Tick",
+      "type": "integer"
+    },
+    "sim_time_s": {
+      "minimum": 0,
+      "title": "Sim Time S",
+      "type": "number"
+    },
+    "poses": {
+      "items": {
+        "$ref": "#/$defs/BodyPose"
+      },
+      "maxItems": 4294967295,
+      "title": "Poses",
+      "type": "array"
+    },
+    "events": {
+      "default": [],
+      "items": {
+        "discriminator": {
+          "mapping": {
+            "break": "#/$defs/BreakEvent",
+            "condition_met": "#/$defs/ConditionMetEvent",
+            "contact": "#/$defs/ContactEvent",
+            "separation": "#/$defs/SeparationEvent"
+          },
+          "propertyName": "kind"
+        },
+        "oneOf": [
+          {
+            "$ref": "#/$defs/ContactEvent"
+          },
+          {
+            "$ref": "#/$defs/BreakEvent"
+          },
+          {
+            "$ref": "#/$defs/SeparationEvent"
+          },
+          {
+            "$ref": "#/$defs/ConditionMetEvent"
+          }
+        ]
+      },
+      "title": "Events",
+      "type": "array"
+    }
+  },
+  "required": [
+    "type",
+    "run_id",
+    "tick",
+    "sim_time_s",
+    "poses"
+  ],
+  "title": "Frame",
+  "type": "object",
+  "$defs": {
+    "BodyPose": {
+      "description": "Position [m] and orientation (unit quaternion `x, y, z, w`) of body `body`, in the world frame.",
+      "properties": {
+        "body": {
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+          "title": "Body",
+          "type": "string"
+        },
+        "position": {
+          "$ref": "#/$defs/WorldPosition"
+        },
+        "orientation": {
+          "$ref": "#/$defs/Quaternion"
+        }
+      },
+      "required": [
+        "body",
+        "position",
+        "orientation"
+      ],
+      "title": "BodyPose",
+      "type": "object"
+    },
+    "BodyTarget": {
+      "description": "What a body touched: another body of the run.",
+      "properties": {
+        "kind": {
+          "const": "body",
+          "title": "Kind",
+          "type": "string"
+        },
+        "id": {
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+          "title": "Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "id"
+      ],
+      "title": "BodyTarget",
+      "type": "object"
+    },
+    "BreakEvent": {
+      "description": "Joint `joint` released because the load on it went over its break threshold (both in N; plan 4.6, a simplified\nmodel). `reason` is the release's cause, `over_threshold` (\"임계 초과\"): only this one is a break (X-08).",
+      "properties": {
+        "kind": {
+          "const": "break",
+          "title": "Kind",
+          "type": "string"
+        },
+        "tick": {
+          "maximum": 4294967295,
+          "minimum": 0,
+          "title": "Tick",
+          "type": "integer"
+        },
+        "reason": {
+          "const": "over_threshold",
+          "title": "Reason",
+          "type": "string"
+        },
+        "joint": {
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+          "title": "Joint",
+          "type": "string"
+        },
+        "load": {
+          "$ref": "#/$defs/ForceN"
+        },
+        "threshold": {
+          "$ref": "#/$defs/ForceN"
+        }
+      },
+      "required": [
+        "kind",
+        "tick",
+        "reason",
+        "joint",
+        "load",
+        "threshold"
+      ],
+      "title": "BreakEvent",
+      "type": "object"
+    },
+    "ConditionMetEvent": {
+      "description": "A success condition of the project became true. This is not a verdict (P4): it says the run satisfied it.",
+      "properties": {
+        "kind": {
+          "const": "condition_met",
+          "title": "Kind",
+          "type": "string"
+        },
+        "tick": {
+          "maximum": 4294967295,
+          "minimum": 0,
+          "title": "Tick",
+          "type": "integer"
+        },
+        "condition": {
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+          "title": "Condition",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "tick",
+        "condition"
+      ],
+      "title": "ConditionMetEvent",
+      "type": "object"
+    },
+    "ContactEvent": {
+      "description": "`body` touches (`phase` `begin`) or stops touching (`end`) `other`. `force` is the contact force at `begin`,\nif known.",
+      "properties": {
+        "kind": {
+          "const": "contact",
+          "title": "Kind",
+          "type": "string"
+        },
+        "tick": {
+          "maximum": 4294967295,
+          "minimum": 0,
+          "title": "Tick",
+          "type": "integer"
+        },
+        "phase": {
+          "enum": [
+            "begin",
+            "end"
+          ],
+          "title": "Phase",
+          "type": "string"
+        },
+        "body": {
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+          "title": "Body",
+          "type": "string"
+        },
+        "other": {
+          "discriminator": {
+            "mapping": {
+              "body": "#/$defs/BodyTarget",
+              "ground": "#/$defs/GroundTarget",
+              "prop": "#/$defs/PropTarget"
+            },
+            "propertyName": "kind"
+          },
+          "oneOf": [
+            {
+              "$ref": "#/$defs/BodyTarget"
+            },
+            {
+              "$ref": "#/$defs/PropTarget"
+            },
+            {
+              "$ref": "#/$defs/GroundTarget"
+            }
+          ],
+          "title": "Other"
+        },
+        "force": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ForceN"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "kind",
+        "tick",
+        "phase",
+        "body",
+        "other"
+      ],
+      "title": "ContactEvent",
+      "type": "object"
+    },
+    "ForceN": {
+      "description": "A force in newtons (`unit` is always `N`, so a client never guesses).",
+      "properties": {
+        "value": {
+          "minimum": 0,
+          "title": "Value",
+          "type": "number"
+        },
+        "unit": {
+          "const": "N",
+          "title": "Unit",
+          "type": "string"
+        }
+      },
+      "required": [
+        "value",
+        "unit"
+      ],
+      "title": "ForceN",
+      "type": "object"
+    },
+    "GroundTarget": {
+      "additionalProperties": false,
+      "description": "What a body touched: the ground. It has no id (the ground of the planet is one thing), so an `id` is refused.",
+      "properties": {
+        "kind": {
+          "const": "ground",
+          "title": "Kind",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind"
+      ],
+      "title": "GroundTarget",
+      "type": "object"
+    },
+    "ImpulseNs": {
+      "description": "An impulse in newton-seconds (`unit` is always `N*s`).",
+      "properties": {
+        "value": {
+          "minimum": 0,
+          "title": "Value",
+          "type": "number"
+        },
+        "unit": {
+          "const": "N*s",
+          "title": "Unit",
+          "type": "string"
+        }
+      },
+      "required": [
+        "value",
+        "unit"
+      ],
+      "title": "ImpulseNs",
+      "type": "object"
+    },
+    "PropTarget": {
+      "description": "What a body touched: a terrain prop, by its id in the project's world.",
+      "properties": {
+        "kind": {
+          "const": "prop",
+          "title": "Kind",
+          "type": "string"
+        },
+        "id": {
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+          "title": "Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "id"
+      ],
+      "title": "PropTarget",
+      "type": "object"
+    },
+    "Quaternion": {
+      "additionalProperties": false,
+      "description": "Unit quaternion with named components (`conventions.py`).",
+      "properties": {
+        "x": {
+          "title": "X",
+          "type": "number"
+        },
+        "y": {
+          "title": "Y",
+          "type": "number"
+        },
+        "z": {
+          "title": "Z",
+          "type": "number"
+        },
+        "w": {
+          "title": "W",
+          "type": "number"
+        }
+      },
+      "required": [
+        "x",
+        "y",
+        "z",
+        "w"
+      ],
+      "title": "Quaternion",
+      "type": "object"
+    },
+    "SeparationEvent": {
+      "description": "Separator instance `separator` let go of joint `joint` on purpose (X-08): `reason` is `intended_separation` (\"의도한\n분리\"), never a break. Each side received the declared separation `impulse`, equal and opposite. `entry` is the schedule\nentry that asked for it, `null` for a manual request during the run. `tick` is the first tick whose state is apart.",
+      "properties": {
+        "kind": {
+          "const": "separation",
+          "title": "Kind",
+          "type": "string"
+        },
+        "tick": {
+          "maximum": 4294967295,
+          "minimum": 0,
+          "title": "Tick",
+          "type": "integer"
+        },
+        "reason": {
+          "const": "intended_separation",
+          "title": "Reason",
+          "type": "string"
+        },
+        "separator": {
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+          "title": "Separator",
+          "type": "string"
+        },
+        "joint": {
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+          "title": "Joint",
+          "type": "string"
+        },
+        "entry": {
+          "anyOf": [
+            {
+              "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Entry"
+        },
+        "impulse": {
+          "$ref": "#/$defs/ImpulseNs"
+        }
+      },
+      "required": [
+        "kind",
+        "tick",
+        "reason",
+        "separator",
+        "joint",
+        "entry",
+        "impulse"
+      ],
+      "title": "SeparationEvent",
+      "type": "object"
+    },
+    "WorldPosition": {
+      "additionalProperties": false,
+      "description": "A position in metres, world frame.",
+      "properties": {
+        "x": {
+          "title": "X",
+          "type": "number"
+        },
+        "y": {
+          "title": "Y",
+          "type": "number"
+        },
+        "z": {
+          "title": "Z",
+          "type": "number"
+        }
+      },
+      "required": [
+        "x",
+        "y",
+        "z"
+      ],
+      "title": "WorldPosition",
+      "type": "object"
+    }
+  }
+}

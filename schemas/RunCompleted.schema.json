@@ -1,0 +1,380 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "The planned duration was reached. The trajectory hash and its tag are required.",
+  "properties": {
+    "reason": {
+      "const": "completed",
+      "title": "Reason",
+      "type": "string"
+    },
+    "trajectory": {
+      "$ref": "#/$defs/TrajectoryEvidence"
+    }
+  },
+  "required": [
+    "reason",
+    "trajectory"
+  ],
+  "title": "RunCompleted",
+  "type": "object",
+  "$defs": {
+    "ComputeTag": {
+      "additionalProperties": false,
+      "description": "⑦ The settings the run actually used: integrator, `timestep_s` [s] and the solver's settings by name\n(`NAME_PATTERN`).",
+      "properties": {
+        "integrator": {
+          "maxLength": 200,
+          "minLength": 1,
+          "title": "Integrator",
+          "type": "string"
+        },
+        "timestep_s": {
+          "exclusiveMinimum": 0,
+          "title": "Timestep S",
+          "type": "number"
+        },
+        "solver": {
+          "additionalProperties": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "string"
+              }
+            ]
+          },
+          "propertyNames": {
+            "pattern": "^[a-z][a-z0-9_]{0,63}$"
+          },
+          "title": "Solver",
+          "type": "object"
+        }
+      },
+      "required": [
+        "integrator",
+        "timestep_s",
+        "solver"
+      ],
+      "title": "ComputeTag",
+      "type": "object"
+    },
+    "CoreBuildTag": {
+      "additionalProperties": false,
+      "description": "⑥ The core build: its commit (the force-applying paths and their order are in it).",
+      "properties": {
+        "commit": {
+          "pattern": "^([0-9a-f]{40}|[0-9a-f]{64})$",
+          "title": "Commit",
+          "type": "string"
+        }
+      },
+      "required": [
+        "commit"
+      ],
+      "title": "CoreBuildTag",
+      "type": "object"
+    },
+    "CpuTag": {
+      "additionalProperties": false,
+      "description": "② CPU: architecture (`x86_64`, `arm64`, ...) and model string.",
+      "properties": {
+        "architecture": {
+          "maxLength": 200,
+          "minLength": 1,
+          "title": "Architecture",
+          "type": "string"
+        },
+        "model": {
+          "maxLength": 200,
+          "minLength": 1,
+          "title": "Model",
+          "type": "string"
+        }
+      },
+      "required": [
+        "architecture",
+        "model"
+      ],
+      "title": "CpuTag",
+      "type": "object"
+    },
+    "CustomBuildEngine": {
+      "additionalProperties": false,
+      "description": "Built by us: the compiler and the build flags identify the binary (`build_flags` may be an empty string).",
+      "properties": {
+        "name": {
+          "maxLength": 200,
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        },
+        "version": {
+          "maxLength": 200,
+          "minLength": 1,
+          "title": "Version",
+          "type": "string"
+        },
+        "distribution": {
+          "const": "custom_build",
+          "title": "Distribution",
+          "type": "string"
+        },
+        "compiler": {
+          "maxLength": 200,
+          "minLength": 1,
+          "title": "Compiler",
+          "type": "string"
+        },
+        "build_flags": {
+          "maxLength": 2000,
+          "title": "Build Flags",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "version",
+        "distribution",
+        "compiler",
+        "build_flags"
+      ],
+      "title": "CustomBuildEngine",
+      "type": "object"
+    },
+    "OsTag": {
+      "additionalProperties": false,
+      "description": "① Operating system: kind (`linux`, `macos`, ...) and kernel release.",
+      "properties": {
+        "kind": {
+          "maxLength": 200,
+          "minLength": 1,
+          "title": "Kind",
+          "type": "string"
+        },
+        "kernel_release": {
+          "maxLength": 200,
+          "minLength": 1,
+          "title": "Kernel Release",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "kernel_release"
+      ],
+      "title": "OsTag",
+      "type": "object"
+    },
+    "PlatformTag": {
+      "additionalProperties": false,
+      "description": "The eight run conditions of `engine.md` 5.4 (H1). Two tags are the same tag when all eight are equal\n(`==`). `image_digest` is required and `None` means \"no image\" (not a container): leaving it out is an error, so\na run cannot lose that component by omission.",
+      "properties": {
+        "os": {
+          "$ref": "#/$defs/OsTag"
+        },
+        "cpu": {
+          "$ref": "#/$defs/CpuTag"
+        },
+        "image_digest": {
+          "anyOf": [
+            {
+              "pattern": "^sha256:[0-9a-f]{64}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Image Digest"
+        },
+        "engine": {
+          "discriminator": {
+            "mapping": {
+              "custom_build": "#/$defs/CustomBuildEngine",
+              "wasm_package": "#/$defs/WasmEngine",
+              "wheel": "#/$defs/WheelEngine"
+            },
+            "propertyName": "distribution"
+          },
+          "oneOf": [
+            {
+              "$ref": "#/$defs/WheelEngine"
+            },
+            {
+              "$ref": "#/$defs/WasmEngine"
+            },
+            {
+              "$ref": "#/$defs/CustomBuildEngine"
+            }
+          ],
+          "title": "Engine"
+        },
+        "runtime": {
+          "$ref": "#/$defs/RuntimeTag"
+        },
+        "core_build": {
+          "$ref": "#/$defs/CoreBuildTag"
+        },
+        "compute": {
+          "$ref": "#/$defs/ComputeTag"
+        },
+        "threads": {
+          "$ref": "#/$defs/ThreadTag"
+        }
+      },
+      "required": [
+        "os",
+        "cpu",
+        "image_digest",
+        "engine",
+        "runtime",
+        "core_build",
+        "compute",
+        "threads"
+      ],
+      "title": "PlatformTag",
+      "type": "object"
+    },
+    "RuntimeTag": {
+      "additionalProperties": false,
+      "description": "⑤ Python and NumPy versions.",
+      "properties": {
+        "python": {
+          "maxLength": 200,
+          "minLength": 1,
+          "title": "Python",
+          "type": "string"
+        },
+        "numpy": {
+          "maxLength": 200,
+          "minLength": 1,
+          "title": "Numpy",
+          "type": "string"
+        }
+      },
+      "required": [
+        "python",
+        "numpy"
+      ],
+      "title": "RuntimeTag",
+      "type": "object"
+    },
+    "ThreadTag": {
+      "additionalProperties": false,
+      "description": "⑧ Thread counts of the physics step and of the solver.",
+      "properties": {
+        "physics": {
+          "minimum": 1,
+          "title": "Physics",
+          "type": "integer"
+        },
+        "solver": {
+          "minimum": 1,
+          "title": "Solver",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "physics",
+        "solver"
+      ],
+      "title": "ThreadTag",
+      "type": "object"
+    },
+    "TrajectoryEvidence": {
+      "description": "A trajectory hash and the platform tag it belongs to. A hash without its tag is not evidence (H1), so the two\nare one object. Two of these are compared only when their tags are equal (H2).",
+      "properties": {
+        "hash": {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "title": "Hash",
+          "type": "string"
+        },
+        "platform": {
+          "$ref": "#/$defs/PlatformTag"
+        }
+      },
+      "required": [
+        "hash",
+        "platform"
+      ],
+      "title": "TrajectoryEvidence",
+      "type": "object"
+    },
+    "WasmEngine": {
+      "additionalProperties": false,
+      "description": "Distributed as a WASM package: the hash of the distributed file identifies the binary.",
+      "properties": {
+        "name": {
+          "maxLength": 200,
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        },
+        "version": {
+          "maxLength": 200,
+          "minLength": 1,
+          "title": "Version",
+          "type": "string"
+        },
+        "distribution": {
+          "const": "wasm_package",
+          "title": "Distribution",
+          "type": "string"
+        },
+        "artifact_hash": {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "title": "Artifact Hash",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "version",
+        "distribution",
+        "artifact_hash"
+      ],
+      "title": "WasmEngine",
+      "type": "object"
+    },
+    "WheelEngine": {
+      "additionalProperties": false,
+      "description": "Distributed as a package wheel (PyPI): the hash of the distributed file identifies the binary.",
+      "properties": {
+        "name": {
+          "maxLength": 200,
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        },
+        "version": {
+          "maxLength": 200,
+          "minLength": 1,
+          "title": "Version",
+          "type": "string"
+        },
+        "distribution": {
+          "const": "wheel",
+          "title": "Distribution",
+          "type": "string"
+        },
+        "artifact_hash": {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "title": "Artifact Hash",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "version",
+        "distribution",
+        "artifact_hash"
+      ],
+      "title": "WheelEngine",
+      "type": "object"
+    }
+  }
+}

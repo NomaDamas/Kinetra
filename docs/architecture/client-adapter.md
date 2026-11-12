@@ -1,6 +1,6 @@
 # 클라이언트 어댑터 경계 (A0-04)
 
-- 상태: 설계. 구현은 C-05(#71: C-05a #72, C-05b #73, C-05c #74)가 한다. 프레임 형식의 스키마는 C-05b가 이 문서에 잇는다.
+- 상태: 설계. 3.1~3.2의 메시지(문서 구독과 명령 발행)는 C-05a(#72)에서 구현됐다(아래 "3.1~3.2 확정"). 실행 스트림의 프레임 형식(3.3절 끝의 "3.3 확정")은 C-05b(#73)에서 구현됐다. 헤드리스 참조 클라이언트와 적합성 테스트(3.3절 끝의 "3.1~3.3 적합성")는 C-05c(#74)에서 구현됐다. 실행 요청과 엔진이 만드는 라이브 스트림은 X-02a(#128)에서 구현됐다(3.3절 끝의 "실행 요청과 라이브 스트림"). 코어가 실시간보다 느릴 때의 동작은 4.1절이다.
 - 근거: `docs/plan/studio-plan.md` 5.1~5.4절, `spikes/mujoco-limits/REPORT.md`의 A0-01a.
 - 표기는 계획과 같다. **[추정]** 근거 없는 판단, **[확인 필요]** 채택 전 검증할 사실, **[제안]** 이 문서가 새로 내는 기준.
 - 번호가 붙은 규칙(G·D·C·F·A·I·P)은 C-05c 적합성 테스트가 기준으로 삼을 문장이다. 계획이나 이슈 DoD에서 온 규칙에는 출처를 적었다. 출처가 없는 규칙, 메시지·필드 이름, 좌표 규약, 새 화면 문구는 이 문서의 [제안]이며 C-01, C-05의 스키마와 A0-05의 `engine.md`에서 확정한다.
@@ -37,7 +37,7 @@
 | **판정** | 필요조건 스크린, 탐색, 몬테카를로, 민감도, 판정 카드의 내용 | 요청과 표시만 한다. 만들거나 고치지 않는다 |
 | 에셋 | 원장, 출처, 내용 해시, 시각 메시와 물리 기술의 제공 | 내려받기, 캐시, 그리기 |
 | **렌더** | 없다 | 장면, 카메라, 조명, 고스트, 배지와 문구의 표시, 시각 전용 효과(파도 등) |
-| **입력** | 없다. 받는 것은 Command와 조종 입력뿐이다 | 장치 읽기, 선택·호버·드래그, 장치 → 조종 채널 바인딩, XR 세션 |
+| **입력** | 없다. 받는 것은 Command와 조종 입력뿐이다. **예외 하나: 음성 인식을 위한 녹음 바이트**(아래 3.5절)는 코어의 받아쓰기(`kinetra_engine.stt`, I-01a)로 가고 글만 돌아온다. 그 글은 입력이 아니라 확인 전의 제안이다 | 장치 읽기, 선택·호버·드래그, 장치 → 조종 채널 바인딩, XR 세션, 마이크 녹음 |
 | 플레이 물리(선택) | 없다. 그 결과를 받지 않는다 | 자체 물리로 그릴 수 있다. 5절의 규칙을 따른다 |
 
 굵은 행이 계획 5.1절과 이슈 DoD가 이름 붙인 것이다. 한 줄 시험: **클라이언트를 지워도 Project, 이력, 실행 기록, 판정은 남는다. 코어를 지우면 클라이언트는 이미 기록된 것을 재생하는 일만 할 수 있다.**
@@ -51,7 +51,7 @@
 - **G1 전송 중립.** 계약은 메시지의 내용이다. S1의 전송은 WebSocket(C-05a)이고 공유 링크는 정적 파일이다. 같은 내용이 두 전송에서 같은 뜻이어야 한다.
 - **G2 엔진·렌더러 중립.** 경계를 넘는 어떤 것에도 MuJoCo 용어(`qpos`, `geom`, `eq`, MJCF 등)나 렌더러 용어(three.js 객체, Godot 노드)가 없다. 스키마는 언어 중립(JSON Schema)으로 쓴다 [제안].
 - **G3 식별자.** 부품, 강체, 결합, 조건, 에셋은 Project의 안정 ID로 가리킨다. 엔진 내부 번호를 쓰지 않는다.
-- **G4 단위와 좌표.** Project와 같은 규약 하나만 쓴다. SI(m, kg, s, rad), 오른손 좌표계, +Z가 위, 쿼터니언은 성분 이름을 스키마에 적는다. **확정(C-01a, `docs/architecture/project-model.md`): Project JSON에서 쿼터니언은 `{x, y, z, w}`(`w`가 스칼라, 단위 길이) 객체이고 배열로 쓰지 않는다. 실행 스트림 프레임은 같은 성분 순서와 뜻(x, y, z, w; w 스칼라)만 따르고 인코딩은 C-05b가 정한다. 단위 어휘는 닫혀 있다.** 자기 렌더러의 좌표로 바꾸는 일은 클라이언트가 한다.
+- **G4 단위와 좌표.** Project와 같은 규약 하나만 쓴다. SI(m, kg, s, rad), 오른손 좌표계, +Z가 위, 쿼터니언은 성분 이름을 스키마에 적는다. **확정(C-01a, `docs/architecture/project-model.md`): Project JSON에서 쿼터니언은 `{x, y, z, w}`(`w`가 스칼라, 단위 길이) 객체이고 배열로 쓰지 않는다. 실행 스트림 프레임은 같은 성분 순서와 뜻(x, y, z, w; w 스칼라)을 따른다: JSON 프레임은 같은 `{x, y, z, w}` 객체이고 이진 프레임은 float32 네 개를 x, y, z, w 순서로 쓴다(3.3 확정, C-05b). 단위 어휘는 닫혀 있다.** 자기 렌더러의 좌표로 바꾸는 일은 클라이언트가 한다.
 - **G5 버전.** 첫 메시지에서 프로토콜 버전을 주고받는다. 모르는 선택 필드는 무시하고, 필수 필드가 늘면 버전을 올린다. 3절 각 항의 "열어 둔 것"은 이 규칙으로 더한다.
 - **G6 값에는 출처.** 수치가 경계를 넘을 때 값 배지(`시뮬` `인용` `기본값` `사용자 선언` `추정`)와 단위가 함께 간다.
 
@@ -93,13 +93,44 @@ S1 범위: 프로젝트 하나, 문서 전체 스냅샷. 발행자는 사용자 
 
 S1 범위: 위 전부. 열어 둔 것: 여러 사용자의 동시 편집 충돌 정책(N-04 #265). 코어가 정하는 전순서와 발행자 ID는 그 바탕이 된다.
 
+#### 3.1~3.2 확정 (C-05a)
+
+코드: 메시지는 `packages/core/src/kinetra_core/protocol.py`(스키마 생성기가 `kinetra_core.__all__`만 읽기 때문에 코어에 둔다; `schemas/ClientMessage.schema.json`, `ServerMessage.schema.json`과 `types.ts`), 문서 소유자와 WebSocket 전송은 `packages/engine/src/kinetra_engine/protocol/`(`Document`, `Hub`), 테스트는 `packages/engine/tests/test_protocol_document.py`. 위 표의 [제안] 이름 중 확정된 것과 바뀐 것:
+
+| 메시지 | 방향 | 필드 | 3.1~3.2 [제안]과 다른 점 |
+|---|---|---|---|
+| `hello` | 양쪽 | `protocol`(정수) | G5의 "첫 메시지에서 프로토콜 버전"의 실체. 지금 `1`. 코어가 모르는 번호면 `error`(fatal) 후 닫는다 |
+| `subscribe` | → 코어 | `project`, `after_revision`과 `epoch`(재접속일 때 둘 다; 없을 수 있음) | |
+| `snapshot` | → 클라이언트 | `project_id`, `epoch`, `revision`, `verdict`(`none` `valid` `invalid`), `project` | 파생값과 정의 해시는 없다(D4: B-05, C-03이 선택 필드로 더한다) |
+| `resumed` | → 클라이언트 | `project_id`, `epoch`, `after_revision`, `revision` | 새 메시지. D6의 "이어 받기"를 알린다. 뒤에 놓친 `applied`가 순서대로 온다. 이어 줄 수 없으면 `snapshot`이 온다(아래 "재접속") |
+| `applied` | → 구독자 모두 | `revision`, `id`, `cause`(`publish` `undo` `redo`), `origin`, `command`, `changes`, `verdict` | `changes`는 바뀐 구역의 새 값 통째(`ProjectChanges`: `materials` `parts` `instances` `joints` `actuators` `schedule` `world` `assumptions`, 안 바뀐 구역은 `null`). 클라이언트는 `apply_changes`로 바꿔 끼우기만 하고 적용기를 다시 만들지 않는다(D3). 구역 단위이고 항목 단위가 아니다 |
+| `publish` | → 코어 | `id`, `base_revision`, `command`, `origin` | 발행자(`origin`)는 `mouse` `agent` `voice` `xr` `mcp`(`kinetra_core.Origin`, C-02b) |
+| `accepted` | → 발행자 | `id`, `revision` | 그 변경의 `applied` 뒤에 온다. 명령이 문서를 바꾸지 않았으면(같은 행성 선택 등) 개정 번호는 그대로이고 `applied`는 없다 |
+| `rejected` | → 발행자 | `id`, `reasons`(`Reason`: `code`, `message`, `ids` = `{kind, id}`; 비어 있을 수 없다) | C3. 읽을 수 없는 `publish`(id는 있고 명령이 틀림)도 `rejected`다 |
+| `request` | → 코어 | `id`, `action`(`undo` `redo`), `origin` | `publish`와 같은 답(`applied` + `accepted` 또는 `rejected`). 실행 요청은 `action`이 아니라 따로 `run` 메시지다(X-02a, 3.3절 끝의 "실행 요청과 라이브 스트림"). 판정 요청은 J 에픽이, 정지 요청은 그것을 쓰는 잎이 더한다(X-02a에는 없다) |
+| `error` | → 클라이언트 | `message`, `fatal` | 명령이 아니라 연결의 오류(JSON 아님, 모르는 `type`, `hello` 전의 메시지, 모르는 프로젝트, 모르는 프로토콜 번호). `fatal`이면 코어가 닫는다 |
+
+- **재접속(D6).** `epoch`는 문서 하나의 한 생애를 가리키는 무작위 값이다(코어가 문서를 열 때 정한다). 코어가 다시 뜨면 같은 개정 번호가 다른 이력을 뜻할 수 있으므로 `epoch`가 다르다. 코어는 `epoch`가 같고, 놓친 `applied`를 아직 갖고 있고, 그 재생이 `snapshot`보다 작을 때만 `resumed`로 잇고, 그 밖에는 모두(첫 구독, `epoch` 없음이나 다름, 클라이언트가 코어보다 앞섬, 기록이 모자람, 재생이 더 큼) `snapshot`을 준다. 클라이언트는 `snapshot`이 오면 사본을 통째로 바꾸고 새 `epoch`를 기억한다. 코어가 쥔 기록은 `LOG_MAX_REVISIONS`(256)개와 `LOG_MAX_BYTES`(8 MiB, UTF-8 바이트) 안의 최근 것이고(한 개정만으로 이 한도를 넘으면 그 개정은 기록에 남기지 않는다: 그 앞에서 이어 받는 클라이언트는 `snapshot`을 받는다), 기억하는 명령 ID는 `REMEMBERED_COMMANDS_MAX`(4096)개다. 이 상한은 측정이 아니라 고른 값(`기본값`)이며 `kinetra_engine.protocol.document`의 상수라서 C-03과 클라이언트 잎이 근거와 함께 옮길 수 있다. 동기: `applied`가 구역을 통째로 싣기 때문에(207개 인스턴스에서 277 B 명령에 76 KB, #505 리뷰 측정) 상한 없는 기록은 편집마다 수백 KiB씩 쌓인다.
+- **모르는 메시지(G5).** 클라이언트는 모르는 `type`의 메시지를 무시한다. 그래야 C-05b의 프레임 같은 메시지를 프로토콜 번호를 올리지 않고 더할 수 있다. 코어는 무시하지 않는다: 읽을 수 없는 메시지는 `error`(id가 있는 `publish`·`request`는 `rejected`)로 답한다. **그래서 클라이언트 → 코어의 새 `type`도 프로토콜 번호를 올리지 않고 더할 수 있다(X-02a의 `run`이 처음이다).** 새 메시지를 모르는 코어는 그것을 모르는 `type`으로 읽고 치명적이지 않은 `error`로 답하므로 클라이언트는 그 코어가 그 요청을 섬기지 않음을 안다. 말없이 무시되는 경우가 없다. G5가 번호를 올리라고 하는 것은 이미 있는 메시지에 필수 필드가 늘거나 뜻이 바뀔 때이고, 그때는 지금처럼 번호를 올린다.
+- **명령 ID는 한 번만 쓴다.** 같은 ID에 같은 내용은 같은 명령(C6: 같은 답, 적용은 한 번)이고, 같은 ID에 다른 내용은 `rejected`다(발행자가 일어나지 않은 편집을 일어났다고 믿지 않게). 길이는 `MAX_COMMAND_ID_LENGTH`(128)자까지. 읽을 수 없어 거부된 `publish`의 ID도 기억한다.
+- **느린 구독자.** 연결마다 보내기 대기열이 있고 `QUEUE_MAX_MESSAGES`(512)건, 또는 둘 이상이 쌓인 상태에서 `QUEUE_MAX_BYTES`(16 MiB, 글자 수가 아니라 UTF-8 바이트)를 넘으면, 또는 한 번의 전송이 `SEND_TIMEOUT_S`(10 s) 안에 끝나지 않으면 그 연결을 구독에서 빼고 소켓을 끊는다(`transport.abort()`). 클라이언트는 다시 접속해 위 재접속 규칙으로 따라온다. 라이브러리의 keepalive는 이를 대신하지 못한다(쓰기 버퍼가 차면 ping도 같은 버퍼에서 멈춘다). 이 값들도 고른 값이다.
+- **프로세스 안의 발행자.** 에이전트(G-02)와 MCP 서버(G-08)는 `Hub.publish(project_id, message)`로 발행한다. 그것이 적용하고 모든 구독자에게 `applied`를 보낸다. `Document`를 직접 부르면 구독자가 모른다. MCP 서버는 G-02a의 `HubEditTools`를 `origin = mcp`로 부른다(`docs/architecture/mcp-server.md`).
+- 선로: WebSocket 텍스트 프레임 하나에 JSON 메시지 하나. 이진 프레임은 `error`다(`hello` 전이면 fatal. 이것은 클라이언트 → 코어 방향이다. 코어 → 클라이언트의 이진 메시지는 실행 스트림 프레임이고 형식은 "3.3 확정"에 있다). 크기 한도는 모든 프레임에 같다(라이브러리가 `hello` 전에도 적용한다). 메시지는 모르는 필드를 무시한다(G5). `command` 안은 반대로 엄격하다: 모르는 필드가 있으면 그 명령 전체가 거부된다(편집의 일부를 말없이 버리는 것보다 낫다).
+- **개정 번호(D2).** 0에서 시작해 `applied`마다 1씩 오른다. `applied`는 모든 구독자에게 개정 순서로 가고 발행자는 자기 `accepted` 앞에 그것을 받는다. 연결마다 보내기 대기열이 하나라서 한 연결이 느려도 순서가 바뀌지 않는다. 대기열에는 상한이 있고 넘으면 그 연결을 끊는다(위 "느린 구독자").
+- **명령 ID(C6).** 발행자가 고른다(UUID 권장). 같은 ID에 같은 내용을 다시 보내면 처음 답을 그대로 받고 적용은 한 번이다. 같은 ID에 다른 내용은 `rejected`다(위 "명령 ID는 한 번만 쓴다"). ID는 문서 단위로 유일하다. 연결에 구독이 없을 때의 `publish`는 `rejected`이고 기억하지 않는다(구독한 뒤 같은 ID를 다시 보낼 수 있다).
+- **낡은 기준 개정(C5).** `base_revision`이 문서보다 뒤면 현재 문서에 대해 검증하고, 안 되면 적용기의 사유로 거부한다(병합 없음). 문서보다 앞서면 `invalid_command`로 거부한다.
+- **판정 상태(D5).** `valid`인 판정은 문서를 바꾸는 `applied`에서 `invalid`가 되고 그 사실이 같은 `applied`에 실린다. 판정을 만들고 `valid`로 바꾸는 쪽은 아직 없다(J 에픽). 지금 문서는 `none`으로 시작한다.
+- **되돌리기.** `request`의 `undo`와 `redo`는 문서 하나의 선형 이력(C-02b `History`)에 대해 한다. 누가 만든 항목이든 되돌린다(사용자별 되돌리기는 N-04). `applied.command`는 프로젝트에 실제로 적용된 명령이다(되돌리기면 역명령).
+- **보안과 한도.** 브라우저는 어느 웹 페이지든 `localhost`로 WebSocket을 열 수 있으므로 `Hub.serve`는 `allowed_origins`를 필수로 받고 다른 `Origin`은 403으로 거부한다(`None`은 헤더를 보내지 않는 클라이언트, 곧 브라우저가 아닌 클라이언트). 기본 `host`는 `127.0.0.1`이고 루프백이 아닌 주소는 `allow_remote=True` 없이는 `ValueError`다(인증이 없으므로). `ssl`(`wss`; 헤드셋 브라우저에 필요)과 `max_size`는 넘겨받는다. 받는 메시지는 `MAX_MESSAGE_BYTES`(1 MiB, 라이브러리 기본값을 적어 둔 것)까지이고 넘으면 라이브러리가 어떤 코드보다 먼저 1009로 연결을 닫는다(그래서 `error` 메시지를 보낼 수 없다). 압축(permessage-deflate)은 라이브러리 기본값 그대로 켜져 있다. 인증은 없다: S1의 코어는 로컬 프로세스다. 계정과 공유는 이 범위 밖이다. 여러 사용자를 구분하는 발행자 ID는 없다(`origin`은 입력 경로다): N-04가 선택 필드로 더한다.
+- **[확인 필요]** 문서 소유자의 프로젝트는 지금 서버를 만들 때 넘긴다(`Hub({id: Project})`; ID는 `ID_PATTERN`). 저장소에서 열고 닫는 것은 C-03이다. 구역 단위 변경분 대신 항목 단위(위치를 실어야 한다)는 별도 이슈다. 한 편집이 프로젝트 전체를 다시 검증하는 비용(C-02a)은 `publish`마다 들고 이벤트 루프에서 동기로 돈다(C-05b의 프레임 전송이 알아야 한다).
+
 ### 3.3 실행 스트림 프레임
 
 | 메시지 [제안] | 방향 | 내용 |
 |---|---|---|
 | `run_started` | 코어 → 클라이언트 | 실행 ID, 문서 개정 번호와 정의 해시, 행성, 시드, 시간 간격, 프레임 간격, 강체 목록(강체 ID ↔ 부품 ID), 실행 종류(미리보기 1회, 판정 표본), 모델 라벨 |
 | `frame` | 코어 → 클라이언트 | 틱(정수), 시뮬 시각 [s], 강체별 자세(위치 [m], 방향 쿼터니언), 이벤트 목록 |
-| 이벤트 | `frame` 안 | 종류(접촉, 파단, 조건 충족), 틱, 관련 ID(강체, 결합, 조건), 종류별 수치와 단위 |
+| 이벤트 | `frame` 안 | 종류(접촉, 파단, 의도한 분리, 조건 충족), 틱, 관련 ID(강체, 결합, 분리기, 조건), 종류별 수치와 단위 |
 | `control` | 클라이언트 → 코어 | 실행 ID, 조종 채널 ID, 값 |
 | `run_ended` | 코어 → 클라이언트 | 종료 사유, 마지막 틱, 궤적 해시 |
 
@@ -113,7 +144,109 @@ S1 범위: 위 전부. 열어 둔 것: 여러 사용자의 동시 편집 충돌 
 - **F8** 프레임이 강체를 가리키는 방법은 실행 도중 강체 목록이 바뀌어도 모호하지 않아야 한다. S1에서는 목록이 고정이다. S1의 파단은 결합이 풀리는 것이고 강체 수는 그대로다(X-04b #138).
 
 S1 범위: 매 프레임에 모든 강체. 조종은 키보드(X-02c).
-열어 둔 것: 강체가 생기고 없어지는 실행(파편), 관심 영역만 담는 부분 프레임, 이진 인코딩과 프레임률. 뒤의 둘은 C-05b에서 정한다. 포즈 스트림 대역폭과 입력 지연의 측정은 나왔다(A0-02a #47, `spikes/web-client/REPORT.md`): 전 강체 float32 7개(28 B)를 60 Hz로 보내면 200 / 1,000 / 5,000개가 2.70 / 13.45 / 67.21 Mbit/s이고 gzip·brotli는 6 %만 줄였다. 인코딩 대안(양자화, 변화분, 관심 영역)은 재지 않았다 [확인 필요].
+열어 둔 것: 강체가 생기고 없어지는 실행(파편), 관심 영역만 담는 부분 프레임. 이진 인코딩과 프레임률은 C-05b가 정했다(아래 "3.3 확정"). 포즈 스트림 대역폭과 입력 지연의 측정은 나왔다(A0-02a #47, `spikes/web-client/REPORT.md`): 전 강체 float32 7개(28 B)를 60 Hz로 보내면 200 / 1,000 / 5,000개가 2.70 / 13.45 / 67.21 Mbit/s이고 gzip·brotli는 6 %만 줄였다. 인코딩 대안(양자화, 변화분, 관심 영역)은 재지 않았다 [확인 필요].
+
+#### 3.3 확정 (C-05b)
+
+코드: 모델과 이진 코덱은 `packages/core/src/kinetra_core/frames.py`(스키마 생성기가 `kinetra_core.__all__`만 읽기 때문에 코어에 둔다. `schemas/RunStarted.schema.json`, `Frame.schema.json`, `RunEnded.schema.json`, `PlatformTag.schema.json`과 `types.ts`; 세 메시지는 `ServerMessage` 합집합에 들어 있어 `type`으로 구분된다). 테스트는 `packages/engine/tests/test_frames.py`(`uv run pytest packages/engine -q -k frame`)와 `schemas/test/frames.test.ts`, 기록된 픽스처는 `packages/engine/tests/fixtures/frames/`(`frame_fixture.py`가 쓴다), 예시는 `schemas/examples/{RunStarted,Frame,RunEnded}.*.json`. 위 표의 [제안] 이름 중 확정된 것과 바뀐 것:
+
+| 메시지 | 방향 | 필드 | 3.3 [제안]과 다른 점 |
+|---|---|---|---|
+| `run_started` | → 클라이언트 | `run_id`, `kind`(`preview` `verdict_sample`), `badge`(항상 `sim`), `project_id`, `revision`, `definition_hash`, `planet`, `seed`, `timestep_s` [s], `frame_every_ticks`, `bodies`(`{id, instances}` 목록; 이진 포즈 블록의 순서), `model_labels`, **`platform`** | 프레임 간격은 `timestep_s × frame_every_ticks`다(초가 아니라 틱 단위로 정해서 시각이 틱에서 정확히 나온다). 강체 ID가 부품 ID가 아니라 인스턴스 목록을 갖는다(용접된 인스턴스는 한 강체로 움직인다). `model_labels`는 선택이고 B-05·W-06이 채운다 |
+| `frame` | → 클라이언트 | `run_id`, `tick`, `sim_time_s` [s], `poses`(강체 ID, `position` {x,y,z} [m], `orientation` {x,y,z,w}), `events` | 시각은 `tick × timestep_s`와 같고 `check_frame`이 확인한다 |
+| 이벤트 | `frame.events` | `kind`로 구분: `contact`(`tick`, `phase` `begin`/`end`, `body`, `other`, 선택 `force` [N]. `other`는 `kind`로 구분: `{kind: "body", id}`, `{kind: "prop", id}`, `{kind: "ground"}`; 몸과 소품은 `id`가 필수이고 땅에는 `id`가 없으며 있으면 거부된다), `break`(`tick`, `reason` `over_threshold`, `joint`, `load` [N], `threshold` [N]), `separation`(`tick`, `reason` `intended_separation`, `separator`, `joint`, `entry`(스케줄 항목 ID 또는 수동이면 `null`), `impulse` [N*s], X-08), `condition_met`(`tick`, `condition`) | 이벤트의 `tick`은 프레임 틱 사이에 있을 수 있다. 프레임에는 이전 프레임 뒤 ~ 이 프레임까지의 이벤트가 실린다. 힘의 `unit`은 항상 `N`, 충격량은 `N*s`다. 결합 해제 이벤트는 사유를 싣고, 분리로 풀린 결합은 `break`가 아니다([`separation.md`](separation.md)) |
+| `run_ended` | → 클라이언트 | `run_id`, `last_tick`(마지막 `frame`의 틱), `end`(`reason`으로 구분: `completed`와 `stopped`는 `trajectory`(`{hash, platform}`)가 필수, `failed`는 `trajectory`가 없고 있으면 거부된다) | `trajectory`는 해시와 플랫폼 태그가 한 객체라서 태그 없는 해시를 만들 수 없다(H1). 조건부 규칙(`reason`별 필수 필드)을 JSON Schema가 직접 강제하려고 `reason`과 `trajectory`를 `end` 객체에 묶었다 |
+
+`control`은 X-02c가, 수신 확인은 #420이 더한다. 실행 요청(`run`)은 X-02a가 더했다(아래 "실행 요청과 라이브 스트림"). 모르는 `type`은 클라이언트가 무시하므로 프로토콜 번호를 올리지 않는다(G5).
+
+- **플랫폼 태그(A0-05, `engine.md` 5.4절 H1).** `run_started.platform`은 필수이고 `engine.md` 5.4절 표의 여덟 구성요소를 필드로 갖는다. 빠지면 스키마와 모델 둘 다 거부한다.
+
+  | 표 | 필드 | 내용 |
+  |---|---|---|
+  | ① OS | `os` | `kind`, `kernel_release` |
+  | ② CPU | `cpu` | `architecture`, `model` |
+  | ③ 실행 환경 이미지 | `image_digest` | `sha256:` 다이제스트, 컨테이너가 아니면 **`null`**(필드는 필수라서 빼먹어서 "이미지 없음"이 되지 않는다) |
+  | ④ 엔진 | `engine` | `name`, `version`, `distribution`으로 구분: `wheel`과 `wasm_package`는 `artifact_hash` 필수, `custom_build`는 `compiler`와 `build_flags` 필수(`build_flags`는 빈 문자열일 수 있다). 해당 필드가 없거나 `null`이면 거부 |
+  | ⑤ Python·NumPy | `runtime` | `python`, `numpy` |
+  | ⑥ 코어 빌드 | `core_build` | `commit` |
+  | ⑦ 계산 설정 | `compute` | `integrator`, `timestep_s`, `solver`(이름 → 값) |
+  | ⑧ 스레드 구성 | `threads` | `physics`, `solver` |
+
+  필드 이름은 엔진 중립이고 엔진의 이름과 버전은 `engine.name`, `engine.version`의 **값**이다(F1, G2). 알 수 없는 필드는 태그 안에서만 거부한다(아홉 번째 구성요소는 "같은 태그"의 뜻을 바꾸므로 조용히 무시하지 않는다). 두 태그는 `==`로 같을 때만 같다. `compute.timestep_s`와 `run_started.timestep_s`는 같아야 한다. 같은 이름을 X-02d가 쓴다: `run_ended.trajectory.platform`이 같은 `PlatformTag`다. 궤적 해시의 비교 규칙은 X-02d의 `kinetra_core.trajectory`다: 태그와 해시가 모두 같으면 `match`(일치), 태그가 같고 해시가 다르면 `mismatch`(불일치, 원인을 찾는다), 태그가 다르면 `not_comparable`(비교 불가, 해시를 보지 않는다). 태그가 없는 기록은 결과 없이 거부한다(`UntaggedTrajectory`). "태그가 같으면 해시가 같다"는 아직 가정이고 #432가 검증한다 [확인 필요]. 이 값들을 채우는 코드는 X-02a의 `kinetra_engine.run.platform_tag`다(아래 "실행 요청과 라이브 스트림").
+- **두 가지 인코딩, 같은 뜻.** (1) JSON `frame`: 포즈가 강체 ID를 이름으로 갖는다. 기록(리플레이, Halo, 공유 번들: F3), 픽스처, 헤드리스 참조 클라이언트, 작은 장면용이다. (2) 이진 프레임: 라이브 스트림용. WebSocket 이진 메시지 하나가 프레임 하나이고 포즈는 `run_started.bodies`의 순서로 위치를 가리킨다. 리틀 엔디언.
+
+  ```
+  offset  0  u8   version (1)       offset 12  u32  event_bytes: 포즈 뒤 이벤트 JSON 텍스트의 바이트 수
+  offset  1  u8*3 0                 offset 16  f64  sim_time_s
+  offset  4  u32  tick              offset 24  n x (x y z qx qy qz qw) float32  [m], 단위 쿼터니언 x, y, z, w
+  offset  8  u32  body_count n      그 뒤       event_bytes 바이트: 이벤트 배열의 UTF-8 JSON(없으면 `[]`)
+  ```
+
+  크기는 `24 + 28 n + event_bytes`다. 포즈 블록이 4의 배수 위치에서 시작하므로 브라우저가 복사 없이 `Float32Array`로 본다. 이진 메시지에는 실행 ID가 없다: 연결의 가장 최근 `run_started`의 프레임이다(S1은 라이브 실행이 한 번에 하나). 이벤트는 드물고 종류가 늘어날 수 있어서 JSON으로 두고, 포즈만 이진으로 했다. 코덱은 `encode_frame`, `decode_frame`이고 길이, 버전, 강체 수, 유한하지 않은 수, 이벤트 형식이 틀리면 `FrameDecodeError`다. 클라이언트 → 코어 이진 메시지는 여전히 `error`다.
+- **쿼터니언(G4).** JSON은 Project와 같은 `{x, y, z, w}` 객체이고 배열은 거부된다(스키마와 모델). 이진은 float32 네 개를 x, y, z, w 순으로 쓴다. 순서를 바꾸면 비대칭 쿼터니언(0.6, 0, 0, 0.8) 테스트가 실패한다. 클라이언트가 three.js(`x, y, z, w`)나 Godot(`x, y, z, w`)의 순서로 옮기는 일은 클라이언트의 몫이다.
+- **프레임률의 결정.** 프레임률은 실행마다 코어가 정하는 값이다: `1 / (timestep_s × frame_every_ticks)` Hz(시뮬 시간). 형식은 어떤 값이든 받는다(F2). 라이브 미리보기의 기본은 클라이언트가 그릴 수 있는 화면 주사율 이하여야 한다는 것뿐이고, 형식에는 **숫자 하나로 고정하지 않았다.** 이유: (a) A0-02a가 60 Hz 한 점에서만 쟀다(16.7 ms 간격), (b) 코어가 실시간에 못 미칠 수 있어(4절) 프레임률의 상한을 코어의 속도가 정한다, (c) 저장 프레임률은 H-03a가 정한다(`engine.md`는 250 Hz float32 그대로면 크기가 강체 수에 비례한다고 적었다). 60 Hz는 측정이 나온 점으로만 쓴다. X-02a의 라이브 미리보기 기본값은 그 60 Hz를 상한으로 한 가장 작은 `frame_every_ticks`다(`FRAME_RATE_CEILING_HZ`, 값 배지 `기본값`; 엔진 기본 `timestep_s` 0.002 s에서 9틱, 시뮬 1초당 55.6프레임). 첫 실행의 속도를 재서 고친 값이 아니다 [확인 필요: 실제 장면의 코어 속도는 #332].
+- **인코딩의 결정과 근거.** 입력: A0-02a의 값(`spikes/web-client/REPORT.md`): 강체당 28 B(float32 7개)를 60 Hz로 보내면 200 / 1,000 / 5,000개가 2.70 / 13.45 / 67.21 Mbit/s이고 gzip(6)·brotli로는 원본의 0.94배까지만 줄었다. 이 형식은 그 28 B와 같은 포즈 블록에 머리 24 B와 이벤트 2 B(`[]`)를 더한다. 테스트가 이 산수를 확인한다(`test_the_frame_size_matches_the_measured_arithmetic_of_the_spike`: 200 / 1,000 / 5,000개에서 0.1 % 안). 고른 것은 **float32 전 강체 이진 프레임**이다. 고르지 않은 것과 이유:
+  - *압축(gzip, brotli)*: 합성 포즈에서 6 %만 줄었고 실제 궤적에서는 재지 않았다 [확인 필요]. 형식에 넣지 않는다. WebSocket의 `permessage-deflate` 같은 전송 계층의 선택은 X-02다.
+  - *양자화, 변화분, 관심 영역*: A0-02a가 재지 않았고(위 "열어 둔 것"의 [확인 필요]) 코어에 실제 궤적이 아직 없다. 재지 않은 이득을 위해 형식을 복잡하게 하지 않는다. 부분 프레임은 `body_count`가 `run_started.bodies`와 같아야 한다는 규칙을 풀어야 하므로 프레임 형식 번호(`version`)를 올리는 변경이다. 강체가 많아져 대역폭이 문제가 되면 이 형식에 새 `version`으로 더한다.
+  - *float64*: 포즈가 두 배(56 B)가 된다. float32는 1,000 m에서 약 6e-5 m의 분해능이라 **그리기 값**이고, 코어의 궤적 해시가 되는 값이 아니다(F7). 기록에서 완전한 정밀도가 필요하면 JSON 프레임(float64)을 쓴다.
+  - *흐름 제어(#420)*: **#420(포즈 스트림 흐름 제어)은 이 PR 시점에 열려 있다**(OPEN, S0). 그 결과(수신 확인 필드의 유무, 최신 프레임 우선)에 기대는 결정은 [확인 필요]로 남기고 형식에 넣지 않았다. 수신 확인은 클라이언트 → 코어 메시지(`ack`)다. 새 클라이언트 → 코어 `type`은 3.2절 "모르는 메시지(G5)"의 규칙으로 프로토콜 번호를 올리지 않고 더할 수 있다(모르는 코어는 `error`로 답한다). 다만 ack를 모르는 코어가 그것을 `error`로 버리면 흐름이 바뀌지 않으므로, 클라이언트가 ack를 섬기는 코어에 기대야 하는지는 #420이 정하고 필요하면 그때 `PROTOCOL_VERSION`을 올린다. 형식(`tick`은 이미 모든 프레임에 있다)은 ack가 마지막으로 그린 `tick`을 가리키는 데 그대로 쓸 수 있다. 받는 쪽의 적체는 C-05a의 연결별 대기열 한도(`QUEUE_MAX_MESSAGES`, `QUEUE_MAX_BYTES`)가 연결을 끊는 것으로 막는다. 프레임이 같은 대기열에 얹히면 그 한도를 프레임 크기로 다시 정해야 한다 [확인 필요, X-02]. **X-02a의 답:** 프레임은 같은 대기열에 얹히지만 다음 프레임은 대기열이 빌 때까지 기다리므로 프레임이 그 한도에 닿지 않고, 한도는 그대로 두었다(아래 "실행 요청과 라이브 스트림"의 "보내기와 흐름"). ack는 더하지 않았다.
+- **끝 프레임(F3, F4).** 코어는 `run_ended` 직전에 **항상 끝 틱의 `frame`을 보낸다.** 실행이 두 프레임 간격 사이(틱이 `frame_every_ticks`의 배수가 아닌 곳)에서 끝나도 그렇다. 그래서 마지막 자세와 직전 프레임 뒤의 이벤트(예: 끝나기 한 틱 전의 파단)가 반드시 클라이언트에 닿는다. `run_ended.last_tick`은 그 프레임의 틱이다. 간격 밖에 있어도 되는 프레임은 이 마지막 하나뿐이다. `run_ended`에 프레임을 싣는 방법도 있었지만 고르지 않았다: 끝 자세가 프레임과 다른 모양으로 오면 기록과 재생이 두 경로가 된다(F3). 흐름을 통째로 받은 쪽은 `check_run(run, frames, ended)`로 확인한다: 프레임이 하나 이상, 틱이 늘어남, 마지막 프레임 = `last_tick`, 마지막을 뺀 프레임은 간격 위, 이벤트는 직전 프레임 뒤의 첫 프레임에만, 궤적 증거의 태그 = 실행의 태그. 중간 프레임은 빠져도 된다(보내는 쪽이 건너뛴 프레임의 이벤트는 다음 프레임에 옮긴다). 픽스처는 틱 130(간격 8)에서 끝나고 틱 129의 파단을 끝 프레임이 싣는다.
+- **수의 한도.** `seed`는 0 ~ 2^53−1(`Number.MAX_SAFE_INTEGER`, JavaScript가 JSON에서 정확히 읽는 가장 큰 정수). 틱과 강체 수는 0 ~ 2^32−1(이진 머리의 u32). `compute.solver`의 설정 이름은 `NAME_PATTERN`(`^[a-z][a-z0-9_]{0,63}$`)이고 모델과 스키마(`propertyNames`)가 같은 `Field` 패턴에서 나온다.
+- **조건부 규칙은 스키마가 강제한다.** `engine`(`distribution`별), `contact.other`(`kind`별), `run_ended.end`(`reason`별)는 판별 합집합이라서 생성된 JSON Schema와 TS 타입(좁혀지는 합집합)이 모델과 같은 규칙을 갖는다. 사후 검증기로 쓰지 않았다: 스키마만 읽는 클라이언트(헤드리스 참조 클라이언트, GD)가 규칙을 놓치기 때문이다. 테스트가 규칙마다 스키마와 모델이 같은 입력을 받고 같은 입력을 거부함을 단언한다. 없어야 하는 필드(땅의 `id`, 실패한 실행의 `trajectory`)는 그 변형이 모르는 필드를 거부해서 강제한다.
+- **프레임의 보증.** `Frame`은 한 메시지 안에서 알 수 있는 것을 검사한다(강체당 포즈 하나, 이벤트의 `tick` ≤ 프레임의 `tick`, 단위 쿼터니언, 유한한 수). `run_started`와 맞아야 하는 것(그 실행의 강체 전부가 정확히 한 번, `sim_time_s = tick × timestep_s`, 틱이 `frame_every_ticks`의 배수, 이벤트가 아는 강체만 가리킴)은 두 메시지를 함께 가진 쪽이 `check_frame(run, frame)`으로 확인한다. 전송 계층(X-02)이 보내기 전에 부르고 C-05c 참조 클라이언트가 받을 때 부른다.
+- **이벤트와 판정.** `condition_met`은 판정이 아니다(P4). 프레임 스트림에서 판정이 만들어지지 않는다(F6). `break`의 `load`와 `threshold`는 N이고 단순화 모델의 값이다(계획 4.6절). `separation`의 `impulse`는 사용자가 선언한 값(또는 부품의 자리 표시 기본값)이다(B-15). `contact`의 `force`는 엔진이 알려 줄 때만 있다.
+- **MuJoCo 용어가 없다(F1).** 필드와 타입 이름에 엔진 내부 용어가 없다. 테스트가 생성된 스키마의 글과 기록된 메시지의 모든 키를 검사한다(`qpos`, `geom`, `mjcf` 등과 엔진 이름). 엔진 이름은 `platform.engine.name`의 값으로만 나온다.
+- **픽스처의 정직성.** 기록된 프레임(`fixtures/frames/run.jsonl`)은 엔진 실행이 아니다. 코어에 엔진이 아직 없으므로(X-01, X-02) 4륜차를 0.2 m에서 떨어뜨린 닫힌 식의 낙하(`g`는 `data/bodies/earth.json`의 인용값)다. 플랫폼 태그의 엔진은 `analytic-fixture`로 적고 `break` 이벤트의 하중과 임계는 형식을 보이기 위한 만든 값이며 예시 자동차의 결합에는 임계가 없다. 궤적 해시는 이진 프레임을 이어 붙인 SHA-256이고 X-02d의 해시가 아니다. 이 값들은 시뮬 결과로 읽으면 안 된다.
+
+#### 3.1~3.3 적합성 (C-05c)
+
+코드: 헤드리스 참조 클라이언트는 `packages/engine/src/kinetra_engine/protocol/client.py`(`ReferenceClient`), 적합성 묶음은 `kinetra_engine/protocol/conformance.py`와 기록된 사례 `kinetra_engine/protocol/conformance_cases/*.json`(사례를 쓰는 것은 `packages/engine/tests/conformance_fixture.py`), 테스트는 `packages/engine/tests/test_conformance.py`(`uv run pytest packages/engine -q -k conformance`).
+
+- **참조 클라이언트는 프로토콜만 쓴다.** 웹 코드도 코어 코드도 없다: `kinetra_core`의 메시지 모델(JSON Schema가 생성되는 그 모델)과 WebSocket 라이브러리만 가져오고 `kinetra_engine`(Hub, Document, 적용기)은 가져오지 않는다. 테스트가 import를 검사한다. 하는 일: `hello` → `subscribe` → 사본을 `snapshot`과 `applied`(`apply_changes`)로만 바꾼다(D1, D3). 재접속하면 쥔 개정 번호와 `epoch`를 보내 이어 받는다(D6). `publish`·`request`(되돌리기)를 보내고 답을 기다린다. 실행 스트림(`run_started`, JSON·이진 `frame`, `run_ended`)을 받아 프레임마다 `check_frame`, 끝에서 `check_run`을 부른다(끝 프레임 규칙). 모르는 `type`의 메시지와 아는 메시지의 모르는 필드는 무시한다(G5).
+- **클라이언트가 확인하는 순서 규칙.** 코어가 어기면 `ProtocolViolation`을 내고 `code`로 어긴 규칙을 말한다(덮고 넘어가면 코어의 버그를 감춘다): `applied`는 쥔 개정의 바로 다음 개정이다(D2, `revision_gap`). 발행자의 `accepted`는 그 편집의 `applied` 뒤에 오므로 `accepted.revision`은 클라이언트가 쥔 개정과 같다(`accepted_before_applied`). `resumed`는 클라이언트가 쥔 `epoch`와 개정에서 이어지고(`resume_mismatch`) 그 뒤에 놓친 `applied`만 순서대로 온다(D6, `replay_incomplete`). 한 연결에 끝나지 않은 실행이 둘일 수 없다(S1, `run_overlap`). 실행 스트림은 `check_frame`과 `check_run`을 통과한다(3.3 확정의 끝 프레임, `frame`·`run_stream`). 나머지 코드는 `ProtocolViolation`의 docstring에 있다. `error`는 `CoreError`다.
+- **연결마다의 상태는 새 연결로 넘어가지 않는다.** 재접속(`connect`)은 사본, 개정 번호, `epoch`를 그대로 두지만 옛 연결의 것은 버린다: `resumed` 뒤에 아직 받지 못한 `applied`의 수(새 `subscribe`가 실제로 닿은 개정부터 다시 묻는다)와 끝나지 않은 실행(프레임은 연결과 함께 사라졌으므로 `interrupted_runs`로 옮긴다). 그래서 이어 받기 도중이나 실행 도중에 끊겨도 정상인 새 연결을 거부하지 않는다(사례 14, 15).
+- **사례(언어 중립 JSON).** 사례 하나는 `steps`(클라이언트가 할 일 `do`(`"dropped": true`면 코어가 그 도중에 연결을 닫는다), 클라이언트가 보내야 하는 메시지 `client`, 코어가 보내는 `core`·`core_binary`(이진 프레임, base64), 코어가 연결을 닫음 `core_close`, 연결 밖에서 코어에 일어난 일 `core_side`)와 `expect`(끝난 뒤 클라이언트의 `revision`, `epoch`, `verdict`, 프로젝트 전체, 명령 ID별 답, 무시한 `type` 목록, 통째로 받은 실행의 틱·이벤트·끝 프레임)이다. 깨진 코어의 사례는 `expect`가 `{"violation": 이유, "code": 규칙, "at_message": n}`이고 클라이언트가 **그 코드로, 사례에서 코어가 보낸 n번째 메시지(모든 연결의 `core`·`core_binary`를 1부터 셈)를 처리할 때** 거부해야 통과한다. 다른 이유나 다른 메시지에서 거부하면 실패다(엉뚱한 것을 거부하는 클라이언트를 통과시키지 않게). `client` 메시지는 `ClientMessage`로 읽어 비교한다(필드 순서, 빠진 선택 필드와 `null`은 같다).
+
+  | 사례 | 규칙 | 출처 |
+  |---|---|---|
+  | `01-open-snapshot` | G5, D1 | Hub 기록 |
+  | `02-publish-accepted`: `applied`(개정 1) 다음 `accepted` | D2, D3, C1 | Hub 기록 |
+  | `03-publish-rejected`: 사유가 있는 `rejected`, 개정 그대로 | C2, C3 | Hub 기록 |
+  | `04-publish-unchanged`: 바꾸는 것이 없는 편집은 같은 개정의 `accepted`, `applied` 없음 | D2, D5 | Hub 기록 |
+  | `05-undo`: `request` undo → `applied`(`cause` undo, 역명령) 다음 `accepted` | C1, D3 | Hub 기록 |
+  | `06-resume-same-epoch`: 끊긴 동안 다른 발행자(에이전트)가 편집, 재접속하면 `resumed`와 놓친 `applied` | D6 | Hub 기록 |
+  | `07-resume-after-restart`: 코어가 다시 뜨면(다른 `epoch`) 새 `snapshot` | D6 | Hub 기록 |
+  | `08-unknown-type-ignored`: 모르는 `type`(`presence`) 둘과 `applied`의 모르는 필드 | G5 | 기록을 고침 |
+  | `09-run-stream`: `run_started`, 이진 프레임 16개, 모르는 `run_progress`, JSON 프레임 128과 끝 프레임 130(간격 8 밖, 틱 129의 파단), `run_ended` | F2~F4, G4, G5 | 기록 + C-05b 픽스처 |
+  | `10`~`13-violation-*`: 개정을 건너뛴 `applied`(`revision_gap`), `applied` 앞의 `accepted`(`accepted_before_applied`), 다른 `epoch`의 `resumed`(`resume_mismatch`), 끝 프레임 없는 `run_ended`(`run_stream`) | D2, D6, F3, F4 | 기록을 고침 |
+  | `14-reconnect-mid-replay`: 놓친 `applied` 둘 중 하나 뒤에 코어가 연결을 닫고, 클라이언트는 개정 1부터 다시 이어 받는다 | D6 | 기록을 고침 |
+  | `15-reconnect-mid-run`: 실행 도중 연결이 닫히고, 재접속 뒤 새 실행이 통째로 온다 | F3, F4, D6 | 기록 + C-05b 픽스처 |
+
+- **기록의 정직성.** Hub 기록 사례는 실제 `Hub`를 실제 로컬 WebSocket으로 부른 기록이다. 보내는 쪽은 참조 클라이언트가 아니라 날 소켓이다(시험받는 클라이언트가 사례를 쓰지 않게). 기대 상태는 코어의 메시지로 계산하고 기록 뒤 Hub 자신의 문서와 같은지 확인한다. 무작위 `epoch`는 나타난 순서로 `epoch-1`, `epoch-2`로 바꾼다. Hub가 다른 말을 하게 되면 `test_conformance_cases_are_what_the_hub_and_the_frame_fixture_say_today`가 실패한다. **실행 스트림 사례는 코어의 실행이 아니다**: 코어에는 아직 실행 경로가 없으므로(X-02) C-05b의 픽스처(4륜차의 닫힌 식 낙하, 엔진 실행 아님, 3.3 확정의 "픽스처의 정직성")를 라이브 코어가 보낼 모양(이진 프레임, 끝의 JSON 프레임)으로 보낸다. X-02a는 자기 스트림이 같은 사례 형식과 `check_run`을 통과함을 보인다.
+- **새 클라이언트가 통과하는 방법.** Python 클라이언트는 `ReferenceClient`와 같은 메서드(`connect`, `subscribe`, `publish`, `request`, `receive_run`, `receive`, `close`)와 상태(받은 메시지 수 `received`, 거부의 `ProtocolViolation.code` 포함)를 갖고 `test_conformance.py`의 `CLIENTS`에 더하면 모든 사례를 돈다. 다른 언어의 클라이언트(웹, XR, Godot: GD-01)는 `uv run python -m kinetra_engine.protocol.conformance serve <사례.json>`이 로컬 포트에서 코어 쪽을 재생하고(URL을 출력한다) 클라이언트가 보내는 메시지를 하나하나 비교한다. 클라이언트의 시험 장치는 `do` 단계를 그 URL에 대해 하고 끝난 상태(또는 거부의 코드와 메시지 번호)를 `expect`와 비교한다. 서버는 클라이언트가 기대한 메시지를 정확히 보냈으면 0, 아니면 1로 끝난다(`list`는 사례와 규칙 목록). 명령 ID는 사례가 주므로 클라이언트는 호출자가 ID를 고를 수 있어야 한다.
+- **묶음에 이빨이 있다.** 규칙 하나를 어기는 클라이언트(모르는 `type`을 오류로 다룸, `run_ended`를 확인 없이 받음, 재접속에 `epoch`를 빠뜨림, 개정을 확인 없이 적용, 옛 연결의 상태를 새 연결로 넘김, 맞는 코드를 너무 이른 메시지에서 냄, 맞는 메시지에서 다른 코드를 냄)가 해당 사례에서 그 이유로 실패함을 테스트가 보인다.
+- 한 사례의 시간 한도 `CASE_TIMEOUT_S`(10 s)는 고른 값이다(`기본값`, 사례는 로컬 메시지 수십 건). 여기에 없는 것: 두 클라이언트 동기화(C-05a의 테스트와 참조 클라이언트의 라이브 테스트가 본다), `control`과 수신 확인(X-02c, #420), 에셋 채널(3.4).
+
+#### 실행 요청과 라이브 스트림 (X-02a)
+
+코드: 메시지는 `packages/core/src/kinetra_core/protocol.py`의 `RunRequest`(`schemas/RunRequest.schema.json`, `ClientMessage` 합집합), 컴파일과 실행은 `packages/engine/src/kinetra_engine/run/`(`compile_project`, `PreviewRun`, 플랫폼 태그 `platform_tag`), 전송은 `kinetra_engine.protocol.server`(`Hub`), 테스트는 `packages/engine/tests/test_simulate_stream.py`(`uv run pytest packages/engine -q -k "simulate and stream"`). legacy의 라이브 실행(`legacy-v0`의 `packages/engine/src/kinetra_engine/live.py`, `/ws/sim`)을 옮겼다: 요청한 순간의 문서로 모델을 컴파일하고, 스트림을 읽는 동안 엔진을 스텝해서 프레임을 만든다. 저장된 파일의 재생이 아니다.
+
+적합성(C-05c): `test_simulate_stream_the_c05c_reference_client_receives_the_run`에서 `ReferenceClient`가 코어가 계산한 실행을 받는다(매 프레임 `check_frame`, 끝에 `check_run`, 순서 규칙). `test_simulate_stream_over_the_protocol_passes_the_stream_checks`는 같은 검사를 날 소켓으로 하고 직접 계산한 실행과 틱·시각·해시가 같음을 본다.
+
+| 메시지 | 방향 | 필드 | 뜻 |
+|---|---|---|---|
+| `run` | → 코어 | `id`, `duration_s` [s], `seed`(기본 0), `speed`(기본 1) | 구독한 문서를 지금 상태로 컴파일해 한 번 돌린다(미리보기, F6). 문서를 바꾸지 않는다(C7). `id`가 그대로 스트림의 `run_id`다. 실행은 `tick × timestep_s ≥ duration_s`인 첫 틱에서 끝난다. `seed`는 `run_started`에 기록만 된다(미리보기 실행은 아직 무작위를 쓰지 않는다). `speed`는 코어의 보내기 속도다: 시뮬 시각 `t`의 프레임을 실행 시작 뒤 `t / speed`초보다 먼저 보내지 않는다(1 = 실시간, 0 = 코어와 연결이 허락하는 만큼 빨리). legacy의 `speed`와 같은 뜻이다 |
+
+- **답.** 받아들이면 그 연결에만 `run_started`(텍스트), 프레임(이진 메시지 하나에 하나, 위 "두 가지 인코딩"), `run_ended`(텍스트)가 순서대로 간다. 다른 구독자는 실행을 모른다(문서가 바뀌지 않았으므로). 거부하면 같은 `id`의 `rejected`다: 빠진 정의(`missing_definition`, 아래 "관문"), 컴파일되지 않는 설계(`CompileError`, X-01d: 사유 문장이 `CompileErrorCode`로 시작하고 인스턴스·부품·결합·액추에이터를 참조한다. 검증기와 같은 규칙인 `snap_mismatch`와 `floating`은 검증기의 `invalid_snap`과 `floating`, 나머지는 `invalid_project`), 이 연결에서 실행이 이미 돌고 있음, 구독 전, 읽을 수 없는 `run`, 틱 수가 u32를 넘는 `duration_s`(모두 `invalid_command`). `run`을 모르는 코어는 모르는 `type`이라 `error`로 답한다. 그래서 프로토콜 번호를 올리지 않았다(G5: 필수 필드가 는 것이 아니라 메시지가 는 것이고, 모르는 코어의 답이 이미 정해져 있다).
+- **한 연결에 실행 하나.** 이진 프레임에는 실행 ID가 없으므로(위 "두 가지 인코딩") 앞 실행이 끝나기 전의 `run`은 거부한다. 연결이 끊기면 그 실행은 멈추고 버려진다(스레드에서 돌던 한 프레임 몫의 스텝은 끝나고 버려진다). 정지 요청(`run_ended`의 `stopped`)은 X-02a에 없다: 실행은 끝 틱이나 실패나 연결 끊김으로만 끝난다.
+- **관문(C-06).** `compile_project`가 `require_complete(project, compile)`를, `PreviewRun`이 `require_complete(project, run)`을 가장 먼저 부른다. 빠진 정의가 있으면 `ProjectIncomplete`이고 전송은 그 `reasons`를 그대로 `rejected`에 싣는다. 부품을 빼고 돌리지 않는다.
+- **스트림.** 틱 0(저장된 자세)이 첫 프레임이고, 그 뒤 `frame_every_ticks`마다, 그리고 끝 틱에 항상 프레임이 있다(위 "끝 프레임"). 모든 프레임은 만들어질 때 `check_frame`을 지난다. 강체의 자세는 그 강체 프레임(가장 작은 ID 인스턴스의 프레임, `body-tree.md`)의 세계 자세다. 이벤트: 파단(X-04b)은 `break`(`tick`, `reason` `over_threshold`, `joint`, `load`, `threshold`, N)로 실린다. 매 틱 `mj_step2` 바로 뒤 임계가 있는 결합의 하중을 읽고 넘은 결합을 풀며, 그 틱의 이벤트를 그 틱 또는 다음 프레임이 싣는다(`break-threshold.md`의 "런타임 결합 해제"). 의도한 분리(X-08)는 스케줄의 `separate` 항목 시점(또는 `PreviewRun.separate` 수동 요청)에 같은 해제 경로로 분리기의 `face_b` 결합을 풀고 선언 충격량을 두 쪽에 주며 `separation` 이벤트(`reason` `intended_separation`)로 실린다([`separation.md`](separation.md)). 임계가 있는 고정 결합과 분리기의 `face_b` 결합은 처음부터 두 강체로 컴파일되므로 강체 목록은 실행 내내 같다(F8). 접촉과 조건 충족은 각 잎이 더한다.
+- **구동(X-01b), 추력(X-01c), 항력(W-03b).** 컴파일은 `compile_thrust`(추력기와 탱크의 추진제), `compile_drives`(스프링과 모터), `compile_drag`(바디별 집중 항력 면적)로 하고 스텝 루프는 실행(`PreviewRun`) 하나가 쥔다. 매 틱 `mj_step` 앞에서 `DriveRuntime.apply`가 프로젝트 제어 스케줄의 지시(그 스텝 시작 시각 `t`에 `start ≤ t < end`인 항목의 `command`, 없으면 0)로 모터 토크를 쓰고 배터리를 줄이며, `ThrustRun.begin_step`이 추진제를 꺼내 그 스텝의 질량을 몸체에 얹고 추력을 `xfrc_applied`에 더한다. `mj_step` 자리는 `mj_step1` → `DragRuntime.apply`(그 스텝의 위치·속도로 바디별 항력을 `xfrc_applied`에 더함) → `mj_step2` → `DragRuntime.restore`(항력이 건드린 행만 되돌림)다. 그 뒤 `ThrustRun.end_step`이 추력의 행을 되돌리고 남은 질량을 얹는다. 달은 대기 밀도가 0이라 항력이 아무 행도 건드리지 않고 궤적이 `mj_step`과 비트 단위로 같다. 시험: `test_simulate_stream_a_scheduled_motor_turns_its_hinge_in_the_stream`(지시 1이면 바퀴가 모터에 대해 돌고, 0이면 돌지 않는다), `test_simulate_stream_a_thruster_run_climbs_as_the_rocket_equation_says`(0.5 s 연소에서 추력이 더한 높이가 로켓 방정식 속도의 합과 상대 4e-12 안; 로켓 방정식에 공기가 없으므로 달에서 돌린다), `test_drag_run_stream_on_earth_approaches_the_hand_terminal_speed`, `test_drag_run_stream_on_the_moon_is_the_no_drag_stream_bit_for_bit`.
+- **끝.** `completed`: 끝 틱에 닿았다. `failed`: 엔진이 유한하지 않은 위치·속도·가속도를 만났다(엔진은 그때 상태를 처음으로 되돌리므로 이어 갈 수 없다). 실패한 실행의 끝 프레임은 마지막으로 유한했던 틱이고 궤적 해시가 없다. 코어 내부 오류(프레임을 만들거나 검사하거나 인코딩하다 난 예외)도 스트림을 닫는다: 마지막으로 보낸 프레임이 끝 프레임이 되고 그 틱의 `run_ended` `failed`가 온 뒤(`check_run`을 통과하는 온전한 스트림), 예외 내용을 싣지 않은 치명적이지 않은 `error`("internal error: …")가 온다. 예외는 코어 로그에만 남는다. `run_started`는 첫 프레임과 함께 나가므로 첫 프레임 전에 실패한 실행은 스트림을 열지 않고 `error`만 받는다. 어느 쪽이든 그 연결의 실행 자리는 비어 다음 `run`을 받는다(시험: `test_simulate_stream_an_internal_error_mid_run_still_ends_the_stream`, `..._before_the_first_frame_opens_no_stream`).
+- **궤적 해시.** `completed`의 `trajectory.hash`는 틱 0부터 끝 틱까지 매 틱의 일반화 위치(엔진 상태의 위치 부분, float64)를 순서대로 이은 바이트의 SHA-256이고, `trajectory.platform`은 `run_started.platform`과 같은 태그다(H1). 결합이 풀린 틱부터는 다시 컴파일된 모델의 일반화 위치(풀린 바디의 자유 관절이 더해진 배열)를 잇는다(X-04b). 코어가 계산한다(F7). 두 기록의 비교(일치, 불일치, 비교 불가)는 `kinetra_core.compare_trajectories`이고(X-02d), 같은 프로젝트·시드·입력의 10회 반복과 새 프로세스의 실행이 같은 해시라는 시험은 `packages/engine/tests/test_determinism.py`다(이 빌드·이 머신에서 관찰한 범위. 다른 머신은 #432).
+- **플랫폼 태그를 채우는 법.** 모두 실행 중인 프로세스에서 읽고 손으로 쓰지 않는다. ① `platform.system()`(`Darwin`은 `macos`)과 `platform.release()`, ② `platform.machine()`과 CPU 모델 문자열(macOS `sysctl machdep.cpu.brand_string`, Linux `/proc/cpuinfo`의 `model name`, 없으면 `platform.processor()`, 그것도 없으면 `unknown`), ③ 환경 변수 `KINETRA_IMAGE_DIGEST`(컨테이너가 넣는다), 없으면 `null`, ④ `mujoco.__version__`, 배포 `wheel`, `artifact_hash`는 설치된 `mujoco-core`의 `WHEEL` 메타데이터 태그에 맞는 휠 파일의 `uv.lock` 해시, ⑤ `platform.python_version()`, `numpy.__version__`, ⑥ `KINETRA_CORE_COMMIT`, 없으면 패키지가 있는 체크아웃의 `git rev-parse HEAD`, ⑦ 컴파일된 모델의 옵션(적분기, `timestep_s`, 솔버 설정 이름 → 값), ⑧ 물리 스텝 1, 솔버 1(`mj_step`을 한 스레드에서 부르고 스레드 풀을 두지 않는다). 읽을 수 없는 구성요소는 추측하지 않고 `PlatformUnknown`으로 실행을 막는다(태그 없는 해시는 증거가 아니다, H1). ⑥은 커밋만 가리키고 작업 트리의 커밋 안 된 변경은 담지 않는다 [확인 필요: #432].
+- **모델 라벨.** `run_started.model_labels`는 컴파일의 모델 라벨(`model_labels`: 프록시 근사 라벨 X-01a, 접촉 라벨 X-01e, 대기가 있는 행성의 `근사: 집중 항력` W-03b)과, 모델이 적용하지 않은 행성 조건이다. 후자는 모델에서 읽어서 정하므로 그 잎이 들어오면 저절로 빠진다: 모델의 중력이 행성의 `data/bodies` 값과 다르면 "미적용: <행성>의 중력 … 엔진 기본 중력 …", 모델에 지면이 없으면 "미적용: 지면 없음". 중력은 W-03a(`compiler/planet.py`)가, 지면은 X-01e(`mjcf.py`의 `__kinetra_ground`)가 모델에 넣으므로 지금 컴파일된 모델에는 두 라벨 모두 붙지 않는다. 지면 줄이 없는 모델(시험용)에서만 "지면 없음"이 다시 나온다. 임계가 있는 결합이 하나라도 있으면 파단의 단순화 모델 라벨(`BREAK_LABEL`, X-04b)이 마지막에 붙는다.
+- **보내기와 흐름.** 엔진은 작업 스레드에서 한 프레임 몫의 틱씩 스텝하므로 이벤트 루프는 다른 연결을 계속 섬긴다. 프레임은 C-05a의 연결별 대기열에 얹히되, 다음 프레임은 그 대기열이 빌 때까지(앞에 놓인 것이 모두 소켓으로 넘어갈 때까지) 기다린다. 그래서 느린 클라이언트는 대기열 한도로 끊기는 대신 실행을 느리게 만든다(4.1절). 소켓 한 번 보내기가 `SEND_TIMEOUT_S`를 넘는 클라이언트는 전과 같이 끊긴다. 수신 확인(#420)은 이 규칙을 바꿀 수 있다.
 
 ### 3.4 에셋 로딩
 
@@ -129,6 +262,7 @@ S1 범위: 매 프레임에 모든 강체. 조종은 키보드(X-02c).
 - **A4** 에셋을 프로젝트에 넣는 일(glb 가져오기)은 명령 발행으로 한다. 클라이언트는 Project가 참조하지 않는 에셋을 부품으로 그리지 않는다.
 - **A5** 생성 3D는 시각 스킨이다. 물리 형상이 되지 않는다(계획 4.4절).
 - **A6** 렌더러 전용 형식(three.js JSON, Godot 장면 파일)은 경계를 넘지 않는다.
+- **A7** 시각 메시는 빈 곳(구멍, 홈)을 파내지 않을 수 있다(B-01c, `part-visual.md`). 부품 glb의 루트 노드 `extras.kinetra.voids`가 비어 있지 않으면 클라이언트는 그 부품에 "빈 곳 N개 미표시"를 보인다(질량은 구멍을 뺀 값이라 그림과 다르다). 신호는 이 목록의 길이 하나다. 시각 메시에서 파내는 일은 #496이고, 그 뒤에는 파낸 부품의 목록이 빈다.
 
 S1 범위: 부품마다 glb 하나. 열어 둔 것: 참조가 ID와 해시이므로 LOD 변형과 영역 단위 스트리밍을 더할 수 있다(열린 세계).
 
@@ -139,13 +273,14 @@ S1 범위: 부품마다 glb 하나. 열어 둔 것: 참조가 ID와 해시이므
 | 마우스·키보드 | 호버, 선택, 드래그 중의 위치, 고스트 | 놓는 순간의 Command(이동, 결합 등) |
 | XR 손·컨트롤러 | 손의 자세, 잡고 있는 동안의 위치, 스냅 후보 고스트, 작업대 스케일 | 놓는 순간의 같은 Command |
 | 텍스트 | 입력창 | 에이전트가 낸 변경안 중 수락한 명령의 `publish` |
-| 음성 | 받아쓰기, 인식문 확인, 삭제류의 확인 단계 | 확인된 문장. 그 뒤는 텍스트와 같다 |
+| 음성 | 마이크 녹음, 인식문 확인, 삭제류의 확인 단계. **받아쓰기 자체는 코어가 한다**(계획 5.1절: 로컬 faster-whisper, `docs/decisions/stt.md`): 녹음 바이트가 경계를 넘어 코어로 가고 글이 돌아온다 | 확인된 문장. 그 뒤는 텍스트와 같다. 코어가 받는 **명령 입력**은 이것 하나다 |
 | 실행 중 조종 | 키 → 조종 채널 바인딩 | `control`(3.3) |
 
 - **I1** 입력 수단마다 다른 Command는 없다. 같은 동작은 같은 Command다(XR-02 #208의 "데스크톱과 같은 스냅 규칙").
 - **I2** Command는 문서의 말로 쓴다: 부품 ID, 스냅 포인트 ID, 파라미터 이름과 SI 값. 화면 좌표, 레이, 손 관절의 자세는 경계를 넘지 않는다.
 - **I3** 고스트를 위한 스냅 후보는 클라이언트가 문서의 스냅 포인트로 계산한다. 붙는지는 코어 검증기가 정한다. 둘이 다르면 코어가 옳다.
 - **I4** 드래그 중의 연속 입력은 Command가 아니다. 이력의 한 칸은 사용자가 확정한 동작 하나다.
+- **I6** 음성 녹음은 입력이 아니라 인식 요청이다. 코어는 `Transcriber.transcribe(바이트) -> Transcript(text, language, duration_s, model)`로 돌려줄 뿐이고 그 글을 해석하거나 실행하지 않는다. 글은 신뢰하지 않는 텍스트이며 사용자가 확인한 문장만 텍스트와 같은 길(에이전트 → 변경안 → `publish`)을 탄다. 녹음 바이트는 저장하지 않는다(`stt.md` 5절). **[확인 필요, I-01b]** 녹음 바이트를 코어로 보내는 전송(다섯 계약 밖의 요청인지, 어느 메시지와 한도인지)과 진행 표시·취소는 I-01b(#159)가 정한다. `transcribe`는 블로킹이고 취소가 없다(`stt.md` 5절).
 - **I5** 실행 중 조종 입력은 편집 Command가 아니다. Project를 바꾸지 않고 이력에 들어가지 않으며 실행 기록에 남는다(F5). 조종 채널은 Project의 액추에이터·제어 정의에서 오고, 어느 키가 어느 채널인지는 클라이언트가 정한다.
 
 S1 범위: 계획 4.3절의 네 입력 모드와 키보드 조종. 헤드셋 안 조종은 S1 밖이다.
@@ -174,7 +309,15 @@ A0-01a(#43)가 잰 MuJoCo 네이티브의 실시간 배속(1.0 = 실시간)이�
 | A. 코어 재생 | 코어의 프레임을 그대로 그린다 | 코어 | S1 권고(계획 5.2절). 플레이와 판정이 갈리지 않는다 |
 | B. 클라이언트 플레이 물리 | 클라이언트의 물리(Jolt, 조건부 WASM) | 코어 | 코어 스트림이 실시간에 못 미칠 때의 후보. 5절의 규칙이 붙는다 |
 
-구성 A에서 코어가 실시간보다 느리면 클라이언트는 받아 둔 뒤 재생하거나 느리게 보여 준다(F2, F4). 어느 구성을 언제 쓰는지는 `engine.md`(A0-05 #54)가 #332와 A0-02, A0-03의 수치로 정한다. 이 문서는 그 선택을 미리 하지 않는다.
+구성 A에서 코어가 실시간보다 느리면 클라이언트는 받아 둔 뒤 재생하거나 느리게 보여 준다(F2, F4). S1은 구성 A만 쓴다(`engine.md` 4.2절 D6, 아래 4.1절). 구성 B를 언제 쓰는지는 `engine.md`(A0-05 #54)가 #332와 A0-02, A0-03의 수치로 정한다.
+
+### 4.1 코어가 실시간보다 느릴 때 (A0-05, X-02a)
+
+정해진 것(`docs/decisions/engine.md` 4.2절 D6, 창업자 승인 2026-11-11): 코어가 실시간에 못 미치는 장면에서 **S1 클라이언트는 받은 프레임을 느린 배속으로 재생하고 배속을 표시한다. S1에 클라이언트 예측이나 자체 플레이 물리를 넣지 않는다.** 예측을 넣는 순간 화면이 코어의 궤적이 아니게 된다(V1, V4, F4). 구성 A(코어 재생)만 쓴다.
+
+- **코어.** 실행 속도는 궤적을 바꾸지 않는다. 틱은 엔진의 한 스텝이고 시각은 `tick × timestep_s`이며, 스텝은 벽시계를 보지 않는다(F2). 코어가 느린 이유가 무엇이든(장면이 무겁다, 머신이 바쁘다, 클라이언트가 늦게 읽어 다음 프레임이 기다린다, `speed`가 1보다 작다) 같은 틱의 시뮬 시각과 자세는 같고 궤적 해시도 같다. 시험: `test_simulate_stream_a_slower_than_real_time_run_has_the_same_ticks_times_and_poses`(프레임마다 프레임 간격의 1.5배를 쉬어 실시간보다 느리게 돈 실행 대 쉬지 않은 실행)와 `test_simulate_stream_paced_slower_than_real_time_over_the_protocol_keeps_ticks_times_and_poses`(`speed` 0.5 대 0, WebSocket 너머). 코어는 늦은 프레임을 건너뛰거나 시간 간격을 키워 따라잡지 않는다.
+- **클라이언트.** 받은 프레임만 그린다. 그리기 보간은 받은 두 프레임 사이에서만 한다(F4). 다음 프레임이 아직 오지 않았으면 마지막 받은 프레임에서 기다린다. 받은 프레임 너머를 예측해 그리지 않는다. 재생 배속 = 재생한 시뮬 시간 ÷ 걸린 벽시계 시간이고, 1보다 작으면 화면에 표시한다(F4의 "재생 배속이 1이 아니면 표시"). 배속은 프레임의 `sim_time_s`로 재므로 형식에 따로 필드가 없다(F2: 형식은 실시간이든 아니든 같다). 받아 둔 뒤 실시간으로 다시 보기는 같은 프레임의 재생이다(F3).
+- **화면.** 배속과 "1회 실행. 판정이 아닙니다"의 표시는 X-02b(#129)가 한다. 이 문서는 무엇을 표시하는지만 정한다.
 
 ## 5. 클라이언트가 플레이 물리를 가질 때의 규칙
 
@@ -214,4 +357,4 @@ A0-01a(#43)가 잰 MuJoCo 네이티브의 실시간 배속(1.0 = 실시간)이�
 
 - 위 표는 설계상의 주장이다. S1에서 증명되는 것은 웹 셸과 헤드리스 참조 클라이언트가 같은 코어에서 동기화되고 적합성 테스트를 통과하는 것까지다(C-05, C-05c). Godot 클라이언트가 실제로 붙는지는 GD-01 전에는 [확인 필요]다.
 - 경계는 공짜가 아니다. S1에 프로토콜과 적합성 테스트의 비용이 들고(계획 5.1절), 구성 B를 쓰는 순간 V1은 5절의 표시 문구와 일치 시험에 달린다.
-- 프레임률, 인코딩, 지연의 측정은 A0-02a(#47)의 `spikes/web-client/REPORT.md`에 있다. 그 값은 합성 포즈, 루프백, 헤드리스 Chromium에서 쟀고 [추정]이다. 이 문서는 그 수치로 인코딩을 확정하지 않는다(C-05b). 느린 클라이언트의 수신 적체와 ack 기반 흐름 제어(코어가 안 받은 프레임이 W개면 틱을 건너뛰고 항상 최신 틱을 보낸다)는 A0-02a-f(#420)가 같은 페이지에 구현했고 `REPORT.md`에 C-05b에 주는 함의를 적었다. SwiftShader 5,000개(렌더가 밀리는 경우)에서는 ack(W=2)가 입력 → 화면 지연을 수 초에서 약 0.7~1 s로 줄였지만 100 ms에는 못 미쳤고, GPU 경로에서는 줄이지 못했다. 한 머신, 부하 불일치, 3회라서 [추정]이다.
+- 프레임률, 인코딩, 지연의 측정은 A0-02a(#47)의 `spikes/web-client/REPORT.md`에 있다. 그 값은 합성 포즈, 루프백, 헤드리스 Chromium에서 쟀고 [추정]이다. C-05b는 그 수치를 입력으로 인코딩을 골랐고 근거와 [확인 필요]를 "3.3 확정"에 적었다. 고른 값은 측정이 아니라 선택이다. 느린 클라이언트의 수신 적체와 ack 기반 흐름 제어(코어가 안 받은 프레임이 W개면 틱을 걸어뛰고 항상 최신 틱을 본낸다)는 A0-02a-f(#420)가 같은 페이지에 구현했고 `REPORT.md`에 C-05b에 주는 함의를 적었다. 합친 클라이언트의 SwiftShader 5,000개 3쌍에서는 ack(W=2)가 입력 → 화면 지연 p50을 3.8~4.8 s에서 0.79~0.99 s로 줄였지만 100 ms에는 못 미쳤고, GPU 경로에서는 줄이지 못했다. 한 머신, 부하 불일치, 3쌍이라서 [추정]이다.

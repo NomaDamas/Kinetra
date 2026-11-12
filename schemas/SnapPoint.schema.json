@@ -1,0 +1,238 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "A place where this part can attach to another. `kind` and `accepts` are compatibility tags (B-04b matches them).\n\n`position` is in metres in the part's local frame and may follow length parameters; `orientation` is the\nlocal frame of the snap point. Badge and source cover the whole pose.",
+  "properties": {
+    "badge": {
+      "$ref": "#/$defs/Badge"
+    },
+    "source": {
+      "$ref": "#/$defs/Source"
+    },
+    "id": {
+      "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+      "title": "Id",
+      "type": "string"
+    },
+    "kind": {
+      "pattern": "^[a-z][a-z0-9_]{0,63}$",
+      "title": "Kind",
+      "type": "string"
+    },
+    "accepts": {
+      "default": [],
+      "items": {
+        "pattern": "^[a-z][a-z0-9_]{0,63}$",
+        "type": "string"
+      },
+      "title": "Accepts",
+      "type": "array"
+    },
+    "position": {
+      "$ref": "#/$defs/Position"
+    },
+    "orientation": {
+      "$ref": "#/$defs/Quaternion"
+    }
+  },
+  "required": [
+    "badge",
+    "source",
+    "id",
+    "kind",
+    "position",
+    "orientation"
+  ],
+  "title": "SnapPoint",
+  "type": "object",
+  "$defs": {
+    "AxisExpr": {
+      "additionalProperties": false,
+      "description": "A length in metres: `offset + sum(factor * param)`. A snap point coordinate in the part's local frame, or a\ndimension of a shape component (`shape.py`). Every `param` is a length parameter of the part.",
+      "properties": {
+        "offset": {
+          "title": "Offset",
+          "type": "number"
+        },
+        "terms": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/ParamTerm"
+          },
+          "title": "Terms",
+          "type": "array"
+        }
+      },
+      "required": [
+        "offset"
+      ],
+      "title": "AxisExpr",
+      "type": "object"
+    },
+    "Badge": {
+      "enum": [
+        "sim",
+        "cite",
+        "default",
+        "declared",
+        "estimate"
+      ],
+      "title": "Badge",
+      "type": "string"
+    },
+    "ParamTerm": {
+      "additionalProperties": false,
+      "description": "`factor * <value of parameter param>`. The parameter must be a length.",
+      "properties": {
+        "param": {
+          "pattern": "^[a-z][a-z0-9_]{0,63}$",
+          "title": "Param",
+          "type": "string"
+        },
+        "factor": {
+          "title": "Factor",
+          "type": "number"
+        }
+      },
+      "required": [
+        "param",
+        "factor"
+      ],
+      "title": "ParamTerm",
+      "type": "object"
+    },
+    "Position": {
+      "additionalProperties": false,
+      "properties": {
+        "x": {
+          "$ref": "#/$defs/AxisExpr"
+        },
+        "y": {
+          "$ref": "#/$defs/AxisExpr"
+        },
+        "z": {
+          "$ref": "#/$defs/AxisExpr"
+        }
+      },
+      "required": [
+        "x",
+        "y",
+        "z"
+      ],
+      "title": "Position",
+      "type": "object"
+    },
+    "Quaternion": {
+      "additionalProperties": false,
+      "description": "Unit quaternion with named components (`conventions.py`).",
+      "properties": {
+        "x": {
+          "title": "X",
+          "type": "number"
+        },
+        "y": {
+          "title": "Y",
+          "type": "number"
+        },
+        "z": {
+          "title": "Z",
+          "type": "number"
+        },
+        "w": {
+          "title": "W",
+          "type": "number"
+        }
+      },
+      "required": [
+        "x",
+        "y",
+        "z",
+        "w"
+      ],
+      "title": "Quaternion",
+      "type": "object"
+    },
+    "Source": {
+      "additionalProperties": false,
+      "description": "Where a value comes from.\n\n`ref` is what was cited, declared or run: a document, a datasheet, a run id, or the reason a default was chosen\n(for an estimate: the method and its inputs). `locator` is where inside it (table, page, section). `url` is a\nlink when there is one. `license` (SPDX expression over the repo allowlist, `spdx.py`) and `declared_by` / `declared_at` feed the badge popover\n(`ValueBadges`, 인용 and 사용자 선언); `Provenance` allows each only on its own badge.",
+      "properties": {
+        "ref": {
+          "maxLength": 500,
+          "minLength": 1,
+          "title": "Ref",
+          "type": "string"
+        },
+        "locator": {
+          "anyOf": [
+            {
+              "maxLength": 200,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Locator"
+        },
+        "url": {
+          "anyOf": [
+            {
+              "maxLength": 2000,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Url"
+        },
+        "license": {
+          "anyOf": [
+            {
+              "maxLength": 200,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "License"
+        },
+        "declared_by": {
+          "anyOf": [
+            {
+              "maxLength": 200,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Declared By"
+        },
+        "declared_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Declared At"
+        }
+      },
+      "required": [
+        "ref"
+      ],
+      "title": "Source",
+      "type": "object"
+    }
+  }
+}

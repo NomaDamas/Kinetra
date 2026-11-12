@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "⑤ Python and NumPy versions.",
+  "properties": {
+    "python": {
+      "maxLength": 200,
+      "minLength": 1,
+      "title": "Python",
+      "type": "string"
+    },
+    "numpy": {
+      "maxLength": 200,
+      "minLength": 1,
+      "title": "Numpy",
+      "type": "string"
+    }
+  },
+  "required": [
+    "python",
+    "numpy"
+  ],
+  "title": "RuntimeTag",
+  "type": "object"
+}

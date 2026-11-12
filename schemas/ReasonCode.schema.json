@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "enum": [
+    "unknown_id",
+    "duplicate_id",
+    "in_use",
+    "index_out_of_range",
+    "invalid_command",
+    "invalid_project",
+    "not_editable",
+    "forbidden",
+    "missing_definition",
+    "invalid_snap",
+    "overlap",
+    "floating",
+    "nothing_to_undo",
+    "nothing_to_redo"
+  ],
+  "title": "ReasonCode",
+  "type": "string"
+}

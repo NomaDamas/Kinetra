@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "What a body touched: the ground. It has no id (the ground of the planet is one thing), so an `id` is refused.",
+  "properties": {
+    "kind": {
+      "const": "ground",
+      "title": "Kind",
+      "type": "string"
+    }
+  },
+  "required": [
+    "kind"
+  ],
+  "title": "GroundTarget",
+  "type": "object"
+}

@@ -2,6 +2,8 @@
 # PR 하나를 수집 → OpenRouter(openai/gpt-6.1-sol, reasoning high) 리뷰 → PR 코멘트 게시/갱신 (P0-06d).
 #   OPENROUTER_API_KEY=... scripts/review_pr.sh <PR> [--repo OWNER/REPO] [--no-post] [--out DIR] [--cost-log FILE]
 # 키는 환경변수로만 받는다(인자·파일로 받지 않는다). 출력은 tools/review/run.py 가 키를 가려서 낸다.
+# 다른 OpenAI 호환 끝점으로 돌리려면 KINETRA_REVIEW_ENDPOINT(https URL), KINETRA_REVIEW_MODEL, KINETRA_REVIEW_EFFORT(low|medium|high)를 준다.
+# 그때도 키는 OPENROUTER_API_KEY 환경변수 하나로 받는다(값은 그 끝점의 키).
 set -euo pipefail
 here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 root="$(cd "$here/.." && pwd)"

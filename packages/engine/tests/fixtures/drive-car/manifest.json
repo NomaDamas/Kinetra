@@ -1,0 +1,575 @@
+{
+  "project": "Project.drive-car.json",
+  "planet": "earth",
+  "instances": [
+    {
+      "id": "chassis",
+      "part": "drive-chassis",
+      "part_name": "Drive car chassis (deck with motor hangers)",
+      "role": null,
+      "material": "al6061-t6",
+      "glb": "chassis.glb",
+      "pose": {
+        "position": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.09
+        },
+        "orientation": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 1.0
+        }
+      }
+    },
+    {
+      "id": "motor-rl",
+      "part": "motor-37d-12v-50-1",
+      "part_name": "Pololu 37D gearmotor 12 V, 50:1, encoder",
+      "role": "motor",
+      "material": null,
+      "glb": "motor-rl.glb",
+      "pose": {
+        "position": {
+          "x": -0.12,
+          "y": 0.08,
+          "z": 0.05
+        },
+        "orientation": {
+          "x": -0.7071067811865476,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.7071067811865476
+        }
+      }
+    },
+    {
+      "id": "motor-rr",
+      "part": "motor-37d-12v-50-1",
+      "part_name": "Pololu 37D gearmotor 12 V, 50:1, encoder",
+      "role": "motor",
+      "material": null,
+      "glb": "motor-rr.glb",
+      "pose": {
+        "position": {
+          "x": -0.12,
+          "y": -0.08,
+          "z": 0.05
+        },
+        "orientation": {
+          "x": 0.7071067811865476,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.7071067811865476
+        }
+      }
+    },
+    {
+      "id": "stub-rl",
+      "part": "drive-stub",
+      "part_name": "Axle stub (motor shaft to wheel hub)",
+      "role": null,
+      "material": "al6061-t6",
+      "glb": "stub-rl.glb",
+      "pose": {
+        "position": {
+          "x": -0.12,
+          "y": 0.094,
+          "z": 0.05
+        },
+        "orientation": {
+          "x": -0.7071067811865476,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.7071067811865476
+        }
+      }
+    },
+    {
+      "id": "stub-rr",
+      "part": "drive-stub",
+      "part_name": "Axle stub (motor shaft to wheel hub)",
+      "role": null,
+      "material": "al6061-t6",
+      "glb": "stub-rr.glb",
+      "pose": {
+        "position": {
+          "x": -0.12,
+          "y": -0.094,
+          "z": 0.05
+        },
+        "orientation": {
+          "x": 0.7071067811865476,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 0.7071067811865476
+        }
+      }
+    },
+    {
+      "id": "wheel-rl",
+      "part": "wheel",
+      "part_name": "Wheel",
+      "role": "wheel",
+      "material": "pom-delrin-150",
+      "glb": "wheel-rl.glb",
+      "pose": {
+        "position": {
+          "x": -0.12,
+          "y": 0.145,
+          "z": 0.049999999999999996
+        },
+        "orientation": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 1.0
+        }
+      }
+    },
+    {
+      "id": "wheel-rr",
+      "part": "wheel",
+      "part_name": "Wheel",
+      "role": "wheel",
+      "material": "pom-delrin-150",
+      "glb": "wheel-rr.glb",
+      "pose": {
+        "position": {
+          "x": -0.12,
+          "y": -0.145,
+          "z": 0.049999999999999996
+        },
+        "orientation": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 1.0,
+          "w": 0.0
+        }
+      }
+    },
+    {
+      "id": "wheel-fl",
+      "part": "wheel",
+      "part_name": "Wheel",
+      "role": "wheel",
+      "material": "pom-delrin-150",
+      "glb": "wheel-fl.glb",
+      "pose": {
+        "position": {
+          "x": 0.12,
+          "y": 0.145,
+          "z": 0.05
+        },
+        "orientation": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 1.0
+        }
+      }
+    },
+    {
+      "id": "wheel-fr",
+      "part": "wheel",
+      "part_name": "Wheel",
+      "role": "wheel",
+      "material": "pom-delrin-150",
+      "glb": "wheel-fr.glb",
+      "pose": {
+        "position": {
+          "x": 0.12,
+          "y": -0.145,
+          "z": 0.05
+        },
+        "orientation": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 1.0,
+          "w": 0.0
+        }
+      }
+    },
+    {
+      "id": "battery",
+      "part": "battery-pack-4s",
+      "part_name": "Battery pack 4S1P (four 18650 cells in series)",
+      "role": "battery",
+      "material": null,
+      "glb": "battery.glb",
+      "pose": {
+        "position": {
+          "x": 0.05,
+          "y": 0.0,
+          "z": 0.12614999999999998
+        },
+        "orientation": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 1.0
+        }
+      }
+    },
+    {
+      "id": "tank",
+      "part": "tank",
+      "part_name": "Propellant tank",
+      "role": "tank",
+      "material": "al6061-t6",
+      "glb": "tank.glb",
+      "pose": {
+        "position": {
+          "x": -0.04,
+          "y": 0.0,
+          "z": 0.154
+        },
+        "orientation": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 1.0
+        }
+      }
+    },
+    {
+      "id": "thruster",
+      "part": "thruster-vacco-48003040",
+      "part_name": "Cold gas thruster 2 lbf (VACCO 48003040)",
+      "role": "thruster",
+      "material": "steel-a36",
+      "glb": "thruster.glb",
+      "pose": {
+        "position": {
+          "x": -0.14729059031466535,
+          "y": 0.0,
+          "z": 0.10799999999999998
+        },
+        "orientation": {
+          "x": 0.0,
+          "y": -0.7071067811865476,
+          "z": 0.0,
+          "w": 0.7071067811865476
+        }
+      }
+    },
+    {
+      "id": "spring-l",
+      "part": "spring-damper-lee-lc032b08",
+      "part_name": "Spring-damper, Lee Spring LC 032B 08 S316 spring (5.99 N/mm) with a damping coefficient",
+      "role": "spring_damper",
+      "material": null,
+      "glb": "spring-l.glb",
+      "pose": {
+        "position": {
+          "x": 0.189525,
+          "y": 0.06,
+          "z": 0.09
+        },
+        "orientation": {
+          "x": 0.0,
+          "y": 0.7071067811865476,
+          "z": 0.0,
+          "w": 0.7071067811865476
+        }
+      }
+    },
+    {
+      "id": "spring-r",
+      "part": "spring-damper-lee-lc032b08",
+      "part_name": "Spring-damper, Lee Spring LC 032B 08 S316 spring (5.99 N/mm) with a damping coefficient",
+      "role": "spring_damper",
+      "material": null,
+      "glb": "spring-r.glb",
+      "pose": {
+        "position": {
+          "x": 0.189525,
+          "y": -0.06,
+          "z": 0.09
+        },
+        "orientation": {
+          "x": 0.0,
+          "y": 0.7071067811865476,
+          "z": 0.0,
+          "w": 0.7071067811865476
+        }
+      }
+    }
+  ],
+  "joints": [
+    {
+      "id": "mount-rl",
+      "kind": "fixed",
+      "a": "chassis",
+      "b": "motor-rl"
+    },
+    {
+      "id": "mount-rr",
+      "kind": "fixed",
+      "a": "chassis",
+      "b": "motor-rr"
+    },
+    {
+      "id": "drive-rl",
+      "kind": "hinge",
+      "a": "motor-rl",
+      "b": "stub-rl"
+    },
+    {
+      "id": "drive-rr",
+      "kind": "hinge",
+      "a": "motor-rr",
+      "b": "stub-rr"
+    },
+    {
+      "id": "hub-rl",
+      "kind": "fixed",
+      "a": "stub-rl",
+      "b": "wheel-rl"
+    },
+    {
+      "id": "hub-rr",
+      "kind": "fixed",
+      "a": "stub-rr",
+      "b": "wheel-rr"
+    },
+    {
+      "id": "axle-fl",
+      "kind": "hinge",
+      "a": "chassis",
+      "b": "wheel-fl"
+    },
+    {
+      "id": "axle-fr",
+      "kind": "hinge",
+      "a": "chassis",
+      "b": "wheel-fr"
+    },
+    {
+      "id": "seat-battery",
+      "kind": "fixed",
+      "a": "chassis",
+      "b": "battery"
+    },
+    {
+      "id": "seat-tank",
+      "kind": "fixed",
+      "a": "chassis",
+      "b": "tank"
+    },
+    {
+      "id": "mount-thruster",
+      "kind": "fixed",
+      "a": "chassis",
+      "b": "thruster"
+    },
+    {
+      "id": "bumper-l",
+      "kind": "slider",
+      "a": "chassis",
+      "b": "spring-l"
+    },
+    {
+      "id": "bumper-r",
+      "kind": "slider",
+      "a": "chassis",
+      "b": "spring-r"
+    }
+  ],
+  "actuators": [
+    {
+      "id": "drive-motor-rl",
+      "kind": "motor",
+      "instance": "motor-rl",
+      "joint": "drive-rl",
+      "supply": "battery"
+    },
+    {
+      "id": "drive-motor-rr",
+      "kind": "motor",
+      "instance": "motor-rr",
+      "joint": "drive-rr",
+      "supply": "battery"
+    },
+    {
+      "id": "thrust",
+      "kind": "thruster",
+      "instance": "thruster",
+      "joint": null,
+      "supply": "tank"
+    }
+  ],
+  "specs": [
+    {
+      "part": "wheel",
+      "part_name": "Wheel",
+      "instances": [
+        "wheel-rl",
+        "wheel-rr",
+        "wheel-fl",
+        "wheel-fr"
+      ],
+      "from": "spec",
+      "name": "tread_friction_static",
+      "value": 1.0,
+      "unit": "1",
+      "badge": "cite",
+      "badge_label": "인용",
+      "source_ref": "OpenStax College Physics 2e, 5.1 Friction, Table 5.1, 'Rubber on dry concrete', static 1.0 (the book gives one digit and says the values are approximate). A reference pair for a rubber tread, not this wheel on any Kinetra planet's ground (that is planet data in data/bodies; how the two combine is X-01's rule). Book licence CC BY-NC-SA 4.0; only factual values cited, no text or table copied. Accessed 2026-11-11",
+      "source_locator": "Table 5.1, row 'Rubber on dry concrete', column 'Static friction'",
+      "source_url": "https://openstax.org/books/college-physics-2e/pages/5-1-friction"
+    },
+    {
+      "part": "wheel",
+      "part_name": "Wheel",
+      "instances": [
+        "wheel-rl",
+        "wheel-rr",
+        "wheel-fl",
+        "wheel-fr"
+      ],
+      "from": "spec",
+      "name": "tread_friction_kinetic",
+      "value": 0.7,
+      "unit": "1",
+      "badge": "cite",
+      "badge_label": "인용",
+      "source_ref": "OpenStax College Physics 2e, 5.1 Friction, Table 5.1, 'Rubber on dry concrete', kinetic 0.7 (one digit, approximate). Same reference-pair caveat as tread_friction_static. Book licence CC BY-NC-SA 4.0; only factual values cited, no text or table copied. Wikipedia 'Friction', approximate coefficients, concrete/rubber, dry kinetic 0.6-0.85, contains it (cross-check only). Accessed 2026-11-11",
+      "source_locator": "Table 5.1, row 'Rubber on dry concrete', column 'Kinetic friction'",
+      "source_url": "https://openstax.org/books/college-physics-2e/pages/5-1-friction"
+    },
+    {
+      "part": "motor-37d-12v-50-1",
+      "part_name": "Pololu 37D gearmotor 12 V, 50:1, encoder",
+      "instances": [
+        "motor-rl",
+        "motor-rr"
+      ],
+      "from": "spec",
+      "name": "rated_voltage",
+      "value": 12.0,
+      "unit": "V",
+      "badge": "cite",
+      "badge_label": "인용",
+      "source_ref": "Pololu 37D Metal Gearmotor item #4753 (50:1, 12 V, 64 CPR encoder, helical pinion), Pololu 37D Metal Gearmotors datasheet rev 1.2 (January 2020)",
+      "source_locator": "Performance summary table: Rated Voltage 12 V, items 4743/4753",
+      "source_url": "https://www.pololu.com/file/0J1736/pololu-37d-metal-gearmotors-rev-1-2.pdf"
+    },
+    {
+      "part": "motor-37d-12v-50-1",
+      "part_name": "Pololu 37D gearmotor 12 V, 50:1, encoder",
+      "instances": [
+        "motor-rl",
+        "motor-rr"
+      ],
+      "from": "curve_start",
+      "name": "stall_torque (torque_speed at 0 rad/s)",
+      "value": 2.0593964999999996,
+      "unit": "N*m",
+      "badge": "cite",
+      "badge_label": "인용",
+      "source_ref": "Pololu 37D Metal Gearmotor item #4753 (50:1, 12 V, 64 CPR encoder, helical pinion), Pololu 37D Metal Gearmotors datasheet rev 1.2 (January 2020); kg*mm read as kgf*mm (x 9.80665e-3 N*m); only these two summary values are used, the line between them is the DC-motor model, the stall point is the datasheet's theoretical extrapolation (a real unit stalls earlier and the stall torque falls as the motor heats)",
+      "source_locator": "Performance summary table: no load 200 RPM, stall extrapolation 210 kg*mm (page 13 graph 'Performance at 12 V' plots speed against torque as a straight line between them)",
+      "source_url": "https://www.pololu.com/file/0J1736/pololu-37d-metal-gearmotors-rev-1-2.pdf"
+    },
+    {
+      "part": "thruster-vacco-48003040",
+      "part_name": "Cold gas thruster 2 lbf (VACCO 48003040)",
+      "instances": [
+        "thruster"
+      ],
+      "from": "spec",
+      "name": "rated_thrust",
+      "value": 8.896443230521,
+      "unit": "N",
+      "badge": "cite",
+      "badge_label": "인용",
+      "source_ref": "VACCO Industries, 2 LBF COLD GAS THRUSTER 48003040 datasheet (07 July 2004)",
+      "source_locator": "Operating parameters: Thrust @ 250 psia GN2 inlet 2.0 lbf (x 4.4482216152605 N/lbf)",
+      "source_url": "https://www.vacco.com/images/uploads/pdfs/cold_gas_thrusters.pdf"
+    },
+    {
+      "part": "battery-pack-4s",
+      "part_name": "Battery pack 4S1P (four 18650 cells in series)",
+      "instances": [
+        "battery"
+      ],
+      "from": "spec",
+      "name": "nominal_voltage",
+      "value": 14.4,
+      "unit": "V",
+      "badge": "estimate",
+      "badge_label": "추정",
+      "source_ref": "Method: 4 cells in series x 3.6 V (datasheet 'Nominal voltage' of one cell) = 14.4 V. Panasonic NCR18650B datasheet v13.11 R1 (copy on batteryspace.com; 'For Reference Only'), accessed 2026-11-12",
+      "source_locator": "Specifications table, Nominal voltage",
+      "source_url": "https://www.batteryspace.com/prod-specs/NCR18650B.pdf"
+    },
+    {
+      "part": "battery-pack-4s",
+      "part_name": "Battery pack 4S1P (four 18650 cells in series)",
+      "instances": [
+        "battery"
+      ],
+      "from": "spec",
+      "name": "energy_capacity",
+      "value": 168480.0,
+      "unit": "J",
+      "badge": "estimate",
+      "badge_label": "추정",
+      "source_ref": "Method: 4 cells in series hold 4 x 42120 J (see battery-18650 energy_capacity: 3250 mAh x 3.6 V per cell, datasheet minimum capacity) = 168480 J (46.8 Wh = 3.25 Ah x 14.4 V). No balancing or protection losses. Panasonic NCR18650B datasheet v13.11 R1 (copy on batteryspace.com; 'For Reference Only'), accessed 2026-11-12",
+      "source_locator": "Specifications table: Capacity (2), Nominal voltage",
+      "source_url": "https://www.batteryspace.com/prod-specs/NCR18650B.pdf"
+    },
+    {
+      "part": "tank",
+      "part_name": "Propellant tank",
+      "instances": [
+        "tank"
+      ],
+      "from": "supply",
+      "name": "propellant_capacity",
+      "value": 0.3023971424639391,
+      "unit": "kg",
+      "badge": "sim",
+      "badge_label": "시뮬",
+      "source_ref": "computed: capacity = propellant_density (1000.0 kg/m^3; default) x inside volume (0.0003023971424639391 m^3, the shape's subtract components) of part tank",
+      "source_locator": null,
+      "source_url": null
+    },
+    {
+      "part": "spring-damper-lee-lc032b08",
+      "part_name": "Spring-damper, Lee Spring LC 032B 08 S316 spring (5.99 N/mm) with a damping coefficient",
+      "instances": [
+        "spring-l",
+        "spring-r"
+      ],
+      "from": "param",
+      "name": "stiffness",
+      "value": 5990.0,
+      "unit": "N/m",
+      "badge": "cite",
+      "badge_label": "인용",
+      "source_ref": "Lee Spring standard compression spring LC 032B 08 S316 (stainless steel type 316, squared and ground), Lee Spring product page",
+      "source_locator": "Rate (N/mm): 5.99 (Rate (lb/inch): 34.2)",
+      "source_url": "https://www.leespring.com/compression-specific/331081"
+    },
+    {
+      "part": "spring-damper-lee-lc032b08",
+      "part_name": "Spring-damper, Lee Spring LC 032B 08 S316 spring (5.99 N/mm) with a damping coefficient",
+      "instances": [
+        "spring-l",
+        "spring-r"
+      ],
+      "from": "param",
+      "name": "damping",
+      "value": 20.0,
+      "unit": "N*s/m",
+      "badge": "default",
+      "badge_label": "기본값",
+      "source_ref": "B-03e: Kinetra default. The datasheet of a coil spring has no damping; 20 N*s/m gives a damping ratio of about 0.18 (zeta = c / (2 sqrt(k m))) for a 0.5 kg load on the cited 5990 N/m spring. Not measured; tune it",
+      "source_locator": null,
+      "source_url": null
+    }
+  ]
+}

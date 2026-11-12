@@ -1,0 +1,116 @@
+{
+  "id": "example-block",
+  "name": "Example block with a hole",
+  "parameters": [
+    {
+      "name": "w",
+      "unit": "m",
+      "default": {
+        "value": 0.2,
+        "unit": "m",
+        "badge": "declared",
+        "source": {
+          "ref": "Kinetra schema example: illustrative value, not a measured part",
+          "declared_by": "kinetra-docs",
+          "declared_at": "2026-11-11T00:00:00Z"
+        }
+      },
+      "min": {
+        "value": 0.1,
+        "unit": "m",
+        "badge": "declared",
+        "source": {
+          "ref": "Kinetra schema example: illustrative value, not a measured part",
+          "declared_by": "kinetra-docs",
+          "declared_at": "2026-11-11T00:00:00Z"
+        }
+      },
+      "max": {
+        "value": 0.5,
+        "unit": "m",
+        "badge": "declared",
+        "source": {
+          "ref": "Kinetra schema example: illustrative value, not a measured part",
+          "declared_by": "kinetra-docs",
+          "declared_at": "2026-11-11T00:00:00Z"
+        }
+      }
+    }
+  ],
+  "shape": {
+    "badge": "declared",
+    "source": {
+      "ref": "Kinetra schema example: illustrative value, not a measured part",
+      "declared_by": "kinetra-docs",
+      "declared_at": "2026-11-11T00:00:00Z"
+    },
+    "components": [
+      {
+        "id": "block",
+        "primitive": {
+          "kind": "box",
+          "size_x": {
+            "offset": 0.0,
+            "terms": [
+              {
+                "param": "w",
+                "factor": 1.0
+              }
+            ]
+          },
+          "size_y": {
+            "offset": 0.1,
+            "terms": []
+          },
+          "size_z": {
+            "offset": 0.1,
+            "terms": []
+          }
+        },
+        "position": {
+          "x": {
+            "offset": 0.0,
+            "terms": []
+          },
+          "y": {
+            "offset": 0.0,
+            "terms": []
+          },
+          "z": {
+            "offset": 0.0,
+            "terms": []
+          }
+        }
+      },
+      {
+        "id": "hole",
+        "operation": "subtract",
+        "primitive": {
+          "kind": "cylinder",
+          "radius": {
+            "offset": 0.02,
+            "terms": []
+          },
+          "length": {
+            "offset": 0.05,
+            "terms": []
+          }
+        },
+        "position": {
+          "x": {
+            "offset": 0.0,
+            "terms": []
+          },
+          "y": {
+            "offset": 0.0,
+            "terms": []
+          },
+          "z": {
+            "offset": 0.0,
+            "terms": []
+          }
+        }
+      }
+    ]
+  }
+}

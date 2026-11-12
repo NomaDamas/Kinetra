@@ -1,0 +1,111 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "A subtracted shape component the proxy kept as a gap: the pieces of its `host` (the added component that contains\nit) leave this void empty.\n\n`volume` is the void's volume, `host_volume` the host primitive's, `union_volume` the volume of the union of the host's\npieces (all in m^3), and `error` = `(union_volume - (host_volume - volume)) / (host_volume - volume)` the signed error\nof this host alone. `layout`: `strips` (disjoint boxes cut across a plate) or `ring` (boxes around a tube's axis,\noverlapping; `ring` then carries the report).",
+  "properties": {
+    "id": {
+      "pattern": "^[a-z][a-z0-9_]{0,63}$",
+      "title": "Id",
+      "type": "string"
+    },
+    "primitive": {
+      "enum": [
+        "box",
+        "cylinder",
+        "sphere"
+      ],
+      "title": "Primitive",
+      "type": "string"
+    },
+    "host": {
+      "pattern": "^[a-z][a-z0-9_]{0,63}$",
+      "title": "Host",
+      "type": "string"
+    },
+    "volume": {
+      "exclusiveMinimum": 0.0,
+      "title": "Volume",
+      "type": "number"
+    },
+    "host_volume": {
+      "exclusiveMinimum": 0.0,
+      "title": "Host Volume",
+      "type": "number"
+    },
+    "union_volume": {
+      "exclusiveMinimum": 0.0,
+      "title": "Union Volume",
+      "type": "number"
+    },
+    "error": {
+      "title": "Error",
+      "type": "number"
+    },
+    "layout": {
+      "enum": [
+        "strips",
+        "ring"
+      ],
+      "title": "Layout",
+      "type": "string"
+    },
+    "ring": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/RingReport"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    }
+  },
+  "required": [
+    "id",
+    "primitive",
+    "host",
+    "volume",
+    "host_volume",
+    "union_volume",
+    "error",
+    "layout"
+  ],
+  "title": "DecomposedVoid",
+  "type": "object",
+  "$defs": {
+    "RingReport": {
+      "additionalProperties": false,
+      "description": "How a tube's ring of boxes sits against the real tube. `wall_closed`: every ray from the axis enters the wall once\nand leaves once, so there is no radial slit (the model rejects `False`). `inner_deviation` [m] is the largest radial\ndistance the proxy's bore wall is from the real bore (towards the wall); `outer_deviation` [m] the largest the\nproxy's outer surface is inside the real outer cylinder (the notches between boxes).",
+      "properties": {
+        "staves": {
+          "minimum": 3,
+          "title": "Staves",
+          "type": "integer"
+        },
+        "wall_closed": {
+          "title": "Wall Closed",
+          "type": "boolean"
+        },
+        "inner_deviation": {
+          "minimum": 0.0,
+          "title": "Inner Deviation",
+          "type": "number"
+        },
+        "outer_deviation": {
+          "minimum": 0.0,
+          "title": "Outer Deviation",
+          "type": "number"
+        }
+      },
+      "required": [
+        "staves",
+        "wall_closed",
+        "inner_deviation",
+        "outer_deviation"
+      ],
+      "title": "RingReport",
+      "type": "object"
+    }
+  }
+}

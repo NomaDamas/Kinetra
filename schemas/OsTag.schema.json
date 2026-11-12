@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "① Operating system: kind (`linux`, `macos`, ...) and kernel release.",
+  "properties": {
+    "kind": {
+      "maxLength": 200,
+      "minLength": 1,
+      "title": "Kind",
+      "type": "string"
+    },
+    "kernel_release": {
+      "maxLength": 200,
+      "minLength": 1,
+      "title": "Kernel Release",
+      "type": "string"
+    }
+  },
+  "required": [
+    "kind",
+    "kernel_release"
+  ],
+  "title": "OsTag",
+  "type": "object"
+}

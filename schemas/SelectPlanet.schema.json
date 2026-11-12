@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Put the project on another planet, by id. The planet's constants are not part of any command.",
+  "properties": {
+    "type": {
+      "const": "select_planet",
+      "title": "Type",
+      "type": "string"
+    },
+    "planet": {
+      "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+      "title": "Planet",
+      "type": "string"
+    }
+  },
+  "required": [
+    "type",
+    "planet"
+  ],
+  "title": "SelectPlanet",
+  "type": "object"
+}

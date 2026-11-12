@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "② CPU: architecture (`x86_64`, `arm64`, ...) and model string.",
+  "properties": {
+    "architecture": {
+      "maxLength": 200,
+      "minLength": 1,
+      "title": "Architecture",
+      "type": "string"
+    },
+    "model": {
+      "maxLength": 200,
+      "minLength": 1,
+      "title": "Model",
+      "type": "string"
+    }
+  },
+  "required": [
+    "architecture",
+    "model"
+  ],
+  "title": "CpuTag",
+  "type": "object"
+}

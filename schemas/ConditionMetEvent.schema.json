@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "A success condition of the project became true. This is not a verdict (P4): it says the run satisfied it.",
+  "properties": {
+    "kind": {
+      "const": "condition_met",
+      "title": "Kind",
+      "type": "string"
+    },
+    "tick": {
+      "maximum": 4294967295,
+      "minimum": 0,
+      "title": "Tick",
+      "type": "integer"
+    },
+    "condition": {
+      "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+      "title": "Condition",
+      "type": "string"
+    }
+  },
+  "required": [
+    "kind",
+    "tick",
+    "condition"
+  ],
+  "title": "ConditionMetEvent",
+  "type": "object"
+}

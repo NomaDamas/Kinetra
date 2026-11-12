@@ -10,11 +10,23 @@ importers:
 
   apps/studio:
     dependencies:
+      '@kinetra/schemas':
+        specifier: workspace:*
+        version: link:../../schemas
       '@kinetra/ui':
         specifier: workspace:*
         version: link:../../packages/ui
 
   packages/ui: {}
+
+  schemas:
+    devDependencies:
+      '@types/node':
+        specifier: 26.6.6
+        version: 26.6.6
+      typescript:
+        specifier: 7.0.2
+        version: 7.0.2
 
   tools/design:
     devDependencies:
@@ -27,6 +39,31 @@ importers:
       pixelmatch:
         specifier: 8.0.0
         version: 8.0.0
+      playwright-core:
+        specifier: 1.65.0
+        version: 1.65.0
+      pngjs:
+        specifier: 7.0.0
+        version: 7.0.0
+      typescript:
+        specifier: 7.0.2
+        version: 7.0.2
+
+  tools/gltf-check:
+    dependencies:
+      three:
+        specifier: 0.187.0
+        version: 0.187.0
+    devDependencies:
+      '@types/node':
+        specifier: 26.6.6
+        version: 26.6.6
+      '@types/pngjs':
+        specifier: 6.0.5
+        version: 6.0.5
+      gltf-validator:
+        specifier: 2.0.0-dev.3.10
+        version: 2.0.0-dev.3.10
       playwright-core:
         specifier: 1.65.0
         version: 1.65.0
@@ -183,6 +220,9 @@ packages:
     cpu: [x64]
     os: [win32]
 
+  gltf-validator@2.0.0-dev.3.10:
+    resolution: {integrity: sha512-odJ4k0tRkGXiDGn78yDBg+fBbAIvBnXxh3RwAta0emSxGtyagFE8B4xELB1oYe3S5RD8Ci3uZAsZaascH2LAEQ==}
+
   pixelmatch@8.0.0:
     resolution: {integrity: sha512-cIqOLfh5k52us715qf3B3+kTOxZv+WDv77HN7xokLScYQGYQHi4m/ynoDIPpvF2LvCyUJGyvzY64i0QCXtzu1g==}
     hasBin: true
@@ -195,6 +235,9 @@ packages:
   pngjs@7.0.0:
     resolution: {integrity: sha512-LKWqWJRhstyYo9pGvgor/ivk2w94eSjE3RGVuzLGlr3NmD8bf7RcYGze1mNdEHRP6TRP6rMuDHk5t44hnTRyow==}
     engines: {node: '>=14.19.0'}
+
+  three@0.187.0:
+    resolution: {integrity: sha512-Qiu7R+Cmh8CstZsY1uJOSWnVlfo7ZtNLV7mF8Jltk3LB3AtDu9cRZlcnRKkAk8Y4z6KKw35z7Y7Urd7jWY8etA==}
 
   typescript@7.0.2:
     resolution: {integrity: sha512-8FYau96o3NKOhbjKi/qNvG/W5jhzxkbdm5sj9AbZ/5T5sWqn3hJgLfGx27sRKZWTvyzCP8dLRBTf5tBTSRVUNA==}
@@ -274,6 +317,8 @@ snapshots:
   '@typescript/typescript-win32-x64@7.0.2':
     optional: true
 
+  gltf-validator@2.0.0-dev.3.10: {}
+
   pixelmatch@8.0.0:
     dependencies:
       pngjs: 7.0.0
@@ -281,6 +326,8 @@ snapshots:
   playwright-core@1.65.0: {}
 
   pngjs@7.0.0: {}
+
+  three@0.187.0: {}
 
   typescript@7.0.2:
     optionalDependencies:

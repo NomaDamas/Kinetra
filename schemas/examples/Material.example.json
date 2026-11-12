@@ -1,0 +1,42 @@
+{
+  "id": "example-material",
+  "name": "example-material",
+  "density": {
+    "value": 1000.0,
+    "unit": "kg/m^3",
+    "badge": "declared",
+    "source": {
+      "ref": "Kinetra schema example: illustrative value, not a measured part",
+      "declared_by": "kinetra-docs",
+      "declared_at": "2026-11-11T00:00:00Z"
+    }
+  },
+  "yield_strength": {
+    "value": 10000000.0,
+    "unit": "Pa",
+    "badge": "declared",
+    "source": {
+      "ref": "Kinetra schema example: illustrative value, not a measured part",
+      "declared_by": "kinetra-docs",
+      "declared_at": "2026-11-11T00:00:00Z"
+    }
+  },
+  "elastic_modulus": {
+    "value": 1000000000.0,
+    "unit": "Pa",
+    "badge": "declared",
+    "source": {
+      "ref": "Kinetra schema example: illustrative value, not a measured part",
+      "declared_by": "kinetra-docs",
+      "declared_at": "2026-11-11T00:00:00Z"
+    }
+  },
+  "friction": {
+    "value": 0.5,
+    "unit": "1",
+    "badge": "default",
+    "source": {
+      "ref": "Kinetra schema example: illustrative default"
+    }
+  }
+}
