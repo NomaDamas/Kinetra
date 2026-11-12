@@ -40,8 +40,10 @@ from typing import Annotated, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
-from .assumption import Assumption, AssumptionTable
+from .assumption import ENGINE_CONSTANT_NAMES, Assumption, AssumptionTable
+from .break_window import BREAK_LOAD_WINDOW
 from .conventions import ID_PATTERN, Unit
+from .designspec import DesignSpec
 from .provenance import Badge, Quantity
 from .world import PLANET_CONSTANT_NAMES, World
 
@@ -196,11 +198,14 @@ def load_bodies(*, directory: Path | None = None) -> Mapping[str, Body]:
 
 
 class VerdictAssumptionTable(BaseModel):
-    """The assumption table a verdict carries (W-03c): the planet's rows read from `data/bodies`, then the project's rows.
+    """The assumption table a verdict carries (W-03c): the planet's rows read from `data/bodies`, the rows the engine fixes
+    (X-10), then the project's rows.
 
     Composed at judge time by `verdict_assumption_table`, never stored in a project: the project's `AssumptionTable`
-    keeps rejecting planet keys (rule C4). A planet row is read-only (`editable` False) and keeps the badges and sources
-    of the data file. Today the planet rows are the ground friction alone; the "근사: 균일 중력" label is W-06's.
+    keeps rejecting planet keys (rule C4) and engine keys. A planet row is read-only (`editable` False) and keeps the badges
+    and sources of the data file. Today the planet rows are the ground friction alone; the "근사: 균일 중력" label is W-06's.
+    An engine row is a modelling choice of the engine, read-only too (`ENGINE_CONSTANT_NAMES`): today the load window of a
+    breakable joint (`BREAK_LOAD_WINDOW`, badge `기본값`), there only when the design has a joint with a `break_threshold`.
     `rows` is the table in the order the panel shows it; Monte-Carlo samples each row's `distribution` and the deterministic
     search uses its `value` (the ground friction enters the model as `to_mjcf(tree, ground_friction=...)`, X-01e/W-03c).
     """
@@ -209,6 +214,7 @@ class VerdictAssumptionTable(BaseModel):
 
     planet: str = Field(pattern=ID_PATTERN)
     planet_rows: tuple[Assumption, ...]
+    engine_rows: tuple[Assumption, ...]
     project: AssumptionTable
 
     @model_validator(mode="after")
@@ -221,13 +227,21 @@ class VerdictAssumptionTable(BaseModel):
                 raise ValueError(f"planet row {a.key!r} is not a planet constant")
             if a.editable:
                 raise ValueError(f"planet row {a.key!r} must be read-only (editable false): the user does not edit a planet")
+        keys = [a.key for a in self.engine_rows]
+        if len(set(keys)) != len(keys):
+            raise ValueError("duplicate engine row")
+        for a in self.engine_rows:
+            if a.key not in ENGINE_CONSTANT_NAMES:
+                raise ValueError(f"engine row {a.key!r} is not a constant the engine fixes")
+            if a.editable:
+                raise ValueError(f"engine row {a.key!r} must be read-only (editable false): the engine fixes it")
         return self
 
     @property
     def rows(self) -> tuple[Assumption, ...]:
-        """Planet rows first, then the project's rows in their stored order. Keys are unique across both: the project
-        table cannot hold a planet key."""
-        return self.planet_rows + self.project.assumptions
+        """Planet rows first, then the engine's, then the project's rows in their stored order. Keys are unique across
+        all three: the project table cannot hold a planet or engine key."""
+        return self.planet_rows + self.engine_rows + self.project.assumptions
 
     def row(self, key: str) -> Assumption:
         """The row with `key`; `KeyError` when there is none."""
@@ -237,11 +251,13 @@ class VerdictAssumptionTable(BaseModel):
         raise KeyError(f"no assumption {key!r} in the verdict's table")
 
 
-def verdict_assumption_table(table: AssumptionTable, body: Body) -> VerdictAssumptionTable:
-    """The verdict's table for a project with assumption table `table` on planet `body` (`load_body(project.world.planet)`):
-    `body.ground_friction` (nominal, uniform or normal distribution, `confidence`, badges and sources as in the data file),
-    then the project's rows unchanged."""
-    return VerdictAssumptionTable(planet=body.id, planet_rows=(body.ground_friction,), project=table)
+def verdict_assumption_table(table: AssumptionTable, body: Body, design: DesignSpec) -> VerdictAssumptionTable:
+    """The verdict's table for a project with assumption table `table` on planet `body` (`load_body(project.world.planet)`)
+    and design `design`: `body.ground_friction` (nominal, uniform or normal distribution, `confidence`, badges and sources as
+    in the data file), then `BREAK_LOAD_WINDOW` when a joint of `design` has a `break_threshold` (X-10), then the project's
+    rows unchanged."""
+    engine = (BREAK_LOAD_WINDOW,) if any(j.break_threshold is not None for j in design.joints) else ()
+    return VerdictAssumptionTable(planet=body.id, planet_rows=(body.ground_friction,), engine_rows=engine, project=table)
 
 
 def check_world_references(world: World, *, planets: Iterable[str], materials: Iterable[str]) -> None:

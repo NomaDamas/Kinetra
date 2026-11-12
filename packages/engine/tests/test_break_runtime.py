@@ -23,7 +23,7 @@ import mujoco
 import numpy as np
 import pytest
 
-from kinetra_core import BreakEvent, Frame, Project, RunCompleted, check_run, decode_frame, encode_frame
+from kinetra_core import BREAK_LOAD_WINDOW, BreakEvent, Frame, Project, RunCompleted, check_run, decode_frame, encode_frame
 from kinetra_core.bodies import load_body
 from kinetra_engine.compiler import (
     BREAK_LABEL,
@@ -196,22 +196,25 @@ def test_break_runtime_breakable_fixed_joint_inside_a_welded_body_is_refused():
 
 
 def test_break_runtime_load_at_rest_is_the_weight_held():
-    """The tower at rest on the ground: the weld holds the top block, so its load is m g (6.48 N on the moon)."""
+    """The tower at rest on the ground: the weld holds the top block, so its load is m g (6.48 N on the moon): the step's
+    force and, once the contact has settled for longer than the window, the window mean (X-10) too."""
     compiled = compile_project(breakable_tower(1.0e6))
     model, data = compiled.model, mujoco.MjData(compiled.model)
-    watch = BreakWatch(compiled.tree, model)
+    watch = BreakWatch(compiled.tree, model, BREAK_LOAD_WINDOW.value.value)
     row = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_BODY, "top")
     for _ in range(1000):  # 2 s: the contact has settled
         mujoco.mj_step(model, data)
-    assert watch.over(model, data) == ()
+        assert watch.over(model, data) == ()
     load = float(np.linalg.norm(data.cfrc_int[row, 3:6]))
     assert load == pytest.approx(TOP_KG * G_MOON, rel=1e-6)
+    assert watch.loads["weld"] == pytest.approx(TOP_KG * G_MOON, rel=1e-6)
 
 
 @pytest.mark.parametrize(("factor", "expect_break"), [(0.9, True), (1.5, False)])
 def test_break_runtime_a_joint_breaks_when_its_load_is_over_the_threshold(factor, expect_break):
     """The tower's weld at 0.9 m g breaks (the weight it holds is over it); at 1.5 m g it holds. While the ground's contact
-    settles the load reads up to 1.17 m g (measured at tick 2, then down to m g), so 1.1 m g would break there too."""
+    settles one step's force reads up to 1.17 m g (measured at tick 2, then down to m g); the window mean (X-10) counts the
+    force before the run's start as 0, so it rises to m g over the first 0.02 s."""
     threshold = factor * TOP_KG * G_MOON
     preview, frames, _ = run(breakable_tower(threshold), 1.0)
     events = breaks(frames)
@@ -252,18 +255,17 @@ def test_break_runtime_drop_releases_only_the_expected_joint():
 
 
 def test_break_runtime_without_breaks_the_swing_loads_stay_under_the_holding_thresholds():
-    """The same drop with no joint able to break: the largest loads the run reads stay under the thresholds that hold above
-    and over the one that breaks, so the selection does not sit on a knife edge."""
+    """The same drop with no joint able to break: the largest loads the run reads (window means, X-10) stay under the
+    thresholds that hold above and over the one that breaks, so the selection does not sit on a knife edge."""
     compiled = compile_project(swing(1.0e9, 1.0e9, 1.0e9))
     model, data = compiled.model, mujoco.MjData(compiled.model)
-    watch = BreakWatch(compiled.tree, model)
-    rows = {j.joint: mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_BODY, j.body) for j in watch.joints}
-    peak = dict.fromkeys(rows, 0.0)
+    watch = BreakWatch(compiled.tree, model, BREAK_LOAD_WINDOW.value.value)
+    peak = {j.joint: 0.0 for j in watch.joints}
     for _ in range(200):
         mujoco.mj_step(model, data)
-        watch.over(model, data)  # computes cfrc_int
-        for name, row in rows.items():
-            peak[name] = max(peak[name], float(np.linalg.norm(data.cfrc_int[row, 3:6])))
+        watch.over(model, data)
+        for name, load in watch.loads.items():
+            peak[name] = max(peak[name], load)
     assert peak["weld-tip"] > 3.0 * BOB_KG * G_EARTH  # a pendulum's bottom-of-swing pull, above 2 m g
     assert peak["weld-mid"] < 6 * BOB_KG * G_EARTH
     assert peak["pin"] < 10 * HANGING_KG * G_EARTH
@@ -271,13 +273,14 @@ def test_break_runtime_without_breaks_the_swing_loads_stay_under_the_holding_thr
 
 def test_break_runtime_a_broken_hinge_releases_its_subtree_and_the_ground_breaks_the_rest():
     """`pin` at 1.5 x the hanging weight breaks during the swing: the arm and both blocks fly off as one piece (the welds
-    hold it together) until it hits the ground, where the impact breaks both welds in the same tick, in joint id order."""
+    hold it together) until it hits the ground, where the impact breaks both welds (the tip block lands first: `weld-tip`
+    goes over its threshold a few ticks before `weld-mid`)."""
     tip, mid, pin = 2 * BOB_KG * G_EARTH, 6 * BOB_KG * G_EARTH, 1.5 * HANGING_KG * G_EARTH
     _, frames, _ = run(swing(tip, mid, pin), 0.4)
     events = breaks(frames)
-    assert [e.joint for e in events] == ["pin", "weld-mid", "weld-tip"]
+    assert [e.joint for e in events] == ["pin", "weld-tip", "weld-mid"]
     first, *impact = events
-    assert impact[0].tick == impact[1].tick > first.tick
+    assert impact[1].tick > impact[0].tick > first.tick
     assert all(e.load.value > e.threshold.value for e in events)
     flying = [f for f in frames if first.tick < f.tick < impact[0].tick]
     assert flying
@@ -382,13 +385,14 @@ def _one_break(project: Project) -> tuple[PreviewRun, int]:
 
 def test_break_runtime_motor_battery_and_drag_follow_the_recompiled_model(spied):
     """The X-01b gearmotor rig on Earth (`test_actuator.motor_rig(supply=True)`: motor and wheel on hinge `axle`, bracket, battery
-    `b1` on fixed `clip`). `drive` is 0 until 0.1 s, then 1: the start's reaction breaks `clip` (5 N; it holds the battery's
-    0.48 N weight at rest). Across the break tick the motor keeps driving its hinge (ctrl still written, speed still rising), the
+    `b1` on fixed `clip`). `drive` is 0 until 0.1 s, then 1: the start's reaction breaks `clip` (2 N; it holds the battery's
+    0.48 N weight at rest, and its window load after the start reaches 4.45 N, measured with `clip` unbreakable). Across the
+    break tick the motor keeps driving its hinge (ctrl still written, speed still rising), the
     battery is not reset (remaining + energy taken = the start charge at every step, remaining never rises) and drag is still
     applied to every body of the new model."""
     from test_actuator import motor_rig
 
-    project = _with(motor_rig(supply=True), joint="clip", threshold=5.0, entries=[_actuate("spin", "drive", 0.1, 1.0, 1.0)])
+    project = _with(motor_rig(supply=True), joint="clip", threshold=2.0, entries=[_actuate("spin", "drive", 0.1, 1.0, 1.0)])
     preview, tick = _one_break(project)
     assert 50 < tick < 60  # after the motor starts at 0.1 s (tick 50), not while the rig settles
     drive, drag = spied["drive"], spied["drag"]

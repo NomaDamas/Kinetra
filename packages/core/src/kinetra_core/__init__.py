@@ -1,6 +1,7 @@
 """Engine-independent Project model and command layer."""
 
 from .assumption import (
+    ENGINE_CONSTANT_NAMES,
     Assumption,
     AssumptionTable,
     Confidence,
@@ -23,6 +24,7 @@ from .bodies import (
     load_body,
     verdict_assumption_table,
 )
+from .break_window import BREAK_LOAD_WINDOW, BREAK_LOAD_WINDOW_KEY, MAX_TIMESTEP_S
 from .canonical import CanonicalError, canonical_json, canonical_order, definition_hash, project_hash
 from .collision import CollisionProxy, DecomposedVoid, FilledVoid, ProxyDerivation, ProxyGeom, RingReport
 from .commands import (
@@ -245,6 +247,10 @@ __all__ = [
     "Hello",
     "MAX_COMMAND_ID_LENGTH",
     "PLANET_CONSTANT_NAMES",
+    "BREAK_LOAD_WINDOW",
+    "BREAK_LOAD_WINDOW_KEY",
+    "ENGINE_CONSTANT_NAMES",
+    "MAX_TIMESTEP_S",
     "PROJECT_FILE_FORMAT",
     "PROJECT_FILE_SUFFIX",
     "PROJECT_FILE_VERSION",

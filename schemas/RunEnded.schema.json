@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "description": "The run is over. `last_tick` is the tick of the run's last `frame`: the core always sends a frame at the end\ntick before `run_ended`, even when the end falls between two frame intervals, so the final poses and every event\nafter the previous frame reach the client (`check_run`). `end` says how the run ended and carries the trajectory\nevidence.",
+  "description": "The run is over. `last_tick` is the tick of the run's last `frame`: the core always sends a frame at the end\ntick before `run_ended`, even when the end falls between two frame intervals, so the final poses and every event\nafter the previous frame reach the client (`check_run`). `end` says how the run ended and carries the trajectory\nevidence. `labels` are sentences about what this run's results are worth that only the run itself could find (X-10:\n\"시간 간격 민감: 파단 결과가 약한 증거\" with its reasons); the labels known before the run are `run_started.model_labels`.",
   "properties": {
     "type": {
       "const": "run_ended",
@@ -40,6 +40,15 @@
         }
       ],
       "title": "End"
+    },
+    "labels": {
+      "default": [],
+      "items": {
+        "minLength": 1,
+        "type": "string"
+      },
+      "title": "Labels",
+      "type": "array"
     }
   },
   "required": [

@@ -23,8 +23,9 @@ is a breakable `fixed` joint (MuJoCo holds a body without a joint rigidly to its
 Numbers are written with `repr`, so they read
 back as the same doubles; bodies, joints and geoms are in tree order. `<option>` carries the planet (W-03a, `planet.py`):
 `gravity="0 0 -g"` with g from `data/bodies`, and MuJoCo's medium off (`density="0" viscosity="0"`; the planet's air density
-is on `tree.planet` for the drag of `drag.py`, W-03b; `planet.py` says why it is not MuJoCo's medium). Time step and integrator are not
-set here (X-02), so MuJoCo's own defaults stand until that leaf sets them.
+is on `tree.planet` for the drag of `drag.py`, W-03b; `planet.py` says why it is not MuJoCo's medium). The integrator is not
+set here (X-02), so MuJoCo's own stands. The time step is MuJoCo's default (0.002 s) unless `timestep_s` is given: a run may
+take a smaller one, fixed for the whole run (X-10, `run/preview.py` `MAX_TIMESTEP_S`).
 
 Contact (X-01e, `contact.py`): the first geom of `<worldbody>` is the ground, the plane z = 0 named `GROUND_GEOM`, with the
 planet's ground friction (`ground_friction`, default the nominal; a Monte Carlo sample of W-03c must lie in the planet's
@@ -112,15 +113,18 @@ def _body(tree: BodyTree, b: Body, depth: int, drives: Drives | None, contact: C
     return lines
 
 
-def to_mjcf(tree: BodyTree, name: str = "kinetra", drives: Drives | None = None, ground_friction: float | None = None) -> str:
-    """The MJCF text of `tree`, with the springs and motors of `drives` when given and the ground at `ground_friction` (default the
-    planet's nominal; `ValueError` outside the planet's distribution, `contact_friction`). The same input gives the same text, byte for byte."""
+def to_mjcf(
+    tree: BodyTree, name: str = "kinetra", drives: Drives | None = None, ground_friction: float | None = None, timestep_s: float | None = None
+) -> str:
+    """The MJCF text of `tree`, with the springs and motors of `drives` when given, the ground at `ground_friction` (default the
+    planet's nominal; `ValueError` outside the planet's distribution, `contact_friction`) and the time step `timestep_s` [s] when
+    given (else MuJoCo's default). The same input gives the same text, byte for byte."""
     contact = contact_friction(tree, ground_friction)
     params = {p.name: p.value for p in CONTACT_PARAMETERS}
     lines = [
         f"<mujoco model={quoteattr(name)}>",
         '  <compiler angle="radian" inertiafromgeom="false"/>',
-        f"  <option gravity={quoteattr(_n(tree.planet.gravity_vector))} density=\"0\" viscosity=\"0\" cone={quoteattr(params['cone'])}/>",
+        f"  <option{'' if timestep_s is None else f' timestep={quoteattr(repr(float(timestep_s)))}'} gravity={quoteattr(_n(tree.planet.gravity_vector))} density=\"0\" viscosity=\"0\" cone={quoteattr(params['cone'])}/>",
         "  <default>",
         f"    <geom condim={quoteattr(params['condim'])} solref={quoteattr(params['solref'])} solimp={quoteattr(params['solimp'])}/>",
         "  </default>",

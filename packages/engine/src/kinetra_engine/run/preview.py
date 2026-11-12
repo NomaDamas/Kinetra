@@ -1,7 +1,7 @@
 """Compile a project and run it once (X-02a): the run stream of `client-adapter.md` 3.3, produced by the engine.
 
-    compile_project(project, cache=None) -> CompiledModel
-    PreviewRun(project, run_id=..., project_id=..., revision=..., duration_s=..., seed=0) -> iterate: Frame ..., RunEnded
+    compile_project(project, cache=None, timestep_s=None) -> CompiledModel
+    PreviewRun(project, run_id=..., project_id=..., revision=..., duration_s=..., seed=0, timestep_s=None) -> iterate: Frame ..., RunEnded
 
 Port of the legacy live run (`legacy-v0`, `packages/engine/src/kinetra_engine/live.py`): the model is compiled from the
 document as it is, and every frame is produced by stepping the engine (`mj_step1`/`mj_step2`) while the stream is read. Nothing is a
@@ -19,7 +19,9 @@ before it is yielded. A body's pose is the world pose of its frame, which is the
 
 **Time (F2).** A tick is one engine step of `timestep_s` (`mj_step1` and `mj_step2`, see below). Iterating does not look at the wall clock: how fast the frames
 are read (a slow core, a slow client, the `speed` of the transport) cannot change a pose or a time. The trajectory is a
-function of the compiled model and the number of ticks only (`client-adapter.md` 4.1).
+function of the compiled model and the number of ticks only (`client-adapter.md` 4.1). The time step is MuJoCo's default
+0.002 s (`MAX_TIMESTEP_S`) unless the run is given a smaller `timestep_s`; it is fixed for the whole run (X-10 compares
+breaks at the time step, half and a quarter of it; no option changes it during a run).
 
 **End.** `completed` at the first tick at or after `duration_s`. `failed` when the engine finds a non-finite position,
 velocity or acceleration (it then resets its state, so the run cannot go on): the end frame is the last finite tick,
@@ -46,13 +48,17 @@ the bodies and adds the thrust into `xfrc_applied`. Then the step is `mj_step1` 
 touched). Last, `ThrustRun.end_step` restores the rows thrust used and puts the mass left on the bodies. On the Moon the air
 density is 0, drag touches nothing, and the trajectory is bit for bit the one of `mj_step`.
 
-**Breaks (X-04b).** Right after `mj_step2` (before `DragRuntime.restore` and `ThrustRun.end_step`, so the step's applied
-forces and masses are still there) a `BreakWatch` reads the load on every joint that has a `break_threshold`
-(`compiler/breaks.py`). The joints over their threshold are released in joint id order: the tree loses them (`release`),
+**Breaks (X-04b, X-10).** Right after `mj_step2` (before `DragRuntime.restore` and `ThrustRun.end_step`, so the step's applied
+forces and masses are still there) a `BreakWatch` reads the force on every joint that has a `break_threshold` and compares
+its mean over the last `BREAK_LOAD_WINDOW` (0.02 s, `kinetra_core.break_window`) with the threshold (`compiler/breaks.py`).
+The joints over their threshold are released in joint id order: the tree loses them (`release`),
 the model is compiled again from it with the drives of the joints left, and the state of the tick is carried into it
 (`carry_state`); the motors, the tanks, the drag and the frames follow the new model by name. Each released
-joint is a `break` event of that tick (`joint`, `load`, `threshold`, in N), carried by the next frame (the frame of the
-tick itself when one is sent there). After a break the trajectory hash goes on over the new model's generalized positions.
+joint is a `break` event of that tick (`joint`, `load` the window mean, `threshold`, in N), carried by the next frame (the
+frame of the tick itself when one is sent there). After a break the trajectory hash goes on over the new model's generalized
+positions. While a joint can still break, a `TimestepSensitivity` checks the run against the range where the window was
+measured to keep breaks time-step invariant; out of it, `run_ended.labels` carries "시간 간격 민감: 파단 결과가 약한 증거"
+with the reasons (`docs/research/engine/break-timestep.md`).
 Contacts and met conditions are not in the stream yet; their leaves add them.
 """
 
@@ -79,6 +85,7 @@ from kinetra_core import (
     require_complete,
 )
 from kinetra_core.bodies import load_body
+from kinetra_core.break_window import BREAK_LOAD_WINDOW, MAX_TIMESTEP_S
 from kinetra_core.frames import MAX_TICK
 
 from ..compiler import (
@@ -91,6 +98,7 @@ from ..compiler import (
     Drives,
     ThrustModel,
     ThrustRun,
+    TimestepSensitivity,
     breakable_joints,
     carry_state,
     compile_drag,
@@ -124,14 +132,17 @@ class CompiledModel:
     model: mujoco.MjModel
 
 
-def compile_project(project: Project, cache: PartCache | None = None) -> CompiledModel:
-    """Compile `project`. Raises `ProjectIncomplete` for a missing definition and `CompileError` (with its
-    `CompileErrorCode`) for a design the compiler refuses."""
+def compile_project(project: Project, cache: PartCache | None = None, timestep_s: float | None = None) -> CompiledModel:
+    """Compile `project` with the time step `timestep_s` [s] (`None`: MuJoCo's default, `MAX_TIMESTEP_S`; else above 0 and at
+    most that). Raises `ProjectIncomplete` for a missing definition, `ValueError` for a time step out of range and
+    `CompileError` (with its `CompileErrorCode`) for a design the compiler refuses."""
     require_complete(project, BlockedOperation.COMPILE)
+    if timestep_s is not None and not 0.0 < timestep_s <= MAX_TIMESTEP_S:
+        raise ValueError(f"time step {timestep_s} s: a run's time step is above 0 and at most {MAX_TIMESTEP_S} s")
     thrust = compile_thrust(project, cache)  # build_body_tree, with the thrusters and the tanks' propellant
     tree = thrust.tree
     drives = compile_drives(tree)
-    mjcf = to_mjcf(tree, drives=drives)
+    mjcf = to_mjcf(tree, drives=drives, timestep_s=timestep_s)
     return CompiledModel(tree, thrust, drives, compile_drag(tree), mjcf, mujoco.MjModel.from_xml_string(mjcf))
 
 
@@ -193,9 +204,11 @@ class PreviewRun:
         kind: RunKind = RunKind.PREVIEW,
         frame_every_ticks: int | None = None,
         cache: PartCache | None = None,
+        timestep_s: float | None = None,
     ):
         require_complete(project, BlockedOperation.RUN)
-        compiled = compile_project(project, cache)
+        compiled = compile_project(project, cache, timestep_s)
+        self._timestep_s = timestep_s
         self.compiled = compiled
         model = compiled.model
         self._model = model
@@ -265,7 +278,8 @@ class PreviewRun:
         drives = DriveRuntime(model, drive_spec)
         thrust = ThrustRun(self.compiled.thrust, model, data)  # puts the tanks' propellant on their bodies
         drag = DragRuntime(model, self.compiled.drag)
-        watch = BreakWatch(tree, model)
+        watch = BreakWatch(tree, model, BREAK_LOAD_WINDOW.value.value)
+        sensitivity = TimestepSensitivity(model) if watch.joints else None  # with the propellant on the bodies
         design, dt = tree.design, run.timestep_s
         trajectory = hashlib.sha256(data.qpos.tobytes())
         last_good = data.qpos.copy()
@@ -281,6 +295,8 @@ class PreviewRun:
             drag.apply(data)
             mujoco.mj_step2(model, data)
             over = watch.over(model, data)  # with this step's applied forces (thrust, drag) and masses
+            if sensitivity is not None and watch.joints:
+                sensitivity.observe(model, data)
             drag.restore(data)
             thrust.end_step()
             if any(data.warning[w].number for w in _UNSTABLE) or not np.isfinite(data.qpos).all():
@@ -290,12 +306,12 @@ class PreviewRun:
                     frame = self._frame(data, good)
                     check_frame(run, frame, final=True)
                     yield frame
-                yield RunEnded.model_validate({"type": "run_ended", "run_id": run.run_id, "last_tick": good, "end": {"reason": "failed"}})
+                yield RunEnded.model_validate({"type": "run_ended", "run_id": run.run_id, "last_tick": good, "end": {"reason": "failed"}, "labels": self._labels(sensitivity)})
                 return
             if over:
                 broken = [o.joint for o in over]
                 tree, drive_spec = release(tree, broken), drive_spec.without_joints(broken)
-                released = mujoco.MjModel.from_xml_string(to_mjcf(tree, drives=drive_spec))
+                released = mujoco.MjModel.from_xml_string(to_mjcf(tree, drives=drive_spec, timestep_s=self._timestep_s))
                 data = carry_state(model, data, released)
                 model = released
                 drives.rebind(model, drive_spec)
@@ -321,5 +337,11 @@ class PreviewRun:
                 "run_id": run.run_id,
                 "last_tick": self.end_tick,
                 "end": {"reason": "completed", "trajectory": {"hash": "sha256:" + trajectory.hexdigest(), "platform": run.platform}},
+                "labels": self._labels(sensitivity),
             }
         )
+
+    @staticmethod
+    def _labels(sensitivity: TimestepSensitivity | None) -> list[str]:
+        label = None if sensitivity is None else sensitivity.label()
+        return [] if label is None else [label]

@@ -20,6 +20,8 @@ belong to other leaves (C-01b, J-02).
 the guarantee is that the engine reads planet constants only from `data/bodies` (W-03a) and the validator refuses
 commands that change them (C-02c). A standalone `Assumption` is not checked, and a differently named key is not
 caught. The model labels the verdict shows next to the table ("근사: 균일 중력" etc.) are W-03b's and W-06's.
+It also rejects the keys of the rows the engine fixes (`ENGINE_CONSTANT_NAMES`: the load window of a breakable joint,
+X-10, `break_window.py`), which the verdict's table adds itself.
 """
 
 from __future__ import annotations
@@ -32,6 +34,9 @@ from pydantic import BaseModel, ConfigDict, Field, StrictBool, field_validator, 
 from .conventions import NAME_PATTERN
 from .provenance import Number, Provenance, Quantity
 from .world import PLANET_CONSTANT_NAMES
+
+ENGINE_CONSTANT_NAMES = frozenset({"break_load_window"})
+"""Keys of the verdict's rows the engine fixes, not the project and not the planet (`break_window.py`)."""
 
 
 class Confidence(StrEnum):
@@ -128,4 +133,6 @@ class AssumptionTable(BaseModel):
                 raise ValueError(
                     f"{k!r} is a planet constant, not an assumption of the project: the engine reads it from data/bodies"
                 )
+            if k in ENGINE_CONSTANT_NAMES:
+                raise ValueError(f"{k!r} is fixed by the engine, not an assumption of the project: the verdict's table adds it")
         return self

@@ -409,12 +409,14 @@ class RunEnded(_Obj):
     """The run is over. `last_tick` is the tick of the run's last `frame`: the core always sends a frame at the end
     tick before `run_ended`, even when the end falls between two frame intervals, so the final poses and every event
     after the previous frame reach the client (`check_run`). `end` says how the run ended and carries the trajectory
-    evidence."""
+    evidence. `labels` are sentences about what this run's results are worth that only the run itself could find (X-10:
+    "시간 간격 민감: 파단 결과가 약한 증거" with its reasons); the labels known before the run are `run_started.model_labels`."""
 
     type: Literal["run_ended"]
     run_id: _RunId
     last_tick: _Tick
     end: RunEnd
+    labels: tuple[Annotated[str, Field(min_length=1)], ...] = ()
 
 
 def check_run(run: RunStarted, frames: Sequence[Frame], ended: RunEnded) -> None:

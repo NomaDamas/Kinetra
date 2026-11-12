@@ -92,7 +92,7 @@ def test_ground_friction_is_a_distribution_row_of_the_verdicts_table(planet):
                                      "distribution": {"kind": "uniform", "low": 1.5, "high": 2.5, "badge": "declared",
                                                       "source": SRC},
                                      "confidence": "med"})
-    table = verdict_assumption_table(AssumptionTable(assumptions=(own,)), body)
+    table = verdict_assumption_table(AssumptionTable(assumptions=(own,)), body, block(planet).design)  # no breakable joint
     assert table.planet == planet
     assert [a.key for a in table.rows] == ["ground_friction", "payload_mass"]  # planet rows first, then the project's
     row = table.row("ground_friction")
@@ -114,19 +114,19 @@ def test_ground_friction_stays_out_of_the_projects_table():
     mars = load_body("mars")
     with pytest.raises(ValidationError, match="planet constant"):
         AssumptionTable(assumptions=(mars.ground_friction,))
-    assert verdict_assumption_table(AssumptionTable(), mars).rows == (mars.ground_friction,)
+    assert verdict_assumption_table(AssumptionTable(), mars, block("mars").design).rows == (mars.ground_friction,)
 
 
 def test_ground_friction_planet_rows_are_read_only_planet_constants():
     earth = load_body("earth").ground_friction
     with pytest.raises(ValidationError, match="read-only"):
-        VerdictAssumptionTable(planet="earth", planet_rows=(earth.model_copy(update={"editable": True}),),
+        VerdictAssumptionTable(planet="earth", planet_rows=(earth.model_copy(update={"editable": True}),), engine_rows=(),
                                project=AssumptionTable())
     with pytest.raises(ValidationError, match="not a planet constant"):
-        VerdictAssumptionTable(planet="earth", planet_rows=(earth.model_copy(update={"key": "payload_mass"}),),
+        VerdictAssumptionTable(planet="earth", planet_rows=(earth.model_copy(update={"key": "payload_mass"}),), engine_rows=(),
                                project=AssumptionTable())
     with pytest.raises(ValidationError, match="duplicate planet row"):
-        VerdictAssumptionTable(planet="earth", planet_rows=(earth, earth), project=AssumptionTable())
+        VerdictAssumptionTable(planet="earth", planet_rows=(earth, earth), engine_rows=(), project=AssumptionTable())
 
 
 # --- the ends of the distribution in the compiled model ---------------------------------------------------------------
@@ -136,7 +136,7 @@ def test_ground_friction_planet_rows_are_read_only_planet_constants():
 @pytest.mark.parametrize("planet", ["earth", "mars", "moon"])
 def test_ground_friction_critical_slide_angle_matches_the_hand_calculation_at_both_ends(planet, end):
     project = block(planet)
-    d = verdict_assumption_table(project.assumptions, load_body(planet)).row("ground_friction").distribution
+    d = verdict_assumption_table(project.assumptions, load_body(planet), project.design).row("ground_friction").distribution
     mu = (d.low, d.high)[end]
     assert mu == ENDS[planet][end]
     g = load_body(planet).gravity.value

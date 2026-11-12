@@ -1,7 +1,20 @@
-"""Project to engine model: body tree (X-01a), joints' springs and motors (X-01b), contact friction and parameters (X-01e), MJCF, model labels, planet constants (W-03a), terrain props (W-05), lumped drag (W-03b), errors per part (X-01d), thrusters and propellant mass (X-01c), breakable joints at run time (X-04b)."""
+"""Project to engine model: body tree (X-01a), joints' springs and motors (X-01b), contact friction and parameters (X-01e), MJCF, model labels, planet constants (W-03a), terrain props (W-05), lumped drag (W-03b), errors per part (X-01d), thrusters and propellant mass (X-01c), breakable joints at run time (X-04b) with a window-averaged load and its time-step sensitivity (X-10)."""
 
 from .bodytree import Body, BodyGeom, BodyJoint, BodyTree, CompiledInstance, build_body_tree
-from .breaks import BREAK_LABEL, BreakableJoint, BreakWatch, OverThreshold, breakable_joints, carry_state, release
+from .breaks import (
+    BREAK_LABEL,
+    MASS_RATIO_LIMIT,
+    SPEED_LIMIT_M_S,
+    SPRING_LIMIT,
+    TIMESTEP_SENSITIVE_LABEL,
+    BreakableJoint,
+    BreakWatch,
+    OverThreshold,
+    TimestepSensitivity,
+    breakable_joints,
+    carry_state,
+    release,
+)
 from .checks import AXIS_TOLERANCE
 from .contact import (
     CONTACT_PARAMETERS,
@@ -30,6 +43,10 @@ __all__ = [
     "CONTACT_PARAMETERS",
     "DEFAULT_FRICTION",
     "GROUND_GEOM",
+    "MASS_RATIO_LIMIT",
+    "SPEED_LIMIT_M_S",
+    "SPRING_LIMIT",
+    "TIMESTEP_SENSITIVE_LABEL",
     "TREAD_FRICTION_SPEC",
     "Body",
     "BodyDrag",
@@ -65,6 +82,7 @@ __all__ = [
     "ThrustStep",
     "ThrusterStep",
     "TerrainGeom",
+    "TimestepSensitivity",
     "build_body_tree",
     "breakable_joints",
     "carry_state",

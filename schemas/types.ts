@@ -1172,13 +1172,15 @@ export interface RunCompleted {
  * The run is over. `last_tick` is the tick of the run's last `frame`: the core always sends a frame at the end
  * tick before `run_ended`, even when the end falls between two frame intervals, so the final poses and every event
  * after the previous frame reach the client (`check_run`). `end` says how the run ended and carries the trajectory
- * evidence.
+ * evidence. `labels` are sentences about what this run's results are worth that only the run itself could find (X-10:
+ * "시간 간격 민감: 파단 결과가 약한 증거" with its reasons); the labels known before the run are `run_started.model_labels`.
  */
 export interface RunEnded {
   type: "run_ended";
   run_id: string;
   last_tick: number;
   end: RunCompleted | RunStopped | RunFailed;
+  labels?: string[];
 }
 
 /** The engine could not go on: there is no trajectory to hash, so a `trajectory` is refused. */
@@ -1422,17 +1424,21 @@ export interface Unverified {
 }
 
 /**
- * The assumption table a verdict carries (W-03c): the planet's rows read from `data/bodies`, then the project's rows.
+ * The assumption table a verdict carries (W-03c): the planet's rows read from `data/bodies`, the rows the engine fixes
+ * (X-10), then the project's rows.
  *
  * Composed at judge time by `verdict_assumption_table`, never stored in a project: the project's `AssumptionTable`
- * keeps rejecting planet keys (rule C4). A planet row is read-only (`editable` False) and keeps the badges and sources
- * of the data file. Today the planet rows are the ground friction alone; the "근사: 균일 중력" label is W-06's.
+ * keeps rejecting planet keys (rule C4) and engine keys. A planet row is read-only (`editable` False) and keeps the badges
+ * and sources of the data file. Today the planet rows are the ground friction alone; the "근사: 균일 중력" label is W-06's.
+ * An engine row is a modelling choice of the engine, read-only too (`ENGINE_CONSTANT_NAMES`): today the load window of a
+ * breakable joint (`BREAK_LOAD_WINDOW`, badge `기본값`), there only when the design has a joint with a `break_threshold`.
  * `rows` is the table in the order the panel shows it; Monte-Carlo samples each row's `distribution` and the deterministic
  * search uses its `value` (the ground friction enters the model as `to_mjcf(tree, ground_friction=...)`, X-01e/W-03c).
  */
 export interface VerdictAssumptionTable {
   planet: string;
   planet_rows: Assumption[];
+  engine_rows: Assumption[];
   project: AssumptionTable;
 }
 
