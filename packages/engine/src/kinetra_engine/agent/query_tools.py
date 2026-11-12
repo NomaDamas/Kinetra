@@ -390,7 +390,8 @@ def summarize_rollout(started: RunStarted, frames: Iterable[Frame], ended: RunEn
         "last_tick": ended.last_tick,
         "end_time_s": last.sim_time_s,
         "end": end.reason,
-        "trajectory_hash": trajectory.hash if trajectory is not None else None,
+        # H1: the hash goes with its platform tag, as `run_ended` carries them (a hash without its tag is not evidence); none for a failed run
+        "trajectory": trajectory.model_dump(mode="json") if trajectory is not None else None,
         "model_labels": list(started.model_labels),
         "sampling": SAMPLING_NOTE,
         "bodies": bodies,

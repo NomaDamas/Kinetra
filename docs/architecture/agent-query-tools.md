@@ -32,7 +32,7 @@ HubQueryTools(hub, "desk").call("statics_check", {}) # Hub 문서의 현재 프�
 | `list_parts` | 프로젝트 그대로(컴파일 없음) | 행성; 인스턴스마다 부품, 부품 이름·역할, 재료, 파라미터(값·단위·배지), 포즈(위치 m, 쿼터니언, 배지), 스냅 포인트 id; 결합(종류, 양쪽 스냅, 한계, 파단 임계); 액추에이터; 제어 스케줄(시작·끝 s, 명령, 배지). 정의가 빠진 인스턴스는 `missing_definition`(`part`/`material`)이고 스냅 포인트를 지어내지 않는다 |
 | `mass_properties` | `compile_thrust`의 바디 트리(인스턴스마다 B-02 `mass_properties`를 저장된 포즈에 놓은 것)와 탱크의 `Supply` | 인스턴스마다 질량 kg와 월드 무게중심 m, 입력 배지; `dry`(건조 질량과 무게중심, `math.fsum`); `propellant`(탱크마다 실행 시작 때 든 양 `Supply.remaining`과 용량); `with_propellant`(추진제를 탱크 안쪽 중심 `PropellantStore.centroid`에 더한 질량과 무게중심) |
 | `statics_check` | X-03a `tipover`(같은 바디 트리) | 입력별 배지 `inputs`와 가장 약한 배지 `badge`, 질량, 무게중심, 투영점, 높이, 받침 종류(`none`/`point`/`segment`/`polygon`), 받침점 수, 지지 다각형 꼭짓점(인스턴스·geom·좌표), 변마다 거리와 각(rad, deg), 여유 m, 전복각(rad, deg), `stable`, 근사와 가정 |
-| `rollout_summary` | `summarize_rollout`: 기록된 실행 스트림(`run_started`, 프레임, `run_ended`) | 실행 id·종류·개정·정의 해시·행성·시드·시간 간격·프레임 간격, 프레임 수, 끝 틱과 시각, 종료 사유, 궤적 해시, 모델 라벨; 강체마다 시작·끝 위치, 변위, 거리, 수평 거리, 가장 낮은·높은 z와 그 틱, 끝과 최대 기울기(deg); 이벤트 종류별 수, 파단과 조건 충족 이벤트 전체, 시작된 접촉 수; 지금 조회한 설계에서 돌린 실행인지(`current_design`: `definition_hash`와 `project_hash`가 같음) |
+| `rollout_summary` | `summarize_rollout`: 기록된 실행 스트림(`run_started`, 프레임, `run_ended`) | 실행 id·종류·개정·정의 해시·행성·시드·시간 간격·프레임 간격, 프레임 수, 끝 틱과 시각, 종료 사유, 궤적 증거 `trajectory`(해시와 플랫폼 태그 한 객체, `run_ended.end.trajectory` 그대로: H1, 태그 없는 해시는 내지 않는다. 실패한 실행은 `null`), 모델 라벨; 강체마다 시작·끝 위치, 변위, 거리, 수평 거리, 가장 낮은·높은 z와 그 틱, 끝과 최대 기울기(deg); 이벤트 종류별 수, 파단과 조건 충족 이벤트 전체, 시작된 접촉 수; 지금 조회한 설계에서 돌린 실행인지(`current_design`: `definition_hash`와 `project_hash`가 같음) |
 
 - **기울기.** 첫 프레임의 자세에서 그 프레임의 자세로 돈 회전이 월드 위쪽(+Z)을 돌린 각이다: $\arccos((R_1 R_0^\top)_{zz})$. 연직축 둘레로만 돈 것은 0이다(테스트: 마지막 자세를 x축 둘레로 0.4 rad 돌리면 22.918°).
 - **실행 기록.** `record`는 `check_run`을 통과한 온전한 스트림만 받고(끝 프레임이 빠지면 `ValueError`) 요약만 `run_id`로 JSON 문장으로 보관한다. `record`와 모든 조회는 매번 새 객체를 돌려주므로 받은 쪽이 고쳐도 기록은 바뀌지 않는다(테스트). 같은 `run_id`를 다시 기록하면 새 것이 옛 것을 바꾼다. `run_id`를 빼면 가장 최근 기록이다. 기록이 없거나 모르는 id는 `unknown_id`.
@@ -46,7 +46,7 @@ HubQueryTools(hub, "desk").call("statics_check", {}) # Hub 문서의 현재 프�
 | `mass_properties`, 탱크 위 추력기(X-01c 픽스처) | `tank_supply().remaining`, test_thrust의 손 질량 $M_\text{tank}+M_\text{thruster}(+\text{capacity})$(상대 1e-12), `ThrustModel.mass_of`, 추진제를 탱크 원점에 더한 무게중심 |
 | `statics_check`, 카트와 내민 팔 | `tipover`의 모든 필드와 같음, 내민 팔은 여유 -0.08 m, 불안정 |
 | `statics_check` 입력 배지, 카트와 탱크 위 추력기 | 카트: `mass`·`pose` `declared`, `gravity` `cite`(지구 데이터), `badge` `declared`. 추력기: `mass` = 바디 트리 인스턴스들의 `Derivation.input_badges`, `badge` = 가장 약한 것 |
-| `rollout_summary`, X-02a 탑(`test_simulate_stream`의 픽스처) 실행 | 스트림의 첫·끝 포즈, 최저·최고 z, 궤적 해시, 끝 틱·시각, 모델 라벨과 같음 |
+| `rollout_summary`, X-02a 탑(`test_simulate_stream`의 픽스처) 실행 | 스트림의 첫·끝 포즈, 최저·최고 z, 궤적 해시와 플랫폼 태그(`run_ended`·`run_started`의 태그 그대로), 끝 틱·시각, 모델 라벨과 같음 |
 
 ## 한계 (숨기지 않는다)
 

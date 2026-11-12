@@ -225,7 +225,10 @@ def test_query_tools_rollout_summary_is_the_run_stream():
     data = ask(proj, "rollout_summary", {"run_id": "run-1"}, tools)
     assert data["notice"] == ROLLOUT_NOTICE and data["badge"] == "sim" and data["kind"] == "preview"
     assert data["end"] == ended.end.reason == "completed" and data["last_tick"] == ended.last_tick
-    assert data["trajectory_hash"] == ended.end.trajectory.hash
+    # H1: the hash never travels without its platform tag, the very object of run_ended and of run_started
+    assert data["trajectory"] == ended.end.trajectory.model_dump(mode="json")
+    assert data["trajectory"]["hash"] == ended.end.trajectory.hash
+    assert data["trajectory"]["platform"] == run.started.platform.model_dump(mode="json") and "trajectory_hash" not in data
     assert data["frames"] == len(frames) and data["end_time_s"] == frames[-1].sim_time_s
     assert data["definition_hash"] == project_hash(proj) and data["current_design"] is True
     assert data["model_labels"] == list(run.started.model_labels)
@@ -240,6 +243,13 @@ def test_query_tools_rollout_summary_is_the_run_stream():
     assert body["highest_at_tick"] == ticks[[p.position.z for p in poses].index(body["highest_z_m"])]
     assert body["horizontal_distance_m"] == math.hypot(last.x - first.x, last.y - first.y)
     assert data["events"] == {} and data["breaks"] == [] and data["conditions_met"] == []
+
+
+def test_query_tools_a_failed_rollout_has_no_trajectory_evidence():
+    run = run_of(tower(), duration_s=0.1)
+    run.compiled.model.opt.gravity[:] = (0.0, 0.0, -1e308)  # test_simulate_stream's diverging run: the engine fails at once
+    data = summarize_rollout(run.started, *split(run))
+    assert data["end"] == "failed" and data["trajectory"] is None and data["notice"] == ROLLOUT_NOTICE
 
 
 def test_query_tools_rollout_tilt_is_the_angle_the_up_axis_turned():
