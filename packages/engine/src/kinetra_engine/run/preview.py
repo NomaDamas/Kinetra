@@ -32,7 +32,8 @@ is a hash of this run's stream, kept by the core (F7); two records are compared 
 X-01e — the friction rule, slow slip, no rolling friction, tread and default friction per instance — and `근사: 집중 항력`
 where the planet has air, W-03b), and what the compiled model does not apply of the planet, read from the model itself so a label goes away once a leaf sets it: the planet's gravity
 when the model's gravity differs from the planet's `data/bodies` value (W-03a sets it, so this label does not appear
-today), and the ground when the model has none (X-01e compiles it, so this label does not appear today either).
+today), and the ground when the model has none (X-01e compiles it, so this label does not appear today either). Last,
+`BREAK_LABEL` when a joint has a `break_threshold` (X-04b: a break compares one force against one threshold).
 
 **Drives (X-01b), thrust (X-01c) and drag (W-03b).** The model is compiled from `compile_thrust` (the body tree with its
 thrusters and the propellant of its tanks), `compile_drives` (springs on sliders, one motor per motor actuator) and
@@ -45,7 +46,14 @@ the bodies and adds the thrust into `xfrc_applied`. Then the step is `mj_step1` 
 touched). Last, `ThrustRun.end_step` restores the rows thrust used and puts the mass left on the bodies. On the Moon the air
 density is 0, drag touches nothing, and the trajectory is bit for bit the one of `mj_step`.
 
-**Events.** The stream carries no events yet: contacts, breaks (X-04b) and met conditions are added by their leaves.
+**Breaks (X-04b).** Right after `mj_step2` (before `DragRuntime.restore` and `ThrustRun.end_step`, so the step's applied
+forces and masses are still there) a `BreakWatch` reads the load on every joint that has a `break_threshold`
+(`compiler/breaks.py`). The joints over their threshold are released in joint id order: the tree loses them (`release`),
+the model is compiled again from it with the drives of the joints left, and the state of the tick is carried into it
+(`carry_state`); the motors, the tanks, the drag and the frames follow the new model by name. Each released
+joint is a `break` event of that tick (`joint`, `load`, `threshold`, in N), carried by the next frame (the frame of the
+tick itself when one is sent there). After a break the trajectory hash goes on over the new model's generalized positions.
+Contacts and met conditions are not in the stream yet; their leaves add them.
 """
 
 from __future__ import annotations
@@ -74,17 +82,22 @@ from kinetra_core.bodies import load_body
 from kinetra_core.frames import MAX_TICK
 
 from ..compiler import (
+    BREAK_LABEL,
     BodyTree,
+    BreakWatch,
     Drag,
     DragRuntime,
     DriveRuntime,
     Drives,
     ThrustModel,
     ThrustRun,
+    breakable_joints,
+    carry_state,
     compile_drag,
     compile_drives,
     compile_thrust,
     model_labels,
+    release,
     to_mjcf,
 )
 from ..parts import PartCache
@@ -191,7 +204,8 @@ class PreviewRun:
         tag = platform_tag(model)
         bodies = compiled.tree.bodies
         self._body_ids = [b.id for b in bodies]
-        self._rows = np.array([mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_BODY, b.id) for b in bodies])
+        self._follow(model)
+        breakable = [BREAK_LABEL] if breakable_joints(compiled.tree) else []
         self.started = RunStarted.model_validate(
             {
                 "type": "run_started",
@@ -206,11 +220,17 @@ class PreviewRun:
                 "timestep_s": timestep_s,
                 "frame_every_ticks": frame_every_ticks or default_frame_every_ticks(timestep_s),
                 "bodies": [{"id": b.id, "instances": list(b.instances)} for b in bodies],
-                "model_labels": [label.text for label in model_labels(compiled.tree)] + list(environment_labels(project, model)),
+                "model_labels": [label.text for label in model_labels(compiled.tree)] + list(environment_labels(project, model)) + breakable,
                 "platform": tag,
             }
         )
         self._iterated = False
+        self._events: list[dict] = []  # events since the last frame made; the next frame carries them
+
+    def _follow(self, model: mujoco.MjModel) -> None:
+        """Read the frames' poses from `model` (the compiled one, or the one compiled again after a break)."""
+        self._model = model
+        self._rows = np.array([mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_BODY, b) for b in self._body_ids])
 
     def _frame(self, data: mujoco.MjData, tick: int) -> Frame:
         mujoco.mj_kinematics(self._model, data)  # poses of this tick's positions; the next mj_step recomputes everything
@@ -223,8 +243,16 @@ class PreviewRun:
             for body, p, q in zip(self._body_ids, data.xpos[self._rows], data.xquat[self._rows])
         ]
         frame = Frame.model_validate(
-            {"type": "frame", "run_id": self.started.run_id, "tick": tick, "sim_time_s": tick * self.started.timestep_s, "poses": poses}
+            {
+                "type": "frame",
+                "run_id": self.started.run_id,
+                "tick": tick,
+                "sim_time_s": tick * self.started.timestep_s,
+                "poses": poses,
+                "events": self._events,
+            }
         )
+        self._events = []
         return frame
 
     def __iter__(self) -> Iterator[Frame | RunEnded]:
@@ -233,10 +261,12 @@ class PreviewRun:
         self._iterated = True
         model, run, every = self._model, self.started, self.started.frame_every_ticks
         data = mujoco.MjData(model)
-        drives = DriveRuntime(model, self.compiled.drives)
+        tree, drive_spec = self.compiled.tree, self.compiled.drives
+        drives = DriveRuntime(model, drive_spec)
         thrust = ThrustRun(self.compiled.thrust, model, data)  # puts the tanks' propellant on their bodies
         drag = DragRuntime(model, self.compiled.drag)
-        design, dt = self.compiled.tree.design, run.timestep_s
+        watch = BreakWatch(tree, model)
+        design, dt = tree.design, run.timestep_s
         trajectory = hashlib.sha256(data.qpos.tobytes())
         last_good = data.qpos.copy()
         frame = self._frame(data, 0)
@@ -250,6 +280,7 @@ class PreviewRun:
             mujoco.mj_step1(model, data)
             drag.apply(data)
             mujoco.mj_step2(model, data)
+            over = watch.over(model, data)  # with this step's applied forces (thrust, drag) and masses
             drag.restore(data)
             thrust.end_step()
             if any(data.warning[w].number for w in _UNSTABLE) or not np.isfinite(data.qpos).all():
@@ -261,6 +292,22 @@ class PreviewRun:
                     yield frame
                 yield RunEnded.model_validate({"type": "run_ended", "run_id": run.run_id, "last_tick": good, "end": {"reason": "failed"}})
                 return
+            if over:
+                broken = [o.joint for o in over]
+                tree, drive_spec = release(tree, broken), drive_spec.without_joints(broken)
+                released = mujoco.MjModel.from_xml_string(to_mjcf(tree, drives=drive_spec))
+                data = carry_state(model, data, released)
+                model = released
+                drives.rebind(model, drive_spec)
+                thrust.rebind(model, data)
+                drag = DragRuntime(model, self.compiled.drag)  # holds nothing between steps: the same bodies, found by name
+                watch.bind(tree, model)
+                self._follow(model)
+                last_good = data.qpos.copy()  # the new model's coordinates
+                self._events.extend(
+                    {"kind": "break", "tick": tick, "joint": o.joint, "load": {"value": o.load, "unit": "N"}, "threshold": {"value": o.threshold, "unit": "N"}}
+                    for o in over
+                )
             trajectory.update(data.qpos.tobytes())
             final = tick == self.end_tick
             if final or tick % every == 0:

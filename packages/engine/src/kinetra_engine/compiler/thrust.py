@@ -269,19 +269,25 @@ class ThrustRun:
 
     def __init__(self, model: ThrustModel, mj_model: mujoco.MjModel, mj_data: mujoco.MjData):
         self.model = model
-        self._m = mj_model
-        self._d = mj_data
-        self._row: dict[str, int] = {}
-        for b in model.tree.bodies:
-            row = mujoco.mj_name2id(mj_model, mujoco.mjtObj.mjOBJ_BODY, b.id)
-            if row < 0:
-                raise ValueError(f"the MuJoCo model has no body {b.id!r}: it was not compiled from this body tree")
-            self._row[b.id] = row
         self.supplies: dict[str, Supply] = {s.instance: s.supply for s in model.stores}
         self._k = {t.actuator: t.thruster.propellant_flow / t.thruster.rated_thrust for t in model.thrusters}
         self._loaded = sorted({s.body for s in model.stores})
-        self._load({s.instance: s.supply.remaining for s in model.stores}, self._loaded)
         self._pending: tuple[dict[int, np.ndarray], dict[str, float], list[str]] | None = None
+        self.rebind(mj_model, mj_data)
+
+    def rebind(self, mj_model: mujoco.MjModel, mj_data: mujoco.MjData) -> None:
+        """Step `mj_model` and `mj_data` from now on (a model compiled again from the same bodies after a joint broke, X-04b):
+        the bodies are found by name and carry what the tanks hold now. Not between `begin_step` and `end_step`."""
+        if self._pending is not None:
+            raise RuntimeError("rebind between begin_step and end_step")
+        rows: dict[str, int] = {}
+        for b in self.model.tree.bodies:
+            row = mujoco.mj_name2id(mj_model, mujoco.mjtObj.mjOBJ_BODY, b.id)
+            if row < 0:
+                raise ValueError(f"the MuJoCo model has no body {b.id!r}: it was not compiled from this body tree")
+            rows[b.id] = row
+        self._m, self._d, self._row = mj_model, mj_data, rows
+        self._load({i: s.remaining for i, s in self.supplies.items()}, self._loaded)
 
     def body_mass(self, body: str) -> tuple[float, Vec, Inertia6]:
         """Mass, centre of mass and inertia of `body` with what the tanks hold now."""
