@@ -36,8 +36,9 @@ it) enforces what the model enforces: `PlatformTag.engine` by `distribution`, `C
 `RunEnded.end` by `reason`.
 
 Messages ignore fields they do not know (G5), like the document messages; a client ignores a `type` it does not know.
-Not here: the real trajectory hash computation (X-02d), `control` and acknowledgement messages (X-02c, flow control
-#420), the transport of binary messages in `kinetra_engine.protocol` (X-02).
+Not here: the trajectory hash computation (`kinetra_engine.run.preview`) and the comparison of two records
+(`trajectory.py`, X-02d), `control` and acknowledgement messages (X-02c, flow control #420), the transport
+of binary messages in `kinetra_engine.protocol` (X-02).
 """
 
 from __future__ import annotations

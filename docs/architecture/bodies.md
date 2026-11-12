@@ -37,10 +37,29 @@
 ## 엔진이 읽는 법 (W-03a)
 
 - 코드는 `packages/engine/src/kinetra_engine/compiler/planet.py`(`planet_physics`, `PlanetPhysics`), 테스트는 `packages/engine/tests/test_freefall.py`(`uv run pytest packages/engine -q -k freefall`). 이슈 #83.
-- `build_body_tree(project)`가 `project.world.planet`으로 `load_body`를 불러 `BodyTree.planet`(`PlanetPhysics`: 중력과 대기 밀도의 `Quantity`, 배지와 출처 그대로)에 싣는다. 컴파일러가 행성 상수를 얻는 길은 이것 하나다. 데이터가 없거나 읽히지 않는 행성은 `CompileError`다. `bodies_directory`로 다른 디렉터리를 줄 수 있다(시험이 파일의 값을 바꾸면 낙하가 바뀌는 것을 본다).
-- MJCF: `<option gravity="0 0 -g" density="0" viscosity="0"/>`. +Z가 위이고 g는 데이터 파일의 값을 `repr`로 적어 같은 double로 읽힌다.
-- **대기 밀도는 `BodyTree.planet.atmosphere_density`로 실리고 MuJoCo 매질(`option density`)에는 넣지 않는다.** MuJoCo 매질은 모든 바디에 같은 전역 값이고, 넣으면 관성 상자 항력(항력 계수 1에 해당하는 고정 식, 부력 없음, MuJoCo 4.0.0 `engine_passive.c` `mj_inertiaBoxFluidModel`)이 라벨 없이 붙는다. 항력은 W-03b가 이 밀도로 바디별 힘을 주고 "근사: 집중 항력"으로 표시한다(`docs/research/fluids/mujoco-water.md` 7.1절의 권고). 그래서 W-03b가 들어오기 전까지 지구·화성에서도 공기 저항이 없다. 이 사실을 숨기지 않는다.
+- `build_body_tree(project)`가 `project.world.planet`으로 `load_body`를 불러 `BodyTree.planet`(`PlanetPhysics`: 중력과 대기 밀도의 `Quantity`, 지면 마찰의 `Assumption`, 배지와 출처 그대로)에 싣는다. 컴파일러가 행성 상수를 얻는 길은 이것 하나다. 데이터가 없거나 읽히지 않는 행성은 `CompileError`다. `bodies_directory`로 다른 디렉터리를 줄 수 있다(시험이 파일의 값을 바꾸면 낙하가 바뀌는 것을 본다).
+- MJCF: `<option gravity="0 0 -g" density="0" viscosity="0"/>`. +Z가 위이고 g는 데이터 파일의 값을 `repr`로 적어 같은 double로 읽힌다. 지면은 `<worldbody>`의 첫 geom인 평면 z = 0이고 마찰은 `ground_friction`의 공칭 또는 분포 안의 표본이다(X-01e, [`contact.md`](contact.md)).
+- **대기 밀도는 `BodyTree.planet.atmosphere_density`로 실리고 MuJoCo 매질(`option density`)에는 넣지 않는다.** MuJoCo 매질은 모든 바디에 같은 전역 값이고, 넣으면 관성 상자 항력(항력 계수 1에 해당하는 고정 식, 부력 없음, MuJoCo 4.0.0 `engine_passive.c` `mj_inertiaBoxFluidModel`)이 라벨 없이 붙는다. 항력은 W-03b가 이 밀도로 바디별 힘을 주고 "근사: 집중 항력"으로 표시한다(`docs/research/fluids/mujoco-water.md` 7.1절의 권고, 아래 "집중 항력 (W-03b)"). 공기 저항은 `DragRuntime`으로 스텝을 밟을 때 걸린다(실행 `PreviewRun`이 그렇게 한다). `mj_step`만 부르는 코드에는 지구·화성에서도 공기 저항이 없다.
 - 자유낙하 대조(정지 상태에서 1 m, 지면에 놓인 0.1 m 정육면체를 실행 초기 조건으로 2 m 올려 바닥에 닿지 않게, MuJoCo 기본 시간 간격 0.002 s와 반암시 오일러): 수계산 t = √(2h/g)는 지구 0.45160 s, 화성 0.73225 s, 달 1.11111 s. 시뮬은 세 행성 모두 수계산보다 0.99962 ~ 0.99998 ms 빠르다(`시뮬`). 적분기가 h_n = g·dt²·n(n+1)/2로 움직이므로 √(T² + dt²/4) − dt/2에서 h를 지나는 것과 맞는다(시간 간격의 1% 안). 시뮬과 수계산의 차이는 적분 오차뿐이고, 같은 식끼리의 대조라서 행성 모델이 현실과 맞는다는 증거는 아니다.
+
+## 집중 항력 (W-03b)
+
+- 코드는 `packages/engine/src/kinetra_engine/compiler/drag.py`(`compile_drag`, `Drag`, `DragRuntime`, `geom_drag_area`, `planet_medium`), 라벨은 `labels.py`(`drag_labels`, `model_labels`), 테스트는 `packages/engine/tests/test_drag.py`(`uv run pytest packages/engine -q -k drag`). 이슈 #84.
+- **결정: MuJoCo 유체 모델이 아니라 직접 준 힘.** MuJoCo 매질(`opt.density`, `opt.viscosity`)은 모델 전역 실수 하나라 S2의 수역(물)과 대기를 한 장면에 둘 수 없고, 관성 상자 모델은 계수가 고정이다(`docs/research/fluids/mujoco-water.md` 3.1·7.1절, MuJoCo 4.0.0). 그래서 매질은 0으로 두고(`test_drag_is_not_mujocos_medium`) 바디마다 `F = −½ ρ(x) C_dA |v| v`를 질량중심에 준다. `v`는 질량중심의 월드 속도, `ρ(x) = Drag.medium_density(질량중심 위치)`. S1의 `planet_medium`은 행성 표면 대기 밀도 상수이고, FL-03b는 이 함수만 바꿔 끼운다. 토크·양력·바람은 없다.
+- **힘을 주는 경로**: `DragRuntime.step(data)` = `mj_step1` → `xfrc_applied` 힘 행에 더함(+=) → `mj_step2` → 건드린 행을 원래 값으로 되돌림. 현재 스텝의 자세와 속도를 보고, 다른 작성자가 둔 힘은 지우지도 쌓지도 않는다(`test_drag_keeps_a_force_another_writer_put_in_xfrc_applied`). 이 경로는 궤적 해시의 일부다(`docs/decisions/engine.md` 4.4절). 실행 루프 `PreviewRun`(X-02a, `run/preview.py`)이 매 틱 `thrust.begin_step` 뒤 `mj_step1` → `apply` → `mj_step2` → `restore` → `thrust.end_step` 순서로 부르고, `run_started.model_labels`에 `model_labels(tree)`를 싣는다.
+- **형상의 집중 계수**(`geom_drag_area`): 충돌 프록시 지오메트리마다 세 축 방향에서 본 `C_d × 투영 면적`의 평균, 바디는 그 합. 계수는 Baker 외 1983의 표(Aarønæs 2014 석사논문 표 2-2, 9쪽에 재수록, [PDF](http://publications.lib.chalmers.se/records/fulltext/199998/199998.pdf), 기준 면적은 흐름에 수직인 투영 면적, 2026-11-12에 읽음).
+
+| 지오메트리 | 축별 값 | `C_dA` | 배지 |
+|---|---|---|---|
+| 구 r | 0.47, πr² | 0.47 πr² | `인용`(표의 구 그대로) |
+| 상자 a×b×c | 정육면체 정면 1.05, 각 면 넓이 | 1.05 (ab+bc+ca)/3 | `추정`: 정육면체 값을 모든 상자에 쓴다. 표의 정육면체 모서리 방향 0.80(×√2 a² = 1.13 a²)과는 8% 안이지만 긴 직사각 부재 정면 2.05라 납작하거나 긴 상자는 이보다 항력이 크다 |
+| 원통 r, 길이 L | 옆면(긴 막대) 1.20, 2rL 두 축; 끝면(막대) 0.82, πr² 한 축 | (2·1.20·2rL + 0.82 πr²)/3 | `추정`: 표의 원판 정면 1.17이라 짧은 원통은 이보다 크다 |
+
+- **라벨**: 대기 밀도가 0보다 크면(지구, 화성) `model_labels(tree)`에 `근사: 집중 항력`(`kind` `drag`)이 한 줄 들어간다. 판정 가정표의 합성(W-03c)과 실행의 `model_labels`가 이 목록을 쓴다.
+- **달은 0이다.** 데이터의 대기 밀도가 0이라 힘이 0이고 `DragRuntime`은 아무것도 더하지 않는다. 궤적이 `mj_step`만 쓴 것과 비트 단위로 같고 라벨도 없다(`test_drag_moon_is_zero_and_the_trajectory_is_the_one_without_drag`).
+- **구의 종단속도 대조** (`시뮬`, MuJoCo 4.0.0, 기본 시간 간격 0.002 s, 오일러, 시드 없음·결정론): 반지름 0.05 m 구(시험 값), 재료 밀도 지구 50, 화성 5 kg/m³(시험 값, 몇 초 안에 종단속도에 닿게). 수계산 `v_t = √(2mg / (ρ C_dA))`: 지구 10.69105 m/s, 화성 18.18444 m/s. 정지에서 떨어뜨려 `v(t) = v_t tanh(g t / v_t)`와 비교했다. 8τ(τ = v_t/g; 지구 1.090 s, 화성 4.875 s) 뒤 속도는 수계산보다 상대 2.2×10⁻⁷ 작고(= 1 − tanh 8), 낙하 전체의 최대 차이는 두 행성 모두 0.184·g·Δt(지구 3.6 mm/s, 화성 1.4 mm/s)다. 같은 식끼리의 대조라서 계수가 현실의 물체와 맞는다는 증거는 아니다. 레이놀즈 수는 지구 약 7×10⁴, 화성 약 1.2×10⁵(공기 동점성 1.5×10⁻⁵ m²/s로 우리가 셈, 화성도 같은 값을 쓴 `추정`)이고, 0.47은 이 아임계 영역의 값이다. 매끈한 구는 약 3×10⁵ 이상에서 계수가 크게 떨어진다(NASA Glenn "Shape Effects on Drag": 구 0.07 ~ 0.5).
+- **명시적 힘의 시간 간격 한계** (`시뮬`, 위 지구 구, τ = 1.090 s): 선형화하면 한 스텝이 속도 오차에 `1 − hρC_dA|v|/m`을 곱하고, 종단속도 근처에서는 `1 − 2gh/v_t`다. 잰 결과: h = 0.4τ, 0.5τ는 단조 수렴, 0.9τ는 7% 넘어선 뒤 수렴, 1.1τ는 0.49 v_t와 1.33 v_t를 오가는 2스텝 순환으로 수렴하지 않고, 1.5τ는 발산해 MuJoCo가 `mjWARN_BADQACC`를 낸다. 즉 안정 한계는 `h < v_t/g`(일반적으로 `hρC_dA|v|/m < 2`)다. 기본 0.002 s는 이 구의 τ/545다. 실행 중에 이 조건을 검사하지는 않는다.
+- **한계**: 방향과 무관한 계수 하나(집중 근사), 지오메트리 사이의 겹침과 가림을 빼지 않아 여러 지오메트리로 된 바디는 항력이 크게 잡힌다, 관절로 이어진 바디도 각자 자기 질량중심 속도로 받는다, 회전 감쇠 없음. 화성 밀도의 불확실도(±37.5%)는 위 "정직성" 절 그대로 판정에 아직 반영되지 않는다.
 
 ## 지면 마찰: 규칙 하나, 세 행성
 
@@ -56,13 +75,20 @@
 
 **공칭 규칙.** 세 행성 모두 공칭값은 **끝값의 평균**이다(`value.source.ref`에 "Midpoint of the bounds"). 이전 판은 화성 공칭이 분포의 79% 지점이었다. 평균이면 결정론 탐색의 값과 몬테카를로의 평균이 같다. 공칭이 평균인 것은 그 값이 가장 그럴듯하다는 뜻이 아니다. 어느 출처도 가장 그럴듯한 값을 주지 않았다.
 
-**대용 값이며 높은 쪽으로 치우쳐 있다.** 출처들은 흙의 내부 마찰각(Mohr-Coulomb, tan φ)이고 부품이 지면 위에서 미끄러지는 쿨롱 계수가 아니다. 서로 다른 재료의 계면에서는 마찰각 δ가 φ보다 작다(FHWA p. 2-39). NAVFAC DM 7.02 표 1의 계면 계수는 강판 말뚝 대 흙 0.20 ~ 0.40, 거푸집 콘크리트 대 흙 0.25 ~ 0.50, 매스 콘크리트 대 흙 0.30 ~ 0.60이다(미끄러지는 부품이 흙에 닿는 경우의 값이 아니라 구조물 벽면 값이다). 따라서 tan φ는 매끈한 부품에게 **상한**이고, 세 행성 분포는 모두 그 상한 쪽에 있다. 예: 지구 분포의 중간 0.56은 미끄럼 임계각 약 29°이고 계면 값 0.20 ~ 0.60은 11° ~ 31°다. 판정은 접지력을 **과대평가**하는 방향으로 치우친다. 하한을 계면 값까지 넓히지 않은 이유는 이 모델이 계면 재료(사용자 부품의 재질)를 모르기 때문이다. 부품 재질과 지면의 쌍별 마찰은 X-01의 접촉 합성이 맡는다. 이 치우침은 `source.ref`, `unverified`, 이 문서에 적었다. 이전 판의 "어떤 출처도 측정하지 않았다"는 말은 사실이 아니었다(NAVFAC에 계면 계수가 있다). 맞는 말은 "사용자가 만드는 부품과 지면의 계수를 준 출처가 없다"이다.
+**대용 값이며 높은 쪽으로 치우쳐 있다.** 출처들은 흙의 내부 마찰각(Mohr-Coulomb, tan φ)이고 부품이 지면 위에서 미끄러지는 쿨롱 계수가 아니다. 서로 다른 재료의 계면에서는 마찰각 δ가 φ보다 작다(FHWA p. 2-39). NAVFAC DM 7.02 표 1의 계면 계수는 강판 말뚝 대 흙 0.20 ~ 0.40, 거푸집 콘크리트 대 흙 0.25 ~ 0.50, 매스 콘크리트 대 흙 0.30 ~ 0.60이다(미끄러지는 부품이 흙에 닿는 경우의 값이 아니라 구조물 벽면 값이다). 따라서 tan φ는 매끈한 부품에게 **상한**이고, 세 행성 분포는 모두 그 상한 쪽에 있다. 예: 지구 분포의 중간 0.56은 미끄럼 임계각 약 29°이고 계면 값 0.20 ~ 0.60은 11° ~ 31°다. 판정은 접지력을 **과대평가**하는 방향으로 치우친다. 하한을 계면 값까지 넓히지 않은 이유는 이 모델이 계면 재료(사용자 부품의 재질)를 모르기 때문이다. 부품 재질과 지면의 접촉 계수는 X-01e의 합성 규칙이 두 값 중 작은 쪽으로 정한다([`contact.md`](contact.md)): 부품 재료 값(대 강철)이 tan φ보다 작으면 부품 값이 쓰여 이 상한이 지켜진다. 이 치우침은 `source.ref`, `unverified`, 이 문서에 적었다. 이전 판의 "어떤 출처도 측정하지 않았다"는 말은 사실이 아니었다(NAVFAC에 계면 계수가 있다). 맞는 말은 "사용자가 만드는 부품과 지면의 계수를 준 출처가 없다"이다.
 
 **분포는 측정된 모집단이 아니다.** 서로 다른 현장·방법에서 나온 대표 각의 최솟값과 최댓값 사이 uniform이다. 어느 출처도 분포를 주지 않았다. 신뢰도는 세 행성 모두 `low`다.
 
 ## 가정표에서의 자리 (W-03c의 계약)
 
 프로젝트에 저장되는 `AssumptionTable`은 행성 키(`PLANET_CONSTANT_NAMES`: `ground_friction`, `gravity` …)를 계속 거부한다. 행성 상수는 프로젝트의 가정이 아니라 `data/bodies`의 것이고, 사용자가 프로젝트를 통해 바꿀 수 없어야 한다(규칙 C4). 그래서 `load_body(id).ground_friction`(`Assumption`)은 프로젝트의 표에 들어가지 않는다. **판정에 붙는 가정표는 판정 시점에 만든다:** 프로젝트의 행들에 `data/bodies`에서 읽은 행성의 행들(마찰 분포, 그리고 W-06이 붙이는 "근사: 균일 중력" 라벨)을 더해 합성한다. 합성은 W-03c의 일이다. 행성 행은 읽기 전용(`editable` False)이고 출처 배지는 이 파일의 것을 그대로 보인다. `test_bodies_planet_friction_is_not_a_row_of_the_projects_assumption_table`가 현재의 거부를 고정한다. 이 결정을 바꾸려면 테스트와 이 절을 함께 바꿔야 한다.
+
+### 합성과 모델에 들어가는 길 (W-03c, 구현됨)
+
+- 코드는 `packages/core/src/kinetra_core/bodies.py`(`verdict_assumption_table`, `VerdictAssumptionTable`), 테스트는 `packages/engine/tests/test_ground_friction.py`(`uv run pytest packages/engine -q -k friction`). 이슈 #85.
+- `verdict_assumption_table(project.assumptions, load_body(project.world.planet))`가 판정의 가정표를 만든다. `rows`는 행성 행(지금은 `ground_friction` 하나) 다음 프로젝트 행이다. 행성 행은 데이터 파일의 `Assumption` 그대로다(공칭, `uniform` 분포, 두 `추정` 배지와 출처, 신뢰도 `low`, `editable` False). `VerdictAssumptionTable`은 행성 행이 `PLANET_CONSTANT_NAMES`의 키이고 읽기 전용이며 겹치지 않을 때만 만들어진다. 프로젝트 표는 그대로 행성 키를 거부하므로 두 쪽의 키는 겹칠 수 없다. 합성된 표는 프로젝트에 저장되지 않는다.
+- **모델에 들어가는 길.** 결정론 탐색은 행의 `value`(공칭), 몬테카를로는 행의 `distribution`에서 뽑은 값을 쓴다. 어느 쪽이든 그 값이 `to_mjcf(tree, ground_friction=μ)`로 컴파일된 지면 geom의 마찰이 된다(지면 geom, 부품과의 합성 규칙 min, 분포 지지 밖 값의 거부는 X-01e, [`contact.md`](contact.md)). 표본을 뽑는 몬테카를로 루프는 J-04의 일이다.
+- **수계산 대조**(분포의 양 끝, 세 행성): 재료 마찰 1.0(모든 행성 상한 0.9004보다 커서 min 규칙에서 지면 값이 쌍의 마찰이 된다)인 0.2 × 0.2 × 0.05 m 판을 지면에 놓고 중력을 θ만큼 돌린다(넘어지는 각 76°는 모든 임계각보다 크다). 컴파일된 지면 geom의 마찰이 뽑은 값과 같은 double이다. 임계각 atan(μ)보다 0.5° 낮으면 판이 버틴다: 시간 0.2 ~ 1 s의 속도 기울기가 0.001 g 미만이고, 부드러운 접촉 때문에 1 s 뒤 1.7×10⁻⁴ ~ 1.8×10⁻³ m/s로 기어간다(`시뮬`, g × 1 s의 0.008 ~ 0.021%; 0.5° 높을 때 도달하는 속도의 약 1/50 ~ 1/100). 0.5°와 2° 높으면 g(sin θ − μ cos θ)로 미끄러진다(`시뮬`, −0.26% ~ +0.57%, 시험의 허용은 1%). 분포 밖의 값(양 끝 ± 0.0001)은 모델에 들어가지 않는다(`ValueError`). 이 대조는 MuJoCo의 쿨롱 마찰이 컴파일된 μ를 따른다는 것을 보일 뿐이고, 흙의 tan φ가 부품의 미끄럼 계수라는 증거는 아니다(위의 "대용 값이며 높은 쪽으로 치우쳐 있다").
 
 ## 정직성: 이 값들이 말하지 않는 것
 

@@ -2,7 +2,7 @@
 
 - 상태: 구현됨. 코드는 `packages/engine/src/kinetra_engine/compiler/`(`bodytree.py`, `labels.py`, `mjcf.py`, 오류는 `errors.py`·`checks.py`), 테스트는 `packages/engine/tests/test_body_tree.py`, `test_compile_errors.py`. `uv run pytest packages/engine -q -k body_tree`(정규 순서 규칙은 `-k canonical_order`, 컴파일 오류는 `-k compile_error`).
 - 근거: `docs/decisions/engine.md`(MuJoCo 네이티브 4.0.0이 코어), `collision-proxy.md`(매핑 표), `part-mass.md`, `project-model.md`(결합), `missing-definitions.md`(`require_complete`), `part-motor.md`(역할 없는 부품의 "곡선 없음"), 이슈 #123, #126, #511.
-- 범위 밖: 힌지·슬라이더의 스프링·댐퍼, 모터와 토크-속도 제한(X-01b), 추력기와 추진제(X-01c, [`thrust.md`](thrust.md)), 접촉 매개변수와 마찰 합성(X-01b), 결합 해제(X-04b), 정역학 경고와 한 목록으로 합치기(X-11). MJCF는 산출물이고 저장 원본이 아니다. 행성 상수와 `<option>`은 W-03a(`bodies.md`의 "엔진이 읽는 법").
+- 범위 밖: 힌지·슬라이더의 스프링·댐퍼, 모터와 토크-속도 제한(X-01b), 추력기와 추진제(X-01c, [`thrust.md`](thrust.md)), 접촉 매개변수와 마찰 합성(X-01e, [`contact.md`](contact.md)), 결합 해제(X-04b), 정역학 경고와 한 목록으로 합치기(X-11). MJCF는 산출물이고 저장 원본이 아니다. 행성 상수와 `<option>`은 W-03a(`bodies.md`의 "엔진이 읽는 법").
 
 ## 쓰는 법
 
@@ -21,8 +21,9 @@ labels = proxy_labels(tree)                                    # 근사 라벨(M
 - **월드 축.** 결합 축은 `a` 인스턴스 자세 × `a` 스냅 포인트 자세 × `Joint.unit_axis`(`project-model.md`의 B-04a 문단이 이 계산을 X-01a의 몫으로 남겼다)이고 MJCF에는 자식 강체 좌표계로 옮겨 적는다. 결합점은 `a` 스냅 포인트의 월드 위치다. 두 스냅 포인트가 저장된 자세에서 만나지 않거나 `b` 스냅 좌표계로 읽은 축이 다른 직선이면 컴파일 오류다(아래 X-01d). 그래서 `a` 쪽을 기준으로 써도 `b` 쪽과 같은 점, 같은 직선이다(자세가 권위다).
 - **프록시 → `geom`**(`collision-proxy.md`의 매핑 표): 상자는 반치수, 원기둥은 `(반지름, 반길이)`, 구는 반지름, 중심은 `pos`, 방향은 `quat="w x y z"`. 강체 안의 다른 인스턴스의 geom은 강체 좌표계로 옮긴다. `geom` 이름은 `<인스턴스>/<프록시 geom id>`.
 - **`<inertial>`.** `mass`, `pos`(`MassProperties.center_of_mass`), `fullinertia`(`Ixx Iyy Izz Ixy Ixz Iyz`, 질량 중심 둘레, 강체 축)를 `MassProperties`에서 명시한다. `inertiafromgeom="false"`라 `<inertial>`이 없는 바디는 MuJoCo가 거절한다(프록시의 메운 빈 곳이 질량에 들어가지 않는다는 보증).
-- **`<option>`(W-03a)**: 중력은 `data/bodies`의 그 행성 값, MuJoCo 매질(`density`, `viscosity`)은 0이다(이유는 `bodies.md`의 "엔진이 읽는 법"). 시간 간격과 적분기는 아직 MuJoCo 기본값이다(X-02).
-- **MJCF에 아직 없는 것**: 시간 간격·적분기 설정, 공기 항력(W-03b), 접촉 매개변수. `break_threshold`는 이 MJCF에 들어가지 않는다(X-04b). 결합의 스프링·댐퍼와 모터는 `to_mjcf(tree, drives=compile_drives(tree))`가 더한다(X-01b, [`joints-actuators.md`](joints-actuators.md)).
+- **`<option>`(W-03a)**: 중력은 `data/bodies`의 그 행성 값, MuJoCo 매질(`density`, `viscosity`)은 0이다(이유는 `bodies.md`의 "엔진이 읽는 법"). 시간 간격과 적분기는 아직 MuJoCo 기본값이다(X-02). `cone="elliptic"`은 X-01e다.
+- **지면과 접촉(X-01e, [`contact.md`](contact.md))**: `<worldbody>`의 첫 geom은 지면 평면 z = 0(`__kinetra_ground`, 행성 지면 마찰)이다. 모든 geom에 `friction`과 `priority`(두 면 중 작은 계수가 이기게)를, `<default>`에 `condim`·`solref`·`solimp`를 쓴다. `to_mjcf(tree, ground_friction=μ)`가 몬테카를로 표본을 받는다.
+- **MJCF에 아직 없는 것**: 시간 간격·적분기 설정. 공기 항력은 MJCF가 아니라 실행 중 바디별 힘이다(W-03b, `compile_drag`·`DragRuntime`, [`bodies.md`](bodies.md) "집중 항력"). `break_threshold`는 이 MJCF에 들어가지 않는다(X-04b). 결합의 스프링·댐퍼와 모터는 `to_mjcf(tree, drives=compile_drives(tree))`가 더한다(X-01b, [`joints-actuators.md`](joints-actuators.md)).
 
 ## 근사 라벨
 
@@ -37,7 +38,7 @@ labels = proxy_labels(tree)                                    # 근사 라벨(M
 
 ## 한계와 열린 질문 (숨기지 않는다)
 
-- 이 PR(X-01a)이 돌려 본 것은 적재(`MjModel.from_xml_string`)와 `mj_forward`까지다. 구름과 모터·스프링의 궤적 시험은 X-01b(`joints-actuators.md`)가 했다. 접촉 매개변수는 아직 컴파일하지 않는다.
+- 이 PR(X-01a)이 돌려 본 것은 적재(`MjModel.from_xml_string`)와 `mj_forward`까지다. 구름과 모터·스프링의 궤적 시험은 X-01b(`joints-actuators.md`)가, 경사의 미끄럼 시험은 X-01e(`contact.md`)가 했다.
 - 같은 인스턴스를 두 번 컴파일하지 않으려면 `cache`(`PartCache`)를 넘긴다. 캐시 키는 `part_key`(엄격)다. 정규 순서로 읽은 부품은 순서만 다른 정의가 같은 키에 닿는다.
 - 구조적 오류도 아래의 `CompileError`다.
 

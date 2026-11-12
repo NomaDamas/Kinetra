@@ -4,7 +4,7 @@
     PreviewRun(project, run_id=..., project_id=..., revision=..., duration_s=..., seed=0) -> iterate: Frame ..., RunEnded
 
 Port of the legacy live run (`legacy-v0`, `packages/engine/src/kinetra_engine/live.py`): the model is compiled from the
-document as it is, and every frame is produced by stepping the engine (`mj_step`) while the stream is read. Nothing is a
+document as it is, and every frame is produced by stepping the engine (`mj_step1`/`mj_step2`) while the stream is read. Nothing is a
 replay of a stored file.
 
 **Gate (C-06).** `compile_project` calls `require_complete(project, compile)` and `PreviewRun` calls
@@ -17,7 +17,7 @@ the end tick (the end frame rule of 3.3), also when it falls between two interva
 before it is yielded. A body's pose is the world pose of its frame, which is the frame of its smallest-id instance
 (`bodytree.py`); the client places the other instances of a welded body by their saved poses relative to it.
 
-**Time (F2).** A tick is one `mj_step` of `timestep_s`. Iterating does not look at the wall clock: how fast the frames
+**Time (F2).** A tick is one engine step of `timestep_s` (`mj_step1` and `mj_step2`, see below). Iterating does not look at the wall clock: how fast the frames
 are read (a slow core, a slow client, the `speed` of the transport) cannot change a pose or a time. The trajectory is a
 function of the compiled model and the number of ticks only (`client-adapter.md` 4.1).
 
@@ -25,22 +25,25 @@ function of the compiled model and the number of ticks only (`client-adapter.md`
 velocity or acceleration (it then resets its state, so the run cannot go on): the end frame is the last finite tick,
 which the run kept, and there is no trajectory hash. The trajectory hash of a completed run is SHA-256 over the
 float64 generalized positions of every tick from 0 to the end, in order, tagged with the run's platform tag (H1). It
-is a hash of this run's stream, kept by the core (F7); how two hashes are compared (match, mismatch, not comparable) is
-X-02d.
+is a hash of this run's stream, kept by the core (F7); two records are compared (match, mismatch, not comparable) by
+`kinetra_core.compare_trajectories` (X-02d).
 
-**Model labels.** The proxy approximation labels of the compile (`proxy_labels`), and what the compiled model does not
-apply of the planet, read from the model itself so a label goes away once a leaf sets it: the planet's gravity when the
-model's gravity differs from the planet's `data/bodies` value (W-03a sets it, so this label does not appear today), and
-the ground when the model has none.
+**Model labels.** The model labels of the compile (`model_labels`: the proxy approximations, the contact labels of
+X-01e — the friction rule, slow slip, no rolling friction, tread and default friction per instance — and `근사: 집중 항력`
+where the planet has air, W-03b), and what the compiled model does not apply of the planet, read from the model itself so a label goes away once a leaf sets it: the planet's gravity
+when the model's gravity differs from the planet's `data/bodies` value (W-03a sets it, so this label does not appear
+today), and the ground when the model has none (X-01e compiles it, so this label does not appear today either).
 
-**Drives (X-01b) and thrust (X-01c).** The model is compiled from `compile_thrust` (the body tree with its thrusters and the
-propellant of its tanks) and `compile_drives` (springs on sliders, one motor per motor actuator). This run owns the step
-loop. Every tick, before `mj_step`: a `DriveRuntime` writes the motors' torque from the project's control schedule (the
-command of an actuator during the step from `t = (tick - 1) * timestep_s` is the `command` of its schedule entry with
-`start <= t < end`; a schedule has at most one such entry per actuator, `DesignSpec`; else 0) and drains their batteries,
-and `ThrustRun.begin_step` draws the propellant, puts the step's mass on the bodies and adds the thrust into
-`xfrc_applied`. After `mj_step`, `ThrustRun.end_step` restores the `xfrc_applied` rows it used and puts the mass left on
-the bodies. Another force source (drag, W-03b) adds into the same rows the same way, between those two calls.
+**Drives (X-01b), thrust (X-01c) and drag (W-03b).** The model is compiled from `compile_thrust` (the body tree with its
+thrusters and the propellant of its tanks), `compile_drives` (springs on sliders, one motor per motor actuator) and
+`compile_drag` (one lumped drag area per body). This run owns the step loop. Every tick: a `DriveRuntime` writes the motors'
+torque from the project's control schedule (the command of an actuator during the step from `t = (tick - 1) * timestep_s` is
+the `command` of its schedule entry with `start <= t < end`; a schedule has at most one such entry per actuator,
+`DesignSpec`; else 0) and drains their batteries, and `ThrustRun.begin_step` draws the propellant, puts the step's mass on
+the bodies and adds the thrust into `xfrc_applied`. Then the step is `mj_step1` (this step's positions and velocities),
+`DragRuntime.apply` (adds each body's drag into `xfrc_applied`), `mj_step2`, `DragRuntime.restore` (puts back the rows it
+touched). Last, `ThrustRun.end_step` restores the rows thrust used and puts the mass left on the bodies. On the Moon the air
+density is 0, drag touches nothing, and the trajectory is bit for bit the one of `mj_step`.
 
 **Events.** The stream carries no events yet: contacts, breaks (X-04b) and met conditions are added by their leaves.
 """
@@ -70,7 +73,20 @@ from kinetra_core import (
 from kinetra_core.bodies import load_body
 from kinetra_core.frames import MAX_TICK
 
-from ..compiler import BodyTree, DriveRuntime, Drives, ThrustModel, ThrustRun, compile_drives, compile_thrust, proxy_labels, to_mjcf
+from ..compiler import (
+    BodyTree,
+    Drag,
+    DragRuntime,
+    DriveRuntime,
+    Drives,
+    ThrustModel,
+    ThrustRun,
+    compile_drag,
+    compile_drives,
+    compile_thrust,
+    model_labels,
+    to_mjcf,
+)
 from ..parts import PartCache
 from .platform_tag import platform_tag
 
@@ -84,12 +100,13 @@ _UNSTABLE = (mujoco.mjtWarning.mjWARN_BADQPOS, mujoco.mjtWarning.mjWARN_BADQVEL,
 
 @dataclass(frozen=True)
 class CompiledModel:
-    """A project compiled for the engine: its body tree, its thrusters and tanks, its springs and motors, the MJCF text
-    (an artifact, never saved or sent: 2절) and the loaded model (dry masses; a run puts the propellant on)."""
+    """A project compiled for the engine: its body tree, its thrusters and tanks, its springs and motors, its drag, the MJCF
+    text (an artifact, never saved or sent: 2절) and the loaded model (dry masses; a run puts the propellant on)."""
 
     tree: BodyTree
     thrust: ThrustModel
     drives: Drives
+    drag: Drag
     mjcf: str
     model: mujoco.MjModel
 
@@ -102,7 +119,7 @@ def compile_project(project: Project, cache: PartCache | None = None) -> Compile
     tree = thrust.tree
     drives = compile_drives(tree)
     mjcf = to_mjcf(tree, drives=drives)
-    return CompiledModel(tree, thrust, drives, mjcf, mujoco.MjModel.from_xml_string(mjcf))
+    return CompiledModel(tree, thrust, drives, compile_drag(tree), mjcf, mujoco.MjModel.from_xml_string(mjcf))
 
 
 def commands_at(design: DesignSpec, t: float) -> dict[str, float]:
@@ -189,7 +206,7 @@ class PreviewRun:
                 "timestep_s": timestep_s,
                 "frame_every_ticks": frame_every_ticks or default_frame_every_ticks(timestep_s),
                 "bodies": [{"id": b.id, "instances": list(b.instances)} for b in bodies],
-                "model_labels": [label.text for label in proxy_labels(compiled.tree)] + list(environment_labels(project, model)),
+                "model_labels": [label.text for label in model_labels(compiled.tree)] + list(environment_labels(project, model)),
                 "platform": tag,
             }
         )
@@ -218,6 +235,7 @@ class PreviewRun:
         data = mujoco.MjData(model)
         drives = DriveRuntime(model, self.compiled.drives)
         thrust = ThrustRun(self.compiled.thrust, model, data)  # puts the tanks' propellant on their bodies
+        drag = DragRuntime(model, self.compiled.drag)
         design, dt = self.compiled.tree.design, run.timestep_s
         trajectory = hashlib.sha256(data.qpos.tobytes())
         last_good = data.qpos.copy()
@@ -229,7 +247,10 @@ class PreviewRun:
             np.copyto(last_good, data.qpos)
             drives.apply(data, commands_at(design, (tick - 1) * dt), dt)
             thrust.begin_step()
-            mujoco.mj_step(model, data)
+            mujoco.mj_step1(model, data)
+            drag.apply(data)
+            mujoco.mj_step2(model, data)
+            drag.restore(data)
             thrust.end_step()
             if any(data.warning[w].number for w in _UNSTABLE) or not np.isfinite(data.qpos).all():
                 good = tick - 1
