@@ -222,14 +222,13 @@ def _quantile(a: Assumption, q: float) -> float:
 
 def _pinned_table(table: VerdictAssumptionTable, key: str, q: float, value: float) -> VerdictAssumptionTable:
     """Make one counterfactual fixed row with explicit derived-value provenance; never mutate the original table."""
-    original = table.row(key)
-    distribution_source = getattr(original.distribution, "source", None)
+    original_index = next(i for i, a in enumerate(table.rows) if a.key == key)
+    original = table.rows[original_index]
+    # Do not nest the original citation: it can already be near Source.ref's 500-character limit. The report keeps the
+    # complete original row; this short derivation points back to its stable key and structured distribution path.
     source = Source(
-        ref=(
-            f"J-03 one-at-a-time pin: q={q:g} of the original distribution for {key!r}; "
-            f"original spread evidence: {distribution_source.ref if distribution_source is not None else 'fixed row'}"
-        ),
-        locator="kinetra_judge.sensitivity._quantile",
+        ref=f"J-03 one-at-a-time pin: q={q:g} derived from original assumption {key!r} distribution",
+        locator=f"SensitivityReport.assumptions[{original_index}].distribution; kinetra_judge.sensitivity._quantile",
     )
     pinned = original.model_copy(update={
         "value": Quantity(value=value, unit=original.value.unit, badge=Badge.ESTIMATE, source=source),

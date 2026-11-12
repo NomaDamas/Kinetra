@@ -64,7 +64,7 @@ Wilson 구간은 닫힌 식으로 대조한다: k = 0, n = 10의 위 끝 z²/(n 
 `run_sensitivity(project, goal, n=, seed=, duration_s=, project_id=, revision=)`는 먼저 실제 `run_verdict` 기준 판정을 낸다. 기준 판정의 `sampled`에 들어간, 분포가 있고 컴파일 모델이 실제 소비한 각 행에 대해 다음을 반복한다.
 
 1. 그 행만 원 분포의 5% 분위수로 고정한 반사실 가정표를 만들고 같은 `n`, `seed`, 실행 길이, 프로젝트, 조건으로 실제 엔진 판정을 다시 돌린다. 95% 분위수도 같은 일을 한다. 균일분포는 $low+q(high-low)$, 정규분포는 표준 라이브러리 `NormalDist.inv_cdf` 뒤 원 행의 clip을 적용한다.
-2. 다른 행은 기존 행별 독립 스트림 `derive_seed(seed, "assumption", key)`와 같은 표본 인덱스를 쓰므로 기준 판정과 공통 난수를 갖는다. 반사실 표의 고정 행에는 `estimate` 배지와 원 분포·분위수·계산 위치를 적은 출처를 새로 붙이며 원 프로젝트와 원 가정표는 바꾸지 않는다. 반사실 판정의 `assumptions_hash`도 그 고정 표의 해시다.
+2. 다른 행은 기존 행별 독립 스트림 `derive_seed(seed, "assumption", key)`와 같은 표본 인덱스를 쓰므로 기준 판정과 공통 난수를 갖는다. 반사실 표의 고정 행에는 `estimate` 배지와 분위수·계산 위치·원 가정 key 및 `SensitivityReport.assumptions[index].distribution` 경로를 적은 짧은 파생 출처를 새로 붙이며 원 프로젝트와 원 가정표는 바꾸지 않는다. 원 출처 문구를 중첩해 500자 한도를 넘기지 않고, 리포트의 원 가정 행이 원 분포 출처 전체를 그대로 보존한다. 반사실 판정의 `assumptions_hash`도 그 고정 표의 해시다.
 3. `effect = p_success(q95) - p_success(q05)`를 재고 `abs(effect)` 내림차순, 같은 크기는 `assumption_key` 오름차순으로 순위를 매긴다. 어느 한쪽이라도 판단된 표본이 없으면 `effect=null`이고 수치가 있는 행 뒤에 둔다. 미측정을 0으로 바꾸지 않는다.
 4. **뒤집기**는 이 리포트에서 명시적으로 “기준 p_success와 고정 판정의 p_success가 0.5의 엄격히 반대편”이라는 뜻이다. 0.5와 같으면 뒤집기가 아니고, 비교에 필요한 p가 없으면 `flips_verdict=null`이다. `dominant_flip_assumption`은 측정된 뒤집기가 있는 가장 높은 순위의 행이며 없으면 `null`이다.
 

@@ -461,6 +461,9 @@ def test_sensitivity_report_exposes_all_assumptions_method_limits_and_unmeasured
     assert tuple(a.key for a in report.assumptions) == (
         "ground_friction", "surface_friction", "unbound_mass", "unused_friction", "fixed_note",
     )
+    # The derived pin cites this key/path instead of nesting a near-500-character citation; no original evidence is lost.
+    assert report.assumptions[0] == load_body("earth").ground_friction
+    assert report.assumptions[1] == sensitivity_project().assumptions.assumptions[0]
     assert report.not_applied == ("unbound_mass", "unused_friction")
     assert report.fixed == ("fixed_note",)
     assert not {"unbound_mass", "unused_friction", "fixed_note"} & {r.assumption_key for r in report.rows}
