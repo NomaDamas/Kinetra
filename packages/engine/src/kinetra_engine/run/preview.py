@@ -53,6 +53,8 @@ the model is compiled again from it with the drives of the joints left, and the 
 (`carry_state`); the motors, the tanks, the drag and the frames follow the new model by name. Each released
 joint is a `break` event of that tick (`joint`, `load`, `threshold`, in N), carried by the next frame (the frame of the
 tick itself when one is sent there). After a break the trajectory hash goes on over the new model's generalized positions.
+A released body is a free body of the run until the end tick (X-13): no rule removes a piece or takes it out of the
+physics by distance, count or time, every frame carries its pose, and the hash covers its free joint.
 Contacts and met conditions are not in the stream yet; their leaves add them.
 """
 
