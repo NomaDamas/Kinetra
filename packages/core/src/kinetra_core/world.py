@@ -17,8 +17,8 @@ Frame: the ground is the plane z = 0 (right-handed, +Z up, `conventions.py`). A 
 prop's local x axis and `width` along local y. A ramp rises along local +x from z = 0 and its `length` is the
 horizontal run, so its rise is `length * tan(incline)` (derived, not stored). A step is a box `height` tall.
 
-Not here: planet data and the loader (W-01), prop geometry and MJCF (W-05, X-01), editing commands (C-02a), and
-checks that need the rest of the Project. That `planet` exists in `data/bodies` (W-01 data, validator #68) and that
+Not here: planet data and the loader (W-01), prop geometry and MJCF (W-05, `kinetra_engine.compiler.terrain`), the
+commands that place, change and remove props (W-05, `commands.py`), and checks that need the rest of the Project. That `planet` exists in `data/bodies` (W-01 data, validator #68) and that
 `material` names a material of the project (validator #68; with C-01d's cross-reference rules #76) are not
 checked by `World` alone, which cannot know them.
 """

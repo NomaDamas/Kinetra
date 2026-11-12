@@ -33,6 +33,9 @@ carries no threshold: the run reads it from `tree.joints`.
 **Planet (W-03a).** The tree also carries the gravity and atmosphere density of `project.world.planet`, read from
 `data/bodies` by `planet_physics` (`planet.py`) and nowhere else; a planet without readable data is a `CompileError`.
 
+**Terrain (W-05).** The tree carries the project's terrain props (`World.terrain_props`, id order) as static geoms
+(`terrain.py`), which `to_mjcf` writes into `<worldbody>` after the ground.
+
 **Errors (X-01d).** A project with a missing definition is refused first (`require_complete`, `ProjectIncomplete`). Every
 other refusal is a `CompileError` with a code and the instance, part, joint and actuator ids (`errors.py`); the checks per
 part and joint that building does not make are in `checks.py`, run in this order: planet, parts, actuators, snaps, axes,
@@ -67,6 +70,7 @@ from ..parts import PartCache, ShapeError, collision_proxy, mass_properties
 from .checks import check_actuators, check_axes, check_floating, check_snaps
 from .errors import CompileError, CompileErrorCode
 from .planet import PlanetPhysics, planet_physics
+from .terrain import TerrainGeom, terrain_geoms
 
 Vec = tuple[float, float, float]
 Mat = tuple[Vec, Vec, Vec]
@@ -215,13 +219,14 @@ class Body:
 class BodyTree:
     """`bodies` in tree order (parents before children, siblings by id); `bodies[0]` is the root. A tree built from a project
     has one root; a run that released joints (`breaks.release`) has more, each a free body hung from the world. `planet`: the
-    constants of `project.world.planet` from `data/bodies` (W-03a)."""
+    constants of `project.world.planet` from `data/bodies` (W-03a). `terrain`: the project's terrain props as static geoms (W-05)."""
 
     bodies: tuple[Body, ...]
     instances: tuple[CompiledInstance, ...]  # canonical (id) order
     joints: tuple[Joint, ...]  # canonical (id) order, as the project's joints
     design: DesignSpec = field(repr=False)  # the canonical-order design the tree was built from
     planet: PlanetPhysics
+    terrain: tuple[TerrainGeom, ...]
 
     @property
     def root(self) -> Body:
@@ -497,5 +502,5 @@ def build_body_tree(
         CompiledInstance(i.id, i.part, i.material, groups.find(i.id), world[i.id][0], world[i.id][1], compiled[i.id][0], compiled[i.id][1])
         for i in design.instances
     )
-    return BodyTree(tuple(bodies), instances, design.joints, design, planet)
+    return BodyTree(tuple(bodies), instances, design.joints, design, planet, terrain_geoms(ordered_project.world.terrain_props))
 
