@@ -21,7 +21,7 @@ other body has the one `hinge` or `slider` joint of its tree joint, `pos`/`axis`
 coordinate is 0 at the saved pose, which is also the model's reference pose). Numbers are written with `repr`, so they read
 back as the same doubles; bodies, joints and geoms are in tree order. `<option>` carries the planet (W-03a, `planet.py`):
 `gravity="0 0 -g"` with g from `data/bodies`, and MuJoCo's medium off (`density="0" viscosity="0"`; the planet's air density
-is on `tree.planet` for the drag of W-03b, `planet.py` says why it is not MuJoCo's medium). Time step and integrator are not
+is on `tree.planet` for the drag of `drag.py`, W-03b; `planet.py` says why it is not MuJoCo's medium). Time step and integrator are not
 set here (X-02), so MuJoCo's own defaults stand until that leaf sets them.
 
 Contact (X-01e, `contact.py`): the first geom of `<worldbody>` is the ground, the plane z = 0 named `GROUND_GEOM`, with the
