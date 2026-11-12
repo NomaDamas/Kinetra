@@ -81,7 +81,7 @@ def test_freefall_time_matches_the_hand_calculation_on_each_planet(planet):
 def test_freefall_compile_options_come_from_data_bodies(planet):
     body = load_body(planet)
     tree = build_body_tree(block(planet))
-    assert tree.planet == PlanetPhysics(planet, body.gravity, body.atmosphere_density)
+    assert tree.planet == PlanetPhysics(planet, body.gravity, body.atmosphere_density, body.ground_friction)
     # the Quantity travels with its badge and source (V5)
     assert tree.planet.gravity.source == body.gravity.source and tree.planet.atmosphere_density.badge == body.atmosphere_density.badge
     model = mujoco.MjModel.from_xml_string(to_mjcf(tree))
@@ -89,10 +89,11 @@ def test_freefall_compile_options_come_from_data_bodies(planet):
     assert model.opt.density == 0.0 and model.opt.viscosity == 0.0  # no unlabelled MuJoCo drag (planet.py)
 
 
-def test_freefall_three_planets_differ_only_in_the_option_line():
+def test_freefall_three_planets_differ_only_in_the_option_and_ground_lines():
     texts = {p: to_mjcf(build_body_tree(block(p))).splitlines() for p in ("earth", "mars", "moon")}
     diff = [i for i, (a, b, c) in enumerate(zip(texts["earth"], texts["mars"], texts["moon"])) if not a == b == c]
-    assert len(diff) == 1 and texts["earth"][diff[0]].lstrip().startswith("<option ")
+    # the gravity of <option> and the ground's friction (X-01e); the block's 0.5 is below every planet's nominal, so no priority moves
+    assert [texts["earth"][i].split()[:2] for i in diff] == [["<option", 'gravity="0.0'], ["<geom", 'name="__kinetra_ground"']]
 
 
 def test_freefall_the_model_runs_what_the_data_file_says(tmp_path: Path):

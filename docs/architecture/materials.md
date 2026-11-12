@@ -2,7 +2,7 @@
 
 - 상태: 구현됨. 데이터는 `packages/core/src/kinetra_core/material_catalog.json`, 모델은 `material_catalog.py`(로더 `load_material_catalog()`), `pbr.py`(PBR 슬롯). 테스트는 `packages/core/tests/test_materials.py`(`uv run pytest packages/core -q -k materials`).
 - 근거: 이슈 #120, `docs/architecture/project-model.md`(`Material`, 값 배지와 출처), 핵심 가치 V5.
-- 범위 밖: 재료 DB 확장(S2; MatWeb 같은 재배포 금지 DB에서 대량으로 옮기는 일은 하지 않는다), 두 재료 쌍별 마찰표와 접촉 마찰 합성(X-01), 이방성·적층 이론, 온도·변형률 속도 의존, 파단 임계 계산(X-04a, 구현됨: [`break-threshold.md`](break-threshold.md)). CFRP의 `yield_strength` 뜻과 강도 기준 혼재는 #481, `Source`의 범위·접근일 필드는 B-07a.
+- 범위 밖: 재료 DB 확장(S2; MatWeb 같은 재배포 금지 DB에서 대량으로 옮기는 일은 하지 않는다), 두 재료 쌍별 마찰표, 접촉 마찰 합성(X-01e, 구현됨: [`contact.md`](contact.md)), 이방성·적층 이론, 온도·변형률 속도 의존, 파단 임계 계산(X-04a, 구현됨: [`break-threshold.md`](break-threshold.md)). CFRP의 `yield_strength` 뜻과 강도 기준 혼재는 #481, `Source`의 범위·접근일 필드는 B-07a.
 
 ## 숫자는 코드에 없다
 
@@ -47,7 +47,7 @@ SI 환산: 1 ksi = 6.894757 MPa, 1 psi = 6.894757 kPa, 1 lb/ft³ = 16.01846 kg/m
 
 ### 마찰 계수
 
-`Material.friction`은 **건조·상온·운동(미끄럼) 쿨롱 계수, 대 강철**이다. 값은 시험 방법에 크게 의존하고 다섯 값은 서로 다른 세 가지 시험에서 왔다: 평판 대 평판 1.96 N(알루미늄·강·티타늄, Magnaplate 1988), 스러스트 와셔 0.28 MPa(POM, ICI Lubricomp 자료), 스트립 드로잉 4~12 MPa(CFRP). Blau 서문은 이 표를 "아주 대략의 길잡이"라고 쓴다. **값끼리 서열을 매기지 말 것.** 두 재료가 만나는 접촉에서 어떤 계수를 쓸지는 X-01이 정한다.
+`Material.friction`은 **건조·상온·운동(미끄럼) 쿨롱 계수, 대 강철**이다. 값은 시험 방법에 크게 의존하고 다섯 값은 서로 다른 세 가지 시험에서 왔다: 평판 대 평판 1.96 N(알루미늄·강·티타늄, Magnaplate 1988), 스러스트 와셔 0.28 MPa(POM, ICI Lubricomp 자료), 스트립 드로잉 4~12 MPa(CFRP). Blau 서문은 이 표를 "아주 대략의 길잡이"라고 쓴다. **값끼리 서열을 매기지 말 것.** 두 면이 만나는 접촉의 계수는 두 값 중 작은 쪽이다(X-01e, [`contact.md`](contact.md)).
 
 **고르는 규칙(하나).** Blau 표 1에서 *강 1032를 고정, 대상 재료를 이동*시킨 행의 **운동** 계수를 쓴다. 폴리머는 같은 방향(강 고정, 폴리머 이동)의 행을 쓴다.
 
