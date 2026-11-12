@@ -56,9 +56,10 @@ the model is compiled again from it with the drives of the joints left, and the 
 (`carry_state`); the motors, the tanks, the drag and the frames follow the new model by name. Each released
 joint is a `break` event of that tick (`joint`, `load` the window mean, `threshold`, in N), carried by the next frame (the
 frame of the tick itself when one is sent there). After a break the trajectory hash goes on over the new model's generalized
-positions. While a joint can still break, a `TimestepSensitivity` checks the run against the range where the window was
-measured to keep breaks time-step invariant; out of it, `run_ended.labels` carries "시간 간격 민감: 파단 결과가 약한 증거"
-with the reasons (`docs/research/engine/break-timestep.md`).
+positions. While a joint can still break, a `TimestepSensitivity` checks the run against the measured speed, mass-ratio and
+spring limits and checks each break for time-step-dependent threshold overshoot; out of those bounds, `run_ended.labels`
+carries "시간 간격 민감: 파단 결과가 약한 증거" with the reasons (`docs/research/engine/break-timestep.md`). The original drop
+and ramp scenes do not meet the proposed 10 % break-load spread; the label does not claim otherwise.
 Contacts and met conditions are not in the stream yet; their leaves add them.
 """
 
@@ -309,6 +310,8 @@ class PreviewRun:
                 yield RunEnded.model_validate({"type": "run_ended", "run_id": run.run_id, "last_tick": good, "end": {"reason": "failed"}, "labels": self._labels(sensitivity)})
                 return
             if over:
+                if sensitivity is not None:
+                    sensitivity.observe_breaks(over)
                 broken = [o.joint for o in over]
                 tree, drive_spec = release(tree, broken), drive_spec.without_joints(broken)
                 released = mujoco.MjModel.from_xml_string(to_mjcf(tree, drives=drive_spec, timestep_s=self._timestep_s))

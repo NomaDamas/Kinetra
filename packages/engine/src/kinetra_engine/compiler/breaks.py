@@ -27,12 +27,12 @@ way. A spring or motor on the broken joint goes with it (`Drives.without_joints`
 **Determinism.** The load is read from the engine's state only, released joints are taken in joint id order, and the new
 model is the same text for the same tree, so the same project and the same ticks give the same breaks and the same states.
 
-**Time-step sensitivity (X-10).** With the window, the three reference scenes break the same joints at the time step,
-half and a quarter of it and their window loads agree within 10 %. `docs/research/engine/break-timestep.md` measured where
-that stops holding; `TimestepSensitivity` checks a run against those numbers (mass ratio, springs and speed at the start and
-after every step while a joint can still break, on the model the run is on, also one compiled again after a break) and its
-`reasons` are why the run's breaks are weak evidence
-(`TIMESTEP_SENSITIVE_LABEL`).
+**Time-step sensitivity (X-10).** With the window, the three original reference scenes break the same joints at the time step,
+half and a quarter of it, but the drop and ramp do **not** meet the proposed 10 % limit for break-event loads (45.9 % and
+19.8 %). `docs/research/engine/break-timestep.md` records that unmet criterion and the measured speed, mass-ratio and spring
+limits. `TimestepSensitivity` checks those limits and also reports a break load more than 10 % over its threshold: if every
+break in every compared run stays within that bound, their pairwise load spread cannot exceed 10 %. Its `reasons` are why the
+run's breaks are weak evidence (`TIMESTEP_SENSITIVE_LABEL`).
 
 This is a simplified model (plan 4.6, `break-threshold.md`): one scalar force against one scalar threshold. No torque, no
 fatigue, no cracks, no FEM.
@@ -54,6 +54,11 @@ BREAK_LABEL = "단순화 모델: 결합 파단은 결합을 지나는 힘을 고
 
 TIMESTEP_SENSITIVE_LABEL = "시간 간격 민감: 파단 결과가 약한 증거"
 """The start of the `run_ended.labels` sentence of a run with a breakable joint that `TimestepSensitivity` puts out of range."""
+
+BREAK_LOAD_SPREAD_LIMIT = 0.10
+"""X-10's proposed maximum relative break-load spread. A break event overshooting its threshold by more than this fraction is
+marked sensitive: if all events instead overshoot by at most this fraction, every load is in `[threshold, 1.1 * threshold]`,
+so their `(maximum - minimum) / minimum` cannot exceed 10 %. This is an acceptance limit [제안], not a measured constant."""
 
 SPEED_LIMIT_M_S = 512.0
 """The fastest body [m/s] at which the measurements kept breaks time-step invariant (`break-timestep.md`: a block dropped on the
@@ -204,11 +209,11 @@ def carry_state(old_model: mujoco.MjModel, old_data: mujoco.MjData, new_model: m
 
 
 class TimestepSensitivity:
-    """Whether a run is where the measurements of `break-timestep.md` did not keep breaks time-step invariant: a mass ratio over
-    `MASS_RATIO_LIMIT`, a slider spring over `SPRING_LIMIT` or a body faster than `SPEED_LIMIT_M_S`. All three are read from the
-    model and state of the run at construction and after every step (`observe`): the model may be one compiled again after a
-    break, and the masses change as tanks drain. `reasons` says which, each kind (and each spring) once, at its first value
-    out of range."""
+    """Conditions that make a run's breaks weak time-step evidence: a mass ratio over `MASS_RATIO_LIMIT`, a slider spring over
+    `SPRING_LIMIT`, a body faster than `SPEED_LIMIT_M_S`, or a break load overshooting its threshold by more than
+    `BREAK_LOAD_SPREAD_LIMIT`. The first three are read from the model and state at construction and after every step
+    (`observe`): the model may be one compiled again after a break, and the masses change as tanks drain. `observe_breaks`
+    reads each event before its joint is released. `reasons` reports each condition once, at its first value out of range."""
 
     def __init__(self, model: mujoco.MjModel) -> None:
         self._found: dict[str, str] = {}
@@ -244,6 +249,17 @@ class TimestepSensitivity:
                 name = mujoco.mj_id2name(model, mujoco.mjtObj.mjOBJ_JOINT, j)
                 self._report(f"spring:{name}", f"스프링 {name}: omega * 시간 간격 {ratio:.3g} > {SPRING_LIMIT:g}")
 
+    def observe_breaks(self, over: Collection[OverThreshold]) -> None:
+        """Before releasing `over`, report a sampled window load that overshoots its threshold by more than the proposed 10 %.
+        Such an overshoot depends on where the threshold falls in a step; without it, the 10 % cross-run spread is guaranteed."""
+        for event in over:
+            overshoot = (event.load - event.threshold) / event.threshold
+            if overshoot > BREAK_LOAD_SPREAD_LIMIT:
+                self._report(
+                    f"overshoot:{event.joint}",
+                    f"파단 하중 초과 {event.joint}: {overshoot:.1%} > {BREAK_LOAD_SPREAD_LIMIT:.0%}",
+                )
+
     def observe(self, model: mujoco.MjModel, data: mujoco.MjData) -> None:
         """After a step, on the model the run is on now: the mass ratio and the springs again, and the fastest body's speed at
         its centre of mass [m/s] (from the step's `cvel`)."""
@@ -255,5 +271,5 @@ class TimestepSensitivity:
             self._report("speed", f"속도 {fastest:.4g} m/s > {SPEED_LIMIT_M_S:g} m/s")
 
     def label(self) -> str | None:
-        """`TIMESTEP_SENSITIVE_LABEL` with the reasons, or `None` when the run stayed inside the measured range."""
+        """`TIMESTEP_SENSITIVE_LABEL` with the reasons, or `None` when no measured sensitivity condition was seen."""
         return f"{TIMESTEP_SENSITIVE_LABEL} ({'; '.join(self.reasons)}; docs/research/engine/break-timestep.md)" if self.reasons else None
