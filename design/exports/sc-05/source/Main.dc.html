@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>S1 기본 부품 기본</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="kin-sc05.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div class="k-root" style="width:1000px;height:900px">
+<svg class="k-spr" aria-hidden="true"><symbol id="g-sim" viewBox="0 0 12 12"><path d="M1 6q1.25-5 2.5 0t2.5 0t2.5 0t2.5 0"/></symbol><symbol id="g-cite" viewBox="0 0 12 12"><path d="M2.5 8.5v-3a2.5 2.5 0 0 1 2.5-2.5M7 8.5v-3a2.5 2.5 0 0 1 2.5-2.5"/></symbol><symbol id="g-def" viewBox="0 0 12 12"><circle cx="6" cy="6" r="3.5"/></symbol><symbol id="g-decl" viewBox="0 0 12 12"><path d="M2 10l.6-2.6 5.6-5.6 2 2-5.6 5.6z"/></symbol><symbol id="g-est" viewBox="0 0 12 12"><path d="M2 4.5q2-2 4 0t4 0M2 8q2-2 4 0t4 0"/></symbol><symbol id="i-x" viewBox="0 0 12 12"><path d="M2.5 2.5l7 7M9.5 2.5l-7 7"/></symbol><symbol id="i-chev" viewBox="0 0 12 12"><path d="M3 4.5l3 3 3-3"/></symbol><symbol id="i-left" viewBox="0 0 12 12"><path d="M7.5 2.5L4 6l3.5 3.5"/></symbol><symbol id="i-grip" viewBox="0 0 12 12"><path d="M4 2.5h.01M8 2.5h.01M4 6h.01M8 6h.01M4 9.5h.01M8 9.5h.01"/></symbol><symbol id="i-filt" viewBox="0 0 12 12"><path d="M1.5 2.5h9l-3.5 4v3l-2 1v-4z"/></symbol><symbol id="i-search" viewBox="0 0 12 12"><path d="M8.5 5a3.5 3.5 0 1 1-7 0a3.5 3.5 0 1 1 7 0M7.6 7.6l2.9 2.9"/></symbol><symbol id="t-thr" viewBox="0 0 24 24"><path d="M5 9h6v6H5zM11 10l7-3v10l-7-3"/></symbol><symbol id="t-mot" viewBox="0 0 24 24"><path d="M15 12a5 5 0 1 1-10 0a5 5 0 1 1 10 0M15 12h5M10 12h.01"/></symbol><symbol id="t-bat" viewBox="0 0 24 24"><path d="M4 8h14v8H4zM18 10.5h2v3h-2M8 8v8"/></symbol><symbol id="t-whl" viewBox="0 0 24 24"><path d="M19 12a7 7 0 1 1-14 0a7 7 0 1 1 14 0M14.5 12a2.5 2.5 0 1 1-5 0a2.5 2.5 0 1 1 5 0"/></symbol><symbol id="t-beam" viewBox="0 0 24 24"><path d="M3 10h18v4H3z"/></symbol><symbol id="t-plate" viewBox="0 0 24 24"><path d="M3 15l5-6h13l-5 6z"/></symbol><symbol id="t-shell" viewBox="0 0 24 24"><path d="M3 16l3-6h11l4 6zM8 16v-3"/></symbol><symbol id="t-spr" viewBox="0 0 24 24"><path d="M12 3v3l4 1.5-8 3 8 3-8 3 4 1.5v4"/></symbol><symbol id="t-slide" viewBox="0 0 24 24"><path d="M3 15h18M8 10h7v5H8zM3 13v4M21 13v4"/></symbol></svg>
+
+<div class="k-note"><span><strong>S1 기본 부품 기본</strong> · 기본 부품 탭, 기본 정렬 <span class="k-q">출처 먼저</span>(인용 → 기본값, 그 안에서 종류 → 이름), 필터 없음, 줄 모두 접힘</span><span>상시 조작 6 · primary 0</span></div>
+
+<div class="k-wrap">
+<div class="k-ann">
+<span class="k-where">셸 안의 위치: SC-01 왼쪽 패널</span>
+<p>SC-01 셸의 왼쪽 패널(240 × 790 px) 안을 채웁니다. 머리, 접기, 탭 묶음의 자리와 모양은 SC-01 그대로입니다. 모드의 primary는 SC-01 상단바에 있고, 이 패널에는 primary가 없습니다.</p>
+<p><strong>상시 조작 6개(4.1절)</strong></p>
+<ol>
+<li>패널 접기</li>
+<li>탭 묶음(기본 부품 · 내 것)</li>
+<li>정렬 선택(<span class="k-q">출처 먼저</span>)</li>
+<li>필터 버튼(적용 0)</li>
+<li>부품 목록(줄 선택 · 끌기)</li>
+<li>값 배지 열(줄마다 근거 팝오버)</li>
+</ol>
+<p>줄 하나 = 2D 썸네일 · 이름 · 종류 · 값 · 단위 · 값 배지. 배지는 오른쪽 열에 모입니다. 줄 전체와 왼쪽 손잡이가 끌기의 시작점입니다(놓는 곳인 뷰포트는 범위 밖).</p>
+<p>기본 정렬의 줄 값은 그 부품의 대표 사양입니다. 냉가스 추력기는 최대 추력 8.9 N <span class="k-q">인용</span>(design-system.md 10절), 나머지는 질량이고 모두 <span class="k-ex">예시</span>입니다 [확인 필요: 2절은 기본 정렬도 질량].</p>
+<p>값이 없는 줄(고정 결합)은 <span class="k-q">정의 없음</span>으로 맨 뒤에 둡니다. 아래 4개는 스크롤하면 보입니다.</p>
+</div>
+
+<div class="k-pad">
+<div class="k-frag">
+<span class="k-lbl">S1 · 기본 부품 탭</span>
+<aside class="l-panel" aria-label="라이브러리" data-unit="S1 라이브러리 패널">
+<div class="l-head"><h2>라이브러리</h2><button type="button" class="k-ib" data-ctl="패널 접기" aria-label="라이브러리 접기" aria-expanded="true"><svg class="i"><use href="#i-left"/></svg></button></div>
+<div class="l-tabs" role="tablist" aria-label="라이브러리 탭" data-ctl="탭 묶음"><button type="button" role="tab" aria-selected="true">기본 부품</button><button type="button" role="tab" aria-selected="false" tabindex="-1">내 것</button></div>
+<div class="l-tools"><div class="l-tr">
+<button type="button" class="l-sort" data-ctl="정렬 선택" aria-haspopup="listbox" aria-expanded="false" aria-label="정렬: 출처 먼저"><span class="k-cap">정렬</span><span class="sv">출처 먼저</span><svg class="i"><use href="#i-chev"/></svg></button>
+<button type="button" class="l-filt" data-ctl="필터 버튼" aria-haspopup="dialog" aria-expanded="false" aria-label="필터, 적용 0"><svg class="i"><use href="#i-filt"/></svg>필터<span class="cnt">0</span></button>
+</div></div>
+<div class="l-colh" aria-hidden="true"><span>부품 · 값</span><span class="bh">배지</span></div>
+<div class="l-list" role="grid" aria-label="기본 부품 목록, 13개, 출처 먼저 정렬" tabindex="0" data-ctl="부품 목록">
+<div class="l-grp">인용</div>
+<div role="row" class="l-row"><span class="l-grip" aria-hidden="true"><svg class="i"><use href="#i-grip"/></svg></span><svg class="l-th" aria-hidden="true"><use href="#t-mot"/></svg><div class="l-c"><div class="l-l1" role="gridcell"><span class="l-nm">모터</span><span class="l-kd">구동</span></div><div class="l-l2"><span class="num">2.4<span class="k-u"> kg</span></span><span class="k-ex">예시</span><span class="l-bc" role="gridcell"><button type="button" class="kb kb-cite" data-badge="인용" data-ctl="값 배지 열" tabindex="-1" aria-label="인용. 출처와 라이선스 열기"><span class="kp"><svg><use href="#g-cite"/></svg>인용</span></button></span></div></div></div>
+<div role="row" class="l-row"><span class="l-grip" aria-hidden="true"><svg class="i"><use href="#i-grip"/></svg></span><svg class="l-th" aria-hidden="true"><use href="#t-whl"/></svg><div class="l-c"><div class="l-l1" role="gridcell"><span class="l-nm">휠</span><span class="l-kd">구동</span></div><div class="l-l2"><span class="num">3.2<span class="k-u"> kg</span></span><span class="k-ex">예시</span><span class="l-bc" role="gridcell"><button type="button" class="kb kb-cite" data-badge="인용" data-ctl="값 배지 열" tabindex="-1" aria-label="인용. 출처와 라이선스 열기"><span class="kp"><svg><use href="#g-cite"/></svg>인용</span></button></span></div></div></div>
+<div role="row" class="l-row"><span class="l-grip" aria-hidden="true"><svg class="i"><use href="#i-grip"/></svg></span><svg class="l-th" aria-hidden="true"><use href="#t-thr"/></svg><div class="l-c"><div class="l-l1" role="gridcell"><span class="l-nm">냉가스 추력기</span><span class="l-kd">추력</span></div><div class="l-l2"><span class="k-cap">최대 추력</span><span class="num">8.9<span class="k-u"> N</span></span><span class="l-bc" role="gridcell"><button type="button" class="kb kb-cite" data-badge="인용" data-ctl="값 배지 열" tabindex="-1" aria-label="인용. 출처와 라이선스 열기"><span class="kp"><svg><use href="#g-cite"/></svg>인용</span></button></span></div></div></div>
+<div role="row" class="l-row"><span class="l-grip" aria-hidden="true"><svg class="i"><use href="#i-grip"/></svg></span><svg class="l-th" aria-hidden="true"><use href="#t-bat"/></svg><div class="l-c"><div class="l-l1" role="gridcell"><span class="l-nm">배터리·탱크</span><span class="l-kd">전원</span></div><div class="l-l2"><span class="num">6<span class="k-u"> kg</span></span><span class="k-ex">예시</span><span class="l-bc" role="gridcell"><button type="button" class="kb kb-cite" data-badge="인용" data-ctl="값 배지 열" tabindex="-1" aria-label="인용. 출처와 라이선스 열기"><span class="kp"><svg><use href="#g-cite"/></svg>인용</span></button></span></div></div></div>
+<div class="l-grp">기본값</div>
+<div role="row" class="l-row"><span class="l-grip" aria-hidden="true"><svg class="i"><use href="#i-grip"/></svg></span><svg class="l-th" aria-hidden="true"><use href="#t-beam"/></svg><div class="l-c"><div class="l-l1" role="gridcell"><span class="l-nm">빔</span><span class="l-kd">구조</span></div><div class="l-l2"><span class="num">0.4<span class="k-u"> kg</span></span><span class="k-ex">예시</span><span class="l-bc" role="gridcell"><button type="button" class="kb kb-def" data-badge="기본값" data-ctl="값 배지 열" tabindex="-1" aria-label="기본값. 기본값의 출처 열기"><span class="kp"><svg><use href="#g-def"/></svg>기본값</span></button></span></div></div></div>
+<div role="row" class="l-row"><span class="l-grip" aria-hidden="true"><svg class="i"><use href="#i-grip"/></svg></span><svg class="l-th" aria-hidden="true"><use href="#t-shell"/></svg><div class="l-c"><div class="l-l1" role="gridcell"><span class="l-nm">차체 쉘</span><span class="l-kd">구조</span></div><div class="l-l2"><span class="num">12<span class="k-u"> kg</span></span><span class="k-ex">예시</span><span class="l-bc" role="gridcell"><button type="button" class="kb kb-def" data-badge="기본값" data-ctl="값 배지 열" tabindex="-1" aria-label="기본값. 기본값의 출처 열기"><span class="kp"><svg><use href="#g-def"/></svg>기본값</span></button></span></div></div></div>
+<div role="row" class="l-row"><span class="l-grip" aria-hidden="true"><svg class="i"><use href="#i-grip"/></svg></span><svg class="l-th" aria-hidden="true"><use href="#t-plate"/></svg><div class="l-c"><div class="l-l1" role="gridcell"><span class="l-nm">판</span><span class="l-kd">구조</span></div><div class="l-l2"><span class="num">1.1<span class="k-u"> kg</span></span><span class="k-ex">예시</span><span class="l-bc" role="gridcell"><button type="button" class="kb kb-def" data-badge="기본값" data-ctl="값 배지 열" tabindex="-1" aria-label="기본값. 기본값의 출처 열기"><span class="kp"><svg><use href="#g-def"/></svg>기본값</span></button></span></div></div></div>
+<div role="row" class="l-row"><span class="l-grip" aria-hidden="true"><svg class="i"><use href="#i-grip"/></svg></span><svg class="l-th" aria-hidden="true"><use href="#t-spr"/></svg><div class="l-c"><div class="l-l1" role="gridcell"><span class="l-nm">스프링-댐퍼</span><span class="l-kd">결합</span></div><div class="l-l2"><span class="num">0.6<span class="k-u"> kg</span></span><span class="k-ex">예시</span><span class="l-bc" role="gridcell"><button type="button" class="kb kb-def" data-badge="기본값" data-ctl="값 배지 열" tabindex="-1" aria-label="기본값. 기본값의 출처 열기"><span class="kp"><svg><use href="#g-def"/></svg>기본값</span></button></span></div></div></div>
+<div role="row" class="l-row"><span class="l-grip" aria-hidden="true"><svg class="i"><use href="#i-grip"/></svg></span><svg class="l-th" aria-hidden="true"><use href="#t-slide"/></svg><div class="l-c"><div class="l-l1" role="gridcell"><span class="l-nm">슬라이더</span><span class="l-kd">결합</span></div><div class="l-l2"><span class="num">0.5<span class="k-u"> kg</span></span><span class="k-ex">예시</span><span class="l-bc" role="gridcell"><button type="button" class="kb kb-def" data-badge="기본값" data-ctl="값 배지 열" tabindex="-1" aria-label="기본값. 기본값의 출처 열기"><span class="kp"><svg><use href="#g-def"/></svg>기본값</span></button></span></div></div></div>
+<div class="l-more">아래로 4개 더 · 정의 없음 줄은 맨 뒤</div>
+</div>
+<div class="l-foot"><span><span class="k-kbd">/</span>부품 검색</span><span><span class="k-kbd">Enter</span>펼침</span><span><span class="k-kbd">→</span>배지</span></div>
+</aside>
+</div>
+
+<div class="k-frag" style="width:340px">
+<span class="k-lbl">숨은 기능과 여는 곳</span>
+<table class="k-tbl" style="width:340px">
+<thead><tr><th>기능</th><th>여는 방법</th><th>단계</th></tr></thead>
+<tbody>
+<tr><td>정렬 이름 · 질량 · 크기, 방향</td><td><span class="k-q">정렬</span> 메뉴</td><td class="c">1</td></tr>
+<tr><td>필터 종류 · 배지 4종</td><td><span class="k-q">필터</span> → 팝오버</td><td class="c">1</td></tr>
+<tr><td>부품 검색</td><td><span class="k-kbd">/</span> 또는 목록을 누른 뒤 입력</td><td class="c">1</td></tr>
+<tr><td>미리보기 · 사양 · 출처</td><td>줄을 누름 또는 <span class="k-kbd">Enter</span></td><td class="c">1</td></tr>
+<tr><td><span class="k-q">작업대에 추가</span></td><td>펼친 줄의 버튼</td><td class="c">1</td></tr>
+<tr><td>근거 팝오버</td><td>배지를 누름, 줄에서 <span class="k-kbd">→</span></td><td class="c">1</td></tr>
+<tr><td>내 것 목록, <span class="k-q">가져오기</span></td><td><span class="k-q">내 것</span> 탭</td><td class="c">1</td></tr>
+<tr><td>내 조립체 저장</td><td>내 것 탭 → <span class="k-q">선택한 조립체 저장</span></td><td class="c">1–2</td></tr>
+</tbody>
+</table>
+<p class="k-sec" style="margin:0">아래 줄(<span class="k-kbd">/</span> <span class="k-kbd">Enter</span> <span class="k-kbd">→</span>)과 정렬의 ▾, 필터의 적용 개수가 숨은 기능의 입구를 화면에 보입니다. 전체 대응표는 X1.</p>
+</div>
+</div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1000,"height":900}}'>
+class Component extends DCLogic {
+renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

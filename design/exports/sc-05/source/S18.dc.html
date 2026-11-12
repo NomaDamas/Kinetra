@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>S18 파일 오류</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="kin-sc05.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div class="k-root" style="width:2370px;height:1040px">
+<svg class="k-spr" aria-hidden="true"><symbol id="i-x" viewBox="0 0 12 12"><path d="M2.5 2.5l7 7M9.5 2.5l-7 7"/></symbol><symbol id="i-err" viewBox="0 0 12 12"><path d="M6 1.5l4.8 8.7H1.2zM6 5v2.3M6 8.7v.1"/></symbol><symbol id="i-copy" viewBox="0 0 12 12"><path d="M4 4h6v6.5H4zM2 8V1.5h6"/></symbol><symbol id="i-info" viewBox="0 0 12 12"><path d="M10.5 6a4.5 4.5 0 1 1-9 0a4.5 4.5 0 1 1 9 0M6 5.5v3M6 3.6v.1"/></symbol><symbol id="i-file" viewBox="0 0 12 12"><path d="M3 1.5h4l2.5 2.5v6.5h-6.5zM7 1.5V4h2.5"/></symbol></svg>
+
+<div class="k-note"><span><strong>S18 오류 · 파일</strong> · 무엇이 안 됐는지, 왜, 다음 행동, 복사할 오류 코드. (a) glb가 아닌 형식 (b) 깨진 파일 (c) 메시가 없는 파일</span><span>4 · primary 1(비활성)</span></div>
+
+<div class="k-wrap">
+<div class="k-ann">
+<span class="k-where">셸 안의 위치: SC-01 위 모달 · 파일 단계</span>
+<ul>
+<li>오류 덩어리: <span class="k-q">color.status.danger</span> 글리프 + "파일 오류", 제목(무엇이), 설명(왜), 다음 행동 하나 <span class="k-q">다시 고르기</span>, 오류 코드와 <span class="k-q">복사</span>.</li>
+<li>상태 색은 글리프와 머리 글자에만 씁니다. 판정이나 부품에 빨강을 쓰지 않습니다.</li>
+<li>다른 단계에 이미 입력한 값(단위, 프록시, 질량, 출처)은 남습니다. 다른 파일을 고르면 단위 · 프록시 단계는 새 파일로 다시 계산합니다 [제안].</li>
+<li>오류는 <span class="k-q">role=alert</span>로 한 번 읽어 줍니다. 포커스는 <span class="k-q">다시 고르기</span>로 갑니다.</li>
+</ul>
+<p>파일 이름은 <span class="k-ex">예시</span>, 오류 코드는 자리 표시입니다.</p>
+</div>
+
+<div class="k-pad">
+<div class="k-frag full">
+<span class="k-lbl">(a) glb가 아닌 형식</span>
+<div class="w-stage">
+<div class="w-shell" data-outside="1" aria-hidden="true"><div class="t"></div><div class="l"></div><div class="r"></div></div>
+<div class="w-scrim"></div>
+<span class="w-cap">가림막 뒤: SC-01 셸(비활성)</span>
+<div class="w-modal" role="dialog" aria-modal="true" aria-labelledby="s18a-t" data-unit="S18a 마법사 · 파일 오류">
+<div class="w-head"><h2 id="s18a-t">glb 가져오기</h2><span class="k-sp"></span><button type="button" class="k-ib" data-ctl="닫기" aria-label="가져오기 닫기" aria-keyshortcuts="Escape"><svg class="i m"><use href="#i-x"/></svg></button></div>
+<ol class="w-steps" aria-label="단계"><li class="w-st cur" aria-current="step">파일</li><li class="w-ar" aria-hidden="true">›</li><li class="w-st">1/4 단위·축</li><li class="w-ar" aria-hidden="true">›</li><li class="w-st">2/4 프록시</li><li class="w-ar" aria-hidden="true">›</li><li class="w-st">3/4 질량</li><li class="w-ar" aria-hidden="true">›</li><li class="w-st">4/4 출처</li></ol>
+<div class="w-body">
+<h3 class="w-q">어떤 파일을 가져올까요?</h3>
+<div class="k-err" role="alert">
+<span class="k-errk"><svg class="i"><use href="#i-err"/></svg>파일 오류</span>
+<h4>glb 파일이 아닙니다</h4>
+<span class="k-sec">고른 파일 rover_arm.fbx는 fbx 형식입니다. 가져오기는 glb 하나만 지원합니다. 다른 도구에서 glb로 내보낸 뒤 다시 고르세요.</span>
+<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:12px;line-height:16px"><span class="k-cap" style="font-size:12px">오류 코드</span><span class="k-code">[오류 코드]</span><button type="button" class="k-btn sm link" data-ctl="오류 코드 복사"><svg class="i"><use href="#i-copy"/></svg>복사</button></div>
+<button type="button" class="k-btn foc" data-ctl="파일 고르기">다시 고르기</button>
+</div>
+<div class="k-hint"><svg class="i"><use href="#i-info"/></svg><span>다른 단계에 입력한 값은 그대로 남습니다.</span></div>
+</div>
+<div class="w-foot"><span class="k-sec">맞는 파일을 고르면 다음으로 갑니다</span><button type="button" class="k-prim" data-ctl="다음" data-primary="1" aria-disabled="true">다음</button></div>
+</div>
+</div>
+</div>
+
+<div class="k-frag full">
+<span class="k-lbl">(b) 깨진 파일</span>
+<div class="w-stage">
+<div class="w-shell" data-outside="1" aria-hidden="true"><div class="t"></div><div class="l"></div><div class="r"></div></div>
+<div class="w-scrim"></div>
+<span class="w-cap">가림막 뒤: SC-01 셸(비활성)</span>
+<div class="w-modal" role="dialog" aria-modal="true" aria-labelledby="s18b-t" data-unit="S18b 마법사 · 파일 오류">
+<div class="w-head"><h2 id="s18b-t">glb 가져오기</h2><span class="k-sp"></span><button type="button" class="k-ib" data-ctl="닫기" aria-label="가져오기 닫기" aria-keyshortcuts="Escape"><svg class="i m"><use href="#i-x"/></svg></button></div>
+<ol class="w-steps" aria-label="단계"><li class="w-st cur" aria-current="step">파일</li><li class="w-ar" aria-hidden="true">›</li><li class="w-st">1/4 단위·축</li><li class="w-ar" aria-hidden="true">›</li><li class="w-st">2/4 프록시</li><li class="w-ar" aria-hidden="true">›</li><li class="w-st">3/4 질량</li><li class="w-ar" aria-hidden="true">›</li><li class="w-st">4/4 출처</li></ol>
+<div class="w-body">
+<h3 class="w-q">어떤 파일을 가져올까요?</h3>
+<div class="k-err" role="alert">
+<span class="k-errk"><svg class="i"><use href="#i-err"/></svg>파일 오류</span>
+<h4>파일을 읽지 못했습니다</h4>
+<span class="k-sec">payload_cover.glb의 내용이 중간에 끊겼거나 손상되었습니다. 받는 중에 끊긴 파일일 수 있습니다. 원본을 다시 받거나 다시 내보낸 뒤 고르세요.</span>
+<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:12px;line-height:16px"><span class="k-cap" style="font-size:12px">오류 코드</span><span class="k-code">[오류 코드]</span><button type="button" class="k-btn sm link" data-ctl="오류 코드 복사"><svg class="i"><use href="#i-copy"/></svg>복사</button></div>
+<button type="button" class="k-btn foc" data-ctl="파일 고르기">다시 고르기</button>
+</div>
+<div class="k-hint"><svg class="i"><use href="#i-info"/></svg><span>다른 단계에 입력한 값은 그대로 남습니다.</span></div>
+</div>
+<div class="w-foot"><span class="k-sec">맞는 파일을 고르면 다음으로 갑니다</span><button type="button" class="k-prim" data-ctl="다음" data-primary="1" aria-disabled="true">다음</button></div>
+</div>
+</div>
+</div>
+
+<div class="k-frag full">
+<span class="k-lbl">(c) 메시가 없는 파일</span>
+<div class="w-stage">
+<div class="w-shell" data-outside="1" aria-hidden="true"><div class="t"></div><div class="l"></div><div class="r"></div></div>
+<div class="w-scrim"></div>
+<span class="w-cap">가림막 뒤: SC-01 셸(비활성)</span>
+<div class="w-modal" role="dialog" aria-modal="true" aria-labelledby="s18c-t" data-unit="S18c 마법사 · 파일 오류">
+<div class="w-head"><h2 id="s18c-t">glb 가져오기</h2><span class="k-sp"></span><button type="button" class="k-ib" data-ctl="닫기" aria-label="가져오기 닫기" aria-keyshortcuts="Escape"><svg class="i m"><use href="#i-x"/></svg></button></div>
+<ol class="w-steps" aria-label="단계"><li class="w-st cur" aria-current="step">파일</li><li class="w-ar" aria-hidden="true">›</li><li class="w-st">1/4 단위·축</li><li class="w-ar" aria-hidden="true">›</li><li class="w-st">2/4 프록시</li><li class="w-ar" aria-hidden="true">›</li><li class="w-st">3/4 질량</li><li class="w-ar" aria-hidden="true">›</li><li class="w-st">4/4 출처</li></ol>
+<div class="w-body">
+<h3 class="w-q">어떤 파일을 가져올까요?</h3>
+<div class="k-err" role="alert">
+<span class="k-errk"><svg class="i"><use href="#i-err"/></svg>파일 오류</span>
+<h4>메시가 없는 파일입니다</h4>
+<span class="k-sec">scene_only.glb 안에 그릴 수 있는 메시가 없습니다. 카메라나 빛, 애니메이션만 든 파일일 수 있습니다. 물체가 든 glb를 고르세요.</span>
+<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:12px;line-height:16px"><span class="k-cap" style="font-size:12px">오류 코드</span><span class="k-code">[오류 코드]</span><button type="button" class="k-btn sm link" data-ctl="오류 코드 복사"><svg class="i"><use href="#i-copy"/></svg>복사</button></div>
+<button type="button" class="k-btn foc" data-ctl="파일 고르기">다시 고르기</button>
+</div>
+<div class="k-hint"><svg class="i"><use href="#i-info"/></svg><span>다른 단계에 입력한 값은 그대로 남습니다.</span></div>
+</div>
+<div class="w-foot"><span class="k-sec">맞는 파일을 고르면 다음으로 갑니다</span><button type="button" class="k-prim" data-ctl="다음" data-primary="1" aria-disabled="true">다음</button></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":2370,"height":1040}}'>
+class Component extends DCLogic {
+renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

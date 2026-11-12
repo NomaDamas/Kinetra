@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>S23 내 것 줄 메뉴</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="kin-sc05.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div class="k-root" style="width:1280px;height:900px">
+<svg class="k-spr" aria-hidden="true"><symbol id="g-sim" viewBox="0 0 12 12"><path d="M1 6q1.25-5 2.5 0t2.5 0t2.5 0t2.5 0"/></symbol><symbol id="g-decl" viewBox="0 0 12 12"><path d="M2 10l.6-2.6 5.6-5.6 2 2-5.6 5.6z"/></symbol><symbol id="i-chev" viewBox="0 0 12 12"><path d="M3 4.5l3 3 3-3"/></symbol><symbol id="i-left" viewBox="0 0 12 12"><path d="M7.5 2.5L4 6l3.5 3.5"/></symbol><symbol id="i-grip" viewBox="0 0 12 12"><path d="M4 2.5h.01M8 2.5h.01M4 6h.01M8 6h.01M4 9.5h.01M8 9.5h.01"/></symbol><symbol id="i-filt" viewBox="0 0 12 12"><path d="M1.5 2.5h9l-3.5 4v3l-2 1v-4z"/></symbol><symbol id="i-upload" viewBox="0 0 12 12"><path d="M6 8V2M3.5 4.5L6 2l2.5 2.5M2 10h8"/></symbol><symbol id="i-more" viewBox="0 0 12 12"><path d="M2.5 6h.01M6 6h.01M9.5 6h.01"/></symbol><symbol id="i-pen" viewBox="0 0 12 12"><path d="M2 10l.6-2.6 5.6-5.6 2 2-5.6 5.6z"/></symbol><symbol id="i-trash" viewBox="0 0 12 12"><path d="M2 3.5h8M4.5 3.5V2h3v1.5M3 3.5l.6 6.5h4.8L9 3.5"/></symbol><symbol id="i-noshare" viewBox="0 0 12 12"><path d="M10.5 6a4.5 4.5 0 1 1-9 0a4.5 4.5 0 1 1 9 0M2.8 9.2l6.4-6.4"/></symbol><symbol id="i-eye" viewBox="0 0 12 12"><path d="M1 6s2-3.5 5-3.5S11 6 11 6s-2 3.5-5 3.5S1 6 1 6zM7.2 6a1.2 1.2 0 1 1-2.4 0a1.2 1.2 0 1 1 2.4 0"/></symbol><symbol id="t-mesh" viewBox="0 0 24 24"><path d="M3 17h18M4 17c0-6 4-10 8-10s8 4 8 10M9 17c0-4 1.5-7 3-7s3 3 3 7"/></symbol><symbol id="t-dish" viewBox="0 0 24 24"><path d="M5 6c0 7 6 11 13 11M12 12l5-5M17 7h.01M10 17v3M6 20h8"/></symbol><symbol id="t-car" viewBox="0 0 24 24"><path d="M3 15v-3l3-3h8l3 3h3v3zM8.6 17a1.6 1.6 0 1 1-3.2 0a1.6 1.6 0 1 1 3.2 0M17.6 17a1.6 1.6 0 1 1-3.2 0a1.6 1.6 0 1 1 3.2 0"/></symbol><symbol id="t-legs" viewBox="0 0 24 24"><path d="M8 5h8v5H8zM12 10v2M12 12l-6 7M12 12l6 7M4 19h4M16 19h4"/></symbol></svg>
+
+<div class="k-note"><span><strong>S23 내 것 줄 메뉴</strong> · (a) 고른 줄의 <span class="k-q">⋯</span> 메뉴: 이름 바꾸기, 삭제 (b) 삭제 확인 창(<span class="k-q">danger</span> + <span class="k-q">secondary</span>)</span><span>(a) 상시 7 + 줄 메뉴 1 + 메뉴 2 · (b) 확인 창 2 · primary 0</span></div>
+
+<div class="k-wrap">
+<div class="k-ann">
+<span class="k-where">셸 안의 위치: SC-01 왼쪽 패널 · 내 것 탭</span>
+<ul>
+<li><span class="k-q">⋯</span>는 고른 줄(포커스 또는 누름)에만 나타나고 목록의 일부입니다. 키보드는 줄에서 <span class="k-kbd">F2</span>(이름 바꾸기), <span class="k-kbd">Delete</span>(삭제 확인), <span class="k-kbd">Shift F10</span>(메뉴).</li>
+<li>이름 바꾸기는 줄 안에서 바로 고칩니다(S8과 같은 검증: 빈 이름, 같은 이름).</li>
+<li>삭제는 확인 창을 거칩니다. 확인 창에는 primary가 없고 <span class="k-q">삭제</span>(danger) + <span class="k-q">취소</span>(secondary)입니다. 처음 포커스는 <span class="k-q">취소</span>입니다.</li>
+<li>문구 "이미 놓은 부품은 그대로입니다"는 [확인 필요]: 계획에 삭제 규칙이 없습니다.</li>
+<li><span class="k-q">color.status.danger</span>는 이 파괴적 동작 확인에만 씁니다.</li>
+</ul>
+</div>
+
+<div class="k-pad">
+<div class="k-frag">
+<span class="k-lbl">(a) 줄 메뉴 열림</span>
+<aside class="l-panel" aria-label="라이브러리" data-unit="S23a 라이브러리 패널">
+<div class="l-head"><h2>라이브러리</h2><button type="button" class="k-ib" data-ctl="패널 접기" aria-label="라이브러리 접기" aria-expanded="true"><svg class="i"><use href="#i-left"/></svg></button></div>
+<div class="l-tabs" role="tablist" aria-label="라이브러리 탭" data-ctl="탭 묶음"><button type="button" role="tab" aria-selected="false" tabindex="-1">기본 부품</button><button type="button" role="tab" aria-selected="true">내 것</button></div>
+<div class="l-tools">
+<button type="button" class="k-btn l-imp" data-ctl="가져오기" aria-haspopup="dialog"><svg class="i"><use href="#i-upload"/></svg>가져오기</button>
+<div class="l-tr">
+<button type="button" class="l-sort" data-ctl="정렬 선택" aria-haspopup="menu" aria-expanded="false" aria-label="정렬: 출처 먼저"><span class="k-cap">정렬</span><span class="sv">출처 먼저</span><svg class="i"><use href="#i-chev"/></svg></button>
+<button type="button" class="l-filt" data-ctl="필터 버튼" aria-haspopup="dialog" aria-expanded="false" aria-label="필터, 적용 0"><svg class="i"><use href="#i-filt"/></svg>필터<span class="cnt">0</span></button>
+</div></div>
+<div class="l-colh" aria-hidden="true"><span>항목 · 값</span><span class="bh">배지</span></div>
+<div class="l-list" role="grid" aria-label="내 것 목록, 4개" tabindex="0" data-ctl="내 것 목록">
+<div class="l-grp">사용자 선언</div>
+<div role="row" class="l-row"><span class="l-grip" aria-hidden="true"><svg class="i"><use href="#i-grip"/></svg></span><svg class="l-th" aria-hidden="true"><use href="#t-mesh"/></svg><div class="l-c"><div class="l-l1" role="gridcell"><span class="l-nm">탑재체 덮개</span><span class="l-kd">가져온 에셋</span></div><div class="l-l2"><span class="num">130<span class="k-u"> kg</span></span><span class="k-ex">예시</span><span class="l-bc" role="gridcell"><button type="button" class="kb kb-decl" data-badge="사용자 선언" data-ctl="값 배지 열" tabindex="-1" aria-label="사용자 선언. 선언한 사람과 시각 열기"><span class="kp"><svg><use href="#g-decl"/></svg>사용자 선언</span></button></span></div><span class="l-tag"><svg class="i"><use href="#i-eye"/></svg>시각 메시: 제작 형상 아님</span></div></div>
+<div role="row" class="l-row"><span class="l-grip" aria-hidden="true"><svg class="i"><use href="#i-grip"/></svg></span><svg class="l-th" aria-hidden="true"><use href="#t-dish"/></svg><div class="l-c"><div class="l-l1" role="gridcell"><span class="l-nm">안테나 접시</span><span class="l-kd">가져온 에셋</span></div><div class="l-l2"><span class="num">4.5<span class="k-u"> kg</span></span><span class="k-ex">예시</span><span class="l-bc" role="gridcell"><button type="button" class="kb kb-decl" data-badge="사용자 선언" data-ctl="값 배지 열" tabindex="-1" aria-label="사용자 선언. 선언한 사람과 시각 열기"><span class="kp"><svg><use href="#g-decl"/></svg>사용자 선언</span></button></span></div><span class="l-tag hi"><svg class="i"><use href="#i-noshare"/></svg>공유 불가 · 출처 모름</span></div></div>
+<div class="l-grp">시뮬</div>
+<div role="row" class="l-row sel" aria-selected="true"><span class="l-grip" aria-hidden="true"><svg class="i"><use href="#i-grip"/></svg></span><svg class="l-th" aria-hidden="true"><use href="#t-car"/></svg><div class="l-c"><div class="l-l1" role="gridcell"><span class="l-nm">로켓 자동차</span><span class="l-kd">조립체</span><span data-transient="1" style="margin-left:auto"><button type="button" class="k-ib sm" data-ctl="줄 메뉴" aria-label="로켓 자동차 메뉴" aria-haspopup="menu" aria-expanded="true" style="background:#263039"><svg class="i"><use href="#i-more"/></svg></button></span></div><div class="l-l2"><span class="k-cap">질량 합</span><span class="num">1.3<span class="k-u"> t</span></span><span class="k-ex">예시</span><span class="l-bc" role="gridcell"><button type="button" class="kb kb-sim" data-badge="시뮬" data-ctl="값 배지 열" tabindex="-1" aria-label="시뮬. 어떤 계산인지 열기"><span class="kp"><svg><use href="#g-sim"/></svg>시뮬</span></button></span></div></div></div>
+<div role="row" class="l-row"><span class="l-grip" aria-hidden="true"><svg class="i"><use href="#i-grip"/></svg></span><svg class="l-th" aria-hidden="true"><use href="#t-legs"/></svg><div class="l-c"><div class="l-l1" role="gridcell"><span class="l-nm">착륙 다리 묶음</span><span class="l-kd">조립체</span></div><div class="l-l2"><span class="k-cap">질량 합</span><span class="num">0.2<span class="k-u"> t</span></span><span class="k-ex">예시</span><span class="l-bc" role="gridcell"><button type="button" class="kb kb-sim" data-badge="시뮬" data-ctl="값 배지 열" tabindex="-1" aria-label="시뮬. 어떤 계산인지 열기"><span class="kp"><svg><use href="#g-sim"/></svg>시뮬</span></button></span></div></div></div>
+</div>
+<div class="l-foot"><span><span class="k-kbd">F2</span>이름</span><span><span class="k-kbd">Delete</span>삭제</span><span><span class="k-kbd">Esc</span>닫기</span></div>
+<div class="k-menu abs" role="menu" aria-label="로켓 자동차" data-transient="1" style="right:10px;top:400px;width:168px">
+<button type="button" class="k-mi" role="menuitem" data-ctl="이름 바꾸기"><svg class="i"><use href="#i-pen"/></svg>이름 바꾸기<span class="k-cap">F2</span></button>
+<button type="button" class="k-mi" role="menuitem" data-ctl="삭제" aria-haspopup="dialog"><svg class="i"><use href="#i-trash"/></svg>삭제<span class="k-cap">Delete</span></button>
+</div>
+</aside>
+</div>
+
+<div class="k-frag">
+<span class="k-lbl">(b) 삭제 확인 창 · SC-01 위</span>
+<div class="w-stage" style="height:790px;align-items:center">
+<div class="w-shell" data-outside="1" aria-hidden="true"><div class="t"></div><div class="l"></div><div class="r"></div></div>
+<div class="w-scrim"></div>
+<span class="w-cap">가림막 뒤: SC-01 셸(비활성)</span>
+<div class="w-conf" role="alertdialog" aria-modal="true" aria-labelledby="s23-t" aria-describedby="s23-d" data-unit="S23b 삭제 확인">
+<h2 id="s23-t">이 항목을 삭제할까요?</h2>
+<p class="k-sec" id="s23-d" style="margin:0">"로켓 자동차"를 내 것에서 지웁니다. 이미 놓은 부품은 그대로입니다.</p>
+<div class="act"><button type="button" class="k-btn dng" data-ctl="삭제"><svg class="i"><use href="#i-trash"/></svg>삭제</button><button type="button" class="k-btn foc" data-ctl="취소">취소</button></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":900}}'>
+class Component extends DCLogic {
+renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

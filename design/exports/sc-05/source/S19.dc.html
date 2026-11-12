@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>S19 검증 거부</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="kin-sc05.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div class="k-root" style="width:1400px;height:1040px">
+<svg class="k-spr" aria-hidden="true"><symbol id="g-sim" viewBox="0 0 12 12"><path d="M1 6q1.25-5 2.5 0t2.5 0t2.5 0t2.5 0"/></symbol><symbol id="g-est" viewBox="0 0 12 12"><path d="M2 4.5q2-2 4 0t4 0M2 8q2-2 4 0t4 0"/></symbol><symbol id="i-x" viewBox="0 0 12 12"><path d="M2.5 2.5l7 7M9.5 2.5l-7 7"/></symbol><symbol id="i-chev" viewBox="0 0 12 12"><path d="M3 4.5l3 3 3-3"/></symbol><symbol id="i-err" viewBox="0 0 12 12"><path d="M6 1.5l4.8 8.7H1.2zM6 5v2.3M6 8.7v.1"/></symbol><symbol id="i-info" viewBox="0 0 12 12"><path d="M10.5 6a4.5 4.5 0 1 1-9 0a4.5 4.5 0 1 1 9 0M6 5.5v3M6 3.6v.1"/></symbol></svg>
+
+<div class="k-note"><span><strong>S19 검증 거부</strong> · 필드 단위: <span class="k-q">color.status.danger</span> 테두리 + 이유 한 줄. (a) 질량 0 (b) 숫자 아님 (c) 단위 없음 (d) 밀도 × 부피에 쓸 부피 없음 (e) 제안이 검증기에 거부됨</span><span>(a) 6 + 값 배지 1 · primary 1(비활성)</span></div>
+
+<div class="k-wrap">
+<div class="k-ann">
+<span class="k-where">셸 안의 위치: SC-01 위 모달 · 3/4 질량</span>
+<ul>
+<li>거부는 그 필드에서 말합니다: 테두리 <span class="k-q">color.status.danger</span> + 글리프 + 이유 한 줄. 입력한 글자는 지우지 않습니다.</li>
+<li>거부된 값에는 배지를 붙이지 않습니다. 선언된 값이 아니기 때문입니다. "질량 없음" 표시는 그대로입니다.</li>
+<li>입력 필드에 <span class="k-q">aria-invalid</span>와 이유 연결(<span class="k-q">aria-describedby</span>). 이유는 입력을 떠날 때 한 번 읽어 줍니다.</li>
+<li>제안이 검증기에 거부되면 제안 줄 안에서 "제안을 적용하지 못했습니다 · 이유"를 보이고, 입력 값은 바뀌지 않습니다.</li>
+<li>모든 거부 상태에서 <span class="k-q">다음</span>은 비활성입니다.</li>
+</ul>
+<p>수치는 <span class="k-ex">예시</span>입니다.</p>
+</div>
+
+<div class="k-pad">
+<div class="k-frag full">
+<span class="k-lbl">(a) 질량 0 · 0보다 커야 함</span>
+<div class="w-stage">
+<div class="w-shell" data-outside="1" aria-hidden="true"><div class="t"></div><div class="l"></div><div class="r"></div></div>
+<div class="w-scrim"></div>
+<span class="w-cap">가림막 뒤: SC-01 셸(비활성)</span>
+<div class="w-modal" role="dialog" aria-modal="true" aria-labelledby="s19a-t" data-unit="S19a 마법사 · 3/4">
+<div class="w-head"><h2 id="s19a-t">glb 가져오기</h2><span class="k-sp"></span><button type="button" class="k-ib" data-ctl="닫기" aria-label="가져오기 닫기" aria-keyshortcuts="Escape"><svg class="i m"><use href="#i-x"/></svg></button></div>
+<ol class="w-steps" aria-label="단계"><li class="w-st done">파일</li><li class="w-ar" aria-hidden="true">›</li><li class="w-st done">1/4 단위·축</li><li class="w-ar" aria-hidden="true">›</li><li class="w-st done">2/4 프록시</li><li class="w-ar" aria-hidden="true">›</li><li class="w-st cur" aria-current="step">3/4 질량</li><li class="w-ar" aria-hidden="true">›</li><li class="w-st">4/4 출처</li></ol>
+<div class="w-body">
+<h3 class="w-q">질량을 어떻게 정할까요?</h3>
+<div class="k-seg" role="radiogroup" aria-label="질량을 정하는 방식" data-ctl="방식 전환" style="align-self:flex-start"><button type="button" role="radio" aria-checked="true">직접 입력</button><button type="button" role="radio" aria-checked="false" tabindex="-1">밀도 × 프록시 부피</button></div>
+<div class="k-field"><label class="k-flab" for="s19a-m">질량</label><div class="bx-row" style="display:flex;align-items:center;gap:8px"><div class="k-ing bad" style="width:220px"><input id="s19a-m" type="text" inputmode="decimal" value="0" aria-invalid="true" aria-describedby="s19a-e" data-ctl="질량 입력"><button type="button" class="k-suf" data-ctl="질량 입력" aria-label="단위 kg, 바꾸기">kg<svg class="i"><use href="#i-chev"/></svg></button></div><span class="noval">질량 없음 · 아직 선언하지 않음</span></div><div class="k-why" id="s19a-e"><svg class="i i-dng" role="img" aria-label="거부"><use href="#i-err"/></svg><span>질량은 0보다 커야 합니다</span></div></div>
+<div class="w-sug"><span class="k-q">제안</span><span class="num">130<span class="k-u"> kg</span></span><button type="button" class="kb kb-est" data-badge="추정" data-ctl="값 배지" aria-label="추정. 추정 방법 열기"><span class="kp"><svg><use href="#g-est"/></svg>추정</span></button><span class="k-ex">예시</span><span class="k-sp"></span><button type="button" class="k-btn sm" data-ctl="제안 적용">적용</button><span class="why">근거: 에이전트가 프록시 부피와 흔한 플라스틱 밀도로 어림했습니다. 카탈로그 사양이 아닙니다.</span></div>
+<div class="w-ro"><svg class="i"><use href="#i-info"/></svg><span>선언한 질량은 판정 가정표에 <span class="k-q">사용자 선언</span>으로 나옵니다. 판정은 선언한 만큼만 맞습니다. L3 실물 검증 없음</span></div>
+</div>
+<div class="w-foot"><span class="k-sec">질량을 선언해야 다음으로 갑니다</span><button type="button" class="k-btn" data-ctl="이전">이전</button><button type="button" class="k-prim" data-ctl="다음" data-primary="1" aria-disabled="true">다음</button></div>
+</div>
+</div>
+</div>
+
+<div class="k-col" style="width:360px">
+<div class="k-frag">
+<span class="k-lbl">(b) 숫자가 아님</span>
+<div class="k-field"><label class="k-flab" for="s19b-m">질량</label><div class="k-ing bad" style="width:220px"><input id="s19b-m" type="text" value="13O" aria-invalid="true" aria-describedby="s19b-e" data-ctl="질량 입력(b)"><button type="button" class="k-suf" data-ctl="질량 입력(b)" aria-label="단위 kg, 바꾸기">kg<svg class="i"><use href="#i-chev"/></svg></button></div><div class="k-why" id="s19b-e"><svg class="i i-dng" role="img" aria-label="거부"><use href="#i-err"/></svg><span>숫자로 입력하세요. 글자 O가 들어 있습니다</span></div></div>
+</div>
+<div class="k-frag">
+<span class="k-lbl">(c) 단위 없음</span>
+<div class="k-field"><label class="k-flab" for="s19c-m">질량</label><div class="k-ing bad" style="width:220px"><input id="s19c-m" type="text" value="130" aria-invalid="true" aria-describedby="s19c-e" data-ctl="질량 입력(c)"><button type="button" class="k-suf" data-ctl="질량 입력(c)" aria-label="단위 없음, 고르기">단위<svg class="i"><use href="#i-chev"/></svg></button></div><div class="k-why" id="s19c-e"><svg class="i i-dng" role="img" aria-label="거부"><use href="#i-err"/></svg><span>단위를 고르세요(kg 또는 t)</span></div></div>
+</div>
+<div class="k-frag">
+<span class="k-lbl">(d) 밀도 × 부피 · 부피 없음</span>
+<div class="k-field"><label class="k-flab" for="s19d-d">밀도</label><div class="k-ing bad" style="width:220px"><input id="s19d-d" type="text" value="600" aria-invalid="true" aria-describedby="s19d-e" data-ctl="밀도 입력(d)"><span class="k-fix">kg/m³</span></div><div class="k-why" id="s19d-e"><svg class="i i-dng" role="img" aria-label="거부"><use href="#i-err"/></svg><span>프록시 부피가 없어 밀도로 정할 수 없습니다. 직접 입력을 쓰거나 2/4 프록시로 돌아가세요</span></div></div>
+<div class="w-eq" style="width:340px;box-sizing:border-box"><span class="k-cap">질량 =</span><span class="k-sec">밀도 ×</span><span class="noval">부피 미산출 · 프록시 없음</span></div>
+</div>
+<div class="k-frag">
+<span class="k-lbl">(e) 제안이 검증기에 거부됨</span>
+<div class="w-sug" style="width:340px;box-sizing:border-box"><span class="k-q">제안</span><span class="k-why"><svg class="i i-dng" role="img" aria-label="거부"><use href="#i-err"/></svg><span>제안을 적용하지 못했습니다 · 검증기가 0 이하 값을 거부했습니다</span></span><span class="why">입력한 값은 그대로입니다. 직접 입력하거나 밀도 방식을 쓰세요.</span></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1400,"height":1040}}'>
+class Component extends DCLogic {
+renderVals() { return {}; }
+}
+</script>
+</body>
+</html>
