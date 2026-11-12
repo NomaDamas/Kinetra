@@ -33,15 +33,17 @@ DECOMPOSED_PREFIX = "근사: 충돌 프록시가 빈 곳을 상자 조각으로 
 
 @dataclass(frozen=True)
 class ModelLabel:
-    """One approximation label. `kind` `filled` or `decomposed`; `instance` and `part` say whose proxy it is; `host` is the
-    decomposed host component (`None` for `filled`); `percent` is N, the number in the text (percent, signed for `decomposed`)."""
+    """One approximation label. `kind` `filled` or `decomposed` (collision proxy, here) or `contact` (`contact.contact_labels`,
+    X-01e); `instance` and `part` say whose proxy or friction it is (`None` for a model-wide contact label); `host` is the
+    decomposed host component (`None` otherwise); `percent` is N, the number in the text (percent, signed for `decomposed`;
+    `None` for `contact`)."""
 
     text: str
-    kind: Literal["filled", "decomposed"]
-    instance: str
-    part: str
+    kind: Literal["filled", "decomposed", "contact"]
+    instance: str | None
+    part: str | None
     host: str | None
-    percent: float
+    percent: float | None
 
 
 def _g(x: float) -> str:

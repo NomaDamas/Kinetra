@@ -4,8 +4,8 @@ Expected numbers are written out by hand from the datasheet values the parts cit
 `parts-battery-tank.md`) and from textbook formulas; MuJoCo 4.0.0 runs the compiled MJCF. Poses, the test blocks and the incline
 angle are fixtures declared by the test (`사용자 선언`). The test anchors a rig's root body to the world by removing its free
 joint from the MJCF (a bench clamp; the project has no "fixed to the ground" yet), sets the gravity it needs on the loaded model
-(overriding the planet gravity of the MJCF `<option>`, W-03a), turns contact off on the clamped rigs (nothing in them touches anything) and, for the
-rolling test, adds the ground plane.
+(overriding the planet gravity of the MJCF `<option>`, W-03a) and turns contact off on the clamped rigs (nothing in them touches
+anything). The rolling test uses the compiled ground plane and friction (X-01e).
 """
 
 from __future__ import annotations
@@ -80,11 +80,11 @@ MAT = {"id": "mat", "name": "Test material", "density": q(1000.0, "kg/m^3"), "yi
        "elastic_modulus": q(1.0e9, "Pa"), "friction": q(0.5, "1")}
 
 
-def project(parts, instances, joints=(), actuators=(), materials=(MAT,)):
+def project(parts, instances, joints=(), actuators=(), materials=(MAT,), planet="earth"):
     dump = [p if isinstance(p, dict) else p.model_dump(mode="json") for p in parts]
     mats = [m if isinstance(m, dict) else m.model_dump(mode="json") for m in materials]
     return Project.model_validate({"design": {"materials": mats, "parts": dump, "instances": list(instances), "joints": list(joints), "actuators": list(actuators)},
-                                   "world": {"planet": "earth"}})
+                                   "world": {"planet": planet}})
 
 
 def anchored(xml: str) -> str:
@@ -383,14 +383,18 @@ THETA = math.radians(30.0)
 def rolling(planet):
     """The B-03a wheel (POM) alone, standing on the ground plane z = 0 (lowest point on it), axis (its y) horizontal, at rest. The
     30 deg incline is the planet's gravity turned by 30 deg about the wheel's axis, `g (sin, 0, -cos)`: in the plane's frame that
-    is the same problem as the plane tilted under vertical gravity, and the wheel stays a grounded assembly. Ground and tread
-    friction are MuJoCo's default 1 (contact parameters are not compiled yet)."""
+    is the same problem as the plane tilted under vertical gravity, and the wheel stays a grounded assembly. Friction is the compiled
+    contact (X-01e) of the project's planet: min(tread 0.7, that planet's nominal ground friction) = the ground's nominal, each planet
+    its own (asserted below). The model's gravity is the compiled planet's, turned."""
     r = WHEEL.parameters[0].default.value / 2  # diameter 0.1 m
-    proj = project([WHEEL], [instance("w1", WHEEL.id, (0.0, 0.0, r), material=POM.id)], materials=(POM,))
+    proj = project([WHEEL], [instance("w1", WHEEL.id, (0.0, 0.0, r), material=POM.id)], materials=(POM,), planet=planet)
     tree = build_body_tree(proj)
-    xml = to_mjcf(tree, drives=compile_drives(tree)).replace("<worldbody>", '<worldbody>\n    <geom name="ground" type="plane" size="0 0 1"/>', 1)
+    xml = to_mjcf(tree, drives=compile_drives(tree))
     model = mujoco.MjModel.from_xml_string(xml)
+    ground = load_body(planet).ground_friction.value.value
+    assert model.geom_friction[0][0] == ground and min(model.geom_friction[i][0] for i in range(model.ngeom)) == ground
     g = load_body(planet).gravity.value
+    assert tuple(model.opt.gravity) == (0.0, 0.0, -g)  # compiled for this planet (W-03a)
     model.opt.gravity[:] = (g * math.sin(THETA), 0.0, -g * math.cos(THETA))
     data = mujoco.MjData(model)
     t, v, spin = [], [], []
@@ -411,6 +415,6 @@ def test_actuator_wheel_rolls_down_an_incline_at_g_sin_theta_over_one_plus_k(pla
     hand = g * math.sin(THETA) / (1.0 + k)
     window = t >= 0.2  # after the contact has settled
     slope = np.polyfit(t[window], v[window], 1)[0]
-    assert slope == pytest.approx(hand, rel=2e-3)  # measured: -0.12 % (earth), -0.045 % (mars), -0.020 % (moon)
+    assert slope == pytest.approx(hand, rel=2e-3)  # measured: -0.115 % (earth), -0.045 % (mars), -0.020 % (moon)
     # rolling, not sliding: the contact point is at rest, v = omega r
-    assert spin[-1] * r == pytest.approx(v[-1], rel=2e-3)  # measured: 0.13 %, 0.023 %, 0.018 % of v
+    assert spin[-1] * r == pytest.approx(v[-1], rel=2e-3)  # measured: 0.16 %, 0.047 %, 0.007 % of v

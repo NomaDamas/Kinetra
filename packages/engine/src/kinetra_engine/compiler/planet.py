@@ -1,4 +1,4 @@
-"""Planet constants of a compiled model (W-03a): gravity and atmosphere density, read from `data/bodies` and nowhere else.
+"""Planet constants of a compiled model (W-03a): gravity, atmosphere density and ground friction, read from `data/bodies` and nowhere else.
 
     planet_physics(planet_id, directory=None) -> PlanetPhysics
 
@@ -14,6 +14,9 @@ One g per planet is the model (W-06 labels it in the assumption table).
 (`density="0" viscosity="0"`). MuJoCo's medium is one global number for every body and its inertia-box drag is a fixed
 model nobody labels (`docs/research/fluids/mujoco-water.md` 3.1 and 7.1). Drag is W-03b's: a force per body from this
 density, labelled "근사: 집중 항력". Writing the density into `<option>` as well would add a second, unlabelled drag.
+
+**Ground friction** is the planet's `ground_friction` `Assumption` (nominal and distribution), unchanged. `to_mjcf` gives the ground
+plane its nominal or a sampled value inside that distribution, combined with each part's friction by `contact.py` (X-01e).
 """
 
 from __future__ import annotations
@@ -21,17 +24,19 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 
+from kinetra_core import Assumption
 from kinetra_core.bodies import AtmosphereDensity, Gravity, load_body
 
 
 @dataclass(frozen=True)
 class PlanetPhysics:
     """The planet constants a compiled model runs with. `gravity` and `atmosphere_density` are the data file's
-    `Quantity`s (value, unit, badge, source), unchanged."""
+    `Quantity`s (value, unit, badge, source), `ground_friction` its `Assumption`, unchanged."""
 
     planet: str
     gravity: Gravity
     atmosphere_density: AtmosphereDensity
+    ground_friction: Assumption
 
     @property
     def gravity_vector(self) -> tuple[float, float, float]:
@@ -43,4 +48,4 @@ def planet_physics(planet_id: str, directory: Path | None = None) -> PlanetPhysi
     """The constants of `planet_id` from `<directory>/<planet_id>.json` (default `data/bodies`, see `load_body`).
     Raises what `load_body` raises: `KeyError` for an unknown planet, `FileNotFoundError`, or a validation error."""
     body = load_body(planet_id, directory=directory)
-    return PlanetPhysics(body.id, body.gravity, body.atmosphere_density)
+    return PlanetPhysics(body.id, body.gravity, body.atmosphere_density, body.ground_friction)
