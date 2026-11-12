@@ -9,6 +9,7 @@ The motor is the library Pololu 37D (`part-motor.md`), the cell the library 1865
 from __future__ import annotations
 
 import math
+from dataclasses import replace
 from pathlib import Path
 
 import pytest
@@ -126,6 +127,17 @@ def test_necessary_motor_bounds_match_the_hand_calculation():
     assert motor_peak_power(motor) == pytest.approx(T0 * W0 / 4, rel=1e-12)  # straight line: max at W0 / 2
     assert motor_efficiency_bound(motor) == pytest.approx(eta_by_hand(), rel=1e-8)
     assert 0.0 < motor_efficiency_bound(motor) < 1.0
+
+
+def test_necessary_motor_efficiency_with_zero_no_load_current_uses_the_no_load_limit():
+    motor = replace(compile_drives(build_body_tree(rig())).motors[0], no_load_current=0.0)
+    # I = Is(1-s), so shaft/battery = s*W0*T0/(V*Is), rising to its limit at s=1 rather than taking 0/0 = 0.
+    assert motor_efficiency_bound(motor) == pytest.approx(W0 * T0 / (VOLT * I_STALL), rel=1e-12)
+
+
+def test_necessary_motor_efficiency_with_zero_current_throughout_is_unbounded():
+    motor = replace(compile_drives(build_body_tree(rig())).motors[0], no_load_current=0.0, stall_current=0.0)
+    assert motor_efficiency_bound(motor) == math.inf
 
 
 def tree_numbers(proj):

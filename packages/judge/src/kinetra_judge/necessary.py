@@ -139,6 +139,14 @@ def motor_efficiency_bound(m: MotorDrive) -> float:
         d0, d1 = v * i0 + v * (i_s - i0) * alpha / t0, v * (i_s - i0) * beta / t0  # battery power = d0 + d1 x
 
         def ratio(x: float) -> float:
+            if x == m.no_load_speed and i0 == 0.0:
+                # At no load both shaft and battery power are zero. Their ratio is the one-sided limit along the
+                # positive-torque segment, not zero: x*T / (V*Is*T/T0) = x*T0 / (V*Is). With Is = 0 too,
+                # positive shaft power at any nearby point has zero battery power, so the supremum is infinite.
+                middle = (x0 + x1) / 2.0
+                if middle != x and middle * (alpha + beta * middle) > 0.0:
+                    denominator = v * i_s
+                    return math.inf if denominator == 0.0 else max(0.0, x * t0 / denominator)
             shaft = x * (alpha + beta * x)
             if shaft <= 0.0:
                 return 0.0
