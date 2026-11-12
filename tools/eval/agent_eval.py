@@ -28,8 +28,9 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Iterator
 
-from kinetra_core import AddPartDef, PartDef, Project, apply_command, load_material_catalog
+from kinetra_core import PLACEMENT_TOLERANCE, AddPartDef, PartDef, Project, apply_command, convex as cx, load_material_catalog
 from kinetra_engine.agent import DEFAULT_MAX_ATTEMPTS, EditTools, ProposalResult, Proposer, load_library
+from kinetra_engine.agent.snapmath import lowest_z, parameter_values, world_bodies
 from kinetra_engine.gateway import BASE_URL, KEY_ENV, Budget, Gateway, GatewayError, HttpRequest, HttpResponse, TransportError
 from kinetra_engine.gateway.transport import urllib_transport
 
@@ -242,6 +243,42 @@ def _instances_by_definition(project: Project) -> dict[str, int]:
     return out
 
 
+def _ground_contact_ids(project: Project, part_id: str) -> list[str]:
+    """Instances of `part_id` whose collision geometry touches z = 0, using the validator's geometry and tolerance."""
+    parts = {p.id: p for p in project.design.parts}
+    out = []
+    for inst in project.design.instances:
+        if inst.part != part_id or inst.part not in parts:
+            continue
+        part = parts[inst.part]
+        pose = inst.pose
+        bodies = world_bodies(part, parameter_values(part, inst), cx.rotation(pose.orientation), (pose.position.x, pose.position.y, pose.position.z))
+        z = lowest_z(bodies)
+        if z is not None and abs(z) <= PLACEMENT_TOLERANCE:
+            out.append(inst.id)
+    return out
+
+
+def _without_joint_path(project: Project) -> list[str]:
+    """Instances outside the first id's joint-connected component (empty for a one-component or empty design)."""
+    ids = {i.id for i in project.design.instances}
+    if not ids:
+        return []
+    adjacency = {i: set() for i in ids}
+    for joint in project.design.joints:
+        adjacency[joint.a.instance].add(joint.b.instance)
+        adjacency[joint.b.instance].add(joint.a.instance)
+    root = min(ids)
+    reached = {root}
+    stack = [root]
+    while stack:
+        for other in adjacency[stack.pop()]:
+            if other not in reached:
+                reached.add(other)
+                stack.append(other)
+    return sorted(ids - reached)
+
+
 def check_proposal(check: dict, project: Project) -> list[str]:
     """The case's own conditions on the proposed project; each failed one is a sentence."""
     fails: list[str] = []
@@ -252,6 +289,14 @@ def check_proposal(check: dict, project: Project) -> list[str]:
     for part, n in check.get("instances_exactly", {}).items():
         if counts.get(part, 0) != n:
             fails.append(f"{part}: {counts.get(part, 0)} instances, wanted {n}")
+    for part, n in check.get("ground_contact_at_least", {}).items():
+        contacts = _ground_contact_ids(project, part)
+        if len(contacts) < n:
+            fails.append(f"{part}: {len(contacts)} ground contacts, wanted at least {n}")
+    if check.get("connected"):
+        disconnected = _without_joint_path(project)
+        if disconnected:
+            fails.append(f"connected: no joint path to {', '.join(repr(i) for i in disconnected)}")
     for want in check.get("parameter", []):
         insts = [i for i in project.design.instances if i.part == want["definition"]]
         values = [next((p.value for p in i.parameters if p.name == want["name"]), None) for i in insts]
