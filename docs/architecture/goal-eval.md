@@ -8,7 +8,7 @@
 
 `evaluate_goal(goal, started, frames, ended)`은 실행 한 번의 스트림(`RunStarted`, `Frame`들, `RunEnded`; C-05b)을 `check_run`으로 확인한 뒤 `Goal`의 조건마다 `met`(충족), `failed`(실패), `undetermined`(판단 불가)를 낸다. **판정이 아니다**: 결과의 첫 레이블이 "1회 실행의 조건 평가이며 판정이 아닙니다"이고, 판정은 이 평가를 표본마다 부르는 몬테카를로(J-01)다.
 
-조건은 프로젝트의 인스턴스 id를 가리킨다. 평가기는 `RunStarted.bodies`에서 그 인스턴스가 속한 몸을 찾아 그 몸의 자세를 따라간다. 그래서 결합이 풀려 떨어져 나간 부품을 가리키는 조건은 그 조각의 궤적으로 평가된다(X-13). 실행에 없는 인스턴스는 `ValueError`다.
+조건은 프로젝트의 인스턴스 id를 가리킨다. 평가기는 `RunStarted.bodies`에서 그 인스턴스가 속한 몸을 찾아 그 몸의 자세를 따라간다. 그래서 결합이 풀려 떨어져 나간 부품을 가리키는 조건은 그 조각의 궤적으로 평가된다(X-13, 엔진 실행으로 확인: `packages/engine/tests/test_break_pieces.py`, `break-threshold.md`). 실행에 없는 인스턴스는 `ValueError`다.
 
 | `kind` | 필드 | 충족 | 실패로 확정 |
 |---|---|---|---|

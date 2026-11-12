@@ -63,6 +63,8 @@ sides the declared impulse (`compiler/separation.py`). Each is a `separation` ev
 separator is let go of once: a second request is refused (`separate`) or, for a schedule entry after a manual request, does
 nothing; a separator whose joint broke before its time has nothing left to release and gives no event. The side that came
 away keeps running in the same world to the end, with its thrusters and motors on their own schedule entries.
+A released body is a free body of the run until the end tick (X-13): no rule removes a piece or takes it out of the
+physics by distance, count or time, every frame carries its pose, and the hash covers its free joint.
 Contacts and met conditions are not in the stream yet; their leaves add them.
 """
 
