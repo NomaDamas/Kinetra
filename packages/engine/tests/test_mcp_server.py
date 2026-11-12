@@ -22,7 +22,7 @@ from websockets.asyncio.client import connect
 
 from kinetra_core import PLANET_CONSTANT_NAMES, PROTOCOL_VERSION, CommandBatch, Origin, Project, ServerMessage, save_project
 from kinetra_core.validator import VERDICT_FIELD_NAMES
-from kinetra_engine.agent import RUN_TOOL_NAMES, TOOL_NAMES, EditTools, HubEditTools, RunTools, run_specs, specs
+from kinetra_engine.agent import QUERY_TOOL_NAMES, RUN_TOOL_NAMES, TOOL_NAMES, EditTools, HubEditTools, RunTools, query_specs, run_specs, specs
 from kinetra_engine.agent import run_tools as rt
 from kinetra_engine.mcp import MAX_LINE_BYTES, PROTOCOL_VERSIONS, McpServer, serve_stdio
 from kinetra_engine.protocol import Hub
@@ -86,13 +86,13 @@ def test_mcp_before_initialize_only_ping_is_answered(tools):
     assert server.protocol_version is None
 
 
-# --- the tools are G-02a's and G-02c's ----------------------------------------------------------------------------------------------------
+# --- the tools are G-02a's, G-02b's and G-02c's ----------------------------------------------------------------------------------------------------
 
 
-def test_mcp_tools_list_is_the_edit_and_run_tools_schema_and_nothing_else(tools):
+def test_mcp_tools_list_is_the_edit_run_and_query_tools_schema_and_nothing_else(tools):
     listed = started(Hub({"desk": empty()}), tools).handle(rpc(1, "tools/list"))["result"]["tools"]
-    assert tuple(t["name"] for t in listed) == (*TOOL_NAMES, *RUN_TOOL_NAMES)
-    for tool, spec in zip(listed, [*specs(), *run_specs()], strict=True):
+    assert tuple(t["name"] for t in listed) == (*TOOL_NAMES, *RUN_TOOL_NAMES, *QUERY_TOOL_NAMES)
+    for tool, spec in zip(listed, [*specs(), *run_specs(), *query_specs()], strict=True):
         assert tool == {"name": spec["function"]["name"], "description": spec["function"]["description"], "inputSchema": spec["function"]["parameters"]}
         assert tool["inputSchema"]["type"] == "object"
 
@@ -353,7 +353,7 @@ def test_mcp_the_command_runs_the_core_on_stdio_and_the_screen_follows(tmp_path)
                 init = await ask(rpc(1, "initialize", {"protocolVersion": "2025-11-25", "capabilities": {}, "clientInfo": {"name": "t", "version": "0"}}))
                 assert init["result"]["serverInfo"]["name"] == "kinetra"
                 await ask({"jsonrpc": "2.0", "method": "notifications/initialized"})
-                assert len((await ask(rpc(2, "tools/list")))["result"]["tools"]) == len(TOOL_NAMES) + len(RUN_TOOL_NAMES)
+                assert len((await ask(rpc(2, "tools/list")))["result"]["tools"]) == len(TOOL_NAMES) + len(RUN_TOOL_NAMES) + len(QUERY_TOOL_NAMES)
                 reply = await ask(rpc(3, "tools/call", {"name": "add_part", "arguments": PLATE}))
                 assert reply["result"]["structuredContent"]["revision"] == 1
                 applied = SERVER.validate_json(await asyncio.wait_for(screen.recv(), 5))

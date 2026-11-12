@@ -13,13 +13,14 @@ from __future__ import annotations
 
 import dataclasses
 import json
+import uuid
 
 import pytest
 from pydantic import ValidationError
 
 from kinetra_core import PLANET_CONSTANT_NAMES, Project, ReasonCode, RunCompleted, RunKind, VerdictState, project_hash
 from kinetra_core.validator import VERDICT_FIELD_NAMES
-from kinetra_engine.agent import RUN_LABEL, RUN_TOOL_NAMES, EditTools, HubEditTools, RunTools, Verdict, VerdictRequest, run_specs
+from kinetra_engine.agent import RUN_LABEL, RUN_TOOL_NAMES, EditTools, HubEditTools, QueryTools, RunTools, Verdict, VerdictRequest, run_specs, summarize_rollout
 from kinetra_engine.agent import run_tools as rt
 from kinetra_engine.protocol import Document, Hub
 from kinetra_engine.run import PreviewRun
@@ -96,6 +97,32 @@ def test_run_tools_a_run_is_one_preview_of_the_document_as_it_is_and_never_a_ver
     assert out["is_verdict"] is False and out["label"] == RUN_LABEL == "1회 실행. 판정이 아닙니다"
     assert out["run"]["started"]["kind"] == "preview" and "verdict" not in out and RUN_LABEL in out["summary"]
     json.dumps(out)
+
+
+def test_run_tools_a_finished_run_records_its_whole_stream_in_the_shared_query_tools(hub, monkeypatch):
+    # A bare UUID hex may start with a digit, which rollout_summary's run_id grammar rejects. Generated ids must remain queryable.
+    monkeypatch.setattr(rt.uuid, "uuid4", lambda: uuid.UUID("00000000-0000-4000-8000-000000000001"))
+    queries = QueryTools()
+    result = RunTools(hub, "car", queries=queries).call("request_run", {"duration_s": 0.05, "seed": 3})
+    assert result.ok
+
+    # Recompute the same real engine stream, including frames that RunToolResult does not expose. The summary must be
+    # exactly that stream's summary, not a reconstruction from only its first and last frames.
+    direct = PreviewRun(
+        hub.documents["car"].project,
+        run_id=result.started.run_id,
+        project_id="car",
+        revision=result.revision,
+        duration_s=0.05,
+        seed=3,
+        kind=RunKind.PREVIEW,
+    )
+    *frames, ended = list(direct)
+    expected = summarize_rollout(direct.started, frames, ended)
+    actual = queries.run(hub.documents["car"].project, "rollout_summary", {"run_id": result.started.run_id})
+    assert actual.ok and actual.data == {**expected, "current_design": True}
+    latest = queries.run(hub.documents["car"].project, "rollout_summary", {})
+    assert latest.ok and latest.data == actual.data
 
 
 def test_run_tools_a_request_reads_the_current_revision_and_changes_no_document(hub):

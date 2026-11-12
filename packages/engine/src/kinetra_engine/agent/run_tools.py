@@ -25,8 +25,9 @@ Rules (`docs/architecture/agent-edit-tools.md`, "실행·판정 요청 도구 (G
   its JSON arguments (text or an object), and a bad call is a result with reasons, never an exception.
 
 Limits (not hidden): `call` runs the engine in the calling thread until the run ends, as long as `duration_s` asks (at most the
-`MAX_TICK` ticks a run counts, like the channel's `run`); a caller on an event loop runs it in a worker thread. The run's frames
-other than the first and the last are not kept.
+`MAX_TICK` ticks a run counts, like the channel's `run`); a caller on an event loop runs it in a worker thread. The result exposes
+only the first and last frames. With `queries=QueryTools()`, the whole stream is held until the terminal message and recorded
+there; without it, intermediate frames are discarded as before.
 """
 
 from __future__ import annotations
@@ -49,6 +50,7 @@ from kinetra_engine.protocol.server import compile_reason
 from kinetra_engine.run import PreviewRun
 
 from . import guard as gd
+from .query_tools import QueryTools
 
 RUN_LABEL = "1회 실행. 판정이 아닙니다"
 """Shown with every run result: the words a client shows for a preview run (`client-adapter.md` F6, plan 4.5 L1)."""
@@ -224,12 +226,14 @@ def _invalid(message: str) -> Reason:
 
 
 class RunTools:
-    """The run and verdict request tools of one project of a `Hub`. Read the document; never publish."""
+    """The run and verdict request tools of one project of a `Hub`. Read the document; never publish. A finished run is recorded
+    in `queries` when that shared query store is supplied."""
 
-    def __init__(self, hub: Hub, project_id: str, *, judge: Judge | None = None):
+    def __init__(self, hub: Hub, project_id: str, *, judge: Judge | None = None, queries: QueryTools | None = None):
         if project_id not in hub.documents:
             raise KeyError(project_id)
         self._hub, self._project_id, self._judge = hub, project_id, judge
+        self._queries = queries
 
     specs = staticmethod(run_specs)
 
@@ -273,7 +277,7 @@ class RunTools:
         try:
             run = PreviewRun(
                 project,
-                run_id=uuid.uuid4().hex,
+                run_id=f"run-{uuid.uuid4().hex}",
                 project_id=self._project_id,
                 revision=revision,
                 duration_s=args.duration_s,
@@ -287,13 +291,19 @@ class RunTools:
         except ValueError as e:  # a duration longer than a run can count
             return _refused(tool, _invalid(str(e)))
         first = last = ended = None
+        frames: list[Frame] | None = [] if self._queries is not None else None
         for item in run:
             if isinstance(item, Frame):
                 first = first or item
                 last = item
+                if frames is not None:
+                    frames.append(item)
             else:
                 ended = item
         assert ended is not None and last is not None  # a run always yields a frame, then its run_ended
+        if self._queries is not None:
+            assert frames is not None
+            self._queries.record(run.started, frames, ended)
         reason = ended.end.reason
         how = {"completed": "completed", "failed": "failed: the engine met a non-finite state"}.get(reason, reason)
         return RunToolResult(
