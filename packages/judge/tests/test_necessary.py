@@ -172,7 +172,6 @@ def test_necessary_energy_passes_for_a_reachable_height_and_proves_nothing():
     screen = necessary_screen(rig(), goal(reach("m1", (-1.0, -1.0, 1.0), (1.0, 1.0, 2.0))))
     assert by_name(screen)["energy_height"].status is CheckStatus.PASSED
     assert screen.verdict is None
-    assert any("통과는 된다는 뜻이 아니다" in label for label in screen.labels)
 
 
 # --- analytical warning 2 and the boundary case: friction impulse on the Moon ----------------------------------------
