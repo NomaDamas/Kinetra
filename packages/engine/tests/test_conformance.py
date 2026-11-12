@@ -61,6 +61,8 @@ def test_conformance_cases_cover_the_rules_of_the_issue():
         "08-unknown-type-ignored",
         "09-run-stream",
         "13-violation-run-without-end-frame",
+        "14-reconnect-mid-replay",
+        "15-reconnect-mid-run",
     } <= names
     kinds = {m["type"] for c in CASES for m in iter_messages(c)}
     assert {"hello", "subscribe", "snapshot", "resumed", "publish", "request", "applied", "accepted", "rejected"} <= kinds
@@ -87,8 +89,19 @@ def test_conformance_every_message_of_the_cases_is_a_protocol_message():
                 assert not list(server_v.iter_errors(step["core"])), (case["case"], step["core"]["type"])
             elif "core" in step:
                 unknown += 1
-                assert case["case"] in ("08-unknown-type-ignored", "09-run-stream", "13-violation-run-without-end-frame")
-    assert unknown == 4  # two presence, and run_progress in the run stream and its broken copy
+                assert case["case"] in ("08-unknown-type-ignored", "09-run-stream", "13-violation-run-without-end-frame", "15-reconnect-mid-run")
+    assert unknown == 5  # two presence, and run_progress in the run stream and its two copies
+
+
+def test_conformance_every_broken_core_names_the_rule_and_the_message():
+    """A violation case says which `ProtocolViolation.code` the client must raise and at which core message."""
+    broken = [c for c in CASES if "violation" in c["expect"]]
+    assert len(broken) == 4
+    for case in broken:
+        expect = case["expect"]
+        sent = [s for s in case["steps"] if "core" in s or "core_binary" in s]
+        assert set(expect) == {"violation", "code", "at_message"} and 1 <= expect["at_message"] <= len(sent)
+    assert {c["expect"]["code"] for c in broken} == {"revision_gap", "accepted_before_applied", "resume_mismatch", "run_stream"}
 
 
 def test_conformance_no_engine_term_crosses_the_boundary():
@@ -180,7 +193,7 @@ class IgnoresNothing(ReferenceClient):
     async def _next(self):
         message = await super()._next()
         if self.ignored:
-            raise ProtocolViolation(f"unknown type {self.ignored[-1]}")
+            raise ProtocolViolation("schema", f"unknown type {self.ignored[-1]}")
         return message
 
 
@@ -214,19 +227,54 @@ class AppliesOutOfOrder(ReferenceClient):
         super()._handle(message)
 
 
+class KeepsTheOldConnection(ReferenceClient):
+    """Carries the replay owed and the run going on over to a new connection (the old connection's state)."""
+
+    async def connect(self):
+        replay, runs = self._replay, list(self.runs)
+        await super().connect()
+        self._replay, self.runs = replay, runs
+
+
+class RefusesTooEarly(ReferenceClient):
+    """Raises the right code, but at the snapshot, before the message that breaks the rule."""
+
+    def _handle(self, message):
+        from kinetra_core import Snapshot
+
+        if isinstance(message, Snapshot):
+            raise ProtocolViolation("revision_gap", "refused early")
+        super()._handle(message)
+
+
+class RefusesForAnotherReason(ReferenceClient):
+    """Raises at the message that breaks the rule, but names another rule."""
+
+    def _handle(self, message):
+        try:
+            super()._handle(message)
+        except ProtocolViolation as e:
+            raise ProtocolViolation("schema", str(e)) from e
+
+
 @pytest.mark.parametrize(
-    ("client", "case"),
+    ("client", "case", "problem"),
     [
-        (IgnoresNothing, "08-unknown-type-ignored"),
-        (IgnoresNothing, "09-run-stream"),
-        (TrustsTheRunEnd, "13-violation-run-without-end-frame"),
-        (ForgetsTheEpoch, "06-resume-same-epoch"),
-        (AppliesOutOfOrder, "10-violation-applied-skips-a-revision"),
+        (IgnoresNothing, "08-unknown-type-ignored", "unknown type presence"),
+        (IgnoresNothing, "09-run-stream", "unknown type run_progress"),
+        (TrustsTheRunEnd, "13-violation-run-without-end-frame", "it accepted it"),
+        (ForgetsTheEpoch, "06-resume-same-epoch", "expected {\"type\": \"subscribe\""),
+        (AppliesOutOfOrder, "10-violation-applied-skips-a-revision", "it accepted it"),
+        (KeepsTheOldConnection, "14-reconnect-mid-replay", "replay_incomplete"),
+        (KeepsTheOldConnection, "15-reconnect-mid-run", "run_overlap"),
+        (RefusesTooEarly, "10-violation-applied-skips-a-revision", "'revision_gap' at core message 2"),
+        (RefusesForAnotherReason, "10-violation-applied-skips-a-revision", "'schema' at core message 3"),
+        (RefusesForAnotherReason, "13-violation-run-without-end-frame", "'schema' at core message 22"),
     ],
 )
-def test_conformance_a_client_that_breaks_a_rule_fails(client, case):
+def test_conformance_a_client_that_breaks_a_rule_fails(client, case, problem):
     problems = asyncio.run(run_case(by_name(case), client))
-    assert problems, f"{client.__name__} passed {case}"
+    assert any(problem in p for p in problems), (client.__name__, case, problems)
 
 
 def test_conformance_a_client_in_another_process_runs_the_cases_through_the_cli():

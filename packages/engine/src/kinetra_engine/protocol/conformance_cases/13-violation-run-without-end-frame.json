@@ -33,5 +33,5 @@
   {"core":{"type":"run_ended","run_id":"fixture-run-1","last_tick":130,"end":{"reason":"completed","trajectory":{"hash":"sha256:c10174ad6504511aefe162b51fbbd5532f8438907fae023e30b24eafea9c1e9a","platform":{"os":{"kind":"macos","kernel_release":"24.6.0"},"cpu":{"architecture":"arm64","model":"Apple M2 Pro"},"image_digest":null,"engine":{"name":"analytic-fixture","version":"0","distribution":"custom_build","compiler":"none (pure Python)","build_flags":""},"runtime":{"python":"3.12.11","numpy":"2.5.4"},"core_build":{"commit":"8371a65c9bae8f9ba6831ae1eb88473feb2aa4cc"},"compute":{"integrator":"closed-form free fall","timestep_s":0.002,"solver":{}},"threads":{"physics":1,"solver":1}}}}}},
   {"do":"close"}
  ],
- "expect": {"violation":"the core always sends the end frame before run_ended"}
+ "expect": {"violation":"the core always sends the end frame before run_ended","code":"run_stream","at_message":22}
 }

@@ -16,5 +16,5 @@
   {"core":{"type":"accepted","id":"c1","revision":2}},
   {"do":"close"}
  ],
- "expect": {"violation":"applied revision 2 after revision 0"}
+ "expect": {"violation":"applied revision 2 after revision 0","code":"revision_gap","at_message":3}
 }

@@ -292,22 +292,60 @@ async def build() -> dict[str, dict]:
     )
     cases.append(run_case)
 
-    # broken cores: the client must refuse them
+    # reconnects: what belonged to the old connection (a replay owed, a run going on) does not carry over
+    steps, expect = copy.deepcopy(resume)
+    first, second = [i for i, s in enumerate(steps) if s.get("do") == "connect"]
+    hello = steps[first + 1 : first + 3]
+    snapshot_step = steps[_core_index(steps, "snapshot")]
+    resumed_step = steps[_core_index(steps, "resumed")]
+    applied_1, applied_2 = steps[_core_index(steps, "applied", 0)], steps[_core_index(steps, "applied", 1)]
+    sub = {"type": "subscribe", "project": PROJECT_ID}
+    owed = {**resumed_step["core"], "after_revision": 0}
+    steps = [
+        {"do": "connect"}, *hello, {"do": "subscribe", "project": PROJECT_ID}, {"client": sub}, snapshot_step, {"do": "close"},
+        {"do": "connect"}, *hello, {"do": "subscribe", "project": PROJECT_ID, "dropped": True},
+        {"client": {**sub, "after_revision": 0, "epoch": "epoch-1"}}, {"core": owed}, applied_1, {"core_close": True},
+        {"do": "connect"}, *hello, {"do": "subscribe", "project": PROJECT_ID},
+        {"client": {**sub, "after_revision": 1, "epoch": "epoch-1"}}, resumed_step, applied_2, {"do": "close"},
+    ]
+    expect["outcomes"] = {}
+    cases.append(case("14-reconnect-mid-replay", "the core drops the connection after 1 of the 2 applied owed; the client resumes from revision 1", ["D6"], "composed", steps, expect))
+
+    steps, expect = copy.deepcopy((run_case["steps"], run_case["expect"]))
+    receive = steps.index({"do": "receive_run"})
+    cut = copy.deepcopy(steps[receive + 1 : receive + 4])  # run_started and two binary frames of a run that is cut
+    cut[0]["core"]["run_id"] = "fixture-run-0"
+    resumed_0 = {"type": "resumed", "project_id": PROJECT_ID, "epoch": "epoch-1", "after_revision": 0, "revision": 0}
+    hello = steps[1:3]
+    steps[receive:receive] = [
+        {"do": "receive_run", "dropped": True}, *cut, {"core_close": True},
+        {"do": "connect"}, *hello, {"do": "subscribe", "project": PROJECT_ID},
+        {"client": {**sub, "after_revision": 0, "epoch": "epoch-1"}}, {"core": resumed_0},
+    ]
+    cases.append(case("15-reconnect-mid-run", "the connection closes during a run; after a reconnect a new run streams whole", ["F3", "F4", "D6"], "composed", steps, expect))
+
+    # broken cores: the client must refuse them with the rule's code, at the message that breaks it
     steps = copy.deepcopy(accepted[0])
     for kind in ("applied", "accepted"):
         steps[_core_index(steps, kind)]["core"]["revision"] = 2
-    cases.append(case("10-violation-applied-skips-a-revision", "an applied that is not the next revision", ["D2"], "composed", steps, {"violation": "applied revision 2 after revision 0"}))
+    cases.append(case("10-violation-applied-skips-a-revision", "an applied that is not the next revision", ["D2"], "composed", steps, violation(steps, _core_index(steps, "applied"), "revision_gap", "applied revision 2 after revision 0")))
     steps = copy.deepcopy(accepted[0])
     a, b = _core_index(steps, "applied"), _core_index(steps, "accepted")
     steps[a], steps[b] = steps[b], steps[a]
-    cases.append(case("11-violation-accepted-before-applied", "accepted arrives before the applied of its edit", ["D2"], "composed", steps, {"violation": "the publisher gets its applied before its accepted"}))
+    cases.append(case("11-violation-accepted-before-applied", "accepted arrives before the applied of its edit", ["D2"], "composed", steps, violation(steps, a, "accepted_before_applied", "the publisher gets its applied before its accepted")))
     steps = copy.deepcopy(resume[0])
     steps[_core_index(steps, "resumed")]["core"]["epoch"] = "epoch-of-another-life"
-    cases.append(case("12-violation-resumed-other-epoch", "resumed under another epoch than the client holds", ["D6"], "composed", steps, {"violation": "resumed continues another life of the document"}))
+    cases.append(case("12-violation-resumed-other-epoch", "resumed under another epoch than the client holds", ["D6"], "composed", steps, violation(steps, _core_index(steps, "resumed"), "resume_mismatch", "resumed continues another life of the document")))
     steps = copy.deepcopy(run_case["steps"])
     del steps[_core_index(steps, "frame", -1)]
-    cases.append(case("13-violation-run-without-end-frame", "run_ended at tick 130 with no frame at tick 130", ["F3", "F4"], "composed", steps, {"violation": "the core always sends the end frame before run_ended"}))
-    return {f"{c['case']}.json": c for c in cases}
+    cases.append(case("13-violation-run-without-end-frame", "run_ended at tick 130 with no frame at tick 130", ["F3", "F4"], "composed", steps, violation(steps, _core_index(steps, "run_ended"), "run_stream", "the core always sends the end frame before run_ended")))
+    return {f"{c['case']}.json": c for c in sorted(cases, key=lambda c: c["case"])}
+
+
+def violation(steps: list[dict], index: int, code: str, why: str) -> dict:
+    """The client must raise `code` while handling the core message at `steps[index]` (numbered over the case)."""
+    at = sum(1 for s in steps[: index + 1] if "core" in s or "core_binary" in s)
+    return {"violation": why, "code": code, "at_message": at}
 
 
 def render(c: dict) -> str:

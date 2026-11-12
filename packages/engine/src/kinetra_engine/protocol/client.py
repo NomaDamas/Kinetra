@@ -59,7 +59,18 @@ KNOWN_TYPES = frozenset(
 
 
 class ProtocolViolation(Exception):
-    """The core sent something a conforming core never sends (ordering, revision, run stream rules)."""
+    """The core sent something a conforming core never sends. `code` names the rule (the conformance cases expect a
+    code at a message): `revision_gap` (an `applied` that is not the next revision, D2), `accepted_before_applied`
+    (D2), `resume_mismatch` (a `resumed` that does not continue what the client holds, D6), `replay_incomplete`
+    (another message before the `applied` owed after `resumed`), `run_stream` (`check_run` refuses the stream, 3.3),
+    `frame` (a frame that is not a frame of its run), `binary_frame` (does not decode), `run_overlap` (a run starts
+    before the previous one ended), `no_run` (a run message with no run going on), `schema` (a known `type` that does
+    not match its schema), `not_json`, `handshake` (no or a second `hello`), `snapshot_project` (a snapshot of another
+    project)."""
+
+    def __init__(self, code: str, message: str):
+        super().__init__(f"{code}: {message}")
+        self.code = code
 
 
 class CoreError(Exception):
@@ -94,7 +105,9 @@ class ReferenceClient:
         self.outcomes: dict[str, Accepted | Rejected] = {}
         self.ignored: list[str] = []  # the unknown `type`s received, in order
         self.errors: list[ProtocolError] = []  # non-fatal `error`s
-        self.runs: list[RunRecord] = []
+        self.runs: list[RunRecord] = []  # runs whose stream this client received from `run_started` on
+        self.interrupted_runs: list[RunRecord] = []  # runs whose connection closed before their `run_ended`
+        self.received = 0  # messages received from the core, all connections (the conformance cases count them)
         self._replay = 0  # `applied` still owed after a `resumed`
         self._delivered_runs = 0  # runs already returned by `receive_run`
         self._greeted = False  # the core's hello of this connection came
@@ -102,13 +115,19 @@ class ReferenceClient:
     # --- connection --------------------------------------------------------------------------------------------
 
     async def connect(self) -> None:
-        """Open the socket and exchange `hello` (G5). The copy of the project is kept from an earlier connection."""
+        """Open the socket and exchange `hello` (G5). The copy of the project (revision, epoch) is kept from an earlier
+        connection; what belonged to the old connection is not: a replay owed after a `resumed` (the new `subscribe`
+        asks again from the revision actually reached) and a run whose stream was cut (its frames are gone with the
+        connection; it moves to `interrupted_runs`)."""
+        self._replay = 0
+        if self.runs and self.runs[-1].ended is None:
+            self.interrupted_runs.append(self.runs.pop())
         self.ws = await connect(self.url, open_timeout=self.open_timeout_s)
         self._greeted = False
         await self._send({"type": "hello", "protocol": PROTOCOL_VERSION})
         message = await self._next()
         if not isinstance(message, Hello) or message.protocol != PROTOCOL_VERSION:
-            raise ProtocolViolation(f"the core answered hello with {message!r}")
+            raise ProtocolViolation("handshake", f"the core answered hello with {message!r}")
 
     async def close(self) -> None:
         if self.ws is not None:
@@ -180,28 +199,29 @@ class ReferenceClient:
         """Receive one message, apply it to the client's state and return it (`None` for an ignored one)."""
         assert self.ws is not None, "connect() first"
         raw = await self.ws.recv()
+        self.received += 1
         if isinstance(raw, bytes):
             return self._binary_frame(raw)
         try:
             data = json.loads(raw)
         except ValueError as e:
-            raise ProtocolViolation(f"a text message that is not JSON: {e}") from e
+            raise ProtocolViolation("not_json", f"a text message that is not JSON: {e}") from e
         kind = data.get("type") if isinstance(data, dict) else None
         if not isinstance(kind, str):
-            raise ProtocolViolation("a message without a string `type`")
+            raise ProtocolViolation("schema", "a message without a string `type`")
         if kind not in KNOWN_TYPES:
             self.ignored.append(kind)  # G5: a message added after this client was written
             return None
         try:
             message = _SERVER.validate_python(data)
         except ValidationError as e:
-            raise ProtocolViolation(f"a {kind} message that does not match its schema: {e}") from e
+            raise ProtocolViolation("schema", f"a {kind} message that does not match its schema: {e}") from e
         self._handle(message)
         return message
 
     def _handle(self, message) -> None:
         if self._replay and not isinstance(message, Applied):
-            raise ProtocolViolation(f"{message.type} arrived before the {self._replay} applied owed after resumed")
+            raise ProtocolViolation("replay_incomplete", f"{message.type} arrived before the {self._replay} applied owed after resumed")
         match message:
             case ProtocolError(fatal=True):
                 raise CoreError(message)
@@ -210,7 +230,7 @@ class ReferenceClient:
                 raise CoreError(message)
             case Snapshot():
                 if message.project_id != self.project_id:
-                    raise ProtocolViolation(f"snapshot of {message.project_id!r}, subscribed to {self.project_id!r}")
+                    raise ProtocolViolation("snapshot_project", f"snapshot of {message.project_id!r}, subscribed to {self.project_id!r}")
                 self.project, self.revision, self.epoch, self.verdict = (
                     message.project,
                     message.revision,
@@ -219,19 +239,20 @@ class ReferenceClient:
                 )
             case Resumed():
                 if message.project_id != self.project_id or message.epoch != self.epoch:
-                    raise ProtocolViolation("resumed names another project or another epoch than the client holds")
+                    raise ProtocolViolation("resume_mismatch", "resumed names another project or another epoch than the client holds")
                 if message.after_revision != self.revision or message.revision < message.after_revision:
-                    raise ProtocolViolation(f"resumed after {message.after_revision}, the client holds {self.revision}")
+                    raise ProtocolViolation("resume_mismatch", f"resumed after {message.after_revision}, the client holds {self.revision}")
                 self._replay = message.revision - message.after_revision
             case Applied():
                 if self.project is None or message.revision != self.revision + 1:
-                    raise ProtocolViolation(f"applied revision {message.revision} after revision {self.revision}")
+                    raise ProtocolViolation("revision_gap", f"applied revision {message.revision} after revision {self.revision}")
                 self.project = apply_changes(self.project, message.changes)
                 self.revision, self.verdict = message.revision, message.verdict
                 self._replay = max(0, self._replay - 1)
             case Accepted():
                 if message.revision != self.revision:
                     raise ProtocolViolation(
+                        "accepted_before_applied",
                         f"accepted {message.id!r} at revision {message.revision}, the client holds {self.revision}"
                         " (the applied of an edit comes before its accepted)"
                     )
@@ -240,11 +261,11 @@ class ReferenceClient:
                 self.outcomes[message.id] = message
             case Hello():
                 if self._greeted:
-                    raise ProtocolViolation("a second hello")
+                    raise ProtocolViolation("handshake", "a second hello")
                 self._greeted = True
             case RunStarted():
                 if self.runs and self.runs[-1].ended is None:
-                    raise ProtocolViolation(f"run {message.run_id!r} started before run {self.runs[-1].started.run_id!r} ended")
+                    raise ProtocolViolation("run_overlap", f"run {message.run_id!r} started before run {self.runs[-1].started.run_id!r} ended")
                 self.runs.append(RunRecord(message))
             case Frame():
                 self._frame(message)
@@ -253,15 +274,15 @@ class ReferenceClient:
                 try:
                     check_run(run.started, run.frames, message)
                 except ValueError as e:
-                    raise ProtocolViolation(f"the run stream breaks 3.3: {e}") from e
+                    raise ProtocolViolation("run_stream", f"the run stream breaks 3.3: {e}") from e
                 run.ended = message
 
     def _live_run(self, run_id: str | None = None) -> RunRecord:
         if not self.runs or self.runs[-1].ended is not None:
-            raise ProtocolViolation("a run stream message with no run going on")
+            raise ProtocolViolation("no_run", "a run stream message with no run going on")
         run = self.runs[-1]
         if run_id is not None and run_id != run.started.run_id:
-            raise ProtocolViolation(f"a message of run {run_id!r}, the run going on is {run.started.run_id!r}")
+            raise ProtocolViolation("no_run", f"a message of run {run_id!r}, the run going on is {run.started.run_id!r}")
         return run
 
     def _frame(self, frame: Frame) -> Frame:
@@ -270,7 +291,7 @@ class ReferenceClient:
             # every frame may be the last one; the grid of all but the last is checked by check_run at the end
             check_frame(run.started, frame, final=True)
         except ValueError as e:
-            raise ProtocolViolation(f"a frame that is not a frame of its run: {e}") from e
+            raise ProtocolViolation("frame", f"a frame that is not a frame of its run: {e}") from e
         run.frames.append(frame)
         return frame
 
@@ -279,5 +300,5 @@ class ReferenceClient:
         try:
             frame = decode_frame(data, run.started.run_id, [b.id for b in run.started.bodies])
         except FrameDecodeError as e:
-            raise ProtocolViolation(f"a binary frame that does not decode: {e}") from e
+            raise ProtocolViolation("binary_frame", f"a binary frame that does not decode: {e}") from e
         return self._frame(frame)

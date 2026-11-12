@@ -9,18 +9,26 @@ same recorded cases, in `conformance_cases/*.json`. A case is language-neutral J
 `steps`, in order, are of four kinds:
 
 - `{"do": "connect"}`, `{"do": "subscribe", "project": id}`, `{"do": "publish", "id", "command", "origin"}`,
-  `{"do": "request", "id", "action", "origin"}`, `{"do": "receive_run"}`, `{"do": "close"}`: what the client is told
-  to do (by its test harness). The command id is given so the wire can be compared; a client lets its caller pick it.
+  `{"do": "request", "id", "action", "origin"}`, `{"do": "receive_run"}`, `{"do": "receive", "count": n}` (handle n
+  messages), `{"do": "close"}`: what the client is told to do (by its test harness). The command id is given so the
+  wire can be compared; a client lets its caller pick it. A `do` with `"dropped": true` is cut short by the core
+  closing the connection: the client loses the connection there (not a `ProtocolViolation`) and goes on with the next
+  `do`.
 - `{"client": message}`: the message a conforming client sends at this point (compared as a `ClientMessage`: field
   order, an omitted optional field and an explicit `null` are the same).
 - `{"core": message}` / `{"core_binary": base64}`: what the core sends (text JSON, or one binary frame of 3.3).
+  `{"core_close": true}`: the core closes the connection (a restart, a dropped subscriber).
 - `{"core_side": ...}`: what happened inside the core while no client was connected (another publisher, a restart).
   Only the recorder acts on it; a player skips it.
 
 `expect` is the client's state after the last step: `revision`, `epoch`, `verdict`, `project` (the whole Project JSON),
 `outcomes` (command id -> `accepted` / `rejected`), `ignored` (the unknown `type`s it skipped, in order), `runs` (per
-received run: `run_id`, `kind`, `ticks`, `last_tick`, `end`, `events` as `[tick, kind]`, `last_frame`). Or it is
-`{"violation": why}`: the core in this case breaks a rule and the client must refuse it (raise), not paper over it.
+run received whole: `run_id`, `kind`, `ticks`, `last_tick`, `end`, `events` as `[tick, kind]`, `last_frame`; a run
+cut by a closed connection is not one of them). Or it is `{"violation": why, "code": rule, "at_message": n}`: the
+core in this case breaks a rule and the client must refuse it with exactly that `ProtocolViolation.code`, while
+handling the `n`-th message the core sent in the case (counting every `core` and `core_binary` step from the first
+connection on). A refusal for another reason or at another message fails the case: it would pass a client that refuses
+the wrong thing.
 
 `source: hub` cases are a recording of the real `Hub` (`packages/engine/tests/conformance_fixture.py` writes them; a
 test fails when the Hub no longer says the same), with each random `epoch` replaced by a label. `composed` cases are
@@ -55,7 +63,7 @@ from websockets.exceptions import ConnectionClosed
 
 from kinetra_core import ClientMessage, Frame, Project
 
-from .client import ProtocolViolation, ReferenceClient
+from .client import CoreError, ProtocolViolation, ReferenceClient
 
 CASES_DIR = Path(__file__).resolve().parent / "conformance_cases"
 CASE_TIMEOUT_S = 10.0
@@ -75,7 +83,7 @@ def _segments(case: dict) -> list[list[dict]]:
     for step in case["steps"]:
         if step.get("do") == "connect":
             segments.append([])
-        elif "client" in step or "core" in step or "core_binary" in step:
+        elif "client" in step or "core" in step or "core_binary" in step or "core_close" in step:
             segments[-1].append(step)
     return segments
 
@@ -116,8 +124,12 @@ class ScriptedCore:
                         return
                 elif "core" in step:
                     await ws.send(json.dumps(step["core"]))
-                else:
+                elif "core_binary" in step:
                     await ws.send(base64.b64decode(step["core_binary"]))
+                else:
+                    self.finished += 1
+                    await ws.close()
+                    return
             self.finished += 1
             async for raw in ws:  # the script is over: anything more the client sends is not in the case
                 self.problems.append(f"connection {n + 1}: a message after the end of the case: {raw!r:.120}")
@@ -145,23 +157,38 @@ def _compare_client(expected: dict, raw: str | bytes) -> str | None:
 async def drive(client: Any, case: dict) -> None:
     """Perform the case's `do` steps on a client with the `ReferenceClient` methods."""
     for step in case["steps"]:
-        match step.get("do"):
-            case "connect":
-                await client.connect()
-            case "subscribe":
-                await client.subscribe(step["project"])
-            case "publish":
-                await client.publish(step["command"], step["origin"], step["id"])
-            case "request":
-                await client.request(step["action"], step["origin"], step["id"])
-            case "receive_run":
-                await client.receive_run()
-            case "close":
-                await client.close()
-            case None:
-                pass
-            case other:
-                raise ValueError(f"unknown step {other!r} in case {case['case']}")
+        if step.get("dropped"):
+            try:
+                await _do(client, case, step)
+            except (ProtocolViolation, CoreError):
+                raise
+            except Exception:  # noqa: BLE001 - the connection is gone, as the case says; the client carries on
+                continue
+            raise ProtocolViolation("dropped", f"{step['do']} completed although the core closed the connection")
+        await _do(client, case, step)
+
+
+async def _do(client: Any, case: dict, step: dict) -> None:
+    match step.get("do"):
+        case "connect":
+            await client.connect()
+        case "subscribe":
+            await client.subscribe(step["project"])
+        case "publish":
+            await client.publish(step["command"], step["origin"], step["id"])
+        case "request":
+            await client.request(step["action"], step["origin"], step["id"])
+        case "receive_run":
+            await client.receive_run()
+        case "receive":
+            for _ in range(step["count"]):
+                await client.receive()
+        case "close":
+            await client.close()
+        case None:
+            pass
+        case other:
+            raise ValueError(f"unknown step {other!r} in case {case['case']}")
 
 
 def run_summary(run: Any) -> dict:
@@ -181,10 +208,12 @@ def check_state(case: dict, client: Any, raised: BaseException | None) -> list[s
     """Compare the client's state (or its refusal) with `expect`."""
     expect = case["expect"]
     if "violation" in expect:
-        if isinstance(raised, ProtocolViolation):
-            return []
-        how = f"raised {raised!r}" if raised else "accepted it"
-        return [f"the core breaks a rule ({expect['violation']}); the client must raise ProtocolViolation, it {how}"]
+        want = f"ProtocolViolation {expect['code']!r} at core message {expect['at_message']}"
+        if not isinstance(raised, ProtocolViolation):
+            how = f"raised {raised!r}" if raised else "accepted it"
+            return [f"the core breaks a rule ({expect['violation']}); the client must raise {want}, it {how}"]
+        got = f"ProtocolViolation {raised.code!r} at core message {client.received}"
+        return [] if got == want else [f"the core breaks a rule ({expect['violation']}); expected {want}, the client raised {got}: {raised}"]
     if raised is not None:
         return [f"the client raised {raised!r}"]
     problems = []
