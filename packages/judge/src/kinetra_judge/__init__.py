@@ -15,11 +15,25 @@ from .goal import (
     TimeLimitCondition,
     evaluate_goal,
 )
+from .mc import (
+    ENGINE_APPLIED,
+    Verdict,
+    VerdictComparison,
+    VerdictComparisonResult,
+    assumptions_hash,
+    compare_verdicts,
+    goal_hash,
+    monte_carlo,
+    run_verdict,
+    sample_assumptions,
+    wilson_ci,
+)
 
 __all__ = [
     "Box",
     "Condition",
     "ConditionResult",
+    "ENGINE_APPLIED",
     "Goal",
     "GoalResult",
     "LandingCondition",
@@ -29,5 +43,15 @@ __all__ = [
     "RotationCondition",
     "Status",
     "TimeLimitCondition",
+    "Verdict",
+    "VerdictComparison",
+    "VerdictComparisonResult",
+    "assumptions_hash",
+    "compare_verdicts",
     "evaluate_goal",
+    "goal_hash",
+    "monte_carlo",
+    "run_verdict",
+    "sample_assumptions",
+    "wilson_ci",
 ]

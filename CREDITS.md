@@ -638,7 +638,7 @@
 - 원본: https://pypi.org/project/numpy/2.4.6/ https://github.com/numpy/numpy
 - 경로: `packages/engine/pyproject.toml`
 - 용도: 실행 의존성: 로컬 받아쓰기(I-01a)의 추이 의존성
-- 변경 내역: 없음(수정 없이 사용). 추이 의존성(Python 3.12 미만에서만 이 버전, 이상은 numpy 2.5.4 행): ctranslate2, onnxruntime 이(가) 요구하며 uv.lock 에서 2.4.6 로 고정(루트는 faster-whisper). 해시는 sdist
+- 변경 내역: 없음(수정 없이 사용). 추이 의존성(Python 3.12 미만에서만 이 버전, 이상은 numpy 2.5.4 행): ctranslate2, onnxruntime 이(가) 요구하며 uv.lock 에서 2.4.6 로 고정(루트는 faster-whisper). 해시는 sdist. J-01a 부터 추가 소비자 packages/judge/pyproject.toml 의 직접 의존성(`numpy>=2.4`, 몬테카를로 표본 `np.random.default_rng`, `kinetra_judge/mc.py`)
 - 받은 날짜: 2026-11-11
 - 원본 해시: `sha256:f3a3570c4a2a16746ac2c31a7c7c7b0c186b95ce902e33db6f28094ed7387dda`
 - 확인자: omp
@@ -651,7 +651,7 @@
 - 원본: https://pypi.org/project/numpy/2.5.4/ https://github.com/numpy/numpy https://github.com/numpy/numpy/blob/main/LICENSE.txt
 - 경로: `spikes/mujoco-limits/scale.py`
 - 용도: 실행 의존성: MuJoCo 한계 측정 스파이크(A0-01a)의 수치 계산과 물 스파이크(FL-01 spikes/mujoco-water/mujoco_water.py. 같은 고정 버전)
-- 변경 내역: 없음(PEP 723 헤더에서 numpy==2.5.4 고정, 수정 없이 사용). NumPy 자체의 라이선스는 BSD-3-Clause(저장소 LICENSE.txt). PyPI 메타데이터 license_expression은 휠에 번들된 구성요소까지 합쳐 'BSD-3-Clause AND 0BSD AND MIT AND Zlib AND CC0-1.0'이다
+- 변경 내역: 없음(PEP 723 헤더에서 numpy==2.5.4 고정, 수정 없이 사용). NumPy 자체의 라이선스는 BSD-3-Clause(저장소 LICENSE.txt). PyPI 메타데이터 license_expression은 휠에 번들된 구성요소까지 합쳐 'BSD-3-Clause AND 0BSD AND MIT AND Zlib AND CC0-1.0'이다. J-01a 부터 추가 소비자 packages/judge/pyproject.toml 의 직접 의존성(`numpy>=2.4`, Python 3.12 이상에서 uv.lock 이 2.5.4 로 고정, 몬테카를로 표본 `kinetra_judge/mc.py`)
 - 받은 날짜: 2026-11-10
 - 원본 해시: `sha256:9a94cf751c9ad8ebaa835bcd3d40dacf8534ad086b88c38029b65123c7999d2a`
 - 확인자: omp
