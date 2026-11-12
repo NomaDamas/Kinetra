@@ -56,7 +56,7 @@ result = mass_properties(part_def, material, {"width": q})   # 덮어쓸 파라�
 | `input_badges` | 위 입력 배지의 서로 다른 값(배지 순서). 검증이 `shape`·`density`·`parameters`의 배지와 대조해 다르면 거절한다(따로 고칠 수 없다) |
 | `assumptions` | 균질 강체, 닫힌 식, 겹치지 않는 합 |
 
-모든 필드가 튜플·불변이라 `MassProperties`는 해시된다. 캐시(B-01d, `part-cache.md`)의 키는 이 결과가 아니라 입력(정의, 재료, 파라미터)이다. 덮어쓴 파라미터는 `ParamValue` 같은 하위 클래스로 와도 평범한 `Quantity`로 바꿔 담아 JSON 왕복이 같다. `MassProperties`의 `badge`는 `sim` 하나로 고정되어 있어 `cite`나 `declared`로 위조할 수 없다(검증이 거절한다). 선언한 밀도로 낸 질량은 그 선언만큼만 맞다. 입력 배지를 하나로 합치는 규칙(X-07의 "가장 약한 입력")은 소비하는 쪽이 정한다. 이 모듈은 순위를 정하지 않고 입력 배지를 그대로 내놓는다.
+모든 필드가 튜플·불변이라 `MassProperties`는 해시된다. 캐시(B-01d, `part-cache.md`)의 키는 이 결과가 아니라 입력(정의, 재료, 파라미터)이다. 덮어쓴 파라미터는 `ParamValue` 같은 하위 클래스로 와도 평범한 `Quantity`로 바꿔 담아 JSON 왕복이 같다. `MassProperties`의 `badge`는 `sim` 하나로 고정되어 있어 `cite`나 `declared`로 위조할 수 없다(검증이 거절한다). 선언한 밀도로 낸 질량은 그 선언만큼만 맞다. 입력 배지를 하나로 합치는 규칙(X-07의 "가장 약한 입력", [`thrust-to-weight.md`](thrust-to-weight.md))은 소비하는 쪽이 정한다. 이 모듈은 순위를 정하지 않고 입력 배지를 그대로 내놓는다.
 
 ## 검증
 
