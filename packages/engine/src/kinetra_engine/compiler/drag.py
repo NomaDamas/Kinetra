@@ -144,7 +144,11 @@ def drag_force(density: float, area: float, velocity: Vec) -> Vec:
 
 class DragRuntime:
     """The drag of one run against a loaded model: `model` must be the MuJoCo model of `to_mjcf(tree, ...)` for the tree
-    `drag` was compiled from (bodies are found by name)."""
+    `drag` was compiled from (bodies are found by name).
+
+    Per step: `mj_step1`, `apply`, `mj_step2`, `restore` (or `step`, which does the four). `apply` adds this step's drag into
+    `xfrc_applied` and remembers the rows it touched as they were; `restore` puts exactly those rows back, so a force another
+    writer keeps there (thrust, `ThrustRun.begin_step`/`end_step`) is neither cleared nor accumulated."""
 
     def __init__(self, model, drag: Drag) -> None:
         import mujoco
@@ -157,13 +161,18 @@ class DragRuntime:
             if i < 0:
                 raise ValueError(f"body {b.body!r}: the model has no body of that name (compile it from the same tree)")
             self._rows.append((i, b.area))
+        self._saved: list[tuple[int, object]] | None = None
 
     def apply(self, data) -> None:
         """Add each body's drag to `data.xfrc_applied` (force rows, world frame, at the centre of mass). Call it after
-        `mj_step1`, so positions and velocities are this step's. A body in a medium of density 0 gets nothing."""
+        `mj_step1`, so positions and velocities are this step's, and call `restore` after `mj_step2`. A body in a medium of
+        density 0 gets nothing and its row is not touched."""
         import mujoco
         import numpy as np
 
+        if self._saved is not None:
+            raise RuntimeError("apply called twice without restore")
+        saved: list[tuple[int, object]] = []
         res = np.zeros(6)
         for i, area in self._rows:
             x = data.xipos[i]
@@ -172,18 +181,25 @@ class DragRuntime:
                 continue
             mujoco.mj_objectVelocity(self.model, data, mujoco.mjtObj.mjOBJ_BODY, i, res, 0)  # [angular; linear] at xipos, world
             f = drag_force(rho, area, (float(res[3]), float(res[4]), float(res[5])))
+            saved.append((i, data.xfrc_applied[i, :3].copy()))
             data.xfrc_applied[i, 0] += f[0]
             data.xfrc_applied[i, 1] += f[1]
             data.xfrc_applied[i, 2] += f[2]
+        self._saved = saved
+
+    def restore(self, data) -> None:
+        """Put back the `xfrc_applied` rows the last `apply` touched, as they were before it."""
+        if self._saved is None:
+            raise RuntimeError("restore called without apply")
+        for i, row in self._saved:
+            data.xfrc_applied[i, :3] = row
+        self._saved = None
 
     def step(self, data) -> None:
-        """One step with drag: `mj_step1`, add drag, `mj_step2`, then put back the `xfrc_applied` rows it touched, so a force
-        another writer keeps there is not counted twice next step."""
+        """One step with drag: `mj_step1`, `apply`, `mj_step2`, `restore`."""
         import mujoco
 
         mujoco.mj_step1(self.model, data)
-        saved = [(i, data.xfrc_applied[i, :3].copy()) for i, _ in self._rows]
         self.apply(data)
         mujoco.mj_step2(self.model, data)
-        for i, row in saved:
-            data.xfrc_applied[i, :3] = row
+        self.restore(data)

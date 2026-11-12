@@ -494,8 +494,11 @@ def test_simulate_stream_a_thruster_run_climbs_as_the_rocket_equation_says():
     it is computed here by hand, not by the code under test. No label says the thruster is not applied."""
     from test_thrust import CAPACITY, F, M_TANK, M_THRUSTER, T_OPEN, V_E, entry, rocket
 
-    burning = run_of(rocket([entry("burn", "main", 0.0, 0.5, 1.0)]), duration_s=0.5)
-    coasting = run_of(rocket([]), duration_s=0.5)
+    def airless(project):  # the rocket equation has no air: on the Moon the run applies no drag (W-03b), Earth's would
+        return project.model_copy(update={"world": project.world.model_copy(update={"planet": "moon"})})
+
+    burning = run_of(airless(rocket([entry("burn", "main", 0.0, 0.5, 1.0)])), duration_s=0.5)
+    coasting = run_of(airless(rocket([])), duration_s=0.5)
     assert not any("추력기" in label for label in burning.started.model_labels)
     frames, ended = split(burning)
     check_run(burning.started, frames, ended)

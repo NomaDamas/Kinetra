@@ -194,3 +194,49 @@ def test_drag_explicit_step_stability_limit_is_v_t_over_g():
     assert min(cycle[-10:]) < 0.6 * vt and max(cycle[-10:]) > 1.3 * vt  # 0.49 v_t and 1.33 v_t in turn
     data, _ = speeds(1.5 * tau)
     assert data.warning[mujoco.mjtWarning.mjWARN_BADQACC].number > 0
+
+
+# --- the run stream (X-02a's PreviewRun owns the step loop) ---------------------------------------------------------
+
+
+def stream(planet: str, density: float, duration_s: float):
+    from kinetra_engine.run import PreviewRun
+
+    run = PreviewRun(ball(planet, density), run_id="run-1", project_id="ball", revision=1, duration_s=duration_s)
+    items = list(run)
+    return run, items[:-1], items[-1]
+
+
+def test_drag_run_stream_on_earth_approaches_the_hand_terminal_speed():
+    """The run's frames: the sphere's speed between the last two frames is the hand terminal speed (8 tau of fall), and the
+    stream says `근사: 집중 항력`."""
+    vt = HAND_VT["earth"]
+    tau = vt / load_body("earth").gravity.value
+    run, frames, ended = stream("earth", DENSITY["earth"], 8.0 * tau)
+    assert ended.end.reason == "completed"
+    assert DRAG_LABEL in run.started.model_labels
+    a, b = frames[-2], frames[-1]
+    speed = -(b.poses[0].position.z - a.poses[0].position.z) / (b.sim_time_s - a.sim_time_s)
+    assert speed == pytest.approx(vt, rel=1e-5)
+    # without drag the same fall would be g t, far above
+    assert b.sim_time_s * load_body("earth").gravity.value > 7.0 * vt
+
+
+def test_drag_run_stream_on_the_moon_is_the_no_drag_stream_bit_for_bit():
+    """Moon: air density 0. The run's trajectory hash and every frame pose equal a plain `mj_step` loop of the same model."""
+    import hashlib
+
+    run, frames, ended = stream("moon", DENSITY["earth"], 1.0)
+    assert DRAG_LABEL not in run.started.model_labels
+    model = run.compiled.model
+    data = mujoco.MjData(model)
+    trajectory = hashlib.sha256(data.qpos.tobytes())
+    mujoco.mj_kinematics(model, data)
+    z = {0: float(data.xpos[1][2])}
+    for tick in range(1, ended.last_tick + 1):
+        mujoco.mj_step(model, data)
+        trajectory.update(data.qpos.tobytes())
+        mujoco.mj_kinematics(model, data)
+        z[tick] = float(data.xpos[1][2])
+    assert ended.end.trajectory.hash == "sha256:" + trajectory.hexdigest()
+    assert all(f.poses[0].position.z == z[f.tick] for f in frames)
