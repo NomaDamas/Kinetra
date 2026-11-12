@@ -70,6 +70,7 @@ def slide(project: Project, mu: float, theta: float) -> tuple[np.ndarray, np.nda
     of `test_actuator.py` does the same), and the block stays a grounded assembly."""
     tree = build_body_tree(project)
     model = mujoco.MjModel.from_xml_string(to_mjcf(tree, ground_friction=mu))
+    assert model.geom("__kinetra_ground").friction[0] == mu  # the drawn value is the ground's sliding coefficient
     g = tree.planet.gravity.value
     model.opt.gravity[:] = (g * math.sin(theta), 0.0, -g * math.cos(theta))
     data = mujoco.MjData(model)
@@ -141,12 +142,13 @@ def test_ground_friction_critical_slide_angle_matches_the_hand_calculation_at_bo
     g = load_body(planet).gravity.value
     critical = math.atan(mu)
 
-    # half a degree below the critical angle: the block holds (MuJoCo's soft contact creeps at well under 1 % of the speed
-    # it reaches half a degree above; measured 1.4e-4 to 2.1e-3 m/s after 1 s)
+    # half a degree below the critical angle: the block holds. MuJoCo's contact is soft, so the block creeps at a small constant
+    # speed instead of standing still (measured 1.7e-4 m/s to 1.8e-3 m/s after 1 s, 8e-5 to 2.1e-4 of g * 1 s); the bound is
+    # 1e-3 of g * 1 s, about a tenth of what half a degree above reaches (9e-3 to 1.2e-2 of g * 1 s).
     t, v = slide(project, mu, critical - math.radians(0.5))
     window = t >= 0.2  # after the contact has settled
     assert abs(np.polyfit(t[window], v[window], 1)[0]) < 1e-3 * g
-    assert abs(v[-1]) < 3e-3
+    assert abs(v[-1]) < 1e-3 * g * 1.0
 
     # above it the block slides at g (sin - mu cos): 0.5 deg is the threshold, 2 deg a clear slide
     for above in (0.5, 2.0):
@@ -154,5 +156,15 @@ def test_ground_friction_critical_slide_angle_matches_the_hand_calculation_at_bo
         hand = g * (math.sin(theta) - mu * math.cos(theta))
         t, v = slide(project, mu, theta)
         slope = np.polyfit(t[window], v[window], 1)[0]
-        assert slope == pytest.approx(hand, rel=1e-2)  # measured within -0.65 % .. +0.46 % (prototype, elliptic cone)
-        assert v[-1] > 10 * 3e-3
+        assert slope == pytest.approx(hand, rel=1e-2)  # measured -0.26 % .. +0.57 % (X-01e contact parameters)
+        assert v[-1] > 1e-3 * g * 1.0
+
+
+@pytest.mark.parametrize("planet", ["earth", "mars", "moon"])
+def test_ground_friction_outside_the_distribution_does_not_enter_the_model(planet):
+    """A drawn value comes from the planet's distribution; a value outside it is a planet the data does not describe (rule C4)."""
+    tree = build_body_tree(block(planet))
+    low, high = ENDS[planet]
+    for mu in (low - 1e-4, high + 1e-4):
+        with pytest.raises(ValueError):
+            to_mjcf(tree, ground_friction=mu)
