@@ -1,0 +1,1093 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kinetra Studio SC-10 시작 화면</title>
+<style>
+html{background:#0F1216}
+body{margin:0}
+button,input,select{font-family:inherit}
+input::placeholder{color:#93A0AE;opacity:1}
+:focus-visible{outline:2px solid #A8CBFF;outline-offset:2px}
+@media (prefers-reduced-motion:reduce){*{transition-property:opacity!important;animation:none!important}}
+.k-root{box-sizing:border-box;background:#0F1216;color:#E8EDF2;font-family:Pretendard,'Pretendard Variable',-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Malgun Gothic','Noto Sans KR',sans-serif;font-size:13px;line-height:20px;font-variant-numeric:tabular-nums;display:flex;flex-direction:column}
+.k-note{flex:none;height:40px;box-sizing:border-box;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:0 16px;border-bottom:1px dashed #7A899B;font-size:12px;line-height:16px;color:#A9B4C0;white-space:nowrap}
+.k-note strong{color:#E8EDF2;font-weight:600}
+.k-cap0{flex:none;height:28px;box-sizing:border-box;display:flex;align-items:center;gap:8px;padding:0 16px;border-top:1px dashed #7A899B;font-size:11px;line-height:16px;color:#A9B4C0;white-space:nowrap}
+.k-row0{flex:1 1 0;min-height:0;display:flex;align-items:flex-start;gap:24px}
+.k-side{flex:none;display:flex;flex-direction:column;gap:12px;padding:12px 24px 0 0}
+.k-lbl{flex:none;display:flex;align-items:center;gap:6px;min-height:20px;font-size:12px;line-height:16px;font-weight:500;color:#A9B4C0}
+.k-lbl strong{color:#E8EDF2;font-weight:600}
+.k-ann{margin:0;font-size:12px;line-height:16px;color:#A9B4C0}
+.k-ann strong{color:#E8EDF2;font-weight:600}
+.k-scr{flex:none;position:relative;width:1440px;height:900px;box-sizing:border-box;display:flex;flex-direction:column;background:#0F1216;overflow:hidden}
+.k-scr.narrow{width:720px;height:1000px}
+.k-top{flex:none;display:flex;align-items:center;gap:12px;height:48px;box-sizing:border-box;padding:0 16px;background:#151A20;border-bottom:1px solid #26303A}
+.k-prod{font-size:13px;line-height:20px;font-weight:600;color:#E8EDF2}
+.k-off{display:inline-flex;align-items:center;gap:6px;height:28px;box-sizing:border-box;padding:0 12px;border:1px solid #F2B84B;border-radius:999px;font-size:12px;line-height:16px;font-weight:500;color:#F2B84B;white-space:nowrap}
+.k-main{flex:1 1 0;min-height:0;display:flex;justify-content:center;align-items:stretch;gap:48px;padding:40px 0 24px}
+.k-scr.narrow .k-main{flex-direction:column;justify-content:flex-start;gap:32px;padding:24px 16px}
+.k-colL{flex:none;width:520px;display:flex;flex-direction:column}
+.k-colR{flex:none;position:relative;width:552px;display:flex;flex-direction:column;min-height:0}
+.k-scr.narrow .k-colL,.k-scr.narrow .k-colR{width:auto}
+.k-h2{margin:0;font-size:16px;line-height:24px;font-weight:600;color:#E8EDF2}
+.k-colL>.k-h2{margin-bottom:16px}
+.k-wide{width:100%}
+.k-prim{flex:none;display:inline-flex;align-items:center;justify-content:center;gap:8px;height:32px;padding:0 16px;border:1px solid #5B9DFF;border-radius:4px;background:#5B9DFF;color:#08111F;font-size:13px;line-height:20px;font-weight:600;white-space:nowrap;cursor:pointer}
+.k-prim[aria-disabled="true"]{border-color:#3A4654;background:#222A33;color:#93A0AE;cursor:not-allowed}
+.k-desc{margin:8px 0 0;font-size:13px;line-height:20px;color:#A9B4C0}
+.k-why{margin:8px 0 0;display:flex;align-items:center;gap:6px;font-size:12px;line-height:16px;font-weight:500;color:#E8EDF2}
+.k-div{display:flex;align-items:center;gap:8px;margin:24px 0 12px;font-size:12px;line-height:16px;font-weight:500;color:#A9B4C0;white-space:nowrap}
+.k-div::after{content:"";flex:1 1 0;height:1px;background:#26303A}
+.k-cards{display:flex;flex-direction:column;gap:8px}
+.k-scard{display:flex;flex-direction:column;align-items:stretch;gap:4px;width:100%;box-sizing:border-box;padding:12px 16px;border:1px solid #7A899B;border-radius:6px;background:#1B2129;color:#E8EDF2;text-align:left;cursor:pointer}
+.k-scard[aria-disabled="true"]{border-color:#3A4654;cursor:not-allowed}
+.k-scard[aria-disabled="true"] .k-scn{color:#A9B4C0}
+.k-sct{display:flex;align-items:center;gap:8px;min-width:0}
+.k-scn{font-size:13px;line-height:20px;font-weight:600}
+.k-st0{margin-left:auto;display:inline-flex;align-items:center;gap:4px;font-size:11px;line-height:16px;font-weight:500;color:#A9B4C0;white-space:nowrap}
+.k-scd{font-size:12px;line-height:20px;color:#A9B4C0}
+.k-capline{margin:8px 0 0;font-size:11px;line-height:16px;color:#A9B4C0}
+.k-head{flex:none;display:flex;align-items:center;gap:8px;width:100%;min-height:32px;box-sizing:border-box;margin-top:16px;padding:0 8px;border:0;border-radius:4px;background:transparent;color:#E8EDF2;font-size:13px;line-height:20px;font-weight:600;text-align:left;cursor:pointer}
+.k-head[aria-expanded="true"]{background:#1B2129}
+.k-chev{flex:none}
+.k-head[aria-expanded="true"] .k-chev{transform:rotate(90deg)}
+.k-meta{margin-left:auto;font-size:11px;line-height:16px;font-weight:500;color:#A9B4C0;white-space:nowrap}
+.k-region{display:flex;flex-direction:column;gap:6px;padding:8px 0 0}
+.k-inrow{display:grid;grid-template-columns:88px minmax(0,1fr);gap:4px 12px;align-items:center;padding:8px;border:1px solid #26303A;border-radius:4px;font-size:12px;line-height:16px}
+.k-inrow>.k-scn{grid-row:span 3;align-self:start;font-size:12px;line-height:20px}
+.k-inrow.r5>.k-scn{grid-row:span 5}
+.k-kv{display:flex;align-items:center;flex-wrap:wrap;gap:2px 6px;min-width:0;color:#E8EDF2}
+.k-k{flex:none;width:52px;font-size:11px;line-height:16px;font-weight:500;color:#A9B4C0}
+.k-mono{font-family:'JetBrains Mono',monospace;font-weight:500}
+.k-val{font-family:'JetBrains Mono',monospace;font-size:13px;line-height:20px;font-weight:500;white-space:nowrap}
+.k-unit{font-size:11px;line-height:16px;font-weight:500;color:#A9B4C0}
+.k-rh{display:flex;align-items:flex-start;justify-content:space-between;gap:16px}
+.k-sub{margin:0;font-size:12px;line-height:16px;color:#A9B4C0}
+.k-sub.gap{margin:12px 0 8px}
+.k-btn{flex:none;display:inline-flex;align-items:center;justify-content:center;gap:6px;height:28px;box-sizing:border-box;padding:0 12px;border:1px solid #7A899B;border-radius:4px;background:transparent;color:#E8EDF2;font-size:12px;line-height:16px;font-weight:500;white-space:nowrap;cursor:pointer}
+.k-btn.ghost{border-color:transparent}
+.k-btn.danger{border-color:#FF7B72;color:#FF7B72}
+.k-btn.sm{height:24px;padding:0 8px}
+.k-btn[aria-disabled="true"]{border-color:#3A4654;color:#93A0AE;cursor:not-allowed}
+.k-btn.ghost[aria-disabled="true"]{border-color:transparent}
+.k-ib{flex:none;width:28px;height:28px;padding:0;border:1px solid transparent;border-radius:4px;background:transparent;color:#E8EDF2;display:inline-flex;align-items:center;justify-content:center;cursor:pointer}
+.k-ib[aria-expanded="true"]{background:#263039;border-color:#3A4654}
+.k-list{flex:0 1 auto;min-height:0;display:flex;flex-direction:column;box-sizing:border-box;border:1px solid #3A4654;border-radius:6px;background:#151A20;overflow:auto}
+.k-list.fit{flex:none}
+.k-r{display:grid;grid-template-columns:minmax(0,1fr) auto 28px;column-gap:12px;row-gap:4px;align-items:center;padding:10px 8px 10px 12px;border-bottom:1px solid #26303A}
+.k-r:last-child{border-bottom:0}
+.k-r[aria-selected="true"]{background:#22324A}
+.k-r.dim .k-rn{color:#A9B4C0}
+.k-c1{grid-column:1;grid-row:1;display:flex;align-items:center;gap:8px;min-width:0}
+.k-ct{grid-column:2;grid-row:1;font-size:12px;line-height:16px;color:#A9B4C0;white-space:nowrap;text-align:right}
+.k-cm{grid-column:3;grid-row:1 / span 2;align-self:center}
+.k-c2{grid-column:1 / span 2;grid-row:2;display:flex;align-items:center;flex-wrap:wrap;gap:4px 8px;min-width:0}
+.k-c3{grid-column:1 / span 3;grid-row:3;display:flex;align-items:center;flex-wrap:wrap;gap:6px 8px;min-width:0}
+.k-rn{flex:0 1 auto;min-width:0;height:24px;box-sizing:border-box;padding:0 2px;border:0;border-radius:4px;background:transparent;color:#E8EDF2;font-size:13px;line-height:20px;font-weight:600;text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer}
+.k-rn[aria-disabled="true"]{cursor:not-allowed}
+.k-tag{flex:none;display:inline-flex;align-items:center;height:18px;box-sizing:border-box;padding:0 6px;border:1px solid #3A4654;border-radius:2px;font-size:11px;line-height:16px;font-weight:500;color:#A9B4C0;white-space:nowrap}
+.k-l0{flex:none;display:inline-flex;align-items:center;height:18px;box-sizing:border-box;padding:0 5px;border:1px solid #A0ACBB;border-radius:999px;background:#1F252D;color:#A0ACBB;font-family:'JetBrains Mono',monospace;font-size:11px;line-height:16px;font-weight:500}
+.k-evc,.k-pc,.kb{flex:none;display:inline-flex;align-items:center;height:24px;padding:0;border:0;background:none;font-size:11px;line-height:16px;font-weight:500;white-space:nowrap;cursor:pointer}
+span.kb{cursor:default}
+.kp{display:inline-flex;align-items:center;gap:5px;height:20px;box-sizing:border-box;padding:0 8px;border:1px solid transparent;border-radius:999px}
+.k-sv{font-weight:400;opacity:1}
+.ev-l1{color:#BBAFF3}.ev-l1 .kp{background:#2A2444;border-color:#BBAFF3}
+.ev-l2{color:#D2BFFF}.ev-l2 .kp{background:#322858;border-color:#D2BFFF}
+.ev-weak{color:#D2BFFF}.ev-weak .kp{background:transparent;border:1px dashed #D2BFFF}
+.ev-none{color:#93A0AE}.ev-none .kp{background:#1B2129;border-color:#93A0AE}
+.k-pc{color:#E8EDF2}.k-pc .kp{border-color:#7A899B;border-radius:4px}
+.k-ps{flex:none;display:inline-flex;align-items:center;gap:5px;height:24px;font-size:12px;line-height:16px;font-weight:600;color:#E8EDF2;white-space:nowrap}
+.k-reason{font-size:12px;line-height:16px;color:#A9B4C0}
+.kb-sim{color:#E8EDF2}.kb-sim .kp{background:#303B49}
+.kb-cite{color:#C5D0DC}.kb-cite .kp{border-color:#7A899B}
+.kb-def{color:#A9B4C0}.kb-def .kp{border-color:#3A4654}
+.kb-decl{color:#F2A8D0}.kb-decl .kp{background:#3A1D2E}
+.k-ex{display:inline-block;font-size:11px;line-height:16px;font-weight:400;color:#93A0AE;border:1px dotted #7A899B;border-radius:2px;padding:0 4px;white-space:nowrap}
+.k-kbd{font-family:'JetBrains Mono',monospace;font-size:11px;line-height:16px;font-weight:500;color:#A9B4C0;border:1px solid #3A4654;border-radius:2px;padding:0 4px;white-space:nowrap}
+.k-hint{margin:8px 0 0;display:flex;align-items:center;flex-wrap:wrap;gap:4px 6px;font-size:11px;line-height:16px;color:#A9B4C0}
+.k-l3{flex:none;display:flex;align-items:center;gap:8px;height:32px;box-sizing:border-box;padding:0 16px;background:#151A20;border-top:1px solid #26303A;font-size:11px;line-height:16px;font-weight:500;color:#93A0AE;white-space:nowrap}
+.k-l3 .k-ro{margin-left:auto;color:#93A0AE;font-weight:400}
+.k-pop{position:absolute;z-index:3;box-sizing:border-box;display:flex;flex-direction:column;gap:8px;padding:12px;background:#222A33;border:1px solid #3A4654;border-radius:6px;box-shadow:0 8px 24px rgba(0,0,0,0.5);font-size:12px;line-height:16px;color:#E8EDF2}
+.k-pop.static{position:relative;z-index:auto}
+.k-pop h3{margin:0;display:flex;align-items:center;gap:6px;font-size:13px;line-height:20px;font-weight:600}
+.k-pop p{margin:0}
+.k-pop .k-sub{color:#A9B4C0}
+.k-menu{position:absolute;z-index:3;width:220px;box-sizing:border-box;display:flex;flex-direction:column;gap:2px;padding:4px;background:#222A33;border:1px solid #3A4654;border-radius:6px;box-shadow:0 8px 24px rgba(0,0,0,0.5)}
+.k-mi{display:flex;align-items:center;gap:8px;width:100%;height:28px;box-sizing:border-box;padding:0 8px;border:0;border-radius:4px;background:transparent;color:#E8EDF2;font-size:12px;line-height:16px;font-weight:500;text-align:left;white-space:nowrap;cursor:pointer}
+.k-mi .k-kbd{margin-left:auto}
+.k-mi.hl{background:#263039}
+.k-msep{height:1px;margin:2px 4px;background:#3A4654}
+.k-scrim{position:absolute;z-index:4;left:0;right:0;top:0;bottom:0;background:rgba(0,0,0,0.6)}
+.k-sheet{position:absolute;z-index:5;width:480px;box-sizing:border-box;display:flex;flex-direction:column;gap:16px;padding:24px;background:#222A33;border:1px solid #3A4654;border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,0.5)}
+.k-sheet.static{position:relative;z-index:auto}
+.k-sheet .k-desc{margin:0}
+.k-shh{display:flex;flex-direction:column;gap:4px}
+.k-fld{display:flex;flex-direction:column;gap:6px}
+.k-flab{font-size:12px;line-height:16px;font-weight:500;color:#A9B4C0}
+.k-in{height:32px;width:100%;box-sizing:border-box;padding:0 10px;border:1px solid #7A899B;border-radius:4px;background:#0F1318;color:#E8EDF2;font-size:13px;line-height:20px}
+.k-in.focus{outline:2px solid #A8CBFF;outline-offset:2px}
+.k-in[aria-invalid="true"]{border-color:#FF7B72}
+.k-err{display:flex;align-items:flex-start;gap:6px;font-size:12px;line-height:16px;color:#E8EDF2}
+.k-err svg{flex:none;margin-top:1px}
+.k-help{margin:0;font-size:12px;line-height:16px;color:#A9B4C0}
+.k-seg{display:inline-flex;align-self:flex-start;padding:2px;gap:2px;border:1px solid #7A899B;border-radius:999px;background:#0F1318}
+.k-seg>button{height:28px;padding:0 18px;border:0;border-radius:999px;background:transparent;color:#A9B4C0;font-size:12px;line-height:16px;font-weight:500;white-space:nowrap;cursor:pointer}
+.k-seg>button[aria-checked="true"]{background:#22324A;color:#E8EDF2;box-shadow:inset 0 0 0 1px #5B9DFF}
+.k-acts{display:flex;align-items:center;justify-content:flex-end;gap:8px}
+.k-acts .k-hint{margin:0 auto 0 0}
+.k-box{display:flex;flex-direction:column;gap:8px;padding:16px;border:1px solid #3A4654;border-radius:6px;background:#151A20}
+.k-skel{display:block;height:12px;border-radius:2px;background:#222A33}
+.k-prog{display:flex;flex-direction:column;gap:6px;padding:8px 0 0}
+.k-pl{display:flex;align-items:center;gap:8px;font-size:12px;line-height:16px;color:#E8EDF2}
+.k-pl .k-btn{margin-left:auto}
+.k-step{color:#A9B4C0}
+.k-step.on{color:#E8EDF2;font-weight:600}
+.k-bar{position:relative;height:4px;border-radius:999px;background:#3A4654;overflow:hidden}
+.k-bar>i{position:absolute;left:0;top:0;bottom:0;display:block;border-radius:999px;background:#5B9DFF}
+.k-code{font-family:'JetBrains Mono',monospace;font-size:12px;line-height:16px;color:#E8EDF2;background:#0F1318;border:1px solid #3A4654;border-radius:4px;padding:2px 6px;white-space:nowrap}
+.k-empty{flex:1 1 0;display:flex;flex-direction:column;justify-content:center;gap:8px;padding:32px;box-sizing:border-box;border:1px solid #3A4654;border-radius:6px;background:#151A20}
+.k-empty h3{margin:0;font-size:20px;line-height:28px;font-weight:600}
+.k-empty p{margin:0;font-size:13px;line-height:20px;color:#A9B4C0}
+.k-n{position:absolute;z-index:6;display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;box-sizing:border-box;padding:0 5px;border-radius:999px;background:#A8CBFF;color:#08111F;font-family:'JetBrains Mono',monospace;font-size:11px;line-height:16px;font-weight:600}
+.k-ring{outline:2px solid #A8CBFF;outline-offset:2px}
+.k-keys{display:grid;grid-template-columns:auto minmax(0,1fr);gap:6px 12px;align-items:center;font-size:12px;line-height:16px;color:#E8EDF2}
+.k-keys>span:nth-child(odd){display:flex;gap:4px;flex-wrap:wrap}
+.k-frag{position:relative;box-sizing:border-box;display:flex;flex-direction:column}
+.k-shade{position:relative;box-sizing:border-box;display:flex;align-items:center;justify-content:center;padding:24px;border-radius:6px;background:#0F1216;border:1px solid #26303A}
+.k-tbl{width:100%;border-collapse:collapse;font-size:12px;line-height:16px}
+.k-tbl th{padding:6px 8px;text-align:left;font-size:11px;line-height:16px;font-weight:500;color:#A9B4C0;border-bottom:1px solid #26303A;white-space:nowrap}
+.k-tbl td{padding:8px;vertical-align:top;border-bottom:1px solid #26303A;color:#E8EDF2}
+.k-tbl td.n{font-weight:600;white-space:nowrap}
+.k-tbl tr.nb td{border-bottom:0;padding-bottom:4px}
+.k-tbl tr.sub td{padding-top:0}
+.k-tbl .k-kv+.k-kv{margin-top:2px}
+.k-hi{color:#E8EDF2}
+body{background:#0F1216;color:#E8EDF2;font-family:Pretendard,'Pretendard Variable',-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Malgun Gothic','Noto Sans KR',sans-serif;font-size:13px;line-height:20px}
+a{color:#5B9DFF}a:hover{color:#A8CBFF}
+.kin-top{padding:24px 16px 8px;max-width:2602px;margin:0 auto}
+.kin-top h1{margin:0 0 4px;font-size:20px;line-height:28px;font-weight:600}
+.kin-top p{margin:0 0 12px;color:#A9B4C0}
+.kin-nav{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:12px}
+.kin-board{max-width:2602px;margin:0 auto;padding:24px 16px 0}
+.kin-board-title{margin:0 0 8px;font-size:12px;line-height:16px;font-weight:500;color:#A9B4C0}
+.kin-board-scroll{overflow-x:auto;border:1px solid #26303A;border-radius:8px;width:max-content;max-width:100%}
+.kin-foot{max-width:2602px;margin:0 auto;padding:24px 16px 48px;color:#A9B4C0;font-size:12px}
+</style>
+</head>
+<body>
+<header class="kin-top">
+<h1>Kinetra Studio SC-10 시작 화면</h1>
+<p>아트보드 S1~S12. 규격: design/briefs/sc-10.md. 토큰과 컴포넌트: design/exports/design-system/. 상단줄 모양: design/exports/sc-01/. 각 아트보드 위 40 px 줄, 아래 28 px 줄, 화면 오른쪽 열은 주석입니다. 프로젝트 이름, 시각, 개수는 예시 데이터입니다. 목록의 증거 칩은 저장 시점의 단계이고 지금의 판정이 아닙니다.</p>
+<nav class="kin-nav" aria-label="아트보드 목차"><a href="#main">S1 기본 · 최근 프로젝트 3행</a><a href="#s2">S2 새로 만들기 시트 · 빈 작업대</a><a href="#s3">S3 새로 만들기 시트 · 시작 프로젝트 로켓 자동차, 달</a><a href="#s4">S4 시작 프로젝트에 든 것 · 펼침</a><a href="#s5">S5 목록 행 변형 7종 · 칩 팝오버</a><a href="#s6">S6 행 메뉴 · 이름 바꾸기, 목록에서 지우기 확인</a><a href="#s7">S7 빈 상태 · 최근 프로젝트 0건</a><a href="#s8">S8 로딩 · 목록 읽는 중, 여는 중, 만드는 중</a><a href="#s9">S9 오류 · 목록 읽기, 열기, 만들기</a><a href="#s10">S10 엔진 오프라인</a><a href="#s11">S11 키보드 · 탭 순서와 단축키</a><a href="#s12">S12 좁은 폭 · 한 열</a></nav>
+</header>
+<main><section class="kin-board" id="main" aria-label="S1 기본 · 최근 프로젝트 3행"><h2 class="kin-board-title">S1 기본 · 최근 프로젝트 3행</h2><div class="kin-board-scroll" tabindex="0" role="group" aria-label="S1 기본 · 최근 프로젝트 3행 아트보드"><div data-board="Main.dc.html" class="k-root" style="width:1440px;height:968px">
+
+<div class="k-note"><span><strong>S1 기본</strong> · 최근 프로젝트 있음, 목록 행 3개 · 첫 행이 포커스 위치(목록의 탭 정지)</span><span>상시 조작 요소 7 · primary 1 (새 프로젝트)</span></div>
+
+<div class="k-scr" data-unit="S1 화면">
+<header class="k-top"><span class="k-prod">Kinetra Studio</span></header>
+<main class="k-main">
+
+<section class="k-colL" aria-labelledby="s1-hl">
+<h2 id="s1-hl" class="k-h2">새로 시작</h2>
+<button type="button" class="k-prim k-wide" data-ctl="새 프로젝트" data-primary="1" aria-haspopup="dialog" aria-describedby="s1-nd"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M7 2v10M2 7h10"/></svg>새 프로젝트</button>
+<p id="s1-nd" class="k-desc">빈 작업대, 지구 평지에서 시작합니다. 행성은 만들 때 고릅니다.</p>
+<div class="k-div">시작 프로젝트</div>
+<div class="k-cards">
+<button type="button" class="k-scard" data-ctl="시작 프로젝트: 4륜차" aria-haspopup="dialog"><span class="k-sct"><span class="k-scn">4륜차</span><span class="k-st0">판정 없음 · <span class="k-l0">L0</span> 조립에서 열림</span></span><span class="k-scd">바퀴 네 개로 굴러가는 가장 단순한 차</span></button>
+<button type="button" class="k-scard" data-ctl="시작 프로젝트: 로켓 자동차" aria-haspopup="dialog"><span class="k-sct"><span class="k-scn">로켓 자동차</span><span class="k-st0">판정 없음 · <span class="k-l0">L0</span> 조립에서 열림</span></span><span class="k-scd">추력기를 단 차. 점프대 장면용</span></button>
+<button type="button" class="k-scard" data-ctl="시작 프로젝트: 로버" aria-haspopup="dialog"><span class="k-sct"><span class="k-scn">로버</span><span class="k-st0">판정 없음 · <span class="k-l0">L0</span> 조립에서 열림</span></span><span class="k-scd">경사로를 오르는 탐사차</span></button>
+</div>
+<p class="k-capline">시작 프로젝트는 복사본으로 열립니다. 원본은 바뀌지 않습니다. 세 행성 어디서든 열 수 있습니다.</p>
+<button type="button" class="k-head" data-ctl="시작 프로젝트에 든 것" aria-expanded="false" aria-controls="s1-in"><svg class="k-chev" width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 2.5L8 6l-3.5 3.5"/></svg>시작 프로젝트에 든 것<span class="k-meta">3개 · 부품 종류, 값 배지, 증거 단계</span></button>
+</section>
+
+<section class="k-colR" aria-labelledby="s1-hr">
+<div class="k-rh">
+<div><h2 id="s1-hr" class="k-h2">최근 프로젝트</h2><p class="k-sub">이 컴퓨터에 저장된 프로젝트 · 최근에 연 순서</p></div>
+<button type="button" class="k-btn" data-ctl="프로젝트 열기"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round" aria-hidden="true"><path d="M1.5 3h4l1.2 1.5h5.8v6.5h-11z"/></svg>프로젝트 열기</button>
+</div>
+<p class="k-sub gap">증거 칩은 저장할 때의 단계입니다. 지금의 판정이 아닙니다.</p>
+<div class="k-list" role="grid" aria-label="최근 프로젝트" aria-rowcount="3" data-ctl="최근 프로젝트 목록">
+
+<div class="k-r" role="row" aria-selected="true">
+<div class="k-c1" role="gridcell"><button type="button" class="k-rn" tabindex="0">로켓 자동차 점프</button><span class="k-tag">지구</span></div>
+<div class="k-ct" role="gridcell">2일 전</div>
+<div class="k-cm" role="gridcell"><button type="button" class="k-ib" tabindex="-1" aria-label="로켓 자동차 점프 메뉴" aria-haspopup="menu" aria-expanded="false"><svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor" aria-hidden="true"><circle cx="2.5" cy="7" r="1.3"/><circle cx="7" cy="7" r="1.3"/><circle cx="11.5" cy="7" r="1.3"/></svg></button></div>
+<div class="k-c2" role="gridcell"><button type="button" class="k-evc ev-l2" tabindex="-1" aria-haspopup="dialog" aria-label="저장 시점의 증거 단계: L2 판정, FEASIBLE_FOUND. 누르면 근거를 엽니다"><span class="kp"><svg width="22" height="10" viewBox="0 0 22 10" aria-hidden="true"><path d="M0 0h4v10H0zM6 0h4v10H6zM12 0h4v10h-4z" fill="currentColor"/><path d="M18.5.5h3v9h-3z" fill="none" stroke="currentColor"/></svg><span class="k-sv">저장</span><span class="k-mono">L2 · FEASIBLE_FOUND</span></span></button></div>
+</div>
+
+<div class="k-r" role="row" aria-selected="false">
+<div class="k-c1" role="gridcell"><button type="button" class="k-rn" tabindex="-1">로버 경사 시험</button><span class="k-tag">화성</span></div>
+<div class="k-ct" role="gridcell">5일 전</div>
+<div class="k-cm" role="gridcell"><button type="button" class="k-ib" tabindex="-1" aria-label="로버 경사 시험 메뉴" aria-haspopup="menu" aria-expanded="false"><svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor" aria-hidden="true"><circle cx="2.5" cy="7" r="1.3"/><circle cx="7" cy="7" r="1.3"/><circle cx="11.5" cy="7" r="1.3"/></svg></button></div>
+<div class="k-c2" role="gridcell"><button type="button" class="k-evc ev-none" tabindex="-1" aria-haspopup="dialog" aria-label="저장 시점의 증거 단계: 판정 없음. 누르면 근거를 엽니다"><span class="kp"><svg width="22" height="10" viewBox="0 0 22 10" aria-hidden="true"><path d="M.5.5h3v9h-3zM6.5.5h3v9h-3zM12.5.5h3v9h-3zM18.5.5h3v9h-3z" fill="none" stroke="currentColor"/></svg><span class="k-sv">저장</span>판정 없음</span></button><button type="button" class="k-pc" tabindex="-1" aria-haspopup="dialog" aria-label="정의 없음 2개. 열 수 있습니다. 누르면 설명을 엽니다"><span class="kp"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" aria-hidden="true"><circle cx="6" cy="6" r="5"/><path d="M6 5.5v3M6 3.5v.1"/></svg>정의 없음 · 2개</span></button></div>
+</div>
+
+<div class="k-r" role="row" aria-selected="false">
+<div class="k-c1" role="gridcell"><button type="button" class="k-rn" tabindex="-1">4륜차 달 주행</button><span class="k-tag">달</span></div>
+<div class="k-ct" role="gridcell">11월 3일</div>
+<div class="k-cm" role="gridcell"><button type="button" class="k-ib" tabindex="-1" aria-label="4륜차 달 주행 메뉴" aria-haspopup="menu" aria-expanded="false"><svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor" aria-hidden="true"><circle cx="2.5" cy="7" r="1.3"/><circle cx="7" cy="7" r="1.3"/><circle cx="11.5" cy="7" r="1.3"/></svg></button></div>
+<div class="k-c2" role="gridcell"><button type="button" class="k-evc ev-l1" tabindex="-1" aria-haspopup="dialog" aria-label="저장 시점의 증거 단계: L1 미리보기, 1회 실행, 판정 아님. 누르면 근거를 엽니다"><span class="kp"><svg width="22" height="10" viewBox="0 0 22 10" aria-hidden="true"><path d="M0 0h4v10H0zM6 0h4v10H6z" fill="currentColor"/><path d="M12.5.5h3v9h-3zM18.5.5h3v9h-3z" fill="none" stroke="currentColor"/></svg><span class="k-sv">저장</span><span class="k-mono">L1</span> · 1회 실행 · 판정 아님</span></button></div>
+</div>
+
+</div>
+<p class="k-hint">파일을 이 화면에 끌어 놓아도 열립니다 · <span class="k-kbd">↑</span><span class="k-kbd">↓</span> 이동 · <span class="k-kbd">Enter</span> 열기 · <span class="k-kbd">F2</span> 이름 바꾸기 · <span class="k-kbd">⋯</span> 행 메뉴</p>
+</section>
+
+</main>
+<footer class="k-l3"><svg width="30" height="12" viewBox="0 0 30 12" role="img" aria-label="증거 강도 0/4"><path d="M.5.5h5v11h-5zM8.5.5h5v11h-5zM16.5.5h5v11h-5zM24.5.5h5v11h-5z" fill="none" stroke="currentColor"/></svg><span class="k-mono">L3</span><span>실물 검증 없음 (실측 0건)</span><span class="k-ro">읽기 전용 · 접지 않음</span></footer>
+</div>
+
+<div class="k-cap0">셸 밖: 시작 화면 · <span class="k-ex">예시</span> 데이터: 프로젝트 이름, 시각, 개수 · 증거 칩은 저장 시점</div>
+</div></div></section><section class="kin-board" id="s2" aria-label="S2 새로 만들기 시트 · 빈 작업대"><h2 class="kin-board-title">S2 새로 만들기 시트 · 빈 작업대</h2><div class="kin-board-scroll" tabindex="0" role="group" aria-label="S2 새로 만들기 시트 · 빈 작업대 아트보드"><div data-board="S2.dc.html" class="k-root" style="width:1440px;height:968px">
+
+<div class="k-note"><span><strong>S2 새로 만들기</strong> · 빈 작업대 · 모달 시트 480 · 뒤 화면은 어둡게 비활성</span><span>시트 안 조작 요소 4 · primary 1 (만들기) · 뒤의 새 프로젝트 비활성</span></div>
+
+<div class="k-scr" data-unit="S2 시트">
+<div data-outside="1" inert="" aria-hidden="true" style="display:contents">
+<header class="k-top"><span class="k-prod">Kinetra Studio</span></header>
+<main class="k-main">
+<section class="k-colL">
+<h2 class="k-h2">새로 시작</h2>
+<button type="button" class="k-prim k-wide" data-ctl="새 프로젝트" data-primary="1" aria-disabled="true" tabindex="-1"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M7 2v10M2 7h10"/></svg>새 프로젝트</button>
+<p class="k-desc">빈 작업대, 지구 평지에서 시작합니다. 행성은 만들 때 고릅니다.</p>
+<div class="k-div">시작 프로젝트</div>
+<div class="k-cards">
+<button type="button" class="k-scard" data-ctl="시작 프로젝트: 4륜차" tabindex="-1"><span class="k-sct"><span class="k-scn">4륜차</span><span class="k-st0">판정 없음 · <span class="k-l0">L0</span> 조립에서 열림</span></span><span class="k-scd">바퀴 네 개로 굴러가는 가장 단순한 차</span></button>
+<button type="button" class="k-scard" data-ctl="시작 프로젝트: 로켓 자동차" tabindex="-1"><span class="k-sct"><span class="k-scn">로켓 자동차</span><span class="k-st0">판정 없음 · <span class="k-l0">L0</span> 조립에서 열림</span></span><span class="k-scd">추력기를 단 차. 점프대 장면용</span></button>
+<button type="button" class="k-scard" data-ctl="시작 프로젝트: 로버" tabindex="-1"><span class="k-sct"><span class="k-scn">로버</span><span class="k-st0">판정 없음 · <span class="k-l0">L0</span> 조립에서 열림</span></span><span class="k-scd">경사로를 오르는 탐사차</span></button>
+</div>
+<p class="k-capline">시작 프로젝트는 복사본으로 열립니다. 원본은 바뀌지 않습니다. 세 행성 어디서든 열 수 있습니다.</p>
+<button type="button" class="k-head" data-ctl="시작 프로젝트에 든 것" aria-expanded="false" tabindex="-1"><svg class="k-chev" width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 2.5L8 6l-3.5 3.5"/></svg>시작 프로젝트에 든 것<span class="k-meta">3개 · 부품 종류, 값 배지, 증거 단계</span></button>
+</section>
+<section class="k-colR">
+<div class="k-rh">
+<div><h2 class="k-h2">최근 프로젝트</h2><p class="k-sub">이 컴퓨터에 저장된 프로젝트 · 최근에 연 순서</p></div>
+<button type="button" class="k-btn" data-ctl="프로젝트 열기" tabindex="-1"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round" aria-hidden="true"><path d="M1.5 3h4l1.2 1.5h5.8v6.5h-11z"/></svg>프로젝트 열기</button>
+</div>
+<p class="k-sub gap">증거 칩은 저장할 때의 단계입니다. 지금의 판정이 아닙니다.</p>
+<div class="k-list" role="grid" aria-label="최근 프로젝트" data-ctl="최근 프로젝트 목록">
+<div class="k-r" role="row" aria-selected="true">
+<div class="k-c1" role="gridcell"><button type="button" class="k-rn" tabindex="-1">로켓 자동차 점프</button><span class="k-tag">지구</span></div>
+<div class="k-ct" role="gridcell">2일 전</div>
+<div class="k-cm" role="gridcell"><button type="button" class="k-ib" tabindex="-1" aria-label="로켓 자동차 점프 메뉴"><svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor" aria-hidden="true"><circle cx="2.5" cy="7" r="1.3"/><circle cx="7" cy="7" r="1.3"/><circle cx="11.5" cy="7" r="1.3"/></svg></button></div>
+<div class="k-c2" role="gridcell"><button type="button" class="k-evc ev-l2" tabindex="-1"><span class="kp"><svg width="22" height="10" viewBox="0 0 22 10" aria-hidden="true"><path d="M0 0h4v10H0zM6 0h4v10H6zM12 0h4v10h-4z" fill="currentColor"/><path d="M18.5.5h3v9h-3z" fill="none" stroke="currentColor"/></svg><span class="k-sv">저장</span><span class="k-mono">L2 · FEASIBLE_FOUND</span></span></button></div>
+</div>
+<div class="k-r" role="row" aria-selected="false">
+<div class="k-c1" role="gridcell"><button type="button" class="k-rn" tabindex="-1">로버 경사 시험</button><span class="k-tag">화성</span></div>
+<div class="k-ct" role="gridcell">5일 전</div>
+<div class="k-cm" role="gridcell"><button type="button" class="k-ib" tabindex="-1" aria-label="로버 경사 시험 메뉴"><svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor" aria-hidden="true"><circle cx="2.5" cy="7" r="1.3"/><circle cx="7" cy="7" r="1.3"/><circle cx="11.5" cy="7" r="1.3"/></svg></button></div>
+<div class="k-c2" role="gridcell"><button type="button" class="k-evc ev-none" tabindex="-1"><span class="kp"><svg width="22" height="10" viewBox="0 0 22 10" aria-hidden="true"><path d="M.5.5h3v9h-3zM6.5.5h3v9h-3zM12.5.5h3v9h-3zM18.5.5h3v9h-3z" fill="none" stroke="currentColor"/></svg><span class="k-sv">저장</span>판정 없음</span></button><button type="button" class="k-pc" tabindex="-1"><span class="kp"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" aria-hidden="true"><circle cx="6" cy="6" r="5"/><path d="M6 5.5v3M6 3.5v.1"/></svg>정의 없음 · 2개</span></button></div>
+</div>
+<div class="k-r" role="row" aria-selected="false">
+<div class="k-c1" role="gridcell"><button type="button" class="k-rn" tabindex="-1">4륜차 달 주행</button><span class="k-tag">달</span></div>
+<div class="k-ct" role="gridcell">11월 3일</div>
+<div class="k-cm" role="gridcell"><button type="button" class="k-ib" tabindex="-1" aria-label="4륜차 달 주행 메뉴"><svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor" aria-hidden="true"><circle cx="2.5" cy="7" r="1.3"/><circle cx="7" cy="7" r="1.3"/><circle cx="11.5" cy="7" r="1.3"/></svg></button></div>
+<div class="k-c2" role="gridcell"><button type="button" class="k-evc ev-l1" tabindex="-1"><span class="kp"><svg width="22" height="10" viewBox="0 0 22 10" aria-hidden="true"><path d="M0 0h4v10H0zM6 0h4v10H6z" fill="currentColor"/><path d="M12.5.5h3v9h-3zM18.5.5h3v9h-3z" fill="none" stroke="currentColor"/></svg><span class="k-sv">저장</span><span class="k-mono">L1</span> · 1회 실행 · 판정 아님</span></button></div>
+</div>
+</div>
+<p class="k-hint">파일을 이 화면에 끌어 놓아도 열립니다 · <span class="k-kbd">↑</span><span class="k-kbd">↓</span> 이동 · <span class="k-kbd">Enter</span> 열기 · <span class="k-kbd">F2</span> 이름 바꾸기 · <span class="k-kbd">⋯</span> 행 메뉴</p>
+</section>
+</main>
+</div>
+<footer class="k-l3"><svg width="30" height="12" viewBox="0 0 30 12" role="img" aria-label="증거 강도 0/4"><path d="M.5.5h5v11h-5zM8.5.5h5v11h-5zM16.5.5h5v11h-5zM24.5.5h5v11h-5z" fill="none" stroke="currentColor"/></svg><span class="k-mono">L3</span><span>실물 검증 없음 (실측 0건)</span><span class="k-ro">읽기 전용 · 접지 않음</span></footer>
+
+<div class="k-scrim" aria-hidden="true" style="bottom:32px"></div>
+<div class="k-sheet" role="dialog" aria-modal="true" aria-labelledby="s2-t" aria-describedby="s2-d" style="left:480px;top:210px">
+<div class="k-shh"><h2 id="s2-t" class="k-h2">새 프로젝트</h2><p id="s2-d" class="k-desc">빈 작업대. 지구 평지에서 시작합니다.</p></div>
+<div class="k-fld"><label class="k-flab" for="s2-name">이름</label><input id="s2-name" class="k-in focus" type="text" value="이름 없는 프로젝트" data-ctl="이름"></div>
+<div class="k-fld"><span id="s2-pl" class="k-flab">시작 행성</span><div class="k-seg" role="radiogroup" aria-labelledby="s2-pl" aria-describedby="s2-ph" data-ctl="시작 행성"><button type="button" role="radio" aria-checked="true">지구</button><button type="button" role="radio" aria-checked="false" tabindex="-1">화성</button><button type="button" role="radio" aria-checked="false" tabindex="-1">달</button></div><p id="s2-ph" class="k-help">나중에 상단바에서 바꿀 수 있습니다. 바꾸면 이미 낸 판정은 무효가 됩니다.</p></div>
+<div class="k-acts"><span class="k-hint"><span class="k-kbd">Enter</span> 만들기 · <span class="k-kbd">Esc</span> 닫기</span><button type="button" class="k-btn ghost" data-ctl="취소">취소</button><button type="button" class="k-prim" data-ctl="만들기" data-primary="1">만들기</button></div>
+</div>
+</div>
+
+<div class="k-cap0">셸 밖: 시작 화면 · <span class="k-ex">예시</span> 데이터: 뒤 화면의 프로젝트 이름, 시각, 개수 · 기본 이름 "이름 없는 프로젝트"와 기본 행성 지구는 [제안]</div>
+</div></div></section><section class="kin-board" id="s3" aria-label="S3 새로 만들기 시트 · 시작 프로젝트 로켓 자동차, 달"><h2 class="kin-board-title">S3 새로 만들기 시트 · 시작 프로젝트 로켓 자동차, 달</h2><div class="kin-board-scroll" tabindex="0" role="group" aria-label="S3 새로 만들기 시트 · 시작 프로젝트 로켓 자동차, 달 아트보드"><div data-board="S3.dc.html" class="k-root" style="width:1440px;height:968px">
+
+<div class="k-note"><span><strong>S3 새로 만들기</strong> · 시작 프로젝트 로켓 자동차 카드에서 열림 · 행성 달 선택</span><span>시트 안 조작 요소 4 · primary 1 (만들기) · 뒤의 새 프로젝트 비활성</span></div>
+
+<div class="k-scr" data-unit="S3 시트">
+<div data-outside="1" inert="" aria-hidden="true" style="display:contents">
+<header class="k-top"><span class="k-prod">Kinetra Studio</span></header>
+<main class="k-main">
+<section class="k-colL">
+<h2 class="k-h2">새로 시작</h2>
+<button type="button" class="k-prim k-wide" data-ctl="새 프로젝트" data-primary="1" aria-disabled="true" tabindex="-1"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M7 2v10M2 7h10"/></svg>새 프로젝트</button>
+<p class="k-desc">빈 작업대, 지구 평지에서 시작합니다. 행성은 만들 때 고릅니다.</p>
+<div class="k-div">시작 프로젝트</div>
+<div class="k-cards">
+<button type="button" class="k-scard" data-ctl="시작 프로젝트: 4륜차" tabindex="-1"><span class="k-sct"><span class="k-scn">4륜차</span><span class="k-st0">판정 없음 · <span class="k-l0">L0</span> 조립에서 열림</span></span><span class="k-scd">바퀴 네 개로 굴러가는 가장 단순한 차</span></button>
+<button type="button" class="k-scard" data-ctl="시작 프로젝트: 로켓 자동차" tabindex="-1" style="background:#22324A;border-color:#5B9DFF"><span class="k-sct"><span class="k-scn">로켓 자동차</span><span class="k-st0">판정 없음 · <span class="k-l0">L0</span> 조립에서 열림</span></span><span class="k-scd">추력기를 단 차. 점프대 장면용</span></button>
+<button type="button" class="k-scard" data-ctl="시작 프로젝트: 로버" tabindex="-1"><span class="k-sct"><span class="k-scn">로버</span><span class="k-st0">판정 없음 · <span class="k-l0">L0</span> 조립에서 열림</span></span><span class="k-scd">경사로를 오르는 탐사차</span></button>
+</div>
+<p class="k-capline">시작 프로젝트는 복사본으로 열립니다. 원본은 바뀌지 않습니다. 세 행성 어디서든 열 수 있습니다.</p>
+<button type="button" class="k-head" data-ctl="시작 프로젝트에 든 것" aria-expanded="false" tabindex="-1"><svg class="k-chev" width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 2.5L8 6l-3.5 3.5"/></svg>시작 프로젝트에 든 것<span class="k-meta">3개 · 부품 종류, 값 배지, 증거 단계</span></button>
+</section>
+<section class="k-colR">
+<div class="k-rh">
+<div><h2 class="k-h2">최근 프로젝트</h2><p class="k-sub">이 컴퓨터에 저장된 프로젝트 · 최근에 연 순서</p></div>
+<button type="button" class="k-btn" data-ctl="프로젝트 열기" tabindex="-1"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round" aria-hidden="true"><path d="M1.5 3h4l1.2 1.5h5.8v6.5h-11z"/></svg>프로젝트 열기</button>
+</div>
+<p class="k-sub gap">증거 칩은 저장할 때의 단계입니다. 지금의 판정이 아닙니다.</p>
+<div class="k-list" role="grid" aria-label="최근 프로젝트" data-ctl="최근 프로젝트 목록">
+<div class="k-r" role="row" aria-selected="true">
+<div class="k-c1" role="gridcell"><button type="button" class="k-rn" tabindex="-1">로켓 자동차 점프</button><span class="k-tag">지구</span></div>
+<div class="k-ct" role="gridcell">2일 전</div>
+<div class="k-cm" role="gridcell"><button type="button" class="k-ib" tabindex="-1" aria-label="로켓 자동차 점프 메뉴"><svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor" aria-hidden="true"><circle cx="2.5" cy="7" r="1.3"/><circle cx="7" cy="7" r="1.3"/><circle cx="11.5" cy="7" r="1.3"/></svg></button></div>
+<div class="k-c2" role="gridcell"><button type="button" class="k-evc ev-l2" tabindex="-1"><span class="kp"><svg width="22" height="10" viewBox="0 0 22 10" aria-hidden="true"><path d="M0 0h4v10H0zM6 0h4v10H6zM12 0h4v10h-4z" fill="currentColor"/><path d="M18.5.5h3v9h-3z" fill="none" stroke="currentColor"/></svg><span class="k-sv">저장</span><span class="k-mono">L2 · FEASIBLE_FOUND</span></span></button></div>
+</div>
+<div class="k-r" role="row" aria-selected="false">
+<div class="k-c1" role="gridcell"><button type="button" class="k-rn" tabindex="-1">로버 경사 시험</button><span class="k-tag">화성</span></div>
+<div class="k-ct" role="gridcell">5일 전</div>
+<div class="k-cm" role="gridcell"><button type="button" class="k-ib" tabindex="-1" aria-label="로버 경사 시험 메뉴"><svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor" aria-hidden="true"><circle cx="2.5" cy="7" r="1.3"/><circle cx="7" cy="7" r="1.3"/><circle cx="11.5" cy="7" r="1.3"/></svg></button></div>
+<div class="k-c2" role="gridcell"><button type="button" class="k-evc ev-none" tabindex="-1"><span class="kp"><svg width="22" height="10" viewBox="0 0 22 10" aria-hidden="true"><path d="M.5.5h3v9h-3zM6.5.5h3v9h-3zM12.5.5h3v9h-3zM18.5.5h3v9h-3z" fill="none" stroke="currentColor"/></svg><span class="k-sv">저장</span>판정 없음</span></button><button type="button" class="k-pc" tabindex="-1"><span class="kp"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" aria-hidden="true"><circle cx="6" cy="6" r="5"/><path d="M6 5.5v3M6 3.5v.1"/></svg>정의 없음 · 2개</span></button></div>
+</div>
+<div class="k-r" role="row" aria-selected="false">
+<div class="k-c1" role="gridcell"><button type="button" class="k-rn" tabindex="-1">4륜차 달 주행</button><span class="k-tag">달</span></div>
+<div class="k-ct" role="gridcell">11월 3일</div>
+<div class="k-cm" role="gridcell"><button type="button" class="k-ib" tabindex="-1" aria-label="4륜차 달 주행 메뉴"><svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor" aria-hidden="true"><circle cx="2.5" cy="7" r="1.3"/><circle cx="7" cy="7" r="1.3"/><circle cx="11.5" cy="7" r="1.3"/></svg></button></div>
+<div class="k-c2" role="gridcell"><button type="button" class="k-evc ev-l1" tabindex="-1"><span class="kp"><svg width="22" height="10" viewBox="0 0 22 10" aria-hidden="true"><path d="M0 0h4v10H0zM6 0h4v10H6z" fill="currentColor"/><path d="M12.5.5h3v9h-3zM18.5.5h3v9h-3z" fill="none" stroke="currentColor"/></svg><span class="k-sv">저장</span><span class="k-mono">L1</span> · 1회 실행 · 판정 아님</span></button></div>
+</div>
+</div>
+<p class="k-hint">파일을 이 화면에 끌어 놓아도 열립니다 · <span class="k-kbd">↑</span><span class="k-kbd">↓</span> 이동 · <span class="k-kbd">Enter</span> 열기 · <span class="k-kbd">F2</span> 이름 바꾸기 · <span class="k-kbd">⋯</span> 행 메뉴</p>
+</section>
+</main>
+</div>
+<footer class="k-l3"><svg width="30" height="12" viewBox="0 0 30 12" role="img" aria-label="증거 강도 0/4"><path d="M.5.5h5v11h-5zM8.5.5h5v11h-5zM16.5.5h5v11h-5zM24.5.5h5v11h-5z" fill="none" stroke="currentColor"/></svg><span class="k-mono">L3</span><span>실물 검증 없음 (실측 0건)</span><span class="k-ro">읽기 전용 · 접지 않음</span></footer>
+
+<div class="k-scrim" aria-hidden="true" style="bottom:32px"></div>
+<div class="k-sheet" role="dialog" aria-modal="true" aria-labelledby="s3-t" aria-describedby="s3-c s3-d" style="left:480px;top:150px">
+<div class="k-shh"><h2 id="s3-t" class="k-h2">새 프로젝트 · 시작 프로젝트: 로켓 자동차</h2><p id="s3-c" class="k-desc">복사본으로 열립니다. 원본은 바뀌지 않습니다.</p><p class="k-st0" style="margin:0">판정 없음 · <span class="k-l0">L0</span> 조립에서 열립니다</p></div>
+<p id="s3-d" class="k-desc">추력기를 단 차. 달 평지에서 시작합니다.</p>
+<div class="k-fld"><label class="k-flab" for="s3-name">이름</label><input id="s3-name" class="k-in focus" type="text" value="로켓 자동차 복사본" aria-describedby="s3-nh" data-ctl="이름"><p id="s3-nh" class="k-help">같은 이름이 이미 있으면 뒤에 번호를 붙입니다(예: 로켓 자동차 복사본 2).</p></div>
+<div class="k-fld"><span id="s3-pl" class="k-flab">시작 행성</span><div class="k-seg" role="radiogroup" aria-labelledby="s3-pl" aria-describedby="s3-ph" data-ctl="시작 행성"><button type="button" role="radio" aria-checked="false" tabindex="-1">지구</button><button type="button" role="radio" aria-checked="false" tabindex="-1">화성</button><button type="button" role="radio" aria-checked="true">달</button></div><p id="s3-ph" class="k-help">나중에 상단바에서 바꿀 수 있습니다. 바꾸면 이미 낸 판정은 무효가 됩니다.</p></div>
+<div class="k-acts"><span class="k-hint"><span class="k-kbd">Enter</span> 만들기 · <span class="k-kbd">Esc</span> 닫기</span><button type="button" class="k-btn ghost" data-ctl="취소">취소</button><button type="button" class="k-prim" data-ctl="만들기" data-primary="1">만들기</button></div>
+</div>
+</div>
+
+<div class="k-cap0">셸 밖: 시작 화면 · <span class="k-ex">예시</span> 데이터: 뒤 화면의 프로젝트 이름, 시각, 개수 · 기본 이름 "시작 프로젝트 이름 + 복사본"과 번호 붙이기는 [제안]</div>
+</div></div></section><section class="kin-board" id="s4" aria-label="S4 시작 프로젝트에 든 것 · 펼침"><h2 class="kin-board-title">S4 시작 프로젝트에 든 것 · 펼침</h2><div class="kin-board-scroll" tabindex="0" role="group" aria-label="S4 시작 프로젝트에 든 것 · 펼침 아트보드"><div data-board="S4.dc.html" class="k-root" style="width:1440px;height:968px">
+
+<div class="k-note"><span><strong>S4 시작 프로젝트에 든 것</strong> · S1에서 머리를 연 모습 · 접으면 머리에 이름과 개수가 남음</span><span>상시 7 + 열린 머리 안 값 배지 2 · primary 1</span></div>
+
+<div class="k-scr" data-unit="S4 화면">
+<header class="k-top"><span class="k-prod">Kinetra Studio</span></header>
+<main class="k-main">
+
+<section class="k-colL" aria-labelledby="s4-hl">
+<h2 id="s4-hl" class="k-h2">새로 시작</h2>
+<button type="button" class="k-prim k-wide" data-ctl="새 프로젝트" data-primary="1" aria-haspopup="dialog" aria-describedby="s4-nd"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M7 2v10M2 7h10"/></svg>새 프로젝트</button>
+<p id="s4-nd" class="k-desc">빈 작업대, 지구 평지에서 시작합니다. 행성은 만들 때 고릅니다.</p>
+<div class="k-div">시작 프로젝트</div>
+<div class="k-cards">
+<button type="button" class="k-scard" data-ctl="시작 프로젝트: 4륜차" aria-haspopup="dialog"><span class="k-sct"><span class="k-scn">4륜차</span><span class="k-st0">판정 없음 · <span class="k-l0">L0</span> 조립에서 열림</span></span><span class="k-scd">바퀴 네 개로 굴러가는 가장 단순한 차</span></button>
+<button type="button" class="k-scard" data-ctl="시작 프로젝트: 로켓 자동차" aria-haspopup="dialog"><span class="k-sct"><span class="k-scn">로켓 자동차</span><span class="k-st0">판정 없음 · <span class="k-l0">L0</span> 조립에서 열림</span></span><span class="k-scd">추력기를 단 차. 점프대 장면용</span></button>
+<button type="button" class="k-scard" data-ctl="시작 프로젝트: 로버" aria-haspopup="dialog"><span class="k-sct"><span class="k-scn">로버</span><span class="k-st0">판정 없음 · <span class="k-l0">L0</span> 조립에서 열림</span></span><span class="k-scd">경사로를 오르는 탐사차</span></button>
+</div>
+<p class="k-capline">시작 프로젝트는 복사본으로 열립니다. 원본은 바뀌지 않습니다. 세 행성 어디서든 열 수 있습니다.</p>
+<button type="button" class="k-head" data-ctl="시작 프로젝트에 든 것" aria-expanded="true" aria-controls="s4-in"><svg class="k-chev" width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 2.5L8 6l-3.5 3.5"/></svg>시작 프로젝트에 든 것<span class="k-meta">3개 · 부품 종류, 값 배지, 증거 단계</span></button>
+<div id="s4-in" class="k-region" role="region" aria-label="시작 프로젝트에 든 것" data-transient="1">
+<table class="k-tbl">
+<thead><tr><th scope="col">이름</th><th scope="col">든 부품 종류 <span class="k-ex">예시</span></th><th scope="col">값 배지 종류</th><th scope="col">열었을 때</th></tr></thead>
+<tbody>
+<tr><td class="n">4륜차</td><td>차체, 바퀴, 모터</td><td><span class="kb kb-cite" title="카탈로그 부품 사양"><span class="kp"><svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor" aria-hidden="true"><path d="M1.5 3h3.5v3L3.5 9.5H2L3.2 6H1.5zM7 3h3.5v3L9 9.5H7.5L8.7 6H7z"/></svg>인용</span></span></td><td><span class="k-st0" style="margin:0"><span class="k-l0">L0</span> 조립 · 판정 없음</span></td></tr>
+<tr class="nb"><td class="n">로켓 자동차</td><td>차체, 바퀴, 냉가스 추력기, 추진제 탱크</td><td><span class="k-kv"><span class="kb kb-cite"><span class="kp"><svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor" aria-hidden="true"><path d="M1.5 3h3.5v3L3.5 9.5H2L3.2 6H1.5zM7 3h3.5v3L9 9.5H7.5L8.7 6H7z"/></svg>인용</span></span><span class="kb kb-decl"><span class="kp"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 10l.6-2.6 5.6-5.6 2 2-5.6 5.6z"/></svg>사용자 선언</span></span></span></td><td><span class="k-st0" style="margin:0"><span class="k-l0">L0</span> 조립 · 판정 없음</span></td></tr>
+<tr class="sub"><td></td><td colspan="3">
+<div class="k-kv"><span>차체 질량</span><span class="k-val">1.3</span><span class="k-unit">t</span><button type="button" class="kb kb-decl" data-ctl="차체 질량 배지" data-badge="사용자 선언" aria-haspopup="dialog" aria-expanded="false" aria-label="값 배지 사용자 선언. 누르면 근거를 엽니다"><span class="kp"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 10l.6-2.6 5.6-5.6 2 2-5.6 5.6z"/></svg>사용자 선언</span></button><span class="k-ex">예시</span></div>
+<div class="k-kv"><span>노즐당 추력</span><span class="k-val">8</span><span class="k-unit">kN</span><button type="button" class="kb kb-decl" data-ctl="노즐당 추력 배지" data-badge="카탈로그 밖 · 사용자 선언" aria-haspopup="dialog" aria-expanded="false" aria-label="값 배지 카탈로그 밖, 사용자 선언. 누르면 근거를 엽니다"><span class="kp"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 10l.6-2.6 5.6-5.6 2 2-5.6 5.6z"/></svg>카탈로그 밖 · 사용자 선언</span></button><span class="k-ex">예시</span></div>
+</td></tr>
+<tr><td class="n">로버</td><td>차체, 바퀴, 모터</td><td><span class="kb kb-cite"><span class="kp"><svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor" aria-hidden="true"><path d="M1.5 3h3.5v3L3.5 9.5H2L3.2 6H1.5zM7 3h3.5v3L9 9.5H7.5L8.7 6H7z"/></svg>인용</span></span></td><td><span class="k-st0" style="margin:0"><span class="k-l0">L0</span> 조립 · 판정 없음</span></td></tr>
+</tbody>
+</table>
+<p class="k-capline">카탈로그 부품의 값은 <span class="k-hi">인용</span>입니다. 이 화면의 수치는 로켓 자동차의 두 값뿐입니다.</p>
+</div>
+</section>
+
+<section class="k-colR" aria-labelledby="s4-hr">
+<div class="k-rh">
+<div><h2 id="s4-hr" class="k-h2">최근 프로젝트</h2><p class="k-sub">이 컴퓨터에 저장된 프로젝트 · 최근에 연 순서</p></div>
+<button type="button" class="k-btn" data-ctl="프로젝트 열기"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round" aria-hidden="true"><path d="M1.5 3h4l1.2 1.5h5.8v6.5h-11z"/></svg>프로젝트 열기</button>
+</div>
+<p class="k-sub gap">증거 칩은 저장할 때의 단계입니다. 지금의 판정이 아닙니다.</p>
+<div class="k-list" role="grid" aria-label="최근 프로젝트" aria-rowcount="3" data-ctl="최근 프로젝트 목록">
+<div class="k-r" role="row" aria-selected="true">
+<div class="k-c1" role="gridcell"><button type="button" class="k-rn" tabindex="0">로켓 자동차 점프</button><span class="k-tag">지구</span></div>
+<div class="k-ct" role="gridcell">2일 전</div>
+<div class="k-cm" role="gridcell"><button type="button" class="k-ib" tabindex="-1" aria-label="로켓 자동차 점프 메뉴" aria-haspopup="menu" aria-expanded="false"><svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor" aria-hidden="true"><circle cx="2.5" cy="7" r="1.3"/><circle cx="7" cy="7" r="1.3"/><circle cx="11.5" cy="7" r="1.3"/></svg></button></div>
+<div class="k-c2" role="gridcell"><button type="button" class="k-evc ev-l2" tabindex="-1" aria-haspopup="dialog" aria-label="저장 시점의 증거 단계: L2 판정, FEASIBLE_FOUND. 누르면 근거를 엽니다"><span class="kp"><svg width="22" height="10" viewBox="0 0 22 10" aria-hidden="true"><path d="M0 0h4v10H0zM6 0h4v10H6zM12 0h4v10h-4z" fill="currentColor"/><path d="M18.5.5h3v9h-3z" fill="none" stroke="currentColor"/></svg><span class="k-sv">저장</span><span class="k-mono">L2 · FEASIBLE_FOUND</span></span></button></div>
+</div>
+<div class="k-r" role="row" aria-selected="false">
+<div class="k-c1" role="gridcell"><button type="button" class="k-rn" tabindex="-1">로버 경사 시험</button><span class="k-tag">화성</span></div>
+<div class="k-ct" role="gridcell">5일 전</div>
+<div class="k-cm" role="gridcell"><button type="button" class="k-ib" tabindex="-1" aria-label="로버 경사 시험 메뉴" aria-haspopup="menu" aria-expanded="false"><svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor" aria-hidden="true"><circle cx="2.5" cy="7" r="1.3"/><circle cx="7" cy="7" r="1.3"/><circle cx="11.5" cy="7" r="1.3"/></svg></button></div>
+<div class="k-c2" role="gridcell"><button type="button" class="k-evc ev-none" tabindex="-1" aria-haspopup="dialog" aria-label="저장 시점의 증거 단계: 판정 없음. 누르면 근거를 엽니다"><span class="kp"><svg width="22" height="10" viewBox="0 0 22 10" aria-hidden="true"><path d="M.5.5h3v9h-3zM6.5.5h3v9h-3zM12.5.5h3v9h-3zM18.5.5h3v9h-3z" fill="none" stroke="currentColor"/></svg><span class="k-sv">저장</span>판정 없음</span></button><button type="button" class="k-pc" tabindex="-1" aria-haspopup="dialog" aria-label="정의 없음 2개. 열 수 있습니다. 누르면 설명을 엽니다"><span class="kp"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" aria-hidden="true"><circle cx="6" cy="6" r="5"/><path d="M6 5.5v3M6 3.5v.1"/></svg>정의 없음 · 2개</span></button></div>
+</div>
+<div class="k-r" role="row" aria-selected="false">
+<div class="k-c1" role="gridcell"><button type="button" class="k-rn" tabindex="-1">4륜차 달 주행</button><span class="k-tag">달</span></div>
+<div class="k-ct" role="gridcell">11월 3일</div>
+<div class="k-cm" role="gridcell"><button type="button" class="k-ib" tabindex="-1" aria-label="4륜차 달 주행 메뉴" aria-haspopup="menu" aria-expanded="false"><svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor" aria-hidden="true"><circle cx="2.5" cy="7" r="1.3"/><circle cx="7" cy="7" r="1.3"/><circle cx="11.5" cy="7" r="1.3"/></svg></button></div>
+<div class="k-c2" role="gridcell"><button type="button" class="k-evc ev-l1" tabindex="-1" aria-haspopup="dialog" aria-label="저장 시점의 증거 단계: L1 미리보기, 1회 실행, 판정 아님. 누르면 근거를 엽니다"><span class="kp"><svg width="22" height="10" viewBox="0 0 22 10" aria-hidden="true"><path d="M0 0h4v10H0zM6 0h4v10H6z" fill="currentColor"/><path d="M12.5.5h3v9h-3zM18.5.5h3v9h-3z" fill="none" stroke="currentColor"/></svg><span class="k-sv">저장</span><span class="k-mono">L1</span> · 1회 실행 · 판정 아님</span></button></div>
+</div>
+</div>
+<p class="k-hint">파일을 이 화면에 끌어 놓아도 열립니다 · <span class="k-kbd">↑</span><span class="k-kbd">↓</span> 이동 · <span class="k-kbd">Enter</span> 열기 · <span class="k-kbd">F2</span> 이름 바꾸기 · <span class="k-kbd">⋯</span> 행 메뉴</p>
+</section>
+
+</main>
+<footer class="k-l3"><svg width="30" height="12" viewBox="0 0 30 12" role="img" aria-label="증거 강도 0/4"><path d="M.5.5h5v11h-5zM8.5.5h5v11h-5zM16.5.5h5v11h-5zM24.5.5h5v11h-5z" fill="none" stroke="currentColor"/></svg><span class="k-mono">L3</span><span>실물 검증 없음 (실측 0건)</span><span class="k-ro">읽기 전용 · 접지 않음</span></footer>
+</div>
+
+<div class="k-cap0">셸 밖: 시작 화면 · <span class="k-ex">예시</span> 데이터: 부품 종류, 차체 질량 1.3 t, 노즐당 추력 8 kN(design-system.md 10절 값, 시작 프로젝트에 든 값인지는 확인 필요)</div>
+</div></div></section><section class="kin-board" id="s5" aria-label="S5 목록 행 변형 7종 · 칩 팝오버"><h2 class="kin-board-title">S5 목록 행 변형 7종 · 칩 팝오버</h2><div class="kin-board-scroll" tabindex="0" role="group" aria-label="S5 목록 행 변형 7종 · 칩 팝오버 아트보드"><div data-board="S5.dc.html" class="k-root" style="width:2040px;height:968px">
+
+<div class="k-note"><span><strong>S5 목록 행 변형</strong> · 7종 ① L2 ② 약한 증거 ③ 모델 밖 ④ 무효 ⑤ 정의 없음 · 카탈로그와 다름 ⑥ 파일 없음 ⑦ 열 수 없음 · 오른쪽: 칩 팝오버 2종</span><span>상시 7 (행 안 단추는 목록에 속함) · primary 1 · 행마다 6요소 이하</span></div>
+
+<div class="k-row0">
+<div class="k-scr" data-unit="S5 화면">
+<header class="k-top"><span class="k-prod">Kinetra Studio</span></header>
+<main class="k-main">
+
+<section class="k-colL" aria-labelledby="s5-hl">
+<h2 id="s5-hl" class="k-h2">새로 시작</h2>
+<button type="button" class="k-prim k-wide" data-ctl="새 프로젝트" data-primary="1" aria-haspopup="dialog" aria-describedby="s5-nd"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M7 2v10M2 7h10"/></svg>새 프로젝트</button>
+<p id="s5-nd" class="k-desc">빈 작업대, 지구 평지에서 시작합니다. 행성은 만들 때 고릅니다.</p>
+<div class="k-div">시작 프로젝트</div>
+<div class="k-cards">
+<button type="button" class="k-scard" data-ctl="시작 프로젝트: 4륜차" aria-haspopup="dialog"><span class="k-sct"><span class="k-scn">4륜차</span><span class="k-st0">판정 없음 · <span class="k-l0">L0</span> 조립에서 열림</span></span><span class="k-scd">바퀴 네 개로 굴러가는 가장 단순한 차</span></button>
+<button type="button" class="k-scard" data-ctl="시작 프로젝트: 로켓 자동차" aria-haspopup="dialog"><span class="k-sct"><span class="k-scn">로켓 자동차</span><span class="k-st0">판정 없음 · <span class="k-l0">L0</span> 조립에서 열림</span></span><span class="k-scd">추력기를 단 차. 점프대 장면용</span></button>
+<button type="button" class="k-scard" data-ctl="시작 프로젝트: 로버" aria-haspopup="dialog"><span class="k-sct"><span class="k-scn">로버</span><span class="k-st0">판정 없음 · <span class="k-l0">L0</span> 조립에서 열림</span></span><span class="k-scd">경사로를 오르는 탐사차</span></button>
+</div>
+<p class="k-capline">시작 프로젝트는 복사본으로 열립니다. 원본은 바뀌지 않습니다. 세 행성 어디서든 열 수 있습니다.</p>
+<button type="button" class="k-head" data-ctl="시작 프로젝트에 든 것" aria-expanded="false" aria-controls="s5-in"><svg class="k-chev" width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 2.5L8 6l-3.5 3.5"/></svg>시작 프로젝트에 든 것<span class="k-meta">3개 · 부품 종류, 값 배지, 증거 단계</span></button>
+</section>
+
+<section class="k-colR" aria-labelledby="s5-hr">
+<div class="k-rh">
+<div><h2 id="s5-hr" class="k-h2">최근 프로젝트</h2><p class="k-sub">이 컴퓨터에 저장된 프로젝트 · 최근에 연 순서</p></div>
+<button type="button" class="k-btn" data-ctl="프로젝트 열기"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round" aria-hidden="true"><path d="M1.5 3h4l1.2 1.5h5.8v6.5h-11z"/></svg>프로젝트 열기</button>
+</div>
+<p class="k-sub gap">증거 칩은 저장할 때의 단계입니다. 지금의 판정이 아닙니다.</p>
+<div class="k-list" role="grid" aria-label="최근 프로젝트" aria-rowcount="7" data-ctl="최근 프로젝트 목록">
+
+<div class="k-r" role="row" aria-selected="true">
+<div class="k-c1" role="gridcell"><button type="button" class="k-rn" tabindex="0">① 로켓 자동차 점프</button><span class="k-tag">지구</span></div>
+<div class="k-ct" role="gridcell">2일 전</div>
+<div class="k-cm" role="gridcell"><button type="button" class="k-ib" tabindex="-1" aria-label="로켓 자동차 점프 메뉴" aria-haspopup="menu" aria-expanded="false"><svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor" aria-hidden="true"><circle cx="2.5" cy="7" r="1.3"/><circle cx="7" cy="7" r="1.3"/><circle cx="11.5" cy="7" r="1.3"/></svg></button></div>
+<div class="k-c2" role="gridcell"><button type="button" class="k-evc ev-l2" tabindex="-1" aria-haspopup="dialog" aria-expanded="false" aria-label="저장 시점의 증거 단계: L2 판정, FEASIBLE_FOUND. 누르면 근거를 엽니다"><span class="kp"><svg width="22" height="10" viewBox="0 0 22 10" aria-hidden="true"><path d="M0 0h4v10H0zM6 0h4v10H6zM12 0h4v10h-4z" fill="currentColor"/><path d="M18.5.5h3v9h-3z" fill="none" stroke="currentColor"/></svg><span class="k-sv">저장</span><span class="k-mono">L2 · FEASIBLE_FOUND</span></span></button></div>
+</div>
+
+<div class="k-r" role="row" aria-selected="false">
+<div class="k-c1" role="gridcell"><button type="button" class="k-rn" tabindex="-1">② 로켓 자동차 예산 탐색</button><span class="k-tag">지구</span></div>
+<div class="k-ct" role="gridcell">3일 전</div>
+<div class="k-cm" role="gridcell"><button type="button" class="k-ib" tabindex="-1" aria-label="로켓 자동차 예산 탐색 메뉴" aria-haspopup="menu" aria-expanded="false"><svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor" aria-hidden="true"><circle cx="2.5" cy="7" r="1.3"/><circle cx="7" cy="7" r="1.3"/><circle cx="11.5" cy="7" r="1.3"/></svg></button></div>
+<div class="k-c2" role="gridcell"><button type="button" class="k-evc ev-weak" tabindex="-1" aria-haspopup="dialog" aria-label="저장 시점의 증거 단계: L2 판정, NOT_FOUND_IN_BUDGET, 약한 증거. 누르면 근거를 엽니다"><span class="kp"><svg width="22" height="10" viewBox="0 0 22 10" aria-hidden="true"><path d="M.5.5h3v9h-3zM6.5.5h3v9h-3zM12.5.5h3v9h-3z" fill="none" stroke="currentColor" stroke-dasharray="2 1"/><path d="M18.5.5h3v9h-3z" fill="none" stroke="currentColor"/></svg><span class="k-sv">저장</span><span class="k-mono">L2 · NOT_FOUND_IN_BUDGET</span> · 약한 증거</span></button></div>
+</div>
+
+<div class="k-r" role="row" aria-selected="false">
+<div class="k-c1" role="gridcell"><button type="button" class="k-rn" tabindex="-1">③ 로버 모래 언덕</button><span class="k-tag">화성</span></div>
+<div class="k-ct" role="gridcell">4일 전</div>
+<div class="k-cm" role="gridcell"><button type="button" class="k-ib" tabindex="-1" aria-label="로버 모래 언덕 메뉴" aria-haspopup="menu" aria-expanded="false"><svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor" aria-hidden="true"><circle cx="2.5" cy="7" r="1.3"/><circle cx="7" cy="7" r="1.3"/><circle cx="11.5" cy="7" r="1.3"/></svg></button></div>
+<div class="k-c2" role="gridcell"><button type="button" class="k-evc ev-none" tabindex="-1" aria-haspopup="dialog" aria-label="저장 시점의 증거 단계: L2, 모델 밖. 이 모델이 다루지 않는 현상입니다. 누르면 근거를 엽니다"><span class="kp"><svg width="22" height="10" viewBox="0 0 22 10" aria-hidden="true"><path d="M.5.5h3v9h-3zM6.5.5h3v9h-3zM12.5.5h3v9h-3zM18.5.5h3v9h-3z" fill="none" stroke="currentColor"/></svg><span class="k-sv">저장</span><span class="k-mono">L2</span> · 모델 밖</span></button></div>
+</div>
+
+<div class="k-r" role="row" aria-selected="false">
+<div class="k-c1" role="gridcell"><button type="button" class="k-rn" tabindex="-1">④ 로버 경사 시험</button><span class="k-tag">달</span></div>
+<div class="k-ct" role="gridcell">5일 전</div>
+<div class="k-cm" role="gridcell"><button type="button" class="k-ib" tabindex="-1" aria-label="로버 경사 시험 메뉴" aria-haspopup="menu" aria-expanded="false"><svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor" aria-hidden="true"><circle cx="2.5" cy="7" r="1.3"/><circle cx="7" cy="7" r="1.3"/><circle cx="11.5" cy="7" r="1.3"/></svg></button></div>
+<div class="k-c2" role="gridcell"><button type="button" class="k-evc ev-none" tabindex="-1" aria-haspopup="dialog" aria-label="저장 시점의 증거 단계: 무효. 행성을 바꿔 다시 판정해야 합니다. 누르면 근거를 엽니다"><span class="kp"><svg width="22" height="10" viewBox="0 0 22 10" aria-hidden="true"><path d="M.5.5h3v9h-3zM6.5.5h3v9h-3zM12.5.5h3v9h-3zM18.5.5h3v9h-3z" fill="none" stroke="currentColor"/></svg><span class="k-sv">저장</span>무효 · 행성을 바꿈 · 다시 판정해야 합니다</span></button></div>
+</div>
+
+<div class="k-r" role="row" aria-selected="false">
+<div class="k-c1" role="gridcell"><button type="button" class="k-rn" tabindex="-1">⑤ 로켓 자동차 개조</button><span class="k-tag">지구</span></div>
+<div class="k-ct" role="gridcell">6일 전</div>
+<div class="k-cm" role="gridcell"><button type="button" class="k-ib" tabindex="-1" aria-label="로켓 자동차 개조 메뉴" aria-haspopup="menu" aria-expanded="false"><svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor" aria-hidden="true"><circle cx="2.5" cy="7" r="1.3"/><circle cx="7" cy="7" r="1.3"/><circle cx="11.5" cy="7" r="1.3"/></svg></button></div>
+<div class="k-c2" role="gridcell"><button type="button" class="k-evc ev-none" tabindex="-1" aria-haspopup="dialog" aria-label="저장 시점의 증거 단계: 판정 없음. 누르면 근거를 엽니다"><span class="kp"><svg width="22" height="10" viewBox="0 0 22 10" aria-hidden="true"><path d="M.5.5h3v9h-3zM6.5.5h3v9h-3zM12.5.5h3v9h-3zM18.5.5h3v9h-3z" fill="none" stroke="currentColor"/></svg><span class="k-sv">저장</span>판정 없음</span></button><button type="button" class="k-pc" tabindex="-1" aria-haspopup="dialog" aria-label="정의 없음 2개, 카탈로그와 다름. 열 수 있습니다. 누르면 설명을 엽니다"><span class="kp"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" aria-hidden="true"><circle cx="6" cy="6" r="5"/><path d="M6 5.5v3M6 3.5v.1"/></svg>정의 없음 · 2개<span style="color:#A9B4C0">|</span>카탈로그와 다름</span></button></div>
+</div>
+
+<div class="k-r dim" role="row" aria-selected="false">
+<div class="k-c1" role="gridcell"><button type="button" class="k-rn" tabindex="-1" aria-disabled="true" aria-describedby="s5-r6">⑥ 4륜차 첫 조립</button><span class="k-tag">지구</span></div>
+<div class="k-ct" role="gridcell">11월 1일</div>
+<div class="k-c2" role="gridcell" style="grid-column:1 / span 3"><span id="s5-r6" class="k-ps"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="#F2B84B" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 2l6.5 11.5h-13zM8 6.5v3.5M8 11.8v.2"/></svg>파일 없음 · 저장한 자리에 파일이 없습니다</span><button type="button" class="k-btn ghost sm" tabindex="-1">다시 찾기</button><button type="button" class="k-btn ghost sm" tabindex="-1">목록에서 지우기</button></div>
+</div>
+
+<div class="k-r" role="row" aria-selected="false">
+<div class="k-c1" role="gridcell"><button type="button" class="k-rn" tabindex="-1" aria-describedby="s5-r7">⑦ 로버 경사 시험 사본</button><span class="k-tag">화성</span></div>
+<div class="k-ct" role="gridcell">10월 28일</div>
+<div class="k-cm" role="gridcell"><button type="button" class="k-ib" tabindex="-1" aria-label="로버 경사 시험 사본 메뉴" aria-haspopup="menu" aria-expanded="false"><svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor" aria-hidden="true"><circle cx="2.5" cy="7" r="1.3"/><circle cx="7" cy="7" r="1.3"/><circle cx="11.5" cy="7" r="1.3"/></svg></button></div>
+<div class="k-c2" role="gridcell"><span id="s5-r7" class="k-ps"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="#FF7B72" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><circle cx="8" cy="8" r="6.5"/><path d="M5.5 5.5l5 5M10.5 5.5l-5 5"/></svg>열 수 없음</span><span class="k-reason">파일 형식을 읽지 못했습니다 · <code class="k-code">PRJ-OPEN-002</code></span><button type="button" class="k-btn ghost sm" tabindex="-1">코드 복사</button></div>
+</div>
+
+</div>
+<p class="k-hint">파일을 이 화면에 끌어 놓아도 열립니다 · <span class="k-kbd">↑</span><span class="k-kbd">↓</span> 이동 · <span class="k-kbd">Enter</span> 열기 · <span class="k-kbd">F2</span> 이름 바꾸기 · <span class="k-kbd">⋯</span> 행 메뉴</p>
+
+
+</section>
+
+</main>
+<footer class="k-l3"><svg width="30" height="12" viewBox="0 0 30 12" role="img" aria-label="증거 강도 0/4"><path d="M.5.5h5v11h-5zM8.5.5h5v11h-5zM16.5.5h5v11h-5zM24.5.5h5v11h-5z" fill="none" stroke="currentColor"/></svg><span class="k-mono">L3</span><span>실물 검증 없음 (실측 0건)</span><span class="k-ro">읽기 전용 · 접지 않음</span></footer>
+</div>
+
+<aside class="k-side" style="width:552px" aria-label="칩 팝오버">
+<div class="k-lbl"><strong>(a) ① 증거 칩을 눌렀을 때</strong> · 근거 팝오버, Esc로 닫음</div>
+<div class="k-frag" data-unit="S5a 칩 팝오버">
+<div class="k-list fit" role="grid" aria-label="최근 프로젝트 조각" data-ctl="최근 프로젝트 목록">
+<div class="k-r" role="row" aria-selected="true">
+<div class="k-c1" role="gridcell"><button type="button" class="k-rn" tabindex="-1">① 로켓 자동차 점프</button><span class="k-tag">지구</span></div>
+<div class="k-ct" role="gridcell">2일 전</div>
+<div class="k-cm" role="gridcell"><button type="button" class="k-ib" tabindex="-1" aria-label="로켓 자동차 점프 메뉴" aria-haspopup="menu" aria-expanded="false"><svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor" aria-hidden="true"><circle cx="2.5" cy="7" r="1.3"/><circle cx="7" cy="7" r="1.3"/><circle cx="11.5" cy="7" r="1.3"/></svg></button></div>
+<div class="k-c2" role="gridcell"><button type="button" class="k-evc ev-l2 k-ring" tabindex="0" aria-haspopup="dialog" aria-expanded="true" aria-controls="s5a-pop" aria-label="저장 시점의 증거 단계: L2 판정, FEASIBLE_FOUND. 근거가 열려 있습니다"><span class="kp"><svg width="22" height="10" viewBox="0 0 22 10" aria-hidden="true"><path d="M0 0h4v10H0zM6 0h4v10H6zM12 0h4v10h-4z" fill="currentColor"/><path d="M18.5.5h3v9h-3z" fill="none" stroke="currentColor"/></svg><span class="k-sv">저장</span><span class="k-mono">L2 · FEASIBLE_FOUND</span></span></button></div>
+</div>
+</div>
+<div id="s5a-pop" class="k-pop static" role="dialog" aria-label="저장된 판정의 근거" data-transient="1" style="width:360px;margin:6px 0 0 12px">
+<h3><svg width="22" height="10" viewBox="0 0 22 10" aria-hidden="true" style="color:#D2BFFF"><path d="M0 0h4v10H0zM6 0h4v10H6zM12 0h4v10h-4z" fill="currentColor"/><path d="M18.5.5h3v9h-3z" fill="none" stroke="currentColor"/></svg>저장된 판정 · <span class="k-mono">FEASIBLE_FOUND</span></h3>
+<p>저장된 판정입니다. 열어서 가정표와 함께 확인하세요. 가정이나 행성을 바꾸면 무효가 됩니다.</p>
+<p class="k-sub">저장한 때 2일 전 · 행성 지구. 이 목록에는 단계 코드만 보이고 판정 카드는 열어서 봅니다.</p>
+<p class="k-sub"><span class="k-kbd">Esc</span> 닫기</p>
+</div>
+</div>
+
+<div class="k-lbl" style="margin-top:16px"><strong>(b) ⑤ 문제 칩을 눌렀을 때</strong> · 정보이고 오류가 아님(무채색 테두리)</div>
+<div class="k-frag" data-unit="S5b 문제 칩 팝오버">
+<div class="k-list fit" role="grid" aria-label="최근 프로젝트 조각" data-ctl="최근 프로젝트 목록">
+<div class="k-r" role="row" aria-selected="true">
+<div class="k-c1" role="gridcell"><button type="button" class="k-rn" tabindex="-1">⑤ 로켓 자동차 개조</button><span class="k-tag">지구</span></div>
+<div class="k-ct" role="gridcell">6일 전</div>
+<div class="k-cm" role="gridcell"><button type="button" class="k-ib" tabindex="-1" aria-label="로켓 자동차 개조 메뉴" aria-haspopup="menu" aria-expanded="false"><svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor" aria-hidden="true"><circle cx="2.5" cy="7" r="1.3"/><circle cx="7" cy="7" r="1.3"/><circle cx="11.5" cy="7" r="1.3"/></svg></button></div>
+<div class="k-c2" role="gridcell"><button type="button" class="k-evc ev-none" tabindex="-1" aria-haspopup="dialog" aria-label="저장 시점의 증거 단계: 판정 없음. 누르면 근거를 엽니다"><span class="kp"><svg width="22" height="10" viewBox="0 0 22 10" aria-hidden="true"><path d="M.5.5h3v9h-3zM6.5.5h3v9h-3zM12.5.5h3v9h-3zM18.5.5h3v9h-3z" fill="none" stroke="currentColor"/></svg><span class="k-sv">저장</span>판정 없음</span></button><button type="button" class="k-pc k-ring" tabindex="0" aria-haspopup="dialog" aria-expanded="true" aria-controls="s5b-pop" aria-label="정의 없음 2개, 카탈로그와 다름. 설명이 열려 있습니다"><span class="kp"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" aria-hidden="true"><circle cx="6" cy="6" r="5"/><path d="M6 5.5v3M6 3.5v.1"/></svg>정의 없음 · 2개<span style="color:#A9B4C0">|</span>카탈로그와 다름</span></button></div>
+</div>
+</div>
+<div id="s5b-pop" class="k-pop static" role="dialog" aria-label="정의 없음과 카탈로그와 다름" data-transient="1" style="width:400px;margin:6px 0 0 120px">
+<h3><svg width="14" height="14" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" aria-hidden="true"><circle cx="6" cy="6" r="5"/><path d="M6 5.5v3M6 3.5v.1"/></svg>정의 없음 · 2개</h3>
+<p>열 수 있습니다. 실행 · 판정 · Halo 내보내기는 열린 뒤 막힙니다. 빠진 정의는 열린 뒤 다시 연결하거나 지울 수 있습니다.</p>
+<h3><svg width="14" height="14" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" aria-hidden="true"><circle cx="6" cy="6" r="5"/><path d="M6 5.5v3M6 3.5v.1"/></svg>카탈로그와 다름</h3>
+<p>프로젝트에 담긴 정의를 씁니다. 카탈로그의 같은 ID와 해시가 다릅니다.</p>
+<p class="k-sub"><span class="k-kbd">Esc</span> 닫기 · 다시 연결과 지우기는 열린 뒤 SC-15 화면에서</p>
+</div>
+</div>
+</aside>
+</div>
+
+<div class="k-cap0">셸 밖: 시작 화면 · <span class="k-ex">예시</span> 데이터: 프로젝트 이름, 시각, 개수, 오류 코드 PRJ-OPEN-002 · ⑤의 두 문제 칩은 한 칸(한 단추)에 함께 · ⑥은 파일이 없어 증거 칩과 ⋯을 그리지 않음</div>
+</div></div></section><section class="kin-board" id="s6" aria-label="S6 행 메뉴 · 이름 바꾸기, 목록에서 지우기 확인"><h2 class="kin-board-title">S6 행 메뉴 · 이름 바꾸기, 목록에서 지우기 확인</h2><div class="kin-board-scroll" tabindex="0" role="group" aria-label="S6 행 메뉴 · 이름 바꾸기, 목록에서 지우기 확인 아트보드"><div data-board="S6.dc.html" class="k-root" style="width:2040px;height:968px">
+
+<div class="k-note"><span><strong>S6 행 ⋯ 메뉴</strong> · 이름 바꾸기 (F2), 복제, JSON 내보내기, 목록에서 지우기 · 오른쪽: (a) 이름 바꾸기 인라인 편집 (b) 목록에서 지우기 확인</span><span>상시 7 + 메뉴 안 4 · primary 1 · 확인 대화상자 안 2(primary 0, 뒤 화면 비활성)</span></div>
+
+<div class="k-row0">
+<div class="k-scr" data-unit="S6 화면">
+<header class="k-top"><span class="k-prod">Kinetra Studio</span></header>
+<main class="k-main">
+
+<section class="k-colL" aria-labelledby="s6-hl">
+<h2 id="s6-hl" class="k-h2">새로 시작</h2>
+<button type="button" class="k-prim k-wide" data-ctl="새 프로젝트" data-primary="1" aria-haspopup="dialog" aria-describedby="s6-nd"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M7 2v10M2 7h10"/></svg>새 프로젝트</button>
+<p id="s6-nd" class="k-desc">빈 작업대, 지구 평지에서 시작합니다. 행성은 만들 때 고릅니다.</p>
+<div class="k-div">시작 프로젝트</div>
+<div class="k-cards">
+<button type="button" class="k-scard" data-ctl="시작 프로젝트: 4륜차" aria-haspopup="dialog"><span class="k-sct"><span class="k-scn">4륜차</span><span class="k-st0">판정 없음 · <span class="k-l0">L0</span> 조립에서 열림</span></span><span class="k-scd">바퀴 네 개로 굴러가는 가장 단순한 차</span></button>
+<button type="button" class="k-scard" data-ctl="시작 프로젝트: 로켓 자동차" aria-haspopup="dialog"><span class="k-sct"><span class="k-scn">로켓 자동차</span><span class="k-st0">판정 없음 · <span class="k-l0">L0</span> 조립에서 열림</span></span><span class="k-scd">추력기를 단 차. 점프대 장면용</span></button>
+<button type="button" class="k-scard" data-ctl="시작 프로젝트: 로버" aria-haspopup="dialog"><span class="k-sct"><span class="k-scn">로버</span><span class="k-st0">판정 없음 · <span class="k-l0">L0</span> 조립에서 열림</span></span><span class="k-scd">경사로를 오르는 탐사차</span></button>
+</div>
+<p class="k-capline">시작 프로젝트는 복사본으로 열립니다. 원본은 바뀌지 않습니다. 세 행성 어디서든 열 수 있습니다.</p>
+<button type="button" class="k-head" data-ctl="시작 프로젝트에 든 것" aria-expanded="false" aria-controls="s6-in"><svg class="k-chev" width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 2.5L8 6l-3.5 3.5"/></svg>시작 프로젝트에 든 것<span class="k-meta">3개 · 부품 종류, 값 배지, 증거 단계</span></button>
+</section>
+
+<section class="k-colR" aria-labelledby="s6-hr">
+<div class="k-rh">
+<div><h2 id="s6-hr" class="k-h2">최근 프로젝트</h2><p class="k-sub">이 컴퓨터에 저장된 프로젝트 · 최근에 연 순서</p></div>
+<button type="button" class="k-btn" data-ctl="프로젝트 열기"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round" aria-hidden="true"><path d="M1.5 3h4l1.2 1.5h5.8v6.5h-11z"/></svg>프로젝트 열기</button>
+</div>
+<p class="k-sub gap">증거 칩은 저장할 때의 단계입니다. 지금의 판정이 아닙니다.</p>
+<div class="k-list" role="grid" aria-label="최근 프로젝트" aria-rowcount="3" data-ctl="최근 프로젝트 목록">
+<div class="k-r" role="row" aria-selected="true">
+<div class="k-c1" role="gridcell"><button type="button" class="k-rn" tabindex="-1">로켓 자동차 점프</button><span class="k-tag">지구</span></div>
+<div class="k-ct" role="gridcell">2일 전</div>
+<div class="k-cm" role="gridcell"><button type="button" class="k-ib" tabindex="0" aria-label="로켓 자동차 점프 메뉴" aria-haspopup="menu" aria-expanded="true" aria-controls="s6-menu"><svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor" aria-hidden="true"><circle cx="2.5" cy="7" r="1.3"/><circle cx="7" cy="7" r="1.3"/><circle cx="11.5" cy="7" r="1.3"/></svg></button></div>
+<div class="k-c2" role="gridcell"><button type="button" class="k-evc ev-l2" tabindex="-1" aria-haspopup="dialog" aria-label="저장 시점의 증거 단계: L2 판정, FEASIBLE_FOUND. 누르면 근거를 엽니다"><span class="kp"><svg width="22" height="10" viewBox="0 0 22 10" aria-hidden="true"><path d="M0 0h4v10H0zM6 0h4v10H6zM12 0h4v10h-4z" fill="currentColor"/><path d="M18.5.5h3v9h-3z" fill="none" stroke="currentColor"/></svg><span class="k-sv">저장</span><span class="k-mono">L2 · FEASIBLE_FOUND</span></span></button></div>
+</div>
+<div class="k-r" role="row" aria-selected="false">
+<div class="k-c1" role="gridcell"><button type="button" class="k-rn" tabindex="-1">로버 경사 시험</button><span class="k-tag">화성</span></div>
+<div class="k-ct" role="gridcell">5일 전</div>
+<div class="k-cm" role="gridcell"><button type="button" class="k-ib" tabindex="-1" aria-label="로버 경사 시험 메뉴" aria-haspopup="menu" aria-expanded="false"><svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor" aria-hidden="true"><circle cx="2.5" cy="7" r="1.3"/><circle cx="7" cy="7" r="1.3"/><circle cx="11.5" cy="7" r="1.3"/></svg></button></div>
+<div class="k-c2" role="gridcell"><button type="button" class="k-evc ev-none" tabindex="-1" aria-haspopup="dialog" aria-label="저장 시점의 증거 단계: 판정 없음. 누르면 근거를 엽니다"><span class="kp"><svg width="22" height="10" viewBox="0 0 22 10" aria-hidden="true"><path d="M.5.5h3v9h-3zM6.5.5h3v9h-3zM12.5.5h3v9h-3zM18.5.5h3v9h-3z" fill="none" stroke="currentColor"/></svg><span class="k-sv">저장</span>판정 없음</span></button><button type="button" class="k-pc" tabindex="-1" aria-haspopup="dialog" aria-label="정의 없음 2개. 열 수 있습니다. 누르면 설명을 엽니다"><span class="kp"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" aria-hidden="true"><circle cx="6" cy="6" r="5"/><path d="M6 5.5v3M6 3.5v.1"/></svg>정의 없음 · 2개</span></button></div>
+</div>
+<div class="k-r" role="row" aria-selected="false">
+<div class="k-c1" role="gridcell"><button type="button" class="k-rn" tabindex="-1">4륜차 달 주행</button><span class="k-tag">달</span></div>
+<div class="k-ct" role="gridcell">11월 3일</div>
+<div class="k-cm" role="gridcell"><button type="button" class="k-ib" tabindex="-1" aria-label="4륜차 달 주행 메뉴" aria-haspopup="menu" aria-expanded="false"><svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor" aria-hidden="true"><circle cx="2.5" cy="7" r="1.3"/><circle cx="7" cy="7" r="1.3"/><circle cx="11.5" cy="7" r="1.3"/></svg></button></div>
+<div class="k-c2" role="gridcell"><button type="button" class="k-evc ev-l1" tabindex="-1" aria-haspopup="dialog" aria-label="저장 시점의 증거 단계: L1 미리보기, 1회 실행, 판정 아님. 누르면 근거를 엽니다"><span class="kp"><svg width="22" height="10" viewBox="0 0 22 10" aria-hidden="true"><path d="M0 0h4v10H0zM6 0h4v10H6z" fill="currentColor"/><path d="M12.5.5h3v9h-3zM18.5.5h3v9h-3z" fill="none" stroke="currentColor"/></svg><span class="k-sv">저장</span><span class="k-mono">L1</span> · 1회 실행 · 판정 아님</span></button></div>
+</div>
+</div>
+<p class="k-hint">파일을 이 화면에 끌어 놓아도 열립니다 · <span class="k-kbd">↑</span><span class="k-kbd">↓</span> 이동 · <span class="k-kbd">Enter</span> 열기 · <span class="k-kbd">F2</span> 이름 바꾸기 · <span class="k-kbd">⋯</span> 행 메뉴</p>
+
+<div id="s6-menu" class="k-menu" role="menu" aria-label="로켓 자동차 점프" data-transient="1" style="left:316px;top:128px">
+<button type="button" class="k-mi hl" role="menuitem" data-ctl="이름 바꾸기">이름 바꾸기<span class="k-kbd">F2</span></button>
+<button type="button" class="k-mi" role="menuitem" data-ctl="복제" tabindex="-1">복제</button>
+<button type="button" class="k-mi" role="menuitem" data-ctl="JSON 내보내기" tabindex="-1">JSON 내보내기</button>
+<div class="k-msep" role="separator"></div>
+<button type="button" class="k-mi" role="menuitem" data-ctl="목록에서 지우기" tabindex="-1">목록에서 지우기…<span class="k-kbd">Delete</span></button>
+</div>
+</section>
+
+</main>
+<footer class="k-l3"><svg width="30" height="12" viewBox="0 0 30 12" role="img" aria-label="증거 강도 0/4"><path d="M.5.5h5v11h-5zM8.5.5h5v11h-5zM16.5.5h5v11h-5zM24.5.5h5v11h-5z" fill="none" stroke="currentColor"/></svg><span class="k-mono">L3</span><span>실물 검증 없음 (실측 0건)</span><span class="k-ro">읽기 전용 · 접지 않음</span></footer>
+</div>
+
+<aside class="k-side" style="width:552px" aria-label="이름 바꾸기와 지우기 확인">
+<div class="k-lbl"><strong>(a) 이름 바꾸기 · 인라인 편집</strong> · 메뉴나 F2로 시작, Enter 저장, Esc 취소</div>
+<div class="k-frag" data-unit="S6a 이름 바꾸기">
+<div class="k-list fit" role="grid" aria-label="최근 프로젝트 조각" data-ctl="최근 프로젝트 목록">
+<div class="k-r" role="row" aria-selected="true">
+<div class="k-c1" role="gridcell" style="grid-column:1 / span 2"><input id="s6a-n1" aria-label="이름" class="k-in focus" type="text" value="" placeholder="이름" aria-invalid="true" aria-describedby="s6a-e1" style="height:28px"><span class="k-tag">지구</span></div>
+<div class="k-cm" role="gridcell"></div>
+<div class="k-c2" role="gridcell"><span id="s6a-e1" class="k-err"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="#FF7B72" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><circle cx="8" cy="8" r="6.5"/><path d="M8 4.5v4.5M8 11.3v.2"/></svg>이름을 비울 수 없습니다.</span></div>
+</div>
+<div class="k-r" role="row" aria-selected="false">
+<div class="k-c1" role="gridcell" style="grid-column:1 / span 2"><input id="s6a-n2" aria-label="이름" class="k-in" type="text" value="로켓 자동차 점프 두 번째 경사로 시험과 착지 자세 비교" aria-invalid="true" aria-describedby="s6a-e2" style="height:28px"><span class="k-tag">지구</span></div>
+<div class="k-cm" role="gridcell"></div>
+<div class="k-c2" role="gridcell"><span id="s6a-e2" class="k-err"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="#FF7B72" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><circle cx="8" cy="8" r="6.5"/><path d="M8 4.5v4.5M8 11.3v.2"/></svg>이름이 너무 깁니다. 24자 이하로 줄여 주세요.</span><span class="k-ex">예시</span></div>
+</div>
+</div>
+<p class="k-hint"><span class="k-kbd">Enter</span> 저장 · <span class="k-kbd">Esc</span> 취소(이전 이름으로) · 거부된 이름은 저장하지 않습니다</p>
+</div>
+
+<div class="k-lbl" style="margin-top:16px"><strong>(b) 목록에서 지우기 확인</strong> · 모달, 처음 포커스는 취소</div>
+<div class="k-shade" data-unit="S6b 확인 대화상자" style="height:300px">
+<div class="k-sheet static" role="alertdialog" aria-modal="true" aria-labelledby="s6b-t" aria-describedby="s6b-d" style="width:440px">
+<h2 id="s6b-t" class="k-h2">목록에서 지울까요?</h2>
+<p id="s6b-d" class="k-desc">‘로버 경사 시험’을 목록에서만 지웁니다. 파일은 지워지지 않습니다.</p>
+<p class="k-help">지운 뒤에도 프로젝트 열기로 그 파일을 다시 열 수 있습니다.</p>
+<div class="k-acts"><span class="k-hint"><span class="k-kbd">Esc</span> 취소</span><button type="button" class="k-btn ghost k-ring" data-ctl="취소">취소</button><button type="button" class="k-btn danger" data-ctl="목록에서 지우기">목록에서 지우기</button></div>
+</div>
+</div>
+</aside>
+</div>
+
+<div class="k-cap0">셸 밖: 시작 화면 · <span class="k-ex">예시</span> 데이터: 프로젝트 이름, 시각, 개수, 이름 길이 한도 24자(허용 문자와 길이는 이 브리프가 정하지 않음) · 파일 삭제 기능은 없음 [제안]</div>
+</div></div></section><section class="kin-board" id="s7" aria-label="S7 빈 상태 · 최근 프로젝트 0건"><h2 class="kin-board-title">S7 빈 상태 · 최근 프로젝트 0건</h2><div class="kin-board-scroll" tabindex="0" role="group" aria-label="S7 빈 상태 · 최근 프로젝트 0건 아트보드"><div data-board="S7.dc.html" class="k-root" style="width:1440px;height:968px">
+
+<div class="k-note"><span><strong>S7 빈 상태</strong> · 최근 프로젝트 0건 · 다음 행동은 왼쪽 primary 하나(목록 자리에 버튼을 두지 않음)</span><span>상시 조작 요소 6 · primary 1 (새 프로젝트)</span></div>
+
+<div class="k-scr" data-unit="S7 화면">
+<header class="k-top"><span class="k-prod">Kinetra Studio</span></header>
+<main class="k-main">
+
+<section class="k-colL" aria-labelledby="s7-hl">
+<h2 id="s7-hl" class="k-h2">새로 시작</h2>
+<button type="button" class="k-prim k-wide" data-ctl="새 프로젝트" data-primary="1" aria-haspopup="dialog" aria-describedby="s7-nd"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M7 2v10M2 7h10"/></svg>새 프로젝트</button>
+<p id="s7-nd" class="k-desc">빈 작업대, 지구 평지에서 시작합니다. 행성은 만들 때 고릅니다.</p>
+<div class="k-div">시작 프로젝트</div>
+<div class="k-cards">
+<button type="button" class="k-scard" data-ctl="시작 프로젝트: 4륜차" aria-haspopup="dialog"><span class="k-sct"><span class="k-scn">4륜차</span><span class="k-st0">판정 없음 · <span class="k-l0">L0</span> 조립에서 열림</span></span><span class="k-scd">바퀴 네 개로 굴러가는 가장 단순한 차</span></button>
+<button type="button" class="k-scard" data-ctl="시작 프로젝트: 로켓 자동차" aria-haspopup="dialog"><span class="k-sct"><span class="k-scn">로켓 자동차</span><span class="k-st0">판정 없음 · <span class="k-l0">L0</span> 조립에서 열림</span></span><span class="k-scd">추력기를 단 차. 점프대 장면용</span></button>
+<button type="button" class="k-scard" data-ctl="시작 프로젝트: 로버" aria-haspopup="dialog"><span class="k-sct"><span class="k-scn">로버</span><span class="k-st0">판정 없음 · <span class="k-l0">L0</span> 조립에서 열림</span></span><span class="k-scd">경사로를 오르는 탐사차</span></button>
+</div>
+<p class="k-capline">시작 프로젝트는 복사본으로 열립니다. 원본은 바뀌지 않습니다. 세 행성 어디서든 열 수 있습니다.</p>
+<button type="button" class="k-head" data-ctl="시작 프로젝트에 든 것" aria-expanded="false" aria-controls="s7-in"><svg class="k-chev" width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 2.5L8 6l-3.5 3.5"/></svg>시작 프로젝트에 든 것<span class="k-meta">3개 · 부품 종류, 값 배지, 증거 단계</span></button>
+</section>
+
+<section class="k-colR" aria-labelledby="s7-hr">
+<div class="k-rh">
+<div><h2 id="s7-hr" class="k-h2">최근 프로젝트</h2><p class="k-sub">이 컴퓨터에 저장된 프로젝트 · 최근에 연 순서</p></div>
+<button type="button" class="k-btn" data-ctl="프로젝트 열기"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round" aria-hidden="true"><path d="M1.5 3h4l1.2 1.5h5.8v6.5h-11z"/></svg>프로젝트 열기</button>
+</div>
+<div class="k-empty" role="status" style="flex:none;height:220px;margin-top:20px">
+<h3>아직 프로젝트가 없습니다</h3>
+<p>새 프로젝트를 만들거나 시작 프로젝트를 열어 보세요. 저장한 파일은 프로젝트 열기로 엽니다.</p>
+</div>
+<p class="k-hint">파일을 이 화면에 끌어 놓아도 열립니다</p>
+</section>
+
+</main>
+<footer class="k-l3"><svg width="30" height="12" viewBox="0 0 30 12" role="img" aria-label="증거 강도 0/4"><path d="M.5.5h5v11h-5zM8.5.5h5v11h-5zM16.5.5h5v11h-5zM24.5.5h5v11h-5z" fill="none" stroke="currentColor"/></svg><span class="k-mono">L3</span><span>실물 검증 없음 (실측 0건)</span><span class="k-ro">읽기 전용 · 접지 않음</span></footer>
+</div>
+
+<div class="k-cap0">셸 밖: 시작 화면 · 이 아트보드에는 <span class="k-ex">예시</span> 데이터가 없음 · 일러스트와 가짜 행 없음</div>
+</div></div></section><section class="kin-board" id="s8" aria-label="S8 로딩 · 목록 읽는 중, 여는 중, 만드는 중"><h2 class="kin-board-title">S8 로딩 · 목록 읽는 중, 여는 중, 만드는 중</h2><div class="kin-board-scroll" tabindex="0" role="group" aria-label="S8 로딩 · 목록 읽는 중, 여는 중, 만드는 중 아트보드"><div data-board="S8.dc.html" class="k-root" style="width:2040px;height:968px">
+
+<div class="k-note"><span><strong>S8 로딩</strong> · (a) 목록 읽는 중: 뼈대 3행, 새 프로젝트와 카드는 활성 · 오른쪽: (b) 프로젝트 여는 중 (c) 시작 프로젝트 만드는 중</span><span>(a) 상시 6 · primary 1 · 진행 줄은 포커스를 빼앗지 않고 읽어 줌</span></div>
+
+<div class="k-row0">
+<div class="k-scr" data-unit="S8a 화면">
+<header class="k-top"><span class="k-prod">Kinetra Studio</span></header>
+<main class="k-main">
+
+<section class="k-colL" aria-labelledby="s8-hl">
+<h2 id="s8-hl" class="k-h2">새로 시작</h2>
+<button type="button" class="k-prim k-wide" data-ctl="새 프로젝트" data-primary="1" aria-haspopup="dialog" aria-describedby="s8-nd"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M7 2v10M2 7h10"/></svg>새 프로젝트</button>
+<p id="s8-nd" class="k-desc">빈 작업대, 지구 평지에서 시작합니다. 행성은 만들 때 고릅니다.</p>
+<div class="k-div">시작 프로젝트</div>
+<div class="k-cards">
+<button type="button" class="k-scard" data-ctl="시작 프로젝트: 4륜차" aria-haspopup="dialog"><span class="k-sct"><span class="k-scn">4륜차</span><span class="k-st0">판정 없음 · <span class="k-l0">L0</span> 조립에서 열림</span></span><span class="k-scd">바퀴 네 개로 굴러가는 가장 단순한 차</span></button>
+<button type="button" class="k-scard" data-ctl="시작 프로젝트: 로켓 자동차" aria-haspopup="dialog"><span class="k-sct"><span class="k-scn">로켓 자동차</span><span class="k-st0">판정 없음 · <span class="k-l0">L0</span> 조립에서 열림</span></span><span class="k-scd">추력기를 단 차. 점프대 장면용</span></button>
+<button type="button" class="k-scard" data-ctl="시작 프로젝트: 로버" aria-haspopup="dialog"><span class="k-sct"><span class="k-scn">로버</span><span class="k-st0">판정 없음 · <span class="k-l0">L0</span> 조립에서 열림</span></span><span class="k-scd">경사로를 오르는 탐사차</span></button>
+</div>
+<p class="k-capline">시작 프로젝트는 복사본으로 열립니다. 원본은 바뀌지 않습니다. 세 행성 어디서든 열 수 있습니다.</p>
+<button type="button" class="k-head" data-ctl="시작 프로젝트에 든 것" aria-expanded="false" aria-controls="s8-in"><svg class="k-chev" width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 2.5L8 6l-3.5 3.5"/></svg>시작 프로젝트에 든 것<span class="k-meta">3개 · 부품 종류, 값 배지, 증거 단계</span></button>
+</section>
+
+<section class="k-colR" aria-labelledby="s8-hr">
+<div class="k-rh">
+<div><h2 id="s8-hr" class="k-h2">최근 프로젝트</h2><p class="k-sub">이 컴퓨터에 저장된 프로젝트 · 최근에 연 순서</p></div>
+<button type="button" class="k-btn" data-ctl="프로젝트 열기"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round" aria-hidden="true"><path d="M1.5 3h4l1.2 1.5h5.8v6.5h-11z"/></svg>프로젝트 열기</button>
+</div>
+<p class="k-sub gap" role="status">프로젝트 목록을 읽는 중</p>
+<div class="k-list" aria-busy="true" aria-label="최근 프로젝트 읽는 중">
+<div class="k-r" aria-hidden="true" style="padding:16px 12px"><span class="k-c1"><span class="k-skel" style="width:180px"></span><span class="k-skel" style="width:32px"></span></span><span class="k-ct"><span class="k-skel" style="width:48px"></span></span><span class="k-c2"><span class="k-skel" style="width:200px"></span></span></div>
+<div class="k-r" aria-hidden="true" style="padding:16px 12px"><span class="k-c1"><span class="k-skel" style="width:140px"></span><span class="k-skel" style="width:32px"></span></span><span class="k-ct"><span class="k-skel" style="width:48px"></span></span><span class="k-c2"><span class="k-skel" style="width:120px"></span></span></div>
+<div class="k-r" aria-hidden="true" style="padding:16px 12px"><span class="k-c1"><span class="k-skel" style="width:160px"></span><span class="k-skel" style="width:32px"></span></span><span class="k-ct"><span class="k-skel" style="width:48px"></span></span><span class="k-c2"><span class="k-skel" style="width:170px"></span></span></div>
+</div>
+<p class="k-hint">파일을 이 화면에 끌어 놓아도 열립니다 · 읽는 동안에도 새로 만들기와 프로젝트 열기는 됩니다</p>
+</section>
+
+</main>
+<footer class="k-l3"><svg width="30" height="12" viewBox="0 0 30 12" role="img" aria-label="증거 강도 0/4"><path d="M.5.5h5v11h-5zM8.5.5h5v11h-5zM16.5.5h5v11h-5zM24.5.5h5v11h-5z" fill="none" stroke="currentColor"/></svg><span class="k-mono">L3</span><span>실물 검증 없음 (실측 0건)</span><span class="k-ro">읽기 전용 · 접지 않음</span></footer>
+</div>
+
+<aside class="k-side" style="width:552px" aria-label="여는 중과 만드는 중">
+<div class="k-lbl"><strong>(b) 프로젝트 여는 중</strong> · 그 행이 선택된 채 진행 줄 · 끝나면 Studio 셸로</div>
+<div class="k-frag" data-unit="S8b 여는 중">
+<div class="k-list fit" role="grid" aria-label="최근 프로젝트 조각" data-ctl="최근 프로젝트 목록">
+<div class="k-r" role="row" aria-selected="true" aria-busy="true">
+<div class="k-c1" role="gridcell"><button type="button" class="k-rn" tabindex="-1">로켓 자동차 점프</button><span class="k-tag">지구</span></div>
+<div class="k-ct" role="gridcell">2일 전</div>
+<div class="k-cm" role="gridcell"><button type="button" class="k-ib" tabindex="-1" aria-label="로켓 자동차 점프 메뉴" aria-haspopup="menu" aria-expanded="false"><svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor" aria-hidden="true"><circle cx="2.5" cy="7" r="1.3"/><circle cx="7" cy="7" r="1.3"/><circle cx="11.5" cy="7" r="1.3"/></svg></button></div>
+<div class="k-c3" role="gridcell" style="grid-row:2;grid-column:1 / span 2">
+<div class="k-prog" role="status" style="width:100%;padding:0">
+<div class="k-pl"><span>여는 중 ·</span><span class="k-step">파일 읽기</span><span class="k-step">→</span><span class="k-step on">정의 확인</span><span class="k-step">→</span><span class="k-step">컴파일</span><span class="k-step">· 단계 2 / 3</span><button type="button" class="k-btn ghost sm" tabindex="0">취소</button></div>
+<div class="k-bar" aria-hidden="true"><i style="width:50%"></i></div>
+</div>
+</div>
+</div>
+<div class="k-r" role="row" aria-selected="false">
+<div class="k-c1" role="gridcell"><button type="button" class="k-rn" tabindex="-1">로버 경사 시험</button><span class="k-tag">화성</span></div>
+<div class="k-ct" role="gridcell">5일 전</div>
+<div class="k-cm" role="gridcell"><button type="button" class="k-ib" tabindex="-1" aria-label="로버 경사 시험 메뉴" aria-haspopup="menu" aria-expanded="false"><svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor" aria-hidden="true"><circle cx="2.5" cy="7" r="1.3"/><circle cx="7" cy="7" r="1.3"/><circle cx="11.5" cy="7" r="1.3"/></svg></button></div>
+<div class="k-c2" role="gridcell"><button type="button" class="k-evc ev-none" tabindex="-1" aria-haspopup="dialog" aria-label="저장 시점의 증거 단계: 판정 없음. 누르면 근거를 엽니다"><span class="kp"><svg width="22" height="10" viewBox="0 0 22 10" aria-hidden="true"><path d="M.5.5h3v9h-3zM6.5.5h3v9h-3zM12.5.5h3v9h-3zM18.5.5h3v9h-3z" fill="none" stroke="currentColor"/></svg><span class="k-sv">저장</span>판정 없음</span></button><button type="button" class="k-pc" tabindex="-1" aria-haspopup="dialog" aria-label="정의 없음 2개. 열 수 있습니다. 누르면 설명을 엽니다"><span class="kp"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" aria-hidden="true"><circle cx="6" cy="6" r="5"/><path d="M6 5.5v3M6 3.5v.1"/></svg>정의 없음 · 2개</span></button></div>
+</div>
+</div>
+<p class="k-hint">여는 동안 그 행의 증거 칩 줄이 진행 줄로 바뀝니다. 진행 줄은 단계 글자와 막대만 씁니다(판정 모양 없음)</p>
+</div>
+
+<div class="k-lbl" style="margin-top:16px"><strong>(c) 시작 프로젝트로 만드는 중</strong> · 시트의 만들기 뒤, 같은 진행 줄</div>
+<div class="k-frag" data-unit="S8c 만드는 중">
+<div class="k-box" style="background:#0F1216">
+<button type="button" class="k-scard" data-ctl="시작 프로젝트: 로켓 자동차" aria-disabled="true" aria-describedby="s8c-p" style="background:#22324A;border-color:#5B9DFF"><span class="k-sct"><span class="k-scn">로켓 자동차</span><span class="k-st0">판정 없음 · <span class="k-l0">L0</span> 조립에서 열림</span></span><span class="k-scd">추력기를 단 차. 점프대 장면용</span></button>
+<div id="s8c-p" class="k-prog" role="status">
+<div class="k-pl"><span>만드는 중 · 로켓 자동차 복사본 · 달 ·</span><span class="k-step on">복사본 만들기</span><span class="k-step">→ 정의 확인 → 컴파일</span><button type="button" class="k-btn ghost sm" data-ctl="취소">취소</button></div>
+<div class="k-bar" aria-hidden="true"><i style="width:20%"></i></div>
+</div>
+</div>
+</div>
+</aside>
+</div>
+
+<div class="k-cap0">셸 밖: 시작 화면 · <span class="k-ex">예시</span> 데이터: 프로젝트 이름, 시각, 개수, 진행 단계 · 뼈대 반짝임은 prefers-reduced-motion이면 멈춤(여기는 멈춘 모습)</div>
+</div></div></section><section class="kin-board" id="s9" aria-label="S9 오류 · 목록 읽기, 열기, 만들기"><h2 class="kin-board-title">S9 오류 · 목록 읽기, 열기, 만들기</h2><div class="kin-board-scroll" tabindex="0" role="group" aria-label="S9 오류 · 목록 읽기, 열기, 만들기 아트보드"><div data-board="S9.dc.html" class="k-root" style="width:2568px;height:968px">
+
+<div class="k-note"><span><strong>S9 오류</strong> · (a) 목록 읽기 오류: 새로 만들기와 파일 열기는 계속 됨 · 오른쪽: (b) 열기 오류(다른 행은 그대로) (c) 만들기 오류: 이름 거부, 저장 오류</span><span>(a) 상시 8 · primary 1 · 시트마다 primary 1 (만들기) · status.danger는 시스템 오류와 입력 거부에만</span></div>
+
+<div class="k-row0">
+<div class="k-scr" data-unit="S9a 화면">
+<header class="k-top"><span class="k-prod">Kinetra Studio</span></header>
+<main class="k-main">
+
+<section class="k-colL" aria-labelledby="s9-hl">
+<h2 id="s9-hl" class="k-h2">새로 시작</h2>
+<button type="button" class="k-prim k-wide" data-ctl="새 프로젝트" data-primary="1" aria-haspopup="dialog" aria-describedby="s9-nd"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M7 2v10M2 7h10"/></svg>새 프로젝트</button>
+<p id="s9-nd" class="k-desc">빈 작업대, 지구 평지에서 시작합니다. 행성은 만들 때 고릅니다.</p>
+<div class="k-div">시작 프로젝트</div>
+<div class="k-cards">
+<button type="button" class="k-scard" data-ctl="시작 프로젝트: 4륜차" aria-haspopup="dialog"><span class="k-sct"><span class="k-scn">4륜차</span><span class="k-st0">판정 없음 · <span class="k-l0">L0</span> 조립에서 열림</span></span><span class="k-scd">바퀴 네 개로 굴러가는 가장 단순한 차</span></button>
+<button type="button" class="k-scard" data-ctl="시작 프로젝트: 로켓 자동차" aria-haspopup="dialog"><span class="k-sct"><span class="k-scn">로켓 자동차</span><span class="k-st0">판정 없음 · <span class="k-l0">L0</span> 조립에서 열림</span></span><span class="k-scd">추력기를 단 차. 점프대 장면용</span></button>
+<button type="button" class="k-scard" data-ctl="시작 프로젝트: 로버" aria-haspopup="dialog"><span class="k-sct"><span class="k-scn">로버</span><span class="k-st0">판정 없음 · <span class="k-l0">L0</span> 조립에서 열림</span></span><span class="k-scd">경사로를 오르는 탐사차</span></button>
+</div>
+<p class="k-capline">시작 프로젝트는 복사본으로 열립니다. 원본은 바뀌지 않습니다. 세 행성 어디서든 열 수 있습니다.</p>
+<button type="button" class="k-head" data-ctl="시작 프로젝트에 든 것" aria-expanded="false" aria-controls="s9-in"><svg class="k-chev" width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 2.5L8 6l-3.5 3.5"/></svg>시작 프로젝트에 든 것<span class="k-meta">3개 · 부품 종류, 값 배지, 증거 단계</span></button>
+</section>
+
+<section class="k-colR" aria-labelledby="s9-hr">
+<div class="k-rh">
+<div><h2 id="s9-hr" class="k-h2">최근 프로젝트</h2><p class="k-sub">이 컴퓨터에 저장된 프로젝트 · 최근에 연 순서</p></div>
+<button type="button" class="k-btn" data-ctl="프로젝트 열기"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round" aria-hidden="true"><path d="M1.5 3h4l1.2 1.5h5.8v6.5h-11z"/></svg>프로젝트 열기</button>
+</div>
+<div class="k-box" role="status" style="margin-top:20px;gap:12px;padding:20px">
+<h3 class="k-err" style="margin:0;font-size:16px;line-height:24px;font-weight:600"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="#FF7B72" stroke-width="1.5" stroke-linecap="round" aria-hidden="true" style="margin-top:4px"><circle cx="8" cy="8" r="6.5"/><path d="M8 4.5v4.5M8 11.3v.2"/></svg>프로젝트 목록을 읽지 못했습니다</h3>
+<p class="k-help" style="font-size:13px;line-height:20px">최근 목록 파일을 읽을 수 없습니다. 저장된 파일은 그대로입니다.</p>
+<div class="k-pl"><span class="k-flab">오류 코드</span><code class="k-code">RECENT-READ-001</code><button type="button" class="k-btn sm" data-ctl="코드 복사">코드 복사</button></div>
+<div class="k-pl"><button type="button" class="k-btn" data-ctl="다시 시도">다시 시도</button><span class="k-help">그동안 새 프로젝트와 프로젝트 열기는 그대로 됩니다.</span></div>
+</div>
+<p class="k-hint">파일을 이 화면에 끌어 놓아도 열립니다</p>
+</section>
+
+</main>
+<footer class="k-l3"><svg width="30" height="12" viewBox="0 0 30 12" role="img" aria-label="증거 강도 0/4"><path d="M.5.5h5v11h-5zM8.5.5h5v11h-5zM16.5.5h5v11h-5zM24.5.5h5v11h-5z" fill="none" stroke="currentColor"/></svg><span class="k-mono">L3</span><span>실물 검증 없음 (실측 0건)</span><span class="k-ro">읽기 전용 · 접지 않음</span></footer>
+</div>
+
+<aside class="k-side" style="width:552px" aria-label="열기 오류와 이름 거부">
+<div class="k-lbl"><strong>(b) 열기 오류</strong> · 그 행만 바뀜, 다른 행은 그대로 · 행 요소 6</div>
+<div class="k-frag" data-unit="S9b 열기 오류">
+<div class="k-list fit" role="grid" aria-label="최근 프로젝트 조각" data-ctl="최근 프로젝트 목록">
+<div class="k-r" role="row" aria-selected="true">
+<div class="k-c1" role="gridcell"><button type="button" class="k-rn" tabindex="-1" aria-describedby="s9b-e">로켓 자동차 점프</button><span class="k-tag">지구</span></div>
+<div class="k-ct" role="gridcell">2일 전</div>
+<div class="k-cm" role="gridcell"><button type="button" class="k-ib" tabindex="-1" aria-label="로켓 자동차 점프 메뉴" aria-haspopup="menu" aria-expanded="false"><svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor" aria-hidden="true"><circle cx="2.5" cy="7" r="1.3"/><circle cx="7" cy="7" r="1.3"/><circle cx="11.5" cy="7" r="1.3"/></svg></button></div>
+<div class="k-c2" role="gridcell"><span id="s9b-e" class="k-err" role="status"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="#FF7B72" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><circle cx="8" cy="8" r="6.5"/><path d="M8 4.5v4.5M8 11.3v.2"/></svg>열지 못했습니다 · 파일이 손상되었습니다</span><button type="button" class="k-btn ghost sm" tabindex="0" aria-label="오류 코드 PRJ-OPEN-003 복사"><span class="k-mono">PRJ-OPEN-003</span> 복사</button><button type="button" class="k-btn sm" tabindex="-1">다시 시도</button></div>
+</div>
+<div class="k-r" role="row" aria-selected="false">
+<div class="k-c1" role="gridcell"><button type="button" class="k-rn" tabindex="-1">로버 경사 시험</button><span class="k-tag">화성</span></div>
+<div class="k-ct" role="gridcell">5일 전</div>
+<div class="k-cm" role="gridcell"><button type="button" class="k-ib" tabindex="-1" aria-label="로버 경사 시험 메뉴" aria-haspopup="menu" aria-expanded="false"><svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor" aria-hidden="true"><circle cx="2.5" cy="7" r="1.3"/><circle cx="7" cy="7" r="1.3"/><circle cx="11.5" cy="7" r="1.3"/></svg></button></div>
+<div class="k-c2" role="gridcell"><button type="button" class="k-evc ev-none" tabindex="-1" aria-haspopup="dialog" aria-label="저장 시점의 증거 단계: 판정 없음. 누르면 근거를 엽니다"><span class="kp"><svg width="22" height="10" viewBox="0 0 22 10" aria-hidden="true"><path d="M.5.5h3v9h-3zM6.5.5h3v9h-3zM12.5.5h3v9h-3zM18.5.5h3v9h-3z" fill="none" stroke="currentColor"/></svg><span class="k-sv">저장</span>판정 없음</span></button><button type="button" class="k-pc" tabindex="-1" aria-haspopup="dialog" aria-label="정의 없음 2개. 열 수 있습니다. 누르면 설명을 엽니다"><span class="kp"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" aria-hidden="true"><circle cx="6" cy="6" r="5"/><path d="M6 5.5v3M6 3.5v.1"/></svg>정의 없음 · 2개</span></button></div>
+</div>
+</div>
+<p class="k-hint">스키마 위반으로 못 여는 경우의 문구와 코드 [확인 필요] · 오류 코드는 그 코드를 누르면 복사됩니다</p>
+</div>
+
+<div class="k-lbl" style="margin-top:16px"><strong>(c1) 만들기 · 이름 거부</strong> · 입력 테두리 status.danger + 이유</div>
+<div class="k-shade" data-unit="S9c1 시트 이름 거부">
+<div class="k-sheet static" role="dialog" aria-modal="true" aria-labelledby="s9c1-t" aria-describedby="s9c1-d">
+<div class="k-shh"><h2 id="s9c1-t" class="k-h2">새 프로젝트</h2><p id="s9c1-d" class="k-desc">빈 작업대. 지구 평지에서 시작합니다.</p></div>
+<div class="k-fld"><label class="k-flab" for="s9c1-n">이름</label><input id="s9c1-n" class="k-in focus" type="text" value="" placeholder="이름 없는 프로젝트" aria-invalid="true" aria-describedby="s9c1-e" data-ctl="이름"><span id="s9c1-e" class="k-err"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="#FF7B72" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><circle cx="8" cy="8" r="6.5"/><path d="M8 4.5v4.5M8 11.3v.2"/></svg>이름을 비울 수 없습니다.</span></div>
+<div class="k-fld"><span id="s9c1-pl" class="k-flab">시작 행성</span><div class="k-seg" role="radiogroup" aria-labelledby="s9c1-pl" data-ctl="시작 행성"><button type="button" role="radio" aria-checked="true">지구</button><button type="button" role="radio" aria-checked="false" tabindex="-1">화성</button><button type="button" role="radio" aria-checked="false" tabindex="-1">달</button></div></div>
+<div class="k-acts"><button type="button" class="k-btn ghost" data-ctl="취소">취소</button><button type="button" class="k-prim" data-ctl="만들기" data-primary="1">만들기</button></div>
+</div>
+</div>
+</aside>
+
+<aside class="k-side" style="width:480px" aria-label="저장 오류">
+<div class="k-lbl"><strong>(c2) 만들기 · 저장 오류</strong> · 시스템 오류, 입력은 그대로 남음</div>
+<div class="k-frag" data-unit="S9c2 시트 저장 오류">
+<div class="k-sheet static" role="dialog" aria-modal="true" aria-labelledby="s9c2-t" aria-describedby="s9c2-e">
+<div class="k-shh"><h2 id="s9c2-t" class="k-h2">새 프로젝트</h2><p class="k-desc">빈 작업대. 화성 평지에서 시작합니다.</p></div>
+<div class="k-fld"><label class="k-flab" for="s9c2-n">이름</label><input id="s9c2-n" class="k-in" type="text" value="화성 첫 조립" data-ctl="이름"></div>
+<div class="k-fld"><span id="s9c2-pl" class="k-flab">시작 행성</span><div class="k-seg" role="radiogroup" aria-labelledby="s9c2-pl" data-ctl="시작 행성"><button type="button" role="radio" aria-checked="false" tabindex="-1">지구</button><button type="button" role="radio" aria-checked="true">화성</button><button type="button" role="radio" aria-checked="false" tabindex="-1">달</button></div></div>
+<div id="s9c2-e" class="k-box" role="status" style="background:#1B2129">
+<span class="k-err" style="font-weight:600"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="#FF7B72" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><circle cx="8" cy="8" r="6.5"/><path d="M8 4.5v4.5M8 11.3v.2"/></svg>프로젝트를 저장하지 못했습니다</span>
+<p class="k-help">저장 폴더에 쓸 수 없습니다. 이름과 행성은 그대로 두었습니다.</p>
+<div class="k-pl"><code class="k-code">PRJ-SAVE-001</code><button type="button" class="k-btn ghost sm" data-ctl="코드 복사">코드 복사</button></div>
+</div>
+<div class="k-acts"><button type="button" class="k-btn ghost" data-ctl="취소">취소</button><button type="button" class="k-prim" data-ctl="만들기 · 다시 시도" data-primary="1">다시 시도</button></div>
+</div>
+</div>
+<p class="k-ann">저장 오류에서는 시트의 primary가 같은 행동을 <strong>다시 시도</strong>라는 이름으로 이어 갑니다. primary는 여전히 하나입니다.</p>
+</aside>
+</div>
+
+<div class="k-cap0">셸 밖: 시작 화면 · <span class="k-ex">예시</span> 데이터: 프로젝트 이름, 시각, 개수, 오류 코드 RECENT-READ-001, PRJ-OPEN-003, PRJ-SAVE-001, 오류 이유 문구</div>
+</div></div></section><section class="kin-board" id="s10" aria-label="S10 엔진 오프라인"><h2 class="kin-board-title">S10 엔진 오프라인</h2><div class="kin-board-scroll" tabindex="0" role="group" aria-label="S10 엔진 오프라인 아트보드"><div data-board="S10.dc.html" class="k-root" style="width:1440px;height:968px">
+
+<div class="k-note"><span><strong>S10 엔진 오프라인</strong> · 상단줄 칩(status.warning) + 다시 연결 · 만들기와 열기는 비활성, 이유는 한 번만 · 목록은 보임</span><span>상시 조작 요소 8 · primary 1 (비활성이지만 남음, 포커스 가능)</span></div>
+
+<div class="k-scr" data-unit="S10 화면">
+<header class="k-top"><span class="k-prod">Kinetra Studio</span><span style="flex:1 1 0"></span><span class="k-off" role="status"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 2l6.5 11.5h-13zM8 6.5v3.5M8 11.8v.2"/></svg>엔진 연결 끊김</span><button type="button" class="k-btn" data-ctl="다시 연결">다시 연결</button></header>
+<main class="k-main">
+
+<section class="k-colL" aria-labelledby="s10-hl">
+<h2 id="s10-hl" class="k-h2">새로 시작</h2>
+<button type="button" class="k-prim k-wide" data-ctl="새 프로젝트" data-primary="1" aria-disabled="true" aria-describedby="s10-why"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M7 2v10M2 7h10"/></svg>새 프로젝트</button>
+<p id="s10-why" class="k-why">엔진에 연결해야 프로젝트를 만들고 열 수 있습니다. 위의 다시 연결을 누르세요.</p>
+<p class="k-desc">빈 작업대, 지구 평지에서 시작합니다. 행성은 만들 때 고릅니다.</p>
+<div class="k-div">시작 프로젝트</div>
+<div class="k-cards">
+<button type="button" class="k-scard" data-ctl="시작 프로젝트: 4륜차" aria-disabled="true" aria-describedby="s10-why"><span class="k-sct"><span class="k-scn">4륜차</span><span class="k-st0">판정 없음 · <span class="k-l0">L0</span> 조립에서 열림</span></span><span class="k-scd">바퀴 네 개로 굴러가는 가장 단순한 차</span></button>
+<button type="button" class="k-scard" data-ctl="시작 프로젝트: 로켓 자동차" aria-disabled="true" aria-describedby="s10-why"><span class="k-sct"><span class="k-scn">로켓 자동차</span><span class="k-st0">판정 없음 · <span class="k-l0">L0</span> 조립에서 열림</span></span><span class="k-scd">추력기를 단 차. 점프대 장면용</span></button>
+<button type="button" class="k-scard" data-ctl="시작 프로젝트: 로버" aria-disabled="true" aria-describedby="s10-why"><span class="k-sct"><span class="k-scn">로버</span><span class="k-st0">판정 없음 · <span class="k-l0">L0</span> 조립에서 열림</span></span><span class="k-scd">경사로를 오르는 탐사차</span></button>
+</div>
+<p class="k-capline">시작 프로젝트는 복사본으로 열립니다. 원본은 바뀌지 않습니다. 세 행성 어디서든 열 수 있습니다.</p>
+<button type="button" class="k-head" data-ctl="시작 프로젝트에 든 것" aria-expanded="false" aria-controls="s10-in"><svg class="k-chev" width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 2.5L8 6l-3.5 3.5"/></svg>시작 프로젝트에 든 것<span class="k-meta">3개 · 부품 종류, 값 배지, 증거 단계</span></button>
+</section>
+
+<section class="k-colR" aria-labelledby="s10-hr">
+<div class="k-rh">
+<div><h2 id="s10-hr" class="k-h2">최근 프로젝트</h2><p class="k-sub">이 컴퓨터에 저장된 프로젝트 · 최근에 연 순서</p></div>
+<button type="button" class="k-btn" data-ctl="프로젝트 열기" aria-disabled="true" aria-describedby="s10-why"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round" aria-hidden="true"><path d="M1.5 3h4l1.2 1.5h5.8v6.5h-11z"/></svg>프로젝트 열기</button>
+</div>
+<p class="k-sub gap">증거 칩은 저장할 때의 단계입니다. 엔진이 끊긴 동안 다시 계산하지 않으므로 오래됨으로 표시합니다.</p>
+<div class="k-list" role="grid" aria-label="최근 프로젝트" aria-rowcount="3" data-ctl="최근 프로젝트 목록">
+<div class="k-r dim" role="row" aria-selected="true">
+<div class="k-c1" role="gridcell"><button type="button" class="k-rn" tabindex="0" aria-disabled="true" aria-describedby="s10-why">로켓 자동차 점프</button><span class="k-tag">지구</span></div>
+<div class="k-ct" role="gridcell">2일 전</div>
+<div class="k-cm" role="gridcell"><button type="button" class="k-ib" tabindex="-1" aria-label="로켓 자동차 점프 메뉴" aria-haspopup="menu" aria-expanded="false"><svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor" aria-hidden="true"><circle cx="2.5" cy="7" r="1.3"/><circle cx="7" cy="7" r="1.3"/><circle cx="11.5" cy="7" r="1.3"/></svg></button></div>
+<div class="k-c2" role="gridcell"><button type="button" class="k-evc ev-l2" tabindex="-1" aria-haspopup="dialog" aria-label="저장 시점의 증거 단계: L2 판정, FEASIBLE_FOUND. 오래됨, 마지막 계산 11월 10일 14시 2분. 누르면 근거를 엽니다"><span class="kp"><svg width="22" height="10" viewBox="0 0 22 10" aria-hidden="true"><path d="M0 0h4v10H0zM6 0h4v10H6zM12 0h4v10h-4z" fill="currentColor"/><path d="M18.5.5h3v9h-3z" fill="none" stroke="currentColor"/></svg><span class="k-sv">저장</span><span class="k-mono">L2 · FEASIBLE_FOUND</span> · 오래됨 · 마지막 계산 11월 10일 14:02</span></button></div>
+</div>
+<div class="k-r dim" role="row" aria-selected="false">
+<div class="k-c1" role="gridcell"><button type="button" class="k-rn" tabindex="-1" aria-disabled="true">로버 경사 시험</button><span class="k-tag">화성</span></div>
+<div class="k-ct" role="gridcell">5일 전</div>
+<div class="k-cm" role="gridcell"><button type="button" class="k-ib" tabindex="-1" aria-label="로버 경사 시험 메뉴" aria-haspopup="menu" aria-expanded="false"><svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor" aria-hidden="true"><circle cx="2.5" cy="7" r="1.3"/><circle cx="7" cy="7" r="1.3"/><circle cx="11.5" cy="7" r="1.3"/></svg></button></div>
+<div class="k-c2" role="gridcell"><button type="button" class="k-evc ev-none" tabindex="-1" aria-haspopup="dialog" aria-label="저장 시점의 증거 단계: 판정 없음. 누르면 근거를 엽니다"><span class="kp"><svg width="22" height="10" viewBox="0 0 22 10" aria-hidden="true"><path d="M.5.5h3v9h-3zM6.5.5h3v9h-3zM12.5.5h3v9h-3zM18.5.5h3v9h-3z" fill="none" stroke="currentColor"/></svg><span class="k-sv">저장</span>판정 없음</span></button><button type="button" class="k-pc" tabindex="-1" aria-haspopup="dialog" aria-label="정의 없음 2개. 누르면 설명을 엽니다"><span class="kp"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" aria-hidden="true"><circle cx="6" cy="6" r="5"/><path d="M6 5.5v3M6 3.5v.1"/></svg>정의 없음 · 2개</span></button></div>
+</div>
+<div class="k-r dim" role="row" aria-selected="false">
+<div class="k-c1" role="gridcell"><button type="button" class="k-rn" tabindex="-1" aria-disabled="true">4륜차 달 주행</button><span class="k-tag">달</span></div>
+<div class="k-ct" role="gridcell">11월 3일</div>
+<div class="k-cm" role="gridcell"><button type="button" class="k-ib" tabindex="-1" aria-label="4륜차 달 주행 메뉴" aria-haspopup="menu" aria-expanded="false"><svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor" aria-hidden="true"><circle cx="2.5" cy="7" r="1.3"/><circle cx="7" cy="7" r="1.3"/><circle cx="11.5" cy="7" r="1.3"/></svg></button></div>
+<div class="k-c2" role="gridcell"><button type="button" class="k-evc ev-l1" tabindex="-1" aria-haspopup="dialog" aria-label="저장 시점의 증거 단계: L1 미리보기, 1회 실행, 판정 아님. 오래됨, 마지막 계산 11월 3일 9시 40분. 누르면 근거를 엽니다"><span class="kp"><svg width="22" height="10" viewBox="0 0 22 10" aria-hidden="true"><path d="M0 0h4v10H0zM6 0h4v10H6z" fill="currentColor"/><path d="M12.5.5h3v9h-3zM18.5.5h3v9h-3z" fill="none" stroke="currentColor"/></svg><span class="k-sv">저장</span><span class="k-mono">L1</span> · 1회 실행 · 판정 아님 · 오래됨 · 마지막 계산 11월 3일 09:40</span></button></div>
+</div>
+</div>
+<p class="k-hint">근거 팝오버와 ⋯ 메뉴(이름 바꾸기, JSON 내보내기, 목록에서 지우기)는 끊긴 동안에도 됩니다 [제안: A0-04 확인 필요]</p>
+</section>
+
+</main>
+<footer class="k-l3"><svg width="30" height="12" viewBox="0 0 30 12" role="img" aria-label="증거 강도 0/4"><path d="M.5.5h5v11h-5zM8.5.5h5v11h-5zM16.5.5h5v11h-5zM24.5.5h5v11h-5z" fill="none" stroke="currentColor"/></svg><span class="k-mono">L3</span><span>실물 검증 없음 (실측 0건)</span><span class="k-ro">읽기 전용 · 접지 않음</span></footer>
+</div>
+
+<div class="k-cap0">셸 밖: 시작 화면 · <span class="k-ex">예시</span> 데이터: 프로젝트 이름, 시각, 개수, 마지막 계산 시각 · 끊긴 동안 되는 일은 A0-04 [확인 필요], 이 아트보드는 안전한 쪽(비활성 + 이유)</div>
+</div></div></section><section class="kin-board" id="s11" aria-label="S11 키보드 · 탭 순서와 단축키"><h2 class="kin-board-title">S11 키보드 · 탭 순서와 단축키</h2><div class="kin-board-scroll" tabindex="0" role="group" aria-label="S11 키보드 · 탭 순서와 단축키 아트보드"><div data-board="S11.dc.html" class="k-root" style="width:2040px;height:968px">
+
+<div class="k-note"><span><strong>S11 키보드</strong> · S1 위 탭 순서 ① 새 프로젝트 → ② 카드 3장 → ③ 머리 → ④ 프로젝트 열기 → ⑤ 목록 · 포커스 링 2 px + 간격 2 px · 오른쪽: 단축키와 시트 안 탭 순서</span><span>상시 7 · primary 1 · 탭 정지 7(카드 3장이 각각 하나, 목록은 하나)</span></div>
+
+<div class="k-row0">
+<div class="k-scr" data-unit="S11 화면">
+<header class="k-top"><span class="k-prod">Kinetra Studio</span></header>
+<main class="k-main">
+
+<section class="k-colL" aria-labelledby="s11-hl">
+<h2 id="s11-hl" class="k-h2">새로 시작</h2>
+<button type="button" class="k-prim k-wide k-ring" data-ctl="새 프로젝트" data-primary="1" aria-haspopup="dialog" aria-describedby="s11-nd"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M7 2v10M2 7h10"/></svg>새 프로젝트</button>
+<p id="s11-nd" class="k-desc">빈 작업대, 지구 평지에서 시작합니다. 행성은 만들 때 고릅니다.</p>
+<div class="k-div">시작 프로젝트</div>
+<div class="k-cards">
+<button type="button" class="k-scard" data-ctl="시작 프로젝트: 4륜차" aria-haspopup="dialog"><span class="k-sct"><span class="k-scn">4륜차</span><span class="k-st0">판정 없음 · <span class="k-l0">L0</span> 조립에서 열림</span></span><span class="k-scd">바퀴 네 개로 굴러가는 가장 단순한 차</span></button>
+<button type="button" class="k-scard" data-ctl="시작 프로젝트: 로켓 자동차" aria-haspopup="dialog"><span class="k-sct"><span class="k-scn">로켓 자동차</span><span class="k-st0">판정 없음 · <span class="k-l0">L0</span> 조립에서 열림</span></span><span class="k-scd">추력기를 단 차. 점프대 장면용</span></button>
+<button type="button" class="k-scard" data-ctl="시작 프로젝트: 로버" aria-haspopup="dialog"><span class="k-sct"><span class="k-scn">로버</span><span class="k-st0">판정 없음 · <span class="k-l0">L0</span> 조립에서 열림</span></span><span class="k-scd">경사로를 오르는 탐사차</span></button>
+</div>
+<p class="k-capline">시작 프로젝트는 복사본으로 열립니다. 원본은 바뀌지 않습니다. 세 행성 어디서든 열 수 있습니다.</p>
+<button type="button" class="k-head" data-ctl="시작 프로젝트에 든 것" aria-expanded="false" aria-controls="s11-in"><svg class="k-chev" width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 2.5L8 6l-3.5 3.5"/></svg>시작 프로젝트에 든 것<span class="k-meta">3개 · 부품 종류, 값 배지, 증거 단계</span></button>
+</section>
+
+<section class="k-colR" aria-labelledby="s11-hr">
+<div class="k-rh">
+<div><h2 id="s11-hr" class="k-h2">최근 프로젝트</h2><p class="k-sub">이 컴퓨터에 저장된 프로젝트 · 최근에 연 순서</p></div>
+<button type="button" class="k-btn" data-ctl="프로젝트 열기"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round" aria-hidden="true"><path d="M1.5 3h4l1.2 1.5h5.8v6.5h-11z"/></svg>프로젝트 열기</button>
+</div>
+<p class="k-sub gap">증거 칩은 저장할 때의 단계입니다. 지금의 판정이 아닙니다.</p>
+<div class="k-list" role="grid" aria-label="최근 프로젝트" aria-rowcount="3" data-ctl="최근 프로젝트 목록">
+<div class="k-r" role="row" aria-selected="true">
+<div class="k-c1" role="gridcell"><button type="button" class="k-rn" tabindex="0">로켓 자동차 점프</button><span class="k-tag">지구</span></div>
+<div class="k-ct" role="gridcell">2일 전</div>
+<div class="k-cm" role="gridcell"><button type="button" class="k-ib" tabindex="-1" aria-label="로켓 자동차 점프 메뉴" aria-haspopup="menu" aria-expanded="false"><svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor" aria-hidden="true"><circle cx="2.5" cy="7" r="1.3"/><circle cx="7" cy="7" r="1.3"/><circle cx="11.5" cy="7" r="1.3"/></svg></button></div>
+<div class="k-c2" role="gridcell"><button type="button" class="k-evc ev-l2" tabindex="-1" aria-haspopup="dialog" aria-label="저장 시점의 증거 단계: L2 판정, FEASIBLE_FOUND. 누르면 근거를 엽니다"><span class="kp"><svg width="22" height="10" viewBox="0 0 22 10" aria-hidden="true"><path d="M0 0h4v10H0zM6 0h4v10H6zM12 0h4v10h-4z" fill="currentColor"/><path d="M18.5.5h3v9h-3z" fill="none" stroke="currentColor"/></svg><span class="k-sv">저장</span><span class="k-mono">L2 · FEASIBLE_FOUND</span></span></button></div>
+</div>
+<div class="k-r" role="row" aria-selected="false">
+<div class="k-c1" role="gridcell"><button type="button" class="k-rn" tabindex="-1">로버 경사 시험</button><span class="k-tag">화성</span></div>
+<div class="k-ct" role="gridcell">5일 전</div>
+<div class="k-cm" role="gridcell"><button type="button" class="k-ib" tabindex="-1" aria-label="로버 경사 시험 메뉴" aria-haspopup="menu" aria-expanded="false"><svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor" aria-hidden="true"><circle cx="2.5" cy="7" r="1.3"/><circle cx="7" cy="7" r="1.3"/><circle cx="11.5" cy="7" r="1.3"/></svg></button></div>
+<div class="k-c2" role="gridcell"><button type="button" class="k-evc ev-none" tabindex="-1" aria-haspopup="dialog" aria-label="저장 시점의 증거 단계: 판정 없음. 누르면 근거를 엽니다"><span class="kp"><svg width="22" height="10" viewBox="0 0 22 10" aria-hidden="true"><path d="M.5.5h3v9h-3zM6.5.5h3v9h-3zM12.5.5h3v9h-3zM18.5.5h3v9h-3z" fill="none" stroke="currentColor"/></svg><span class="k-sv">저장</span>판정 없음</span></button><button type="button" class="k-pc" tabindex="-1" aria-haspopup="dialog" aria-label="정의 없음 2개. 열 수 있습니다. 누르면 설명을 엽니다"><span class="kp"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" aria-hidden="true"><circle cx="6" cy="6" r="5"/><path d="M6 5.5v3M6 3.5v.1"/></svg>정의 없음 · 2개</span></button></div>
+</div>
+<div class="k-r" role="row" aria-selected="false">
+<div class="k-c1" role="gridcell"><button type="button" class="k-rn" tabindex="-1">4륜차 달 주행</button><span class="k-tag">달</span></div>
+<div class="k-ct" role="gridcell">11월 3일</div>
+<div class="k-cm" role="gridcell"><button type="button" class="k-ib" tabindex="-1" aria-label="4륜차 달 주행 메뉴" aria-haspopup="menu" aria-expanded="false"><svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor" aria-hidden="true"><circle cx="2.5" cy="7" r="1.3"/><circle cx="7" cy="7" r="1.3"/><circle cx="11.5" cy="7" r="1.3"/></svg></button></div>
+<div class="k-c2" role="gridcell"><button type="button" class="k-evc ev-l1" tabindex="-1" aria-haspopup="dialog" aria-label="저장 시점의 증거 단계: L1 미리보기, 1회 실행, 판정 아님. 누르면 근거를 엽니다"><span class="kp"><svg width="22" height="10" viewBox="0 0 22 10" aria-hidden="true"><path d="M0 0h4v10H0zM6 0h4v10H6z" fill="currentColor"/><path d="M12.5.5h3v9h-3zM18.5.5h3v9h-3z" fill="none" stroke="currentColor"/></svg><span class="k-sv">저장</span><span class="k-mono">L1</span> · 1회 실행 · 판정 아님</span></button></div>
+</div>
+</div>
+<p class="k-hint">파일을 이 화면에 끌어 놓아도 열립니다 · <span class="k-kbd">↑</span><span class="k-kbd">↓</span> 이동 · <span class="k-kbd">Enter</span> 열기 · <span class="k-kbd">F2</span> 이름 바꾸기 · <span class="k-kbd">⋯</span> 행 메뉴</p>
+</section>
+
+</main>
+<footer class="k-l3"><svg width="30" height="12" viewBox="0 0 30 12" role="img" aria-label="증거 강도 0/4"><path d="M.5.5h5v11h-5zM8.5.5h5v11h-5zM16.5.5h5v11h-5zM24.5.5h5v11h-5z" fill="none" stroke="currentColor"/></svg><span class="k-mono">L3</span><span>실물 검증 없음 (실측 0건)</span><span class="k-ro">읽기 전용 · 접지 않음</span></footer>
+
+<span class="k-n" aria-hidden="true" style="left:132px;top:134px">1</span>
+<span class="k-n" aria-hidden="true" style="left:132px;top:256px">2</span>
+<span class="k-n" aria-hidden="true" style="left:132px;top:334px">2</span>
+<span class="k-n" aria-hidden="true" style="left:132px;top:412px">2</span>
+<span class="k-n" aria-hidden="true" style="left:132px;top:512px">3</span>
+<span class="k-n" aria-hidden="true" style="left:1286px;top:94px">4</span>
+<span class="k-n" aria-hidden="true" style="left:700px;top:172px">5</span>
+</div>
+
+<aside class="k-side" style="width:552px" aria-label="키와 시트 안 탭 순서">
+<div class="k-lbl"><strong>키</strong> · 단축키는 툴팁과 목록 아래 줄에도 적음</div>
+<div class="k-box">
+<div class="k-keys">
+<span><span class="k-kbd">Tab</span><span class="k-kbd">Shift+Tab</span></span><span>탭 정지 ① → ⑤ 순서로 이동. 포커스가 갇히지 않음</span>
+<span><span class="k-kbd">Enter</span><span class="k-kbd">Space</span></span><span>새 프로젝트 · 카드 → 시트, 머리 → 펼치기 · 접기</span>
+<span><span class="k-kbd">↑</span><span class="k-kbd">↓</span></span><span>목록 안 행 이동(roving tabindex, 목록은 탭 정지 하나)</span>
+<span><span class="k-kbd">←</span><span class="k-kbd">→</span></span><span>행 안에서 이름 → 증거 칩 → 문제 칩 → ⋯ 사이 이동</span>
+<span><span class="k-kbd">Enter</span></span><span>행: 열기 · 칩: 근거 팝오버 · ⋯: 메뉴</span>
+<span><span class="k-kbd">F2</span></span><span>이름 바꾸기(인라인 편집, Enter 저장, Esc 취소)</span>
+<span><span class="k-kbd">Delete</span></span><span>목록에서 지우기 확인 대화상자(처음 포커스는 취소)</span>
+<span><span class="k-kbd">Shift+F10</span><span class="k-kbd">메뉴 키</span></span><span>행 메뉴 열기 · 메뉴 안 ↑↓, Enter, Esc</span>
+<span><span class="k-kbd">Esc</span></span><span>팝오버 · 메뉴 · 시트 · 대화상자 닫기, 포커스는 연 자리로</span>
+</div>
+</div>
+
+<div class="k-lbl" style="margin-top:8px"><strong>시트 안 탭 순서</strong> · 모달, 포커스를 가둠 · 처음 포커스는 이름(전체 선택)</div>
+<div class="k-frag" data-unit="S11 시트 조각">
+<div class="k-sheet static" role="dialog" aria-modal="true" aria-labelledby="s11s-t" aria-describedby="s11s-d" style="width:480px">
+<div class="k-shh"><h2 id="s11s-t" class="k-h2">새 프로젝트</h2><p id="s11s-d" class="k-desc">빈 작업대. 지구 평지에서 시작합니다.</p></div>
+<div class="k-fld"><label class="k-flab" for="s11s-n">이름</label><input id="s11s-n" class="k-in focus" type="text" value="이름 없는 프로젝트" data-ctl="이름"></div>
+<div class="k-fld"><span id="s11s-pl" class="k-flab">시작 행성 · <span class="k-kbd">←</span><span class="k-kbd">→</span> 로 고름</span><div class="k-seg" role="radiogroup" aria-labelledby="s11s-pl" data-ctl="시작 행성"><button type="button" role="radio" aria-checked="true">지구</button><button type="button" role="radio" aria-checked="false" tabindex="-1">화성</button><button type="button" role="radio" aria-checked="false" tabindex="-1">달</button></div></div>
+<div class="k-acts"><span class="k-hint"><span class="k-kbd">Enter</span> 만들기 · <span class="k-kbd">Esc</span> 닫기(입력은 남기지 않음)</span><button type="button" class="k-btn ghost" data-ctl="취소">취소</button><button type="button" class="k-prim" data-ctl="만들기" data-primary="1">만들기</button></div>
+</div>
+<span class="k-n" aria-hidden="true" style="left:-10px;top:104px">1</span>
+<span class="k-n" aria-hidden="true" style="left:-10px;top:178px">2</span>
+<span class="k-n" aria-hidden="true" style="left:344px;top:200px">3</span>
+<span class="k-n" aria-hidden="true" style="left:412px;top:200px">4</span>
+</div>
+</aside>
+</div>
+
+<div class="k-cap0">셸 밖: 시작 화면 · <span class="k-ex">예시</span> 데이터: 프로젝트 이름, 시각, 개수 · 번호 원은 주석이고 화면 요소가 아님</div>
+</div></div></section><section class="kin-board" id="s12" aria-label="S12 좁은 폭 · 한 열"><h2 class="kin-board-title">S12 좁은 폭 · 한 열</h2><div class="kin-board-scroll" tabindex="0" role="group" aria-label="S12 좁은 폭 · 한 열 아트보드"><div data-board="S12.dc.html" class="k-root" style="width:720px;height:1068px">
+
+<div class="k-note"><span><strong>S12 좁은 폭 720</strong> · 두 열이 한 열로 쌓임 · 빼는 기능 없음</span><span>상시 7 · primary 1</span></div>
+
+<div class="k-scr narrow" data-unit="S12 화면">
+<header class="k-top"><span class="k-prod">Kinetra Studio</span></header>
+<main class="k-main">
+
+<section class="k-colL" aria-labelledby="s12-hl">
+<h2 id="s12-hl" class="k-h2">새로 시작</h2>
+<button type="button" class="k-prim k-wide" data-ctl="새 프로젝트" data-primary="1" aria-haspopup="dialog" aria-describedby="s12-nd"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M7 2v10M2 7h10"/></svg>새 프로젝트</button>
+<p id="s12-nd" class="k-desc">빈 작업대, 지구 평지에서 시작합니다. 행성은 만들 때 고릅니다.</p>
+<div class="k-div">시작 프로젝트</div>
+<div class="k-cards">
+<button type="button" class="k-scard" data-ctl="시작 프로젝트: 4륜차" aria-haspopup="dialog"><span class="k-sct"><span class="k-scn">4륜차</span><span class="k-st0">판정 없음 · <span class="k-l0">L0</span> 조립에서 열림</span></span><span class="k-scd">바퀴 네 개로 굴러가는 가장 단순한 차</span></button>
+<button type="button" class="k-scard" data-ctl="시작 프로젝트: 로켓 자동차" aria-haspopup="dialog"><span class="k-sct"><span class="k-scn">로켓 자동차</span><span class="k-st0">판정 없음 · <span class="k-l0">L0</span> 조립에서 열림</span></span><span class="k-scd">추력기를 단 차. 점프대 장면용</span></button>
+<button type="button" class="k-scard" data-ctl="시작 프로젝트: 로버" aria-haspopup="dialog"><span class="k-sct"><span class="k-scn">로버</span><span class="k-st0">판정 없음 · <span class="k-l0">L0</span> 조립에서 열림</span></span><span class="k-scd">경사로를 오르는 탐사차</span></button>
+</div>
+<p class="k-capline">시작 프로젝트는 복사본으로 열립니다. 원본은 바뀌지 않습니다. 세 행성 어디서든 열 수 있습니다.</p>
+<button type="button" class="k-head" data-ctl="시작 프로젝트에 든 것" aria-expanded="false" aria-controls="s12-in"><svg class="k-chev" width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 2.5L8 6l-3.5 3.5"/></svg>시작 프로젝트에 든 것<span class="k-meta">3개 · 부품 종류, 값 배지, 증거 단계</span></button>
+</section>
+
+<section class="k-colR" aria-labelledby="s12-hr">
+<div class="k-rh">
+<div><h2 id="s12-hr" class="k-h2">최근 프로젝트</h2><p class="k-sub">이 컴퓨터에 저장된 프로젝트 · 최근에 연 순서</p></div>
+<button type="button" class="k-btn" data-ctl="프로젝트 열기"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round" aria-hidden="true"><path d="M1.5 3h4l1.2 1.5h5.8v6.5h-11z"/></svg>프로젝트 열기</button>
+</div>
+<p class="k-sub gap">증거 칩은 저장할 때의 단계입니다. 지금의 판정이 아닙니다.</p>
+<div class="k-list" role="grid" aria-label="최근 프로젝트" aria-rowcount="3" data-ctl="최근 프로젝트 목록">
+<div class="k-r" role="row" aria-selected="true">
+<div class="k-c1" role="gridcell"><button type="button" class="k-rn" tabindex="0">로켓 자동차 점프</button><span class="k-tag">지구</span></div>
+<div class="k-ct" role="gridcell">2일 전</div>
+<div class="k-cm" role="gridcell"><button type="button" class="k-ib" tabindex="-1" aria-label="로켓 자동차 점프 메뉴" aria-haspopup="menu" aria-expanded="false"><svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor" aria-hidden="true"><circle cx="2.5" cy="7" r="1.3"/><circle cx="7" cy="7" r="1.3"/><circle cx="11.5" cy="7" r="1.3"/></svg></button></div>
+<div class="k-c2" role="gridcell"><button type="button" class="k-evc ev-l2" tabindex="-1" aria-haspopup="dialog" aria-label="저장 시점의 증거 단계: L2 판정, FEASIBLE_FOUND. 누르면 근거를 엽니다"><span class="kp"><svg width="22" height="10" viewBox="0 0 22 10" aria-hidden="true"><path d="M0 0h4v10H0zM6 0h4v10H6zM12 0h4v10h-4z" fill="currentColor"/><path d="M18.5.5h3v9h-3z" fill="none" stroke="currentColor"/></svg><span class="k-sv">저장</span><span class="k-mono">L2 · FEASIBLE_FOUND</span></span></button></div>
+</div>
+<div class="k-r" role="row" aria-selected="false">
+<div class="k-c1" role="gridcell"><button type="button" class="k-rn" tabindex="-1">로버 경사 시험</button><span class="k-tag">화성</span></div>
+<div class="k-ct" role="gridcell">5일 전</div>
+<div class="k-cm" role="gridcell"><button type="button" class="k-ib" tabindex="-1" aria-label="로버 경사 시험 메뉴" aria-haspopup="menu" aria-expanded="false"><svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor" aria-hidden="true"><circle cx="2.5" cy="7" r="1.3"/><circle cx="7" cy="7" r="1.3"/><circle cx="11.5" cy="7" r="1.3"/></svg></button></div>
+<div class="k-c2" role="gridcell"><button type="button" class="k-evc ev-none" tabindex="-1" aria-haspopup="dialog" aria-label="저장 시점의 증거 단계: 판정 없음. 누르면 근거를 엽니다"><span class="kp"><svg width="22" height="10" viewBox="0 0 22 10" aria-hidden="true"><path d="M.5.5h3v9h-3zM6.5.5h3v9h-3zM12.5.5h3v9h-3zM18.5.5h3v9h-3z" fill="none" stroke="currentColor"/></svg><span class="k-sv">저장</span>판정 없음</span></button><button type="button" class="k-pc" tabindex="-1" aria-haspopup="dialog" aria-label="정의 없음 2개. 열 수 있습니다. 누르면 설명을 엽니다"><span class="kp"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" aria-hidden="true"><circle cx="6" cy="6" r="5"/><path d="M6 5.5v3M6 3.5v.1"/></svg>정의 없음 · 2개</span></button></div>
+</div>
+<div class="k-r" role="row" aria-selected="false">
+<div class="k-c1" role="gridcell"><button type="button" class="k-rn" tabindex="-1">4륜차 달 주행</button><span class="k-tag">달</span></div>
+<div class="k-ct" role="gridcell">11월 3일</div>
+<div class="k-cm" role="gridcell"><button type="button" class="k-ib" tabindex="-1" aria-label="4륜차 달 주행 메뉴" aria-haspopup="menu" aria-expanded="false"><svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor" aria-hidden="true"><circle cx="2.5" cy="7" r="1.3"/><circle cx="7" cy="7" r="1.3"/><circle cx="11.5" cy="7" r="1.3"/></svg></button></div>
+<div class="k-c2" role="gridcell"><button type="button" class="k-evc ev-l1" tabindex="-1" aria-haspopup="dialog" aria-label="저장 시점의 증거 단계: L1 미리보기, 1회 실행, 판정 아님. 누르면 근거를 엽니다"><span class="kp"><svg width="22" height="10" viewBox="0 0 22 10" aria-hidden="true"><path d="M0 0h4v10H0zM6 0h4v10H6z" fill="currentColor"/><path d="M12.5.5h3v9h-3zM18.5.5h3v9h-3z" fill="none" stroke="currentColor"/></svg><span class="k-sv">저장</span><span class="k-mono">L1</span> · 1회 실행 · 판정 아님</span></button></div>
+</div>
+</div>
+<p class="k-hint">파일을 이 화면에 끌어 놓아도 열립니다 · <span class="k-kbd">↑</span><span class="k-kbd">↓</span> 이동 · <span class="k-kbd">Enter</span> 열기 · <span class="k-kbd">F2</span> 이름 바꾸기 · <span class="k-kbd">⋯</span> 행 메뉴</p>
+</section>
+
+</main>
+<footer class="k-l3"><svg width="30" height="12" viewBox="0 0 30 12" role="img" aria-label="증거 강도 0/4"><path d="M.5.5h5v11h-5zM8.5.5h5v11h-5zM16.5.5h5v11h-5zM24.5.5h5v11h-5z" fill="none" stroke="currentColor"/></svg><span class="k-mono">L3</span><span>실물 검증 없음 (실측 0건)</span><span class="k-ro">읽기 전용</span></footer>
+</div>
+
+<div class="k-cap0">셸 밖: 시작 화면 · <span class="k-ex">예시</span> 데이터 · 폭 ~720 이하(WCAG 1.4.10)</div>
+</div></div></section></main>
+<footer class="kin-foot">독립 실행 HTML 내보내기. 외부 요청이 없습니다. 글꼴 파일은 들어 있지 않고, Pretendard와 JetBrains Mono는 설치되어 있을 때만 쓰입니다.</footer>
+
+</body>
+</html>

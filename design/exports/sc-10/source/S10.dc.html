@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>S10 엔진 오프라인</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="/_blob/8a967c89f7190aed4b9f6b850d32b71a">
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div class="k-root" style="width:1440px;height:968px">
+
+<div class="k-note"><span><strong>S10 엔진 오프라인</strong> · 상단줄 칩(status.warning) + 다시 연결 · 만들기와 열기는 비활성, 이유는 한 번만 · 목록은 보임</span><span>상시 조작 요소 8 · primary 1 (비활성이지만 남음, 포커스 가능)</span></div>
+
+<div class="k-scr" data-unit="S10 화면">
+<header class="k-top"><span class="k-prod">Kinetra Studio</span><span style="flex:1 1 0"></span><span class="k-off" role="status"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 2l6.5 11.5h-13zM8 6.5v3.5M8 11.8v.2"/></svg>엔진 연결 끊김</span><button type="button" class="k-btn" data-ctl="다시 연결">다시 연결</button></header>
+<main class="k-main">
+
+<section class="k-colL" aria-labelledby="s10-hl">
+<h2 id="s10-hl" class="k-h2">새로 시작</h2>
+<button type="button" class="k-prim k-wide" data-ctl="새 프로젝트" data-primary="1" aria-disabled="true" aria-describedby="s10-why"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M7 2v10M2 7h10"/></svg>새 프로젝트</button>
+<p id="s10-why" class="k-why">엔진에 연결해야 프로젝트를 만들고 열 수 있습니다. 위의 다시 연결을 누르세요.</p>
+<p class="k-desc">빈 작업대, 지구 평지에서 시작합니다. 행성은 만들 때 고릅니다.</p>
+<div class="k-div">시작 프로젝트</div>
+<div class="k-cards">
+<button type="button" class="k-scard" data-ctl="시작 프로젝트: 4륜차" aria-disabled="true" aria-describedby="s10-why"><span class="k-sct"><span class="k-scn">4륜차</span><span class="k-st0">판정 없음 · <span class="k-l0">L0</span> 조립에서 열림</span></span><span class="k-scd">바퀴 네 개로 굴러가는 가장 단순한 차</span></button>
+<button type="button" class="k-scard" data-ctl="시작 프로젝트: 로켓 자동차" aria-disabled="true" aria-describedby="s10-why"><span class="k-sct"><span class="k-scn">로켓 자동차</span><span class="k-st0">판정 없음 · <span class="k-l0">L0</span> 조립에서 열림</span></span><span class="k-scd">추력기를 단 차. 점프대 장면용</span></button>
+<button type="button" class="k-scard" data-ctl="시작 프로젝트: 로버" aria-disabled="true" aria-describedby="s10-why"><span class="k-sct"><span class="k-scn">로버</span><span class="k-st0">판정 없음 · <span class="k-l0">L0</span> 조립에서 열림</span></span><span class="k-scd">경사로를 오르는 탐사차</span></button>
+</div>
+<p class="k-capline">시작 프로젝트는 복사본으로 열립니다. 원본은 바뀌지 않습니다. 세 행성 어디서든 열 수 있습니다.</p>
+<button type="button" class="k-head" data-ctl="시작 프로젝트에 든 것" aria-expanded="false" aria-controls="s10-in"><svg class="k-chev" width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 2.5L8 6l-3.5 3.5"/></svg>시작 프로젝트에 든 것<span class="k-meta">3개 · 부품 종류, 값 배지, 증거 단계</span></button>
+</section>
+
+<section class="k-colR" aria-labelledby="s10-hr">
+<div class="k-rh">
+<div><h2 id="s10-hr" class="k-h2">최근 프로젝트</h2><p class="k-sub">이 컴퓨터에 저장된 프로젝트 · 최근에 연 순서</p></div>
+<button type="button" class="k-btn" data-ctl="프로젝트 열기" aria-disabled="true" aria-describedby="s10-why"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round" aria-hidden="true"><path d="M1.5 3h4l1.2 1.5h5.8v6.5h-11z"/></svg>프로젝트 열기</button>
+</div>
+<p class="k-sub gap">증거 칩은 저장할 때의 단계입니다. 엔진이 끊긴 동안 다시 계산하지 않으므로 오래됨으로 표시합니다.</p>
+<div class="k-list" role="grid" aria-label="최근 프로젝트" aria-rowcount="3" data-ctl="최근 프로젝트 목록">
+<div class="k-r dim" role="row" aria-selected="true">
+<div class="k-c1" role="gridcell"><button type="button" class="k-rn" tabindex="0" aria-disabled="true" aria-describedby="s10-why">로켓 자동차 점프</button><span class="k-tag">지구</span></div>
+<div class="k-ct" role="gridcell">2일 전</div>
+<div class="k-cm" role="gridcell"><button type="button" class="k-ib" tabindex="-1" aria-label="로켓 자동차 점프 메뉴" aria-haspopup="menu" aria-expanded="false"><svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor" aria-hidden="true"><circle cx="2.5" cy="7" r="1.3"/><circle cx="7" cy="7" r="1.3"/><circle cx="11.5" cy="7" r="1.3"/></svg></button></div>
+<div class="k-c2" role="gridcell"><button type="button" class="k-evc ev-l2" tabindex="-1" aria-haspopup="dialog" aria-label="저장 시점의 증거 단계: L2 판정, FEASIBLE_FOUND. 오래됨, 마지막 계산 11월 10일 14시 2분. 누르면 근거를 엽니다"><span class="kp"><svg width="22" height="10" viewBox="0 0 22 10" aria-hidden="true"><path d="M0 0h4v10H0zM6 0h4v10H6zM12 0h4v10h-4z" fill="currentColor"/><path d="M18.5.5h3v9h-3z" fill="none" stroke="currentColor"/></svg><span class="k-sv">저장</span><span class="k-mono">L2 · FEASIBLE_FOUND</span> · 오래됨 · 마지막 계산 11월 10일 14:02</span></button></div>
+</div>
+<div class="k-r dim" role="row" aria-selected="false">
+<div class="k-c1" role="gridcell"><button type="button" class="k-rn" tabindex="-1" aria-disabled="true">로버 경사 시험</button><span class="k-tag">화성</span></div>
+<div class="k-ct" role="gridcell">5일 전</div>
+<div class="k-cm" role="gridcell"><button type="button" class="k-ib" tabindex="-1" aria-label="로버 경사 시험 메뉴" aria-haspopup="menu" aria-expanded="false"><svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor" aria-hidden="true"><circle cx="2.5" cy="7" r="1.3"/><circle cx="7" cy="7" r="1.3"/><circle cx="11.5" cy="7" r="1.3"/></svg></button></div>
+<div class="k-c2" role="gridcell"><button type="button" class="k-evc ev-none" tabindex="-1" aria-haspopup="dialog" aria-label="저장 시점의 증거 단계: 판정 없음. 누르면 근거를 엽니다"><span class="kp"><svg width="22" height="10" viewBox="0 0 22 10" aria-hidden="true"><path d="M.5.5h3v9h-3zM6.5.5h3v9h-3zM12.5.5h3v9h-3zM18.5.5h3v9h-3z" fill="none" stroke="currentColor"/></svg><span class="k-sv">저장</span>판정 없음</span></button><button type="button" class="k-pc" tabindex="-1" aria-haspopup="dialog" aria-label="정의 없음 2개. 누르면 설명을 엽니다"><span class="kp"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" aria-hidden="true"><circle cx="6" cy="6" r="5"/><path d="M6 5.5v3M6 3.5v.1"/></svg>정의 없음 · 2개</span></button></div>
+</div>
+<div class="k-r dim" role="row" aria-selected="false">
+<div class="k-c1" role="gridcell"><button type="button" class="k-rn" tabindex="-1" aria-disabled="true">4륜차 달 주행</button><span class="k-tag">달</span></div>
+<div class="k-ct" role="gridcell">11월 3일</div>
+<div class="k-cm" role="gridcell"><button type="button" class="k-ib" tabindex="-1" aria-label="4륜차 달 주행 메뉴" aria-haspopup="menu" aria-expanded="false"><svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor" aria-hidden="true"><circle cx="2.5" cy="7" r="1.3"/><circle cx="7" cy="7" r="1.3"/><circle cx="11.5" cy="7" r="1.3"/></svg></button></div>
+<div class="k-c2" role="gridcell"><button type="button" class="k-evc ev-l1" tabindex="-1" aria-haspopup="dialog" aria-label="저장 시점의 증거 단계: L1 미리보기, 1회 실행, 판정 아님. 오래됨, 마지막 계산 11월 3일 9시 40분. 누르면 근거를 엽니다"><span class="kp"><svg width="22" height="10" viewBox="0 0 22 10" aria-hidden="true"><path d="M0 0h4v10H0zM6 0h4v10H6z" fill="currentColor"/><path d="M12.5.5h3v9h-3zM18.5.5h3v9h-3z" fill="none" stroke="currentColor"/></svg><span class="k-sv">저장</span><span class="k-mono">L1</span> · 1회 실행 · 판정 아님 · 오래됨 · 마지막 계산 11월 3일 09:40</span></button></div>
+</div>
+</div>
+<p class="k-hint">근거 팝오버와 ⋯ 메뉴(이름 바꾸기, JSON 내보내기, 목록에서 지우기)는 끊긴 동안에도 됩니다 [제안: A0-04 확인 필요]</p>
+</section>
+
+</main>
+<footer class="k-l3"><svg width="30" height="12" viewBox="0 0 30 12" role="img" aria-label="증거 강도 0/4"><path d="M.5.5h5v11h-5zM8.5.5h5v11h-5zM16.5.5h5v11h-5zM24.5.5h5v11h-5z" fill="none" stroke="currentColor"/></svg><span class="k-mono">L3</span><span>실물 검증 없음 (실측 0건)</span><span class="k-ro">읽기 전용 · 접지 않음</span></footer>
+</div>
+
+<div class="k-cap0">셸 밖: 시작 화면 · <span class="k-ex">예시</span> 데이터: 프로젝트 이름, 시각, 개수, 마지막 계산 시각 · 끊긴 동안 되는 일은 A0-04 [확인 필요], 이 아트보드는 안전한 쪽(비활성 + 이유)</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":968}}'>
+class Component extends DCLogic {
+renderVals() { return {}; }
+}
+</script>
+</body>
+</html>
