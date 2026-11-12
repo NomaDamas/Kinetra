@@ -12,6 +12,17 @@ Values chosen by the test (`SRC`), not data:
   `data/bodies/earth.json`), 225.8 ticks of 0.002 s. MuJoCo's semi-implicit Euler puts the bottom face at
   h - g dt^2 n (n + 1) / 2 after n ticks: it is at or under 0 first at n = 226 (n = 225 leaves 2.65 mm). The speed there is
   sqrt(2 g h) = 4.43 m/s.
+- `ramp_slide`: the flat block of `test_terrain_ramp.py` (0.1 x 0.1 x 0.02 m, friction 1.0) on the middle of the slope of a
+  1 m long, 30 degree ramp of steel A36 (catalog friction 0.23; the pair takes min(1.0, 0.23) = 0.23, X-01e), Earth. It
+  slides down with a = g (sin 30 - 0.23 cos 30) = 2.950 m/s^2 from rest. The slope from the middle to the low edge is
+  0.5 / cos 30 = 0.5774 m. Its downhill bottom edge reaches the low edge after 0.5774 - 0.05 m: t = sqrt(2 d / a) =
+  0.5979 s = 299.0 ticks, where it touches the ground (`begin`). Its uphill bottom edge passes the low edge after
+  0.5774 + 0.05 m at the same acceleration: 0.6522 s = 326.1 ticks, when it leaves the ramp for good (its last `end`). That
+  second number is an estimate: from the ground touch on the front rides on the ground (friction min(1.0, 0.5628 Earth
+  nominal)) instead of the slope, so the block is slower than the estimate and leaves later; the test allows 10 ticks.
+  While it slides the engine's box–mesh contact comes and goes from tick to tick (one contact point, the block rocks), so
+  the ramp pair has many `begin`/`end` before the last `end` (`contacts.py`: no debounce, the stream says what the engine
+  did).
 - the swinging arm of `test_break_runtime.py` with its hinge `pin` breakable: the arm and both blocks fly off, hit the
   ground, and the impact breaks both welds. The base and the arm were parent and child (MuJoCo does not collide them) and
   the welded blocks too, so every body–body contact here exists only in a model compiled again after a break.
@@ -28,6 +39,7 @@ from kinetra_core.bodies import load_body
 from kinetra_engine.run import PreviewRun
 from kinetra_judge import Goal, Status, evaluate_goal
 
+import test_terrain_ramp as ramps
 from test_break_runtime import BOB_KG, G_EARTH, HANGING_KG, swing
 
 SRC = {"ref": "#562 test fixture: value chosen by the test", "locator": "test_contact_events.py"}
@@ -59,6 +71,22 @@ def wall_drop() -> Project:
                                    "world": {"planet": "earth", "terrain_props": [step]}})
 
 
+RAMP_DEG = 30.0
+RAMP_M = 1.0
+
+
+def ramp_slide() -> Project:
+    """The block on the middle of the ramp's slope, its local x up the slope (module docstring)."""
+    theta = math.radians(RAMP_DEG)
+    half = ramps.THICK / 2
+    centre = (-math.sin(theta) * half, 0.0, RAMP_M / 2 * math.tan(theta) + math.cos(theta) * half)
+    inst = {"id": "block1", "part": "plate", "material": "grip", "pose": {"badge": "declared", "source": SRC,
+            "position": dict(zip("xyz", centre, strict=True)),
+            "orientation": {"w": math.cos(-theta / 2), "x": 0.0, "y": math.sin(-theta / 2), "z": 0.0}}}
+    return Project.model_validate({"design": {"materials": [ramps.grip(), ramps.STEEL], "parts": [ramps.plate()], "instances": [inst], "joints": []},
+                                   "world": {"planet": "earth", "terrain_props": [ramps.ramp(theta, ramps.STEEL["id"], length=RAMP_M)]}})
+
+
 def run(project: Project, duration_s: float) -> tuple[PreviewRun, list[Frame], object]:
     preview = PreviewRun(project, run_id="contact-run", project_id="p", revision=1, duration_s=duration_s)
     items = list(preview)
@@ -88,6 +116,42 @@ def assert_alternating(events: list[ContactEvent]) -> None:
         else:
             assert pair(e) in touching, e
             touching.discard(pair(e))
+
+
+def test_contact_events_assert_alternating_refuses_a_list_that_is_not_one():
+    ground = {"kind": "ground"}
+
+    def ev(tick, phase):
+        return ContactEvent(kind="contact", tick=tick, phase=phase, body="cube1", other=ground)
+
+    assert_alternating([ev(0, "begin"), ev(3, "end"), ev(5, "begin")])
+    for bad in ([ev(0, "begin"), ev(4, "begin")], [ev(2, "end")], [ev(0, "begin"), ev(3, "end"), ev(4, "end")], [ev(5, "begin"), ev(3, "end")]):
+        with pytest.raises(AssertionError):
+            assert_alternating(bad)
+
+
+def test_contact_events_a_block_sliding_off_a_ramp_ends_its_ramp_contact_near_the_hand_estimate():
+    preview, frames, _ = run(ramp_slide(), 0.8)
+    g, dt = load_body("earth").gravity.value, preview.started.timestep_s
+    theta = math.radians(RAMP_DEG)
+    mu = min(ramps.BLOCK_FRICTION, ramps.STEEL["friction"]["value"])
+    assert mu == 0.23
+    a = g * (math.sin(theta) - mu * math.cos(theta))
+    to_edge = RAMP_M / 2 / math.cos(theta)
+    touch_s = math.sqrt(2.0 * (to_edge - ramps.SIDE / 2) / a)
+    leave_s = math.sqrt(2.0 * (to_edge + ramps.SIDE / 2) / a)
+    assert (round(touch_s / dt, 1), round(leave_s / dt, 1)) == (299.0, 326.1)
+    events = contacts(frames)
+    assert_alternating(events)
+    on_ramp = [e for e in events if pair(e) == ("block1", "prop", "ramp1")]
+    on_ground = [e for e in events if pair(e) == ("block1", "ground", None)]
+    assert len(on_ramp) + len(on_ground) == len(events)
+    assert on_ramp[0].phase == "begin" and on_ramp[0].tick <= 1  # resting on the slope at the saved pose
+    assert abs(on_ground[0].tick * dt - touch_s) <= dt  # the front edge reaches the ground within one tick of the hand value
+    last = on_ramp[-1]
+    assert last.phase == "end" and all(e.tick < last.tick for e in on_ramp[:-1])
+    assert on_ground[0].tick < last.tick
+    assert 0 <= last.tick - leave_s / dt <= 10  # leaves the ramp for good at or after the estimate, within 10 ticks
 
 
 def test_contact_events_first_ground_begin_of_a_1m_drop_matches_the_hand_calculation():

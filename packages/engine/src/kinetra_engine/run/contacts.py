@@ -10,6 +10,9 @@ the same if a margin is ever set. No force threshold and no debounce: a resting 
 holds a steady small overlap), and a bounce that leaves the surface is an `end` and a new `begin`. Two bodies joined
 directly by a joint (a parent and its child in the body tree) never collide (MuJoCo excludes parent-child pairs), so they
 have no contact events while the joint holds; once a break releases the joint (X-04b) they collide like any two bodies.
+Without a debounce a contact can also flicker: on a box sliding on a ramp (a convex mesh) MuJoCo's box–mesh collision gives one point, the box rocks on it,
+and the pair comes and goes from tick to tick while it slides (`test_contact_events.py`, `ramp_slide`). The stream says
+what the engine did; a reader that wants "on the ramp" over an interval reads the first `begin` and the last `end`.
 
 **Dedupe.** The points are reduced to pairs: (body, ground), (body, prop id), or (body, body) for two bodies, written once
 with `body` the smaller id and `other` the larger. Every geom of a body (its instances' proxy geoms, `bodytree.py`) is
