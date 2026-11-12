@@ -54,7 +54,7 @@
 
 ## CI의 그림
 
-`screenshots` 잡이 `pnpm --filter @kinetra/gltf-check capture:drive-car`를 돈다. `page/drive-car.html`이 인스턴스마다 glb를 pose대로 놓고(B-02 뼈대와 같은 코드: `page/assembly.js`의 `projectFrame`, `placeInstances`, `fitCamera`. `skeleton.js`도 이것을 쓰도록 옮겼다) 옆 표에 부품 목록(부품, 역할, 수, 인스턴스)과 위 사양 행(값, 단위, 배지 색 칩과 한국어 이름, 출처 앞 110자와 locator, 셀의 title에 출처 전문)을 쓴다. 표의 모든 값은 생성기가 부품 정의에서 읽어 쓴 `manifest.json`의 것이다. `drive-car.ts`가 단언한다: 14개가 모두 pose의 자리에 있다, 지면 아래가 없고 차가 바닥에 선다(테셀레이션 때문에 1 mm 허용), 부품 목록이 모든 인스턴스를 덮는다, 사양 행마다 값·표시 문자열·배지·출처가 manifest와 같다, 그려진 픽셀이 있고 잘린 곳이 없다. 결과는 `drive-car.png`와 `drive-car-result.json`(`problems: []`).
+`screenshots` 잡이 `pnpm --filter @kinetra/gltf-check capture:drive-car`를 돈다. `page/drive-car.html`이 인스턴스마다 glb를 pose대로 놓고(B-02 뼈대와 같은 코드: `page/assembly.js`의 `projectFrame`, `placeInstances`, `fitCamera`. `skeleton.js`도 이것을 쓰도록 옮겼다) 옆 표에 부품 목록(부품, 역할, 수, 인스턴스)과 위 사양 행(값, 단위, 배지 색 칩과 한국어 이름, 출처 앞 110자와 locator, 셀의 title에 출처 전문)을 쓴다. 표의 모든 값은 생성기가 부품 정의에서 읽어 쓴 `manifest.json`의 것이다. `drive-car.ts`가 단언한다: 그려진 인스턴스 id 집합이 manifest의 것과 같고(빠짐·추가·중복 없음) 각 인스턴스가 **같은 id의 manifest pose**(엔진이 쓴 값) 자리에 있다(페이지가 읽었다고 보고한 pose는 믿지 않고 manifest와 따로 대조한다. `assembly.ts`의 `placementProblems`, 뼈대도 같이 쓴다), 지면 아래가 없고 차가 바닥에 선다(테셀레이션 때문에 1 mm 허용), 부품 목록이 모든 인스턴스를 덮는다, 사양 행마다 값·표시 문자열·배지·출처가 manifest와 같다, 그려진 픽셀이 있고 잘린 곳이 없다. 결과는 `drive-car.png`와 `drive-car-result.json`(`problems: []`).
 
 ## 한계 (숨기지 않는다)
 

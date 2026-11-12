@@ -5,8 +5,9 @@
 //
 // Inputs are the committed files written by `uv run python packages/engine/tests/drive_car_sample.py`:
 // `packages/engine/tests/fixtures/drive-car/{manifest.json,<instance>.glb}` (`test_drive_parts.py` checks they are current
-// and that the manifest's specs are the part definitions'). The run asserts: every instance loaded and sits at its pose
-// (Project frame -> three.js: (x, y, z) -> (x, z, -y)); nothing is below the ground and the car stands on it; the parts
+// and that the manifest's specs are the part definitions'). The run asserts: every instance of the manifest is drawn once
+// (same id set) and sits at the manifest's pose for its id (Project frame -> three.js: (x, y, z) -> (x, z, -y);
+// `assembly.ts`); nothing is below the ground and the car stands on it; the parts
 // list covers every instance; every spec row shows the manifest's value, unit, badge and source; the canvas holds drawn
 // pixels and nothing is cut off. It writes `drive-car.png` (canvas and table) and `drive-car-result.json` to outDir
 // (default out/gltf-check). Exit code: 0 pass, 1 failed, 3 outside the resource guard.
@@ -16,6 +17,8 @@ import { fileURLToPath } from "node:url";
 import { chromium } from "playwright-core";
 import type { Browser } from "playwright-core";
 import { PNG } from "pngjs";
+import { placementProblems } from "./assembly.ts";
+import type { PlacedInstance } from "./assembly.ts";
 import { DEFAULT_OUT, drawnPixels, guardProblem, serve } from "./capture.ts";
 import { REPO_ROOT } from "./validate.ts";
 
@@ -31,7 +34,7 @@ export interface DriveCarManifest {
 }
 
 export interface DriveCarResult {
-  instances: { id: string; pose_project: number[]; world_position_yup: number[]; box_min_yup: number[]; box_max_yup: number[] }[];
+  instances: PlacedInstance[];
   part_rows: number;
   part_instances: number;
   specs: { part_name: string; name: string; value: number; value_text: string; badge: string; badge_text: string; source_title: string; source_text: string }[];
@@ -51,14 +54,8 @@ export function fmt(v: number): string {
 export function problems(r: DriveCarResult, drawn: number, m: DriveCarManifest): string[] {
   const out: string[] = [];
   if (m.instances.length !== EXPECTED_INSTANCES) out.push(`the manifest has ${m.instances.length} instances, expected ${EXPECTED_INSTANCES}`);
-  if (r.instances.length !== m.instances.length) out.push(`${r.instances.length} instances placed, the manifest has ${m.instances.length}`);
   for (const role of ROLES) if (!m.instances.some((i) => i.role === role)) out.push(`no ${role} in the car`);
-  for (const i of r.instances) {
-    const [x, y, z] = i.pose_project as [number, number, number];
-    const want = [x, z, -y];
-    want.forEach((w, k) => { if (Math.abs(i.world_position_yup[k]! - w) > 1e-5) out.push(`${i.id}: placed at ${i.world_position_yup} not at pose ${want}`); });
-    if (!(i.box_max_yup[0]! > i.box_min_yup[0]! && i.box_max_yup[1]! > i.box_min_yup[1]! && i.box_max_yup[2]! > i.box_min_yup[2]!)) out.push(`${i.id}: empty bounding box`);
-  }
+  out.push(...placementProblems(r.instances, m.instances));
   if (r.scene_box_min_yup[1]! < -1e-6) out.push(`part below the ground: min height ${r.scene_box_min_yup[1]}`);
   else if (r.scene_box_min_yup[1]! > GROUND_TOLERANCE_M) out.push(`the car does not stand on the ground: min height ${r.scene_box_min_yup[1]}`);
   if (r.part_instances !== m.instances.length) out.push(`the parts list covers ${r.part_instances} instances of ${m.instances.length}`);

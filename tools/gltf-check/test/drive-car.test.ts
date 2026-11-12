@@ -79,11 +79,24 @@ test("a wrong value, unit, badge or source, a missing row, a misplaced or buried
   assert.match(problems({ ...r, specs: r.specs.slice(1) }, 50000, manifest).join(), /spec rows/);
   assert.match(problems({ ...r, part_instances: 13 }, 50000, manifest).join(), /covers 13 instances/);
   const moved = { ...r, instances: r.instances.map((i, k) => (k === 3 ? { ...i, world_position_yup: [9, 9, 9] } : i)) };
-  assert.match(problems(moved, 50000, manifest).join(), /not at pose/);
+  assert.match(problems(moved, 50000, manifest).join(), /not at the manifest pose/);
   assert.match(problems({ ...r, scene_box_min_yup: [0, -0.1, 0] }, 50000, manifest).join(), /below the ground/);
   assert.match(problems({ ...r, scene_box_min_yup: [0, 0.2, 0] }, 50000, manifest).join(), /does not stand on the ground/);
   assert.match(problems({ ...r, max_ndc: 1.2 }, 50000, manifest).join(), /cut off/);
   assert.match(problems(r, 100, manifest).join(), /pixels drawn/);
+});
+
+test("the placement is judged against the manifest pose by id, not the pose the page says it read", () => {
+  const r = good();
+  const lied = { ...r, instances: r.instances.map((i, k) => (k === 1 ? { ...i, pose_project: [5, 6, 7], world_position_yup: [5, 7, -6] } : i)) };
+  const found = problems(lied, 50000, manifest).join();
+  assert.match(found, /the page read pose 5,6,7/);
+  assert.match(found, /not at the manifest pose/);
+  assert.deepEqual(problems({ ...r, instances: [...r.instances].reverse() }, 50000, manifest), []);
+  assert.match(problems({ ...r, instances: r.instances.slice(1) }, 50000, manifest).join(), /not drawn: chassis/);
+  const extra = { ...r.instances[0]!, id: "ghost" };
+  assert.match(problems({ ...r, instances: [...r.instances, extra] }, 50000, manifest).join(), /does not have: ghost/);
+  assert.match(problems({ ...r, instances: [...r.instances, r.instances[0]!] }, 50000, manifest).join(), /more than once: chassis/);
 });
 
 test("the glb of every drive-car instance passes the Khronos validator with no errors and no warnings", async () => {

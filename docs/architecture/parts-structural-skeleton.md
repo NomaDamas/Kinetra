@@ -36,7 +36,7 @@
 
 ## CI의 그림
 
-`screenshots` 잡이 `pnpm --filter @kinetra/gltf-check capture:skeleton`을 돈다. `tools/gltf-check/page/skeleton.html`이 인스턴스마다 glb를 three.js `GLTFLoader`로 읽어 **인스턴스의 pose대로** 놓고(프로젝트 좌표 +Z 위를 한 그룹으로 three.js의 +Y 위로 돌린다. 파일의 Z→Y 루트 회전은 이 그룹이 대신하므로 버린다), 캔버스 아래 표에 부품별 질량과 총질량을 쓴다. 표의 숫자는 엔진이 쓴 `manifest.json`의 값이다. `skeleton.ts`가 단언한다: 7개가 모두 pose의 자리에 있다, 지면 아래로 내려간 것이 없고 뼈대가 바닥에 닿는다, 페이지가 다시 더한 합이 엔진의 총질량과 같다, 표의 총질량 글자와 행 수가 맞다, 그려진 픽셀이 있고 잘림이 없다. 결과는 아티팩트 `screenshots`의 `gltf-check/skeleton.png`와 `skeleton-result.json`이다. 그림은 시각 메시이고 판정이 아니다(구멍은 파이지 않는다: `part-visual.md`).
+`screenshots` 잡이 `pnpm --filter @kinetra/gltf-check capture:skeleton`을 돈다. `tools/gltf-check/page/skeleton.html`이 인스턴스마다 glb를 three.js `GLTFLoader`로 읽어 **인스턴스의 pose대로** 놓고(프로젝트 좌표 +Z 위를 한 그룹으로 three.js의 +Y 위로 돌린다. 파일의 Z→Y 루트 회전은 이 그룹이 대신하므로 버린다. 배치 코드는 B-03이 `page/assembly.js`로 뺐다), 캔버스 아래 표에 부품별 질량과 총질량을 쓴다. 표의 숫자는 엔진이 쓴 `manifest.json`의 값이다. `skeleton.ts`가 단언한다: 그려진 인스턴스 id 집합이 manifest의 7개와 같고(빠짐·추가·중복 없음) 각각 **같은 id의 manifest pose** 자리에 있다(페이지가 보고한 pose를 믿지 않는다: `assembly.ts`의 `placementProblems`), 질량도 id로 맞춘다, 지면 아래로 내려간 것이 없고 뼈대가 바닥에 닿는다, 페이지가 다시 더한 합이 엔진의 총질량과 같다, 표의 총질량 글자와 행 수가 맞다, 그려진 픽셀이 있고 잘림이 없다. 결과는 아티팩트 `screenshots`의 `gltf-check/skeleton.png`와 `skeleton-result.json`이다. 그림은 시각 메시이고 판정이 아니다(구멍은 파이지 않는다: `part-visual.md`).
 
 ## 다시 만들기
 
