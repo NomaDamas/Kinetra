@@ -95,7 +95,17 @@ _REFUSAL = re.compile(
     r"(?:\w+\s+){0,2}?(?:guarantee|give|provide|state|say|promise|predict|estimate|compute|calculate|record|mark|issue|declare|decide|determine|judge|assign|tell|claim)\b",
     re.IGNORECASE,
 )
-_DEFERRAL = re.compile(r"(?=.*(?:시뮬|몬테\s?카를로|simulation|monte carlo))(?=.*(?:로만|으로만|만으로|통해서만|에서만|뒤에만|후에만|\bonly\b))", re.IGNORECASE)
+_DEFERRAL = re.compile(
+    # the clause ends on "… 시뮬/몬테카를로 … 로만/통해서만 정해집니다·제공됩니다·나옵니다": deferring is its predicate
+    r"(?:시뮬|몬테\s?카를로).*(?:로만|으로만|통해서만|에서만|만으로|뒤에만|후에만)\s*(?:\S+\s+){0,2}?"
+    r"(?:정해|나옵|나온|나와|제공|결정|확인|산출|매겨|내려|판단|알 수 있)\S*\s*[.!?。]?\s*$"
+    r"|\b(?:comes?|is|are)\s+(?:(?:decided|determined|given|set|known|computed|produced)\s+)?only\s+(?:from|by|through|via|after)\s+"
+    r"(?:an?\s+|the\s+)?(?:simulations?|monte carlo)"
+    r"|\bonly\s+(?:an?\s+|the\s+)?(?:simulations?|monte carlo)(?:\s+(?:and|or)\s+(?:monte carlo|simulations?))?\s+(?:runs?\s+)?"
+    r"(?:can|will|may)\s+(?:tell|decide|determine|give|show|say)\b",
+    re.IGNORECASE,
+)
+"""Deferring the verdict to simulation as what the clause says, not a mention of simulation beside a hedge ("시뮬로 확인하면 …")."""
 _CLAUSE_END = re.compile(r"[,;:]|지만|그러나|하지만|다만|는데|고\s|\b(?:but|however|although|though|while|yet)\b", re.IGNORECASE)
 _OUTCOME_WORDS = re.compile(r"성공|통과|실패|succe|\bpass|\bfail", re.IGNORECASE)
 _SENTENCE_END = re.compile(r"(?<=[.!?。])\s+|\n+")
@@ -107,7 +117,7 @@ def _verdict_like(sentence: str) -> bool:
     if _CLAIM_WORDS.search(sentence) or (_OUTCOME_WORDS.search(sentence) and re.search(r"\d", sentence)):
         return True
     return any(
-        _TOPIC_WORDS.search(clause) and not (_REFUSAL.search(clause) or _DEFERRAL.match(clause)) for clause in _CLAUSE_END.split(sentence)
+        _TOPIC_WORDS.search(clause) and not (_REFUSAL.search(clause) or _DEFERRAL.search(clause)) for clause in _CLAUSE_END.split(sentence)
     )
 
 

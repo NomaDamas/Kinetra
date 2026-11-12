@@ -286,6 +286,7 @@ def test_proposal_a_declining_explanation_is_filtered_too():
         "판정을 내리는 것은 불가능합니다.",
         "I cannot give a verdict or a probability.",
         "The verdict comes only from simulation and Monte Carlo.",
+        "Only a simulation can tell the probability.",
     ],
 )
 def test_proposal_a_sentence_refusing_or_deferring_the_verdict_is_kept(refusal):
@@ -307,6 +308,13 @@ def test_proposal_a_sentence_refusing_or_deferring_the_verdict_is_kept(refusal):
         "I cannot guarantee it, but it will work.",
         "시뮬레이션으로만 판정되지만 통과할 확률이 큽니다.",
         "기둥이 실패할 확률은 거의 없어 판정할 수 없습니다.",
+        # a mention of simulation beside a hedge is not a deferral (review of #570)
+        "시뮬로 확인하면 성공 확률이 높습니다.",
+        "according to the simulation it will pass.",
+        "시뮬레이션으로만 보면 판정은 통과입니다.",
+        "시뮬레이션에서만 확인되는 판정은 통과입니다.",
+        "Only in simulation does the verdict look like a pass.",
+        "The verdict is pass only by simulation.",
     ],
 )
 def test_proposal_a_claim_beside_a_refusal_is_still_removed(claim):
