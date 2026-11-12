@@ -15,7 +15,7 @@ import mujoco
 import pytest
 
 from kinetra_core import Project, load_body
-from kinetra_engine.compiler import CompileError, PlanetPhysics, build_body_tree, planet_physics, to_mjcf
+from kinetra_engine.compiler import CompileError, CompileErrorCode, PlanetPhysics, build_body_tree, planet_physics, to_mjcf
 
 SRC = {"ref": "W-03a test fixture: value chosen by the test", "locator": "test_freefall.py"}
 DROP = 1.0  # [m]
@@ -110,7 +110,9 @@ def test_freefall_the_model_runs_what_the_data_file_says(tmp_path: Path):
 
 
 def test_freefall_a_planet_without_data_is_a_compile_error(tmp_path: Path):
-    with pytest.raises(CompileError, match="venus"):
+    with pytest.raises(CompileError, match="venus") as e:
         build_body_tree(block("venus"))
-    with pytest.raises(CompileError, match="earth"):
+    assert e.value.code is CompileErrorCode.PLANET
+    with pytest.raises(CompileError, match="earth") as e:
         build_body_tree(block("earth"), bodies_directory=tmp_path)  # no earth.json there
+    assert e.value.code is CompileErrorCode.PLANET
