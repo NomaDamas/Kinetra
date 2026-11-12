@@ -66,7 +66,7 @@ from kinetra_core import THRUSTER_NOZZLE
 from ..parts import PartCache, Supply, Thruster, burn, tank_supply, thruster_from_part
 from ..parts._shape import resolve_shape
 from ..parts.mass import _principal_inertia
-from .bodytree import BodyTree, CompileError, CompiledInstance, Mat, Vec, _congruent, _parameter_values, build_body_tree, mtv, mv, qconj, qmul, qnorm, rot, vsub
+from .bodytree import BodyTree, CompiledInstance, Mat, Vec, _congruent, _parameter_values, build_body_tree, mtv, mv, qconj, qmul, qnorm, rot, vsub
 
 Inertia6 = tuple[float, float, float, float, float, float]  # ixx iyy izz ixy ixz iyz
 
@@ -204,8 +204,9 @@ def _store(tree: BodyTree, ci: CompiledInstance, part, inst) -> PropellantStore:
 def compile_thrust(project: Project, cache: PartCache | None = None, tolerance: float | Quantity | None = None) -> ThrustModel:
     """The body tree of `project` with its thrusters, their schedule and the propellant of its tanks.
 
-    Refuses a project with a missing definition (`require_complete`, `ProjectIncomplete`) and raises `CompileError` for what
-    `build_body_tree` refuses and for a thruster actuator on a part whose role is not `thruster` (it has no thrust curve)."""
+    Refuses a project with a missing definition (`require_complete`, `ProjectIncomplete`) and raises the `CompileError`s of
+    `build_body_tree` (X-01d), among them `no_curve` for a thruster actuator on a part with no role. A part with another role
+    never gets here: `DesignSpec` refuses a thruster actuator on it (B-03b), so every thruster read here has its curve."""
     require_complete(project, BlockedOperation.COMPILE)
     tree = build_body_tree(project, cache, tolerance)
     design = tree.design
@@ -219,12 +220,6 @@ def compile_thrust(project: Project, cache: PartCache | None = None, tolerance: 
             continue
         inst = by_id[act.instance]
         part = parts[inst.part]
-        if part.role is not PartRole.THRUSTER:
-            raise CompileError(
-                f"thruster actuator {act.id!r} is on instance {inst.id!r} of part {part.id!r}, which is not a thruster part "
-                "(no thrust curve, rated thrust or propellant flow)",
-                instances=(inst.id,), parts=(part.id,),
-            )
         th = thruster_from_part(part)
         nozzle = next(s for s in part.snap_points if s.id == THRUSTER_NOZZLE)
         ci = compiled[inst.id]

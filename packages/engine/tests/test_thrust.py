@@ -17,7 +17,7 @@ import pytest
 from gltf_samples import catalog_material, library_part
 
 from kinetra_core import Project, ProjectIncomplete, check_placement
-from kinetra_engine.compiler import CompileError, ThrustRun, compile_thrust, to_mjcf
+from kinetra_engine.compiler import CompileError, CompileErrorCode, ThrustRun, compile_thrust, to_mjcf
 
 SRC = {"ref": "X-01c test fixture: value chosen by the test", "locator": "test_thrust.py"}
 LBF, LBM = 4.4482216152605, 0.45359237  # exact definitions
@@ -256,7 +256,7 @@ def test_thrust_acts_at_the_nozzle_off_axis_thrust_turns_the_body():
     assert omega_body[0] == pytest.approx(0.0, abs=1e-12) and omega_body[2] == pytest.approx(0.0, abs=1e-12)
 
 
-def test_thrust_actuator_on_a_part_that_is_not_a_thruster_is_a_compile_error():
+def test_thrust_actuator_on_a_part_with_no_role_is_a_no_curve_compile_error():
     block = {"id": "block", "name": "block", "parameters": [], "snap_points": [{"id": "s", "kind": "plug", "accepts": ["plug"], "badge": "declared", "source": SRC,
              "position": {"x": {"offset": 0.0, "terms": []}, "y": {"offset": 0.0, "terms": []}, "z": {"offset": 0.0, "terms": []}}, "orientation": IDENT}],
              "shape": {"badge": "declared", "source": SRC, "components": [{"id": "b", "operation": "add", "primitive": {"kind": "box", "size_x": {"offset": 0.1, "terms": []},
@@ -264,7 +264,8 @@ def test_thrust_actuator_on_a_part_that_is_not_a_thruster_is_a_compile_error():
     proj = project([instance("blk", "block", at=(0.0, 0.0, 0.05), material="steel-a36")], [], [{"id": "main", "kind": "thruster", "instance": "blk"}], [], extra_parts=[block])
     with pytest.raises(CompileError) as e:
         compile_thrust(proj)
-    assert e.value.instances == ("blk",) and e.value.parts == ("block",)
+    assert e.value.code is CompileErrorCode.NO_CURVE
+    assert e.value.instances == ("blk",) and e.value.parts == ("block",) and e.value.actuators == ("main",)
 
 
 def test_thrust_compile_refuses_a_project_with_a_missing_definition():
