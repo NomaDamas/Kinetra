@@ -5,6 +5,7 @@
       "hello": "#/$defs/Hello",
       "publish": "#/$defs/Publish",
       "request": "#/$defs/Request",
+      "run": "#/$defs/RunRequest",
       "subscribe": "#/$defs/Subscribe"
     },
     "propertyName": "type"
@@ -21,6 +22,9 @@
     },
     {
       "$ref": "#/$defs/Request"
+    },
+    {
+      "$ref": "#/$defs/RunRequest"
     }
   ],
   "$defs": {
@@ -1960,6 +1964,47 @@
       ],
       "title": "RequestAction",
       "type": "string"
+    },
+    "RunRequest": {
+      "description": "Compile the subscribed document as it is now and run it once (X-02a; a preview, never a verdict: F6, C7).\n\n`id` names the request and becomes the stream's `run_id`. `duration_s` [s] is the simulated time to run; the run\nends at the first tick at or after it. `seed` is recorded in `run_started` (the preview run draws nothing from it\nyet). `speed` paces the core against the wall clock: the core sends the frame of simulated time `t` no earlier than\n`t / speed` seconds after the run started (`1` real time, `0` as fast as the core and the connection allow). The\npace never changes the trajectory (`client-adapter.md` 4.1).",
+      "properties": {
+        "type": {
+          "const": "run",
+          "title": "Type",
+          "type": "string"
+        },
+        "id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Id",
+          "type": "string"
+        },
+        "duration_s": {
+          "exclusiveMinimum": 0,
+          "title": "Duration S",
+          "type": "number"
+        },
+        "seed": {
+          "default": 0,
+          "maximum": 9007199254740991,
+          "minimum": 0,
+          "title": "Seed",
+          "type": "integer"
+        },
+        "speed": {
+          "default": 1.0,
+          "minimum": 0,
+          "title": "Speed",
+          "type": "number"
+        }
+      },
+      "required": [
+        "type",
+        "id",
+        "duration_s"
+      ],
+      "title": "RunRequest",
+      "type": "object"
     },
     "SelectPlanet": {
       "additionalProperties": false,
