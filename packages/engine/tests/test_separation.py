@@ -324,7 +324,8 @@ def test_separation_event_reason_is_intended_separation_and_is_never_a_break():
     assert SEPARATION_LABEL in preview.started.model_labels
     carrier = next(f for f in frames if event in f.events)
     bodies = [b.id for b in preview.started.bodies]
-    assert decode_frame(encode_frame(carrier, bodies), preview.started.run_id, bodies).events == (event,)  # on the wire too
+    # The ground `end` belongs in the same frame; the wire preserves separation and contact events in stream order.
+    assert decode_frame(encode_frame(carrier, bodies), preview.started.run_id, bodies).events == carrier.events
 
 
 def test_separation_both_sides_stay_in_the_run_to_its_end():
