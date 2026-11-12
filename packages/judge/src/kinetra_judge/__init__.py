@@ -36,6 +36,7 @@ from .necessary import (
     motor_peak_power,
     necessary_screen,
 )
+from .sensitivity import SensitivityReport, SensitivityRow, SensitivityScenario, run_sensitivity
 
 __all__ = [
     "Box",
@@ -52,6 +53,9 @@ __all__ = [
     "Point",
     "ReachCondition",
     "RotationCondition",
+    "SensitivityReport",
+    "SensitivityRow",
+    "SensitivityScenario",
     "Status",
     "TimeLimitCondition",
     "Verdict",
@@ -62,6 +66,7 @@ __all__ = [
     "evaluate_goal",
     "goal_hash",
     "monte_carlo",
+    "run_sensitivity",
     "run_verdict",
     "sample_assumptions",
     "wilson_ci",

@@ -1,8 +1,8 @@
 # 몬테카를로 판정: p_success와 95% 신뢰구간 (J-01a)
 
-- 상태: 구현됨. `packages/judge/src/kinetra_judge/mc.py`(`sample_assumptions`, `wilson_ci`, `monte_carlo`, `run_verdict`, `Verdict`, `compare_verdicts`, `goal_hash`, `assumptions_hash`), 엔진 쪽은 `PreviewRun(..., ground_friction=μ, assumption_values=표본)`(`packages/engine/src/kinetra_engine/run/preview.py`), 코어 바인딩은 `kinetra_core.assumption`과 `apply_assumption_values`다. 테스트 `packages/judge/tests/test_mc.py`(`uv run pytest packages/judge -q -k mc`).
-- 근거: 이슈 #162와 #571, `docs/plan/studio-plan.md` 4.5절과 J-01 행, `docs/decisions/engine.md` 5.4절(H1~H6), 조건 평가기([`goal-eval.md`](goal-eval.md), J-02a), 판정 가정표의 합성([`bodies.md`](bodies.md) W-03c), 핵심 가치 V1. legacy 원본은 `legacy-v0:packages/engine/src/kinetra_engine/mc.py`.
-- 범위 밖: 민감도 순위(J-03, legacy의 한 번에 하나씩 흔들기), 실패 원인 묶음 집계(J-06), 판정 카드 화면(J-04a), 에이전트 도구에 판정기 연결(J-01d), 가정표 편집 화면(J-04b), 기준 플랫폼(#478).
+- 상태: 구현됨. `packages/judge/src/kinetra_judge/mc.py`(`sample_assumptions`, `wilson_ci`, `monte_carlo`, `run_verdict`, `Verdict`, `compare_verdicts`, `goal_hash`, `assumptions_hash`)와 `sensitivity.py`(`run_sensitivity`, `SensitivityReport`), 엔진 쪽은 `PreviewRun(..., ground_friction=μ, assumption_values=표본)`(`packages/engine/src/kinetra_engine/run/preview.py`), 코어 바인딩은 `kinetra_core.assumption`과 `apply_assumption_values`다. 테스트 `packages/judge/tests/test_mc.py`(`uv run pytest packages/judge -q -k "mc or sensitivity"`).
+- 근거: 이슈 #162, #169와 #571, `docs/plan/studio-plan.md` 4.5절과 J-01·J-03 행, `docs/decisions/engine.md` 5.4절(H1~H6), 조건 평가기([`goal-eval.md`](goal-eval.md), J-02a), 판정 가정표의 합성([`bodies.md`](bodies.md) W-03c), 핵심 가치 V1. legacy 원본은 `legacy-v0:packages/engine/src/kinetra_engine/mc.py`.
+- 범위 밖: 전역 민감도 분석, 실패 원인 묶음 집계(J-06), 판정 카드 화면(J-04a), 민감도 표시 화면(J-04c), 에이전트 도구에 판정기 연결(J-01d), 가정표 편집 화면(J-04b), 기준 플랫폼(#478).
 
 ## 하는 일
 
@@ -58,3 +58,18 @@
 Wilson 구간은 닫힌 식으로 대조한다: k = 0, n = 10의 위 끝 z²/(n + z²) = 0.27753, k = 5, n = 10의 구간 [0.236594, 0.763406].
 
 바인딩 양 끝 대조(#571): 같은 30° 경사로에 재료 마찰 1.0인 판을 놓고, 경사로 재료의 마찰에 `material_property` 바인딩을 둔다. 접촉 쌍의 마찰은 `min(1.0, 표본)`이다. 분포의 아래 끝 0.1에서는 $a=g(\sin30°-0.1\cos30°)=4.06\,\mathrm{m/s^2}$라 1 s 안에 0.02 m보다 훨씬 멀리 미끄러지고, 위 끝 1.0은 $\tan30°$보다 커서 버틴다. 테스트는 표본화 함수에서 이 행만 선언한 분포의 두 끝으로 고정하고(다른 행의 독립 시드 스트림은 그대로), 실제 `run_verdict` 컴파일·엔진·조건 평가로 성공 1개·실패 1개와 `sampled_values=(0.1,1.0)`을 단언한다. 수치는 실제 재료 인용이 아니라 테스트가 선언한 값과 추정 분포다.
+
+## 가정별 민감도 순위 (J-03)
+
+`run_sensitivity(project, goal, n=, seed=, duration_s=, project_id=, revision=)`는 먼저 실제 `run_verdict` 기준 판정을 낸다. 기준 판정의 `sampled`에 들어간, 분포가 있고 컴파일 모델이 실제 소비한 각 행에 대해 다음을 반복한다.
+
+1. 그 행만 원 분포의 5% 분위수로 고정한 반사실 가정표를 만들고 같은 `n`, `seed`, 실행 길이, 프로젝트, 조건으로 실제 엔진 판정을 다시 돌린다. 95% 분위수도 같은 일을 한다. 균일분포는 $low+q(high-low)$, 정규분포는 표준 라이브러리 `NormalDist.inv_cdf` 뒤 원 행의 clip을 적용한다.
+2. 다른 행은 기존 행별 독립 스트림 `derive_seed(seed, "assumption", key)`와 같은 표본 인덱스를 쓰므로 기준 판정과 공통 난수를 갖는다. 반사실 표의 고정 행에는 `estimate` 배지와 원 분포·분위수·계산 위치를 적은 출처를 새로 붙이며 원 프로젝트와 원 가정표는 바꾸지 않는다. 반사실 판정의 `assumptions_hash`도 그 고정 표의 해시다.
+3. `effect = p_success(q95) - p_success(q05)`를 재고 `abs(effect)` 내림차순, 같은 크기는 `assumption_key` 오름차순으로 순위를 매긴다. 어느 한쪽이라도 판단된 표본이 없으면 `effect=null`이고 수치가 있는 행 뒤에 둔다. 미측정을 0으로 바꾸지 않는다.
+4. **뒤집기**는 이 리포트에서 명시적으로 “기준 p_success와 고정 판정의 p_success가 0.5의 엄격히 반대편”이라는 뜻이다. 0.5와 같으면 뒤집기가 아니고, 비교에 필요한 p가 없으면 `flips_verdict=null`이다. `dominant_flip_assumption`은 측정된 뒤집기가 있는 가장 높은 순위의 행이며 없으면 `null`이다.
+
+실행 수는 정확히 $n(1+2|\text{baseline.sampled}|)$다. `SensitivityReport`는 `badge=sim`, `method=one_at_a_time_q05_q95`, 원 기준 판정, 원 가정표 전체(값·분포·출처·바인딩), 순위 행, 각 분위수와 고정값, 반사실 판정의 성공·실패·판단 불가 수와 p·Wilson 구간·플랫폼·가정표 해시, `dominant_flip_assumption`을 JSON으로 싣는다. 고정값의 `value_source=original_assumption_distribution_quantile`는 그 수가 독립 실측이나 인용이 아니라 원 분포에서 계산됐음을 밝힌다.
+
+미바인딩 행과 바인딩됐지만 실제 소비되지 않은 행은 `not_applied`에만 싣고 순위를 매기거나 반사실 실행을 하지 않는다. 분포가 없는 행은 `fixed`에 싣는다. 따라서 이들이 “민감도 0”이나 적용된 가정처럼 보이지 않는다.
+
+한계도 리포트 `labels`에 함께 싣는다. 이 방법은 두 분위수의 일변량 국소 비교이지 전역 민감도가 아니며 가정 상호작용을 재지 않는다. 표본 오차와 모델 근사 오차가 남고, 순위 하나로 인과나 최종 실현 가능성을 단정하지 않는다. 검증은 `uv run pytest packages/judge -q -k sensitivity`다. 지배 가정 테스트는 위 30° 경사로에서 재료 마찰 q05=0.145(모두 미끄러짐), q95=0.955(모두 버팀)가 1위·뒤집기 가정임을 실제 엔진 판정으로 보고, 접촉에 들어가지 않는 지면 마찰은 같은 공통 난수 아래 변화 0임을 확인한다. 이 값들은 테스트가 선언한 분포에서 계산된 고정값이다.
