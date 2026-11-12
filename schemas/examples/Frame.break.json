@@ -79,6 +79,7 @@
     {
       "kind": "break",
       "tick": 129,
+      "reason": "over_threshold",
       "joint": "axle-fl",
       "load": {
         "value": 150.0,

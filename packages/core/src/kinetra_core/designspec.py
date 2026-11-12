@@ -5,7 +5,8 @@ instance (parameter names, units and ranges, a joint's snap point, an actuator's
 validation, and a conflict is rejected with the ids involved. An instance whose part or material the project does
 not carry is a placeholder (C-06, `missing.py`, `docs/architecture/missing-definitions.md`): it validates, keeps its
 pose, parameter values and joints, and nothing that needs the missing definition is checked until it is linked back.
-Other references (joint -> instance, actuator -> instance, schedule -> actuator) stay closed.
+Other references (joint -> instance, actuator -> instance, schedule -> actuator, separation entry -> separator instance)
+stay closed.
 
 Where numbers are physical they follow C-01a: a `Quantity` (value, unit, badge, source), or one `Provenance`
 that covers a whole record whose numbers have fixed units by field (an instance pose in m and a unit quaternion,
@@ -27,15 +28,16 @@ point is used twice. That the joints form a tree (no loop, one connected assembl
 rule, reported as a compile error (X-01a, X-01d).
 
 Stable ids (G3): instance, joint, actuator and schedule entry ids match `ID_PATTERN` and are unique inside their own collection.
-An actuator's id is also its control channel id (client-adapter I5): manual control (`control`) and schedule
-entries name the actuator. Two actuators with the same kind, instance and joint are rejected (a second channel
+An actuator's id is also its control channel id (client-adapter I5): manual control (`control`) and actuate
+entries name the actuator. A separation entry (`SeparateEntry`, X-08) names the separator instance it releases. Two actuators with the same kind, instance and joint are rejected (a second channel
 to the same drive is ambiguous). A joint at a separator part's snap point is fixed (B-15). Which part may carry which actuator kind: a motor actuator on a part whose role is
 `motor`, a thruster on `thruster` (`PartRole`, B-03b). A part with another role is rejected; a part with no role is
 accepted (a bare body, and the compiler reports that it has no curve).
 
 Not here: MJCF (X-01); snap compatibility (B-04b), the joint axis in the world and its fit to the snap orientations (X-01a); a joint's own spring and
 damping (X-01b; the spring-damper *part* is B-03e); torque-speed and thrust curves and what a command of 1 means in N*m or N (B-03b, B-03c, X-01b,
-X-01c); release/separation schedule entries (X-08); definition hashes (`canonical.py`, C-03);
+X-01c); whether a separation schedule contradicts itself (two separations of one separator: a compile error, X-08, X-01d)
+and what a separation does at run time (`docs/architecture/separation.md`); definition hashes (`canonical.py`, C-03);
 `World` and assumptions (C-01c).
 """
 
@@ -344,13 +346,42 @@ class ActuateEntry(Provenance):
         return self
 
 
+class SeparateEntry(Provenance):
+    """Release separator instance `separator` at `at` seconds of simulated time (X-08, `docs/architecture/separation.md`).
+
+    One entry of the same time-axis schedule as `ActuateEntry` (no separate staging list); the `type` tag tells them apart.
+    `separator` is the id of an instance of a `separator` part (B-15). A separation cannot be undone, so the schedule
+    holds at most one per separator; that rule (and two at one time) is the compiler's (`separation_twice`,
+    `separation_conflict`, X-01d), not this model's. One badge and source cover the entry.
+    """
+
+    type: Literal["separate"]
+    id: _Id
+    separator: _Id
+    at: _NonNegative
+
+
+ScheduleEntry = Annotated[ActuateEntry | SeparateEntry, Field(discriminator="type")]
+"""One entry of the control schedule: an actuator's command over an interval, or a separation at one time."""
+
+
 class ControlSchedule(BaseModel):
     """The time-axis control program. Entries are kept in the order given; time order is not required. Entry ids
     are unique inside the schedule."""
 
     model_config = ConfigDict(extra="forbid", frozen=True)
 
-    entries: tuple[ActuateEntry, ...] = ()
+    entries: tuple[ScheduleEntry, ...] = ()
+
+    @property
+    def actuations(self) -> tuple[ActuateEntry, ...]:
+        """The actuate entries, in the schedule's order."""
+        return tuple(e for e in self.entries if isinstance(e, ActuateEntry))
+
+    @property
+    def separations(self) -> tuple[SeparateEntry, ...]:
+        """The separation entries, in the schedule's order."""
+        return tuple(e for e in self.entries if isinstance(e, SeparateEntry))
 
     @model_validator(mode="after")
     def _unique_ids(self) -> "ControlSchedule":
@@ -510,6 +541,24 @@ class DesignSpec(BaseModel):
         by_actuator: dict[str, list[ActuateEntry]] = {}
         for n, entry in enumerate(self.schedule.entries):
             where = f"schedule.entries[{n}]"
+            if isinstance(entry, SeparateEntry):
+                held = instances.get(entry.separator)
+                if held is None:
+                    raise RefError(
+                        f"{where}: unknown separator instance {entry.separator!r}",
+                        Ref(kind=RefKind.INSTANCE, id=entry.separator),
+                        Ref(kind=RefKind.SCHEDULE_ENTRY, id=entry.id),
+                    )
+                held_part = parts.get(held.part)  # a placeholder (C-06): its role is not known, not checked
+                if held_part is not None and held_part.role is not PartRole.SEPARATOR:
+                    raise RefError(
+                        f"{where}: a separation releases a separator, but instance {entry.separator!r} is part {held.part!r} "
+                        f"with {'no role' if held_part.role is None else f'role {held_part.role.value!r}'}",
+                        Ref(kind=RefKind.INSTANCE, id=entry.separator),
+                        Ref(kind=RefKind.PART, id=held.part),
+                        Ref(kind=RefKind.SCHEDULE_ENTRY, id=entry.id),
+                    )
+                continue
             act = actuators.get(entry.actuator)
             if act is None:
                 raise RefError(f"{where}: unknown actuator {entry.actuator!r}", Ref(kind=RefKind.ACTUATOR, id=entry.actuator), Ref(kind=RefKind.SCHEDULE_ENTRY, id=entry.id))

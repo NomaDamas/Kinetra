@@ -10,16 +10,17 @@ projects with the same `project_hash` give the same bodies, the same float sums 
 (the same grouping the stream frames name, `bodies[].instances`, `client-adapter.md` F8). The body's id is the smallest instance
 id of the group and its frame is that instance's frame. Its mass, centre of mass and inertia are the sum of the instances'
 `MassProperties` (parallel-axis theorem, in the body frame). They are never read from the collision proxy. A `fixed` joint
-**with** a `break_threshold` (X-04b) does not weld: its two sides stay two bodies, joined in the tree by that fixed joint, so the
-run can read the force through it and release it (`breaks.py`).
+**with** a `break_threshold` (X-04b), and the fixed joint at a separator's `face_b` (X-08, `separation.py`: the one a
+separation releases), do not weld: their two sides stay two bodies, joined in the tree by that fixed joint, so the run can read
+the force through it and release it (`breaks.py`).
 
-**Tree.** `hinge`, `slider` and breakable `fixed` joints connect bodies. The bodies and these joints must form one tree: a loop,
+**Tree.** `hinge`, `slider` and the `fixed` joints that do not weld (breakable, or at a separator's `face_b`) connect bodies. The bodies and these joints must form one tree: a loop,
 a joint inside one rigid body and a second assembly the first is not joined to are `CompileError`s naming the instances and
 joints. The root is the smallest-id body that is no joint's `b` side (the `a` side is the parent by convention); the tree is
 then walked from it, and a joint met from its `b` side is reversed: the axis changes sign and the coordinate and its limits
 stay the joint's own (`b` turning by q relative to `a` is `a` turning by q about the opposite axis). The root is free (6
-degrees of freedom); every other body has the one degree of freedom of its hinge or slider, or none (a breakable fixed joint:
-held to its parent until it breaks).
+degrees of freedom); every other body has the one degree of freedom of its hinge or slider, or none (a fixed joint that does
+not weld: held to its parent until it breaks or a separation releases it).
 
 **Frames.** SI, right-handed, +Z up; quaternions are `(w, x, y, z)` here because MuJoCo orders them so (`collision-proxy.md`,
 mapping table). A body's `pos`/`quat` are relative to its parent body (the root's to the world). A joint's `pos` and `axis` are
@@ -35,8 +36,8 @@ carries no threshold: the run reads it from `tree.joints`.
 
 **Errors (X-01d).** A project with a missing definition is refused first (`require_complete`, `ProjectIncomplete`). Every
 other refusal is a `CompileError` with a code and the instance, part, joint and actuator ids (`errors.py`); the checks per
-part and joint that building does not make are in `checks.py`, run in this order: planet, parts, actuators, snaps, axes,
-the tree, floating.
+part and joint that building does not make are in `checks.py` and `separation.py`, run in this order: planet, parts,
+actuators, separations, snaps, axes, the tree, floating.
 """
 
 from __future__ import annotations
@@ -66,6 +67,7 @@ from kinetra_core.geometry import Quaternion
 from ..parts import PartCache, ShapeError, collision_proxy, mass_properties
 from .checks import check_actuators, check_axes, check_floating, check_snaps
 from .errors import CompileError, CompileErrorCode
+from .separation import check_separations, separator_joints
 from .planet import PlanetPhysics, planet_physics
 
 Vec = tuple[float, float, float]
@@ -246,9 +248,10 @@ def _parameter_values(part: PartDef, inst: Instance) -> dict[str, float]:
     return {p.name: p.default.value for p in part.parameters} | {p.name: p.value for p in inst.parameters}
 
 
-def _welds(joint: Joint) -> bool:
-    """A fixed joint that never breaks makes its two instances one rigid body; a breakable one keeps them two bodies."""
-    return joint.kind is JointKind.FIXED and joint.break_threshold is None
+def _welds(joint: Joint, released: set[str]) -> bool:
+    """A fixed joint that never comes apart makes its two instances one rigid body; a breakable one, or one a separator
+    releases (`released`), keeps them two bodies."""
+    return joint.kind is JointKind.FIXED and joint.break_threshold is None and joint.id not in released
 
 
 def _compile_instance(
@@ -330,6 +333,8 @@ def build_body_tree(
         inst.id: _compile_instance(design, inst, parts, materials, cache, tolerance) for inst in design.instances
     }
     check_actuators(design)
+    check_separations(design)
+    released = {s.joint for s in separator_joints(design).values()}
     findings = check_placement(ordered_project)
     check_snaps(design, findings)
     check_axes(design)
@@ -337,7 +342,7 @@ def build_body_tree(
     # rigid bodies: instances welded by fixed joints that never break
     groups = _Groups(list(by_id))
     for joint in design.joints:
-        if _welds(joint) and not groups.union(joint.a.instance, joint.b.instance):
+        if _welds(joint, released) and not groups.union(joint.a.instance, joint.b.instance):
             raise CompileError(
                 f"fixed joint {joint.id!r} closes a loop of fixed joints between instances {joint.a.instance!r} and {joint.b.instance!r}: "
                 "they are already one rigid body",
@@ -355,7 +360,7 @@ def build_body_tree(
     adjacency: dict[str, list[tuple[str, Joint, bool]]] = {g: [] for g in members}  # (other body, joint, other is the joint's a side)
     targets: set[str] = set()
     for joint in design.joints:
-        if _welds(joint):
+        if _welds(joint, released):
             continue
         ga, gb = groups.find(joint.a.instance), groups.find(joint.b.instance)
         if ga == gb:

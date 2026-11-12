@@ -68,10 +68,13 @@ export interface AddAssumption {
   index?: number | null;
 }
 
-/** Add a schedule entry. `index` is only where it goes in the list; the entry is known by its `id`. */
+/**
+ * Add a schedule entry (an actuate or a separate entry, X-08). `index` is only where it goes in the list; the entry
+ * is known by its `id`.
+ */
 export interface AddControlEntry {
   type: "add_control_entry";
-  entry: ActuateEntry;
+  entry: ActuateEntry | SeparateEntry;
   index?: number | null;
 }
 
@@ -203,10 +206,14 @@ export interface Box {
   size_z: AxisExpr;
 }
 
-/** Joint `joint` released: the load on it reached its break threshold (both in N; plan 4.6, a simplified model). */
+/**
+ * Joint `joint` released because the load on it went over its break threshold (both in N; plan 4.6, a simplified
+ * model). `reason` is the release's cause, `over_threshold` ("임계 초과"): only this one is a break (X-08).
+ */
 export interface BreakEvent {
   kind: "break";
   tick: number;
+  reason: "over_threshold";
   joint: string;
   load: ForceN;
   threshold: ForceN;
@@ -336,7 +343,7 @@ export interface ContactEvent {
  * are unique inside the schedule.
  */
 export interface ControlSchedule {
-  entries?: ActuateEntry[];
+  entries?: (ActuateEntry | SeparateEntry)[];
 }
 
 /** ⑥ The core build: its commit (the force-applying paths and their order are in it). */
@@ -521,7 +528,7 @@ export interface Frame {
   tick: number;
   sim_time_s: number;
   poses: BodyPose[];
-  events?: (ContactEvent | BreakEvent | ConditionMetEvent)[];
+  events?: (ContactEvent | BreakEvent | SeparationEvent | ConditionMetEvent)[];
 }
 
 /** Dimensionless Coulomb coefficient. */
@@ -565,6 +572,12 @@ export interface HistoryEntry {
   origin: Origin;
   command: AddPartDef | ReplacePartDef | RemovePartDef | AddMaterialDef | ReplaceMaterialDef | RemoveMaterialDef | AddInstance | RemoveInstance | MoveInstance | SetParameter | ClearParameter | SetInstanceMaterial | RelinkInstance | AddJoint | ReplaceJoint | RemoveJoint | AddActuator | RemoveActuator | AddControlEntry | RemoveControlEntry | ReplaceControlEntry | AddAssumption | SetAssumption | RemoveAssumption | SelectPlanet | CommandBatch;
   inverse: AddPartDef | ReplacePartDef | RemovePartDef | AddMaterialDef | ReplaceMaterialDef | RemoveMaterialDef | AddInstance | RemoveInstance | MoveInstance | SetParameter | ClearParameter | SetInstanceMaterial | RelinkInstance | AddJoint | ReplaceJoint | RemoveJoint | AddActuator | RemoveActuator | AddControlEntry | RemoveControlEntry | ReplaceControlEntry | AddAssumption | SetAssumption | RemoveAssumption | SelectPlanet | CommandBatch;
+}
+
+/** An impulse in newton-seconds (`unit` is always `N*s`). */
+export interface ImpulseNs {
+  value: number;
+  unit: "N*s";
 }
 
 /** Slope angle above the ground in radians, strictly between 0 and pi/2. */
@@ -1073,10 +1086,10 @@ export interface RemovePartDef {
   unlink?: boolean;
 }
 
-/** Replace the schedule entry with the same id (`entry.id`), in place. */
+/** Replace the schedule entry with the same id (`entry.id`), in place. The new entry may be of the other type. */
 export interface ReplaceControlEntry {
   type: "replace_control_entry";
-  entry: ActuateEntry;
+  entry: ActuateEntry | SeparateEntry;
 }
 
 /**
@@ -1224,6 +1237,38 @@ export interface RuntimeTag {
 export interface SelectPlanet {
   type: "select_planet";
   planet: string;
+}
+
+/**
+ * Release separator instance `separator` at `at` seconds of simulated time (X-08, `docs/architecture/separation.md`).
+ *
+ * One entry of the same time-axis schedule as `ActuateEntry` (no separate staging list); the `type` tag tells them apart.
+ * `separator` is the id of an instance of a `separator` part (B-15). A separation cannot be undone, so the schedule
+ * holds at most one per separator; that rule (and two at one time) is the compiler's (`separation_twice`,
+ * `separation_conflict`, X-01d), not this model's. One badge and source cover the entry.
+ */
+export interface SeparateEntry {
+  badge: Badge;
+  source: Source;
+  type: "separate";
+  id: string;
+  separator: string;
+  at: number;
+}
+
+/**
+ * Separator instance `separator` let go of joint `joint` on purpose (X-08): `reason` is `intended_separation` ("의도한
+ * 분리"), never a break. Each side received the declared separation `impulse`, equal and opposite. `entry` is the schedule
+ * entry that asked for it, `null` for a manual request during the run. `tick` is the first tick whose state is apart.
+ */
+export interface SeparationEvent {
+  kind: "separation";
+  tick: number;
+  reason: "intended_separation";
+  separator: string;
+  joint: string;
+  entry: string | null;
+  impulse: ImpulseNs;
 }
 
 /**
@@ -1467,9 +1512,11 @@ export type EditCommand = AddPartDef | ReplacePartDef | RemovePartDef | AddMater
 
 export type EngineTag = WheelEngine | WasmEngine | CustomBuildEngine;
 
-export type FrameEvent = ContactEvent | BreakEvent | ConditionMetEvent;
+export type FrameEvent = ContactEvent | BreakEvent | SeparationEvent | ConditionMetEvent;
 
 export type RunEnd = RunCompleted | RunStopped | RunFailed;
+
+export type ScheduleEntry = ActuateEntry | SeparateEntry;
 
 export type ServerMessage = Hello | Snapshot | Resumed | Applied | Accepted | Rejected | ProtocolError | RunStarted | Frame | RunEnded;
 

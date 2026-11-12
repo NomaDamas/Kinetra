@@ -104,6 +104,7 @@ def frame(tick: int) -> dict:
             {
                 "kind": "break",
                 "tick": BREAK_TICK,
+                "reason": "over_threshold",
                 "joint": "axle-fl",
                 "load": {"value": 150.0, "unit": "N"},
                 "threshold": {"value": 120.0, "unit": "N"},
