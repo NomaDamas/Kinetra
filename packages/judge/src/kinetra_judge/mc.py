@@ -16,7 +16,8 @@ taxonomy counts (J-06), the Clopper-Pearson interval (unused by the legacy verdi
 A verdict is the simulation of every sample (V1): sample i runs the project once (`RunKind.VERDICT_SAMPLE`, one frame per
 tick) with the values of row i, and `evaluate_goal` (J-02a) says `met`, `failed` or `undetermined`. p_success is
 `met / (met + failed)`; undetermined samples are counted and left out of p and the CI, with a label. A table row whose
-sample does not enter the model is not shaken and says so (`not_applied`): the engine reads only `ENGINE_APPLIED` today.
+sample does not enter the model is not shaken and says so (`not_applied`). `run_verdict` applies `ENGINE_APPLIED` and
+project rows with a typed binding; `sampled_values` records the actual draws of every applied random row.
 
 Platform (engine.md 5.4): a verdict carries the platform tag of its runs (H1); every sample must have the same tag, else
 there is no verdict. Two verdicts are compared only when they answer the same request (`REQUEST_FIELDS`: project, goal,
@@ -29,7 +30,7 @@ from __future__ import annotations
 import hashlib
 import json
 import math
-from collections.abc import Callable, Mapping, Sequence
+from collections.abc import Callable, Mapping, Sequence, Set
 from enum import StrEnum
 from typing import Any, Literal
 
@@ -37,6 +38,8 @@ import numpy as np
 from kinetra_core import (
     Assumption,
     FixedDistribution,
+    InstanceParameterBinding,
+    MaterialPropertyBinding,
     Frame,
     NormalDistribution,
     PlatformTag,
@@ -52,6 +55,8 @@ from kinetra_core import (
 from kinetra_core.frames import MAX_SEED
 from kinetra_engine.parts import PartCache
 from kinetra_engine.run import PreviewRun, end_tick
+from kinetra_engine.compiler import contact_friction
+from kinetra_engine.run.preview import CompiledModel
 from pydantic import BaseModel, ConfigDict, model_validator
 
 from .goal import Goal, Status, evaluate_goal
@@ -60,8 +65,8 @@ Z_95 = 1.959963984540054
 """The two-sided 95% standard normal quantile (Φ⁻¹(0.975)), the legacy `wilson_ci` default."""
 
 ENGINE_APPLIED = frozenset({"ground_friction"})
-"""The table rows whose sample `run_verdict` puts into the model: the planet's ground friction (`PreviewRun(ground_friction=)`,
-`to_mjcf`, W-03c). A project row has no binding to a design value yet, so the model never reads it."""
+"""Planet rows applied independently of a project binding (`PreviewRun(ground_friction=)`, `to_mjcf`, W-03c).
+Bound project rows are added by `run_verdict`; unbound rows remain `not_applied`."""
 
 VERDICT_LABEL = "몬테카를로 판정: 가정표의 분포에서 뽑은 표본마다 시뮬을 한 번씩 돌려 성공 조건을 평가했다"
 CI_LABEL = "95% 신뢰구간은 Wilson 점수 구간이다. 표본 수에서 오는 불확실성만 담고 모델의 근사에서 오는 오차는 담지 않는다"
@@ -157,8 +162,9 @@ def assumptions_hash(table: VerdictAssumptionTable) -> str:
 class Verdict(BaseModel):
     """A Monte Carlo verdict, recorded with the platform tag of its runs (engine.md 5.4 H1) and its request (`REQUEST_FIELDS`).
     `p_success`, `ci_low`, `ci_high` are over the determined samples (`n_met + n_failed`) and `None` when there is none.
-    `sampled` are the shaken rows that entered the model, `not_applied` the shaken rows that did not. `model_labels` are the
-    runs' (`RunStarted.model_labels`, in first-seen order), `labels` the verdict's own."""
+    `sampled` are the shaken rows that entered the model, `sampled_values` their draws in sample order, and
+    `not_applied` the shaken rows that did not. `model_labels` are the runs' (`RunStarted.model_labels`, in first-seen
+    order), `labels` the verdict's own."""
 
     model_config = ConfigDict(extra="forbid", frozen=True)
 
@@ -180,6 +186,8 @@ class Verdict(BaseModel):
     ci_method: Literal["wilson_95"]
     platform: PlatformTag
     sampled: tuple[str, ...]
+    sampled_values: dict[str, tuple[float, ...]]
+    """The actual draw of every `sampled` row, in sample order; values use the row's unit."""
     not_applied: tuple[str, ...]
     model_labels: tuple[str, ...]
     labels: tuple[str, ...]
@@ -195,6 +203,8 @@ class Verdict(BaseModel):
         else:
             if self.p_success != self.n_met / determined or (self.ci_low, self.ci_high) != wilson_ci(self.n_met, determined):
                 raise ValueError("p_success and the CI must be the Wilson 95% of n_met over n_met + n_failed")
+        if set(self.sampled_values) != set(self.sampled) or any(len(v) != self.n_samples for v in self.sampled_values.values()):
+            raise ValueError("sampled_values must contain exactly n_samples draws for every sampled row")
         return self
 
 
@@ -209,7 +219,7 @@ def monte_carlo(
     n: int,
     seed: int,
     duration_s: float,
-    applied: frozenset[str],
+    applied: Set[str],
     run_sample: RunSample,
 ) -> Verdict:
     """Draw `n` samples of `table` under `seed`, run each with `run_sample` (runs of `duration_s`), evaluate `goal` on each
@@ -281,10 +291,75 @@ def monte_carlo(
         ci_method="wilson_95",
         platform=first.platform,
         sampled=sampled,
+        sampled_values={key: values[key] for key in sampled},
         not_applied=not_applied,
         model_labels=tuple(model_labels),
         labels=tuple(labels),
     )
+
+
+def _consumed_bindings(project: Project, compiled: CompiledModel, duration_s: float) -> frozenset[str]:
+    """Input reads, not mere references: unused definitions and descriptive specs are not physics inputs."""
+    tree = compiled.tree
+    parts = {p.id: p for p in tree.design.parts}
+    instances = {i.id: i for i in tree.design.instances}
+    parameters: set[tuple[str, str]] = set()
+    materials: set[tuple[str, str]] = set()
+    specs: set[tuple[str, str]] = set()
+    for ci in tree.instances:
+        parameters.update((ci.instance, p.name) for p in ci.properties.derivation.parameters)
+        parameters.update((ci.instance, p.name) for p in ci.proxy.derivation.parameters)
+        if ci.properties.derivation.material_id is not None:
+            materials.add((ci.properties.derivation.material_id, "density"))
+    for geom in contact_friction(tree).geoms:
+        if geom.origin == "material":
+            materials.add((instances[geom.instance].material, "friction"))
+        elif geom.origin == "tread":
+            specs.add((geom.part, "tread_friction_kinetic"))
+    for prop in tree.terrain:
+        if prop.material is not None:
+            materials.add((prop.material, "friction"))
+    for joint in tree.joints:
+        for ref in (joint.a, joint.b):
+            inst = instances[ref.instance]
+            snap = next(s for s in parts[inst.part].snap_points if s.id == ref.snap_point)
+            for axis in (snap.position.x, snap.position.y, snap.position.z):
+                parameters.update((inst.id, term.param) for term in axis.terms)
+    for spring in compiled.drives.springs:
+        parameters.update((spring.instance, name) for name in ("stiffness", "damping"))
+    active = {e.actuator for e in tree.design.schedule.actuations if e.command != 0 and e.start < duration_s}
+    for motor in compiled.drives.motors:
+        if motor.actuator in active and motor.supply is not None:
+            specs.update((motor.part.id, name) for name in ("rated_voltage", "no_load_current", "stall_current"))
+            source = instances[motor.supply]
+            specs.add((source.part, "energy_capacity"))
+            parameters.add((source.id, "initial_charge"))
+    for thruster in compiled.thrust.thrusters:
+        if thruster.actuator in active:
+            part = instances[thruster.instance].part
+            specs.add((part, "rated_thrust"))
+            if thruster.supply is not None:
+                specs.add((part, "propellant_flow"))
+            nozzle = next(s for s in parts[part].snap_points if s.id == "nozzle")
+            for axis in (nozzle.position.x, nozzle.position.y, nozzle.position.z):
+                parameters.update((thruster.instance, term.param) for term in axis.terms)
+    for store in compiled.thrust.stores:
+        parameters.update((store.instance, name) for name in ("propellant_density", "initial_fill"))
+    for entry in tree.design.schedule.entries:
+        if entry.type == "separate" and entry.at < duration_s:
+            parameters.add((entry.separator, "separation_impulse"))
+    consumed = set()
+    for row in project.assumptions.assumptions:
+        binding = row.binding
+        if isinstance(binding, InstanceParameterBinding):
+            used = (binding.instance, binding.parameter) in parameters
+        elif isinstance(binding, MaterialPropertyBinding):
+            used = (binding.material, binding.property) in materials
+        else:
+            used = binding is not None and (binding.part, binding.spec) in specs
+        if used:
+            consumed.add(row.key)
+    return frozenset(consumed)
 
 
 def run_verdict(
@@ -300,8 +375,10 @@ def run_verdict(
 ) -> Verdict:
     """The verdict of `project` on `goal` from the engine: the table is `verdict_assumption_table` of the project on its
     planet (W-03c), and sample i is one `PreviewRun` of kind `verdict_sample` (run id `verdict-{seed}-{i}`, the verdict's
-    seed, one frame per tick) with the ground at the sample's `ground_friction`."""
+    seed, one frame per tick) with the ground at the sample's `ground_friction` and every bound project row applied to its
+    typed target. The base project is never mutated; its hash remains the run/request identity."""
     table = verdict_assumption_table(project.assumptions, load_body(project.world.planet))
+    applied = set(ENGINE_APPLIED) | {a.key for a in project.assumptions.assumptions if a.binding is not None}
 
     def run_sample(i: int, values: Mapping[str, float]) -> tuple[RunStarted, Sequence[Frame], RunEnded]:
         run = PreviewRun(
@@ -315,11 +392,13 @@ def run_verdict(
             frame_every_ticks=1,
             cache=cache,
             ground_friction=values["ground_friction"],
+            assumption_values=values,
         )
+        applied.intersection_update(ENGINE_APPLIED | _consumed_bindings(project, run.compiled, duration_s))
         stream = list(run)
         return run.started, stream[:-1], stream[-1]
 
-    return monte_carlo(table, goal, n=n, seed=seed, duration_s=duration_s, applied=ENGINE_APPLIED, run_sample=run_sample)
+    return monte_carlo(table, goal, n=n, seed=seed, duration_s=duration_s, applied=applied, run_sample=run_sample)
 
 
 class VerdictComparison(StrEnum):

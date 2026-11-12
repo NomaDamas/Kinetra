@@ -707,6 +707,36 @@
           "default": true,
           "title": "Editable",
           "type": "boolean"
+        },
+        "binding": {
+          "anyOf": [
+            {
+              "discriminator": {
+                "mapping": {
+                  "instance_parameter": "#/$defs/InstanceParameterBinding",
+                  "material_property": "#/$defs/MaterialPropertyBinding",
+                  "part_spec": "#/$defs/PartSpecBinding"
+                },
+                "propertyName": "kind"
+              },
+              "oneOf": [
+                {
+                  "$ref": "#/$defs/InstanceParameterBinding"
+                },
+                {
+                  "$ref": "#/$defs/MaterialPropertyBinding"
+                },
+                {
+                  "$ref": "#/$defs/PartSpecBinding"
+                }
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Binding"
         }
       },
       "required": [
@@ -1838,6 +1868,34 @@
       "title": "Instance",
       "type": "object"
     },
+    "InstanceParameterBinding": {
+      "additionalProperties": false,
+      "description": "Bind an assumption to one instance's parameter (the part default when the instance omits it).",
+      "properties": {
+        "kind": {
+          "const": "instance_parameter",
+          "title": "Kind",
+          "type": "string"
+        },
+        "instance": {
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+          "title": "Instance",
+          "type": "string"
+        },
+        "parameter": {
+          "pattern": "^[a-z][a-z0-9_]{0,63}$",
+          "title": "Parameter",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "instance",
+        "parameter"
+      ],
+      "title": "InstanceParameterBinding",
+      "type": "object"
+    },
     "Joint": {
       "additionalProperties": false,
       "description": "A connection between two snap points of two different instances. `a` is the parent side by convention.\n\n`axis` (hinge and slider): the line the one free motion is about or along, in the frame of the `a` snap point\n(`JointAxis`). `None` is +Z of that frame (`DEFAULT_JOINT_AXIS`). A fixed joint has no motion and so no axis.\n`limits` are optional (`None`: unlimited, as a wheel axle) and not allowed on a fixed joint; they bound the joint\ncoordinate, which is 0 at the saved pose (`JointLimits`).\n`break_threshold` is optional (`None`: never breaks).",
@@ -1995,6 +2053,39 @@
         "friction"
       ],
       "title": "Material",
+      "type": "object"
+    },
+    "MaterialPropertyBinding": {
+      "additionalProperties": false,
+      "description": "Bind an assumption to one physical property of a material carried by the project.",
+      "properties": {
+        "kind": {
+          "const": "material_property",
+          "title": "Kind",
+          "type": "string"
+        },
+        "material": {
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+          "title": "Material",
+          "type": "string"
+        },
+        "property": {
+          "enum": [
+            "density",
+            "yield_strength",
+            "elastic_modulus",
+            "friction"
+          ],
+          "title": "Property",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "material",
+        "property"
+      ],
+      "title": "MaterialPropertyBinding",
       "type": "object"
     },
     "MoveInstance": {
@@ -2325,6 +2416,34 @@
       ],
       "title": "PartRole",
       "type": "string"
+    },
+    "PartSpecBinding": {
+      "additionalProperties": false,
+      "description": "Bind an assumption to one named specification of a part carried by the project.",
+      "properties": {
+        "kind": {
+          "const": "part_spec",
+          "title": "Kind",
+          "type": "string"
+        },
+        "part": {
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+          "title": "Part",
+          "type": "string"
+        },
+        "spec": {
+          "pattern": "^[a-z][a-z0-9_]{0,63}$",
+          "title": "Spec",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "part",
+        "spec"
+      ],
+      "title": "PartSpecBinding",
+      "type": "object"
     },
     "Placement": {
       "additionalProperties": false,

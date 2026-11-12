@@ -38,6 +38,7 @@ from kinetra_judge import (
     sample_assumptions,
     wilson_ci,
 )
+import kinetra_judge.mc as mc
 from kinetra_judge.mc import CI_LABEL, ENGINE_APPLIED, PLATFORM_LABEL, VERDICT_LABEL, derive_seed
 
 SRC = {"ref": "J-01a test fixture: value chosen by the test", "locator": "test_mc.py"}
@@ -196,6 +197,7 @@ def test_mc_verdicts_of_different_requests_are_not_comparable(ramp_verdict):
         assert compare_verdicts(other, ramp_verdict) == VerdictComparisonResult(status=VerdictComparison.NOT_COMPARABLE, differs=(field,))
     # another sample count, with its own consistent numbers: still a different request
     other_n = Verdict.model_validate({**record, "n_samples": N + 1, "n_failed": record["n_failed"] + 1,
+                                      "sampled_values": {k: [*v, v[-1]] for k, v in record["sampled_values"].items()},
                                       "p_success": ramp_verdict.n_met / (N + 1),
                                       "ci_low": wilson_ci(ramp_verdict.n_met, N + 1)[0], "ci_high": wilson_ci(ramp_verdict.n_met, N + 1)[1]})
     assert compare_verdicts(other_n, ramp_verdict).differs == ("n_samples",)
@@ -212,6 +214,8 @@ def test_mc_verdict_refuses_inconsistent_numbers(ramp_verdict):
     for bad in ({"p_success": ramp_verdict.p_success + 0.01}, {"ci_low": 0.0}, {"n_met": ramp_verdict.n_met + 1}, {"p_success": None}):
         with pytest.raises(ValueError):
             Verdict.model_validate({**record, **bad})
+    with pytest.raises(ValueError, match="sampled_values"):
+        Verdict.model_validate({**record, "sampled_values": {"ground_friction": [0.5]}})
 
 
 # --- what the verdict does not hide ----------------------------------------------------------------------------------
@@ -238,12 +242,107 @@ def table_of(project: Project):
     return verdict_assumption_table(project.assumptions, load_body(project.world.planet))
 
 
+def test_mc_bound_material_friction_at_both_distribution_ends_changes_the_hand_computed_result(monkeypatch):
+    """#571: the low endpoint slides and the high endpoint holds on the same 30° ramp as above.
+
+    The ramp has its own material, so the contact pair is min(block 1.0, sampled ramp friction), not the planet row.
+    The sampler is forced only to the declared distribution's two endpoints; every compile, engine step and goal check is real.
+    """
+    data = block_on_ramp().model_dump(mode="json")
+    data["design"]["materials"].append({
+        "id": "surface", "name": "Declared test surface", "density": q(1000.0, "kg/m^3"),
+        "yield_strength": q(1.0e8, "Pa"), "elastic_modulus": q(1.0e9, "Pa"), "friction": q(0.5, "1"),
+    })
+    data["world"]["terrain_props"][0]["material"] = "surface"
+    data["assumptions"]["assumptions"] = [{
+        "key": "surface_friction", "label": "Surface friction", "value": q(0.5, "1"), "confidence": "med",
+        "distribution": {"kind": "uniform", "low": 0.1, "high": 1.0, "badge": "estimate", "source": SRC},
+        "binding": {"kind": "material_property", "material": "surface", "property": "friction"},
+    }]
+    project = Project.model_validate(data)
+    real_samples = mc.sample_assumptions
+
+    def endpoints(rows, n, seed):
+        assert n == 2
+        values = real_samples(rows, n, seed)  # all other rows retain their independent, seeded streams
+        values["surface_friction"] = (0.1, 1.0)
+        return values
+
+    monkeypatch.setattr(mc, "sample_assumptions", endpoints)
+    verdict = run_verdict(project, slid_goal(project), n=2, seed=SEED, duration_s=DURATION_S, project_id="ramp", revision=0)
+
+    # mu=0.1: a = g(sin30° - 0.1cos30°) = 4.06 m/s², so it moves far beyond 0.02 m by 1 s.
+    # mu=1.0 > tan30°: the block holds. The ground-friction draws cannot change either material-material contact.
+    assert (verdict.n_met, verdict.n_failed, verdict.n_undetermined) == (1, 1, 0)
+    assert verdict.sampled == ("ground_friction", "surface_friction") and verdict.not_applied == ()
+    assert verdict.sampled_values["surface_friction"] == (0.1, 1.0)
+    assert verdict.sampled_values["ground_friction"] == drawn_mu(project, 2, SEED)
+    assert project.design.materials[1].friction.value == 0.5  # samples never mutate the project or its declared material
+
+
+@pytest.mark.parametrize("declared_mass", [False, True])
+def test_mc_only_consumed_bound_targets_are_sampled(declared_mass):
+    data = block_on_ramp().model_dump(mode="json")
+    part = data["design"]["parts"][0]
+    part["parameters"] = [{"name": "mass", "unit": "kg", "default": q(1.0, "kg"),
+                           "min": q(0.1, "kg"), "max": q(2.0, "kg")}]
+    part["mass_parameter"] = "mass" if declared_mass else None
+    part["specs"] = [{"name": "tread_friction_kinetic", **q(0.5, "1")}, {"name": "annotation", **q(1.0, "N")}]
+    data["design"]["materials"].append({**data["design"]["materials"][0], "id": "unused"})
+
+    def bound(key, value, unit, binding):
+        return {"key": key, "label": key, "value": q(value, unit), "confidence": "med", "binding": binding,
+                "distribution": {"kind": "uniform", "low": value * 0.9, "high": value * 1.1,
+                                 "badge": "estimate", "source": SRC}}
+
+    data["assumptions"]["assumptions"] = [
+        bound("mass", 1.0, "kg", {"kind": "instance_parameter", "instance": "block1", "parameter": "mass"}),
+        bound("density", 1000.0, "kg/m^3", {"kind": "material_property", "material": "grip", "property": "density"}),
+        bound("strength", 1.0e8, "Pa", {"kind": "material_property", "material": "grip", "property": "yield_strength"}),
+        bound("orphan", 1.0, "1", {"kind": "material_property", "material": "unused", "property": "friction"}),
+        bound("overridden_friction", 1.0, "1", {"kind": "material_property", "material": "grip", "property": "friction"}),
+        bound("tread", 0.5, "1", {"kind": "part_spec", "part": "plate", "spec": "tread_friction_kinetic"}),
+        bound("annotation", 1.0, "N", {"kind": "part_spec", "part": "plate", "spec": "annotation"}),
+    ]
+    project = Project.model_validate(data)
+    goal = Goal.model_validate({"conditions": [{"kind": "no_break", "id": "whole"}]})
+    verdict = run_verdict(project, goal, n=2, seed=SEED, duration_s=0.01, project_id="used", revision=0)
+    expected = {"ground_friction", "mass" if declared_mass else "density", "tread"}
+    assert set(verdict.sampled) == expected and set(verdict.sampled_values) == expected
+    assert set(verdict.not_applied) == {r["key"] for r in data["assumptions"]["assumptions"]} - expected
+
+
+@pytest.mark.parametrize("active", [False, True])
+def test_mc_inactive_thruster_spec_is_not_applied(active):
+    data = block_on_ramp().model_dump(mode="json")
+    part = data["design"]["parts"][0]
+    part["role"] = "thruster"
+    part["specs"] = [{"name": "rated_thrust", **q(1.0, "N")}, {"name": "propellant_flow", **q(0.1, "kg/s")}]
+    part["curves"] = [{"name": "thrust", "curve": {"badge": "declared", "source": SRC,
+        "x_unit": "s", "y_unit": "N", "points": [{"x": 0.0, "y": 1.0}, {"x": 1.0, "y": 1.0}]}}]
+    part["snap_points"] = [{"id": "nozzle", "kind": "exhaust", "badge": "declared", "source": SRC,
+        "position": {a: ax(0.0) for a in "xyz"}, "orientation": {"x": 0.0, "y": 0.0, "z": 0.0, "w": 1.0}}]
+    data["design"]["actuators"] = [{"id": "engine", "kind": "thruster", "instance": "block1"}]
+    if active:
+        data["design"]["schedule"] = {"entries": [{"type": "actuate", "id": "on", "actuator": "engine",
+            "start": 0.0, "end": 1.0, "command": 1.0, "badge": "declared", "source": SRC}]}
+    data["assumptions"]["assumptions"] = [{"key": "thrust", "label": "Thrust", "value": q(1.0, "N"),
+        "confidence": "med", "distribution": {"kind": "uniform", "low": 0.9, "high": 1.1, "badge": "estimate", "source": SRC},
+        "binding": {"kind": "part_spec", "part": "plate", "spec": "rated_thrust"}}]
+    project = Project.model_validate(data)
+    goal = Goal.model_validate({"conditions": [{"kind": "no_break", "id": "whole"}]})
+    verdict = run_verdict(project, goal, n=1, seed=SEED, duration_s=0.01, project_id="thrust", revision=0)
+    assert ("thrust" in verdict.sampled) is active
+    assert ("thrust" in verdict.not_applied) is not active
+
+
 def test_mc_names_rows_the_model_does_not_read():
     mass = {"key": "vehicle_mass", "label": "Vehicle mass", "value": q(10.0, "kg"), "confidence": "med",
             "distribution": {"kind": "uniform", "low": 9.0, "high": 11.0, "badge": "estimate", "source": SRC}}
     project = block_on_ramp([mass])
     v = monte_carlo(table_of(project), slid_goal(project), n=2, seed=SEED, duration_s=0.1, applied=ENGINE_APPLIED, run_sample=engine_sample(project))
     assert v.sampled == ("ground_friction",) and v.not_applied == ("vehicle_mass",)
+    assert set(v.sampled_values) == {"ground_friction"}
     assert "미적용: 가정 'vehicle_mass'의 분포는 모델이 읽지 않아 흔들지 않았다" in v.labels
 
 

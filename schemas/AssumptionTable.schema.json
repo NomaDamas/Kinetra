@@ -63,6 +63,36 @@
           "default": true,
           "title": "Editable",
           "type": "boolean"
+        },
+        "binding": {
+          "anyOf": [
+            {
+              "discriminator": {
+                "mapping": {
+                  "instance_parameter": "#/$defs/InstanceParameterBinding",
+                  "material_property": "#/$defs/MaterialPropertyBinding",
+                  "part_spec": "#/$defs/PartSpecBinding"
+                },
+                "propertyName": "kind"
+              },
+              "oneOf": [
+                {
+                  "$ref": "#/$defs/InstanceParameterBinding"
+                },
+                {
+                  "$ref": "#/$defs/MaterialPropertyBinding"
+                },
+                {
+                  "$ref": "#/$defs/PartSpecBinding"
+                }
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Binding"
         }
       },
       "required": [
@@ -108,6 +138,67 @@
         "kind"
       ],
       "title": "FixedDistribution",
+      "type": "object"
+    },
+    "InstanceParameterBinding": {
+      "additionalProperties": false,
+      "description": "Bind an assumption to one instance's parameter (the part default when the instance omits it).",
+      "properties": {
+        "kind": {
+          "const": "instance_parameter",
+          "title": "Kind",
+          "type": "string"
+        },
+        "instance": {
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+          "title": "Instance",
+          "type": "string"
+        },
+        "parameter": {
+          "pattern": "^[a-z][a-z0-9_]{0,63}$",
+          "title": "Parameter",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "instance",
+        "parameter"
+      ],
+      "title": "InstanceParameterBinding",
+      "type": "object"
+    },
+    "MaterialPropertyBinding": {
+      "additionalProperties": false,
+      "description": "Bind an assumption to one physical property of a material carried by the project.",
+      "properties": {
+        "kind": {
+          "const": "material_property",
+          "title": "Kind",
+          "type": "string"
+        },
+        "material": {
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+          "title": "Material",
+          "type": "string"
+        },
+        "property": {
+          "enum": [
+            "density",
+            "yield_strength",
+            "elastic_modulus",
+            "friction"
+          ],
+          "title": "Property",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "material",
+        "property"
+      ],
+      "title": "MaterialPropertyBinding",
       "type": "object"
     },
     "NormalDistribution": {
@@ -166,6 +257,34 @@
         "std"
       ],
       "title": "NormalDistribution",
+      "type": "object"
+    },
+    "PartSpecBinding": {
+      "additionalProperties": false,
+      "description": "Bind an assumption to one named specification of a part carried by the project.",
+      "properties": {
+        "kind": {
+          "const": "part_spec",
+          "title": "Kind",
+          "type": "string"
+        },
+        "part": {
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+          "title": "Part",
+          "type": "string"
+        },
+        "spec": {
+          "pattern": "^[a-z][a-z0-9_]{0,63}$",
+          "title": "Spec",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "part",
+        "spec"
+      ],
+      "title": "PartSpecBinding",
       "type": "object"
     },
     "Quantity": {

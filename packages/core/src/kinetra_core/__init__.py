@@ -2,11 +2,15 @@
 
 from .assumption import (
     Assumption,
+    AssumptionBinding,
     AssumptionTable,
     Confidence,
     Distribution,
     FixedDistribution,
+    InstanceParameterBinding,
+    MaterialPropertyBinding,
     NormalDistribution,
+    PartSpecBinding,
     UniformDistribution,
 )
 from .bodies import (
@@ -181,7 +185,7 @@ from .partdef import (
     SpecDef,
 )
 from .pbr import PbrColor, PbrScalar, PbrSlots
-from .project import Project
+from .project import Project, apply_assumption_values
 from .projectfile import (
     FORMAT as PROJECT_FILE_FORMAT,
     PROJECT_FILE_SUFFIX,
@@ -272,6 +276,7 @@ __all__ = [
     "AddTerrainProp",
     "ApplyResult",
     "Assumption",
+    "AssumptionBinding",
     "AssumptionTable",
     "AtmosphereDensity",
     "AxisExpr",
@@ -317,6 +322,7 @@ __all__ = [
     "Incline",
     "Insolation",
     "Instance",
+    "InstanceParameterBinding",
     "Joint",
     "JointAxis",
     "JointKind",
@@ -324,6 +330,7 @@ __all__ = [
     "MassProperties",
     "Material",
     "MaterialCatalog",
+    "MaterialPropertyBinding",
     "MissingDefinition",
     "MoveInstance",
     "NormalDistribution",
@@ -336,6 +343,7 @@ __all__ = [
     "ParameterUse",
     "PartDef",
     "PartRole",
+    "PartSpecBinding",
     "PbrColor",
     "PbrScalar",
     "PbrSlots",
@@ -414,6 +422,7 @@ __all__ = [
     "World",
     "WorldPosition",
     "YieldStrength",
+    "apply_assumption_values",
     "apply_changes",
     "apply_command",
     "check_placement",

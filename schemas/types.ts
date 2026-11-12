@@ -144,6 +144,7 @@ export interface Assumption {
   distribution?: FixedDistribution | UniformDistribution | NormalDistribution;
   confidence: Confidence;
   editable?: boolean;
+  binding?: InstanceParameterBinding | MaterialPropertyBinding | PartSpecBinding | null;
 }
 
 export interface AssumptionTable {
@@ -615,6 +616,13 @@ export interface Instance {
   pose: Pose;
 }
 
+/** Bind an assumption to one instance's parameter (the part default when the instance omits it). */
+export interface InstanceParameterBinding {
+  kind: "instance_parameter";
+  instance: string;
+  parameter: string;
+}
+
 /**
  * A connection between two snap points of two different instances. `a` is the parent side by convention.
  *
@@ -682,6 +690,13 @@ export interface Material {
 
 export interface MaterialCatalog {
   entries: CatalogEntry[];
+}
+
+/** Bind an assumption to one physical property of a material carried by the project. */
+export interface MaterialPropertyBinding {
+  kind: "material_property";
+  material: string;
+  property: "density" | "yield_strength" | "elastic_modulus" | "friction";
 }
 
 /** A definition the project does not carry, and the instances that use it (in project order). */
@@ -783,6 +798,13 @@ export interface PartDef {
  * `spring_damper` has its stiffness and damping (B-03e).
  */
 export type PartRole = "motor" | "thruster" | "wheel" | "battery" | "tank" | "spring_damper" | "separator";
+
+/** Bind an assumption to one named specification of a part carried by the project. */
+export interface PartSpecBinding {
+  kind: "part_spec";
+  part: string;
+  spec: string;
+}
 
 /** Base color as sRGB hex. */
 export interface PbrColor {
@@ -1518,6 +1540,8 @@ export interface YieldStrength {
   value: number;
   unit: "Pa";
 }
+
+export type AssumptionBinding = InstanceParameterBinding | MaterialPropertyBinding | PartSpecBinding;
 
 export type ClientMessage = Hello | Subscribe | Publish | Request | RunRequest;
 

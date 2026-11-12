@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Bind an assumption to one instance's parameter (the part default when the instance omits it).",
+  "properties": {
+    "kind": {
+      "const": "instance_parameter",
+      "title": "Kind",
+      "type": "string"
+    },
+    "instance": {
+      "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+      "title": "Instance",
+      "type": "string"
+    },
+    "parameter": {
+      "pattern": "^[a-z][a-z0-9_]{0,63}$",
+      "title": "Parameter",
+      "type": "string"
+    }
+  },
+  "required": [
+    "kind",
+    "instance",
+    "parameter"
+  ],
+  "title": "InstanceParameterBinding",
+  "type": "object"
+}
