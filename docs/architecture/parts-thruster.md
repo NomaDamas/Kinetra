@@ -24,7 +24,7 @@
 - `burn(th, duration, command, propellant)` → `Burn`: 명령을 `duration` 동안 유지할 때의 충격량 [N·s]과 추진제 사용량 [kg]. **구간별 선형 곡선의 사다리꼴 적분이라 정확하다**(스텝 적분이 아니다). 추진제가 모자라면 그 시각에 멈추고(`depleted`), 남은 양보다 더 쓰지 않는다. 결과의 배지는 `sim`이다.
 - 충격량 = 추력 × 시간: 정상 추력 `F`, 상승 시간 `T₀`이면 `J = F (T − T₀/2)`. `test_thruster_impulse_is_thrust_times_time_with_the_ramp_taken_out`가 손계산과 1e-12 상대 오차로 맞추고, `test_thruster_impulse_is_the_numerical_integral_of_the_thrust`가 중점법 수치 적분과, `test_thruster_impulse_equals_exhaust_velocity_times_propellant_used`가 `J = v_e · m_used`와 맞춘다.
 
-추진제 질량이 줄어 차체 질량이 바뀌는 처리, 탱크에서 꺼내 쓰는 연결, MJCF 힘 적용은 이 잎이 하지 않는다(X-01c, B-03d). `Burn.propellant_used`와 `Thruster.mass_flow`가 그 잎이 읽을 입력이다.
+추진제 질량이 줄어 차체 질량이 바뀌는 처리, 탱크에서 꺼내 쓰는 연결, MJCF 힘 적용은 이 잎이 하지 않는다. X-01c가 `Burn`의 적분으로 스케줄의 충격량을 구하고 `Supply`에서 추진제를 꺼내며 바디 질량을 고친다([`thrust.md`](thrust.md)).
 
 ## 카탈로그 밖 · 사용자 선언
 

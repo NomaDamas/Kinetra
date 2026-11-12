@@ -39,7 +39,7 @@
 - 받을 수 없는 요청(음수나 비유한 양·률·시간 간격)은 `SupplyError`(`ValueError`의 하위 클래스)다. `draw_rate`는 `rate`와 `dt`를 따로 검사하므로 `draw_rate(-1.0, 0.0)`도 거부한다(곱 `-0.0`이 양 검사를 통과하던 틈, B-03f).
 - 잔량이 모자라면 있는 만큼만 내고 `satisfied < 1`을 알린다. 부르는 쪽은 그 단계의 액추에이터 출력에 `satisfied`를 곱한다(받은 에너지가 절반이면 일을 절반 한다). 잔량은 0 아래로 내려가지 않는다. 다 쓴 공급원은 0을 낸다.
 - `electrical_power`는 효율 $\eta$를 아는 소비자를 위한 식 $P_\mathrm{el} = P_\mathrm{mech}/\eta$ ($0<\eta\le 1$)이다. 부하가 모터를 제동하는 구간(기계 동력이 음수)은 0을 꺼내고 **되돌려주지 않는다**(회생 제동은 모델에 없다). 시뮬레이션의 모터(X-01b)는 효율 사양이 없어서 이 식을 쓰지 않고 데이터시트 전류(`no_load_current`, `stall_current`)로 $P = |u|\,V\,I(\tau)$를 꺼낸다([`joints-actuators.md`](joints-actuators.md)).
-- 탱크의 질량: `tank_total_mass(건조 질량, 공급)` = 건조 질량 + 남은 추진제. 건조 질량은 `mass_properties(tank, 재료)`의 질량이다. 소모에 따라 총질량이 준다. 이 질량 변화를 MJCF에 어떻게 반영할지는 X-01c의 결정이고 이 문서가 정하지 않는다. 무게중심이 추진제와 함께 이동하는 것도 여기에 없다(`tank_total_mass`는 스칼라 질량만 준다).
+- 탱크의 질량: `tank_total_mass(건조 질량, 공급)` = 건조 질량 + 남은 추진제. 건조 질량은 `mass_properties(tank, 재료)`의 질량이다. 소모에 따라 총질량이 준다. 이 질량 변화를 엔진 모델에 반영하는 방식은 X-01c가 정했다([`thrust.md`](thrust.md): 추진제는 탱크 안쪽에 고르게 퍼져 있고, 그 바디의 질량·관성을 단계마다 고친다). 무게중심이 추진제와 함께 이동하는 것은 거기에도 없다(`tank_total_mass`는 스칼라 질량만 준다).
 - `Actuator.supply`는 인스턴스 id다. 모터의 공급원은 역할 `battery`, 추력기의 공급원은 `tank`인 부품의 인스턴스여야 하고, 역할이 없는 부품과 없는 인스턴스는 거부된다(`DesignSpec` 검증, 거부 사유가 인스턴스·부품·액추에이터 `Ref`를 싣는다). `supply`가 `None`이면 계량하지 않는다. 공급원 인스턴스를 지우면(`remove_instance`) 그것을 쓰던 액추에이터와 그 스케줄 항목이 같은 명령으로 함께 지워지고 되돌리면 모두 돌아온다.
 
 ## 등속 주행 소모의 수계산 (이슈 DoD, `test_battery_constant_speed_drive_consumption_matches_the_hand_calculation`)
