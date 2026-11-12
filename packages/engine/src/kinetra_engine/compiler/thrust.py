@@ -261,7 +261,11 @@ class ThrustRun:
     """Steps a compiled MuJoCo model of `model.tree` with the thrust of the schedule and the propellant mass of the tanks.
 
     The constructor puts the propellant every tank holds at the start on its body (`mj_model` is changed in place: give each
-    run its own model). `step()` does one `mj_step`. `supplies` is what each tank instance holds now."""
+    run its own model). `step()` does one `mj_step`. A caller that owns the step loop (the run of X-02a, which also writes
+    the motors' `ctrl` and other forces) calls `begin_step()`, then `mj_step` itself, then `end_step()`: `begin_step` draws
+    the propellant, puts this step's mass on the bodies and adds the thrust into `xfrc_applied` (on top of whatever the
+    caller put there), `end_step` takes the thrust out again (the rows go back to what they were before `begin_step`) and
+    puts the mass left on the bodies. `supplies` is what each tank instance holds now."""
 
     def __init__(self, model: ThrustModel, mj_model: mujoco.MjModel, mj_data: mujoco.MjData):
         self.model = model
@@ -277,6 +281,7 @@ class ThrustRun:
         self._k = {t.actuator: t.thruster.propellant_flow / t.thruster.rated_thrust for t in model.thrusters}
         self._loaded = sorted({s.body for s in model.stores})
         self._load({s.instance: s.supply.remaining for s in model.stores}, self._loaded)
+        self._pending: tuple[dict[int, np.ndarray], dict[str, float], list[str]] | None = None
 
     def body_mass(self, body: str) -> tuple[float, Vec, Inertia6]:
         """Mass, centre of mass and inertia of `body` with what the tanks hold now."""
@@ -295,6 +300,16 @@ class ThrustRun:
             m.body_iquat[row] = quat
 
     def step(self) -> ThrustStep:
+        record = self.begin_step()
+        mujoco.mj_step(self._m, self._d)
+        self.end_step()
+        return record
+
+    def begin_step(self) -> ThrustStep:
+        """Everything of one step before `mj_step` (see the class docstring). Returns the step's record; call `end_step`
+        after the `mj_step`, once per `begin_step`."""
+        if self._pending is not None:
+            raise RuntimeError("begin_step called twice without end_step")
         m, d = self._m, self._d
         t, dt = float(d.time), float(m.opt.timestep)
         asked = {th.actuator: th.impulse(t, t + dt) for th in self.model.thrusters}
@@ -332,9 +347,17 @@ class ThrustRun:
         saved = {row: d.xfrc_applied[row].copy() for row in forces}
         for row, w in forces.items():
             d.xfrc_applied[row] += w
-        mujoco.mj_step(m, d)
+        self._pending = (saved, after, changed)
+        return ThrustStep(t, dt, tuple(records), after)
+
+    def end_step(self) -> None:
+        """Everything of one step after `mj_step`: the `xfrc_applied` rows the thrust used are restored, and the bodies
+        whose tanks were drawn on carry what is left."""
+        if self._pending is None:
+            raise RuntimeError("end_step without begin_step")
+        saved, after, changed = self._pending
+        self._pending = None
         for row, w in saved.items():
-            d.xfrc_applied[row] = w
+            self._d.xfrc_applied[row] = w
         if changed:
             self._load(after, changed)
-        return ThrustStep(t, dt, tuple(records), after)
