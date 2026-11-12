@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>S2 추력 머리 열림: 스케줄 있음</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="/_blob/1b63cce74a7cba46d15c994ab634270a">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div class="k-root" style="width:644px;height:882px">
+
+<div class="k-note"><span><strong>S2 추력</strong> · 머리 열림, 제어 스케줄 있음</span><span>상시 6 · 열린 머리 안 4 · 합 10 · 패널 primary 0</span></div>
+
+<div class="k-main">
+<div class="k-ann">
+<div class="k-map" aria-hidden="true"><i style="left:0;right:0;top:0;height:8px;border-bottom-width:1px"></i><i style="left:0;top:9px;bottom:16px;width:40px;border-right-width:1px"></i><i class="on" style="right:0;top:9px;bottom:16px;width:53px"></i><i style="left:0;right:0;bottom:6px;height:9px;border-top-width:1px"></i><i style="left:0;right:0;bottom:0;height:5px;border-top-width:1px"></i></div>
+<p><strong>셸 안의 위치: SC-01 오른쪽 패널 · 조립 보조</strong><br>S1에서 <span class="k-hi">추력</span> 머리를 한 번 누른 모습입니다. 점검 머리는 접히고 이름과 개수만 남습니다.</p>
+<p>추력은 <span class="k-hi">켜진 추력기만</span>으로 계산합니다. 읽기 값 넷(합력, 방향, 추력중심, 토크)은 같은 계산에서 나와 <span class="k-hi">시뮬</span> 배지 하나를 함께 씁니다(SC-02 질량중심과 같은 묶음 규칙). 그 아래 한 줄에 입력 추력의 배지를 따로 둡니다.</p>
+<p><strong>시점을 바꾸면 값만 바뀝니다</strong> <span class="k-ex">예시</span></p>
+<div style="display:grid;grid-template-columns:28px 1fr;gap:4px 8px"><span class="k-hi">전</span><span>0.00 s · 켜진 추력기 2 · 합력 16 kN · 추력중심 y 0.09 m</span><span class="k-hi">후</span><span>0.50 s · 켜진 추력기 1 · 합력 8 kN · 추력중심 y 0.18 m</span></div>
+<p>모양, 색, 줄 수는 그대로입니다. 뷰포트의 추력중심·추력선 표식도 같은 시점을 따릅니다(모양은 코드 프로토타입).</p>
+<p><strong>세는 법</strong><br>상시 6: 패널 접기, 패널 전환기, L0 증거 칩, 점검 머리, 추력 머리, 추력 대 중량비 머리.<br>열린 머리 안 4: 추력 표시 스위치, 시점 선택(분할 컨트롤 하나), 읽기 값 배지, 입력 추력 배지.</p>
+<p>방향은 무차원이라 단위가 <span class="k-hi">–</span>입니다. 토크는 무게중심에 대한 값입니다.</p>
+</div>
+
+<div class="k-cols">
+<div class="k-col">
+<div class="k-lbl">패널 320 × 790</div>
+<aside class="k-panel" data-panel="S2" data-unit="S2" aria-label="조립 보조">
+<div class="k-pbar"><button type="button" class="k-ib" data-ctl="패널 접기" aria-label="오른쪽 패널 접기" aria-expanded="true"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 2.5L8 6l-3.5 3.5"/></svg></button><div class="k-seg" role="radiogroup" aria-label="오른쪽 패널 보기" data-ctl="패널 전환기"><button type="button" role="radio" aria-checked="false" tabindex="-1">인스펙터</button><button type="button" role="radio" aria-checked="true">조립 보조</button></div></div>
+<div class="k-ptitle"><h2>조립 보조</h2><button type="button" class="k-ev" data-ctl="L0 증거 칩" aria-haspopup="dialog" aria-expanded="false" aria-label="증거 단계 L0 해석 계산. 누르면 근거를 엽니다"><svg width="25" height="10" viewBox="0 0 30 12" aria-hidden="true"><path d="M0 0h6v12H0z" fill="currentColor"/><path d="M8.5.5h5v11h-5zM16.5.5h5v11h-5zM24.5.5h5v11h-5z" fill="none" stroke="currentColor"/></svg>L0 해석 계산</button></div>
+<div class="k-honest">이 패널의 값은 모두 L0 해석 계산입니다. 판정이 아닙니다.</div>
+<div class="k-body">
+
+<button type="button" class="k-head" data-ctl="실행 전 점검 · 3건 머리" aria-expanded="false"><svg class="k-chev" width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 2.5L8 6l-3.5 3.5"/></svg>실행 전 점검 · 3건<span class="k-meta">막음 1 · 알림 2</span></button>
+<div class="k-sep"></div>
+
+<button type="button" class="k-head" data-ctl="추력 · 스케줄 있음 머리" aria-expanded="true" aria-controls="s2-thr"><svg class="k-chev" width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 2.5L8 6l-3.5 3.5"/></svg>추력 · 스케줄 있음</button>
+<div id="s2-thr" class="k-region" role="region" aria-label="추력" data-transient="1">
+<div class="k-line" style="justify-content:space-between;padding:0 4px"><button type="button" class="k-sw" role="switch" aria-checked="true" data-ctl="추력 표시 스위치"><span class="k-trk"><span class="k-thm"></span></span>추력 표시<span class="k-st">켬</span></button><span class="k-cap">추력중심 · 추력선 · 토크</span></div>
+<div class="k-row"><span class="k-lab" id="s2-t">시점</span><div class="k-seg" role="radiogroup" aria-labelledby="s2-t" data-ctl="시점 선택" style="grid-column:2 / 5;justify-self:start"><button type="button" role="radio" aria-checked="true">0.00 s</button><button type="button" role="radio" aria-checked="false" tabindex="-1">0.50 s</button><button type="button" role="radio" aria-checked="false" tabindex="-1">1.00 s</button></div></div>
+<div class="k-help">제어 스케줄의 시점 3개 <span class="k-ex">예시</span></div>
+<div class="k-sep"></div>
+<div class="k-line hi" style="justify-content:space-between">읽기 값 · 켜진 추력기 2개<span style="display:inline-flex;align-items:center;gap:6px"><button type="button" class="kb kb-sim" data-ctl="읽기 값 배지" data-badge="시뮬" aria-haspopup="dialog" aria-expanded="false" aria-label="값 배지 시뮬. 합력, 방향, 추력중심, 토크에 함께 붙습니다. 누르면 근거를 엽니다"><span class="kp"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 6q1.25-5 2.5 0t2.5 0t2.5 0t2.5 0"/></svg>시뮬</span></button><span class="k-ex">예시</span></span></div>
+<div class="k-row"><span class="k-lab">합력</span><span class="k-val">16</span><span class="k-unit">kN</span><span></span></div>
+<div class="k-help">켜진 추력기 2개 × 노즐당 8 kN</div>
+<div class="k-row top"><span class="k-lab" style="line-height:20px">방향</span><span class="k-vec"><span>x</span><span>0.00</span><span>y</span><span>0.00</span><span>z</span><span>1.00</span></span><span class="k-units"><span>–</span><span>–</span><span>–</span></span><span></span></div>
+<div class="k-row top"><span class="k-lab" style="line-height:20px">추력중심</span><span class="k-vec"><span>x</span><span>0.00</span><span>y</span><span>0.09</span><span>z</span><span>0.18</span></span><span class="k-units"><span>m</span><span>m</span><span>m</span></span><span></span></div>
+<div class="k-row top"><span class="k-lab" style="line-height:20px">토크</span><span class="k-vec"><span>x</span><span>1440</span><span>y</span><span>0</span><span>z</span><span>0</span></span><span class="k-units"><span>N·m</span><span>N·m</span><span>N·m</span></span><span></span></div>
+<div class="k-help">토크는 무게중심 기준</div>
+<div class="k-help" style="display:flex;align-items:center;gap:6px;color:#E8EDF2;font-size:12px;font-weight:500"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="#A9B4C0" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none"><path d="M2.5 1.5v8h8M2.5 9.5l4.5-3.5"/></svg>조립체 원점 기준</div>
+<div class="k-sep"></div>
+<div class="k-line">입력 추력: 노즐당 <span class="k-val" style="font-size:12px;line-height:16px">8</span><span class="k-unit">kN</span><button type="button" class="kb kb-decl" data-ctl="입력 추력 배지" data-badge="사용자 선언" aria-haspopup="dialog" aria-expanded="false" aria-label="값 배지 카탈로그 밖, 사용자 선언. 누르면 근거를 엽니다"><span class="kp"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 10l.6-2.6 5.6-5.6 2 2-5.6 5.6z"/></svg>카탈로그 밖 · 사용자 선언</span></button></div>
+<div class="k-line hi">L0 해석 계산 · 판정이 아닙니다</div>
+</div>
+<div class="k-sep"></div>
+
+<button type="button" class="k-head" data-ctl="추력 대 중량비 · 세 행성 머리" aria-expanded="false"><svg class="k-chev" width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 2.5L8 6l-3.5 3.5"/></svg>추력 대 중량비 · 세 행성</button>
+<div class="k-sep"></div>
+
+</div>
+<div class="k-foot"><span class="k-kbd">Enter</span>머리 열기·닫기<span class="k-kbd">Esc</span>닫기</div>
+</aside>
+</div>
+</div>
+</div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":644,"height":882}}'>
+class Component extends DCLogic {
+renderVals() {
+return {};
+}
+}
+</script>
+</body>
+</html>

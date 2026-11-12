@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>S3 추력 변형 3종</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="/_blob/1b63cce74a7cba46d15c994ab634270a">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div class="k-root" style="width:1332px;height:882px">
+
+<div class="k-note"><span><strong>S3 추력 변형</strong> · (a) 스케줄 없음 (b) 짝힘 (c) 추력기 없음</span><span>(a) 6+4 · (b) 6+4 · (c) 5+1 · 패널 primary 0</span></div>
+
+<div class="k-main">
+<div class="k-ann">
+<div class="k-map" aria-hidden="true"><i style="left:0;right:0;top:0;height:8px;border-bottom-width:1px"></i><i style="left:0;top:9px;bottom:16px;width:40px;border-right-width:1px"></i><i class="on" style="right:0;top:9px;bottom:16px;width:53px"></i><i style="left:0;right:0;bottom:6px;height:9px;border-top-width:1px"></i><i style="left:0;right:0;bottom:0;height:5px;border-top-width:1px"></i></div>
+<p><strong>셸 안의 위치: SC-01 오른쪽 패널 · 조립 보조, 추력 머리 열림</strong></p>
+<p><strong>(a) 스케줄 없음</strong>: 시점 선택은 비활성(포커스는 됨)이고 바로 아래에 이유 문장 두 줄이 붙습니다. 값은 모든 추력기를 최대 추력으로 켠 계산입니다.</p>
+<p><strong>(b) 짝힘</strong>: 마주 보는 추력기 2개의 합력이 0입니다. 추력중심과 방향은 숫자 대신 "없음"이고 토크만 값이 있습니다.</p>
+<p><strong>(c) 추력기 없음</strong>: "추력기 없음" 한 줄뿐입니다. 0이나 가짜 값을 채우지 않습니다. 스위치는 비활성이고 이유가 붙습니다. 추력 대 중량비도 머리 없이 한 줄로 바뀝니다(S5 (c)).</p>
+<p>세 변형 모두 모양과 색은 같고 글자만 다릅니다. 숫자는 모두 <span class="k-ex">예시</span>입니다.</p>
+<p><strong>세는 법</strong>: 상시(패널 머리와 접힌 머리) + 열린 머리 안. 비활성 컨트롤도 보이므로 셉니다.</p>
+</div>
+
+<div class="k-cols">
+
+<div class="k-col">
+<div class="k-lbl">(a) 스케줄 없음</div>
+<aside class="k-panel" data-panel="S3a" data-unit="S3a" aria-label="조립 보조">
+<div class="k-pbar"><button type="button" class="k-ib" data-ctl="패널 접기" aria-label="오른쪽 패널 접기" aria-expanded="true"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 2.5L8 6l-3.5 3.5"/></svg></button><div class="k-seg" role="radiogroup" aria-label="오른쪽 패널 보기" data-ctl="패널 전환기"><button type="button" role="radio" aria-checked="false" tabindex="-1">인스펙터</button><button type="button" role="radio" aria-checked="true">조립 보조</button></div></div>
+<div class="k-ptitle"><h2>조립 보조</h2><button type="button" class="k-ev" data-ctl="L0 증거 칩" aria-haspopup="dialog" aria-expanded="false" aria-label="증거 단계 L0 해석 계산. 누르면 근거를 엽니다"><svg width="25" height="10" viewBox="0 0 30 12" aria-hidden="true"><path d="M0 0h6v12H0z" fill="currentColor"/><path d="M8.5.5h5v11h-5zM16.5.5h5v11h-5zM24.5.5h5v11h-5z" fill="none" stroke="currentColor"/></svg>L0 해석 계산</button></div>
+<div class="k-honest">이 패널의 값은 모두 L0 해석 계산입니다. 판정이 아닙니다.</div>
+<div class="k-body">
+<button type="button" class="k-head" data-ctl="실행 전 점검 · 3건 머리" aria-expanded="false"><svg class="k-chev" width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 2.5L8 6l-3.5 3.5"/></svg>실행 전 점검 · 3건<span class="k-meta">막음 1 · 알림 2</span></button>
+<div class="k-sep"></div>
+<button type="button" class="k-head" data-ctl="추력 · 스케줄 없음 머리" aria-expanded="true" aria-controls="s3a-r"><svg class="k-chev" width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 2.5L8 6l-3.5 3.5"/></svg>추력 · 스케줄 없음</button>
+<div id="s3a-r" class="k-region" role="region" aria-label="추력" data-transient="1">
+<div class="k-line" style="justify-content:space-between;padding:0 4px"><button type="button" class="k-sw" role="switch" aria-checked="true" data-ctl="추력 표시 스위치"><span class="k-trk"><span class="k-thm"></span></span>추력 표시<span class="k-st">켬</span></button><span class="k-cap">추력중심 · 추력선 · 토크</span></div>
+<div class="k-row"><span class="k-lab" id="s3a-t">시점</span><div class="k-seg" role="radiogroup" aria-labelledby="s3a-t" aria-disabled="true" aria-describedby="s3a-why" data-ctl="시점 선택(비활성)" style="grid-column:2 / 5;justify-self:start"><button type="button" role="radio" aria-checked="false" aria-disabled="true">시점 없음</button></div></div>
+<div id="s3a-why" style="display:flex;flex-direction:column;gap:2px"><div class="k-line hi">스케줄 없음: 모든 추력기 최대 추력 기준</div><div class="k-line hi">추진제 가득 기준</div></div>
+<div class="k-sep"></div>
+<div class="k-line hi" style="justify-content:space-between">읽기 값 · 켜진 추력기 2개<span style="display:inline-flex;align-items:center;gap:6px"><button type="button" class="kb kb-sim" data-ctl="읽기 값 배지" data-badge="시뮬" aria-haspopup="dialog" aria-expanded="false" aria-label="값 배지 시뮬. 누르면 근거를 엽니다"><span class="kp"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 6q1.25-5 2.5 0t2.5 0t2.5 0t2.5 0"/></svg>시뮬</span></button><span class="k-ex">예시</span></span></div>
+<div class="k-row"><span class="k-lab">합력</span><span class="k-val">16</span><span class="k-unit">kN</span><span></span></div>
+<div class="k-row top"><span class="k-lab" style="line-height:20px">방향</span><span class="k-vec"><span>x</span><span>0.00</span><span>y</span><span>0.00</span><span>z</span><span>1.00</span></span><span class="k-units"><span>–</span><span>–</span><span>–</span></span><span></span></div>
+<div class="k-row top"><span class="k-lab" style="line-height:20px">추력중심</span><span class="k-vec"><span>x</span><span>0.00</span><span>y</span><span>0.09</span><span>z</span><span>0.18</span></span><span class="k-units"><span>m</span><span>m</span><span>m</span></span><span></span></div>
+<div class="k-row top"><span class="k-lab" style="line-height:20px">토크</span><span class="k-vec"><span>x</span><span>1440</span><span>y</span><span>0</span><span>z</span><span>0</span></span><span class="k-units"><span>N·m</span><span>N·m</span><span>N·m</span></span><span></span></div>
+<div class="k-help">무게중심 기준 · 조립체 원점 기준</div>
+<div class="k-line">입력 추력: 노즐당 <span class="k-val" style="font-size:12px;line-height:16px">8</span><span class="k-unit">kN</span><button type="button" class="kb kb-decl" data-ctl="입력 추력 배지" data-badge="사용자 선언" aria-haspopup="dialog" aria-expanded="false" aria-label="값 배지 카탈로그 밖, 사용자 선언. 누르면 근거를 엽니다"><span class="kp"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 10l.6-2.6 5.6-5.6 2 2-5.6 5.6z"/></svg>카탈로그 밖 · 사용자 선언</span></button></div>
+<div class="k-line hi">L0 해석 계산 · 판정이 아닙니다</div>
+</div>
+<div class="k-sep"></div>
+<button type="button" class="k-head" data-ctl="추력 대 중량비 · 세 행성 머리" aria-expanded="false"><svg class="k-chev" width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 2.5L8 6l-3.5 3.5"/></svg>추력 대 중량비 · 세 행성</button>
+<div class="k-sep"></div>
+</div>
+</aside>
+</div>
+
+<div class="k-col">
+<div class="k-lbl">(b) 짝힘: 합력 0</div>
+<aside class="k-panel" data-panel="S3b" data-unit="S3b" aria-label="조립 보조">
+<div class="k-pbar"><button type="button" class="k-ib" data-ctl="패널 접기" aria-label="오른쪽 패널 접기" aria-expanded="true"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 2.5L8 6l-3.5 3.5"/></svg></button><div class="k-seg" role="radiogroup" aria-label="오른쪽 패널 보기" data-ctl="패널 전환기"><button type="button" role="radio" aria-checked="false" tabindex="-1">인스펙터</button><button type="button" role="radio" aria-checked="true">조립 보조</button></div></div>
+<div class="k-ptitle"><h2>조립 보조</h2><button type="button" class="k-ev" data-ctl="L0 증거 칩" aria-haspopup="dialog" aria-expanded="false" aria-label="증거 단계 L0 해석 계산. 누르면 근거를 엽니다"><svg width="25" height="10" viewBox="0 0 30 12" aria-hidden="true"><path d="M0 0h6v12H0z" fill="currentColor"/><path d="M8.5.5h5v11h-5zM16.5.5h5v11h-5zM24.5.5h5v11h-5z" fill="none" stroke="currentColor"/></svg>L0 해석 계산</button></div>
+<div class="k-honest">이 패널의 값은 모두 L0 해석 계산입니다. 판정이 아닙니다.</div>
+<div class="k-body">
+<button type="button" class="k-head" data-ctl="실행 전 점검 · 3건 머리" aria-expanded="false"><svg class="k-chev" width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 2.5L8 6l-3.5 3.5"/></svg>실행 전 점검 · 3건<span class="k-meta">막음 1 · 알림 2</span></button>
+<div class="k-sep"></div>
+<button type="button" class="k-head" data-ctl="추력 · 스케줄 있음 머리" aria-expanded="true" aria-controls="s3b-r"><svg class="k-chev" width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 2.5L8 6l-3.5 3.5"/></svg>추력 · 스케줄 있음</button>
+<div id="s3b-r" class="k-region" role="region" aria-label="추력" data-transient="1">
+<div class="k-line" style="justify-content:space-between;padding:0 4px"><button type="button" class="k-sw" role="switch" aria-checked="true" data-ctl="추력 표시 스위치"><span class="k-trk"><span class="k-thm"></span></span>추력 표시<span class="k-st">켬</span></button><span class="k-cap">추력중심 · 추력선 · 토크</span></div>
+<div class="k-row"><span class="k-lab" id="s3b-t">시점</span><div class="k-seg" role="radiogroup" aria-labelledby="s3b-t" data-ctl="시점 선택" style="grid-column:2 / 5;justify-self:start"><button type="button" role="radio" aria-checked="true">0.00 s</button><button type="button" role="radio" aria-checked="false" tabindex="-1">0.50 s</button><button type="button" role="radio" aria-checked="false" tabindex="-1">1.00 s</button></div></div>
+<div class="k-help">제어 스케줄의 시점 3개 <span class="k-ex">예시</span></div>
+<div class="k-sep"></div>
+<div class="k-line hi">합력 0 · 추력중심 없음. 토크만 있습니다</div>
+<div class="k-line hi" style="justify-content:space-between">읽기 값 · 켜진 추력기 2개<span style="display:inline-flex;align-items:center;gap:6px"><button type="button" class="kb kb-sim" data-ctl="읽기 값 배지" data-badge="시뮬" aria-haspopup="dialog" aria-expanded="false" aria-label="값 배지 시뮬. 누르면 근거를 엽니다"><span class="kp"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 6q1.25-5 2.5 0t2.5 0t2.5 0t2.5 0"/></svg>시뮬</span></button><span class="k-ex">예시</span></span></div>
+<div class="k-row"><span class="k-lab">합력</span><span class="k-val">0</span><span class="k-unit">kN</span><span></span></div>
+<div class="k-row"><span class="k-lab">방향</span><span class="k-lab" style="color:#E8EDF2;text-align:right">없음</span><span class="k-unit">–</span><span></span></div>
+<div class="k-row"><span class="k-lab">추력중심</span><span class="k-lab" style="color:#E8EDF2;text-align:right">없음</span><span class="k-unit">m</span><span></span></div>
+<div class="k-row top"><span class="k-lab" style="line-height:20px">토크</span><span class="k-vec"><span>x</span><span>0</span><span>y</span><span>0</span><span>z</span><span>1600</span></span><span class="k-units"><span>N·m</span><span>N·m</span><span>N·m</span></span><span></span></div>
+<div class="k-help">무게중심 기준 · 조립체 원점 기준</div>
+<div class="k-line">입력 추력: 노즐당 <span class="k-val" style="font-size:12px;line-height:16px">8</span><span class="k-unit">kN</span><button type="button" class="kb kb-decl" data-ctl="입력 추력 배지" data-badge="사용자 선언" aria-haspopup="dialog" aria-expanded="false" aria-label="값 배지 카탈로그 밖, 사용자 선언. 누르면 근거를 엽니다"><span class="kp"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 10l.6-2.6 5.6-5.6 2 2-5.6 5.6z"/></svg>카탈로그 밖 · 사용자 선언</span></button></div>
+<div class="k-line hi">L0 해석 계산 · 판정이 아닙니다</div>
+</div>
+<div class="k-sep"></div>
+<button type="button" class="k-head" data-ctl="추력 대 중량비 · 세 행성 머리" aria-expanded="false"><svg class="k-chev" width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 2.5L8 6l-3.5 3.5"/></svg>추력 대 중량비 · 세 행성</button>
+<div class="k-sep"></div>
+</div>
+</aside>
+</div>
+
+<div class="k-col">
+<div class="k-lbl">(c) 추력기 없음</div>
+<aside class="k-panel" data-panel="S3c" data-unit="S3c" aria-label="조립 보조">
+<div class="k-pbar"><button type="button" class="k-ib" data-ctl="패널 접기" aria-label="오른쪽 패널 접기" aria-expanded="true"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 2.5L8 6l-3.5 3.5"/></svg></button><div class="k-seg" role="radiogroup" aria-label="오른쪽 패널 보기" data-ctl="패널 전환기"><button type="button" role="radio" aria-checked="false" tabindex="-1">인스펙터</button><button type="button" role="radio" aria-checked="true">조립 보조</button></div></div>
+<div class="k-ptitle"><h2>조립 보조</h2><button type="button" class="k-ev" data-ctl="L0 증거 칩" aria-haspopup="dialog" aria-expanded="false" aria-label="증거 단계 L0 해석 계산. 누르면 근거를 엽니다"><svg width="25" height="10" viewBox="0 0 30 12" aria-hidden="true"><path d="M0 0h6v12H0z" fill="currentColor"/><path d="M8.5.5h5v11h-5zM16.5.5h5v11h-5zM24.5.5h5v11h-5z" fill="none" stroke="currentColor"/></svg>L0 해석 계산</button></div>
+<div class="k-honest">이 패널의 값은 모두 L0 해석 계산입니다. 판정이 아닙니다.</div>
+<div class="k-body">
+<button type="button" class="k-head" data-ctl="실행 전 점검 · 1건 머리" aria-expanded="false"><svg class="k-chev" width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 2.5L8 6l-3.5 3.5"/></svg>실행 전 점검 · 1건<span class="k-meta">막음 0 · 알림 1</span></button>
+<div class="k-sep"></div>
+<button type="button" class="k-head" data-ctl="추력 · 추력기 없음 머리" aria-expanded="true" aria-controls="s3c-r"><svg class="k-chev" width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 2.5L8 6l-3.5 3.5"/></svg>추력 · 추력기 없음</button>
+<div id="s3c-r" class="k-region" role="region" aria-label="추력" data-transient="1">
+<div class="k-line" style="padding:0 4px"><button type="button" class="k-sw" role="switch" aria-checked="false" aria-disabled="true" aria-describedby="s3c-why" data-ctl="추력 표시 스위치(비활성)"><span class="k-trk"><span class="k-thm"></span></span>추력 표시<span class="k-st">끔</span></button></div>
+<div id="s3c-why" class="k-line">추력기가 없어 켤 수 없습니다</div>
+<div class="k-line hi" style="font-size:13px;line-height:20px">추력기 없음</div>
+</div>
+<div class="k-sep"></div>
+<div class="k-line" style="min-height:32px;font-size:13px;line-height:20px;font-weight:600;color:#E8EDF2">추력 대 중량비 · 추력기 없음</div>
+<div class="k-sep"></div>
+</div>
+</aside>
+</div>
+
+</div>
+</div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1332,"height":882}}'>
+class Component extends DCLogic {
+renderVals() {
+return {};
+}
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>S13 표시 색 팝오버</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="/_blob/1b63cce74a7cba46d15c994ab634270a">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div class="k-root" style="width:988px;height:882px">
+
+<div class="k-note"><span><strong>S13 표시 색</strong> · 배치 · 표시의 표시 색 행 → 팝오버</span><span>상시 10 · 열린 머리 안 8 · 팝오버 안 3 · primary 0</span></div>
+
+<div class="k-main">
+<div class="k-ann">
+<div class="k-map" aria-hidden="true"><i style="left:0;right:0;top:0;height:8px;border-bottom-width:1px"></i><i style="left:0;top:9px;bottom:16px;width:40px;border-right-width:1px"></i><i class="on" style="right:0;top:9px;bottom:16px;width:53px"></i><i style="left:0;right:0;bottom:6px;height:9px;border-top-width:1px"></i><i style="left:0;right:0;bottom:0;height:5px;border-top-width:1px"></i><i class="on" style="right:56px;top:70px;width:42px;height:40px"></i></div>
+<p><strong>셸 안의 위치: 인스펙터 행에서 연 팝오버</strong><br>실제 화면에서는 패널 왼쪽(뷰포트 위)에 행과 나란히 열립니다. 여기서는 오른쪽 열에 실제 크기로 그렸습니다.</p>
+<p><strong>표시 색</strong>은 재질 물성과 다른 필드이고 <span class="k-hi">시각 전용</span> 태그가 행과 팝오버에 항상 붙습니다. 2단계(머리 → 행)에서 닿습니다.</p>
+<p>견본 8칸은 사용자 데이터이고 새 색 토큰이 아닙니다 [제안: 개수는 B-16]. 시안은 측정에서 새 hex가 생기지 않도록 기존 토큰 값 가운데 증거 색이 아닌 것으로 칠했습니다.</p>
+<p>선택 표시는 색이 아니라 <span class="k-hi">바깥 링 + 체크 모양</span>입니다.</p>
+<p><strong>거부</strong>: 증거 색(color.evidence.*)과 같은 색 코드는 <span class="k-hi">status.danger</span> 테두리와 이유 문장으로 거부합니다. 견본에도 증거 색은 없습니다.</p>
+<p>견본은 라디오 묶음 하나(화살표로 이동), 색 코드는 입력 하나입니다. <span class="k-kbd">Esc</span>로 닫으면 포커스는 표시 색 행으로 돌아갑니다.</p>
+</div>
+
+<div class="k-cols">
+
+<div class="k-col">
+<div class="k-lbl">패널: 표시 색 행 눌림</div>
+<aside class="k-panel" data-panel="S13" data-unit="S13 패널" aria-label="인스펙터">
+<div class="k-pbar"><button type="button" class="k-ib" data-ctl="패널 접기" aria-label="오른쪽 패널 접기" aria-expanded="true"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 2.5L8 6l-3.5 3.5"/></svg></button><div class="k-seg" role="radiogroup" aria-label="오른쪽 패널 보기" data-ctl="패널 전환기"><button type="button" role="radio" aria-checked="true">인스펙터</button><button type="button" role="radio" aria-checked="false" tabindex="-1">조립 보조</button></div></div>
+<div class="k-ptitle"><h2>빔</h2><span class="k-kind2">· 강체</span></div>
+<div class="k-body" style="padding-top:4px">
+<div class="k-row"><label for="s13-m" class="k-lab">질량</label><input id="s13-m" class="k-in" data-ctl="질량 값 입력" value="0.12"><span class="k-unit">t</span><button type="button" class="kb kb-sim" data-ctl="질량 값 배지" data-badge="시뮬" aria-haspopup="dialog" aria-expanded="false" aria-label="값 배지 시뮬. 누르면 근거를 엽니다"><span class="kp"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 6q1.25-5 2.5 0t2.5 0t2.5 0t2.5 0"/></svg>시뮬</span></button></div>
+<div class="k-row"><label for="s13-mat" class="k-lab">재질</label><span style="grid-column:2 / 4;position:relative;display:flex;min-width:0"><select id="s13-mat" class="k-in left" data-ctl="재질 선택" style="appearance:none;-webkit-appearance:none;padding-right:22px"><option>재질 프리셋 A(예시)</option></select><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="#A9B4C0" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="position:absolute;right:6px;top:6px;pointer-events:none"><path d="M2.5 4.5L6 8l3.5-3.5"/></svg></span><button type="button" class="kb kb-cite" data-ctl="재질 값 배지" data-badge="인용" aria-haspopup="dialog" aria-expanded="false" aria-label="값 배지 인용. 누르면 출처를 엽니다"><span class="kp"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 8.5v-3a2.5 2.5 0 0 1 2.5-2.5M7 8.5v-3a2.5 2.5 0 0 1 2.5-2.5"/></svg>인용</span></button></div>
+<div class="k-row top"><span class="k-lab" style="line-height:20px">질량중심</span><span class="k-vec"><span>x</span><span>0.40</span><span>y</span><span>0.00</span><span>z</span><span>0.62</span></span><span class="k-units"><span>m</span><span>m</span><span>m</span></span><button type="button" class="kb kb-sim" data-ctl="질량중심 값 배지" data-badge="시뮬" aria-haspopup="dialog" aria-expanded="false" aria-label="값 배지 시뮬. 누르면 근거를 엽니다"><span class="kp"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 6q1.25-5 2.5 0t2.5 0t2.5 0t2.5 0"/></svg>시뮬</span></button></div>
+<div class="k-help">조립체 원점 기준 · 계산값 <span class="k-ex">예시</span></div>
+<button type="button" class="k-rowbtn" data-ctl="관성 보기" aria-expanded="false"><svg class="k-chev" width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 2.5L8 6l-3.5 3.5"/></svg>관성 보기<span class="k-meta" style="color:#93A0AE">Ixx · Iyy · Izz · 곱관성</span></button>
+<div class="k-sep"></div>
+<button type="button" class="k-head" data-ctl="재질 세부" aria-expanded="false"><svg class="k-chev" width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 2.5L8 6l-3.5 3.5"/></svg>재질 세부<span class="k-meta">밀도 · 항복강도 · 마찰</span></button>
+<div class="k-sep"></div>
+<button type="button" class="k-head" data-ctl="배치 · 표시" aria-expanded="true" aria-controls="s13-r"><svg class="k-chev" width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 2.5L8 6l-3.5 3.5"/></svg>배치 · 표시</button>
+<div id="s13-r" class="k-region" role="region" aria-label="배치 · 표시" data-transient="1">
+<div class="k-line hi" style="justify-content:space-between">자세 · 위치와 회전<span style="display:inline-flex;align-items:center;gap:6px"><button type="button" class="kb kb-decl" data-ctl="자세 값 배지" data-badge="사용자 선언" aria-haspopup="dialog" aria-expanded="false" aria-label="값 배지 사용자 선언. 누르면 근거를 엽니다"><span class="kp"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 10l.6-2.6 5.6-5.6 2 2-5.6 5.6z"/></svg>사용자 선언</span></button><span class="k-ex">예시</span></span></div>
+<div class="k-row"><label for="s13-px" class="k-lab">위치 x</label><input id="s13-px" class="k-in" data-ctl="위치 x" value="0.40"><span class="k-unit">m</span><span></span></div>
+<div class="k-row"><label for="s13-py" class="k-lab">위치 y</label><input id="s13-py" class="k-in" data-ctl="위치 y" value="0.00"><span class="k-unit">m</span><span></span></div>
+<div class="k-row"><label for="s13-pz" class="k-lab">위치 z</label><input id="s13-pz" class="k-in" data-ctl="위치 z" value="0.62"><span class="k-unit">m</span><span></span></div>
+<div class="k-row"><label for="s13-rx" class="k-lab">회전 x</label><input id="s13-rx" class="k-in" data-ctl="회전 x" value="0"><span class="k-unit">°</span><span></span></div>
+<div class="k-row"><label for="s13-ry" class="k-lab">회전 y</label><input id="s13-ry" class="k-in" data-ctl="회전 y" value="0"><span class="k-unit">°</span><span></span></div>
+<div class="k-row"><label for="s13-rz" class="k-lab">회전 z</label><input id="s13-rz" class="k-in" data-ctl="회전 z" value="90"><span class="k-unit">°</span><span></span></div>
+<div class="k-help">조립체 원점 기준</div>
+<button type="button" class="k-rowbtn" data-ctl="표시 색" aria-haspopup="dialog" aria-expanded="true" aria-controls="s13-pop" style="margin-top:4px"><span class="k-lab" style="width:56px">표시 색</span><span class="k-swatch" style="background:#5B9DFF"></span><span class="k-tag">시각 전용</span><svg class="k-chev" width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="margin-left:auto"><path d="M4.5 2.5L8 6l-3.5 3.5"/></svg></button>
+</div>
+<div class="k-sep"></div>
+</div>
+</aside>
+</div>
+
+<div class="k-col" style="width:320px;gap:0">
+<div class="k-lbl">(a) 팝오버 · 실제 크기</div>
+<div id="s13-pop" class="k-pop" role="dialog" aria-label="표시 색" data-unit="S13a 팝오버" data-transient="1">
+<div style="display:flex;align-items:center;gap:8px"><h3>표시 색</h3><span class="k-tag">시각 전용</span><button type="button" class="k-ib sm" data-ctl="팝오버 닫기" aria-label="표시 색 닫기" style="margin-left:auto"><svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M2 2l6 6M8 2l-6 6"/></svg></button></div>
+<p style="margin:0;color:#E8EDF2">질량·관성·궤적에 영향이 없습니다</p>
+<span class="k-cap" id="s13a-l">사용자 색 견본 8칸</span>
+<div class="k-sws" role="radiogroup" aria-labelledby="s13a-l" data-ctl="색 견본">
+<button type="button" role="radio" aria-checked="false" tabindex="-1" class="k-swb" aria-label="색 1" style="color:#E8EDF2;background:#E8EDF2;border-color:#7A899B"></button>
+<button type="button" role="radio" aria-checked="false" tabindex="-1" class="k-swb" aria-label="색 2" style="color:#E8EDF2;background:#C5D0DC;border-color:#7A899B"></button>
+<button type="button" role="radio" aria-checked="false" tabindex="-1" class="k-swb" aria-label="색 3" style="color:#E8EDF2;background:#A9B4C0;border-color:#7A899B"></button>
+<button type="button" role="radio" aria-checked="false" tabindex="-1" class="k-swb" aria-label="색 4" style="color:#E8EDF2;background:#7A899B;border-color:#7A899B"></button>
+<button type="button" role="radio" aria-checked="false" tabindex="-1" class="k-swb" aria-label="색 5" style="color:#E8EDF2;background:#3A4654;border-color:#7A899B"></button>
+<button type="button" role="radio" aria-checked="true" class="k-swb" aria-label="색 6, 선택됨" style="color:#E8EDF2;background:#5B9DFF;border-color:#7A899B"><span class="k-swck"><svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 5.2l2 2 4-4.4"/></svg></span></button>
+<button type="button" role="radio" aria-checked="false" tabindex="-1" class="k-swb" aria-label="색 7" style="color:#E8EDF2;background:#303B49;border-color:#7A899B"></button>
+<button type="button" role="radio" aria-checked="false" tabindex="-1" class="k-swb" aria-label="색 8" style="color:#E8EDF2;background:#D2C6A0;border-color:#7A899B"></button>
+</div>
+<div style="display:grid;grid-template-columns:56px minmax(0,1fr);gap:8px;align-items:center"><label for="s13a-c" class="k-lab">색 코드</label><input id="s13a-c" class="k-in left" data-ctl="색 코드" value="#5B9DFF" style="font-family:'JetBrains Mono',monospace"></div>
+<span class="k-cap">증거 단계 색과 같은 색은 고를 수 없습니다</span>
+</div>
+
+<div class="k-lbl" style="margin-top:16px">(b) 거부: 증거 단계 색과 같은 색 코드</div>
+<div class="k-pop" role="dialog" aria-label="표시 색" data-unit="S13b 팝오버" data-transient="1">
+<div style="display:flex;align-items:center;gap:8px"><h3>표시 색</h3><span class="k-tag">시각 전용</span><button type="button" class="k-ib sm" data-ctl="팝오버 닫기" aria-label="표시 색 닫기" style="margin-left:auto"><svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M2 2l6 6M8 2l-6 6"/></svg></button></div>
+<p style="margin:0;color:#E8EDF2">질량·관성·궤적에 영향이 없습니다</p>
+<div style="display:grid;grid-template-columns:56px minmax(0,1fr);gap:8px;align-items:center"><label for="s13b-c" class="k-lab">색 코드</label><input id="s13b-c" class="k-in left" data-ctl="색 코드(거부)" value="#A0ACBB" aria-invalid="true" aria-describedby="s13b-e" style="font-family:'JetBrains Mono',monospace"></div>
+<span id="s13b-e" role="alert" style="font-weight:500;color:#E8EDF2">증거 단계 색과 같아 고를 수 없습니다. 색이 판정처럼 읽히지 않게 하려는 규칙입니다</span>
+<span class="k-cap">표시 색은 바뀌지 않았습니다(색 6 그대로)</span>
+</div>
+
+<div class="k-lbl" style="margin-top:16px">색을 바꿔도 질량 줄은 그대로</div>
+<div style="display:grid;grid-template-columns:24px 16px minmax(0,1fr);gap:6px 8px;align-items:center;font-size:12px;line-height:16px;color:#A9B4C0">
+<span>전</span><span class="k-swatch" style="background:#5B9DFF"></span><span style="display:flex;align-items:center;gap:6px">질량 <span class="k-val" style="font-size:12px;color:#E8EDF2">0.12</span> t <span class="kb kb-sim" data-badge="시뮬"><span class="kp"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 6q1.25-5 2.5 0t2.5 0t2.5 0t2.5 0"/></svg>시뮬</span></span></span>
+<span>후</span><span class="k-swatch" style="background:#D2C6A0"></span><span style="display:flex;align-items:center;gap:6px">질량 <span class="k-val" style="font-size:12px;color:#E8EDF2">0.12</span> t <span class="kb kb-sim" data-badge="시뮬"><span class="kp"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 6q1.25-5 2.5 0t2.5 0t2.5 0t2.5 0"/></svg>시뮬</span></span></span>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":988,"height":882}}'>
+class Component extends DCLogic {
+renderVals() {
+return {};
+}
+}
+</script>
+</body>
+</html>

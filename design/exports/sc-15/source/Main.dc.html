@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>S1 조립 보조 기본: 점검 머리 열림</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="/_blob/1b63cce74a7cba46d15c994ab634270a">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div class="k-root" style="width:644px;height:882px">
+
+<div class="k-note"><span><strong>S1 기본</strong> · 조립 보조, 실행 전 점검 열림(막음 1, 알림 2)</span><span>상시 조작 요소 9 · 패널 primary 0</span></div>
+
+<div class="k-main">
+<div class="k-ann">
+<div class="k-map" aria-hidden="true"><i style="left:0;right:0;top:0;height:8px;border-bottom-width:1px"></i><i style="left:0;top:9px;bottom:16px;width:40px;border-right-width:1px"></i><i class="on" style="right:0;top:9px;bottom:16px;width:53px"></i><i style="left:0;right:0;bottom:6px;height:9px;border-top-width:1px"></i><i style="left:0;right:0;bottom:0;height:5px;border-top-width:1px"></i></div>
+<p><strong>셸 안의 위치: SC-01 오른쪽 패널 · 조립 모드</strong><br>1440 × 900 화면에서 320 × 790 px. 패널 머리의 전환기 <span class="k-hi">인스펙터 | 조립 보조</span>로 고릅니다. 선택이 없어도 열리고, 마지막에 고른 쪽을 프로젝트마다 기억합니다 [제안].</p>
+<p>기본 화면은 "실행 전에 무엇이 걸렸는가"까지입니다. 추력과 추력 대 중량비는 접힌 머리 뒤에 있고 머리는 한 번에 하나만 열립니다.</p>
+<p><strong>상시 조작 요소 9 (5.1절)</strong><br>1 패널 접기 · 2 패널 전환기 · 3 L0 증거 칩 · 4 실행 전 점검 머리 · 5~7 점검 줄 3 · 8 추력 머리 · 9 추력 대 중량비 머리</p>
+<p>세지 않은 것: 제목, "판정이 아닙니다" 줄, 줄 안의 읽기 전용 <span class="k-hi">L0</span> 칩, 막음·알림 글자, 아래 줄의 키 안내.</p>
+<p>막음과 알림은 색이 아니라 <span class="k-hi">글자</span>(실행을 막음 / 알림)와 <span class="k-hi">모양</span>(■ / ○), 그리고 순서(막음이 먼저)로 가릅니다. 줄은 모두 같은 L0 색입니다.</p>
+<p>줄을 누르면 뷰포트에서 강조합니다(1단계). 강조된 줄에만 <span class="k-hi">자세히</span>가 생겨 대상 목록과 해결 안내를 엽니다(2단계, S6).</p>
+<p>상단바 <span class="k-hi">실행하기</span>(primary)는 막혀 있고 옆에 "실행을 막는 점검 1건"이 보입니다(S16).</p>
+</div>
+
+<div class="k-cols">
+<div class="k-col">
+<div class="k-lbl">패널 320 × 790</div>
+<aside class="k-panel" data-panel="S1" data-unit="S1" aria-label="조립 보조">
+<div class="k-pbar"><button type="button" class="k-ib" data-ctl="패널 접기" aria-label="오른쪽 패널 접기" aria-expanded="true"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 2.5L8 6l-3.5 3.5"/></svg></button><div class="k-seg" role="radiogroup" aria-label="오른쪽 패널 보기" data-ctl="패널 전환기"><button type="button" role="radio" aria-checked="false" tabindex="-1">인스펙터</button><button type="button" role="radio" aria-checked="true">조립 보조</button></div></div>
+<div class="k-ptitle"><h2>조립 보조</h2><button type="button" class="k-ev" data-ctl="L0 증거 칩" aria-haspopup="dialog" aria-expanded="false" aria-label="증거 단계 L0 해석 계산. 누르면 근거를 엽니다"><svg width="25" height="10" viewBox="0 0 30 12" aria-hidden="true"><path d="M0 0h6v12H0z" fill="currentColor"/><path d="M8.5.5h5v11h-5zM16.5.5h5v11h-5zM24.5.5h5v11h-5z" fill="none" stroke="currentColor"/></svg>L0 해석 계산</button></div>
+<div class="k-honest">이 패널의 값은 모두 L0 해석 계산입니다. 판정이 아닙니다.</div>
+<div class="k-body">
+
+<button type="button" class="k-head" data-ctl="실행 전 점검 · 3건 머리" aria-expanded="true" aria-controls="s1-chk"><svg class="k-chev" width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 2.5L8 6l-3.5 3.5"/></svg>실행 전 점검 · 3건<span class="k-meta">막음 1 · 알림 2</span></button>
+<div id="s1-chk" class="k-region" role="region" aria-label="실행 전 점검">
+<ul class="k-list" aria-label="점검 줄 3건, 막음이 먼저">
+<li><button type="button" class="k-chk" data-ctl="점검 줄: 추진제 없는 추력기" aria-pressed="false"><span class="k-tags"><span class="k-l0">L0</span><span class="k-kind"><svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><rect x="1" y="1" width="8" height="8" fill="currentColor"/></svg>실행을 막음</span></span><span class="k-msg">추진제 없는 추력기</span><span class="k-tgt">냉가스 추력기 ×2</span></button></li>
+<li><button type="button" class="k-chk" data-ctl="점검 줄: 무게중심이 지지 다각형 밖" aria-pressed="false" tabindex="-1"><span class="k-tags"><span class="k-l0">L0</span><span class="k-kind"><svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><circle cx="5" cy="5" r="3.5" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>알림</span></span><span class="k-msg">무게중심이 지지 다각형 밖입니다. 이 모델에서는 전복할 수 있습니다</span><span class="k-tgt">조립체 전체</span></button></li>
+<li><button type="button" class="k-chk" data-ctl="점검 줄: 추력선이 무게중심에서 벗어남" aria-pressed="false" tabindex="-1"><span class="k-tags"><span class="k-l0">L0</span><span class="k-kind"><svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><circle cx="5" cy="5" r="3.5" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>알림</span></span><span class="k-msg">추력선이 무게중심에서 벗어나 토크가 생깁니다</span><span class="k-tgt">냉가스 추력기 ×2</span></button></li>
+</ul>
+<div class="k-line">줄을 누르면 뷰포트에서 강조합니다. 고쳐 주지는 않습니다.</div>
+</div>
+<div class="k-sep"></div>
+
+<button type="button" class="k-head" data-ctl="추력 · 스케줄 없음 머리" aria-expanded="false"><svg class="k-chev" width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 2.5L8 6l-3.5 3.5"/></svg>추력 · 스케줄 없음</button>
+<div class="k-sep"></div>
+<button type="button" class="k-head" data-ctl="추력 대 중량비 · 세 행성 머리" aria-expanded="false"><svg class="k-chev" width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 2.5L8 6l-3.5 3.5"/></svg>추력 대 중량비 · 세 행성</button>
+<div class="k-sep"></div>
+
+</div>
+<div class="k-foot"><span class="k-kbd">↑</span><span class="k-kbd">↓</span>줄 이동<span class="k-kbd">Enter</span>강조<span class="k-kbd">Esc</span>닫기</div>
+</aside>
+</div>
+</div>
+</div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":644,"height":882}}'>
+class Component extends DCLogic {
+renderVals() {
+return {};
+}
+}
+</script>
+</body>
+</html>
