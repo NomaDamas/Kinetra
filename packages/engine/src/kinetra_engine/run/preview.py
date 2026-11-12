@@ -1,7 +1,8 @@
 """Compile a project and run it once (X-02a): the run stream of `client-adapter.md` 3.3, produced by the engine.
 
-    compile_project(project, cache=None) -> CompiledModel
+    compile_project(project, cache=None, ground_friction=None) -> CompiledModel
     PreviewRun(project, run_id=..., project_id=..., revision=..., duration_s=..., seed=0) -> iterate: Frame ..., RunEnded
+    PreviewRun(..., kind=RunKind.VERDICT_SAMPLE, ground_friction=μ)   # one Monte Carlo sample of a verdict (J-01a)
 
 Port of the legacy live run (`legacy-v0`, `packages/engine/src/kinetra_engine/live.py`): the model is compiled from the
 document as it is, and every frame is produced by stepping the engine (`mj_step1`/`mj_step2`) while the stream is read. Nothing is a
@@ -140,14 +141,15 @@ class CompiledModel:
     model: mujoco.MjModel
 
 
-def compile_project(project: Project, cache: PartCache | None = None) -> CompiledModel:
-    """Compile `project`. Raises `ProjectIncomplete` for a missing definition and `CompileError` (with its
+def compile_project(project: Project, cache: PartCache | None = None, ground_friction: float | None = None) -> CompiledModel:
+    """Compile `project`, the ground at `ground_friction` (default the planet's nominal; a Monte Carlo sample of the planet's
+    `ground_friction` distribution, W-03c, J-01a). Raises `ProjectIncomplete` for a missing definition and `CompileError` (with its
     `CompileErrorCode`) for a design the compiler refuses."""
     require_complete(project, BlockedOperation.COMPILE)
     thrust = compile_thrust(project, cache)  # build_body_tree, with the thrusters and the tanks' propellant
     tree = thrust.tree
     drives = compile_drives(tree)
-    mjcf = to_mjcf(tree, drives=drives)
+    mjcf = to_mjcf(tree, drives=drives, ground_friction=ground_friction)
     return CompiledModel(tree, thrust, drives, compile_drag(tree), mjcf, mujoco.MjModel.from_xml_string(mjcf))
 
 
@@ -209,9 +211,11 @@ class PreviewRun:
         kind: RunKind = RunKind.PREVIEW,
         frame_every_ticks: int | None = None,
         cache: PartCache | None = None,
+        ground_friction: float | None = None,
     ):
         require_complete(project, BlockedOperation.RUN)
-        compiled = compile_project(project, cache)
+        compiled = compile_project(project, cache, ground_friction)
+        self._ground_friction = ground_friction
         self.compiled = compiled
         model = compiled.model
         self._model = model
@@ -313,7 +317,7 @@ class PreviewRun:
             runtime follows the new model by name."""
             nonlocal tree, drive_spec, model, data, drag
             tree, drive_spec = release(tree, joints), drive_spec.without_joints(joints)
-            new_model = mujoco.MjModel.from_xml_string(to_mjcf(tree, drives=drive_spec))
+            new_model = mujoco.MjModel.from_xml_string(to_mjcf(tree, drives=drive_spec, ground_friction=self._ground_friction))
             data = carry_state(model, data, new_model)
             model = new_model
             drives.rebind(model, drive_spec)

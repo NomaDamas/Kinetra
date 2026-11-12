@@ -8,6 +8,7 @@ thrown away whole. Offline: the gateway runs on a fake transport that answers fr
 from __future__ import annotations
 
 import json
+from decimal import Decimal
 
 import pytest
 from test_break_runtime import G_MOON, TOP_KG, breakable_tower
@@ -102,7 +103,13 @@ def test_explain_quotes_only_numbers_of_the_run_and_the_checks(broken):
     brk, statics = evidence["rollout_summary"]["breaks"][0], evidence["statics_check"]
     # every number shown is cited (tick, load, threshold, angle, margin), from a datum it is a rounding of
     assert [c.text for c in result.citations] == [str(brk["tick"]), f"{brk['load']['value']:.2f}", f"{brk['threshold']['value']:.3f}", f"{statics['tipover_angle_deg']:.1f}", f"{statics['margin_m']:.2f}"]
-    assert all(at(evidence, c.path) == c.value and abs(abs(c.value) - abs(float(c.text))) <= 0.5 * 10 ** -len(c.text.partition(".")[2]) for c in result.citations)
+    # The same exact decimal rule as check_numbers: binary subtraction can exceed half a unit at an exact halfway value.
+    assert all(
+        at(evidence, c.path) == c.value
+        and abs(abs(Decimal(repr(c.value))) - abs(Decimal(c.text)))
+        <= Decimal("0.5") * Decimal(10) ** -len(c.text.partition(".")[2])
+        for c in result.citations
+    )
     by_path = {c.path: c for c in result.citations}
     assert by_path["rollout_summary.breaks[0].load.value"].value == brk["load"]["value"]
     assert by_path["rollout_summary.breaks[0].threshold.value"].value == brk["threshold"]["value"]

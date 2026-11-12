@@ -3,7 +3,14 @@ name = "kinetra-judge"
 version = "0.0.0"
 description = "Judgment: necessary-condition screen, search, Monte-Carlo verdicts"
 requires-python = ">=3.11"
-dependencies = ["kinetra-core", "pydantic>=2.14,<3"]
+dependencies = [
+    "kinetra-core",
+    # J-01a: a verdict runs the engine's samples (`kinetra_judge.mc.run_verdict`)
+    "kinetra-engine",
+    # J-01a: the Monte Carlo sampler (legacy `mc.py`, `np.random.default_rng`); already locked through mujoco-core. BSD-3-Clause
+    "numpy>=2.4",
+    "pydantic>=2.14,<3",
+]
 
 [build-system]
 requires = ["hatchling"]
