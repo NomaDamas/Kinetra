@@ -66,7 +66,12 @@ nothing; a separator whose joint broke before its time has nothing left to relea
 away keeps running in the same world to the end, with its thrusters and motors on their own schedule entries.
 A released body is a free body of the run until the end tick (X-13): no rule removes a piece or takes it out of the
 physics by distance, count or time, every frame carries its pose, and the hash covers its free joint.
-Contacts and met conditions are not in the stream yet; their leaves add them.
+
+**Contacts (#562).** A `ContactWatch` (`contacts.py`, which states the threshold, the dedupe and the order) reads the
+contacts of the pose at tick 0 and after every tick (after the break or separation of that tick, on the model the tick ends
+with) and adds a `contact` `begin`/`end` event for every body–ground, body–prop and body–body pair whose touching changed;
+the frame of that tick or the next carries them, after the tick's `break` or `separation` events. After a release the watch
+is bound to the model compiled again and goes on by name. Met conditions are not in the stream yet; their leaf adds them.
 """
 
 from __future__ import annotations
@@ -118,6 +123,7 @@ from ..compiler import (
     to_mjcf,
 )
 from ..parts import PartCache
+from .contacts import ContactWatch
 from .platform_tag import platform_tag
 
 FRAME_RATE_CEILING_HZ = 60.0
@@ -310,6 +316,7 @@ class PreviewRun:
         drag = DragRuntime(model, self.compiled.drag)
         watch = BreakWatch(tree, model)
         schedule = SeparationSchedule(tree.design)
+        contacts = ContactWatch(model)
         design, dt = tree.design, run.timestep_s
 
         def released(joints: list[str]) -> None:
@@ -324,10 +331,12 @@ class PreviewRun:
             thrust.rebind(model, data)
             drag = DragRuntime(model, self.compiled.drag)  # holds nothing between steps: the same bodies, found by name
             watch.bind(tree, model)
+            contacts.bind(model)
             self._follow(model)
 
         trajectory = hashlib.sha256(data.qpos.tobytes())
         last_good = data.qpos.copy()
+        self._events.extend(contacts.events(model, data, 0))
         frame = self._frame(data, 0)
         check_frame(run, frame, final=self.end_tick == 0)
         yield frame
@@ -392,6 +401,7 @@ class PreviewRun:
                     }
                     for o in over
                 )
+            self._events.extend(contacts.events(model, data, tick))
             trajectory.update(data.qpos.tobytes())
             final = tick == self.end_tick
             if final or tick % every == 0:
