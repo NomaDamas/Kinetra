@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>S21 엔진 오프라인</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="kin-sc05.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div class="k-root" style="width:1570px;height:1040px">
+<svg class="k-spr" aria-hidden="true"><symbol id="g-sim" viewBox="0 0 12 12"><path d="M1 6q1.25-5 2.5 0t2.5 0t2.5 0t2.5 0"/></symbol><symbol id="g-cite" viewBox="0 0 12 12"><path d="M2.5 8.5v-3a2.5 2.5 0 0 1 2.5-2.5M7 8.5v-3a2.5 2.5 0 0 1 2.5-2.5"/></symbol><symbol id="g-def" viewBox="0 0 12 12"><circle cx="6" cy="6" r="3.5"/></symbol><symbol id="g-decl" viewBox="0 0 12 12"><path d="M2 10l.6-2.6 5.6-5.6 2 2-5.6 5.6z"/></symbol><symbol id="i-x" viewBox="0 0 12 12"><path d="M2.5 2.5l7 7M9.5 2.5l-7 7"/></symbol><symbol id="i-chev" viewBox="0 0 12 12"><path d="M3 4.5l3 3 3-3"/></symbol><symbol id="i-chevr" viewBox="0 0 12 12"><path d="M4.5 3l3 3-3 3"/></symbol><symbol id="i-left" viewBox="0 0 12 12"><path d="M7.5 2.5L4 6l3.5 3.5"/></symbol><symbol id="i-grip" viewBox="0 0 12 12"><path d="M4 2.5h.01M8 2.5h.01M4 6h.01M8 6h.01M4 9.5h.01M8 9.5h.01"/></symbol><symbol id="i-filt" viewBox="0 0 12 12"><path d="M1.5 2.5h9l-3.5 4v3l-2 1v-4z"/></symbol><symbol id="i-upload" viewBox="0 0 12 12"><path d="M6 8V2M3.5 4.5L6 2l2.5 2.5M2 10h8"/></symbol><symbol id="i-unplug" viewBox="0 0 12 12"><path d="M2 10l2.2-2.2M10 2L7.8 4.2M3.5 5.5l3 3M5 4l1.3-1.3a1.8 1.8 0 0 1 2.6 2.6L7.6 6.6M4.4 5.4L3.1 6.7a1.8 1.8 0 0 0 2.6 2.6L7 8"/></symbol><symbol id="i-info" viewBox="0 0 12 12"><path d="M10.5 6a4.5 4.5 0 1 1-9 0a4.5 4.5 0 1 1 9 0M6 5.5v3M6 3.6v.1"/></symbol><symbol id="i-eye" viewBox="0 0 12 12"><path d="M1 6s2-3.5 5-3.5S11 6 11 6s-2 3.5-5 3.5S1 6 1 6zM7.2 6a1.2 1.2 0 1 1-2.4 0a1.2 1.2 0 1 1 2.4 0"/></symbol><symbol id="t-thr" viewBox="0 0 24 24"><path d="M5 9h6v6H5zM11 10l7-3v10l-7-3"/></symbol><symbol id="t-mot" viewBox="0 0 24 24"><path d="M15 12a5 5 0 1 1-10 0a5 5 0 1 1 10 0M15 12h5M10 12h.01"/></symbol><symbol id="t-beam" viewBox="0 0 24 24"><path d="M3 10h18v4H3z"/></symbol><symbol id="t-mesh" viewBox="0 0 24 24"><path d="M3 17h18M4 17c0-6 4-10 8-10s8 4 8 10M9 17c0-4 1.5-7 3-7s3 3 3 7"/></symbol><symbol id="t-car" viewBox="0 0 24 24"><path d="M3 15v-3l3-3h8l3 3h3v3zM8.6 17a1.6 1.6 0 1 1-3.2 0a1.6 1.6 0 1 1 3.2 0M17.6 17a1.6 1.6 0 1 1-3.2 0a1.6 1.6 0 1 1 3.2 0"/></symbol><symbol id="t-legs" viewBox="0 0 24 24"><path d="M8 5h8v5H8zM12 10v2M12 12l-6 7M12 12l6 7M4 19h4M16 19h4"/></symbol></svg>
+
+<div class="k-note"><span><strong>S21 엔진 오프라인</strong> · 상단바 "엔진 연결 끊김" 칩(SC-01) 아래. (a) 기본 부품은 그대로 (b) 내 것의 <span class="k-q">시뮬</span> 값에 오래됨 (c) 마법사의 계산이 필요한 단계는 <span class="k-q">다음</span> 비활성</span><span>(a) 6 · (b) 7 · (c) 5 + 값 배지 1 · primary 1(비활성)</span></div>
+
+<div class="k-wrap">
+<div class="k-ann">
+<span class="k-where">셸 안의 위치: SC-01 상단바 아래 왼쪽 패널 · 위 모달</span>
+<ul>
+<li>상단바의 칩과 <span class="k-q">다시 연결</span>은 SC-01 S9 그대로입니다(세지 않음). 상태 색 <span class="k-q">color.status.warning</span>은 이 칩에만 씁니다.</li>
+<li><span class="k-q">인용</span> · <span class="k-q">기본값</span> · <span class="k-q">사용자 선언</span>은 카탈로그와 기록의 값이라 그대로 보입니다.</li>
+<li><span class="k-q">시뮬</span> 값(조립체 질량 합 등)은 배지에 "오래됨"을 붙이고 줄에 "오래됨 · 마지막 계산 [시각]". 가짜 값으로 채우거나 지우지 않습니다.</li>
+<li>마법사: 프록시 · 부피 계산이 필요한 단계(2/4)는 <span class="k-q">다음</span> 비활성 + 이유 "엔진에 연결되어야 합니다". 부피는 <span class="k-q">부피 미산출 · 엔진 연결 끊김</span>.</li>
+<li>파일 읽기와 1/4 단위·축 단계가 엔진 없이 되는지는 [확인 필요]. 이 그림은 2/4만 막습니다.</li>
+</ul>
+<p>수치는 <span class="k-ex">예시</span>입니다.</p>
+</div>
+
+<div class="k-pad">
+<div class="k-col">
+<div class="k-frag">
+<span class="k-lbl">상단바(SC-01) 일부 · 세지 않음</span>
+<div data-outside="1" style="width:528px;height:48px;box-sizing:border-box;display:flex;align-items:center;gap:8px;padding:0 12px;background:#151A20;border:1px solid #26303A">
+<span class="k-sec" style="flex:1 1 0">… 모드 전환기 · 증거 배지</span>
+<span class="k-chip-w" role="status"><svg class="i"><use href="#i-unplug"/></svg>엔진 연결 끊김</span>
+<button type="button" class="k-btn sm">다시 연결</button>
+</div>
+</div>
+<div style="display:flex;gap:48px">
+<div class="k-frag">
+<span class="k-lbl">(a) 기본 부품 · 카탈로그 값 그대로</span>
+<aside class="l-panel" aria-label="라이브러리" data-unit="S21a 라이브러리 패널">
+<div class="l-head"><h2>라이브러리</h2><button type="button" class="k-ib" data-ctl="패널 접기" aria-label="라이브러리 접기" aria-expanded="true"><svg class="i"><use href="#i-left"/></svg></button></div>
+<div class="l-tabs" role="tablist" aria-label="라이브러리 탭" data-ctl="탭 묶음"><button type="button" role="tab" aria-selected="true">기본 부품</button><button type="button" role="tab" aria-selected="false" tabindex="-1">내 것</button></div>
+<div class="l-tools"><div class="l-tr">
+<button type="button" class="l-sort" data-ctl="정렬 선택" aria-haspopup="menu" aria-expanded="false" aria-label="정렬: 출처 먼저"><span class="k-cap">정렬</span><span class="sv">출처 먼저</span><svg class="i"><use href="#i-chev"/></svg></button>
+<button type="button" class="l-filt" data-ctl="필터 버튼" aria-haspopup="dialog" aria-expanded="false" aria-label="필터, 적용 0"><svg class="i"><use href="#i-filt"/></svg>필터<span class="cnt">0</span></button>
+</div></div>
+<div class="l-colh" aria-hidden="true"><span>부품 · 값</span><span class="bh">배지</span></div>
+<div class="l-list" role="grid" aria-label="기본 부품 목록, 13개" tabindex="0" data-ctl="부품 목록">
+<div class="l-grp">인용</div>
+<div role="row" class="l-row"><span class="l-grip" aria-hidden="true"><svg class="i"><use href="#i-grip"/></svg></span><svg class="l-th" aria-hidden="true"><use href="#t-mot"/></svg><div class="l-c"><div class="l-l1" role="gridcell"><span class="l-nm">모터</span><span class="l-kd">구동</span></div><div class="l-l2"><span class="num">2.4<span class="k-u"> kg</span></span><span class="k-ex">예시</span><span class="l-bc" role="gridcell"><button type="button" class="kb kb-cite" data-badge="인용" data-ctl="값 배지 열" tabindex="-1" aria-label="인용. 출처와 라이선스 열기"><span class="kp"><svg><use href="#g-cite"/></svg>인용</span></button></span></div></div></div>
+<div role="row" class="l-row"><span class="l-grip" aria-hidden="true"><svg class="i"><use href="#i-grip"/></svg></span><svg class="l-th" aria-hidden="true"><use href="#t-thr"/></svg><div class="l-c"><div class="l-l1" role="gridcell"><span class="l-nm">냉가스 추력기</span><span class="l-kd">추력</span></div><div class="l-l2"><span class="k-cap">최대 추력</span><span class="num">8.9<span class="k-u"> N</span></span><span class="l-bc" role="gridcell"><button type="button" class="kb kb-cite" data-badge="인용" data-ctl="값 배지 열" tabindex="-1" aria-label="인용. 출처와 라이선스 열기"><span class="kp"><svg><use href="#g-cite"/></svg>인용</span></button></span></div></div></div>
+<div class="l-grp">기본값</div>
+<div role="row" class="l-row"><span class="l-grip" aria-hidden="true"><svg class="i"><use href="#i-grip"/></svg></span><svg class="l-th" aria-hidden="true"><use href="#t-beam"/></svg><div class="l-c"><div class="l-l1" role="gridcell"><span class="l-nm">빔</span><span class="l-kd">구조</span></div><div class="l-l2"><span class="num">0.4<span class="k-u"> kg</span></span><span class="k-ex">예시</span><span class="l-bc" role="gridcell"><button type="button" class="kb kb-def" data-badge="기본값" data-ctl="값 배지 열" tabindex="-1" aria-label="기본값. 기본값의 출처 열기"><span class="kp"><svg><use href="#g-def"/></svg>기본값</span></button></span></div></div></div>
+<div class="l-more">… 나머지 줄도 그대로</div>
+</div>
+<div class="l-foot"><span>카탈로그는 엔진 없이도 보입니다</span></div>
+</aside>
+</div>
+
+<div class="k-frag">
+<span class="k-lbl">(b) 내 것 · 시뮬 값 오래됨</span>
+<aside class="l-panel" aria-label="라이브러리" data-unit="S21b 라이브러리 패널">
+<div class="l-head"><h2>라이브러리</h2><button type="button" class="k-ib" data-ctl="패널 접기" aria-label="라이브러리 접기" aria-expanded="true"><svg class="i"><use href="#i-left"/></svg></button></div>
+<div class="l-tabs" role="tablist" aria-label="라이브러리 탭" data-ctl="탭 묶음"><button type="button" role="tab" aria-selected="false" tabindex="-1">기본 부품</button><button type="button" role="tab" aria-selected="true">내 것</button></div>
+<div class="l-tools">
+<button type="button" class="k-btn l-imp" data-ctl="가져오기" aria-haspopup="dialog"><svg class="i"><use href="#i-upload"/></svg>가져오기</button>
+<div class="l-tr">
+<button type="button" class="l-sort" data-ctl="정렬 선택" aria-haspopup="menu" aria-expanded="false" aria-label="정렬: 출처 먼저"><span class="k-cap">정렬</span><span class="sv">출처 먼저</span><svg class="i"><use href="#i-chev"/></svg></button>
+<button type="button" class="l-filt" data-ctl="필터 버튼" aria-haspopup="dialog" aria-expanded="false" aria-label="필터, 적용 0"><svg class="i"><use href="#i-filt"/></svg>필터<span class="cnt">0</span></button>
+</div></div>
+<div class="l-colh" aria-hidden="true"><span>항목 · 값</span><span class="bh">배지</span></div>
+<div class="l-list" role="grid" aria-label="내 것 목록, 4개" tabindex="0" data-ctl="내 것 목록">
+<div class="l-grp">사용자 선언</div>
+<div role="row" class="l-row"><span class="l-grip" aria-hidden="true"><svg class="i"><use href="#i-grip"/></svg></span><svg class="l-th" aria-hidden="true"><use href="#t-mesh"/></svg><div class="l-c"><div class="l-l1" role="gridcell"><span class="l-nm">탑재체 덮개</span><span class="l-kd">가져온 에셋</span></div><div class="l-l2"><span class="num">130<span class="k-u"> kg</span></span><span class="k-ex">예시</span><span class="l-bc" role="gridcell"><button type="button" class="kb kb-decl" data-badge="사용자 선언" data-ctl="값 배지 열" tabindex="-1" aria-label="사용자 선언. 선언한 사람과 시각 열기"><span class="kp"><svg><use href="#g-decl"/></svg>사용자 선언</span></button></span></div><span class="l-tag"><svg class="i"><use href="#i-eye"/></svg>시각 메시: 제작 형상 아님</span></div></div>
+<div class="l-grp">시뮬</div>
+<div role="row" class="l-row"><span class="l-grip" aria-hidden="true"><svg class="i"><use href="#i-grip"/></svg></span><svg class="l-th" aria-hidden="true"><use href="#t-car"/></svg><div class="l-c"><div class="l-l1" role="gridcell"><span class="l-nm">로켓 자동차</span><span class="l-kd">조립체</span></div><div class="l-l2"><span class="k-cap">질량 합</span><span class="num">1.3<span class="k-u"> t</span></span><span class="k-ex">예시</span><span class="l-bc" role="gridcell"><button type="button" class="kb kb-sim kb-stale" data-badge="시뮬" data-ctl="값 배지 열" tabindex="-1" aria-label="시뮬, 오래됨. 마지막 계산 시각 열기"><span class="kp"><svg><use href="#g-sim"/></svg>시뮬 · 오래됨</span></button></span></div><span class="k-stale" style="align-self:flex-start">오래됨 · 마지막 계산 [시각]</span></div></div>
+<div role="row" class="l-row"><span class="l-grip" aria-hidden="true"><svg class="i"><use href="#i-grip"/></svg></span><svg class="l-th" aria-hidden="true"><use href="#t-legs"/></svg><div class="l-c"><div class="l-l1" role="gridcell"><span class="l-nm">착륙 다리 묶음</span><span class="l-kd">조립체</span></div><div class="l-l2"><span class="k-cap">질량 합</span><span class="num">0.2<span class="k-u"> t</span></span><span class="k-ex">예시</span><span class="l-bc" role="gridcell"><button type="button" class="kb kb-sim kb-stale" data-badge="시뮬" data-ctl="값 배지 열" tabindex="-1" aria-label="시뮬, 오래됨. 마지막 계산 시각 열기"><span class="kp"><svg><use href="#g-sim"/></svg>시뮬 · 오래됨</span></button></span></div><span class="k-stale" style="align-self:flex-start">오래됨 · 마지막 계산 [시각]</span></div></div>
+<div class="l-more">아래로 1개 더</div>
+</div>
+<div class="l-foot"><span>시뮬 값은 다시 연결되면 다시 계산합니다</span></div>
+</aside>
+</div>
+</div>
+</div>
+
+<div class="k-frag full">
+<span class="k-lbl">(c) 마법사 2/4 · 계산이 필요한 단계</span>
+<div class="w-stage">
+<div class="w-shell" data-outside="1" aria-hidden="true"><div class="t"></div><div class="l"></div><div class="r"></div></div>
+<div class="w-scrim"></div>
+<span class="w-cap">가림막 뒤: SC-01 셸(비활성)</span>
+<div class="w-modal" role="dialog" aria-modal="true" aria-labelledby="s21c-t" data-unit="S21c 마법사 · 2/4">
+<div class="w-head"><h2 id="s21c-t">glb 가져오기</h2><span class="k-sp"></span><button type="button" class="k-ib" data-ctl="닫기" aria-label="가져오기 닫기" aria-keyshortcuts="Escape"><svg class="i m"><use href="#i-x"/></svg></button></div>
+<ol class="w-steps" aria-label="단계"><li class="w-st done">파일</li><li class="w-ar" aria-hidden="true">›</li><li class="w-st done">1/4 단위·축</li><li class="w-ar" aria-hidden="true">›</li><li class="w-st cur" aria-current="step">2/4 프록시</li><li class="w-ar" aria-hidden="true">›</li><li class="w-st">3/4 질량</li><li class="w-ar" aria-hidden="true">›</li><li class="w-st">4/4 출처</li></ol>
+<div class="w-body">
+<h3 class="w-q">물리에는 어떤 모양을 쓸까요?</h3>
+<div class="w-radio" role="radiogroup" aria-label="프록시 종류" data-ctl="프록시 종류">
+<div class="w-opt"><button type="button" class="w-rb" role="radio" aria-checked="false" tabindex="-1"><span class="rd"></span><span>상자<span class="d">바깥 상자 하나. 가장 단순하고 부피가 큽니다</span></span></button></div>
+<div class="w-opt"><button type="button" class="w-rb" role="radio" aria-checked="true"><span class="rd"></span><span>볼록체<span class="d">메시를 감싸는 볼록 껍질 하나</span></span></button><button type="button" class="kb kb-decl" data-badge="사용자 선언" data-ctl="값 배지" aria-label="사용자 선언. 근거 열기"><span class="kp"><svg><use href="#g-decl"/></svg>사용자 선언</span></button></div>
+</div>
+<div class="w-ro"><svg class="i"><use href="#i-info"/></svg><span>충돌에는 프록시만 쓰고 시각 메시는 쓰지 않습니다.</span></div>
+<div class="w-tbl">
+<div class="w-tr"><span class="k-cap">메시 부피</span><span class="noval">부피 미산출 · 엔진 연결 끊김</span></div>
+<div class="w-tr"><span class="k-cap">프록시 부피</span><span class="noval">부피 미산출 · 엔진 연결 끊김</span></div>
+<div class="w-tr"><span class="k-cap">부피 차이</span><span class="noval">차이 미산출 · 부피 없음</span></div>
+</div>
+<button type="button" class="w-acc" data-ctl="고급 머리" aria-expanded="false"><svg class="i"><use href="#i-chevr"/></svg>고급 · 볼록 분해 도구와 라이선스 기록<span class="k-cap">접힘</span></button>
+</div>
+<div class="w-foot" style="position:relative"><span class="k-sec">다시 연결되면 프록시를 만들고 이어 갑니다. 입력한 값은 남습니다</span><button type="button" class="k-btn" data-ctl="이전">이전</button><button type="button" class="k-prim" data-ctl="다음" data-primary="1" aria-disabled="true" aria-describedby="s21c-tip">다음</button><span class="k-tip abs" role="tooltip" id="s21c-tip" style="right:20px;bottom:52px">엔진에 연결되어야 합니다</span></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1570,"height":1040}}'>
+class Component extends DCLogic {
+renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

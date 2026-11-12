@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>S11 단위와 축</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="kin-sc05.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div class="k-root" style="width:2370px;height:1040px">
+<svg class="k-spr" aria-hidden="true"><symbol id="g-sim" viewBox="0 0 12 12"><path d="M1 6q1.25-5 2.5 0t2.5 0t2.5 0t2.5 0"/></symbol><symbol id="g-def" viewBox="0 0 12 12"><circle cx="6" cy="6" r="3.5"/></symbol><symbol id="g-decl" viewBox="0 0 12 12"><path d="M2 10l.6-2.6 5.6-5.6 2 2-5.6 5.6z"/></symbol><symbol id="g-est" viewBox="0 0 12 12"><path d="M2 4.5q2-2 4 0t4 0M2 8q2-2 4 0t4 0"/></symbol><symbol id="i-x" viewBox="0 0 12 12"><path d="M2.5 2.5l7 7M9.5 2.5l-7 7"/></symbol><symbol id="i-chev" viewBox="0 0 12 12"><path d="M3 4.5l3 3 3-3"/></symbol><symbol id="i-check" viewBox="0 0 12 12"><path d="M2.5 6.5l2.3 2.3 4.7-5"/></symbol><symbol id="i-info" viewBox="0 0 12 12"><path d="M10.5 6a4.5 4.5 0 1 1-9 0a4.5 4.5 0 1 1 9 0M6 5.5v3M6 3.6v.1"/></symbol><symbol id="i-to" viewBox="0 0 16 12"><path d="M1 6h13M10 2l4 4-4 4"/></symbol></svg>
+
+<div class="k-note"><span><strong>S11 1/4 단위·축</strong> · 질문 하나: "이 파일의 단위는?" (a) 규칙이 어림한 단위 <span class="k-q">추정</span> (b) 사용자가 고름 → <span class="k-q">사용자 선언</span> (c) 크기가 이상할 때 한 줄 안내</span><span>5(5.3절) + 값 배지 1 · primary 1</span></div>
+
+<div class="k-wrap">
+<div class="k-ann">
+<span class="k-where">셸 안의 위치: SC-01 위 모달</span>
+<ul>
+<li>단위 선택: m, cm, mm, in [제안]. 위쪽 축 선택: +Y(glb 규약), +Z.</li>
+<li>규칙이 어림한 단위는 <span class="k-q">추정</span> + 근거 한 줄. 사용자가 고르거나 그대로 <span class="k-q">다음</span>을 누르면 <span class="k-q">사용자 선언</span>으로 기록됩니다 [제안]. 바뀌는 순간을 (b)에 그렸습니다.</li>
+<li>가운데 2D 개략도: 앞에서 본 윤곽 + 1 m 기준자 + 가로 · 높이 치수선. 깊이는 그림 아래 한 줄. 치수는 파일 좌표 × 단위로 엔진이 계산한 값이라 <span class="k-q">시뮬</span>입니다.</li>
+<li>크기가 이상하면(수 mm, 수 km) 한 줄 안내. 상태 색이 아니라 보통 글자와 정보 글리프입니다. 막지 않습니다.</li>
+<li>3D 미리보기는 그리지 않습니다(범위 밖).</li>
+</ul>
+<p>근거 문장과 모든 치수는 <span class="k-ex">예시</span>입니다.</p>
+</div>
+
+<div class="k-pad">
+<div class="k-frag full">
+<span class="k-lbl">(a) 규칙이 어림한 단위 · 추정</span>
+<div class="w-stage">
+<div class="w-shell" data-outside="1" aria-hidden="true"><div class="t"></div><div class="l"></div><div class="r"></div></div>
+<div class="w-scrim"></div>
+<span class="w-cap">가림막 뒤: SC-01 셸(비활성)</span>
+<div class="w-modal" role="dialog" aria-modal="true" aria-labelledby="s11a-t" data-unit="S11a 마법사 · 1/4">
+<div class="w-head"><h2 id="s11a-t">glb 가져오기</h2><span class="k-sp"></span><button type="button" class="k-ib" data-ctl="닫기" aria-label="가져오기 닫기" aria-keyshortcuts="Escape"><svg class="i m"><use href="#i-x"/></svg></button></div>
+<ol class="w-steps" aria-label="단계"><li class="w-st done">파일</li><li class="w-ar" aria-hidden="true">›</li><li class="w-st cur" aria-current="step">1/4 단위·축</li><li class="w-ar" aria-hidden="true">›</li><li class="w-st">2/4 프록시</li><li class="w-ar" aria-hidden="true">›</li><li class="w-st">3/4 질량</li><li class="w-ar" aria-hidden="true">›</li><li class="w-st">4/4 출처</li></ol>
+<div class="w-body">
+<h3 class="w-q">이 파일의 단위는?</h3>
+<div class="w-row" style="align-items:flex-start">
+<div class="k-field"><span class="k-flab" id="s11a-u">단위</span><div class="bx-row" style="display:flex;align-items:center;gap:8px"><button type="button" class="k-sel foc" data-ctl="단위 선택" aria-haspopup="listbox" aria-labelledby="s11a-u" style="width:120px"><span class="k-sv">mm</span><svg class="i"><use href="#i-chev"/></svg></button><button type="button" class="kb kb-est" data-badge="추정" data-ctl="값 배지" aria-label="추정. 추정 방법 열기"><span class="kp"><svg><use href="#g-est"/></svg>추정</span></button></div></div>
+<div class="k-field"><span class="k-flab" id="s11a-a">위쪽 축</span><div class="bx-row" style="display:flex;align-items:center;gap:8px"><button type="button" class="k-sel" data-ctl="위쪽 축 선택" aria-haspopup="listbox" aria-labelledby="s11a-a" style="width:120px"><span class="k-sv">+Y</span><svg class="i"><use href="#i-chev"/></svg></button><button type="button" class="kb kb-def" data-badge="기본값" data-ctl="값 배지" aria-label="기본값. 기본값의 출처 열기"><span class="kp"><svg><use href="#g-def"/></svg>기본값</span></button></div></div>
+</div>
+<div class="k-hint" style="margin-top:-6px"><svg class="i"><use href="#i-info"/></svg><span>단위는 규칙의 제안입니다. 근거: 파일의 가장 긴 변이 1200이라 mm로 보입니다 <span class="k-ex">예시</span></span></div>
+<div class="w-fig" role="img" aria-label="앞에서 본 2D 개략도: 윤곽, 1 m 기준자, 가로와 높이 치수선">
+<svg viewBox="0 0 518 196" aria-hidden="true"><path d="M60 140V104Q60 44 120 40H240Q300 44 300 104V140z"/><path d="M60 158h240M60 152v12M300 152v12M322 40v100M316 40h12M316 140h12" stroke="#93A0AE"/><path d="M60 18h200M60 13v10M260 13v10" stroke="#E8EDF2"/></svg>
+<div class="dl" style="left:270px;top:10px"><span class="k-cap">1 m 기준자</span></div>
+<div class="dl" style="left:332px;top:78px"><span class="vb"><span class="k-cap">높이</span><span class="num">0.5<span class="k-u"> m</span></span><span class="k-ex">예시</span><button type="button" class="kb kb-sim" data-badge="시뮬" data-ctl="값 배지" aria-label="시뮬. 어떤 계산인지 열기"><span class="kp"><svg><use href="#g-sim"/></svg>시뮬</span></button></span></div>
+<div class="dl" style="left:96px;bottom:4px"><span class="vb"><span class="k-cap">가로</span><span class="num">1.2<span class="k-u"> m</span></span><span class="k-ex">예시</span><button type="button" class="kb kb-sim" data-badge="시뮬" data-ctl="값 배지" aria-label="시뮬. 어떤 계산인지 열기"><span class="kp"><svg><use href="#g-sim"/></svg>시뮬</span></button></span></div>
+</div>
+<div class="vb"><span class="k-cap">깊이</span><span class="num">0.8<span class="k-u"> m</span></span><span class="k-ex">예시</span><button type="button" class="kb kb-sim" data-badge="시뮬" data-ctl="값 배지" aria-label="시뮬. 어떤 계산인지 열기"><span class="kp"><svg><use href="#g-sim"/></svg>시뮬</span></button><span class="k-cap">그림에 없는 축</span></div>
+</div>
+<div class="w-foot"><span class="k-sec">다음을 누르면 mm가 사용자 선언으로 기록됩니다</span><button type="button" class="k-btn" data-ctl="이전">이전</button><button type="button" class="k-prim" data-ctl="다음" data-primary="1">다음</button></div>
+</div>
+</div>
+</div>
+
+<div class="k-frag full">
+<span class="k-lbl">(b) 사용자가 고름 · 추정 → 사용자 선언</span>
+<div class="w-stage">
+<div class="w-shell" data-outside="1" aria-hidden="true"><div class="t"></div><div class="l"></div><div class="r"></div></div>
+<div class="w-scrim"></div>
+<span class="w-cap">가림막 뒤: SC-01 셸(비활성)</span>
+<div class="w-modal" role="dialog" aria-modal="true" aria-labelledby="s11b-t" data-unit="S11b 마법사 · 1/4">
+<div class="w-head"><h2 id="s11b-t">glb 가져오기</h2><span class="k-sp"></span><button type="button" class="k-ib" data-ctl="닫기" aria-label="가져오기 닫기" aria-keyshortcuts="Escape"><svg class="i m"><use href="#i-x"/></svg></button></div>
+<ol class="w-steps" aria-label="단계"><li class="w-st done">파일</li><li class="w-ar" aria-hidden="true">›</li><li class="w-st cur" aria-current="step">1/4 단위·축</li><li class="w-ar" aria-hidden="true">›</li><li class="w-st">2/4 프록시</li><li class="w-ar" aria-hidden="true">›</li><li class="w-st">3/4 질량</li><li class="w-ar" aria-hidden="true">›</li><li class="w-st">4/4 출처</li></ol>
+<div class="w-body">
+<h3 class="w-q">이 파일의 단위는?</h3>
+<div class="w-row" style="align-items:flex-start">
+<div class="k-field"><span class="k-flab" id="s11b-u">단위</span><div class="bx-row" style="display:flex;align-items:center;gap:6px;flex-wrap:wrap"><button type="button" class="k-sel" data-ctl="단위 선택" aria-haspopup="listbox" aria-expanded="true" aria-labelledby="s11b-u" style="width:120px;background:#22324A;border-color:#5B9DFF"><span class="k-sv">mm</span><svg class="i"><use href="#i-chev"/></svg></button><span class="kb kb-est" style="height:20px" aria-hidden="true"><span class="kp"><svg><use href="#g-est"/></svg>추정</span></span><svg class="i" viewBox="0 0 16 12" role="img" aria-label="바뀜" style="width:16px;color:#A9B4C0"><use href="#i-to"/></svg><button type="button" class="kb kb-decl" data-badge="사용자 선언" data-ctl="값 배지" aria-label="사용자 선언. 선언한 사람과 시각 열기"><span class="kp"><svg><use href="#g-decl"/></svg>사용자 선언</span></button></div></div>
+<div class="k-field" style="flex:0 0 170px"><span class="k-flab" id="s11b-a">위쪽 축</span><div class="bx-row" style="display:flex;align-items:center;gap:8px"><button type="button" class="k-sel" data-ctl="위쪽 축 선택" aria-haspopup="listbox" aria-labelledby="s11b-a" style="width:72px"><span class="k-sv">+Y</span><svg class="i"><use href="#i-chev"/></svg></button><button type="button" class="kb kb-def" data-badge="기본값" data-ctl="값 배지" aria-label="기본값. 기본값의 출처 열기"><span class="kp"><svg><use href="#g-def"/></svg>기본값</span></button></div></div>
+</div>
+<div class="k-menu" role="listbox" aria-label="단위" data-transient="1" style="width:200px;margin-top:-8px">
+<button type="button" class="k-mi" role="option" aria-selected="false" data-ctl="단위: m"><span style="width:12px"></span>m</button>
+<button type="button" class="k-mi" role="option" aria-selected="false" data-ctl="단위: cm"><span style="width:12px"></span>cm</button>
+<button type="button" class="k-mi cur" role="option" aria-selected="true" data-ctl="단위: mm"><svg class="i"><use href="#i-check"/></svg>mm<span class="k-cap">제안</span></button>
+<button type="button" class="k-mi" role="option" aria-selected="false" data-ctl="단위: in"><span style="width:12px"></span>in</button>
+</div>
+<div class="k-hint"><svg class="i"><use href="#i-info"/></svg><span>직접 골랐습니다. 단위는 이제 사용자 선언입니다.</span></div>
+<div class="vb"><span class="k-cap">가로 × 깊이 × 높이</span><span class="num">1.2 × 0.8 × 0.5<span class="k-u"> m</span></span><span class="k-ex">예시</span><button type="button" class="kb kb-sim" data-badge="시뮬" data-ctl="값 배지" aria-label="시뮬. 어떤 계산인지 열기"><span class="kp"><svg><use href="#g-sim"/></svg>시뮬</span></button><span class="k-cap">그림은 (a)와 같음</span></div>
+</div>
+<div class="w-foot"><span class="k-sec"></span><button type="button" class="k-btn" data-ctl="이전">이전</button><button type="button" class="k-prim" data-ctl="다음" data-primary="1">다음</button></div>
+</div>
+</div>
+</div>
+
+<div class="k-frag full">
+<span class="k-lbl">(c) 크기가 이상할 때 · 단위 m를 고름</span>
+<div class="w-stage">
+<div class="w-shell" data-outside="1" aria-hidden="true"><div class="t"></div><div class="l"></div><div class="r"></div></div>
+<div class="w-scrim"></div>
+<span class="w-cap">가림막 뒤: SC-01 셸(비활성)</span>
+<div class="w-modal" role="dialog" aria-modal="true" aria-labelledby="s11c-t" data-unit="S11c 마법사 · 1/4">
+<div class="w-head"><h2 id="s11c-t">glb 가져오기</h2><span class="k-sp"></span><button type="button" class="k-ib" data-ctl="닫기" aria-label="가져오기 닫기" aria-keyshortcuts="Escape"><svg class="i m"><use href="#i-x"/></svg></button></div>
+<ol class="w-steps" aria-label="단계"><li class="w-st done">파일</li><li class="w-ar" aria-hidden="true">›</li><li class="w-st cur" aria-current="step">1/4 단위·축</li><li class="w-ar" aria-hidden="true">›</li><li class="w-st">2/4 프록시</li><li class="w-ar" aria-hidden="true">›</li><li class="w-st">3/4 질량</li><li class="w-ar" aria-hidden="true">›</li><li class="w-st">4/4 출처</li></ol>
+<div class="w-body">
+<h3 class="w-q">이 파일의 단위는?</h3>
+<div class="w-row" style="align-items:flex-start">
+<div class="k-field"><span class="k-flab" id="s11c-u">단위</span><div class="bx-row" style="display:flex;align-items:center;gap:8px"><button type="button" class="k-sel" data-ctl="단위 선택" aria-haspopup="listbox" aria-labelledby="s11c-u" style="width:120px"><span class="k-sv">m</span><svg class="i"><use href="#i-chev"/></svg></button><button type="button" class="kb kb-decl" data-badge="사용자 선언" data-ctl="값 배지" aria-label="사용자 선언. 선언한 사람과 시각 열기"><span class="kp"><svg><use href="#g-decl"/></svg>사용자 선언</span></button></div></div>
+<div class="k-field"><span class="k-flab" id="s11c-a">위쪽 축</span><div class="bx-row" style="display:flex;align-items:center;gap:8px"><button type="button" class="k-sel" data-ctl="위쪽 축 선택" aria-haspopup="listbox" aria-labelledby="s11c-a" style="width:120px"><span class="k-sv">+Y</span><svg class="i"><use href="#i-chev"/></svg></button><button type="button" class="kb kb-def" data-badge="기본값" data-ctl="값 배지" aria-label="기본값. 기본값의 출처 열기"><span class="kp"><svg><use href="#g-def"/></svg>기본값</span></button></div></div>
+</div>
+<div class="k-hint" role="status"><svg class="i"><use href="#i-info"/></svg><span>이 단위로는 물체가 건물보다 훨씬 큽니다. 생각한 크기가 아니면 단위를 다시 고르세요. 규칙의 제안은 mm입니다.</span></div>
+<div class="w-fig" role="img" aria-label="앞에서 본 2D 개략도: 윤곽이 커서 1 m 기준자가 점처럼 작음">
+<svg viewBox="0 0 518 196" aria-hidden="true"><path d="M30 150V104Q30 30 110 26H410Q490 30 490 104V150z"/><path d="M30 166h460M30 160v12M490 160v12" stroke="#93A0AE"/><path d="M40 16h1" stroke="#E8EDF2" stroke-width="3"/></svg>
+<div class="dl" style="left:48px;top:8px"><span class="k-cap">1 m 기준자(점 크기)</span></div>
+<div class="dl" style="left:150px;bottom:2px"><span class="vb"><span class="k-cap">가로</span><span class="num">1200<span class="k-u"> m</span></span><span class="k-ex">예시</span><button type="button" class="kb kb-sim" data-badge="시뮬" data-ctl="값 배지" aria-label="시뮬. 어떤 계산인지 열기"><span class="kp"><svg><use href="#g-sim"/></svg>시뮬</span></button></span></div>
+</div>
+<div class="vb"><span class="k-cap">깊이 · 높이</span><span class="num">800 · 500<span class="k-u"> m</span></span><span class="k-ex">예시</span><button type="button" class="kb kb-sim" data-badge="시뮬" data-ctl="값 배지" aria-label="시뮬. 어떤 계산인지 열기"><span class="kp"><svg><use href="#g-sim"/></svg>시뮬</span></button></div>
+</div>
+<div class="w-foot"><span class="k-sec">안내는 막지 않습니다. 다음으로 갈 수 있습니다</span><button type="button" class="k-btn" data-ctl="이전">이전</button><button type="button" class="k-prim" data-ctl="다음" data-primary="1">다음</button></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":2370,"height":1040}}'>
+class Component extends DCLogic {
+renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

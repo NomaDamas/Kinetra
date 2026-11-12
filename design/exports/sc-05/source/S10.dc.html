@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>S10 가져오기 파일</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="kin-sc05.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div class="k-root" style="width:1680px;height:1040px">
+<svg class="k-spr" aria-hidden="true"><symbol id="g-sim" viewBox="0 0 12 12"><path d="M1 6q1.25-5 2.5 0t2.5 0t2.5 0t2.5 0"/></symbol><symbol id="i-x" viewBox="0 0 12 12"><path d="M2.5 2.5l7 7M9.5 2.5l-7 7"/></symbol><symbol id="i-upload" viewBox="0 0 12 12"><path d="M6 8V2M3.5 4.5L6 2l2.5 2.5M2 10h8"/></symbol><symbol id="i-file" viewBox="0 0 12 12"><path d="M3 1.5h4l2.5 2.5v6.5h-6.5zM7 1.5V4h2.5"/></symbol><symbol id="i-info" viewBox="0 0 12 12"><path d="M10.5 6a4.5 4.5 0 1 1-9 0a4.5 4.5 0 1 1 9 0M6 5.5v3M6 3.6v.1"/></symbol></svg>
+
+<div class="k-note"><span><strong>S10 가져오기 0 · 파일</strong> · 내 것 탭의 <span class="k-q">가져오기</span>로 열리는 모달(<span class="k-q">elevation.3</span> + 가림막). (a) 파일 고르기 전 (b) 고른 뒤</span><span>(a) 3 · (b) 3 + 값 배지 1 · primary 1(<span class="k-q">다음</span>)</span></div>
+
+<div class="k-wrap">
+<div class="k-ann">
+<span class="k-where">셸 안의 위치: SC-01 위 모달</span>
+<p><strong>마법사의 틀</strong>(모든 단계 같음)</p>
+<ul>
+<li>머리: 제목 + <span class="k-q">닫기</span>(×, <span class="k-kbd">Esc</span>). 중간에 닫으면 확인 창(S16).</li>
+<li>단계 표시(읽기 전용): 파일 → 1/4 단위·축 → 2/4 프록시 → 3/4 질량 → 4/4 출처.</li>
+<li>가운데 질문 하나. 아래 <span class="k-q">이전</span>(secondary) <span class="k-q">다음</span>(primary). 마지막 단계는 <span class="k-q">가져오기 완료</span>. primary는 단계마다 하나입니다.</li>
+<li>단계를 오가도 입력한 값은 남습니다.</li>
+<li>포커스는 모달 안에 갇힙니다. 처음 포커스는 질문의 첫 조작입니다.</li>
+</ul>
+<p><strong>파일 단계</strong>: 지원 형식은 glb 하나입니다(다른 형식, 자동 리깅 없음). 파일을 고르기 전에는 <span class="k-q">다음</span>이 비활성이고 이유를 툴팁으로 보입니다.</p>
+<p>파일 크기는 엔진이 읽은 값이라 <span class="k-q">시뮬</span>입니다. 파일 이름과 크기는 <span class="k-ex">예시</span>입니다.</p>
+</div>
+
+<div class="k-pad">
+<div class="k-frag full">
+<span class="k-lbl">(a) 파일 고르기 전</span>
+<div class="w-stage">
+<div class="w-shell" data-outside="1" aria-hidden="true"><div class="t"></div><div class="l"></div><div class="r"></div></div>
+<div class="w-scrim"></div>
+<span class="w-cap">가림막 뒤: SC-01 셸(비활성)</span>
+<div class="w-modal" role="dialog" aria-modal="true" aria-labelledby="s10a-t" data-unit="S10a 마법사 · 파일">
+<div class="w-head"><h2 id="s10a-t">glb 가져오기</h2><span class="k-sp"></span><button type="button" class="k-ib" data-ctl="닫기" aria-label="가져오기 닫기" aria-keyshortcuts="Escape"><svg class="i m"><use href="#i-x"/></svg></button></div>
+<ol class="w-steps" aria-label="단계"><li class="w-st cur" aria-current="step">파일</li><li class="w-ar" aria-hidden="true">›</li><li class="w-st">1/4 단위·축</li><li class="w-ar" aria-hidden="true">›</li><li class="w-st">2/4 프록시</li><li class="w-ar" aria-hidden="true">›</li><li class="w-st">3/4 질량</li><li class="w-ar" aria-hidden="true">›</li><li class="w-st">4/4 출처</li></ol>
+<div class="w-body">
+<h3 class="w-q">어떤 파일을 가져올까요?</h3>
+<div class="w-drop">
+<svg class="i m" aria-hidden="true" style="color:#A9B4C0"><use href="#i-upload"/></svg>
+<span>glb 파일을 여기에 놓거나 고르세요</span>
+<button type="button" class="k-btn foc" data-ctl="파일 고르기">파일 고르기</button>
+</div>
+<div class="k-hint"><svg class="i"><use href="#i-info"/></svg><span>지원 형식은 glb 하나입니다. 다른 형식과 자동 리깅은 지원하지 않습니다.</span></div>
+</div>
+<div class="w-foot" style="position:relative"><span class="k-sec">파일을 골라야 다음 단계로 갑니다</span><button type="button" class="k-prim" data-ctl="다음" data-primary="1" aria-disabled="true" aria-describedby="s10a-tip">다음</button><span class="k-tip abs" role="tooltip" id="s10a-tip" style="right:20px;bottom:52px">파일을 골라야 합니다</span></div>
+</div>
+</div>
+</div>
+
+<div class="k-frag full">
+<span class="k-lbl">(b) 파일을 고른 뒤</span>
+<div class="w-stage">
+<div class="w-shell" data-outside="1" aria-hidden="true"><div class="t"></div><div class="l"></div><div class="r"></div></div>
+<div class="w-scrim"></div>
+<span class="w-cap">가림막 뒤: SC-01 셸(비활성)</span>
+<div class="w-modal" role="dialog" aria-modal="true" aria-labelledby="s10b-t" data-unit="S10b 마법사 · 파일">
+<div class="w-head"><h2 id="s10b-t">glb 가져오기</h2><span class="k-sp"></span><button type="button" class="k-ib" data-ctl="닫기" aria-label="가져오기 닫기" aria-keyshortcuts="Escape"><svg class="i m"><use href="#i-x"/></svg></button></div>
+<ol class="w-steps" aria-label="단계"><li class="w-st cur" aria-current="step">파일</li><li class="w-ar" aria-hidden="true">›</li><li class="w-st">1/4 단위·축</li><li class="w-ar" aria-hidden="true">›</li><li class="w-st">2/4 프록시</li><li class="w-ar" aria-hidden="true">›</li><li class="w-st">3/4 질량</li><li class="w-ar" aria-hidden="true">›</li><li class="w-st">4/4 출처</li></ol>
+<div class="w-body">
+<h3 class="w-q">어떤 파일을 가져올까요?</h3>
+<div class="w-file">
+<svg class="i m" aria-hidden="true" style="color:#A9B4C0"><use href="#i-file"/></svg>
+<div style="flex:1 1 0;min-width:0;display:flex;flex-direction:column;gap:2px"><b>payload_cover.glb</b><span class="vb"><span class="k-cap">파일 크기</span><span class="num">4.2<span class="k-u"> MB</span></span><span class="k-ex">예시</span><button type="button" class="kb kb-sim" data-badge="시뮬" data-ctl="값 배지" aria-label="시뮬. 파일을 읽은 기록 열기"><span class="kp"><svg><use href="#g-sim"/></svg>시뮬</span></button></span></div>
+<button type="button" class="k-btn sm" data-ctl="파일 고르기">다시 고르기</button>
+</div>
+<div class="k-hint"><svg class="i"><use href="#i-info"/></svg><span>지원 형식은 glb 하나입니다. 다른 형식과 자동 리깅은 지원하지 않습니다.</span></div>
+</div>
+<div class="w-foot"><span class="k-sec"></span><button type="button" class="k-prim foc" data-ctl="다음" data-primary="1">다음</button></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1680,"height":1040}}'>
+class Component extends DCLogic {
+renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

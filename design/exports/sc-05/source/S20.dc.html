@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>S20 부피 미산출</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="kin-sc05.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div class="k-root" style="width:990px;height:1040px">
+<svg class="k-spr" aria-hidden="true"><symbol id="g-sim" viewBox="0 0 12 12"><path d="M1 6q1.25-5 2.5 0t2.5 0t2.5 0t2.5 0"/></symbol><symbol id="g-est" viewBox="0 0 12 12"><path d="M2 4.5q2-2 4 0t4 0M2 8q2-2 4 0t4 0"/></symbol><symbol id="i-x" viewBox="0 0 12 12"><path d="M2.5 2.5l7 7M9.5 2.5l-7 7"/></symbol><symbol id="i-chevr" viewBox="0 0 12 12"><path d="M4.5 3l3 3-3 3"/></symbol><symbol id="i-info" viewBox="0 0 12 12"><path d="M10.5 6a4.5 4.5 0 1 1-9 0a4.5 4.5 0 1 1 9 0M6 5.5v3M6 3.6v.1"/></symbol></svg>
+
+<div class="k-note"><span><strong>S20 부피 미산출</strong> · S12의 변형: 메시가 닫혀 있지 않아 메시 부피와 차이를 못 구함. 프록시 부피는 산출됨</span><span>5(5.3절) + 값 배지 1 · primary 1</span></div>
+
+<div class="k-wrap">
+<div class="k-ann">
+<span class="k-where">셸 안의 위치: SC-01 위 모달 · 2/4 프록시</span>
+<ul>
+<li>못 구한 값은 숫자 · 0 · 빈칸 · <span class="k-q">–</span>가 아니라 <span class="k-q">부피 미산출 · 이유</span>입니다(<span class="k-q">design-system.md</span> 5.1절의 "미산출 · 이유"와 같은 방식).</li>
+<li>차이도 같은 방식: <span class="k-q">차이 미산출 · 메시 부피 없음</span>.</li>
+<li>프록시 부피는 산출되므로 3/4 질량에서 밀도 × 프록시 부피 방식을 쓸 수 있다는 한 줄을 둡니다.</li>
+<li>개략도는 메시 윤곽의 끊긴 자리를 열린 선으로 보입니다. 상태 색을 쓰지 않습니다. 막지 않습니다(<span class="k-q">다음</span> 활성).</li>
+</ul>
+<p>수치는 <span class="k-ex">예시</span>입니다.</p>
+</div>
+
+<div class="k-pad">
+<div class="k-frag full">
+<span class="k-lbl">S20 · 메시가 닫혀 있지 않음</span>
+<div class="w-stage">
+<div class="w-shell" data-outside="1" aria-hidden="true"><div class="t"></div><div class="l"></div><div class="r"></div></div>
+<div class="w-scrim"></div>
+<span class="w-cap">가림막 뒤: SC-01 셸(비활성)</span>
+<div class="w-modal" role="dialog" aria-modal="true" aria-labelledby="s20-t" data-unit="S20 마법사 · 2/4">
+<div class="w-head"><h2 id="s20-t">glb 가져오기</h2><span class="k-sp"></span><button type="button" class="k-ib" data-ctl="닫기" aria-label="가져오기 닫기" aria-keyshortcuts="Escape"><svg class="i m"><use href="#i-x"/></svg></button></div>
+<ol class="w-steps" aria-label="단계"><li class="w-st done">파일</li><li class="w-ar" aria-hidden="true">›</li><li class="w-st done">1/4 단위·축</li><li class="w-ar" aria-hidden="true">›</li><li class="w-st cur" aria-current="step">2/4 프록시</li><li class="w-ar" aria-hidden="true">›</li><li class="w-st">3/4 질량</li><li class="w-ar" aria-hidden="true">›</li><li class="w-st">4/4 출처</li></ol>
+<div class="w-body">
+<h3 class="w-q">물리에는 어떤 모양을 쓸까요?</h3>
+<div class="w-radio" role="radiogroup" aria-label="프록시 종류" data-ctl="프록시 종류">
+<div class="w-opt"><button type="button" class="w-rb" role="radio" aria-checked="false" tabindex="-1"><span class="rd"></span><span>상자<span class="d">바깥 상자 하나. 가장 단순하고 부피가 큽니다</span></span></button></div>
+<div class="w-opt"><button type="button" class="w-rb" role="radio" aria-checked="true"><span class="rd"></span><span>볼록체<span class="d">메시를 감싸는 볼록 껍질 하나</span></span></button><span class="k-cap">제안</span><button type="button" class="kb kb-est" data-badge="추정" data-ctl="값 배지" aria-label="추정. 제안한 방법 열기"><span class="kp"><svg><use href="#g-est"/></svg>추정</span></button></div>
+</div>
+<div class="w-ro"><svg class="i"><use href="#i-info"/></svg><span>충돌에는 프록시만 쓰고 시각 메시는 쓰지 않습니다.</span></div>
+<div class="w-fig" style="height:160px" role="img" aria-label="2D 개략도: 바닥이 열린 시각 메시 윤곽(실선)과 볼록체 프록시(점선)">
+<svg viewBox="0 0 518 160" aria-hidden="true"><path d="M180 132H110V104Q110 40 180 36H338Q408 40 408 104V132H300"/><path d="M104 138V100Q106 30 180 28H338Q412 30 414 100V138z" stroke-dasharray="5 4" stroke="#E8EDF2"/><path d="M200 132h80" stroke="#93A0AE" stroke-dasharray="1 5"/></svg>
+<div class="lg"><span>실선 · 시각 메시(바닥이 열림)</span><span>점선 · 프록시(볼록체)</span></div>
+</div>
+<div class="w-tbl">
+<div class="w-tr"><span class="k-cap">메시 부피</span><span class="noval">부피 미산출 · 메시가 닫혀 있지 않습니다</span></div>
+<div class="w-tr"><span class="k-cap">프록시 부피</span><span class="num">0.22<span class="k-u"> m³</span></span><span class="k-ex">예시</span><button type="button" class="kb kb-sim" data-badge="시뮬" data-ctl="값 배지" aria-label="시뮬. 어떤 계산인지 열기"><span class="kp"><svg><use href="#g-sim"/></svg>시뮬</span></button></div>
+<div class="w-tr"><span class="k-cap">부피 차이</span><span class="noval">차이 미산출 · 메시 부피 없음</span></div>
+</div>
+<div class="k-hint"><svg class="i"><use href="#i-info"/></svg><span>프록시 부피는 산출되었습니다. 3/4 질량에서 밀도 × 프록시 부피 방식을 쓸 수 있습니다.</span></div>
+<button type="button" class="w-acc" data-ctl="고급 머리" aria-expanded="false"><svg class="i"><use href="#i-chevr"/></svg>고급 · 볼록 분해 도구와 라이선스 기록<span class="k-cap">접힘</span></button>
+</div>
+<div class="w-foot"><span class="k-sec"></span><button type="button" class="k-btn" data-ctl="이전">이전</button><button type="button" class="k-prim" data-ctl="다음" data-primary="1">다음</button></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":990,"height":1040}}'>
+class Component extends DCLogic {
+renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

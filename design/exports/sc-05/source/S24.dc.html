@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>S24 키보드</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="kin-sc05.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div class="k-root" style="width:1750px;height:1040px">
+<svg class="k-spr" aria-hidden="true"><symbol id="g-cite" viewBox="0 0 12 12"><path d="M2.5 8.5v-3a2.5 2.5 0 0 1 2.5-2.5M7 8.5v-3a2.5 2.5 0 0 1 2.5-2.5"/></symbol><symbol id="g-def" viewBox="0 0 12 12"><circle cx="6" cy="6" r="3.5"/></symbol><symbol id="g-est" viewBox="0 0 12 12"><path d="M2 4.5q2-2 4 0t4 0M2 8q2-2 4 0t4 0"/></symbol><symbol id="i-x" viewBox="0 0 12 12"><path d="M2.5 2.5l7 7M9.5 2.5l-7 7"/></symbol><symbol id="i-chev" viewBox="0 0 12 12"><path d="M3 4.5l3 3 3-3"/></symbol><symbol id="i-left" viewBox="0 0 12 12"><path d="M7.5 2.5L4 6l3.5 3.5"/></symbol><symbol id="i-grip" viewBox="0 0 12 12"><path d="M4 2.5h.01M8 2.5h.01M4 6h.01M8 6h.01M4 9.5h.01M8 9.5h.01"/></symbol><symbol id="i-filt" viewBox="0 0 12 12"><path d="M1.5 2.5h9l-3.5 4v3l-2 1v-4z"/></symbol><symbol id="t-thr" viewBox="0 0 24 24"><path d="M5 9h6v6H5zM11 10l7-3v10l-7-3"/></symbol><symbol id="t-mot" viewBox="0 0 24 24"><path d="M15 12a5 5 0 1 1-10 0a5 5 0 1 1 10 0M15 12h5M10 12h.01"/></symbol><symbol id="t-whl" viewBox="0 0 24 24"><path d="M19 12a7 7 0 1 1-14 0a7 7 0 1 1 14 0M14.5 12a2.5 2.5 0 1 1-5 0a2.5 2.5 0 1 1 5 0"/></symbol><symbol id="t-beam" viewBox="0 0 24 24"><path d="M3 10h18v4H3z"/></symbol></svg>
+
+<div class="k-note"><span><strong>S24 키보드</strong> · S1 위 탭 순서 번호(접기 → 탭 → 정렬 → 필터 → 목록 → 배지 열), 목록 안의 키, 마법사의 탭 순서와 포커스 가둠</span><span>패널 6 · 마법사 5 + 값 배지 1</span></div>
+
+<div class="k-wrap">
+<div class="k-ann">
+<span class="k-where">셸 안의 위치: SC-01 왼쪽 패널 · 위 모달</span>
+<ul>
+<li>파란 번호는 탭 순서입니다(주석, 화면에 그리지 않음).</li>
+<li>목록은 탭 정지 하나입니다. 안에서는 화살표로 옮깁니다(roving tabindex). 배지 열은 줄에서 <span class="k-kbd">→</span>로 들어가는 두 번째 칸입니다 [제안].</li>
+<li>포커스 링 2 px <span class="k-q">color.focus.ring</span> + 2 px 간격.</li>
+<li>끌어 놓기는 키보드로 할 수 없으므로 펼친 줄의 <span class="k-q">작업대에 추가</span>가 대안입니다(<span class="k-kbd">Enter</span> → <span class="k-kbd">Tab</span> → <span class="k-kbd">Enter</span>).</li>
+<li>정렬 · 필터 · 검색으로 결과 개수가 바뀌면 스크린리더에 읽어 줍니다.</li>
+<li>마법사는 포커스를 가둡니다. <span class="k-kbd">Esc</span>는 팝오버 · 메뉴를 먼저 닫고, 그다음이면 닫기 확인 창(S16)을 엽니다.</li>
+</ul>
+</div>
+
+<div class="k-pad">
+<div class="k-frag">
+<span class="k-lbl">패널 탭 순서 · 목록에 포커스</span>
+<aside class="l-panel" aria-label="라이브러리" data-unit="S24 라이브러리 패널">
+<div class="l-head"><h2>라이브러리</h2><button type="button" class="k-ib" data-ctl="패널 접기" aria-label="라이브러리 접기" aria-expanded="true"><svg class="i"><use href="#i-left"/></svg></button></div>
+<div class="l-tabs" role="tablist" aria-label="라이브러리 탭" data-ctl="탭 묶음"><button type="button" role="tab" aria-selected="true">기본 부품</button><button type="button" role="tab" aria-selected="false" tabindex="-1">내 것</button></div>
+<div class="l-tools"><div class="l-tr">
+<button type="button" class="l-sort" data-ctl="정렬 선택" aria-haspopup="menu" aria-expanded="false" aria-label="정렬: 출처 먼저"><span class="k-cap">정렬</span><span class="sv">출처 먼저</span><svg class="i"><use href="#i-chev"/></svg></button>
+<button type="button" class="l-filt" data-ctl="필터 버튼" aria-haspopup="dialog" aria-expanded="false" aria-label="필터, 적용 0"><svg class="i"><use href="#i-filt"/></svg>필터<span class="cnt">0</span></button>
+</div></div>
+<div class="l-colh" aria-hidden="true"><span>부품 · 값</span><span class="bh">배지</span></div>
+<div class="l-list" role="grid" aria-label="기본 부품 목록, 13개" tabindex="0" data-ctl="부품 목록">
+<div class="l-grp">인용</div>
+<div role="row" class="l-row foc" aria-selected="true"><span class="l-grip" aria-hidden="true"><svg class="i"><use href="#i-grip"/></svg></span><svg class="l-th" aria-hidden="true"><use href="#t-mot"/></svg><div class="l-c"><div class="l-l1" role="gridcell"><span class="l-nm">모터</span><span class="l-kd">구동</span></div><div class="l-l2"><span class="num">2.4<span class="k-u"> kg</span></span><span class="k-ex">예시</span><span class="l-bc" role="gridcell"><button type="button" class="kb kb-cite" data-badge="인용" data-ctl="값 배지 열" tabindex="-1" aria-label="인용. 출처와 라이선스 열기"><span class="kp"><svg><use href="#g-cite"/></svg>인용</span></button></span></div></div></div>
+<div role="row" class="l-row"><span class="l-grip" aria-hidden="true"><svg class="i"><use href="#i-grip"/></svg></span><svg class="l-th" aria-hidden="true"><use href="#t-whl"/></svg><div class="l-c"><div class="l-l1" role="gridcell"><span class="l-nm">휠</span><span class="l-kd">구동</span></div><div class="l-l2"><span class="num">3.2<span class="k-u"> kg</span></span><span class="k-ex">예시</span><span class="l-bc" role="gridcell"><button type="button" class="kb kb-cite foc" data-badge="인용" data-ctl="값 배지 열" tabindex="-1" aria-label="인용. 출처와 라이선스 열기"><span class="kp"><svg><use href="#g-cite"/></svg>인용</span></button></span></div></div></div>
+<div role="row" class="l-row"><span class="l-grip" aria-hidden="true"><svg class="i"><use href="#i-grip"/></svg></span><svg class="l-th" aria-hidden="true"><use href="#t-thr"/></svg><div class="l-c"><div class="l-l1" role="gridcell"><span class="l-nm">냉가스 추력기</span><span class="l-kd">추력</span></div><div class="l-l2"><span class="k-cap">최대 추력</span><span class="num">8.9<span class="k-u"> N</span></span><span class="l-bc" role="gridcell"><button type="button" class="kb kb-cite" data-badge="인용" data-ctl="값 배지 열" tabindex="-1" aria-label="인용. 출처와 라이선스 열기"><span class="kp"><svg><use href="#g-cite"/></svg>인용</span></button></span></div></div></div>
+<div class="l-grp">기본값</div>
+<div role="row" class="l-row"><span class="l-grip" aria-hidden="true"><svg class="i"><use href="#i-grip"/></svg></span><svg class="l-th" aria-hidden="true"><use href="#t-beam"/></svg><div class="l-c"><div class="l-l1" role="gridcell"><span class="l-nm">빔</span><span class="l-kd">구조</span></div><div class="l-l2"><span class="num">0.4<span class="k-u"> kg</span></span><span class="k-ex">예시</span><span class="l-bc" role="gridcell"><button type="button" class="kb kb-def" data-badge="기본값" data-ctl="값 배지 열" tabindex="-1" aria-label="기본값. 기본값의 출처 열기"><span class="kp"><svg><use href="#g-def"/></svg>기본값</span></button></span></div></div></div>
+<div class="l-more">아래로 9개 더</div>
+</div>
+<div class="l-foot"><span><span class="k-kbd">/</span>부품 검색</span><span><span class="k-kbd">Enter</span>펼침</span><span><span class="k-kbd">→</span>배지</span></div>
+<span class="k-n abs" style="right:36px;top:11px">1</span>
+<span class="k-n abs" style="right:8px;top:52px">2</span>
+<span class="k-n abs" style="left:120px;top:74px">3</span>
+<span class="k-n abs" style="right:2px;top:74px">4</span>
+<span class="k-n abs" style="left:2px;top:208px">5</span>
+<span class="k-n abs" style="right:2px;top:284px">6</span>
+</aside>
+</div>
+
+<div class="k-frag" style="width:420px">
+<span class="k-lbl">키</span>
+<table class="k-tbl" style="width:420px">
+<thead><tr><th>키</th><th>어디서</th><th>동작</th></tr></thead>
+<tbody>
+<tr><td><span class="k-kbd">Tab</span> <span class="k-kbd">Shift Tab</span></td><td>패널</td><td>접기 → 탭 → 정렬 → 필터 → 목록 → 배지 열</td></tr>
+<tr><td><span class="k-kbd">← →</span></td><td>탭 묶음</td><td>기본 부품 · 내 것</td></tr>
+<tr><td><span class="k-kbd">↑ ↓</span></td><td>목록</td><td>줄 옮기기. 맨 위 · 맨 끝은 <span class="k-kbd">Home</span> <span class="k-kbd">End</span></td></tr>
+<tr><td><span class="k-kbd">→</span> <span class="k-kbd">←</span></td><td>줄</td><td>그 줄의 배지로 / 줄로 돌아가기</td></tr>
+<tr><td><span class="k-kbd">Enter</span></td><td>줄 / 배지</td><td>줄 펼침 · 접힘 / 근거 팝오버</td></tr>
+<tr><td><span class="k-kbd">/</span></td><td>패널 어디서나</td><td>부품 검색 필드 열기</td></tr>
+<tr><td><span class="k-kbd">Esc</span></td><td>팝오버 · 메뉴 · 검색 · 펼친 줄</td><td>닫기. 포커스는 연 자리로</td></tr>
+<tr><td><span class="k-kbd">F2</span> <span class="k-kbd">Delete</span></td><td>내 것 줄</td><td>이름 바꾸기 / 삭제 확인</td></tr>
+<tr><td><span class="k-kbd">Shift F10</span></td><td>내 것 줄</td><td>줄 메뉴(<span class="k-q">⋯</span>)</td></tr>
+<tr><td><span class="k-kbd">Esc</span></td><td>마법사</td><td>닫기 확인 창(S16). 파일 고르기 전에는 바로 닫힘</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="k-frag full">
+<span class="k-lbl">마법사 탭 순서 · 포커스 가둠</span>
+<div class="w-stage">
+<div class="w-shell" data-outside="1" aria-hidden="true"><div class="t"></div><div class="l"></div><div class="r"></div></div>
+<div class="w-scrim"></div>
+<span class="w-cap">가림막 뒤: SC-01 셸(비활성) · 포커스가 나가지 않음</span>
+<div class="w-modal" role="dialog" aria-modal="true" aria-labelledby="s24-t" data-unit="S24 마법사 · 1/4">
+<div class="w-head"><h2 id="s24-t">glb 가져오기</h2><span class="k-sp"></span><button type="button" class="k-ib" data-ctl="닫기" aria-label="가져오기 닫기" aria-keyshortcuts="Escape"><svg class="i m"><use href="#i-x"/></svg></button></div>
+<ol class="w-steps" aria-label="단계"><li class="w-st done">파일</li><li class="w-ar" aria-hidden="true">›</li><li class="w-st cur" aria-current="step">1/4 단위·축</li><li class="w-ar" aria-hidden="true">›</li><li class="w-st">2/4 프록시</li><li class="w-ar" aria-hidden="true">›</li><li class="w-st">3/4 질량</li><li class="w-ar" aria-hidden="true">›</li><li class="w-st">4/4 출처</li></ol>
+<div class="w-body">
+<h3 class="w-q">이 파일의 단위는?</h3>
+<div class="w-row" style="align-items:flex-start">
+<div class="k-field"><span class="k-flab" id="s24-u">단위</span><div class="bx-row" style="display:flex;align-items:center;gap:8px"><button type="button" class="k-sel foc" data-ctl="단위 선택" aria-haspopup="listbox" aria-labelledby="s24-u" style="width:120px"><span class="k-sv">mm</span><svg class="i"><use href="#i-chev"/></svg></button><button type="button" class="kb kb-est" data-badge="추정" data-ctl="값 배지" aria-label="추정. 추정 방법 열기"><span class="kp"><svg><use href="#g-est"/></svg>추정</span></button></div></div>
+<div class="k-field"><span class="k-flab" id="s24-a">위쪽 축</span><div class="bx-row" style="display:flex;align-items:center;gap:8px"><button type="button" class="k-sel" data-ctl="위쪽 축 선택" aria-haspopup="listbox" aria-labelledby="s24-a" style="width:120px"><span class="k-sv">+Y</span><svg class="i"><use href="#i-chev"/></svg></button><button type="button" class="kb kb-def" data-badge="기본값" data-ctl="값 배지" aria-label="기본값. 기본값의 출처 열기"><span class="kp"><svg><use href="#g-def"/></svg>기본값</span></button></div></div>
+</div>
+<div class="k-hint"><span>본문 안은 위에서 아래, 왼쪽에서 오른쪽 순서입니다. 처음 포커스는 본문의 첫 조작(단위 선택)입니다. 값 배지는 그 값 바로 뒤에 옵니다.</span></div>
+</div>
+<div class="w-foot"><span class="k-sec"><span class="k-kbd">Tab</span> 다음에서 닫기로 돌아갑니다</span><button type="button" class="k-btn" data-ctl="이전">이전</button><button type="button" class="k-prim" data-ctl="다음" data-primary="1">다음</button></div>
+<span class="k-n abs" style="right:40px;top:6px">1</span>
+<span class="k-n abs" style="left:4px;top:136px">2</span>
+<span class="k-n abs" style="right:118px;bottom:42px">3</span>
+<span class="k-n abs" style="right:2px;bottom:38px">4</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1750,"height":1040}}'>
+class Component extends DCLogic {
+renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

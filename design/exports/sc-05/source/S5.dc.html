@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>S5 값 배지 열의 상태</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="kin-sc05.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div class="k-root" style="width:1440px;height:900px">
+<svg class="k-spr" aria-hidden="true"><symbol id="g-sim" viewBox="0 0 12 12"><path d="M1 6q1.25-5 2.5 0t2.5 0t2.5 0t2.5 0"/></symbol><symbol id="g-cite" viewBox="0 0 12 12"><path d="M2.5 8.5v-3a2.5 2.5 0 0 1 2.5-2.5M7 8.5v-3a2.5 2.5 0 0 1 2.5-2.5"/></symbol><symbol id="g-def" viewBox="0 0 12 12"><circle cx="6" cy="6" r="3.5"/></symbol><symbol id="g-decl" viewBox="0 0 12 12"><path d="M2 10l.6-2.6 5.6-5.6 2 2-5.6 5.6z"/></symbol><symbol id="g-est" viewBox="0 0 12 12"><path d="M2 4.5q2-2 4 0t4 0M2 8q2-2 4 0t4 0"/></symbol><symbol id="i-lock" viewBox="0 0 12 12"><path d="M2.5 5.5h7v5h-7zM4 5.5V4a2 2 0 0 1 4 0v1.5"/></symbol><symbol id="i-to" viewBox="0 0 16 12"><path d="M1 6h13M10 2l4 4-4 4"/></symbol><symbol id="i-grip" viewBox="0 0 12 12"><path d="M4 2.5h.01M8 2.5h.01M4 6h.01M8 6h.01M4 9.5h.01M8 9.5h.01"/></symbol><symbol id="t-fix" viewBox="0 0 24 24"><path d="M3 8h8v8H3zM13 8h8v8h-8zM11 12h2"/></symbol></svg>
+
+<div class="k-note"><span><strong>S5 값 배지 열의 상태</strong> · 배지 5종(+ 수식어) × 기본 · hover · 포커스 링 · 팝오버 열림, 근거 팝오버 5종, 읽기 전용, 오래됨, 필터에 선택됨, 정의 없음 줄. 배지를 비활성으로 만드는 상태는 없습니다</span><span>시트 · 세지 않음</span></div>
+
+<div class="k-wrap">
+<div class="k-ann">
+<span class="k-where">셸 안의 위치: SC-01 왼쪽 패널의 값 배지 열</span>
+<p>값 배지는 <span class="k-q">design-system.md</span> 4절 그대로입니다: 글리프 + 라벨 + 테두리 모양. 색은 출처 종류만 말합니다. 증거 색(보라)과 상태 색을 배지에 쓰지 않습니다.</p>
+<p><strong>키보드</strong>: 줄에서 <span class="k-kbd">→</span>로 그 줄의 배지, <span class="k-kbd">Enter</span>로 팝오버, <span class="k-kbd">Esc</span>로 닫고 줄로 돌아갑니다 [제안].</p>
+<p>hover는 면을 한 단계 밝히고, 포커스는 2 px 링 + 2 px 간격, 팝오버 열림은 배지 글자색의 1 px 링입니다.</p>
+<p>근거 조회는 어느 화면에서도 막지 않습니다(V1). 읽기 전용 화면에서도 배지 포커스와 팝오버는 그대로입니다.</p>
+<p>팝오버 문구와 수치는 <span class="k-ex">예시</span>, 대괄호 안은 실제 기록이 들어갈 자리입니다.</p>
+</div>
+
+<div class="k-pad" style="flex-direction:column;gap:24px">
+<div style="display:flex;gap:48px;align-items:flex-start">
+<div class="k-frag">
+<span class="k-lbl">배지 × 상태</span>
+<div style="display:grid;grid-template-columns:120px repeat(4,170px);row-gap:6px;align-items:center;justify-items:start">
+<span class="k-cap">배지</span><span class="k-cap">기본</span><span class="k-cap">hover</span><span class="k-cap">포커스 링</span><span class="k-cap">팝오버 열림</span>
+<span class="k-sec">시뮬 · 엔진 계산</span>
+<button type="button" class="kb kb-sim" data-badge="시뮬" data-ctl="값 배지" aria-label="시뮬. 근거 열기"><span class="kp"><svg><use href="#g-sim"/></svg>시뮬</span></button>
+<button type="button" class="kb kb-sim hov" data-badge="시뮬" data-ctl="값 배지" aria-label="시뮬. 근거 열기"><span class="kp"><svg><use href="#g-sim"/></svg>시뮬</span></button>
+<button type="button" class="kb kb-sim foc" data-badge="시뮬" data-ctl="값 배지" aria-label="시뮬. 근거 열기"><span class="kp"><svg><use href="#g-sim"/></svg>시뮬</span></button>
+<button type="button" class="kb kb-sim open" data-badge="시뮬" data-ctl="값 배지" aria-expanded="true" aria-label="시뮬. 근거 열림"><span class="kp"><svg><use href="#g-sim"/></svg>시뮬</span></button>
+<span class="k-sec">인용 · 출처 기록</span>
+<button type="button" class="kb kb-cite" data-badge="인용" data-ctl="값 배지" aria-label="인용. 근거 열기"><span class="kp"><svg><use href="#g-cite"/></svg>인용</span></button>
+<button type="button" class="kb kb-cite hov" data-badge="인용" data-ctl="값 배지" aria-label="인용. 근거 열기"><span class="kp"><svg><use href="#g-cite"/></svg>인용</span></button>
+<button type="button" class="kb kb-cite foc" data-badge="인용" data-ctl="값 배지" aria-label="인용. 근거 열기"><span class="kp"><svg><use href="#g-cite"/></svg>인용</span></button>
+<button type="button" class="kb kb-cite open" data-badge="인용" data-ctl="값 배지" aria-expanded="true" aria-label="인용. 근거 열림"><span class="kp"><svg><use href="#g-cite"/></svg>인용</span></button>
+<span class="k-sec">기본값 · 시스템 값</span>
+<button type="button" class="kb kb-def" data-badge="기본값" data-ctl="값 배지" aria-label="기본값. 근거 열기"><span class="kp"><svg><use href="#g-def"/></svg>기본값</span></button>
+<button type="button" class="kb kb-def hov" data-badge="기본값" data-ctl="값 배지" aria-label="기본값. 근거 열기"><span class="kp"><svg><use href="#g-def"/></svg>기본값</span></button>
+<button type="button" class="kb kb-def foc" data-badge="기본값" data-ctl="값 배지" aria-label="기본값. 근거 열기"><span class="kp"><svg><use href="#g-def"/></svg>기본값</span></button>
+<button type="button" class="kb kb-def open" data-badge="기본값" data-ctl="값 배지" aria-expanded="true" aria-label="기본값. 근거 열림"><span class="kp"><svg><use href="#g-def"/></svg>기본값</span></button>
+<span class="k-sec">사용자 선언</span>
+<button type="button" class="kb kb-decl" data-badge="사용자 선언" data-ctl="값 배지" aria-label="사용자 선언. 근거 열기"><span class="kp"><svg><use href="#g-decl"/></svg>사용자 선언</span></button>
+<button type="button" class="kb kb-decl hov" data-badge="사용자 선언" data-ctl="값 배지" aria-label="사용자 선언. 근거 열기"><span class="kp"><svg><use href="#g-decl"/></svg>사용자 선언</span></button>
+<button type="button" class="kb kb-decl foc" data-badge="사용자 선언" data-ctl="값 배지" aria-label="사용자 선언. 근거 열기"><span class="kp"><svg><use href="#g-decl"/></svg>사용자 선언</span></button>
+<button type="button" class="kb kb-decl open" data-badge="사용자 선언" data-ctl="값 배지" aria-expanded="true" aria-label="사용자 선언. 근거 열림"><span class="kp"><svg><use href="#g-decl"/></svg>사용자 선언</span></button>
+<span class="k-sec">수식어</span>
+<button type="button" class="kb kb-decl" data-badge="카탈로그 밖 · 사용자 선언" data-ctl="값 배지" aria-label="카탈로그 밖, 사용자 선언. 근거 열기"><span class="kp"><svg><use href="#g-decl"/></svg>카탈로그 밖 · 사용자 선언</span></button>
+<button type="button" class="kb kb-decl hov" data-badge="카탈로그 밖 · 사용자 선언" data-ctl="값 배지" aria-label="카탈로그 밖, 사용자 선언. 근거 열기"><span class="kp"><svg><use href="#g-decl"/></svg>카탈로그 밖 · 사용자 선언</span></button>
+<button type="button" class="kb kb-decl foc" data-badge="카탈로그 밖 · 사용자 선언" data-ctl="값 배지" aria-label="카탈로그 밖, 사용자 선언. 근거 열기"><span class="kp"><svg><use href="#g-decl"/></svg>카탈로그 밖 · 사용자 선언</span></button>
+<button type="button" class="kb kb-decl open" data-badge="카탈로그 밖 · 사용자 선언" data-ctl="값 배지" aria-expanded="true" aria-label="카탈로그 밖, 사용자 선언. 근거 열림"><span class="kp"><svg><use href="#g-decl"/></svg>카탈로그 밖 · 사용자 선언</span></button>
+<span class="k-sec">추정 · 어림</span>
+<button type="button" class="kb kb-est" data-badge="추정" data-ctl="값 배지" aria-label="추정. 근거 열기"><span class="kp"><svg><use href="#g-est"/></svg>추정</span></button>
+<button type="button" class="kb kb-est hov" data-badge="추정" data-ctl="값 배지" aria-label="추정. 근거 열기"><span class="kp"><svg><use href="#g-est"/></svg>추정</span></button>
+<button type="button" class="kb kb-est foc" data-badge="추정" data-ctl="값 배지" aria-label="추정. 근거 열기"><span class="kp"><svg><use href="#g-est"/></svg>추정</span></button>
+<button type="button" class="kb kb-est open" data-badge="추정" data-ctl="값 배지" aria-expanded="true" aria-label="추정. 근거 열림"><span class="kp"><svg><use href="#g-est"/></svg>추정</span></button>
+</div>
+</div>
+
+<div class="k-col" style="width:240px">
+<div class="k-frag">
+<span class="k-lbl">필터에 선택됨 · 배지 열 머리</span>
+<div style="width:240px;box-sizing:border-box;background:#151A20;border:1px solid #26303A;display:flex;flex-direction:column">
+<div class="l-colh" style="border-top:0"><span>부품 · 값</span><span class="bh">배지</span></div>
+<div class="l-colh" style="border-top:0;border-bottom:0"><span>부품 · 값</span><span class="bh on">배지 · 인용</span></div>
+</div>
+<span class="k-cap">위: 배지 필터 없음. 아래: 배지 필터 <span class="k-q">인용</span> 켜짐. 머리는 읽기 전용 글자이고 누를 수 없습니다.</span>
+</div>
+<div class="k-frag">
+<span class="k-lbl">정의 없음 줄</span>
+<div style="width:240px;box-sizing:border-box;padding:4px;background:#151A20;border:1px solid #26303A">
+<div class="l-row"><span class="l-grip" aria-hidden="true"><svg class="i"><use href="#i-grip"/></svg></span><svg class="l-th" aria-hidden="true"><use href="#t-fix"/></svg><div class="l-c"><div class="l-l1"><span class="l-nm">고정 결합</span><span class="l-kd">결합</span></div><div class="l-l2"><span class="nodef">정의 없음</span></div></div></div>
+</div>
+<span class="k-cap">값도 배지도 없습니다. 배지 없는 줄은 정렬 · 필터 대상이 아니라 맨 뒤에 둡니다. 0이나 빈칸으로 채우지 않습니다.</span>
+</div>
+</div>
+</div>
+
+<div class="k-frag">
+<span class="k-lbl">읽기 전용 · 오래됨 · 바뀜</span>
+<div style="display:flex;flex-direction:column;gap:8px">
+<div class="vb" style="gap:6px 8px"><span class="k-cap" style="width:96px">읽기 전용</span><svg class="i" role="img" aria-label="편집 잠김" style="color:#A9B4C0"><use href="#i-lock"/></svg><span class="k-sec">차체 질량</span><span class="num lg">1.3<span class="k-u"> t</span></span><button type="button" class="kb kb-decl" data-badge="사용자 선언" data-ctl="값 배지" aria-label="사용자 선언. 근거 열기"><span class="kp"><svg><use href="#g-decl"/></svg>사용자 선언</span></button><span class="k-sec">값 편집만 막습니다. 배지 포커스와 근거 팝오버는 그대로입니다</span></div>
+<div class="vb" style="gap:6px 8px"><span class="k-cap" style="width:96px">오래됨</span><span class="k-sec">조립체 질량 합</span><span class="num lg">1.3<span class="k-u"> t</span></span><span class="k-ex">예시</span><button type="button" class="kb kb-sim kb-stale" data-badge="시뮬" data-ctl="값 배지" aria-label="시뮬, 오래됨. 마지막 계산 시각과 근거 열기"><span class="kp"><svg><use href="#g-sim"/></svg>시뮬 · 오래됨</span></button><span class="k-stale">오래됨 · 마지막 계산 [시각]</span><span class="k-sec">엔진 연결이 끊겨 다시 계산하지 못했습니다</span></div>
+<div class="vb" style="gap:6px 8px"><span class="k-cap" style="width:96px">바뀜</span><span class="num lg">130<span class="k-u"> kg</span></span><button type="button" class="kb kb-est" data-badge="추정" data-ctl="값 배지" aria-label="추정. 근거 열기"><span class="kp"><svg><use href="#g-est"/></svg>추정</span></button><svg class="i" viewBox="0 0 16 12" role="img" aria-label="바뀜" style="width:16px;color:#A9B4C0"><use href="#i-to"/></svg><span class="num lg">130<span class="k-u"> kg</span></span><button type="button" class="kb kb-decl" data-badge="사용자 선언" data-ctl="값 배지" aria-label="사용자 선언. 근거 열기"><span class="kp"><svg><use href="#g-decl"/></svg>사용자 선언</span></button><span class="k-ex">예시</span><span class="k-sec">제안을 적용하거나 고치면 사용자 선언으로 바뀝니다(이전 → 새 값)</span></div>
+</div>
+</div>
+
+<div class="k-frag">
+<span class="k-lbl">근거 팝오버 5종 · 배지를 누르거나 <span class="k-kbd">Enter</span></span>
+<div style="display:grid;grid-template-columns:repeat(5,200px);gap:16px;align-items:start">
+<div class="k-pop" role="dialog" aria-label="시뮬 근거">
+<h3>근거 · 조립체 질량 합</h3>
+<div class="k-pl"><span class="k-cap">값</span><span class="vb"><span class="num">1.3<span class="k-u"> t</span></span><span class="kb kb-sim" data-badge="시뮬"><span class="kp"><svg><use href="#g-sim"/></svg>시뮬</span></span><span class="k-ex">예시</span></span></div>
+<div class="k-pl"><span class="k-cap">계산</span><span>부품 질량의 합</span></div>
+<div class="k-pl"><span class="k-cap">실행</span><span>[계산 기록]</span></div>
+<div class="k-pl"><span class="k-cap">시각</span><span>[날짜와 시각]</span></div>
+</div>
+<div class="k-pop" role="dialog" aria-label="인용 근거">
+<h3>근거 · 최대 추력</h3>
+<div class="k-pl"><span class="k-cap">값</span><span class="vb"><span class="num">8.9<span class="k-u"> N</span></span><span class="kb kb-cite" data-badge="인용"><span class="kp"><svg><use href="#g-cite"/></svg>인용</span></span></span></div>
+<div class="k-pl"><span class="k-cap">출처</span><span>[카탈로그 이름과 항목]</span></div>
+<div class="k-pl"><span class="k-cap">라이선스</span><span>[라이선스 이름]</span></div>
+<div class="k-pl"><span class="k-cap">기록</span><span>[원장 항목]</span></div>
+</div>
+<div class="k-pop" role="dialog" aria-label="기본값 근거">
+<h3>근거 · 빔 질량</h3>
+<div class="k-pl"><span class="k-cap">값</span><span class="vb"><span class="num">0.4<span class="k-u"> kg</span></span><span class="kb kb-def" data-badge="기본값"><span class="kp"><svg><use href="#g-def"/></svg>기본값</span></span><span class="k-ex">예시</span></span></div>
+<div class="k-pl"><span class="k-cap">출처</span><span>[시스템 기본값 표의 항목]</span></div>
+<div class="k-sec">사용자가 정하지 않아 시스템이 넣은 값입니다. 이 설계에 맞는지 확인된 적이 없습니다.</div>
+</div>
+<div class="k-pop" role="dialog" aria-label="사용자 선언 근거">
+<h3>근거 · 가져온 에셋 질량</h3>
+<div class="k-pl"><span class="k-cap">값</span><span class="vb"><span class="num">130<span class="k-u"> kg</span></span><span class="kb kb-decl" data-badge="사용자 선언"><span class="kp"><svg><use href="#g-decl"/></svg>사용자 선언</span></span><span class="k-ex">예시</span></span></div>
+<div class="k-pl"><span class="k-cap">선언한 사람</span><span>[이름]</span></div>
+<div class="k-pl"><span class="k-cap">선언 시각</span><span>[날짜와 시각]</span></div>
+<div class="k-pl"><span class="k-cap">방식</span><span>직접 입력</span></div>
+<div class="k-sec">판정은 이 선언만큼만 맞습니다.</div>
+</div>
+<div class="k-pop" role="dialog" aria-label="추정 근거">
+<h3>근거 · 질량 제안</h3>
+<div class="k-pl"><span class="k-cap">값</span><span class="vb"><span class="num">130<span class="k-u"> kg</span></span><span class="kb kb-est" data-badge="추정"><span class="kp"><svg><use href="#g-est"/></svg>추정</span></span><span class="k-ex">예시</span></span></div>
+<div class="k-pl"><span class="k-cap">추정 방법</span><span>[방법 이름과 입력]</span></div>
+<div class="k-pl"><span class="k-cap">추정한 주체</span><span>에이전트 또는 규칙</span></div>
+<div class="k-sec">적용하거나 고치면 사용자 선언으로 바뀝니다.</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

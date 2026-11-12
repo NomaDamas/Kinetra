@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>S6 검색과 정렬·필터</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="kin-sc05.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div class="k-root" style="width:880px;height:900px">
+<svg class="k-spr" aria-hidden="true"><symbol id="g-cite" viewBox="0 0 12 12"><path d="M2.5 8.5v-3a2.5 2.5 0 0 1 2.5-2.5M7 8.5v-3a2.5 2.5 0 0 1 2.5-2.5"/></symbol><symbol id="i-x" viewBox="0 0 12 12"><path d="M2.5 2.5l7 7M9.5 2.5l-7 7"/></symbol><symbol id="i-chev" viewBox="0 0 12 12"><path d="M3 4.5l3 3 3-3"/></symbol><symbol id="i-left" viewBox="0 0 12 12"><path d="M7.5 2.5L4 6l3.5 3.5"/></symbol><symbol id="i-grip" viewBox="0 0 12 12"><path d="M4 2.5h.01M8 2.5h.01M4 6h.01M8 6h.01M4 9.5h.01M8 9.5h.01"/></symbol><symbol id="i-filt" viewBox="0 0 12 12"><path d="M1.5 2.5h9l-3.5 4v3l-2 1v-4z"/></symbol><symbol id="i-search" viewBox="0 0 12 12"><path d="M8.5 5a3.5 3.5 0 1 1-7 0a3.5 3.5 0 1 1 7 0M7.6 7.6l2.9 2.9"/></symbol><symbol id="t-thr" viewBox="0 0 24 24"><path d="M5 9h6v6H5zM11 10l7-3v10l-7-3"/></symbol></svg>
+
+<div class="k-note"><span><strong>S6 검색 + 정렬 · 필터</strong> · <span class="k-kbd">/</span>로 연 검색 필드에 "추력", 정렬 질량 · 오름. (a) 필터 <span class="k-q">인용</span> → 1개 (b) 필터 <span class="k-q">기본값</span> → 0건</span><span>(a) 상시 9 · (b) 상시 8 · primary 0</span></div>
+
+<div class="k-wrap">
+<div class="k-ann">
+<span class="k-where">셸 안의 위치: SC-01 왼쪽 패널</span>
+<p><strong>검색(SC-01의 <span class="k-kbd">/</span>)</strong></p>
+<ul>
+<li><span class="k-kbd">/</span>를 누르거나 목록에서 글자를 치면 정렬 줄 아래에 검색 필드가 열립니다(1단계). 이름과 종류에서 찾습니다.</li>
+<li>검색은 정렬 · 필터와 함께 씁니다. 세 조건을 한 줄로 보이고 결과 개수를 씁니다. 개수가 바뀌면 스크린리더에 읽어 줍니다.</li>
+<li><span class="k-kbd">Esc</span>는 검색어를 지우고 필드를 닫습니다. 정렬 · 필터는 그대로입니다.</li>
+</ul>
+<p><strong>0건</strong>: 제목 한 줄 + 다음 행동 하나(<span class="k-q">필터 해제</span>). 일러스트와 가짜 예시 줄을 넣지 않습니다. 0건일 때는 위 해제 줄의 버튼을 빼서 같은 행동을 두 번 보이지 않습니다.</p>
+<p>수치는 <span class="k-ex">예시</span>입니다.</p>
+</div>
+
+<div class="k-pad">
+<div class="k-frag">
+<span class="k-lbl">(a) 검색 + 필터 인용 + 질량순 → 1개</span>
+<aside class="l-panel" aria-label="라이브러리" data-unit="S6a 라이브러리 패널">
+<div class="l-head"><h2>라이브러리</h2><button type="button" class="k-ib" data-ctl="패널 접기" aria-label="라이브러리 접기" aria-expanded="true"><svg class="i"><use href="#i-left"/></svg></button></div>
+<div class="l-tabs" role="tablist" aria-label="라이브러리 탭" data-ctl="탭 묶음"><button type="button" role="tab" aria-selected="true">기본 부품</button><button type="button" role="tab" aria-selected="false" tabindex="-1">내 것</button></div>
+<div class="l-tools"><div class="l-tr">
+<button type="button" class="l-sort" data-ctl="정렬 선택" aria-haspopup="menu" aria-expanded="false" aria-label="정렬: 질량, 오름차순"><span class="k-cap">정렬</span><span class="sv">질량 · 오름</span><svg class="i"><use href="#i-chev"/></svg></button>
+<button type="button" class="l-filt on" data-ctl="필터 버튼" aria-haspopup="dialog" aria-expanded="false" aria-label="필터, 적용 1"><svg class="i"><use href="#i-filt"/></svg>필터<span class="cnt">적용 1</span></button>
+</div>
+<div class="l-search"><svg class="i"><use href="#i-search"/></svg><input type="search" value="추력" aria-label="부품 검색" data-ctl="검색 필드"><button type="button" class="k-ib sm" data-ctl="검색 지우기" aria-label="검색 지우기" aria-keyshortcuts="Escape"><svg class="i"><use href="#i-x"/></svg></button></div>
+</div>
+<div class="l-fbar" role="status" aria-live="polite"><span>"추력" · 인용 · 질량순 · 결과 1개</span><button type="button" class="k-btn sm" data-ctl="필터 해제 줄">해제</button></div>
+<div class="l-colh" aria-hidden="true"><span>부품 · 질량</span><span class="bh on">배지 · 인용</span></div>
+<div class="l-list" role="grid" aria-label="검색 결과 1개" tabindex="0" data-ctl="부품 목록">
+<div role="row" class="l-row"><span class="l-grip" aria-hidden="true"><svg class="i"><use href="#i-grip"/></svg></span><svg class="l-th" aria-hidden="true"><use href="#t-thr"/></svg><div class="l-c"><div class="l-l1" role="gridcell"><span class="l-nm">냉가스 <span style="text-decoration:underline">추력</span>기</span><span class="l-kd">추력</span></div><div class="l-l2"><span class="num">0.3<span class="k-u"> kg</span></span><span class="k-ex">예시</span><span class="l-bc" role="gridcell"><button type="button" class="kb kb-cite" data-badge="인용" data-ctl="값 배지 열" tabindex="-1" aria-label="인용. 출처와 라이선스 열기"><span class="kp"><svg><use href="#g-cite"/></svg>인용</span></button></span></div></div></div>
+</div>
+<div class="l-foot"><span><span class="k-kbd">Esc</span>검색 닫기</span><span><span class="k-kbd">↓</span>결과로</span></div>
+</aside>
+</div>
+
+<div class="k-frag">
+<span class="k-lbl">(b) 검색 + 필터 기본값 + 질량순 → 0건</span>
+<aside class="l-panel" aria-label="라이브러리" data-unit="S6b 라이브러리 패널">
+<div class="l-head"><h2>라이브러리</h2><button type="button" class="k-ib" data-ctl="패널 접기" aria-label="라이브러리 접기" aria-expanded="true"><svg class="i"><use href="#i-left"/></svg></button></div>
+<div class="l-tabs" role="tablist" aria-label="라이브러리 탭" data-ctl="탭 묶음"><button type="button" role="tab" aria-selected="true">기본 부품</button><button type="button" role="tab" aria-selected="false" tabindex="-1">내 것</button></div>
+<div class="l-tools"><div class="l-tr">
+<button type="button" class="l-sort" data-ctl="정렬 선택" aria-haspopup="menu" aria-expanded="false" aria-label="정렬: 질량, 오름차순"><span class="k-cap">정렬</span><span class="sv">질량 · 오름</span><svg class="i"><use href="#i-chev"/></svg></button>
+<button type="button" class="l-filt on" data-ctl="필터 버튼" aria-haspopup="dialog" aria-expanded="false" aria-label="필터, 적용 1"><svg class="i"><use href="#i-filt"/></svg>필터<span class="cnt">적용 1</span></button>
+</div>
+<div class="l-search"><svg class="i"><use href="#i-search"/></svg><input type="search" value="추력" aria-label="부품 검색" data-ctl="검색 필드"><button type="button" class="k-ib sm" data-ctl="검색 지우기" aria-label="검색 지우기" aria-keyshortcuts="Escape"><svg class="i"><use href="#i-x"/></svg></button></div>
+</div>
+<div class="l-fbar" role="status" aria-live="polite"><span>"추력" · 기본값 · 질량순 · 결과 0개</span></div>
+<div class="l-colh" aria-hidden="true"><span>부품 · 질량</span><span class="bh on">배지 · 기본값</span></div>
+<div class="l-list" role="grid" aria-label="검색 결과 0개" tabindex="0" data-ctl="부품 목록">
+<div class="l-empty" style="padding:32px 10px 16px">
+<h3 style="font-size:16px;line-height:24px">조건에 맞는 부품이 없습니다</h3>
+<p class="k-sec" style="margin:0">"추력"과 필터 <span class="k-q">기본값</span>을 함께 만족하는 부품이 없습니다.</p>
+<button type="button" class="k-btn" data-ctl="빈 결과: 필터 해제">필터 해제</button>
+</div>
+</div>
+<div class="l-foot"><span><span class="k-kbd">Esc</span>검색 닫기</span></div>
+</aside>
+</div>
+</div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":880,"height":900}}'>
+class Component extends DCLogic {
+renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

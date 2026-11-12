@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>S16 닫기 확인</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="kin-sc05.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div class="k-root" style="width:990px;height:1040px">
+<svg class="k-spr" aria-hidden="true"><symbol id="g-decl" viewBox="0 0 12 12"><path d="M2 10l.6-2.6 5.6-5.6 2 2-5.6 5.6z"/></symbol><symbol id="i-x" viewBox="0 0 12 12"><path d="M2.5 2.5l7 7M9.5 2.5l-7 7"/></symbol><symbol id="i-chev" viewBox="0 0 12 12"><path d="M3 4.5l3 3 3-3"/></symbol></svg>
+
+<div class="k-note"><span><strong>S16 닫기 확인</strong> · 마법사 중간에 <span class="k-q">×</span> 또는 <span class="k-kbd">Esc</span> → 확인 창</span><span>확인 창 2 · primary 0 · danger 1</span></div>
+
+<div class="k-wrap">
+<div class="k-ann">
+<span class="k-where">셸 안의 위치: SC-01 위 모달 위 확인 창</span>
+<ul>
+<li>파일을 고른 뒤부터 닫으려 하면 확인 창을 거칩니다. 파일을 고르기 전(S10 a)에는 바로 닫힙니다 [제안].</li>
+<li>문구: "가져오기를 취소할까요? 입력한 값은 사라집니다."</li>
+<li><span class="k-q">취소하고 닫기</span>(danger) / <span class="k-q">계속 편집</span>(secondary). primary가 없습니다. 처음 포커스는 <span class="k-q">계속 편집</span>이고, 확인 창에서 <span class="k-kbd">Esc</span>는 계속 편집과 같습니다.</li>
+<li>뒤의 마법사는 가림막 아래에서 비활성입니다. 세지 않습니다.</li>
+<li>취소하면 마법사가 닫히고 포커스는 내 것 탭의 <span class="k-q">가져오기</span>로 돌아갑니다. 내 것 목록은 바뀌지 않습니다.</li>
+</ul>
+</div>
+
+<div class="k-pad">
+<div class="k-frag full">
+<span class="k-lbl">S16 · 3/4 질량 단계에서 닫기를 누름</span>
+<div class="w-stage">
+<div class="w-shell" data-outside="1" aria-hidden="true"><div class="t"></div><div class="l"></div><div class="r"></div></div>
+<div class="w-scrim"></div>
+<span class="w-cap">가림막 뒤: SC-01 셸(비활성)</span>
+<div class="w-modal" data-outside="1" aria-hidden="true" inert="">
+<div class="w-head"><h2>glb 가져오기</h2><span class="k-sp"></span><button type="button" class="k-ib" tabindex="-1" aria-label="가져오기 닫기" style="background:#263039"><svg class="i m"><use href="#i-x"/></svg></button></div>
+<ol class="w-steps"><li class="w-st done">파일</li><li class="w-ar">›</li><li class="w-st done">1/4 단위·축</li><li class="w-ar">›</li><li class="w-st done">2/4 프록시</li><li class="w-ar">›</li><li class="w-st cur">3/4 질량</li><li class="w-ar">›</li><li class="w-st">4/4 출처</li></ol>
+<div class="w-body">
+<h3 class="w-q">질량을 어떻게 정할까요?</h3>
+<div class="k-seg" style="align-self:flex-start"><button type="button" tabindex="-1" aria-checked="true">직접 입력</button><button type="button" tabindex="-1">밀도 × 프록시 부피</button></div>
+<div class="k-field"><span class="k-flab">질량</span><div style="display:flex;align-items:center;gap:8px"><div class="k-ing" style="width:220px"><input type="text" value="130" tabindex="-1" aria-label="질량"><span class="k-fix">kg</span></div><span class="kb kb-decl"><span class="kp"><svg><use href="#g-decl"/></svg>사용자 선언</span></span><span class="k-ex">예시</span></div></div>
+</div>
+<div class="w-foot"><span class="k-sec"></span><button type="button" class="k-btn" tabindex="-1">이전</button><button type="button" class="k-prim" tabindex="-1">다음</button></div>
+</div>
+<div class="w-scrim" style="z-index:3"></div>
+<div class="w-conf" role="alertdialog" aria-modal="true" aria-labelledby="s16-t" aria-describedby="s16-d" data-unit="S16 닫기 확인" style="position:absolute;left:50%;top:300px;transform:translateX(-50%);z-index:4">
+<h2 id="s16-t">가져오기를 취소할까요?</h2>
+<p class="k-sec" id="s16-d" style="margin:0">입력한 값은 사라집니다.</p>
+<div class="act"><button type="button" class="k-btn dng" data-ctl="취소하고 닫기">취소하고 닫기</button><button type="button" class="k-btn foc" data-ctl="계속 편집">계속 편집</button></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":990,"height":1040}}'>
+class Component extends DCLogic {
+renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>S9 내 것 빈 상태</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="kin-sc05.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div class="k-root" style="width:600px;height:900px">
+<svg class="k-spr" aria-hidden="true"><symbol id="i-left" viewBox="0 0 12 12"><path d="M7.5 2.5L4 6l3.5 3.5"/></symbol><symbol id="i-upload" viewBox="0 0 12 12"><path d="M6 8V2M3.5 4.5L6 2l2.5 2.5M2 10h8"/></symbol></svg>
+
+<div class="k-note"><span><strong>S9 내 것 빈 상태</strong> · 저장한 조립체도 가져온 에셋도 없음</span><span>상시 3 · primary 0</span></div>
+
+<div class="k-wrap">
+<div class="k-ann">
+<span class="k-where">셸 안의 위치: SC-01 왼쪽 패널 · 내 것 탭</span>
+<p>제목 한 줄(<span class="k-q">type.heading</span>) + 설명 한 줄 + 다음 행동 하나(<span class="k-q">가져오기</span>). 일러스트와 가짜 예시 줄이 없습니다.</p>
+<p>빈 상태에서는 위쪽 <span class="k-q">가져오기</span> 버튼과 정렬 · 필터 줄을 숨깁니다. 같은 행동을 두 곳에 두지 않고, 정렬할 것이 없기 때문입니다.</p>
+<p>조립체 저장은 작업대에서 조립체를 고르면 <span class="k-q">선택한 조립체 저장</span>으로 나타납니다(S7 b). 설명 줄이 그 길을 말합니다.</p>
+<p>기본 부품 탭에는 빈 상태가 없습니다. 카탈로그는 늘 있습니다.</p>
+</div>
+
+<div class="k-pad">
+<div class="k-frag">
+<span class="k-lbl">S9 · 내 것 탭, 0개</span>
+<aside class="l-panel" aria-label="라이브러리" data-unit="S9 라이브러리 패널">
+<div class="l-head"><h2>라이브러리</h2><button type="button" class="k-ib" data-ctl="패널 접기" aria-label="라이브러리 접기" aria-expanded="true"><svg class="i"><use href="#i-left"/></svg></button></div>
+<div class="l-tabs" role="tablist" aria-label="라이브러리 탭" data-ctl="탭 묶음"><button type="button" role="tab" aria-selected="false" tabindex="-1">기본 부품</button><button type="button" role="tab" aria-selected="true">내 것</button></div>
+<div class="l-empty" role="region" aria-label="내 것 비어 있음">
+<h3>아직 저장한 것이 없습니다</h3>
+<p class="k-sec" style="margin:0">glb 파일을 가져오거나, 작업대에서 조립체를 골라 저장하면 여기에 모입니다.</p>
+<button type="button" class="k-btn" data-ctl="가져오기" aria-haspopup="dialog" style="margin-top:4px"><svg class="i"><use href="#i-upload"/></svg>가져오기</button>
+</div>
+</aside>
+</div>
+</div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":600,"height":900}}'>
+class Component extends DCLogic {
+renderVals() { return {}; }
+}
+</script>
+</body>
+</html>
