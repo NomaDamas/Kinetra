@@ -213,6 +213,7 @@ from .protocol import (
 )
 from .provenance import BADGE_LABEL_KO, Badge, Provenance, Quantity, Source
 from .shape import Box, Cylinder, Shape, ShapeComponent, Sphere
+from .trajectory import TrajectoryComparison, UntaggedTrajectory, compare_trajectories, trajectory_evidence
 from .validator import (
     PLACEMENT_TOLERANCE,
     ProjectIncomplete,
@@ -468,4 +469,8 @@ __all__ = [
     "WasmEngine",
     "WheelEngine",
     "check_run",
+    "TrajectoryComparison",
+    "UntaggedTrajectory",
+    "compare_trajectories",
+    "trajectory_evidence",
 ]

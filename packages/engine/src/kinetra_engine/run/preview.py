@@ -25,8 +25,8 @@ function of the compiled model and the number of ticks only (`client-adapter.md`
 velocity or acceleration (it then resets its state, so the run cannot go on): the end frame is the last finite tick,
 which the run kept, and there is no trajectory hash. The trajectory hash of a completed run is SHA-256 over the
 float64 generalized positions of every tick from 0 to the end, in order, tagged with the run's platform tag (H1). It
-is a hash of this run's stream, kept by the core (F7); how two hashes are compared (match, mismatch, not comparable) is
-X-02d.
+is a hash of this run's stream, kept by the core (F7); two records are compared (match, mismatch, not comparable) by
+`kinetra_core.compare_trajectories` (X-02d).
 
 **Model labels.** The proxy approximation labels of the compile (`proxy_labels`), the contact labels (`contact_labels`, X-01e:
 the friction rule, slow slip, no rolling friction, tread and default friction per instance), and what the compiled model
