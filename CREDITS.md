@@ -604,6 +604,19 @@
 - 원본 해시: `sha256:c503ff7003dd7dfee19b575aed6a409fb9bc15bf9f1c4053892c793e05b5edb3`
 - 확인자: omp
 
+### dep-mujoco-core-4.0.0
+
+- 표기: MuJoCo (mujoco-core), Copyright Google DeepMind. Apache License 2.0.
+- 저작자: Google DeepMind
+- 라이선스: Apache-2.0
+- 원본: https://pypi.org/project/mujoco-core/4.0.0/ https://github.com/google-deepmind/mujoco https://github.com/google-deepmind/mujoco/blob/main/LICENSE
+- 경로: `packages/engine/pyproject.toml`
+- 용도: 실행 의존성: MuJoCo 엔진 바인딩(X-01a 가 packages/engine 의 의존성으로 추가, 결정은 docs/decisions/engine.md). kinetra_engine.compiler 가 만든 MJCF 를 실제 로더로 읽어 geom_size, 질량, mj_forward 를 시험한다
+- 변경 내역: 없음(수정 없이 사용). packages/engine/pyproject.toml 의 dependencies(mujoco-core==4.0.0)와 uv.lock 에서 고정. 해시는 PyPI sdist(uv.lock 의 sdist 항목). `mujoco` 메타 패키지(dep-mujoco-4.0.0, 스파이크)와 같은 프로젝트의 엔진 바인딩 배포본이고 import 이름도 `mujoco` 다. 의존성은 numpy 뿐이다(뷰어용 mujoco-studio, glfw, pyopengl 은 `mujoco` 메타 패키지가 끌고 오므로 쓰지 않는다)
+- 받은 날짜: 2026-11-12
+- 원본 해시: `sha256:7300cc232f27ceb8694aa45b26c790667eebd4a06286156b49b9726e3bf1d7cf`
+- 확인자: omp
+
 ### dep-mujoco-wasm-4.0.0
 
 - 표기: MuJoCo, Copyright Google DeepMind. Apache License 2.0.
