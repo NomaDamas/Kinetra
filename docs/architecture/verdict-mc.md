@@ -13,7 +13,7 @@
 3. 표본 i마다 엔진을 한 번 돌린다: `PreviewRun` 종류 `verdict_sample`, 실행 id `verdict-{seed}-{i}`, 판정의 시드, 틱마다 프레임(조건을 틱 단위로 본다, goal-eval.md 2), 지면 마찰은 그 표본의 `ground_friction`(`to_mjcf(..., ground_friction=μ)`, 결합이 풀려 다시 컴파일할 때도 같은 값).
 4. 스트림마다 `evaluate_goal`(J-02a)이 `met`, `failed`, `undetermined`를 낸다. p_success = `met / (met + failed)`, 95% 신뢰구간은 같은 분모의 Wilson 점수 구간(z = 1.959963984540054, p를 품도록 넓힌다. legacy `wilson_ci`).
 
-`monte_carlo(table, goal, n=, seed=, duration_s=, applied=, run_sample=)`는 엔진과 무관한 같은 루프다. `run_sample(i, values)`가 실행 스트림 하나를 돌려준다.
+`monte_carlo(table, goal, n=, seed=, duration_s=, applied=, run_sample=)`는 엔진과 무관한 같은 루프다. `run_sample(i, values)`가 실행 스트림 하나를 돌려준다. 표본마다 실제로 돈 길이(`last_tick × timestep_s`)를 확인한다: 요청한 `duration_s`가 끝나는 틱(`end_tick(duration_s, timestep_s)`)에서 끝나지 않은 실행(더 짧게 끝났거나 그 전에 멈췄거나 더 길게 돈 실행)이 하나라도 있으면 판정을 만들지 않는다(`ValueError`). 엔진이 계속할 수 없었던 실행(`failed`)만 더 일찍 끝날 수 있고, 그 표본은 세되 정해지지 않은 조건 때문에 `undetermined`가 된다. 그래서 기록한 `duration_s`는 모든 표본이 실제로 돈 길이다.
 
 ## 기록 (`Verdict`)
 

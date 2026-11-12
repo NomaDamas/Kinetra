@@ -274,3 +274,17 @@ def test_mc_counts_only_verdict_samples_of_one_tag():
         monte_carlo(table, goal, n=2, seed=SEED, duration_s=0.1, applied=ENGINE_APPLIED, run_sample=second_elsewhere)
     with pytest.raises(ValueError):
         monte_carlo(table, goal, n=0, seed=SEED, duration_s=0.1, applied=ENGINE_APPLIED, run_sample=real)
+
+
+def test_mc_refuses_samples_that_did_not_run_the_requested_duration():
+    project = block_on_ramp()
+    table, goal = table_of(project), slid_goal(project)
+    for run_sample in (
+        engine_sample(project, duration_s=0.05),  # completed, but shorter than asked
+        engine_sample(project, stopped=True, duration_s=0.05),  # stopped before the requested end
+        engine_sample(project, duration_s=0.2),  # longer than asked
+    ):
+        with pytest.raises(ValueError, match="the request is 0.1 s, which ends at tick 50"):
+            monte_carlo(table, goal, n=1, seed=SEED, duration_s=0.1, applied=ENGINE_APPLIED, run_sample=run_sample)
+    v = monte_carlo(table, goal, n=1, seed=SEED, duration_s=0.1, applied=ENGINE_APPLIED, run_sample=engine_sample(project, duration_s=0.1))
+    assert v.duration_s == 0.1 and v.n_samples == 1  # the run that ran 0.1 s (50 ticks of 0.002 s) is counted

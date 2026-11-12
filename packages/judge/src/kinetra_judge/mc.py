@@ -51,7 +51,7 @@ from kinetra_core import (
 )
 from kinetra_core.frames import MAX_SEED
 from kinetra_engine.parts import PartCache
-from kinetra_engine.run import PreviewRun
+from kinetra_engine.run import PreviewRun, end_tick
 from pydantic import BaseModel, ConfigDict, model_validator
 
 from .goal import Goal, Status, evaluate_goal
@@ -216,7 +216,11 @@ def monte_carlo(
     stream, and count.
 
     Raises `ValueError` when a run is not a `verdict_sample`, or the runs disagree on the platform tag, the project
-    (`definition_hash`), the planet or the time step, or the planet is not the table's: such runs do not make one verdict."""
+    (`definition_hash`), the planet or the time step, or the planet is not the table's, or a run did not run the requested
+    `duration_s`: such runs do not make one verdict. A run's length is its own `last_tick × timestep_s`: it must end at
+    `end_tick(duration_s, timestep_s)` (the tick a run of `duration_s` ends at, `kinetra_engine.run.end_tick`), whether it
+    completed or was stopped there. Only a run the engine could not go on with (`failed`) may end earlier; it is counted,
+    and its undecided conditions make it `undetermined`."""
     if not 1 <= n:
         raise ValueError(f"n must be at least 1, got {n}")
     if not 0 <= seed <= MAX_SEED:
@@ -239,7 +243,14 @@ def monte_carlo(
         elif (started.definition_hash, started.planet, started.timestep_s) != (first.definition_hash, first.planet, first.timestep_s):
             raise ValueError(f"sample {i}: a different project, planet or time step than sample 0")
         model_labels.update(dict.fromkeys(started.model_labels))
-        counts[evaluate_goal(goal, started, frames, ended).status] += 1
+        result = evaluate_goal(goal, started, frames, ended)  # checks the stream first (`check_run`)
+        expected, reason = end_tick(duration_s, started.timestep_s), ended.end.reason
+        if ended.last_tick > expected or (ended.last_tick < expected and reason != "failed"):
+            raise ValueError(
+                f"sample {i}: ran to tick {ended.last_tick} ({ended.last_tick * started.timestep_s:g} s, {reason}); the request is "
+                f"{duration_s:g} s, which ends at tick {expected}"
+            )
+        counts[result.status] += 1
     assert first is not None  # n >= 1
     met, failed, undetermined = counts[Status.MET], counts[Status.FAILED], counts[Status.UNDETERMINED]
     shaken = [a.key for a in rows if is_random(a)]
