@@ -1,6 +1,6 @@
 # 클라이언트 어댑터 경계 (A0-04)
 
-- 상태: 설계. 3.1~3.2의 메시지(문서 구독과 명령 발행)는 C-05a(#72)에서 구현됐다(아래 "3.1~3.2 확정"). 실행 스트림의 프레임 형식(3.3절 끝의 "3.3 확정")은 C-05b(#73)에서 구현됐다. 나머지 구현은 C-05c(#74)가 한다.
+- 상태: 설계. 3.1~3.2의 메시지(문서 구독과 명령 발행)는 C-05a(#72)에서 구현됐다(아래 "3.1~3.2 확정"). 실행 스트림의 프레임 형식(3.3절 끝의 "3.3 확정")은 C-05b(#73)에서 구현됐다. 헤드리스 참조 클라이언트와 적합성 테스트(3.3절 끝의 "3.1~3.3 적합성")는 C-05c(#74)에서 구현됐다.
 - 근거: `docs/plan/studio-plan.md` 5.1~5.4절, `spikes/mujoco-limits/REPORT.md`의 A0-01a.
 - 표기는 계획과 같다. **[추정]** 근거 없는 판단, **[확인 필요]** 채택 전 검증할 사실, **[제안]** 이 문서가 새로 내는 기준.
 - 번호가 붙은 규칙(G·D·C·F·A·I·P)은 C-05c 적합성 테스트가 기준으로 삼을 문장이다. 계획이나 이슈 DoD에서 온 규칙에는 출처를 적었다. 출처가 없는 규칙, 메시지·필드 이름, 좌표 규약, 새 화면 문구는 이 문서의 [제안]이며 C-01, C-05의 스키마와 A0-05의 `engine.md`에서 확정한다.
@@ -197,6 +197,35 @@ S1 범위: 매 프레임에 모든 강체. 조종은 키보드(X-02c).
 - **이벤트와 판정.** `condition_met`은 판정이 아니다(P4). 프레임 스트림에서 판정이 만들어지지 않는다(F6). `break`의 `load`와 `threshold`는 N이고 단순화 모델의 값이다(계획 4.6절). `contact`의 `force`는 엔진이 알려 줄 때만 있다.
 - **MuJoCo 용어가 없다(F1).** 필드와 타입 이름에 엔진 내부 용어가 없다. 테스트가 생성된 스키마의 글과 기록된 메시지의 모든 키를 검사한다(`qpos`, `geom`, `mjcf` 등과 엔진 이름). 엔진 이름은 `platform.engine.name`의 값으로만 나온다.
 - **픽스처의 정직성.** 기록된 프레임(`fixtures/frames/run.jsonl`)은 엔진 실행이 아니다. 코어에 엔진이 아직 없으므로(X-01, X-02) 4륜차를 0.2 m에서 떨어뜨린 닫힌 식의 낙하(`g`는 `data/bodies/earth.json`의 인용값)다. 플랫폼 태그의 엔진은 `analytic-fixture`로 적고 `break` 이벤트의 하중과 임계는 형식을 보이기 위한 만든 값이며 예시 자동차의 결합에는 임계가 없다. 궤적 해시는 이진 프레임을 이어 붙인 SHA-256이고 X-02d의 해시가 아니다. 이 값들은 시뮬 결과로 읽으면 안 된다.
+
+#### 3.1~3.3 적합성 (C-05c)
+
+코드: 헤드리스 참조 클라이언트는 `packages/engine/src/kinetra_engine/protocol/client.py`(`ReferenceClient`), 적합성 묶음은 `kinetra_engine/protocol/conformance.py`와 기록된 사례 `kinetra_engine/protocol/conformance_cases/*.json`(사례를 쓰는 것은 `packages/engine/tests/conformance_fixture.py`), 테스트는 `packages/engine/tests/test_conformance.py`(`uv run pytest packages/engine -q -k conformance`).
+
+- **참조 클라이언트는 프로토콜만 쓴다.** 웹 코드도 코어 코드도 없다: `kinetra_core`의 메시지 모델(JSON Schema가 생성되는 그 모델)과 WebSocket 라이브러리만 가져오고 `kinetra_engine`(Hub, Document, 적용기)은 가져오지 않는다. 테스트가 import를 검사한다. 하는 일: `hello` → `subscribe` → 사본을 `snapshot`과 `applied`(`apply_changes`)로만 바꾼다(D1, D3). 재접속하면 쥔 개정 번호와 `epoch`를 보내 이어 받는다(D6). `publish`·`request`(되돌리기)를 보내고 답을 기다린다. 실행 스트림(`run_started`, JSON·이진 `frame`, `run_ended`)을 받아 프레임마다 `check_frame`, 끝에서 `check_run`을 부른다(끝 프레임 규칙). 모르는 `type`의 메시지와 아는 메시지의 모르는 필드는 무시한다(G5).
+- **클라이언트가 확인하는 순서 규칙.** 코어가 어기면 `ProtocolViolation`을 내고 `code`로 어긴 규칙을 말한다(덮고 넘어가면 코어의 버그를 감춘다): `applied`는 쥔 개정의 바로 다음 개정이다(D2, `revision_gap`). 발행자의 `accepted`는 그 편집의 `applied` 뒤에 오므로 `accepted.revision`은 클라이언트가 쥔 개정과 같다(`accepted_before_applied`). `resumed`는 클라이언트가 쥔 `epoch`와 개정에서 이어지고(`resume_mismatch`) 그 뒤에 놓친 `applied`만 순서대로 온다(D6, `replay_incomplete`). 한 연결에 끝나지 않은 실행이 둘일 수 없다(S1, `run_overlap`). 실행 스트림은 `check_frame`과 `check_run`을 통과한다(3.3 확정의 끝 프레임, `frame`·`run_stream`). 나머지 코드는 `ProtocolViolation`의 docstring에 있다. `error`는 `CoreError`다.
+- **연결마다의 상태는 새 연결로 넘어가지 않는다.** 재접속(`connect`)은 사본, 개정 번호, `epoch`를 그대로 두지만 옛 연결의 것은 버린다: `resumed` 뒤에 아직 받지 못한 `applied`의 수(새 `subscribe`가 실제로 닿은 개정부터 다시 묻는다)와 끝나지 않은 실행(프레임은 연결과 함께 사라졌으므로 `interrupted_runs`로 옮긴다). 그래서 이어 받기 도중이나 실행 도중에 끊겨도 정상인 새 연결을 거부하지 않는다(사례 14, 15).
+- **사례(언어 중립 JSON).** 사례 하나는 `steps`(클라이언트가 할 일 `do`(`"dropped": true`면 코어가 그 도중에 연결을 닫는다), 클라이언트가 보내야 하는 메시지 `client`, 코어가 보내는 `core`·`core_binary`(이진 프레임, base64), 코어가 연결을 닫음 `core_close`, 연결 밖에서 코어에 일어난 일 `core_side`)와 `expect`(끝난 뒤 클라이언트의 `revision`, `epoch`, `verdict`, 프로젝트 전체, 명령 ID별 답, 무시한 `type` 목록, 통째로 받은 실행의 틱·이벤트·끝 프레임)이다. 깨진 코어의 사례는 `expect`가 `{"violation": 이유, "code": 규칙, "at_message": n}`이고 클라이언트가 **그 코드로, 사례에서 코어가 보낸 n번째 메시지(모든 연결의 `core`·`core_binary`를 1부터 셈)를 처리할 때** 거부해야 통과한다. 다른 이유나 다른 메시지에서 거부하면 실패다(엉뚱한 것을 거부하는 클라이언트를 통과시키지 않게). `client` 메시지는 `ClientMessage`로 읽어 비교한다(필드 순서, 빠진 선택 필드와 `null`은 같다).
+
+  | 사례 | 규칙 | 출처 |
+  |---|---|---|
+  | `01-open-snapshot` | G5, D1 | Hub 기록 |
+  | `02-publish-accepted`: `applied`(개정 1) 다음 `accepted` | D2, D3, C1 | Hub 기록 |
+  | `03-publish-rejected`: 사유가 있는 `rejected`, 개정 그대로 | C2, C3 | Hub 기록 |
+  | `04-publish-unchanged`: 바꾸는 것이 없는 편집은 같은 개정의 `accepted`, `applied` 없음 | D2, D5 | Hub 기록 |
+  | `05-undo`: `request` undo → `applied`(`cause` undo, 역명령) 다음 `accepted` | C1, D3 | Hub 기록 |
+  | `06-resume-same-epoch`: 끊긴 동안 다른 발행자(에이전트)가 편집, 재접속하면 `resumed`와 놓친 `applied` | D6 | Hub 기록 |
+  | `07-resume-after-restart`: 코어가 다시 뜨면(다른 `epoch`) 새 `snapshot` | D6 | Hub 기록 |
+  | `08-unknown-type-ignored`: 모르는 `type`(`presence`) 둘과 `applied`의 모르는 필드 | G5 | 기록을 고침 |
+  | `09-run-stream`: `run_started`, 이진 프레임 16개, 모르는 `run_progress`, JSON 프레임 128과 끝 프레임 130(간격 8 밖, 틱 129의 파단), `run_ended` | F2~F4, G4, G5 | 기록 + C-05b 픽스처 |
+  | `10`~`13-violation-*`: 개정을 건너뛴 `applied`(`revision_gap`), `applied` 앞의 `accepted`(`accepted_before_applied`), 다른 `epoch`의 `resumed`(`resume_mismatch`), 끝 프레임 없는 `run_ended`(`run_stream`) | D2, D6, F3, F4 | 기록을 고침 |
+  | `14-reconnect-mid-replay`: 놓친 `applied` 둘 중 하나 뒤에 코어가 연결을 닫고, 클라이언트는 개정 1부터 다시 이어 받는다 | D6 | 기록을 고침 |
+  | `15-reconnect-mid-run`: 실행 도중 연결이 닫히고, 재접속 뒤 새 실행이 통째로 온다 | F3, F4, D6 | 기록 + C-05b 픽스처 |
+
+- **기록의 정직성.** Hub 기록 사례는 실제 `Hub`를 실제 로컬 WebSocket으로 부른 기록이다. 보내는 쪽은 참조 클라이언트가 아니라 날 소켓이다(시험받는 클라이언트가 사례를 쓰지 않게). 기대 상태는 코어의 메시지로 계산하고 기록 뒤 Hub 자신의 문서와 같은지 확인한다. 무작위 `epoch`는 나타난 순서로 `epoch-1`, `epoch-2`로 바꾼다. Hub가 다른 말을 하게 되면 `test_conformance_cases_are_what_the_hub_and_the_frame_fixture_say_today`가 실패한다. **실행 스트림 사례는 코어의 실행이 아니다**: 코어에는 아직 실행 경로가 없으므로(X-02) C-05b의 픽스처(4륜차의 닫힌 식 낙하, 엔진 실행 아님, 3.3 확정의 "픽스처의 정직성")를 라이브 코어가 보낼 모양(이진 프레임, 끝의 JSON 프레임)으로 보낸다. X-02a는 자기 스트림이 같은 사례 형식과 `check_run`을 통과함을 보인다.
+- **새 클라이언트가 통과하는 방법.** Python 클라이언트는 `ReferenceClient`와 같은 메서드(`connect`, `subscribe`, `publish`, `request`, `receive_run`, `receive`, `close`)와 상태(받은 메시지 수 `received`, 거부의 `ProtocolViolation.code` 포함)를 갖고 `test_conformance.py`의 `CLIENTS`에 더하면 모든 사례를 돈다. 다른 언어의 클라이언트(웹, XR, Godot: GD-01)는 `uv run python -m kinetra_engine.protocol.conformance serve <사례.json>`이 로컬 포트에서 코어 쪽을 재생하고(URL을 출력한다) 클라이언트가 보내는 메시지를 하나하나 비교한다. 클라이언트의 시험 장치는 `do` 단계를 그 URL에 대해 하고 끝난 상태(또는 거부의 코드와 메시지 번호)를 `expect`와 비교한다. 서버는 클라이언트가 기대한 메시지를 정확히 보냈으면 0, 아니면 1로 끝난다(`list`는 사례와 규칙 목록). 명령 ID는 사례가 주므로 클라이언트는 호출자가 ID를 고를 수 있어야 한다.
+- **묶음에 이빨이 있다.** 규칙 하나를 어기는 클라이언트(모르는 `type`을 오류로 다룸, `run_ended`를 확인 없이 받음, 재접속에 `epoch`를 빠뜨림, 개정을 확인 없이 적용, 옛 연결의 상태를 새 연결로 넘김, 맞는 코드를 너무 이른 메시지에서 냄, 맞는 메시지에서 다른 코드를 냄)가 해당 사례에서 그 이유로 실패함을 테스트가 보인다.
+- 한 사례의 시간 한도 `CASE_TIMEOUT_S`(10 s)는 고른 값이다(`기본값`, 사례는 로컬 메시지 수십 건). 여기에 없는 것: 두 클라이언트 동기화(C-05a의 테스트와 참조 클라이언트의 라이브 테스트가 본다), `control`과 수신 확인(X-02c, #420), 에셋 채널(3.4).
 
 ### 3.4 에셋 로딩
 

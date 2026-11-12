@@ -8,6 +8,7 @@
     "validate": "node validate.ts",
     "capture": "node capture.ts",
     "capture:skeleton": "node skeleton.ts",
+    "capture:drive-car": "node drive-car.ts",
     "lint": "tsc --noEmit",
     "build": "tsc --noEmit",
     "test": "node --test \"test/*.test.ts\"",

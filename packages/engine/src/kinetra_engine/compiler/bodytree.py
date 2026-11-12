@@ -23,8 +23,11 @@ in the frame of the body it belongs to (the child): the point is the world posit
 `R(a instance) R(a snap point) axis` turned into the child's frame.
 
 Not here: the springs, dampers, motors and actuator limits of a joint (X-01b), thrusters and propellant (X-01c), what a joint's
-`break_threshold` does (X-04b), planet constants (W-03a), contact parameters (X-01b), the error format of a part (X-01d). A joint
+`break_threshold` does (X-04b), contact parameters (X-01b), the error format of a part (X-01d). A joint
 that carries a `break_threshold` or an actuator is compiled without it (the MJCF has neither yet).
+
+**Planet (W-03a).** The tree also carries the gravity and atmosphere density of `project.world.planet`, read from
+`data/bodies` by `planet_physics` (`planet.py`) and nowhere else; a planet without readable data is a `CompileError`.
 """
 
 from __future__ import annotations
@@ -32,6 +35,7 @@ from __future__ import annotations
 import math
 from collections.abc import Mapping
 from dataclasses import dataclass, field
+from pathlib import Path
 
 from kinetra_core import (
     CollisionProxy,
@@ -48,6 +52,7 @@ from kinetra_core import (
 from kinetra_core.geometry import Quaternion
 
 from ..parts import PartCache, ShapeError, collision_proxy, mass_properties
+from .planet import PlanetPhysics, planet_physics
 
 Vec = tuple[float, float, float]
 Mat = tuple[Vec, Vec, Vec]
@@ -204,12 +209,14 @@ class Body:
 
 @dataclass(frozen=True)
 class BodyTree:
-    """`bodies` in tree order (parents before children, siblings by id); `bodies[0]` is the root."""
+    """`bodies` in tree order (parents before children, siblings by id); `bodies[0]` is the root. `planet`: the constants
+    of `project.world.planet` from `data/bodies` (W-03a)."""
 
     bodies: tuple[Body, ...]
     instances: tuple[CompiledInstance, ...]  # canonical (id) order
     joints: tuple[Joint, ...]  # canonical (id) order, as the project's joints
     design: DesignSpec = field(repr=False)  # the canonical-order design the tree was built from
+    planet: PlanetPhysics
 
     @property
     def root(self) -> Body:
@@ -270,12 +277,22 @@ class _Groups:
         return True
 
 
-def build_body_tree(project: Project, cache: PartCache | None = None, tolerance: float | Quantity | None = None) -> BodyTree:
+def build_body_tree(
+    project: Project,
+    cache: PartCache | None = None,
+    tolerance: float | Quantity | None = None,
+    bodies_directory: Path | None = None,
+) -> BodyTree:
     """The body tree of `project` (see the module docstring). `cache` serves `mass_properties` and `collision_proxy`;
-    `tolerance` is the proxy decomposition tolerance (`collision_proxy`, default `DEFAULT_TOLERANCE`).
+    `tolerance` is the proxy decomposition tolerance (`collision_proxy`, default `DEFAULT_TOLERANCE`); `bodies_directory`
+    is where the planet data is read (`load_body`, default `data/bodies`).
 
-    Raises `CompileError` for a design with no instance, a part that cannot be compiled, a loop of fixed joints, a joint
-    inside one rigid body, a loop among the bodies, or an assembly that is not one piece."""
+    Raises `CompileError` for a planet without readable data, a design with no instance, a part that cannot be compiled, a
+    loop of fixed joints, a joint inside one rigid body, a loop among the bodies, or an assembly that is not one piece."""
+    try:
+        planet = planet_physics(project.world.planet, bodies_directory)
+    except (KeyError, OSError, ValueError) as e:
+        raise CompileError(f"planet {project.world.planet!r} has no readable data in data/bodies: {e}") from e
     design = canonical_order(project).design  # the one reading order: ids, not the file's order
     if not design.instances:
         raise CompileError("the design has no instance: nothing to compile")
@@ -437,5 +454,5 @@ def build_body_tree(project: Project, cache: PartCache | None = None, tolerance:
         CompiledInstance(i.id, i.part, i.material, groups.find(i.id), world[i.id][0], world[i.id][1], compiled[i.id][0], compiled[i.id][1])
         for i in design.instances
     )
-    return BodyTree(tuple(bodies), instances, design.joints, design)
+    return BodyTree(tuple(bodies), instances, design.joints, design, planet)
 
