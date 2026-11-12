@@ -17,9 +17,11 @@ from .bodies import (
     Gravity,
     Insolation,
     Unverified,
+    VerdictAssumptionTable,
     check_world_references,
     load_bodies,
     load_body,
+    verdict_assumption_table,
 )
 from .canonical import CanonicalError, canonical_json, canonical_order, definition_hash, project_hash
 from .collision import CollisionProxy, DecomposedVoid, FilledVoid, ProxyDerivation, ProxyGeom, RingReport
@@ -394,6 +396,7 @@ __all__ = [
     "UniformDistribution",
     "Unit",
     "Unverified",
+    "VerdictAssumptionTable",
     "VerdictState",
     "World",
     "WorldPosition",
@@ -419,6 +422,7 @@ __all__ = [
     "open_report",
     "parse_command",
     "validate_command",
+    "verdict_assumption_table",
     "open_project",
     "parse_project",
     "project_file",
