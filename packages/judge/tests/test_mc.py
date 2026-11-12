@@ -280,6 +280,62 @@ def test_mc_bound_material_friction_at_both_distribution_ends_changes_the_hand_c
     assert project.design.materials[1].friction.value == 0.5  # samples never mutate the project or its declared material
 
 
+@pytest.mark.parametrize("declared_mass", [False, True])
+def test_mc_only_consumed_bound_targets_are_sampled(declared_mass):
+    data = block_on_ramp().model_dump(mode="json")
+    part = data["design"]["parts"][0]
+    part["parameters"] = [{"name": "mass", "unit": "kg", "default": q(1.0, "kg"),
+                           "min": q(0.1, "kg"), "max": q(2.0, "kg")}]
+    part["mass_parameter"] = "mass" if declared_mass else None
+    part["specs"] = [{"name": "tread_friction_kinetic", **q(0.5, "1")}, {"name": "annotation", **q(1.0, "N")}]
+    data["design"]["materials"].append({**data["design"]["materials"][0], "id": "unused"})
+
+    def bound(key, value, unit, binding):
+        return {"key": key, "label": key, "value": q(value, unit), "confidence": "med", "binding": binding,
+                "distribution": {"kind": "uniform", "low": value * 0.9, "high": value * 1.1,
+                                 "badge": "estimate", "source": SRC}}
+
+    data["assumptions"]["assumptions"] = [
+        bound("mass", 1.0, "kg", {"kind": "instance_parameter", "instance": "block1", "parameter": "mass"}),
+        bound("density", 1000.0, "kg/m^3", {"kind": "material_property", "material": "grip", "property": "density"}),
+        bound("strength", 1.0e8, "Pa", {"kind": "material_property", "material": "grip", "property": "yield_strength"}),
+        bound("orphan", 1.0, "1", {"kind": "material_property", "material": "unused", "property": "friction"}),
+        bound("overridden_friction", 1.0, "1", {"kind": "material_property", "material": "grip", "property": "friction"}),
+        bound("tread", 0.5, "1", {"kind": "part_spec", "part": "plate", "spec": "tread_friction_kinetic"}),
+        bound("annotation", 1.0, "N", {"kind": "part_spec", "part": "plate", "spec": "annotation"}),
+    ]
+    project = Project.model_validate(data)
+    goal = Goal.model_validate({"conditions": [{"kind": "no_break", "id": "whole"}]})
+    verdict = run_verdict(project, goal, n=2, seed=SEED, duration_s=0.01, project_id="used", revision=0)
+    expected = {"ground_friction", "mass" if declared_mass else "density", "tread"}
+    assert set(verdict.sampled) == expected and set(verdict.sampled_values) == expected
+    assert set(verdict.not_applied) == {r["key"] for r in data["assumptions"]["assumptions"]} - expected
+
+
+@pytest.mark.parametrize("active", [False, True])
+def test_mc_inactive_thruster_spec_is_not_applied(active):
+    data = block_on_ramp().model_dump(mode="json")
+    part = data["design"]["parts"][0]
+    part["role"] = "thruster"
+    part["specs"] = [{"name": "rated_thrust", **q(1.0, "N")}, {"name": "propellant_flow", **q(0.1, "kg/s")}]
+    part["curves"] = [{"name": "thrust", "curve": {"badge": "declared", "source": SRC,
+        "x_unit": "s", "y_unit": "N", "points": [{"x": 0.0, "y": 1.0}, {"x": 1.0, "y": 1.0}]}}]
+    part["snap_points"] = [{"id": "nozzle", "kind": "exhaust", "badge": "declared", "source": SRC,
+        "position": {a: ax(0.0) for a in "xyz"}, "orientation": {"x": 0.0, "y": 0.0, "z": 0.0, "w": 1.0}}]
+    data["design"]["actuators"] = [{"id": "engine", "kind": "thruster", "instance": "block1"}]
+    if active:
+        data["design"]["schedule"] = {"entries": [{"type": "actuate", "id": "on", "actuator": "engine",
+            "start": 0.0, "end": 1.0, "command": 1.0, "badge": "declared", "source": SRC}]}
+    data["assumptions"]["assumptions"] = [{"key": "thrust", "label": "Thrust", "value": q(1.0, "N"),
+        "confidence": "med", "distribution": {"kind": "uniform", "low": 0.9, "high": 1.1, "badge": "estimate", "source": SRC},
+        "binding": {"kind": "part_spec", "part": "plate", "spec": "rated_thrust"}}]
+    project = Project.model_validate(data)
+    goal = Goal.model_validate({"conditions": [{"kind": "no_break", "id": "whole"}]})
+    verdict = run_verdict(project, goal, n=1, seed=SEED, duration_s=0.01, project_id="thrust", revision=0)
+    assert ("thrust" in verdict.sampled) is active
+    assert ("thrust" in verdict.not_applied) is not active
+
+
 def test_mc_names_rows_the_model_does_not_read():
     mass = {"key": "vehicle_mass", "label": "Vehicle mass", "value": q(10.0, "kg"), "confidence": "med",
             "distribution": {"kind": "uniform", "low": 9.0, "high": 11.0, "badge": "estimate", "source": SRC}}

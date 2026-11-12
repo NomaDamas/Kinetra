@@ -129,10 +129,10 @@ class Project(BaseModel):
 def apply_assumption_values(project: Project, values: Mapping[str, float]) -> Project:
     """Return the compile input with every bound row set to `values[key]`, leaving `project` unchanged.
 
-    The sampled number carries the row nominal's badge and source, not the target's: sampling must not turn a user
-    declaration into a citation (or a citation into a declaration). Unbound rows are ignored. A missing value for a
-    bound row is an error, never a silent nominal fallback. The returned model is fully validated, including parameter
-    ranges, so an inapplicable sample is refused rather than run as if it had been applied.
+    The sampled number derives its provenance from the distribution and links the nominal evidence; it never inherits
+    a measured citation merely because the nominal was cited. Unbound rows are ignored. A missing value for a bound row
+    is an error, never a silent nominal fallback. The returned model is fully validated, including parameter ranges,
+    so an inapplicable sample is refused rather than run as if it had been applied.
     """
     bound = tuple(a for a in project.assumptions.assumptions if a.binding is not None)
     if not bound:
@@ -141,7 +141,7 @@ def apply_assumption_values(project: Project, values: Mapping[str, float]) -> Pr
     if missing:
         raise ValueError(f"missing values for bound assumptions: {missing}")
 
-    data = project.model_dump(mode="python")
+    data = project.model_dump(mode="json")
     instances = {instance.id: n for n, instance in enumerate(project.design.instances)}
     materials = {material.id: n for n, material in enumerate(project.design.materials)}
     parts = {part.id: n for n, part in enumerate(project.design.parts)}
@@ -150,6 +150,19 @@ def apply_assumption_values(project: Project, values: Mapping[str, float]) -> Pr
         assert binding is not None
         quantity = assumption.value.model_dump(mode="python")
         quantity["value"] = values[assumption.key]
+        distribution = assumption.distribution
+        evidence = assumption.value if distribution.kind == "fixed" else distribution
+        badge = evidence.badge.value
+        quantity["badge"] = "estimate" if badge == "cite" else badge
+        source = evidence.source.model_dump(mode="python")
+        source["license"] = None
+        if quantity["badge"] != "declared":
+            source["declared_by"] = source["declared_at"] = None
+        source["ref"] = (
+            f"Sample of assumption {assumption.key!r}; distribution evidence: {evidence.source.ref}; "
+            f"nominal evidence: {assumption.value.source.ref}"
+        )[:500]
+        quantity["source"] = source
         if isinstance(binding, InstanceParameterBinding):
             parameters = data["design"]["instances"][instances[binding.instance]]["parameters"]
             quantity["name"] = binding.parameter

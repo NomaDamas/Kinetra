@@ -138,8 +138,8 @@ def test_apply_assumption_values_changes_only_the_returned_compile_input():
     (mass,) = sampled.design.instances[0].parameters  # an omitted parameter is materialized at its sampled value
     assert (mass.name, mass.value, mass.unit.value) == ("mass", 20.0, "kg")
     assert sampled.design.materials[0].friction.value == 0.25
-    assert mass.badge.value == "declared" and sampled.design.materials[0].friction.badge.value == "declared"
-    assert mass.source.ref == SRC["ref"]  # the sample never inherits or upgrades the target's provenance
+    assert mass.badge.value == "estimate" and sampled.design.materials[0].friction.badge.value == "estimate"
+    assert SRC["ref"] in mass.source.ref and "nominal evidence" in mass.source.ref
 
 
 def test_apply_assumption_values_replaces_an_explicit_parameter_and_requires_every_bound_value():
@@ -158,7 +158,7 @@ def test_apply_assumption_values_changes_a_part_spec_without_mutating_the_defini
     original = Project.model_validate(with_rows(row("part_rating", "N", SPEC_TARGET)))
     sampled = apply_assumption_values(original, {"part_rating": 0.75})
     assert sampled.design.parts[0].specs[0].value == 0.75
-    assert sampled.design.parts[0].specs[0].badge.value == "declared"
+    assert sampled.design.parts[0].specs[0].badge.value == "estimate"
     assert original.design.parts[0].specs[0].value == 0.5
 
 
@@ -191,11 +191,27 @@ def test_apply_assumption_values_scales_a_thruster_curve_with_sampled_rated_thru
     sampled = apply_assumption_values(original, {"thrust_rating": 8.0})
     rated = next(s for s in sampled.design.parts[0].specs if s.name == "rated_thrust")
     curve = sampled.design.parts[0].curves[0].curve
-    assert rated.value == 8.0 and rated.badge.value == "declared"
+    assert rated.value == 8.0 and rated.badge.value == "estimate"
     assert [p.y for p in curve.points] == [0.0, 4.0, 8.0]
     assert curve.badge.value == "estimate" and "thrust_rating" in curve.source.ref
     assert original.design.parts[0].curves[0].curve.badge.value == "declared"
     assert [p.y for p in original.design.parts[0].curves[0].curve.points] == [0.0, 2.0, 4.0]
+
+
+@pytest.mark.parametrize("spread_badge", ["estimate", "default", "declared", "cite"])
+def test_sample_provenance_follows_distribution_not_cited_nominal(spread_badge):
+    data = with_rows(row("vehicle_mass", "kg", INSTANCE_TARGET))
+    assumption = data["assumptions"]["assumptions"][0]
+    assumption["value"]["badge"] = "cite"
+    assumption["value"]["source"] = {"ref": "Measured nominal mass evidence", "locator": "measurement table"}
+    assumption["distribution"]["badge"] = spread_badge
+    assumption["distribution"]["source"] = {"ref": "Spread evidence", "locator": "spread declaration"}
+    original = Project.model_validate(data)
+    sampled = apply_assumption_values(original, {"vehicle_mass": 15.0})
+    quantity = sampled.design.instances[0].parameters[0]
+    assert quantity.badge.value == ("estimate" if spread_badge == "cite" else spread_badge)
+    assert "Spread evidence" in quantity.source.ref and "Measured nominal mass evidence" in quantity.source.ref
+    assert original.assumptions.assumptions[0].value.badge.value == "cite"
 
 
 def test_unbound_rows_do_not_force_a_compile_input_copy():
