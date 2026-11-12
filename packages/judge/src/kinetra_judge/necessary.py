@@ -1,13 +1,12 @@
-"""Necessary-condition screen (J-01b; `docs/architecture/necessary-screen.md`).
+"""Necessary-condition analytical warnings (J-01b; `docs/architecture/necessary-screen.md`).
 
-    necessary_screen(project, goal) -> NecessaryScreen      # INFEASIBLE_NECESSARY_CONDITION, or None (nothing proven)
+    necessary_screen(project, goal) -> NecessaryScreen      # L0 analytical warnings; runtime verdict is always None
 
-Each check is an upper bound, in continuous physics of the model the engine runs, on what any control schedule could achieve, derived from a
-success condition of the goal (J-02a) and the design (X-01a body tree, X-01b motors and batteries, W-03b drag). A check
-fails only when the condition needs more than the bound times `1 + NUMERIC_MARGIN` (a `default` allowance for what soft
-contacts and time steps can add, not a measured one) at the favourable end of every assumption the bound reads; then the
-screen says `INFEASIBLE_NECESSARY_CONDITION`. Passing proves
-nothing (a passed bound is not a way to meet the goal).
+Each check is an upper bound, in an explicit ideal continuous-physics model, on what any control schedule could achieve,
+derived from a success condition of the goal (J-02a) and the design (X-01a body tree, X-01b motors and batteries, W-03b
+drag). When the condition needs strictly more than the favourable bound gives, the check is a `warning` with the analytical
+evidence. No energy, impulse or static-torque warning skips simulation or produces a final impossibility verdict: soft
+contacts, discrete steps and unmeasured collisions are outside the proof. Passing proves nothing either.
 
 | check | kind | from | needs | bound |
 |---|---|---|---|---|
@@ -35,7 +34,7 @@ from enum import StrEnum
 from typing import Literal
 
 import numpy as np
-from kinetra_core import ActuatorKind, Assumption, Badge, PartRole, Project, Quantity, Source, Unit
+from kinetra_core import ActuatorKind, Assumption, PartRole, Project
 from kinetra_core.assumption import NormalDistribution, UniformDistribution
 from kinetra_engine.compiler import Body, BodyTree, MotorDrive, build_body_tree, compile_drag, compile_drives
 from kinetra_engine.compiler.bodytree import mv, rot, vadd
@@ -45,7 +44,6 @@ from pydantic import BaseModel, ConfigDict
 
 from .goal import Goal, ReachCondition, RotationCondition, TimeLimitCondition
 
-INFEASIBLE = "INFEASIBLE_NECESSARY_CONDITION"
 FRICTION_KEY = "ground_friction"
 """The one assumption the engine reads today (W-03c): the planet's ground friction."""
 
@@ -53,22 +51,9 @@ STATIC_TORQUE_LABEL = (
     "정적 토크는 경고다: 저장된 자세에서 모터 정지 토크가 축 둘레 중력 모멘트보다 작으면 준정적으로는 들 수 없지만, "
     "흔들어 에너지를 모으면 들 수 있어 불가능의 증거가 아니다"
 )
-NUMERIC_MARGIN = Quantity(
-    value=0.05,
-    unit=Unit.ONE,
-    badge=Badge.DEFAULT,
-    source=Source(
-        ref="Kinetra default for J-01b, not measured: the relative allowance between the continuous-physics bounds and what the "
-        "engine's soft contacts and time steps can add. In the test scenes the mechanical energy never rose above the motor-work "
-        "bound (largest gain / bound 0.429, test_necessary_engine_energy_stays_under_the_bound)"
-    ),
-)
-"""A check fails only when the condition needs more than `(1 + NUMERIC_MARGIN) x` its bound: the bounds are continuous physics,
-and the engine's soft contacts and discrete steps can add or remove a little energy (`docs/architecture/necessary-screen.md`)."""
-
 SCREEN_LABEL = (
-    f"연속 물리 상한 + 수치 여유 {NUMERIC_MARGIN.value:.0%}(기본값, 잰 값이 아니다)의 필요조건 검사다. "
-    "실패는 필요량이 상한에 여유를 더한 것보다 크다는 뜻이고, 통과는 된다는 뜻이 아니다"
+    "L0 해석 경고다: 명시적 이상 연속물리 모델의 상한을 넘어도 실제 시뮬을 생략하거나 최종 불가능으로 판정하지 않는다. "
+    "소프트 접촉·이산 스텝·미계량 충돌·모델 밖 외부 에너지는 이 증거가 덮지 않으며, 통과도 된다는 뜻이 아니다"
 )
 FAVORABLE_LABEL = "가정은 분포 지지의 양 끝에서 모두 계산하고 유리한 쪽(상한이 큰 쪽)으로 판단한다"
 MOTOR_LABEL = "모터 일의 상한은 연속 시간의 모터 식(X-01b 토크 곡선, 데이터시트 두 전류의 직선)에서 낸다. 한 스텝 안의 이산화 차이는 셈하지 않는다"
@@ -81,8 +66,7 @@ def unapplied_label(key: str) -> str:
 
 class CheckStatus(StrEnum):
     PASSED = "passed"
-    FAILED = "failed"
-    WARNING = "warning"  # static torque only: evidence on the card, never a verdict
+    WARNING = "warning"  # analytical evidence only: never a runtime verdict or a reason to skip simulation
     NOT_APPLICABLE = "not_applicable"
 
 
@@ -109,10 +93,10 @@ class NecessaryCheck(_Strict):
 
 
 class NecessaryScreen(_Strict):
-    """`verdict` is `INFEASIBLE_NECESSARY_CONDITION` when a check failed, else `None` (the screen proved nothing). `labels`
-    are the screen's model assumptions and the assumptions it did not apply."""
+    """L0 analytical warnings and evidence. `verdict` is always None: no check skips simulation or declares final
+    impossibility. `labels` are the screen's model assumptions and the assumptions it did not apply."""
 
-    verdict: Literal["INFEASIBLE_NECESSARY_CONDITION"] | None
+    verdict: None = None
     checks: tuple[NecessaryCheck, ...]
     labels: tuple[str, ...]
 
@@ -226,9 +210,9 @@ class _Design:
         return None
 
     def splittable(self, body: Body) -> bool:
-        """Whether the piece the body moves with can change in a run: a separator in it (X-08) or any joint with a break
-        threshold (X-04b, X-13). Then the screen takes each candidate instance alone (the lightest piece that holds it)."""
-        return bool(self.breakable) or any(i in self.separators for i in body.instances)
+        """Whether a separator in this body (X-08) can change the piece the reference moves with. Breakable joints are
+        handled separately: they make every energy check not applicable because the target body cannot be bounded."""
+        return any(i in self.separators for i in body.instances)
 
     def body_world(self, body: Body) -> tuple[tuple[float, float, float], tuple]:
         ci = self.instances[body.id]  # a body's frame is its smallest instance's (X-01a)
@@ -283,10 +267,10 @@ def _check(name, kind, c, status, reason, required=None, available=None, nominal
     )
 
 
-def _verdict(name, kind, c, required, available, unit, pass_reason, fail_reason, nominal=None, favorable=None) -> NecessaryCheck:
-    """A bound decided: failed only when the condition needs more than the favourable bound times `1 + NUMERIC_MARGIN`."""
-    status = CheckStatus.FAILED if required > available * (1.0 + NUMERIC_MARGIN.value) else CheckStatus.PASSED
-    return _check(name, kind, c, status, fail_reason if status is CheckStatus.FAILED else pass_reason, required, available, nominal, unit, favorable)
+def _bound_check(name, kind, c, required, available, unit, pass_reason, warning_reason, nominal=None, favorable=None) -> NecessaryCheck:
+    """An ideal continuous-physics bound: warn when the requirement exceeds it, without declaring runtime impossibility."""
+    status = CheckStatus.WARNING if required > available else CheckStatus.PASSED
+    return _check(name, kind, c, status, warning_reason if status is CheckStatus.WARNING else pass_reason, required, available, nominal, unit, favorable)
 
 
 # --- checks -----------------------------------------------------------------------------------------------------------
@@ -295,14 +279,20 @@ def _verdict(name, kind, c, required, available, unit, pass_reason, fail_reason,
 def _energy_height(c: ReachCondition, d: _Design, seconds: float | None) -> NecessaryCheck:
     """The body of the instance is followed and its reference point is its smallest instance's origin (J-02a). That
     instance `P` is one of the body's instances with an id at most the condition's (a separator can split the body, X-08);
-    without a separator in the body it is the body's own. `P`'s origin at `region.min.z` puts the centre of mass of the
-    piece it moves with at least `region.min.z - r` high (`r` its distance from that origin), which takes `m g (rise)` of
-    work; the motors give at most `motor_work`, and every other instance at most its potential energy above z = 0."""
+    without a separator in the body it is the body's own. Any breakable joint makes this check not applicable. `P`'s origin
+    at `region.min.z` puts the centre of mass of the piece it moves with at least `region.min.z - r` high (`r` its distance
+    from that origin), which takes `m g (rise)` of work; the motors give at most `motor_work`, and every other instance at
+    most its potential energy above z = 0."""
     name, kind = "energy_height", "energy"
     x = _instance_of(d, c)
     why = d.unbounded_energy(seconds)
     if why:
         return _check(name, kind, c, CheckStatus.NOT_APPLICABLE, why)
+    if d.breakable:
+        return _check(
+            name, kind, c, CheckStatus.NOT_APPLICABLE,
+            f"끊어질 수 있는 결합({', '.join(d.breakable)})이 있어 목표 몸의 구성이 달라질 수 있으므로 에너지 필요조건을 묶지 못한다",
+        )
     body = d.tree.body_of(x)
     height = c.region.min.z
     work = d.motor_work(seconds)
@@ -319,10 +309,10 @@ def _energy_height(c: ReachCondition, d: _Design, seconds: float | None) -> Nece
         others = math.fsum(d.mass[i] * d.g * d.com[i][2] for i in d.instances if i not in members)
         options.append((need, work + others, ref))
     need, available, ref = min(options, key=lambda o: o[0] - o[1])
-    return _verdict(
+    return _bound_check(
         name, kind, c, need, available, "J",
         f"기준 인스턴스 {ref}를 목표 높이로 올리는 일이 모터 일과 나머지 부품의 위치에너지 상한 안이다",
-        f"기준 인스턴스 {ref}를 목표 높이로 올리는 데 드는 일이 모터 일과 나머지 부품의 위치에너지를 모두 써도 모자란다",
+        f"이상 연속물리 모델에서는 기준 인스턴스 {ref}를 목표 높이로 올리는 데 모터 일과 나머지 부품의 위치에너지를 모두 써도 모자란다는 해석 경고다(실행 판정 아님)",
     )
 
 
@@ -330,12 +320,17 @@ def _energy_rotation(c: RotationCondition, d: _Design, seconds: float) -> Necess
     """By `seconds` the energy of the design is at most `E = motor_work(seconds) + potential energy above z = 0`, so the body
     spins at most `sqrt(2 E / I_min)` (its rotational kinetic energy is part of `E`) and turns at most `seconds` times that.
     `I_min` is the body's smallest principal moment; a body a separator can split gives the instance's own (a piece that
-    holds the instance has at least the instance's inertia)."""
+    holds the instance has at least the instance's inertia). Any breakable joint makes this check not applicable."""
     name, kind = "energy_rotation", "energy"
     x = _instance_of(d, c)
     why = d.unbounded_energy(seconds)
     if why:
         return _check(name, kind, c, CheckStatus.NOT_APPLICABLE, why)
+    if d.breakable:
+        return _check(
+            name, kind, c, CheckStatus.NOT_APPLICABLE,
+            f"끊어질 수 있는 결합({', '.join(d.breakable)})이 있어 목표 몸의 구성이 달라질 수 있으므로 에너지 필요조건을 묶지 못한다",
+        )
     body = d.tree.body_of(x)
     if d.splittable(body):
         i = d.instances[x].properties.inertia
@@ -344,10 +339,10 @@ def _energy_rotation(c: RotationCondition, d: _Design, seconds: float) -> Necess
         inertia = body.inertia
     energy = d.motor_work(seconds) + d.potential
     available = math.degrees(seconds * math.sqrt(2.0 * energy / _min_inertia(inertia)))
-    return _verdict(
+    return _bound_check(
         name, kind, c, c.angle_deg, available, "deg",
         "시간 한도 안에 낼 수 있는 회전 각의 에너지 상한 안이다",
-        "모든 에너지가 그 몸의 회전에 들어가도 시간 한도 안에 목표 각도만큼 돌 수 없다",
+        "이상 연속물리 모델에서는 모든 에너지를 그 몸의 회전에 넣어도 시간 한도 안의 목표 각도에 못 미친다는 해석 경고다(실행 판정 아님)",
     )
 
 
@@ -428,10 +423,10 @@ def _impulse_horizontal(c: ReachCondition, d: _Design, seconds: float) -> Necess
 
     ends = [mu for mu in _support(d.friction) if mu >= 0.0]
     mu_fav = max(ends, key=available)
-    return _verdict(
+    return _bound_check(
         name, kind, c, need, available(mu_fav), "m",
         "시간 한도 안의 수평 이동이 지면 마찰 충격량의 상한 안이다",
-        "지면 마찰을 분포의 유리한 끝으로 두어도 시간 한도 안에 그만큼 수평으로 갈 충격량이 없다",
+        "이상 연속물리 모델에서는 지면 마찰을 분포의 유리한 끝으로 두어도 시간 한도 안의 수평 이동 충격량이 모자란다는 해석 경고다(실행 판정 아님)",
         nominal=available(d.friction.value.value),
         favorable={FRICTION_KEY: mu_fav},
     )
@@ -488,5 +483,4 @@ def necessary_screen(project: Project, goal: Goal, *, bodies_directory=None) -> 
     if d.motors:
         labels += [MOTOR_LABEL, STATIC_TORQUE_LABEL]
     labels += [unapplied_label(a.key) for a in project.assumptions.assumptions]
-    failed = any(ch.status is CheckStatus.FAILED for ch in checks)
-    return NecessaryScreen(verdict=INFEASIBLE if failed else None, checks=tuple(checks), labels=tuple(labels))
+    return NecessaryScreen(verdict=None, checks=tuple(checks), labels=tuple(labels))

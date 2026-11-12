@@ -16,7 +16,7 @@ from kinetra_core import PartDef, Project, load_body, load_material_catalog
 from kinetra_engine.compiler import build_body_tree, compile_drives
 from kinetra_engine.parts import collision_proxy
 
-from kinetra_judge import INFEASIBLE, NUMERIC_MARGIN, CheckStatus, Goal, motor_efficiency_bound, motor_peak_power, necessary_screen
+from kinetra_judge import CheckStatus, Goal, motor_efficiency_bound, motor_peak_power, necessary_screen
 
 LIBRARY = Path(__file__).parents[2] / "engine" / "src" / "kinetra_engine" / "parts" / "library"
 SRC = {"ref": "J-01b test fixture: value chosen by the test", "locator": "test_necessary.py"}
@@ -143,10 +143,10 @@ def tree_numbers(proj):
     return tree, mass, com
 
 
-# --- impossible case 1: energy ----------------------------------------------------------------------------------------
+# --- analytical warning 1: energy -------------------------------------------------------------------------------------
 
 
-def test_necessary_energy_one_cell_cannot_lift_the_motor_ten_kilometres():
+def test_necessary_energy_bound_excess_is_an_analytical_warning_not_a_verdict():
     # The motor's body (motor + bracket + cell, welded) must put its reference point 10 km up: the origin of its smallest
     # instance, the cell `b1` (J-02a). Work needed m g (10 000 - |origin - com| - com_z); the cell gives at most eta x 42 120 J,
     # the wheel at most its potential energy.
@@ -161,10 +161,11 @@ def test_necessary_energy_one_cell_cannot_lift_the_motor_ten_kilometres():
     assert need > available  # about 3.0e4 J against about 1.9e4 J
     screen = necessary_screen(proj, goal(reach("m1", (-1.0, -1.0, 10_000.0), (1.0, 1.0, 10_001.0))))
     e = by_name(screen)["energy_height"]
-    assert (e.status, e.unit) == (CheckStatus.FAILED, "J")
+    assert (e.status, e.unit) == (CheckStatus.WARNING, "J")
     assert e.required == pytest.approx(need, rel=1e-9)
     assert e.available == pytest.approx(available, rel=1e-7)
-    assert screen.verdict == INFEASIBLE
+    assert "실행 판정 아님" in e.reason
+    assert screen.verdict is None
 
 
 def test_necessary_energy_passes_for_a_reachable_height_and_proves_nothing():
@@ -174,7 +175,7 @@ def test_necessary_energy_passes_for_a_reachable_height_and_proves_nothing():
     assert any("통과는 된다는 뜻이 아니다" in label for label in screen.labels)
 
 
-# --- impossible case 2 and the boundary case: friction impulse on the Moon -------------------------------------------
+# --- analytical warning 2 and the boundary case: friction impulse on the Moon ----------------------------------------
 
 
 def horizontal_numbers(proj, seconds):
@@ -195,22 +196,23 @@ def horizontal_numbers(proj, seconds):
     return c, lift, radius
 
 
-def test_necessary_impulse_on_the_moon_friction_cannot_carry_it_fifty_metres_in_two_seconds():
+def test_necessary_impulse_bound_excess_is_an_analytical_warning_not_a_verdict():
     proj = rig("moon")
     c, lift, radius = horizontal_numbers(proj, 2.0)
     mu_high = load_body("moon").ground_friction.distribution.high  # 0.9004 (tan 42 deg, bodies.md)
     x0 = 50.0
     screen = necessary_screen(proj, goal(reach("w1", (x0, -1.0, 0.0), (x0 + 1.0, 1.0, 1.0)), {"kind": "time_limit", "id": "t", "seconds": 2.0}))
     i = by_name(screen)["impulse_horizontal"]
-    assert i.status is CheckStatus.FAILED
+    assert i.status is CheckStatus.WARNING
     assert i.favorable == {"ground_friction": mu_high}
     assert i.available == pytest.approx(mu_high * lift, rel=1e-9)
     assert i.required == pytest.approx(x0 - c[0] - radius, rel=1e-9)
-    assert screen.verdict == INFEASIBLE
+    assert "실행 판정 아님" in i.reason
+    assert screen.verdict is None
 
 
-def test_necessary_boundary_fails_at_the_nominal_friction_but_not_at_the_favorable_end():
-    # A region between the nominal bound (mu 0.6573) and the favourable one (mu 0.9004): no INFEASIBLE.
+def test_necessary_boundary_warns_at_the_nominal_friction_but_not_at_the_favorable_end():
+    # A region between the nominal bound (mu 0.6573) and the favourable one (mu 0.9004): no analytical warning.
     proj = rig("moon")
     c, lift, radius = horizontal_numbers(proj, 2.0)
     friction = load_body("moon").ground_friction
@@ -241,7 +243,7 @@ def test_necessary_rotation_bound_is_time_times_the_spin_all_energy_allows():
                                          {"kind": "time_limit", "id": "t", "seconds": seconds}))
     r = by_name(screen)["energy_rotation"]
     assert r.available == pytest.approx(bound, rel=1e-9)
-    assert r.status is CheckStatus.FAILED and screen.verdict == INFEASIBLE
+    assert r.status is CheckStatus.WARNING and screen.verdict is None
 
 
 # --- static torque: a warning, never INFEASIBLE -----------------------------------------------------------------------
@@ -274,25 +276,24 @@ def test_necessary_unapplied_project_assumptions_are_labelled():
     assert "미적용: 가정 vehicle_mass는 모델에 바인딩되지 않아 흔들지 않았다" in screen.labels
 
 
-# --- review of #578: breakable joints, disconnected trees, the numerical margin ---------------------------------------
+# --- review of #578: breakable joints, disconnected trees, measured engine energy -------------------------------------
 
 
-def test_necessary_breakable_joint_takes_each_candidate_instance_alone():
-    # With a break threshold on `hold` the piece the cell moves with can change, so the reference candidates are the body's
-    # instances with an id at most the condition's, each alone; the most favourable one decides.
+def test_necessary_any_breakable_joint_makes_energy_checks_not_applicable():
+    # A break threshold anywhere can change the target body and its reference point. Do not guess a per-instance bound.
     proj = rig(hold_threshold=1000.0)
-    tree, mass, com = tree_numbers(proj)
-    g = load_body("earth").gravity.value
-    body = tree.body_of("br").instances
-    work = eta_by_hand() * CELL_ENERGY
-    options = []
-    for p in (i for i in body if i <= "br"):
-        need = mass[p] * g * (10_000.0 - math.dist(next(ci.position for ci in tree.instances if ci.instance == p), com[p]) - com[p][2])
-        others = math.fsum(mass[i] * g * com[i][2] for i in mass if i != p)
-        options.append((need, work + others))
-    need, available = min(options, key=lambda o: o[0] - o[1])
-    e = by_name(necessary_screen(proj, goal(reach("br", (-1.0, -1.0, 10_000.0), (1.0, 1.0, 10_001.0)))))["energy_height"]
-    assert e.required == pytest.approx(need, rel=1e-9) and e.available == pytest.approx(available, rel=1e-7)
+    screen = necessary_screen(proj, goal(
+        reach("br", (-1.0, -1.0, 10_000.0), (1.0, 1.0, 10_001.0)),
+        {"kind": "rotation", "id": "spin", "instance": "w1", "axis": "y", "angle_deg": 1.0e6},
+        {"kind": "time_limit", "id": "t", "seconds": 0.5},
+    ))
+    checks = by_name(screen)
+    for name in ("energy_height", "energy_rotation"):
+        check = checks[name]
+        assert check.status is CheckStatus.NOT_APPLICABLE
+        assert check.required is None and check.available is None
+        assert "hold" in check.reason and "끊어질 수 있는 결합" in check.reason
+    assert screen.verdict is None
 
 
 def test_necessary_reach_radius_of_a_tree_with_several_free_bodies_is_not_applicable():
@@ -308,22 +309,11 @@ def test_necessary_reach_radius_of_a_tree_with_several_free_bodies_is_not_applic
     assert i.status is CheckStatus.NOT_APPLICABLE and "이어지지 않은 몸" in i.reason
 
 
-def test_necessary_numerical_margin_keeps_a_requirement_just_over_the_bound_feasible():
-    proj = rig("moon")
-    c, lift, radius = horizontal_numbers(proj, 2.0)
-    high = load_body("moon").ground_friction.distribution.high * lift
-    x0 = c[0] + radius + high * (1.0 + NUMERIC_MARGIN.value / 2)  # over the bound, inside the margin
-    i = by_name(necessary_screen(proj, goal(reach("w1", (x0, -1.0, 0.0), (x0 + 1.0, 1.0, 1.0)), {"kind": "time_limit", "id": "t", "seconds": 2.0})))["impulse_horizontal"]
-    assert i.available < i.required < i.available * (1.0 + NUMERIC_MARGIN.value)
-    assert i.status is CheckStatus.PASSED
-    assert NUMERIC_MARGIN.badge.value == "default"
-
-
 @pytest.mark.parametrize("planet", ["earth", "moon"])
 @pytest.mark.parametrize("command", [0.0, 0.3, 1.0])
 def test_necessary_engine_energy_stays_under_the_bound(planet, command):
-    """The measurement behind NUMERIC_MARGIN's source: the rig run by MuJoCo (default time step, compiled contacts, 5 s) never
-    gains more mechanical energy (MuJoCo's kinetic + potential) than the motor-work bound min(eta x drawn, P t). Largest
+    """A measurement of the limited rig, not a general runtime proof: MuJoCo (default time step, compiled contacts, 5 s)
+    never gains more mechanical energy (kinetic + potential) than the motor-work bound min(eta x drawn, P t). Largest
     gain / bound seen: 0.429 at command 1 (earth and moon), 0.248 / 0.269 at 0.3; at command 0 the energy never rises."""
     import mujoco
     from kinetra_engine.compiler import DriveRuntime, to_mjcf
@@ -343,7 +333,7 @@ def test_necessary_engine_energy_stays_under_the_bound(planet, command):
         mujoco.mj_step(model, data)
         gain = data.energy[0] + data.energy[1] - e0
         bound = min(motor_efficiency_bound(motor) * runtime.energy["drive"], motor_peak_power(motor) * k * model.opt.timestep)
-        assert gain <= bound * (1.0 + NUMERIC_MARGIN.value) + 1e-12
+        assert gain <= bound + 1e-12
         if bound > 0.0:
             worst = max(worst, gain / bound)
     assert worst < 0.5

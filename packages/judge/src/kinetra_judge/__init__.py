@@ -29,8 +29,6 @@ from .mc import (
     wilson_ci,
 )
 from .necessary import (
-    INFEASIBLE,
-    NUMERIC_MARGIN,
     CheckStatus,
     NecessaryCheck,
     NecessaryScreen,
@@ -40,8 +38,6 @@ from .necessary import (
 )
 
 __all__ = [
-    "INFEASIBLE",
-    "NUMERIC_MARGIN",
     "Box",
     "CheckStatus",
     "Condition",
