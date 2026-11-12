@@ -299,13 +299,15 @@ class PreviewRun:
             if self._substeps > 1:
                 saved_data = mujoco.MjData(model)
                 mujoco.mj_copyData(saved_data, model, data)
+                mass_state = {name: getattr(model, name).copy() for name in ("body_mass", "body_ipos", "body_inertia", "body_iquat")}
                 checkpoint = (
                     model, tree, drive_spec, saved_data, dict(drives.supplies), dict(drives.energy), dict(thrust.supplies),
-                    dict(sensitivity._found) if sensitivity is not None else {}, len(self._events)
+                    mass_state, dict(sensitivity._found) if sensitivity is not None else {}, len(self._events)
                 )
             for substep in range(self._substeps):
-                drives.apply(data, commands_at(design, float(data.time)), self._timestep_s)
-                thrust.begin_step()
+                step_time = ((tick - 1) * self._substeps + substep) * self._timestep_s
+                drives.apply(data, commands_at(design, step_time), self._timestep_s)
+                thrust.begin_step(step_time)
                 mujoco.mj_step1(model, data)
                 drag.apply(data)
                 mujoco.mj_step2(model, data)
@@ -317,12 +319,14 @@ class PreviewRun:
                 if any(data.warning[w].number for w in _UNSTABLE) or not np.isfinite(data.qpos).all():
                     good = tick - 1
                     if checkpoint is not None:
-                        model, tree, drive_spec, data, drive_supplies, drive_energy, thrust_supplies, sensitivity_found, event_count = checkpoint
+                        model, tree, drive_spec, data, drive_supplies, drive_energy, thrust_supplies, mass_state, sensitivity_found, event_count = checkpoint
                         drives = DriveRuntime(model, drive_spec, supplies=drive_supplies)
                         drives.energy = drive_energy
                         thrust = ThrustRun(self.compiled.thrust, model, data)
                         thrust.supplies = thrust_supplies
-                        thrust.rebind(model, data)  # also restores the tank masses at the completed public tick
+                        thrust.rebind(model, data)
+                        for name, values in mass_state.items():  # exact boundary mass, COM and inertia, not a fresh full-tank load
+                            getattr(model, name)[:] = values
                         self._follow(model)
                         if sensitivity is not None:
                             sensitivity._found = sensitivity_found

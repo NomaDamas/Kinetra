@@ -295,7 +295,6 @@ def test_break_timestep_failure_after_an_internal_release_rolls_back_the_whole_p
     next(j for j in data["design"]["joints"] if j["id"] == "seat-tank")["break_threshold"] = q(1.0e-12, "N")
     next(e for e in data["design"]["schedule"]["entries"] if e["id"] == "burn")["start"] = 0.0
     preview = PreviewRun(Project.model_validate(data), run_id="x10", project_id="p", revision=1, duration_s=0.01)
-    initial_masses = preview._model.body_mass.copy()
     initial_tanks = {s.instance: s.supply.remaining for s in preview.compiled.thrust.stores}
     initial_batteries = {instance: supply.remaining for instance, supply in preview.compiled.drives.supplies}
     drives, thrusts = [], []
@@ -311,6 +310,12 @@ def test_break_timestep_failure_after_an_internal_release_rolls_back_the_whole_p
 
     monkeypatch.setattr(DriveRuntime, "__init__", capture_drive)
     monkeypatch.setattr(ThrustRun, "__init__", capture_thrust)
+    iterator = iter(preview)
+    first = next(iterator)  # __iter__ loads the initial propellant; tick 0 is the true rollback boundary
+    initial_model_state = {
+        name: getattr(preview._model, name).copy()
+        for name in ("body_mass", "body_ipos", "body_inertia", "body_iquat", "body_subtreemass", "dof_invweight0")
+    }
     original_over, original_step2 = BreakWatch.over, mujoco.mj_step2
     released = False
 
@@ -329,7 +334,7 @@ def test_break_timestep_failure_after_an_internal_release_rolls_back_the_whole_p
 
     monkeypatch.setattr(BreakWatch, "over", over_and_mark)
     monkeypatch.setattr(mujoco, "mj_step2", step2_then_fail)
-    items = list(preview)
+    items = [first, *iterator]
     frames, ended = items[:-1], items[-1]
     check_run(preview.started, frames, ended)
     assert ended.end.reason == "failed" and ended.last_tick == 0
@@ -337,7 +342,41 @@ def test_break_timestep_failure_after_an_internal_release_rolls_back_the_whole_p
     assert {i: s.remaining for i, s in drives[-1].supplies.items()} == initial_batteries
     assert set(drives[-1].energy.values()) == {0.0}
     assert {i: s.remaining for i, s in thrusts[-1].supplies.items()} == initial_tanks
-    np.testing.assert_array_equal(preview._model.body_mass, initial_masses)
+    for name, expected in initial_model_state.items():
+        np.testing.assert_array_equal(getattr(preview._model, name), expected, err_msg=name)
+
+
+@pytest.mark.parametrize("kind", ["motor", "thrust"])
+def test_break_timestep_schedule_uses_exact_absolute_substep_clock(monkeypatch, kind):
+    """At h=0.000125 s, schedule start 0.1 and end 0.102 s are exactly internal steps 800 and 816, never accumulated-time neighbours."""
+    active = []
+    if kind == "motor":
+        from test_actuator import motor_rig
+
+        project = _with(motor_rig(supply=True), joint="clip", threshold=1.0e9,
+                        entries=[_actuate("spin", "drive", 0.1, 0.102, 1.0)])
+        original = DriveRuntime.apply
+
+        def apply(self, data, commands, dt):
+            active.append("drive" in commands)
+            return original(self, data, commands, dt)
+
+        monkeypatch.setattr(DriveRuntime, "apply", apply)
+    else:
+        data = thrust(1.0e9).model_dump(mode="json")
+        next(e for e in data["design"]["schedule"]["entries"] if e["id"] == "burn")["end"] = 0.102
+        project = Project.model_validate(data)
+        original = ThrustRun.begin_step
+
+        def begin_step(self, time_s=None):
+            record = original(self, time_s)
+            active.append(record.thrusters[0].impulse > 0.0)
+            return record
+
+        monkeypatch.setattr(ThrustRun, "begin_step", begin_step)
+    list(PreviewRun(project, run_id="x10", project_id="p", revision=1, duration_s=0.104, timestep_s=MAX_TIMESTEP_S))
+    assert len(active) == 832
+    assert [active[i] for i in (799, 800, 815, 816)] == [False, True, True, False]
 
 
 # --- the three scenes ----------------------------------------------------------------------------------------------------
