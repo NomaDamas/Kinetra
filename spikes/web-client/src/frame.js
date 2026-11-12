@@ -22,3 +22,18 @@ export function readHeader(buf) {
 
 /** Float32 view of the pose block: 7 floats per body. Needs a 4-byte aligned offset (HEADER is). */
 export const poseView = (buf, n) => new Float32Array(buf, HEADER, 7 * n);
+
+// Client -> server messages (A0-02a-f). Little-endian, one WebSocket binary message each, the first u32 is the kind.
+//   control  12 B: u32 kind=1, u32 seq, u32 state   (channel 0; A0-02a had the same two fields without the kind)
+//   ack       8 B: u32 kind=2, u32 tick             (newest tick the client has drawn; cumulative: it also acks every older frame)
+// Spike encoding like the frame above, NOT the C-05b schema.
+export const MSG_CONTROL = 1, MSG_ACK = 2, CONTROL_BYTES = 12, ACK_BYTES = 8;
+export function writeControl(seq, state) { const v = new DataView(new ArrayBuffer(CONTROL_BYTES)); v.setUint32(0, MSG_CONTROL, true); v.setUint32(4, seq, true); v.setUint32(8, state, true); return v.buffer; }
+export function writeAck(tick) { const v = new DataView(new ArrayBuffer(ACK_BYTES)); v.setUint32(0, MSG_ACK, true); v.setUint32(4, tick, true); return v.buffer; }
+/** `bytes`: a Uint8Array (a Buffer from ws). Returns { kind: "control", seq, state } | { kind: "ack", tick } | null for anything else. */
+export function readClientMessage(bytes) {
+  const v = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  if (bytes.byteLength === CONTROL_BYTES && v.getUint32(0, true) === MSG_CONTROL) return { kind: "control", seq: v.getUint32(4, true), state: v.getUint32(8, true) };
+  if (bytes.byteLength === ACK_BYTES && v.getUint32(0, true) === MSG_ACK) return { kind: "ack", tick: v.getUint32(4, true) };
+  return null;
+}

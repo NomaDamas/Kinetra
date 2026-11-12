@@ -11,7 +11,7 @@
   "scripts": {
     "dev": "node src/serve.mjs",
     "measure:pose": "node measure-pose.mjs",
-    "test": "node --test --test-name-pattern=. tests/frame.test.mjs tests/poses.test.mjs tests/stats.test.mjs tests/stream.test.mjs tests/latency.test.mjs tests/replay-serve.test.mjs tests/pixelcheck.test.mjs",
+    "test": "node --test --test-name-pattern=. tests/frame.test.mjs tests/poses.test.mjs tests/stats.test.mjs tests/stream.test.mjs tests/latency.test.mjs tests/replay-serve.test.mjs tests/pixelcheck.test.mjs tests/flow.test.mjs",
     "dev:replay": "node src/replay-serve.mjs",
     "build:replay": "node build-replay.mjs",
     "measure:replay": "node measure-replay.mjs"
