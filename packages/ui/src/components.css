@@ -1,0 +1,139 @@
+/* Kinetra UI components (D0-02d). Every value is a token from tokens/tokens.css; no colour literals.
+   Boards: design/exports/design-system/source/ValueBadges.dc.html and Evidence.dc.html. */
+
+/* ---- ValueBadge (brief 4절) ---- */
+.kin-value-badge {
+  display: inline-flex;
+  align-items: center;
+  height: var(--kin-size-control-sm);
+  padding: 0;
+  border: 0;
+  background: none;
+  font: var(--kin-type-caption);
+  white-space: nowrap;
+  cursor: pointer;
+}
+.kin-value-badge:focus-visible {
+  outline: none;
+}
+.kin-value-badge__pill {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--kin-space-100);
+  height: var(--kin-size-badge);
+  box-sizing: border-box;
+  padding: 0 var(--kin-space-200);
+  border-radius: var(--kin-radius-pill);
+}
+.kin-value-badge:focus-visible .kin-value-badge__pill {
+  outline: 2px solid var(--kin-color-focus-ring);
+  outline-offset: 2px;
+}
+
+/* 시뮬: waveform, filled, no border */
+.kin-value-badge--sim {
+  color: var(--kin-color-badge-sim-text);
+}
+.kin-value-badge--sim .kin-value-badge__pill {
+  background: var(--kin-color-badge-sim-fill);
+}
+/* 인용: quotes, solid border, no fill */
+.kin-value-badge--cite {
+  color: var(--kin-color-badge-cite-text);
+}
+.kin-value-badge--cite .kin-value-badge__pill {
+  border: 1px solid var(--kin-color-badge-cite-border);
+}
+/* 기본값: empty circle, thin border, no fill */
+.kin-value-badge--default {
+  color: var(--kin-color-badge-default-text);
+}
+.kin-value-badge--default .kin-value-badge__pill {
+  border: 1px solid var(--kin-color-badge-default-border);
+}
+/* 사용자 선언: pencil, filled */
+.kin-value-badge--declared {
+  color: var(--kin-color-badge-declared-text);
+}
+.kin-value-badge--declared .kin-value-badge__pill {
+  background: var(--kin-color-badge-declared-fill);
+}
+/* 추정: approx, filled, dashed border */
+.kin-value-badge--estimate {
+  color: var(--kin-color-badge-estimate-text);
+}
+.kin-value-badge--estimate .kin-value-badge__pill {
+  background: var(--kin-color-badge-estimate-fill);
+  border: 1px dashed var(--kin-color-badge-estimate-text);
+}
+/* 오래됨 (only 시뮬): dashed border in secondary text colour */
+.kin-value-badge--sim.kin-value-badge--stale .kin-value-badge__pill {
+  border: 1px dashed var(--kin-color-text-secondary);
+}
+
+/* hover: filled kinds get a white 8% veil (board: inset shadow), outlined kinds get color.bg.hover */
+.kin-value-badge--sim:hover .kin-value-badge__pill,
+.kin-value-badge--declared:hover .kin-value-badge__pill,
+.kin-value-badge--estimate:hover .kin-value-badge__pill {
+  box-shadow: inset 0 0 0 99px rgba(255, 255, 255, 0.08);
+}
+.kin-value-badge--cite:hover .kin-value-badge__pill,
+.kin-value-badge--default:hover .kin-value-badge__pill {
+  background: var(--kin-color-bg-hover);
+}
+/* popover open (aria-expanded): 1 px ring in the badge text colour; outlined kinds take color.bg.selected */
+.kin-value-badge--sim[aria-expanded="true"] .kin-value-badge__pill,
+.kin-value-badge--declared[aria-expanded="true"] .kin-value-badge__pill {
+  box-shadow: 0 0 0 1px currentColor;
+}
+.kin-value-badge--estimate[aria-expanded="true"] .kin-value-badge__pill {
+  box-shadow:
+    0 0 0 2px var(--kin-color-badge-estimate-fill),
+    0 0 0 3px currentColor;
+}
+.kin-value-badge--cite[aria-expanded="true"] .kin-value-badge__pill,
+.kin-value-badge--default[aria-expanded="true"] .kin-value-badge__pill {
+  border-color: currentColor;
+  background: var(--kin-color-bg-selected);
+}
+
+/* ---- EvidenceLevel (brief 5절) ---- */
+.kin-evidence {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--kin-space-200);
+  height: var(--kin-size-control-md);
+  box-sizing: border-box;
+  padding: 0 var(--kin-space-300);
+  border: 1px solid;
+  border-radius: var(--kin-radius-pill);
+  font: var(--kin-type-label);
+}
+.kin-evidence__code {
+  font-family: var(--kin-font-mono);
+}
+.kin-evidence--none {
+  color: var(--kin-color-evidence-none);
+  border-color: var(--kin-color-evidence-none);
+  background: var(--kin-color-evidence-none-bg);
+}
+.kin-evidence--l0 {
+  color: var(--kin-color-evidence-l0);
+  border-color: var(--kin-color-evidence-l0);
+  background: var(--kin-color-evidence-l0-bg);
+}
+.kin-evidence--l1 {
+  color: var(--kin-color-evidence-l1);
+  border-color: var(--kin-color-evidence-l1);
+  background: var(--kin-color-evidence-l1-bg);
+}
+.kin-evidence--l2 {
+  color: var(--kin-color-evidence-l2);
+  border-color: var(--kin-color-evidence-l2);
+  background: var(--kin-color-evidence-l2-bg);
+}
+/* weak evidence (NOT_FOUND_IN_BUDGET): same L2 colour, empty fill, dashed border (brief 5.2 rule 4) */
+.kin-evidence--weak {
+  background: none;
+  border-style: dashed;
+}
