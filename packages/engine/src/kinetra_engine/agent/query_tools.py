@@ -59,7 +59,7 @@ from kinetra_core import (
 )
 from kinetra_core.conventions import ID_PATTERN
 from kinetra_engine.protocol import Hub
-from kinetra_engine.protocol.server import compile_reasons
+from kinetra_engine.protocol.server import compile_reason
 
 from ..compiler import CompileError, ThrustModel, compile_thrust
 from ..compiler.bodytree import Vec, mv, quat_of, rot, vadd
@@ -188,7 +188,7 @@ def _compile(project: Project) -> ThrustModel:
     except ProjectIncomplete as e:
         raise QueryError(tuple(e.reasons)) from e
     except CompileError as e:
-        raise QueryError(compile_reasons(e)) from e
+        raise QueryError((compile_reason(e),)) from e
 
 
 # --- the tools ---------------------------------------------------------------------------------------------------

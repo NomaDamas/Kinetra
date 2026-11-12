@@ -15,10 +15,12 @@ Mapping (`docs/architecture/collision-proxy.md`, "MuJoCo 매핑"; the values do 
 The body's mass, centre of mass and inertia come from `MassProperties` as an explicit `<inertial pos mass fullinertia>`; the
 geoms carry no density and `inertiafromgeom="false"` makes MuJoCo refuse a body without that element, so no body takes its mass
 from a collision proxy (which has filled voids in it). `fullinertia` is `Ixx Iyy Izz Ixy Ixz Iyz`, the matrix entries about the
-centre of mass in the body frame, the same signs as `MassProperties`. Angles are radians. The root has a `freejoint` named
-`ROOT_JOINT_PREFIX + <body id>`; every
+centre of mass in the body frame, the same signs as `MassProperties`. Angles are radians. A root (the tree's root, and after a
+break every released body, `breaks.release`) has a `freejoint` named `ROOT_JOINT_PREFIX + <body id>`; every
 other body has the one `hinge` or `slider` joint of its tree joint, `pos`/`axis` in the body frame, `range` the limits (the
-coordinate is 0 at the saved pose, which is also the model's reference pose). Numbers are written with `repr`, so they read
+coordinate is 0 at the saved pose, which is also the model's reference pose), or no joint element at all when its tree joint
+is a breakable `fixed` joint (MuJoCo holds a body without a joint rigidly to its parent; X-04b reads the force between them).
+Numbers are written with `repr`, so they read
 back as the same doubles; bodies, joints and geoms are in tree order. `<option>` carries the planet (W-03a, `planet.py`):
 `gravity="0 0 -g"` with g from `data/bodies`, and MuJoCo's medium off (`density="0" viscosity="0"`; the planet's air density
 is on `tree.planet` for the drag of `drag.py`, W-03b; `planet.py` says why it is not MuJoCo's medium). Time step and integrator are not
@@ -77,6 +79,8 @@ def _body(tree: BodyTree, b: Body, depth: int, drives: Drives | None, contact: C
     lines.append(f"{pad}  <inertial pos={quoteattr(_n(b.com))} mass={quoteattr(_n([b.mass]))} fullinertia={quoteattr(_n([ixx, iyy, izz, ixy, ixz, iyz]))}/>")
     if b.joint is None:
         lines.append(f"{pad}  <freejoint {_attr('name', ROOT_JOINT_PREFIX + b.id)}/>")
+    elif b.joint.kind is JointKind.FIXED:
+        pass  # held rigidly to the parent until the run releases it
     else:
         j = b.joint
         kind = "hinge" if j.kind is JointKind.HINGE else "slide"
@@ -110,7 +114,9 @@ def to_mjcf(tree: BodyTree, name: str = "kinetra", drives: Drives | None = None,
         "  <worldbody>",
         f"    <geom {_attr('name', GROUND_GEOM)} type=\"plane\" size=\"0 0 1\" {_friction(contact, contact.ground)}/>",
     ]
-    lines.extend(_body(tree, tree.root, 2, drives, contact, {g.geom: g.mu for g in contact.geoms}))
+    mu = {g.geom: g.mu for g in contact.geoms}
+    for root in tree.roots:
+        lines.extend(_body(tree, root, 2, drives, contact, mu))
     lines.append("  </worldbody>")
     if drives is not None and drives.motors:
         lines.append("  <actuator>")
