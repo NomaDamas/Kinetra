@@ -16,7 +16,7 @@ from kinetra_core import PartDef, Project, load_body, load_material_catalog
 from kinetra_engine.compiler import build_body_tree, compile_drives
 from kinetra_engine.parts import collision_proxy
 
-from kinetra_judge import INFEASIBLE, CheckStatus, Goal, motor_efficiency_bound, motor_peak_power, necessary_screen
+from kinetra_judge import INFEASIBLE, NUMERIC_MARGIN, CheckStatus, Goal, motor_efficiency_bound, motor_peak_power, necessary_screen
 
 LIBRARY = Path(__file__).parents[2] / "engine" / "src" / "kinetra_engine" / "parts" / "library"
 SRC = {"ref": "J-01b test fixture: value chosen by the test", "locator": "test_necessary.py"}
@@ -90,11 +90,13 @@ H = -min(g.center[2] - next(d.value for d in g.dimensions if d.name == "length")
 BRACKET = block_part("bracket", (0.02, 0.02, 0.02), (("mount", "motor_mount", (-0.05, 0.0, 0.0), IDENT), ("cell", "face", (0.01, 0.0, 0.0), IDENT)))
 
 
-def rig(planet="earth"):
+def rig(planet="earth", hold_threshold=None):
     instances = [instance("m1", MOTOR.id, (0.0, 0.0, H)), instance("w1", WHEEL.id, (0.0, 0.0, H + 0.014), ROT_X90, material=POM.id),
                  instance("br", "bracket", (0.05, 0.0, H), material="mat"), instance("b1", BATTERY.id, (0.06925, 0.0, H))]
     joints = [joint("axle", "hinge", ("m1", "shaft"), ("w1", "hub")), joint("hold", "fixed", ("br", "mount"), ("m1", "mount")),
               joint("clip", "fixed", ("br", "cell"), ("b1", "side-xn"))]
+    if hold_threshold is not None:
+        joints[1]["break_threshold"] = q(hold_threshold, "N")
     act = [{"id": "drive", "kind": "motor", "instance": "m1", "joint": "axle", "supply": "b1"}]
     return project([MOTOR, WHEEL, BATTERY, BRACKET], instances, joints, act, [POM, MAT], planet)
 
@@ -270,3 +272,78 @@ def test_necessary_unapplied_project_assumptions_are_labelled():
     data["assumptions"] = {"assumptions": [{"key": "vehicle_mass", "label": "Vehicle mass", "value": q(1.0, "kg"), "confidence": "low"}]}
     screen = necessary_screen(Project.model_validate(data), goal(reach("m1", (-1.0, -1.0, 0.0), (1.0, 1.0, 1.0))))
     assert "미적용: 가정 vehicle_mass는 모델에 바인딩되지 않아 흔들지 않았다" in screen.labels
+
+
+# --- review of #578: breakable joints, disconnected trees, the numerical margin ---------------------------------------
+
+
+def test_necessary_breakable_joint_takes_each_candidate_instance_alone():
+    # With a break threshold on `hold` the piece the cell moves with can change, so the reference candidates are the body's
+    # instances with an id at most the condition's, each alone; the most favourable one decides.
+    proj = rig(hold_threshold=1000.0)
+    tree, mass, com = tree_numbers(proj)
+    g = load_body("earth").gravity.value
+    body = tree.body_of("br").instances
+    work = eta_by_hand() * CELL_ENERGY
+    options = []
+    for p in (i for i in body if i <= "br"):
+        need = mass[p] * g * (10_000.0 - math.dist(next(ci.position for ci in tree.instances if ci.instance == p), com[p]) - com[p][2])
+        others = math.fsum(mass[i] * g * com[i][2] for i in mass if i != p)
+        options.append((need, work + others))
+    need, available = min(options, key=lambda o: o[0] - o[1])
+    e = by_name(necessary_screen(proj, goal(reach("br", (-1.0, -1.0, 10_000.0), (1.0, 1.0, 10_001.0)))))["energy_height"]
+    assert e.required == pytest.approx(need, rel=1e-9) and e.available == pytest.approx(available, rel=1e-7)
+
+
+def test_necessary_reach_radius_of_a_tree_with_several_free_bodies_is_not_applicable():
+    from kinetra_engine.compiler import release
+
+    from kinetra_judge import necessary
+
+    proj = rig("moon")
+    d = necessary._Design(proj)
+    d.tree = release(d.tree, ["axle"])  # the wheel is a free body no joint chain reaches
+    c = goal(reach("w1", (50.0, -1.0, 0.0), (51.0, 1.0, 1.0)), {"kind": "time_limit", "id": "t", "seconds": 2.0}).conditions[0]
+    i = necessary._impulse_horizontal(c, d, 2.0)
+    assert i.status is CheckStatus.NOT_APPLICABLE and "이어지지 않은 몸" in i.reason
+
+
+def test_necessary_numerical_margin_keeps_a_requirement_just_over_the_bound_feasible():
+    proj = rig("moon")
+    c, lift, radius = horizontal_numbers(proj, 2.0)
+    high = load_body("moon").ground_friction.distribution.high * lift
+    x0 = c[0] + radius + high * (1.0 + NUMERIC_MARGIN.value / 2)  # over the bound, inside the margin
+    i = by_name(necessary_screen(proj, goal(reach("w1", (x0, -1.0, 0.0), (x0 + 1.0, 1.0, 1.0)), {"kind": "time_limit", "id": "t", "seconds": 2.0})))["impulse_horizontal"]
+    assert i.available < i.required < i.available * (1.0 + NUMERIC_MARGIN.value)
+    assert i.status is CheckStatus.PASSED
+    assert NUMERIC_MARGIN.badge.value == "default"
+
+
+@pytest.mark.parametrize("planet", ["earth", "moon"])
+@pytest.mark.parametrize("command", [0.0, 0.3, 1.0])
+def test_necessary_engine_energy_stays_under_the_bound(planet, command):
+    """The measurement behind NUMERIC_MARGIN's source: the rig run by MuJoCo (default time step, compiled contacts, 5 s) never
+    gains more mechanical energy (MuJoCo's kinetic + potential) than the motor-work bound min(eta x drawn, P t). Largest
+    gain / bound seen: 0.429 at command 1 (earth and moon), 0.248 / 0.269 at 0.3; at command 0 the energy never rises."""
+    import mujoco
+    from kinetra_engine.compiler import DriveRuntime, to_mjcf
+
+    tree = build_body_tree(rig(planet))
+    drives = compile_drives(tree)
+    model = mujoco.MjModel.from_xml_string(to_mjcf(tree, drives=drives))
+    model.opt.enableflags |= mujoco.mjtEnableBit.mjENBL_ENERGY
+    data = mujoco.MjData(model)
+    runtime = DriveRuntime(model, drives)
+    mujoco.mj_forward(model, data)
+    e0 = data.energy[0] + data.energy[1]
+    motor = drives.motors[0]
+    worst = 0.0
+    for k in range(1, 2501):
+        runtime.apply(data, {"drive": command}, model.opt.timestep)
+        mujoco.mj_step(model, data)
+        gain = data.energy[0] + data.energy[1] - e0
+        bound = min(motor_efficiency_bound(motor) * runtime.energy["drive"], motor_peak_power(motor) * k * model.opt.timestep)
+        assert gain <= bound * (1.0 + NUMERIC_MARGIN.value) + 1e-12
+        if bound > 0.0:
+            worst = max(worst, gain / bound)
+    assert worst < 0.5
