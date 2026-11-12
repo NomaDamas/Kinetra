@@ -449,7 +449,7 @@
     },
     "AddControlEntry": {
       "additionalProperties": false,
-      "description": "Add a schedule entry. `index` is only where it goes in the list; the entry is known by its `id`.",
+      "description": "Add a schedule entry (an actuate or a separate entry, X-08). `index` is only where it goes in the list; the entry\nis known by its `id`.",
       "properties": {
         "type": {
           "const": "add_control_entry",
@@ -457,7 +457,22 @@
           "type": "string"
         },
         "entry": {
-          "$ref": "#/$defs/ActuateEntry"
+          "discriminator": {
+            "mapping": {
+              "actuate": "#/$defs/ActuateEntry",
+              "separate": "#/$defs/SeparateEntry"
+            },
+            "propertyName": "type"
+          },
+          "oneOf": [
+            {
+              "$ref": "#/$defs/ActuateEntry"
+            },
+            {
+              "$ref": "#/$defs/SeparateEntry"
+            }
+          ],
+          "title": "Entry"
         },
         "index": {
           "anyOf": [
@@ -2148,7 +2163,7 @@
     },
     "ReplaceControlEntry": {
       "additionalProperties": false,
-      "description": "Replace the schedule entry with the same id (`entry.id`), in place.",
+      "description": "Replace the schedule entry with the same id (`entry.id`), in place. The new entry may be of the other type.",
       "properties": {
         "type": {
           "const": "replace_control_entry",
@@ -2156,7 +2171,22 @@
           "type": "string"
         },
         "entry": {
-          "$ref": "#/$defs/ActuateEntry"
+          "discriminator": {
+            "mapping": {
+              "actuate": "#/$defs/ActuateEntry",
+              "separate": "#/$defs/SeparateEntry"
+            },
+            "propertyName": "type"
+          },
+          "oneOf": [
+            {
+              "$ref": "#/$defs/ActuateEntry"
+            },
+            {
+              "$ref": "#/$defs/SeparateEntry"
+            }
+          ],
+          "title": "Entry"
         }
       },
       "required": [
@@ -2281,6 +2311,48 @@
         "planet"
       ],
       "title": "SelectPlanet",
+      "type": "object"
+    },
+    "SeparateEntry": {
+      "additionalProperties": false,
+      "description": "Release separator instance `separator` at `at` seconds of simulated time (X-08, `docs/architecture/separation.md`).\n\nOne entry of the same time-axis schedule as `ActuateEntry` (no separate staging list); the `type` tag tells them apart.\n`separator` is the id of an instance of a `separator` part (B-15). A separation cannot be undone, so the schedule\nholds at most one per separator; that rule (and two at one time) is the compiler's (`separation_twice`,\n`separation_conflict`, X-01d), not this model's. One badge and source cover the entry.",
+      "properties": {
+        "badge": {
+          "$ref": "#/$defs/Badge"
+        },
+        "source": {
+          "$ref": "#/$defs/Source"
+        },
+        "type": {
+          "const": "separate",
+          "title": "Type",
+          "type": "string"
+        },
+        "id": {
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "separator": {
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+          "title": "Separator",
+          "type": "string"
+        },
+        "at": {
+          "minimum": 0,
+          "title": "At",
+          "type": "number"
+        }
+      },
+      "required": [
+        "badge",
+        "source",
+        "type",
+        "id",
+        "separator",
+        "at"
+      ],
+      "title": "SeparateEntry",
       "type": "object"
     },
     "SetAssumption": {

@@ -157,7 +157,7 @@ def _curve_impulse(th: Thruster, x: float) -> float:
 
 
 def _openings(design, actuator: str) -> tuple[Opening, ...]:
-    entries = sorted((e for e in design.schedule.entries if e.actuator == actuator), key=lambda e: (e.start, e.id))
+    entries = sorted((e for e in design.schedule.actuations if e.actuator == actuator), key=lambda e: (e.start, e.id))
     out: list[Opening] = []
     for e in entries:
         if e.command == 0.0:

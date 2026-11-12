@@ -6,7 +6,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
-import type { Actuator, Badge, Project, Quantity, Unit } from "../types.ts";
+import type { ActuateEntry, Actuator, Badge, Project, Quantity, Unit } from "../types.ts";
 
 const here = (p: string) => fileURLToPath(new URL(p, import.meta.url));
 
@@ -62,7 +62,9 @@ test("the rocket-car skeleton reads: a scheduled thruster that drives no joint",
   assert.equal(thrusters.length, 1);
   const [thruster] = thrusters;
   assert.ok(thruster && (thruster.joint ?? null) === null);
-  const entries = (p.design?.schedule?.entries ?? []).filter((e) => e.actuator === thruster.id);
+  const entries = (p.design?.schedule?.entries ?? []).filter(
+    (e): e is ActuateEntry => e.type === "actuate" && e.actuator === thruster.id, // narrowed by the `type` tag (X-08)
+  );
   assert.ok(entries.length >= 1);
   for (const e of entries) assert.ok(e.command >= 0 && e.command <= 1 && e.start < e.end);
   assert.equal(p.world.planet, "moon");

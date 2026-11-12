@@ -2,16 +2,17 @@
 
 What is modelled: the part is a body of declared mass and its own dimensions. Two held parts are joined to its two faces,
 `face_a` and `face_b`, by fixed joints (`DesignSpec` rejects any other joint kind at a separator). When the release event
-happens (X-08, not here) the two joints let go and each side receives the **declared separation impulse** `J` [N*s]: equal in
-size, opposite in direction (momentum is conserved), along the outward normal of the face it was joined to. `J = 0` is allowed:
-the joints let go and nothing pushes.
+happens (X-08, `compiler/separation.py`) the joint at `face_b` lets go (the separator stays with the side of `face_a`) and each
+side receives the **declared separation impulse** `J` [N*s]: equal in size, opposite in direction (momentum is conserved), along
+the outward normal of its face. `J = 0` is allowed: the joint lets go and nothing pushes.
 
 What is not: what makes the push (an energy source of any kind), how it is released, its timing or shape in time, shock and
 vibration, the hardware that holds the parts. The part has no field for any of them. The impulse is the user's number or the
 definition's placeholder (badge `declared` or `default`), and the assumption table shows it as the simplified model
 "단순화 모델: 선언 분리 충격량" (`separation_assumption`).
 
-The release itself, the impulse acting on the two bodies and the velocity that follows are X-08. This module reads the part.
+The release itself, the impulse acting on the two bodies and the velocity that follows are X-08's (`compiler/separation.py`,
+`docs/architecture/separation.md`). This module reads the part.
 """
 
 from __future__ import annotations

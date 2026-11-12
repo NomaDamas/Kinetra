@@ -433,15 +433,23 @@ def test_a_pose_is_a_named_position_and_a_named_quaternion_in_project_order():
 def test_events_validate_by_kind_and_carry_si_units():
     contact = {"kind": "contact", "tick": 3, "phase": "begin", "body": "wheel-fl", "other": {"kind": "prop", "id": "prop-a"},
                "force": {"value": 12.5, "unit": "N"}}
-    brk = {"kind": "break", "tick": 3, "joint": "axle-fl", "load": {"value": 150.0, "unit": "N"}, "threshold": {"value": 120.0, "unit": "N"}}
+    brk = {"kind": "break", "tick": 3, "reason": "over_threshold", "joint": "axle-fl", "load": {"value": 150.0, "unit": "N"},
+           "threshold": {"value": 120.0, "unit": "N"}}
+    sep = {"kind": "separation", "tick": 3, "reason": "intended_separation", "separator": "sep-1", "joint": "hold-b", "entry": None,
+           "impulse": {"value": 1.0, "unit": "N*s"}}
     met = {"kind": "condition_met", "tick": 3, "condition": "landed"}
-    for event in (contact, brk, met):
+    for event in (contact, brk, sep, met):
         assert schema_ok("Frame", frame_with_event(event))
         assert Frame.model_validate(frame_with_event(event)).events[0].kind == event["kind"]
     wrong_unit = {**brk, "load": {"value": 150.0, "unit": "kg"}}
-    assert not schema_ok("Frame", frame_with_event(wrong_unit))
-    with pytest.raises(ValidationError):
-        Frame.model_validate(frame_with_event(wrong_unit))
+    # a release says why (X-08): a break without its reason, or a separation that claims to be over a threshold, is refused
+    no_reason = {k: v for k, v in brk.items() if k != "reason"}
+    wrong_reason = {**sep, "reason": "over_threshold"}
+    impulse_in_n = {**sep, "impulse": {"value": 1.0, "unit": "N"}}
+    for bad in (wrong_unit, no_reason, wrong_reason, impulse_in_n):
+        assert not schema_ok("Frame", frame_with_event(bad))
+        with pytest.raises(ValidationError):
+            Frame.model_validate(frame_with_event(bad))
     unknown_kind = {"kind": "explosion", "tick": 3}
     assert not schema_ok("Frame", frame_with_event(unknown_kind))
 

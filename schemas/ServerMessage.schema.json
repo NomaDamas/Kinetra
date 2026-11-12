@@ -258,7 +258,7 @@
     },
     "AddControlEntry": {
       "additionalProperties": false,
-      "description": "Add a schedule entry. `index` is only where it goes in the list; the entry is known by its `id`.",
+      "description": "Add a schedule entry (an actuate or a separate entry, X-08). `index` is only where it goes in the list; the entry\nis known by its `id`.",
       "properties": {
         "type": {
           "const": "add_control_entry",
@@ -266,7 +266,22 @@
           "type": "string"
         },
         "entry": {
-          "$ref": "#/$defs/ActuateEntry"
+          "discriminator": {
+            "mapping": {
+              "actuate": "#/$defs/ActuateEntry",
+              "separate": "#/$defs/SeparateEntry"
+            },
+            "propertyName": "type"
+          },
+          "oneOf": [
+            {
+              "$ref": "#/$defs/ActuateEntry"
+            },
+            {
+              "$ref": "#/$defs/SeparateEntry"
+            }
+          ],
+          "title": "Entry"
         },
         "index": {
           "anyOf": [
@@ -850,7 +865,7 @@
       "type": "object"
     },
     "BreakEvent": {
-      "description": "Joint `joint` released: the load on it reached its break threshold (both in N; plan 4.6, a simplified model).",
+      "description": "Joint `joint` released because the load on it went over its break threshold (both in N; plan 4.6, a simplified\nmodel). `reason` is the release's cause, `over_threshold` (\"임계 초과\"): only this one is a break (X-08).",
       "properties": {
         "kind": {
           "const": "break",
@@ -862,6 +877,11 @@
           "minimum": 0,
           "title": "Tick",
           "type": "integer"
+        },
+        "reason": {
+          "const": "over_threshold",
+          "title": "Reason",
+          "type": "string"
         },
         "joint": {
           "pattern": "^[a-z][a-z0-9_-]{0,63}$",
@@ -878,6 +898,7 @@
       "required": [
         "kind",
         "tick",
+        "reason",
         "joint",
         "load",
         "threshold"
@@ -1245,7 +1266,21 @@
         "entries": {
           "default": [],
           "items": {
-            "$ref": "#/$defs/ActuateEntry"
+            "discriminator": {
+              "mapping": {
+                "actuate": "#/$defs/ActuateEntry",
+                "separate": "#/$defs/SeparateEntry"
+              },
+              "propertyName": "type"
+            },
+            "oneOf": [
+              {
+                "$ref": "#/$defs/ActuateEntry"
+              },
+              {
+                "$ref": "#/$defs/SeparateEntry"
+              }
+            ]
           },
           "title": "Entries",
           "type": "array"
@@ -1603,7 +1638,8 @@
               "mapping": {
                 "break": "#/$defs/BreakEvent",
                 "condition_met": "#/$defs/ConditionMetEvent",
-                "contact": "#/$defs/ContactEvent"
+                "contact": "#/$defs/ContactEvent",
+                "separation": "#/$defs/SeparationEvent"
               },
               "propertyName": "kind"
             },
@@ -1613,6 +1649,9 @@
               },
               {
                 "$ref": "#/$defs/BreakEvent"
+              },
+              {
+                "$ref": "#/$defs/SeparationEvent"
               },
               {
                 "$ref": "#/$defs/ConditionMetEvent"
@@ -1698,6 +1737,27 @@
         "protocol"
       ],
       "title": "Hello",
+      "type": "object"
+    },
+    "ImpulseNs": {
+      "description": "An impulse in newton-seconds (`unit` is always `N*s`).",
+      "properties": {
+        "value": {
+          "minimum": 0,
+          "title": "Value",
+          "type": "number"
+        },
+        "unit": {
+          "const": "N*s",
+          "title": "Unit",
+          "type": "string"
+        }
+      },
+      "required": [
+        "value",
+        "unit"
+      ],
+      "title": "ImpulseNs",
       "type": "object"
     },
     "Incline": {
@@ -3081,7 +3141,7 @@
     },
     "ReplaceControlEntry": {
       "additionalProperties": false,
-      "description": "Replace the schedule entry with the same id (`entry.id`), in place.",
+      "description": "Replace the schedule entry with the same id (`entry.id`), in place. The new entry may be of the other type.",
       "properties": {
         "type": {
           "const": "replace_control_entry",
@@ -3089,7 +3149,22 @@
           "type": "string"
         },
         "entry": {
-          "$ref": "#/$defs/ActuateEntry"
+          "discriminator": {
+            "mapping": {
+              "actuate": "#/$defs/ActuateEntry",
+              "separate": "#/$defs/SeparateEntry"
+            },
+            "propertyName": "type"
+          },
+          "oneOf": [
+            {
+              "$ref": "#/$defs/ActuateEntry"
+            },
+            {
+              "$ref": "#/$defs/SeparateEntry"
+            }
+          ],
+          "title": "Entry"
         }
       },
       "required": [
@@ -3489,6 +3564,105 @@
         "planet"
       ],
       "title": "SelectPlanet",
+      "type": "object"
+    },
+    "SeparateEntry": {
+      "additionalProperties": false,
+      "description": "Release separator instance `separator` at `at` seconds of simulated time (X-08, `docs/architecture/separation.md`).\n\nOne entry of the same time-axis schedule as `ActuateEntry` (no separate staging list); the `type` tag tells them apart.\n`separator` is the id of an instance of a `separator` part (B-15). A separation cannot be undone, so the schedule\nholds at most one per separator; that rule (and two at one time) is the compiler's (`separation_twice`,\n`separation_conflict`, X-01d), not this model's. One badge and source cover the entry.",
+      "properties": {
+        "badge": {
+          "$ref": "#/$defs/Badge"
+        },
+        "source": {
+          "$ref": "#/$defs/Source"
+        },
+        "type": {
+          "const": "separate",
+          "title": "Type",
+          "type": "string"
+        },
+        "id": {
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "separator": {
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+          "title": "Separator",
+          "type": "string"
+        },
+        "at": {
+          "minimum": 0,
+          "title": "At",
+          "type": "number"
+        }
+      },
+      "required": [
+        "badge",
+        "source",
+        "type",
+        "id",
+        "separator",
+        "at"
+      ],
+      "title": "SeparateEntry",
+      "type": "object"
+    },
+    "SeparationEvent": {
+      "description": "Separator instance `separator` let go of joint `joint` on purpose (X-08): `reason` is `intended_separation` (\"의도한\n분리\"), never a break. Each side received the declared separation `impulse`, equal and opposite. `entry` is the schedule\nentry that asked for it, `null` for a manual request during the run. `tick` is the first tick whose state is apart.",
+      "properties": {
+        "kind": {
+          "const": "separation",
+          "title": "Kind",
+          "type": "string"
+        },
+        "tick": {
+          "maximum": 4294967295,
+          "minimum": 0,
+          "title": "Tick",
+          "type": "integer"
+        },
+        "reason": {
+          "const": "intended_separation",
+          "title": "Reason",
+          "type": "string"
+        },
+        "separator": {
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+          "title": "Separator",
+          "type": "string"
+        },
+        "joint": {
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+          "title": "Joint",
+          "type": "string"
+        },
+        "entry": {
+          "anyOf": [
+            {
+              "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Entry"
+        },
+        "impulse": {
+          "$ref": "#/$defs/ImpulseNs"
+        }
+      },
+      "required": [
+        "kind",
+        "tick",
+        "reason",
+        "separator",
+        "joint",
+        "entry",
+        "impulse"
+      ],
+      "title": "SeparationEvent",
       "type": "object"
     },
     "SetAssumption": {

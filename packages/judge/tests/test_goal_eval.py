@@ -56,7 +56,8 @@ def touchdown_tick(vz0: float) -> int:
     return math.ceil(2.0 * vz0 / G / DT)
 
 
-def trajectory(vx: float, vz0: float, turns: float, break_tick: int | None = None, contacts: bool = True, last: int = LAST, reason: str = "completed", every: int = EVERY):
+def trajectory(vx: float, vz0: float, turns: float, break_tick: int | None = None, contacts: bool = True, last: int = LAST, reason: str = "completed", every: int = EVERY,
+               separation_tick: int | None = None):
     """The run stream (`RunStarted`, frames, `RunEnded`) of the analytic jump described in the module docstring."""
     down = touchdown_tick(vz0)
     started = RunStarted.model_validate(
@@ -72,7 +73,10 @@ def trajectory(vx: float, vz0: float, turns: float, break_tick: int | None = Non
         events += [(0, "begin"), (1, "end"), (down, "begin")]
         events = [{"kind": "contact", "tick": t, "phase": p, "body": "wheel-1", "other": {"kind": "ground"}} for t, p in events]
     if break_tick is not None:
-        events.append({"kind": "break", "tick": break_tick, "joint": "mount", "load": {"value": 2.0, "unit": "N"}, "threshold": {"value": 1.0, "unit": "N"}})
+        events.append({"kind": "break", "tick": break_tick, "reason": "over_threshold", "joint": "mount", "load": {"value": 2.0, "unit": "N"}, "threshold": {"value": 1.0, "unit": "N"}})
+    if separation_tick is not None:  # X-08: the same joint let go on purpose
+        events.append({"kind": "separation", "tick": separation_tick, "reason": "intended_separation", "separator": "car", "joint": "mount",
+                       "entry": "stage", "impulse": {"value": 1.0, "unit": "N*s"}})
     ticks = [*range(0, last + 1, every), *([last] if last % every else [])]
     frames, previous = [], -1
     for tick in ticks:
@@ -126,6 +130,12 @@ def test_goal_eval_success_trajectory_meets_every_condition():
     assert (c["mount-holds"].status, c["mount-holds"].tick) == (Status.MET, LAST)  # no break, decided at the end
     assert result.tick == LAST
     assert result.labels[0] == "1회 실행의 조건 평가이며 판정이 아닙니다"
+
+
+def test_goal_eval_an_intended_separation_is_not_a_break():
+    """X-08: a joint released by a separation (`separation`, reason `intended_separation`) does not fail "no break"."""
+    result = evaluate_goal(Goal.model_validate(GOAL), *trajectory(vx=1.5, vz0=4.0, turns=1.0, separation_tick=200))
+    assert (by_id(result)["mount-holds"].status, by_id(result)["mount-holds"].tick) == (Status.MET, LAST)
 
 
 def test_goal_eval_failure_trajectory_fails_each_condition_at_its_tick():

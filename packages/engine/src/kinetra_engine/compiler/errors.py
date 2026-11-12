@@ -21,6 +21,9 @@ a project with a placeholder is refused before anything is read, by `require_com
 | `spring_joint` | a spring-damper instance is not at exactly one slider, or a slider has one at both ends (`compile_drives`, X-01b) |
 | `motor_joint` | a motor actuator drives a slider: its curve is torque against angular speed (`compile_drives`, X-01b) |
 | `no_current` | a motor that draws from a battery is a part without the specs `no_load_current` and `stall_current` (`compile_drives`, X-01b) |
+| `separation_unjoined` | a separation entry names a separator with nothing joined to its `face_b`: no joint to release (X-08) |
+| `separation_conflict` | two separation entries release one separator at the same time (X-08) |
+| `separation_twice` | a second separation entry releases one separator again later: a separation cannot be undone (X-08) |
 """
 
 from __future__ import annotations
@@ -43,6 +46,9 @@ class CompileErrorCode(StrEnum):
     SPRING_JOINT = "spring_joint"
     MOTOR_JOINT = "motor_joint"
     NO_CURRENT = "no_current"
+    SEPARATION_UNJOINED = "separation_unjoined"
+    SEPARATION_CONFLICT = "separation_conflict"
+    SEPARATION_TWICE = "separation_twice"
 
 
 class CompileError(ValueError):

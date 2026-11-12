@@ -41,6 +41,7 @@ from typing import Any
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
 from kinetra_core import (
+    ActuateEntry,
     Badge,
     BreakEvent,
     ConditionMetEvent,
@@ -54,6 +55,7 @@ from kinetra_core import (
     RefKind,
     RunEnded,
     RunStarted,
+    SeparationEvent,
     check_run,
     project_hash,
 )
@@ -236,7 +238,9 @@ def list_parts(project: Project) -> dict[str, Any]:
         "joints": joints,
         "actuators": [{"id": a.id, "kind": a.kind.value, "instance": a.instance, "joint": a.joint, "supply": a.supply} for a in design.actuators],
         "schedule": [
-            {"id": e.id, "actuator": e.actuator, "start_s": e.start, "end_s": e.end, "command": e.command, "badge": e.badge.value}
+            {"type": "actuate", "id": e.id, "actuator": e.actuator, "start_s": e.start, "end_s": e.end, "command": e.command, "badge": e.badge.value}
+            if isinstance(e, ActuateEntry)
+            else {"type": "separate", "id": e.id, "separator": e.separator, "at_s": e.at, "badge": e.badge.value}
             for e in design.schedule.entries
         ],
     }
@@ -397,6 +401,7 @@ def summarize_rollout(started: RunStarted, frames: Iterable[Frame], ended: RunEn
         "bodies": bodies,
         "events": counts,
         "breaks": [e.model_dump(mode="json") for e in events if isinstance(e, BreakEvent)],
+        "separations": [e.model_dump(mode="json") for e in events if isinstance(e, SeparationEvent)],
         "conditions_met": [e.model_dump(mode="json") for e in events if isinstance(e, ConditionMetEvent)],
         "contacts_begun": sum(1 for e in events if isinstance(e, ContactEvent) and e.phase == "begin"),
     }

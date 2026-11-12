@@ -51,8 +51,20 @@ forces and masses are still there) a `BreakWatch` reads the load on every joint 
 (`compiler/breaks.py`). The joints over their threshold are released in joint id order: the tree loses them (`release`),
 the model is compiled again from it with the drives of the joints left, and the state of the tick is carried into it
 (`carry_state`); the motors, the tanks, the drag and the frames follow the new model by name. Each released
-joint is a `break` event of that tick (`joint`, `load`, `threshold`, in N), carried by the next frame (the frame of the
-tick itself when one is sent there). After a break the trajectory hash goes on over the new model's generalized positions.
+joint is a `break` event of that tick (`reason` `over_threshold`, `joint`, `load`, `threshold`, in N), carried by the next
+frame (the frame of the tick itself when one is sent there). After a break the trajectory hash goes on over the new model's
+generalized positions.
+
+**Separations (X-08).** Before the step from `t = (tick - 1) * timestep_s`, every schedule `separate` entry with `at <= t` not
+run yet, then every manual request (`PreviewRun.separate`, made between two frames), releases its separator's `face_b` joint
+by the same path as a break (`release`, compile again, `carry_state`, the runtimes follow), and `push_apart` gives the two
+sides the declared impulse (`compiler/separation.py`). Each is a `separation` event of that tick (`reason`
+`intended_separation`, `separator`, `joint`, `entry` or `None` for a manual one, `impulse` in N*s), never a `break`. A
+separator is let go of once: a second request is refused (`separate`) or, for a schedule entry after a manual request, does
+nothing; a separator whose joint broke before its time has nothing left to release and gives no event. The side that came
+away keeps running in the same world to the end, with its thrusters and motors on their own schedule entries.
+A released body is a free body of the run until the end tick (X-13): no rule removes a piece or takes it out of the
+physics by distance, count or time, every frame carries its pose, and the hash covers its free joint.
 Contacts and met conditions are not in the stream yet; their leaves add them.
 """
 
@@ -83,12 +95,14 @@ from kinetra_core.frames import MAX_TICK
 
 from ..compiler import (
     BREAK_LABEL,
+    SEPARATION_LABEL,
     BodyTree,
     BreakWatch,
     Drag,
     DragRuntime,
     DriveRuntime,
     Drives,
+    SeparationSchedule,
     ThrustModel,
     ThrustRun,
     breakable_joints,
@@ -97,7 +111,9 @@ from ..compiler import (
     compile_drives,
     compile_thrust,
     model_labels,
+    push_apart,
     release,
+    separator_joints,
     to_mjcf,
 )
 from ..parts import PartCache
@@ -137,7 +153,7 @@ def compile_project(project: Project, cache: PartCache | None = None) -> Compile
 
 def commands_at(design: DesignSpec, t: float) -> dict[str, float]:
     """The command of every actuator that has a schedule entry covering simulated time `t` (`start <= t < end`)."""
-    return {e.actuator: e.command for e in design.schedule.entries if e.start <= t < e.end}
+    return {e.actuator: e.command for e in design.schedule.actuations if e.start <= t < e.end}
 
 
 def default_frame_every_ticks(timestep_s: float) -> int:
@@ -206,6 +222,8 @@ class PreviewRun:
         self._body_ids = [b.id for b in bodies]
         self._follow(model)
         breakable = [BREAK_LABEL] if breakable_joints(compiled.tree) else []
+        self._separators = separator_joints(compiled.tree.design)
+        separable = [SEPARATION_LABEL] if self._separators else []
         self.started = RunStarted.model_validate(
             {
                 "type": "run_started",
@@ -220,12 +238,33 @@ class PreviewRun:
                 "timestep_s": timestep_s,
                 "frame_every_ticks": frame_every_ticks or default_frame_every_ticks(timestep_s),
                 "bodies": [{"id": b.id, "instances": list(b.instances)} for b in bodies],
-                "model_labels": [label.text for label in model_labels(compiled.tree)] + list(environment_labels(project, model)) + breakable,
+                "model_labels": [label.text for label in model_labels(compiled.tree)]
+                + list(environment_labels(project, model))
+                + breakable
+                + separable,
                 "platform": tag,
             }
         )
         self._iterated = False
         self._events: list[dict] = []  # events since the last frame made; the next frame carries them
+        self._requested: list[str] = []  # manual separations asked since the last step (`separate`)
+        self._separated: set[str] = set()  # separators let go of (or asked to) during the run: never again
+
+    @property
+    def separators(self) -> tuple[str, ...]:
+        """The separator instances this run can separate (each holds a part at its `face_b`), in instance id order."""
+        return tuple(self._separators)
+
+    def separate(self, separator: str) -> None:
+        """Manual control (`client-adapter.md` I5): separate `separator` at the start of the next step, by the same path as a
+        schedule entry (the event's `entry` is `None`). Between two frames of the iteration, this is the step right after the
+        last frame read. Raises `ValueError` for an instance that is not one of `separators`, and for one already separated
+        or asked to: a separation cannot be undone."""
+        if separator not in self._separators:
+            raise ValueError(f"{separator!r} is not a separator holding a part at its face_b; the run's separators are {list(self._separators)}")
+        if separator in self._separated or separator in self._requested:
+            raise ValueError(f"separator {separator!r} is separated already: a separation cannot be undone")
+        self._requested.append(separator)
 
     def _follow(self, model: mujoco.MjModel) -> None:
         """Read the frames' poses from `model` (the compiled one, or the one compiled again after a break)."""
@@ -266,7 +305,23 @@ class PreviewRun:
         thrust = ThrustRun(self.compiled.thrust, model, data)  # puts the tanks' propellant on their bodies
         drag = DragRuntime(model, self.compiled.drag)
         watch = BreakWatch(tree, model)
+        schedule = SeparationSchedule(tree.design)
         design, dt = tree.design, run.timestep_s
+
+        def released(joints: list[str]) -> None:
+            """X-04b's release: `joints` leave the tree, the model is compiled again, the state is carried over and every
+            runtime follows the new model by name."""
+            nonlocal tree, drive_spec, model, data, drag
+            tree, drive_spec = release(tree, joints), drive_spec.without_joints(joints)
+            new_model = mujoco.MjModel.from_xml_string(to_mjcf(tree, drives=drive_spec))
+            data = carry_state(model, data, new_model)
+            model = new_model
+            drives.rebind(model, drive_spec)
+            thrust.rebind(model, data)
+            drag = DragRuntime(model, self.compiled.drag)  # holds nothing between steps: the same bodies, found by name
+            watch.bind(tree, model)
+            self._follow(model)
+
         trajectory = hashlib.sha256(data.qpos.tobytes())
         last_good = data.qpos.copy()
         frame = self._frame(data, 0)
@@ -274,6 +329,33 @@ class PreviewRun:
         yield frame
         sent = 0
         for tick in range(1, self.end_tick + 1):
+            asked = [(e.separator, e.id) for e in schedule.due((tick - 1) * dt)] + [(s, None) for s in self._requested]
+            self._requested.clear()
+            held = {b.joint.id for b in tree.bodies if b.joint is not None}
+            going = []
+            for separator, entry in asked:
+                if separator in self._separated:
+                    continue  # apart already (a manual request before its entry, or the other way round): irreversible
+                self._separated.add(separator)
+                sep = self._separators[separator]
+                if sep.joint in held:  # else a break released it first: nothing left to release or push
+                    going.append((sep, entry))
+            if going:
+                released([sep.joint for sep, _ in going])
+                for sep, entry in going:
+                    push_apart(model, data, tree, sep)
+                    self._events.append(
+                        {
+                            "kind": "separation",
+                            "tick": tick,
+                            "reason": "intended_separation",
+                            "separator": sep.separator,
+                            "joint": sep.joint,
+                            "entry": entry,
+                            "impulse": {"value": sep.impulse, "unit": "N*s"},
+                        }
+                    )
+                last_good = data.qpos.copy()  # the new model's coordinates
             np.copyto(last_good, data.qpos)
             drives.apply(data, commands_at(design, (tick - 1) * dt), dt)
             thrust.begin_step()
@@ -293,19 +375,17 @@ class PreviewRun:
                 yield RunEnded.model_validate({"type": "run_ended", "run_id": run.run_id, "last_tick": good, "end": {"reason": "failed"}})
                 return
             if over:
-                broken = [o.joint for o in over]
-                tree, drive_spec = release(tree, broken), drive_spec.without_joints(broken)
-                released = mujoco.MjModel.from_xml_string(to_mjcf(tree, drives=drive_spec))
-                data = carry_state(model, data, released)
-                model = released
-                drives.rebind(model, drive_spec)
-                thrust.rebind(model, data)
-                drag = DragRuntime(model, self.compiled.drag)  # holds nothing between steps: the same bodies, found by name
-                watch.bind(tree, model)
-                self._follow(model)
+                released([o.joint for o in over])
                 last_good = data.qpos.copy()  # the new model's coordinates
                 self._events.extend(
-                    {"kind": "break", "tick": tick, "joint": o.joint, "load": {"value": o.load, "unit": "N"}, "threshold": {"value": o.threshold, "unit": "N"}}
+                    {
+                        "kind": "break",
+                        "tick": tick,
+                        "reason": "over_threshold",
+                        "joint": o.joint,
+                        "load": {"value": o.load, "unit": "N"},
+                        "threshold": {"value": o.threshold, "unit": "N"},
+                    }
                     for o in over
                 )
             trajectory.update(data.qpos.tobytes())

@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "description": "Joint `joint` released: the load on it reached its break threshold (both in N; plan 4.6, a simplified model).",
+  "description": "Joint `joint` released because the load on it went over its break threshold (both in N; plan 4.6, a simplified\nmodel). `reason` is the release's cause, `over_threshold` (\"임계 초과\"): only this one is a break (X-08).",
   "properties": {
     "kind": {
       "const": "break",
@@ -12,6 +12,11 @@
       "minimum": 0,
       "title": "Tick",
       "type": "integer"
+    },
+    "reason": {
+      "const": "over_threshold",
+      "title": "Reason",
+      "type": "string"
     },
     "joint": {
       "pattern": "^[a-z][a-z0-9_-]{0,63}$",
@@ -28,6 +33,7 @@
   "required": [
     "kind",
     "tick",
+    "reason",
     "joint",
     "load",
     "threshold"

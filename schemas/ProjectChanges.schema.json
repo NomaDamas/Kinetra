@@ -412,7 +412,21 @@
         "entries": {
           "default": [],
           "items": {
-            "$ref": "#/$defs/ActuateEntry"
+            "discriminator": {
+              "mapping": {
+                "actuate": "#/$defs/ActuateEntry",
+                "separate": "#/$defs/SeparateEntry"
+              },
+              "propertyName": "type"
+            },
+            "oneOf": [
+              {
+                "$ref": "#/$defs/ActuateEntry"
+              },
+              {
+                "$ref": "#/$defs/SeparateEntry"
+              }
+            ]
           },
           "title": "Entries",
           "type": "array"
@@ -1324,6 +1338,48 @@
         "incline"
       ],
       "title": "RampProp",
+      "type": "object"
+    },
+    "SeparateEntry": {
+      "additionalProperties": false,
+      "description": "Release separator instance `separator` at `at` seconds of simulated time (X-08, `docs/architecture/separation.md`).\n\nOne entry of the same time-axis schedule as `ActuateEntry` (no separate staging list); the `type` tag tells them apart.\n`separator` is the id of an instance of a `separator` part (B-15). A separation cannot be undone, so the schedule\nholds at most one per separator; that rule (and two at one time) is the compiler's (`separation_twice`,\n`separation_conflict`, X-01d), not this model's. One badge and source cover the entry.",
+      "properties": {
+        "badge": {
+          "$ref": "#/$defs/Badge"
+        },
+        "source": {
+          "$ref": "#/$defs/Source"
+        },
+        "type": {
+          "const": "separate",
+          "title": "Type",
+          "type": "string"
+        },
+        "id": {
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "separator": {
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+          "title": "Separator",
+          "type": "string"
+        },
+        "at": {
+          "minimum": 0,
+          "title": "At",
+          "type": "number"
+        }
+      },
+      "required": [
+        "badge",
+        "source",
+        "type",
+        "id",
+        "separator",
+        "at"
+      ],
+      "title": "SeparateEntry",
       "type": "object"
     },
     "Shape": {
