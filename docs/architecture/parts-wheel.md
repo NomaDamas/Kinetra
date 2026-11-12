@@ -2,7 +2,7 @@
 
 - 상태: 구현됨. 정의는 `packages/engine/src/kinetra_engine/parts/library/wheel.json`(`PartDef`, 파일 이름이 부품 id). 테스트는 `packages/engine/tests/test_wheel.py`(`uv run pytest packages/engine -q -k wheel`). 고정 glb는 `packages/engine/tests/fixtures/gltf/wheel-pom.glb`.
 - 근거: 이슈 #101, `docs/process/add-part.md`(이 부품이 따른 절차), `part-mass.md`, `collision-proxy.md`, `part-visual.md`, 핵심 가치 V5.
-- 범위 밖: 모터와 토크-속도(B-03b), 결합(B-04a, 휠은 힌지 한쪽 끝의 스냅 포인트 `hub`만 낸다), 스냅 호환 규칙(B-04b), MJCF 접촉 매개변수와 두 재료의 마찰 합성(X-01a, X-01b), 타이어 변형·공기압·접지면 늘어남·미끄럼비 곡선(이슈 "범위 밖": 타이어 변형), 연소와 노즐 유동, 살과 속 빈 림.
+- 범위 밖: 모터와 토크-속도(B-03b), 결합(B-04a, 휠은 힌지 한쪽 끝의 스냅 포인트 `hub`만 낸다), 스냅 호환 규칙(B-04b), MJCF 접촉 매개변수와 두 재료의 마찰 합성(X-01e, [`contact.md`](contact.md)), 타이어 변형·공기압·접지면 늘어남·미끄럼비 곡선(이슈 "범위 밖": 타이어 변형), 연소와 노즐 유동, 살과 속 빈 림.
 
 `role`은 `wheel`(B-03b의 `PartRole`)이다. 휠에는 필수 곡선이나 사양 검사가 걸리지 않는다(`PartDef`는 모터 역할만 곡선을 요구한다).
 
@@ -41,7 +41,7 @@
 | `tread_friction_static` | 1.0 | `인용` | OpenStax *College Physics 2e* 5.1절 표 5.1, "Rubber on dry concrete" 정지 마찰 1.0 |
 | `tread_friction_kinetic` | 0.7 | `인용` | 같은 표, 운동 마찰 0.7 |
 
-- **고무 대 마른 콘크리트라는 기준쌍의 값이다.** 이 휠이 어느 행성 지면에서 갖는 마찰이 아니다. 행성 지면 마찰은 `data/bodies`의 행성 데이터(규칙 C4)이고 두 면의 마찰을 합치는 규칙은 X-01이 정한다. 이 사양은 "트레드가 고무 계열이다"라는 가정에 값을 붙인 것이고 판정 입력으로 쓰려면 X-01이 이 값과 지면 값을 어떻게 합칠지 정해야 한다.
+- **고무 대 마른 콘크리트라는 기준쌍의 값이다.** 이 휠이 어느 행성 지면에서 갖는 마찰이 아니다. 행성 지면 마찰은 `data/bodies`의 행성 데이터(규칙 C4)이고, 컴파일은 운동 마찰 `tread_friction_kinetic`(0.7)을 휠의 모든 geom에 주고 지면 값과 작은 쪽을 쓴다(X-01e, [`contact.md`](contact.md)). 공칭 지면에서는 세 행성 모두 지면 값이 더 작아 지면이 정한다. 정지 마찰 1.0은 MuJoCo가 계수 하나만 써서 쓰지 않는다.
 - 값은 한 자리다. 책이 "근삿값"이라고 쓴다. 교차 확인으로 Wikipedia "Friction"의 근사 마찰 계수 표(콘크리트 대 고무, 마름: 운동 0.6–0.85)에 0.7이 들어 있음을 봤다. 그 표의 정지 값(마름)은 1.0이다. 교차 확인은 인용이 아니다.
 - **라이선스.** 이 책은 CC BY-NC-SA 4.0이다(비영리 한정). 표를 옮기지 않고 사실 수치 둘을 출처 위치와 함께 적었다(`source.license`는 적지 않았다: 허용 목록 밖이고 값은 저작물이 아니라 측정된 사실이다. 데이터 값 몇 개의 인용이라는 판단은 `materials.md` "출처 약관 확인"과 같다). 이 판단의 틀림 여부는 리뷰가 본다.
 - 이 값을 `Material.friction`으로 만들지 않았다. 그것은 재료 하나의 값(대 강철)이고 B-07 카탈로그의 일이다. 고무 재료는 카탈로그에 없다.
