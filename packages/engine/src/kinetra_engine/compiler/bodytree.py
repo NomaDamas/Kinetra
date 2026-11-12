@@ -23,7 +23,7 @@ in the frame of the body it belongs to (the child): the point is the world posit
 `R(a instance) R(a snap point) axis` turned into the child's frame.
 
 Not here: the springs, dampers, motors and actuator limits of a joint (X-01b), thrusters and propellant (X-01c), what a joint's
-`break_threshold` does (X-04b), contact parameters (X-01b). A joint that carries a `break_threshold` or an actuator is
+`break_threshold` does (X-04b), contact friction and parameters (X-01e, `contact.py`). A joint that carries a `break_threshold` or an actuator is
 compiled without it (the MJCF has neither yet).
 
 **Planet (W-03a).** The tree also carries the gravity and atmosphere density of `project.world.planet`, read from

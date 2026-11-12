@@ -3425,7 +3425,7 @@ items:
       ## 문제
       프로젝트 형식을 MuJoCo가 읽는 모델로 바꾸는 단계가 없다.
       ## 완료 정의 (DoD)
-      - [ ] 하위 이슈 전부 닫힘: X-01a, X-01b, X-01c, X-01d
+      - [ ] 하위 이슈 전부 닫힘: X-01a, X-01b, X-01c, X-01d, X-01e
       - [ ] 통합 시연 증거: 4륜차와 로켓 자동차 뼈대가 컴파일돼 총질량·무게중심이 부품 합산과 맞는 로그
       - [ ] "100% 완료" 8항목 충족(`docs/process/done-definition.md`, issues.yaml `done_definition`)
       ## 범위 밖
@@ -3542,6 +3542,34 @@ items:
       `uv run pytest packages/engine -q -k compile_error`
       ## 의존성
       선행: X-01a / 후속: 없음
+  - id: X-01e
+    kind: sub
+    parent: X-01
+    title: "[X-01e] 접촉 매개변수와 마찰 합성"
+    labels: ["type:feature", "area:engine", "stage:S1-studio", "prio:P0", "size:S"]
+    milestone: "S1-W04"
+    depends_on: [X-01b, W-01]
+    body: |-
+      ## 대목표
+      G1 — 창업자가 세 행성 어디서든 상상한 물건을 만들어 정직한 판정이 붙은 Halo로 내보낸다. (에픽 X, docs/plan/studio-plan.md 5.3절)
+      ## 핵심 가치
+      > **V1 정직한 판정** — 판정은 시뮬과 몬테카를로만 한다. 확률, 가정, 한계를 숨기지 않는다. 1회 미리보기 실행을 판정이라 부르지 않는다.
+      > **V5 깨끗한 출처** — 수치, 부품, 에셋은 출처와 라이선스가 기록된 것만 쓴다. 사용자가 선언한 값과 가져온 에셋은 배지로 구분한다.
+
+      이 이슈가 없으면: 바퀴·부품·지면이 맞닿을 때 어떤 마찰과 접촉 매개변수가 쓰이는지 정해지지 않아, 굴러가는 차의 판정이 표시되지 않은 MuJoCo 기본값(마찰 1 등)에 기댄다.
+      ## 문제
+      `docs/architecture/body-tree.md`가 접촉 매개변수와 두 재료의 마찰 합성을 X-01b 몫으로 적었지만 X-01b(#124) DoD에 없어 아무도 맡지 않았다(#538 리뷰에서 확인).
+      ## 완료 정의 (DoD)
+      - [ ] 각 geom의 마찰을 부품 재료(B-07 `Material.friction`) 또는 부품 사양(B-03a 휠의 tread 마찰)에서 정하고, 두 접촉 면의 합성 규칙(MuJoCo는 기본 max)을 정해 문서와 라벨에 적는다. 지면 마찰은 W-03c(#85)의 분포 값과 이어진다
+      - [ ] 접촉 매개변수(solref·solimp·condim 등)를 정하고 출처 또는 `기본값` 배지로 남긴다
+      - [ ] 테스트: 경사에서 미끄러짐이 시작되는 각이 tan⁻¹(μ_합성)과 맞는다(두 재료 조합, 세 행성)
+      - [ ] "100% 완료" 8항목 충족(`docs/process/done-definition.md`, issues.yaml `done_definition`)
+      ## 범위 밖
+      지면 마찰의 분포·몬테카를로(W-03c).
+      ## 검증 방법
+      `uv run pytest packages/engine -q -k contact_friction`
+      ## 의존성
+      선행: X-01b, W-01 / 후속: 없음
   - id: X-02
     kind: issue
     parent: X
