@@ -1,0 +1,80 @@
+{
+  "run_id": "sc02rev2-20261111T170500",
+  "screen": "SC-02",
+  "kind": "revision",
+  "revision_brief": "design/briefs/sc-02-revision-2.md",
+  "brief": "design/briefs/sc-02.md",
+  "previous_export": "design/exports/sc-02/",
+  "previous_run_id": "sc02rev-20261110T230109",
+  "artifact": "https://claude.ai/artifact/W5F2kNGaJAdKUv1nBEhgdP",
+  "artifact_version": "1794399478-8895",
+  "artifact_version_number": 16,
+  "fixed": {
+    "1_com_reference_frame": "read-only label '조립체 원점 기준' under every centre-of-mass row (S1, S2 a-d, S6, S7, S8 a-b, S9, S10; 11 rows), same markup as the S3 axis frame label; not a control",
+    "2_com_cell_fits": "centre of mass as one line per axis (x/y/z) with unit per line; example x 0.12, y -12.35, z 0.45 m; narrowest value cell 83 px (S7) holds 10 chars; S1 fits with 273 px left",
+    "3_scroll_region": "S2 (d), S4 (b)(c)(d): panel body is a vertical scroll region, title rows fixed; collapsed heads below the open section dock at the bottom (as SC-04 S2), heads above and the open head pin at the top; verified at top/bottom scroll and with 600 px extra content",
+    "4_remeasured": "self-check table in NOTES.md updated"
+  },
+  "changed_artboards": [
+    "Main.dc.html (S1)",
+    "S2.dc.html",
+    "S4.dc.html",
+    "S6.dc.html",
+    "S7.dc.html",
+    "S8.dc.html",
+    "S9.dc.html",
+    "S10.dc.html"
+  ],
+  "unchanged_artboards": [
+    "S3.dc.html",
+    "S5.dc.html",
+    "canvas.json"
+  ],
+  "self_check": {
+    "s1_controls": 10,
+    "s1_control_names_match_5_1": true,
+    "primary_in_inspector": 0,
+    "new_colors": 0,
+    "colors_used": 23,
+    "badge_kinds": 5,
+    "max_step": 2,
+    "banned_phrases": 0,
+    "panel_overflow": 0,
+    "cell_overflow": 0,
+    "squeezed": 0,
+    "heads_hidden_in_scroll": 0,
+    "targets_under_24px": 0,
+    "min_contrast": 5.45
+  },
+  "open_questions": [
+    "frame choice 조립체 원점 vs 부모 바디",
+    "y example 0.00 -> -12.35 on all artboards",
+    "top-pinned heads extend the SC-04 pattern",
+    "scroll region only on the four panels named; S2 (a)(c), S7 have 53-73 px left with fallback fonts"
+  ],
+  "browser_measurement": "headless Chrome only, throwaway --user-data-dir /tmp/kin-sc02rev2-chrome.XXXXXX, deleted after each run; none left",
+  "index_html_sha256": "75d9635a1910fde4315809a8ab66cf044383bbae0710c40c4d27e6b7fcafa19b",
+  "files": [
+    "NOTES.md",
+    "index.html",
+    "source/Main.dc.html",
+    "source/S10.dc.html",
+    "source/S2.dc.html",
+    "source/S3.dc.html",
+    "source/S4.dc.html",
+    "source/S5.dc.html",
+    "source/S6.dc.html",
+    "source/S7.dc.html",
+    "source/S8.dc.html",
+    "source/S9.dc.html",
+    "source/canvas.json",
+    "source/tools/build_export.py",
+    "source/tools/make_s3.py",
+    "source/tools/measure.sh",
+    "source/tools/revise.py",
+    "source/tools/revise2.py",
+    "source/tools/shot.sh",
+    "DONE.json"
+  ],
+  "finished_at": "2026-11-11T12:21:18Z"
+}
