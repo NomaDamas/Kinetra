@@ -366,13 +366,13 @@
     },
     {
       "id": "bumper-l",
-      "kind": "fixed",
+      "kind": "slider",
       "a": "chassis",
       "b": "spring-l"
     },
     {
       "id": "bumper-r",
-      "kind": "fixed",
+      "kind": "slider",
       "a": "chassis",
       "b": "spring-r"
     }

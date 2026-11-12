@@ -98,6 +98,7 @@ uv run python packages/core/scripts/export_schemas.py --check  # 쓰지 않고 �
 
 - 검증: `uv run python packages/core/scripts/validate_examples.py`. `schemas/examples/*.json`을 모두 JSON Schema(`jsonschema`)와 Pydantic 모델 둘 다로 검사하고, `Project`는 `world.planet`이 `data/bodies`에 있는지와 지형 소품의 재료가 프로젝트의 것인지도 `check_world_references`로 본다. 필수 예시 셋이 하나라도 없거나 로켓 자동차에 스케줄된 추력기가 없으면 실패한다. CI는 `engine` 워크플로에서 돈다. `packages/core/tests/test_examples.py`가 같은 스크립트와 예시의 내용(조립 일치, 되돌리기 가능한 명령 적용, 배지)을 시험한다.
 - TS: `schemas/test/examples.test.ts`가 세 예시를 `@kinetra/schemas`의 `Project` 타입으로 읽는다(`pnpm build`가 타입을, `pnpm test`가 값을 본다). 타입은 모양만 안다. 유효성 판정은 위 스크립트가 한다.
+- 컴파일(#553): `packages/engine/tests/test_example_projects.py`가 `schemas/examples/Project.*.json`을 모두 `compile_project`에 넣는다. 컴파일되거나, 파일 안의 `NOT_COMPILABLE` 목록에 거부 코드와 이유가 적혀 있어야 한다: `Project.empty.json`은 `no_instance`(인스턴스 없음), `Project.four-wheel-car.json`·`Project.rocket-car-skeleton.json`은 `part`(부품에 모양 레시피가 없어 형상이 없다). 목록의 예시는 정확히 그 코드로 거부되어야 하므로 목록이 낡으면 테스트가 실패한다. `Project.drive-car.json`·`Project.structural-skeleton.json`은 컴파일된다.
 - 예시의 수치는 모두 `사용자 선언`(`kinetra-docs`)이거나 `기본값`/`추정`이고 출처 문구에 "illustrative"가 있다. 실부품 수치도 성능 주장도 아니다.
 
 ## `Project`와 `Command` (C-02a)

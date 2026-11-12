@@ -46,6 +46,7 @@ SHAFT_OUT_RIGHT = (S, 0.0, 0.0, S)  # about x by +90 deg: part +z -> world -y
 TURN_Z = (0.0, 0.0, 1.0, 0.0)  # 180 deg about z: a right-hand wheel's outer hub boss faces -y
 EXHAUST_AFT = (0.0, -S, 0.0, S)  # about y by -90 deg: thruster +z (exhaust) -> world -x, thrust pushes +x
 ALONG_X = (0.0, S, 0.0, S)  # about y by +90 deg: spring axis (+z) -> world +x
+AXLE_FRAME = (-S, 0.0, 0.0, S)  # about x by -90 deg: snap +z -> world +y, the frame of the library wheel's `hub` snap
 
 # Chassis geometry (the chassis frame is the deck centre; the deck is level, identity orientation).
 DECK_L, DECK_W, DECK_T = 0.36, 0.24, 0.008
@@ -89,8 +90,10 @@ def _quat(q: tuple[float, float, float, float]) -> dict:
     return dict(zip("xyzw", q))
 
 
-def _snap(sid: str, kind: str, accepts: list[str], at: tuple[float, float, float], why: str) -> dict:
-    return {"id": sid, "kind": kind, "accepts": accepts, "position": _pos(*at), "orientation": _quat(IDENTITY), **_declared(why)}
+def _snap(
+    sid: str, kind: str, accepts: list[str], at: tuple[float, float, float], why: str, orientation: tuple[float, float, float, float] = IDENTITY
+) -> dict:
+    return {"id": sid, "kind": kind, "accepts": accepts, "position": _pos(*at), "orientation": _quat(orientation), **_declared(why)}
 
 
 def _box(cid: str, size: tuple[float, float, float], at: tuple[float, float, float]) -> dict:
@@ -120,13 +123,16 @@ def chassis_part() -> PartDef:
     snaps = [
         _snap("motor-rl", "motor_mount", ["motor_mount"], (xr, MOTOR_Y, z_axle), "rear left motor face plate, under its hanger"),
         _snap("motor-rr", "motor_mount", ["motor_mount"], (xr, -MOTOR_Y, z_axle), "rear right motor face plate, under its hanger"),
-        _snap("axle-fl", "axle_mount", ["shaft"], (xf, WHEEL_Y, z_axle), "front left axle end (the wheel centre); the axle is not drawn"),
-        _snap("axle-fr", "axle_mount", ["shaft"], (xf, -WHEEL_Y, z_axle), "front right axle end (the wheel centre); the axle is not drawn"),
+        # The front axle snaps are turned like the wheel's `hub` snap (its +z is the wheel axis), so a hinge axis read in
+        # either snap frame lies on one world line (X-01d `check_axes`).
+        _snap("axle-fl", "axle_mount", ["shaft"], (xf, WHEEL_Y, z_axle), "front left axle end (the wheel centre); the axle is not drawn", AXLE_FRAME),
+        _snap("axle-fr", "axle_mount", ["shaft"], (xf, -WHEEL_Y, z_axle), "front right axle end (the wheel centre); the axle is not drawn", AXLE_FRAME),
         _snap("battery-seat", "face", ["face"], (0.05, 0.0, z_top), "battery seat on the deck top"),
         _snap("tank-seat", "face", ["face"], (-0.04, 0.0, z_top), "tank seat on the deck top"),
         _snap("thruster-mount", "face", ["face"], (-0.10, 0.0, z_top + THRUSTER_BODY_R), "thruster mount: the back face of its valve body, which lies on the deck"),
-        _snap("spring-l", "spring_end", ["spring_end"], (DECK_L / 2, SPRING_Y, 0.0), "left bumper spring seat on the deck's front face"),
-        _snap("spring-r", "spring_end", ["spring_end"], (DECK_L / 2, -SPRING_Y, 0.0), "right bumper spring seat on the deck's front face"),
+        # The spring seats are turned like the spring (its +z, the spring axis, along world +x) for the bumper sliders' axis.
+        _snap("spring-l", "spring_end", ["spring_end"], (DECK_L / 2, SPRING_Y, 0.0), "left bumper spring seat on the deck's front face", ALONG_X),
+        _snap("spring-r", "spring_end", ["spring_end"], (DECK_L / 2, -SPRING_Y, 0.0), "right bumper spring seat on the deck's front face", ALONG_X),
     ]
     components = [
         _box("deck", (DECK_L, DECK_W, DECK_T), (0.0, 0.0, 0.0)),
@@ -189,7 +195,7 @@ INSTANCES: dict[str, tuple[str, str | None, dict[str, tuple[float, str]], tuple[
     "spring-r": ("spring-damper-lee-lc032b08", None, {}, ALONG_X),
 }
 
-# (joint id, kind, parent instance, parent snap, child instance, child snap, hinge axis in the parent snap's frame).
+# (joint id, kind, parent instance, parent snap, child instance, child snap, hinge or slider axis in the parent snap's frame).
 # The order is the placement order: a child's parent is placed first. `chassis` is the root.
 JOINTS: tuple[tuple[str, str, str, str, str, str, tuple[float, float, float] | None], ...] = (
     ("mount-rl", "fixed", "chassis", "motor-rl", "motor-rl", "mount", None),
@@ -198,13 +204,14 @@ JOINTS: tuple[tuple[str, str, str, str, str, str, tuple[float, float, float] | N
     ("drive-rr", "hinge", "motor-rr", "shaft", "stub-rr", "in", (0.0, 0.0, -1.0)),  # shaft +z = world -y: flipped so + rolls forward
     ("hub-rl", "fixed", "stub-rl", "out", "wheel-rl", "hub", None),
     ("hub-rr", "fixed", "stub-rr", "out", "wheel-rr", "hub", None),
-    ("axle-fl", "hinge", "chassis", "axle-fl", "wheel-fl", "hub", (0.0, 1.0, 0.0)),
-    ("axle-fr", "hinge", "chassis", "axle-fr", "wheel-fr", "hub", (0.0, 1.0, 0.0)),
+    ("axle-fl", "hinge", "chassis", "axle-fl", "wheel-fl", "hub", (0.0, 0.0, 1.0)),  # axle snap +z = world +y
+    ("axle-fr", "hinge", "chassis", "axle-fr", "wheel-fr", "hub", (0.0, 0.0, 1.0)),
     ("seat-battery", "fixed", "chassis", "battery-seat", "battery", "bottom", None),
     ("seat-tank", "fixed", "chassis", "tank-seat", "tank", "bottom", None),
     ("mount-thruster", "fixed", "chassis", "thruster-mount", "thruster", "mount", None),
-    ("bumper-l", "fixed", "chassis", "spring-l", "spring-l", "end_a", None),
-    ("bumper-r", "fixed", "chassis", "spring-r", "spring-r", "end_a", None),
+    # A spring-damper acts along the one slider at its snap points (X-01b): the bumper springs slide along their axis.
+    ("bumper-l", "slider", "chassis", "spring-l", "spring-l", "end_a", (0.0, 0.0, 1.0)),  # seat +z = world +x
+    ("bumper-r", "slider", "chassis", "spring-r", "spring-r", "end_a", (0.0, 0.0, 1.0)),
 )
 
 ACTUATORS = (
@@ -272,12 +279,12 @@ def build_project() -> Project:
     for jid, kind, a, sa, b, sb, axis in JOINTS:
         joint = {"id": jid, "kind": kind, "a": {"instance": a, "snap_point": sa}, "b": {"instance": b, "snap_point": sb}}
         if axis is not None:
-            joint["axis"] = {
-                "x": axis[0],
-                "y": axis[1],
-                "z": axis[2],
-                **_declared("hinge axis along the axle (world +y), so a positive angle rolls the car forward (+x)"),
-            }
+            why = (
+                "hinge axis along the axle (world +y), so a positive angle rolls the car forward (+x)"
+                if kind == "hinge"
+                else "slider axis along the bumper spring (world +x), so a positive travel stretches it forward"
+            )
+            joint["axis"] = {"x": axis[0], "y": axis[1], "z": axis[2], **_declared(why)}
         joints.append(joint)
     schedule = [
         {"type": "actuate", "id": eid, "actuator": act, "start": t0, "end": t1, "command": c, **_declared("a demonstration program, not a tuned run")}
