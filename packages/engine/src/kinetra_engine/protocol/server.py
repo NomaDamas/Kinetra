@@ -16,6 +16,12 @@ C-05b, which puts frames on the same connections, can move them with a measured 
 Anyone who changes a document from inside the process (the agent of G-02, the MCP server of G-08, a test) calls
 `Hub.publish`, which applies the message and broadcasts the `applied` to every subscriber, whoever sent it.
 
+A `run` (X-02a) compiles the subscribed document as it is and streams one run to the asking connection only: a
+`run_started` text message, one binary message per frame (`encode_frame`, `client-adapter.md` 3.3) and a `run_ended`.
+One run at a time per connection, because a binary frame names no run. A frame waits for the connection's queue to be
+empty before it is queued, so a slow client slows the run down instead of being dropped by the queue limits; the
+trajectory does not depend on it (`kinetra_engine.run.preview`).
+
 Security: a browser lets any web page open a WebSocket to `localhost`, so `serve` requires `allowed_origins` (the
 `Origin` header values of the pages that may connect; `None` allows clients that send no header, which is every
 non-browser client). `serve` listens on the loopback address only and refuses another `host` unless `allow_remote` is
@@ -42,15 +48,28 @@ from kinetra_core import (
     MAX_COMMAND_ID_LENGTH,
     PROTOCOL_VERSION,
     ClientMessage,
+    Frame,
     Hello,
     Project,
+    ProjectIncomplete,
     ProtocolError,
     Publish,
+    Reason,
+    ReasonCode,
+    Ref,
+    RefKind,
+    Rejected,
+    RunEnded,
+    RunFailed,
     Request,
+    RunRequest,
     Subscribe,
+    encode_frame,
 )
 from kinetra_core.conventions import ID_PATTERN
 
+from ..compiler import CompileError, CompileErrorCode
+from ..run import PreviewRun
 from .document import Document, Outcome, refuse_unsubscribed
 
 log = logging.getLogger(__name__)
@@ -87,26 +106,31 @@ def _echo(value: object) -> str:
 class _Connection:
     def __init__(self, ws: ServerConnection):
         self.ws = ws
-        self.queue: asyncio.Queue[str | None] = asyncio.Queue()
+        self.queue: asyncio.Queue[str | bytes | None] = asyncio.Queue()
         self.pending_bytes = 0
         self.said_hello = False
         self.document: Document | None = None
         self.dropped = False
+        self.idle = asyncio.Event()  # set while nothing waits to be sent (a run waits for it before its next frame)
+        self.idle.set()
+        self.run: asyncio.Task | None = None  # the run streaming on this connection (one at a time: a binary frame has no run id)
 
     def full(self, size: int) -> bool:
         """Would a message of `size` bytes (UTF-8) not fit?"""
         waiting = self.queue.qsize()
         return waiting >= QUEUE_MAX_MESSAGES or (waiting > 0 and self.pending_bytes + size > QUEUE_MAX_BYTES)
 
-    def enqueue(self, text: str) -> bool:
-        """Queue a serialized message. `False` (and nothing queued) when the connection is full."""
+    def enqueue(self, message: str | bytes) -> bool:
+        """Queue a serialized message (JSON text, or a binary run frame). `False` (and nothing queued) when the
+        connection is full."""
         if self.dropped:
             return True
-        size = len(text.encode())
+        size = _size(message)
         if self.full(size):
             return False
         self.pending_bytes += size
-        self.queue.put_nowait(text)
+        self.idle.clear()
+        self.queue.put_nowait(message)
         return True
 
     def abort(self) -> None:
@@ -114,19 +138,45 @@ class _Connection:
         self.ws.transport.abort()
 
     async def pump(self) -> None:
-        while (text := await self.queue.get()) is not _CLOSE:
-            self.pending_bytes -= len(text.encode())
+        while (message := await self.queue.get()) is not _CLOSE:
+            self.pending_bytes -= _size(message)
             if self.dropped:
                 return
             try:
                 async with asyncio.timeout(SEND_TIMEOUT_S):
-                    await self.ws.send(text)
+                    await self.ws.send(message)
             except ConnectionClosed:
                 return
             except TimeoutError:
                 log.warning("document channel: a subscriber is not reading; dropped")
                 self.abort()
                 return
+            if self.queue.empty():
+                self.idle.set()
+
+
+def _size(message: str | bytes) -> int:
+    return len(message) if isinstance(message, bytes) else len(message.encode())
+
+
+def _refuse(request_id: str, code: ReasonCode, text: str, ids: tuple[Ref, ...] = ()) -> Rejected:
+    return Rejected(type="rejected", id=request_id, reasons=(Reason(code=code, message=text, ids=ids),))
+
+
+_COMPILE_REASONS = {CompileErrorCode.SNAP_MISMATCH: ReasonCode.INVALID_SNAP, CompileErrorCode.FLOATING: ReasonCode.FLOATING}
+"""The compile errors that are the validator's own rules (`check_placement`, `body-tree.md`) keep the validator's reason
+code; every other compile error is `invalid_project`. The `CompileErrorCode` itself leads the sentence (`<code>: ...`)."""
+
+
+def _compile_refused(request_id: str, error: CompileError) -> Rejected:
+    ids = (
+        tuple(Ref(kind=RefKind.INSTANCE, id=i) for i in error.instances)
+        + tuple(Ref(kind=RefKind.PART, id=p) for p in error.parts)
+        + tuple(Ref(kind=RefKind.JOINT, id=j) for j in error.joints)
+        + tuple(Ref(kind=RefKind.ACTUATOR, id=a) for a in error.actuators)
+    )
+    code = _COMPILE_REASONS.get(error.code, ReasonCode.INVALID_PROJECT)
+    return _refuse(request_id, code, f"{error.code.value}: the design does not compile: {error}", ids)
 
 
 class Hub:
@@ -194,6 +244,8 @@ class Hub:
             self._send(conn, ProtocolError(type="error", message="internal error", fatal=True))
             close_code = _INTERNAL_ERROR_CLOSE
         finally:
+            if conn.run is not None:
+                conn.run.cancel()  # the stream has nowhere to go; a step already in a worker thread finishes and is dropped
             self._unsubscribe(conn)
             conn.queue.put_nowait(_CLOSE)
             await writer
@@ -222,6 +274,8 @@ class Hub:
             self._subscribe(conn, message)
         elif isinstance(message, (Publish, Request)):
             self._edit(conn, message)
+        elif isinstance(message, RunRequest):
+            self._start_run(conn, message)
         return True
 
     def _receive_hello(self, conn: _Connection, raw: str | bytes) -> bool:
@@ -248,22 +302,26 @@ class Hub:
     def _unreadable(self, conn: _Connection, raw: str, error: ValidationError) -> bool:
         """A frame that is not a valid client message. A `publish` or `request` that has an id is answered with a
         `rejected` for that id (C3: a command that cannot be read is a refused command, with the reason), and the
-        id is remembered like any other command id (C6). Anything else is an `error`."""
+        id is remembered like any other command id (C6). A `run` that has an id is refused for that id (nothing to
+        remember: a run changes no document). Anything else is an `error`."""
         try:
             data = json.loads(raw)
         except (ValueError, RecursionError):
             return self._fail(conn, "the frame is not JSON", fatal=False)
         kind = data.get("type") if isinstance(data, dict) else None
         command_id = data.get("id") if isinstance(data, dict) else None
-        if kind in ("publish", "request") and isinstance(command_id, str) and 0 < len(command_id) <= MAX_COMMAND_ID_LENGTH:
+        if kind in ("publish", "request", "run") and isinstance(command_id, str) and 0 < len(command_id) <= MAX_COMMAND_ID_LENGTH:
             problems = "; ".join(
                 f"{'.'.join(str(p) for p in err['loc'])}: {err['msg']}"
                 for err in error.errors(include_url=False, include_context=False, include_input=False)
-            )
+            )[:1000]
+            if kind == "run":
+                self._send(conn, _refuse(command_id, ReasonCode.INVALID_COMMAND, f"the message is not a valid run: {problems}"))
+                return True
             if conn.document is None:
                 self._send(conn, refuse_unsubscribed(command_id))
                 return True
-            outcome = conn.document.unreadable(command_id, raw, problems[:1000], kind)
+            outcome = conn.document.unreadable(command_id, raw, problems, kind)
             self._send(conn, outcome.reply)
             return True
         return self._fail(conn, f"not a client message (type {_echo(kind)})", fatal=False)
@@ -305,6 +363,92 @@ class Hub:
             return
         outcome = self.publish(document.project_id, message)
         self._send(conn, outcome.reply)
+
+    # --- runs (X-02a) ----------------------------------------------------------------------------------------
+
+    def _start_run(self, conn: _Connection, message: RunRequest) -> None:
+        """Compile and run the subscribed document as it is now, streaming to this connection only (C7: a run changes
+        no document, so no other subscriber hears of it)."""
+        document = conn.document
+        if document is None:
+            self._send(conn, _refuse(message.id, ReasonCode.INVALID_COMMAND, "subscribe to a project before asking for a run"))
+            return
+        if conn.run is not None and not conn.run.done():
+            self._send(
+                conn,
+                _refuse(
+                    message.id,
+                    ReasonCode.INVALID_COMMAND,
+                    "a run is going on on this connection: one run at a time, because a binary frame names no run",
+                ),
+            )
+            return
+        conn.run = asyncio.create_task(self._stream_run(conn, document.project_id, document.project, document.revision, message))
+
+    async def _stream_run(self, conn: _Connection, project_id: str, project: Project, revision: int, message: RunRequest) -> None:
+        """`run_started`, the frames as binary messages, `run_ended`. The engine steps in a worker thread, one frame's
+        ticks at a time, so the event loop keeps serving every connection. Two things may hold a frame back, and
+        neither changes it: the `speed` pace (a frame of simulated time `t` goes out no earlier than `t / speed` after
+        the start) and the connection (the next frame waits until everything queued before it was sent, so a slow
+        client slows the run down instead of piling frames up: `client-adapter.md` 4.1).
+
+        An internal error after `run_started` (making, checking or encoding a frame) still ends the stream: the last
+        frame sent becomes the end frame, a `run_ended` `failed` at its tick follows (a whole stream for `check_run`),
+        then a non-fatal `error` whose text names the run and not the exception (it is logged here, not sent).
+        `run_started` goes out together with the first frame, so a run that fails before it has one opened no stream
+        and gets only the `error`. Either way the task ends, which frees the connection's one run slot."""
+        open_stream = False
+        last_sent: Frame | None = None
+        try:
+            try:
+                run = await asyncio.to_thread(
+                    PreviewRun,
+                    project,
+                    run_id=message.id,
+                    project_id=project_id,
+                    revision=revision,
+                    duration_s=message.duration_s,
+                    seed=message.seed,
+                )
+            except ProjectIncomplete as e:
+                self._send(conn, Rejected(type="rejected", id=message.id, reasons=e.reasons))
+                return
+            except CompileError as e:
+                self._send(conn, _compile_refused(message.id, e))
+                return
+            except ValueError as e:  # a duration longer than a run can count
+                self._send(conn, _refuse(message.id, ReasonCode.INVALID_COMMAND, str(e)))
+                return
+            bodies = [b.id for b in run.started.bodies]
+            loop = asyncio.get_running_loop()
+            start = loop.time()
+            stream = iter(run)
+            while (item := await asyncio.to_thread(next, stream, None)) is not None:
+                if not isinstance(item, Frame):
+                    self._send(conn, item)  # run_ended (after at least one frame: the run always yields one first)
+                    open_stream = False  # the stream is whole
+                    continue
+                if message.speed > 0:
+                    delay = start + item.sim_time_s / message.speed - loop.time()
+                    if delay > 0:
+                        await asyncio.sleep(delay)
+                binary = encode_frame(item, bodies)
+                await conn.idle.wait()
+                if not open_stream:  # announced with its first frame, so a run that cannot make one leaves no open stream
+                    self._send(conn, run.started)
+                    open_stream = True
+                if not conn.enqueue(binary):
+                    self._drop(conn)
+                    return
+                last_sent = item
+        except Exception:
+            log.exception("run %r: internal error", message.id)
+            if open_stream and last_sent is not None:  # a stream is open: close it with its last frame
+                self._send(
+                    conn,
+                    RunEnded(type="run_ended", run_id=message.id, last_tick=last_sent.tick, end=RunFailed(reason="failed")),
+                )
+            self._send(conn, ProtocolError(type="error", message=f"internal error: the core could not run {message.id!r}", fatal=False))
 
 
 def _is_loopback(host: str) -> bool:

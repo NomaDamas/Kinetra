@@ -6,8 +6,9 @@ live in `kinetra_core` so `export_schemas.py` turns them into JSON Schema and Ty
 client sees.
 
 Messages carry a literal `type` tag (required, so a union of them is a discriminated union; see the exporter's check).
-Client to core: `hello`, `subscribe`, `publish`, `request`. Core to client: `hello`, `snapshot`, `resumed`, `applied`,
-`accepted`, `rejected`, `error`, and the run stream `run_started`, `frame`, `run_ended` (`frames.py`, C-05b). `ClientMessage` and `ServerMessage` are the two unions.
+Client to core: `hello`, `subscribe`, `publish`, `request`, `run`. Core to client: `hello`, `snapshot`, `resumed`,
+`applied`, `accepted`, `rejected`, `error`, and the run stream `run_started`, `frame`, `run_ended` (`frames.py`, C-05b).
+`ClientMessage` and `ServerMessage` are the two unions.
 
 Rules (read by C-05b, C-05c, B-05, B-05a, G-08):
 
@@ -50,10 +51,14 @@ Rules (read by C-05b, C-05c, B-05, B-05a, G-08):
   (`REMEMBERED_COMMANDS_MAX`), so a resend of a very old id is not guaranteed to be recognised.
 - The verdict (D5): `verdict` is `none` (no verdict yet), `valid`, or `invalid` (the document changed after it). It
   rides in `snapshot` and in every `applied`, so the client learns of an invalidation in the same message as the edit.
+- **Runs (X-02a).** `run` asks the core to compile the document as it is now and run it once (a preview, F6). It does
+  not change the project (C7). Its `id` is also the `run_id` of the stream: the answer is `run_started` with that
+  `run_id`, then the frames and `run_ended`, or a `rejected` with that `id` and the reasons (a missing definition, a
+  design that does not compile, a run already going on this connection). A core that does not serve `run` answers
+  `error` (an unknown `type`), so the message is added without a new `PROTOCOL_VERSION`.
 
 Not here: derived values and the definition hash in `snapshot` and `applied` (D4; the model-label and derived-value
-leaves B-05 and C-03 add optional fields, G5), run and judge requests (`request.action` gains them with X-02 and the J
-epic), the asset channel (3.4).
+leaves B-05 and C-03 add optional fields, G5), a stop request (not in X-02a) and judge requests (the J epic), the asset channel (3.4).
 """
 
 from __future__ import annotations
@@ -67,7 +72,7 @@ from .assumption import AssumptionTable
 from .commands import Command, Reason
 from .conventions import ID_PATTERN
 from .designspec import ActuateEntry, Actuator, ControlSchedule, DesignSpec, Instance, Joint
-from .frames import Frame, RunEnded, RunStarted
+from .frames import MAX_SEED, Frame, RunEnded, RunStarted
 from .history import Origin
 from .material import Material
 from .partdef import PartDef
@@ -148,7 +153,23 @@ class Request(_Msg):
     origin: Origin
 
 
-ClientMessage = Annotated[Union[Hello, Subscribe, Publish, Request], Field(discriminator="type")]
+class RunRequest(_Msg):
+    """Compile the subscribed document as it is now and run it once (X-02a; a preview, never a verdict: F6, C7).
+
+    `id` names the request and becomes the stream's `run_id`. `duration_s` [s] is the simulated time to run; the run
+    ends at the first tick at or after it. `seed` is recorded in `run_started` (the preview run draws nothing from it
+    yet). `speed` paces the core against the wall clock: the core sends the frame of simulated time `t` no earlier than
+    `t / speed` seconds after the run started (`1` real time, `0` as fast as the core and the connection allow). The
+    pace never changes the trajectory (`client-adapter.md` 4.1)."""
+
+    type: Literal["run"]
+    id: _CommandId
+    duration_s: Annotated[float, Field(strict=True, allow_inf_nan=False, gt=0)]
+    seed: Annotated[int, Field(strict=True, ge=0, le=MAX_SEED)] = 0
+    speed: Annotated[float, Field(strict=True, allow_inf_nan=False, ge=0)] = 1.0
+
+
+ClientMessage = Annotated[Union[Hello, Subscribe, Publish, Request, RunRequest], Field(discriminator="type")]
 """Anything a client sends."""
 
 
