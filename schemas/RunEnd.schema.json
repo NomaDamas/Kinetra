@@ -22,7 +22,7 @@
   "$defs": {
     "ComputeTag": {
       "additionalProperties": false,
-      "description": "⑦ The settings the run actually used: integrator, `timestep_s` [s] and the solver's settings by name\n(`NAME_PATTERN`).",
+      "description": "⑦ The settings the run actually used: integrator, actual internal `timestep_s` [s], fixed substep count per public\ntick, and the solver's settings by name (`NAME_PATTERN`).",
       "properties": {
         "integrator": {
           "maxLength": 200,
@@ -34,6 +34,11 @@
           "exclusiveMinimum": 0,
           "title": "Timestep S",
           "type": "number"
+        },
+        "substeps_per_tick": {
+          "minimum": 1,
+          "title": "Substeps Per Tick",
+          "type": "integer"
         },
         "solver": {
           "additionalProperties": {
@@ -59,6 +64,7 @@
       "required": [
         "integrator",
         "timestep_s",
+        "substeps_per_tick",
         "solver"
       ],
       "title": "ComputeTag",

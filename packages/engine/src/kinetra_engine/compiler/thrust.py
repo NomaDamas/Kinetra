@@ -321,13 +321,14 @@ class ThrustRun:
         self.end_step()
         return record
 
-    def begin_step(self) -> ThrustStep:
+    def begin_step(self, time_s: float | None = None) -> ThrustStep:
         """Everything of one step before `mj_step` (see the class docstring). Returns the step's record; call `end_step`
-        after the `mj_step`, once per `begin_step`."""
+        after the `mj_step`, once per `begin_step`. `time_s` is the caller's absolute step-start clock; standalone callers
+        default to MuJoCo's accumulated `data.time`."""
         if self._pending is not None:
             raise RuntimeError("begin_step called twice without end_step")
         m, d = self._m, self._d
-        t, dt = float(d.time), float(m.opt.timestep)
+        t, dt = (float(d.time) if time_s is None else time_s), float(m.opt.timestep)
         asked = {th.actuator: th.impulse(t, t + dt) for th in self.model.thrusters}
 
         satisfied: dict[str, float] = {}

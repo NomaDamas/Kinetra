@@ -86,7 +86,7 @@ def run_started() -> dict:
             },
             "runtime": {"python": "3.12.11", "numpy": "2.5.4"},
             "core_build": {"commit": "8371a65c9bae8f9ba6831ae1eb88473feb2aa4cc"},
-            "compute": {"integrator": "closed-form free fall", "timestep_s": TIMESTEP, "solver": {}},
+            "compute": {"integrator": "closed-form free fall", "timestep_s": TIMESTEP, "substeps_per_tick": 1, "solver": {}},
             "threads": {"physics": 1, "solver": 1},
         },
     }

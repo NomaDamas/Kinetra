@@ -36,7 +36,7 @@ PLATFORM = {
     "engine": {"name": "analytic-fixture", "version": "0", "distribution": "custom_build", "compiler": "none (pure Python)", "build_flags": ""},
     "runtime": {"python": "3.12", "numpy": "2"},
     "core_build": {"commit": "0" * 40},
-    "compute": {"integrator": "closed-form ballistic arc", "timestep_s": DT, "solver": {}},
+    "compute": {"integrator": "closed-form ballistic arc", "timestep_s": DT, "substeps_per_tick": 1, "solver": {}},
     "threads": {"physics": 1, "solver": 1},
 }
 

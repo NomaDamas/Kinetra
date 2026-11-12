@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "additionalProperties": false,
-  "description": "The assumption table a verdict carries (W-03c): the planet's rows read from `data/bodies`, then the project's rows.\n\nComposed at judge time by `verdict_assumption_table`, never stored in a project: the project's `AssumptionTable`\nkeeps rejecting planet keys (rule C4). A planet row is read-only (`editable` False) and keeps the badges and sources\nof the data file. Today the planet rows are the ground friction alone; the \"근사: 균일 중력\" label is W-06's.\n`rows` is the table in the order the panel shows it; Monte-Carlo samples each row's `distribution` and the deterministic\nsearch uses its `value` (the ground friction enters the model as `to_mjcf(tree, ground_friction=...)`, X-01e/W-03c).",
+  "description": "The assumption table a verdict carries (W-03c): the planet's rows read from `data/bodies`, the rows the engine fixes\n(X-10), then the project's rows.\n\nComposed at judge time by `verdict_assumption_table`, never stored in a project: the project's `AssumptionTable`\nkeeps rejecting planet keys (rule C4) and engine keys. A planet row is read-only (`editable` False) and keeps the badges\nand sources of the data file. Today the planet rows are the ground friction alone; the \"근사: 균일 중력\" label is W-06's.\nAn engine row is a modelling choice of the engine, read-only too (`ENGINE_CONSTANT_NAMES`): today the load window of a\nbreakable joint (`BREAK_LOAD_WINDOW`, badge `기본값`), there only when the design has a joint with a `break_threshold`.\n`rows` is the table in the order the panel shows it; Monte-Carlo samples each row's `distribution` and the deterministic\nsearch uses its `value` (the ground friction enters the model as `to_mjcf(tree, ground_friction=...)`, X-01e/W-03c).",
   "properties": {
     "planet": {
       "pattern": "^[a-z][a-z0-9_-]{0,63}$",
@@ -15,6 +15,13 @@
       "title": "Planet Rows",
       "type": "array"
     },
+    "engine_rows": {
+      "items": {
+        "$ref": "#/$defs/Assumption"
+      },
+      "title": "Engine Rows",
+      "type": "array"
+    },
     "project": {
       "$ref": "#/$defs/AssumptionTable"
     }
@@ -22,6 +29,7 @@
   "required": [
     "planet",
     "planet_rows",
+    "engine_rows",
     "project"
   ],
   "title": "VerdictAssumptionTable",

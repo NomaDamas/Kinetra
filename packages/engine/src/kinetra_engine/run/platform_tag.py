@@ -144,13 +144,14 @@ def _enum(kind, value: int, prefix: str) -> str:
     return kind(value).name.removeprefix(prefix).lower()
 
 
-def compute_settings(model: mujoco.MjModel) -> dict:
+def compute_settings(model: mujoco.MjModel, *, substeps_per_tick: int = 1) -> dict:
     """⑦ of `model`: what the run actually uses, read from the compiled model (not from the MJCF text, whose missing
-    `<option>` means the engine's defaults)."""
+    `<option>` means the engine's defaults). `model.opt.timestep` is the actual internal integrator step."""
     o = model.opt
     return {
         "integrator": _enum(mujoco.mjtIntegrator, o.integrator, "mjINT_"),
         "timestep_s": float(o.timestep),
+        "substeps_per_tick": substeps_per_tick,
         "solver": {
             "solver": _enum(mujoco.mjtSolver, o.solver, "mjSOL_"),
             "cone": _enum(mujoco.mjtCone, o.cone, "mjCONE_"),
@@ -170,6 +171,6 @@ def compute_settings(model: mujoco.MjModel) -> dict:
     }
 
 
-def platform_tag(model: mujoco.MjModel) -> PlatformTag:
+def platform_tag(model: mujoco.MjModel, *, substeps_per_tick: int = 1) -> PlatformTag:
     """The platform tag of a run of `model` in this process. Raises `PlatformUnknown` when a component cannot be read."""
-    return PlatformTag.model_validate({**_fixed(), "compute": compute_settings(model)})
+    return PlatformTag.model_validate({**_fixed(), "compute": compute_settings(model, substeps_per_tick=substeps_per_tick)})
