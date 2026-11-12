@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>S9 판정 4종이 섞인 열</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="kin-sc07.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div class="k-root" style="width:1440px;height:980px">
+
+<div class="k-note"><span><strong>S9 판정 4종</strong> · (a) 지구 <span class="k-mono">FEASIBLE_FOUND</span>, 화성 <span class="k-mono">INFEASIBLE_NECESSARY_CONDITION</span>, 달 <span class="k-mono">NOT_FOUND_IN_BUDGET</span> (b) 달 열이 모델 밖일 때. 비교 보기 크롭(장면·타임라인은 S1과 같음)</span><span>(a) 비교 보기 안 조작 11 · (b) 열 1 · primary 0</span></div>
+
+<div class="k-wrap">
+<div class="k-ann">
+<p><strong>열 안은 design-system.md 5.1절 표 그대로</strong></p>
+<ul>
+<li><span class="k-mono">FEASIBLE_FOUND</span>만 확률 + 95% CI + 표본 수 + 민감도 1위.</li>
+<li>나머지 셋은 확률 자리에 "확률 미산출 · 이유", 민감도 자리에 "민감도 미산출 · 이유". 빈칸, 0 %, 대시를 쓰지 않습니다.</li>
+<li>판정별 내용: 필요조건은 필요한 값 · 쓸 수 있는 값 · 여유, 예산 안에서 못 찾음은 쓴 탐색 예산과 "약한 증거"(바탕 비움 + 점선), 모델 밖은 <span class="k-mono">color.evidence.none</span>과 다루지 않는 현상.</li>
+<li>네 판정 모두 L2 또는 증거 없음 색이고 초록·빨강이 없습니다. 같은 L2면 행성이 달라도 같은 색입니다.</li>
+<li>확률이 있는 열이 하나뿐이라 신뢰구간 비교 문구를 쓰지 않습니다. 빠진 열을 채우지 않습니다.</li>
+<li>가정표, "이 모델이 보지 않는 것", L3는 네 판정에 모두 붙습니다(아래 머리 둘과 L3 줄, 열의 판정 카드).</li>
+</ul>
+</div>
+<div class="k-pad" style="gap:10px">
+<span class="k-lbl" style="color:#E8EDF2">(a) 세 열에 판정 셋</span>
+<section class="c-cmp solo" aria-label="3행성 비교 보기, 판정이 섞인 열" data-unit="비교 보기">
+<div class="c-head">
+<h2>비교 보기</h2>
+<span class="c-same">같은 설계 · 같은 시드 · 행성 상수만 다름</span>
+<span class="k-sp"></span>
+<button type="button" class="kb" data-ctl="증거 배지" aria-haspopup="dialog" aria-expanded="false" aria-label="증거 단계 L2 판정, 세 행성. 누르면 근거를 엽니다" style="color:#D2BFFF"><span class="k-ev l2"><svg width="30" height="12" viewBox="0 0 30 12" aria-hidden="true"><path d="M0 0h6v12H0zM8 0h6v12H8zM16 0h6v12h-6z" fill="currentColor"/><path d="M24.5.5h5v11h-5z" fill="none" stroke="currentColor"/></svg><span class="k-mono">L2</span>판정 · 세 행성</span></button>
+<button type="button" class="k-btn sm" data-ctl="비교 닫기"><svg width="10" height="10" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M2.5 2.5l7 7M9.5 2.5l-7 7"/></svg>닫기<span class="k-kbd">Esc</span></button>
+</div>
+<div class="c-sub"><b>1회 실행. 판정이 아닙니다</b><span>(장면과 타임라인)</span><span class="c-dot">·</span><span>근사: 균일 중력(행성별 g 하나)</span><span class="c-dot">·</span><span>시드 <span class="k-mono k-hi">4821</span> <span class="k-ex">예시</span></span></div>
+<div class="c-tbl" role="table" aria-label="판정 비교">
+<div class="c-grid th" role="row"><span role="columnheader">행</span><span role="columnheader">지구 · 현재</span><span role="columnheader">화성</span><span role="columnheader">달</span></div>
+<div class="c-grid tv" role="row">
+<div class="c-rh" role="rowheader"><b>판정</b><span class="k-cap">열마다 요약. 확률 배지는 확률이 있는 열에만</span></div>
+<div class="c-vd" role="cell">
+<span class="k-ev l2" style="align-self:flex-start"><svg width="30" height="12" viewBox="0 0 30 12" aria-hidden="true"><path d="M0 0h6v12H0zM8 0h6v12H8zM16 0h6v12h-6z" fill="currentColor"/><path d="M24.5.5h5v11h-5z" fill="none" stroke="currentColor"/></svg>L2 판정 · 탐색 + 몬테카를로</span>
+<div class="c-code"><svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><circle cx="6" cy="6" r="4.5" fill="currentColor"/></svg>FEASIBLE_FOUND</div>
+<span>이 모델에서는 성공 사례를 찾았습니다.</span>
+<div class="c-p"><b>15.2%</b><span class="k-mono">[12.3, 18.6]</span><button type="button" class="kb kb-sim" data-ctl="지구 p_success 배지" aria-haspopup="dialog" aria-label="값 배지 시뮬. 누르면 근거를 엽니다"><span class="kp"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 6q1.25-5 2.5 0t2.5 0t2.5 0t2.5 0"/></svg>시뮬</span></button><span class="k-ex">예시</span></div>
+<div class="c-ci" role="img" aria-label="신뢰구간 12.3%에서 18.6%, 점 추정 15.2%. 축 0%에서 25%"><i class="bg"></i><i class="iv" style="left:49.2%;width:25.2%"></i><i class="pt" style="left:60.8%"></i></div>
+<div class="c-axis"><span>0%</span><span>95% CI · n = 500</span><span>25%</span></div>
+<span class="k-cap">민감도 1위 · <span class="k-hi">노즐별 추력 잡음</span></span>
+<button type="button" class="k-btn sm" data-ctl="지구 판정 카드 열기" style="align-self:flex-start">판정 카드 열기</button>
+</div>
+<div class="c-vd" role="cell">
+<span class="k-ev l2" style="align-self:flex-start"><svg width="30" height="12" viewBox="0 0 30 12" aria-hidden="true"><path d="M0 0h6v12H0zM8 0h6v12H8zM16 0h6v12h-6z" fill="currentColor"/><path d="M24.5.5h5v11h-5z" fill="none" stroke="currentColor"/></svg>L2 판정 · 필요조건 검사</span>
+<div class="c-code" style="font-size:11px"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><circle cx="6" cy="6" r="4.5"/><path d="M2.8 9.2l6.4-6.4"/></svg>INFEASIBLE_NECESSARY_CONDITION</div>
+<span>이 모델에서는 필요조건을 만족하지 못합니다.</span>
+<div style="display:flex;flex-direction:column;gap:2px">
+<span class="k-cap">어긴 필요조건 · 결합부 하중</span>
+<div class="c-v"><span class="k-cap" style="min-width:68px">필요한 값</span><span class="k-mono">1.12 <span class="k-u">kN</span></span><button type="button" class="kb kb-sim" data-ctl="화성 필요한 값 배지" aria-haspopup="dialog" aria-label="값 배지 시뮬"><span class="kp"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 6q1.25-5 2.5 0t2.5 0t2.5 0t2.5 0"/></svg>시뮬</span></button><span class="k-ex">예시</span></div>
+<div class="c-v"><span class="k-cap" style="min-width:68px">쓸 수 있는 값</span><span class="k-mono">1.00 <span class="k-u">kN</span></span><button type="button" class="kb kb-def" data-ctl="화성 쓸 수 있는 값 배지" aria-haspopup="dialog" aria-label="값 배지 기본값"><span class="kp"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><circle cx="6" cy="6" r="4"/></svg>기본값</span></button><span class="k-ex">예시</span></div>
+<div class="c-v"><span class="k-cap" style="min-width:68px">여유</span><span class="k-mono">−0.12 <span class="k-u">kN</span></span><span class="k-cap">위 두 값의 차</span><span class="k-ex">예시</span></div>
+</div>
+<div class="c-nop"><b>확률 미산출</b> · 필요조건에서 막혀 몬테카를로를 돌리지 않았습니다</div>
+<div class="c-nop"><b>민감도 미산출</b> · 필요조건에서 막혀 몬테카를로를 돌리지 않았습니다</div>
+<button type="button" class="k-btn sm" data-ctl="화성 판정 카드 열기" style="align-self:flex-start">판정 카드 열기</button>
+</div>
+<div class="c-vd weak" role="cell">
+<span class="k-ev weak" style="align-self:flex-start"><svg width="30" height="12" viewBox="0 0 30 12" aria-hidden="true"><path d="M0 0h6v12H0zM8 0h6v12H8zM16 0h6v12h-6z" fill="currentColor"/><path d="M24.5.5h5v11h-5z" fill="none" stroke="currentColor"/></svg>L2 판정 · 약한 증거</span>
+<div class="c-code"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-dasharray="2 2" aria-hidden="true"><circle cx="6" cy="6" r="4.5"/></svg>NOT_FOUND_IN_BUDGET</div>
+<span>예산 안에서 찾지 못했습니다(약한 증거).</span>
+<div style="display:flex;flex-direction:column;gap:2px">
+<span class="k-cap">쓴 탐색 예산</span>
+<div class="c-v"><span>살펴본 후보</span><span class="k-mono">200 / 200 <span class="k-u">개</span></span><button type="button" class="kb kb-sim" data-ctl="달 탐색 예산 배지" aria-haspopup="dialog" aria-label="값 배지 시뮬"><span class="kp"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 6q1.25-5 2.5 0t2.5 0t2.5 0t2.5 0"/></svg>시뮬</span></button><span class="k-ex">예시</span></div>
+</div>
+<div class="c-nop"><b>확률 미산출</b> · 예산 안에서 성공 사례를 찾지 못했습니다</div>
+<div class="c-nop"><b>민감도 미산출</b> · 예산 안에서 성공 사례를 찾지 못했습니다</div>
+<button type="button" class="k-btn sm" data-ctl="달 판정 카드 열기" style="align-self:flex-start">판정 카드 열기</button>
+</div>
+</div>
+<div class="c-grid tn" role="row"><span class="k-cap" role="cell">비교 문구</span><span class="c-cmpline" role="cell">확률이 있는 열이 하나라 신뢰구간을 비교하지 않습니다.</span></div>
+</div>
+<div class="c-heads">
+<button type="button" class="c-acc" data-ctl="가정 비교 머리" aria-expanded="false"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 2.5L8 6l-3.5 3.5"/></svg><span>가정 비교</span><span class="c-cnt">행성마다 다른 가정 5개 · 같은 가정 4개</span></button>
+<button type="button" class="c-acc" data-ctl="이 모델이 보지 않는 것 머리" aria-expanded="false"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 2.5L8 6l-3.5 3.5"/></svg><span>이 모델이 보지 않는 것</span><span class="c-cnt">5개</span></button>
+</div>
+<div class="c-foot"><span class="k-l3"><svg width="30" height="12" viewBox="0 0 30 12" role="img" aria-label="증거 강도 0/4"><path d="M.5.5h5v11h-5zM8.5.5h5v11h-5zM16.5.5h5v11h-5zM24.5.5h5v11h-5z" fill="none" stroke="currentColor"/></svg><span class="k-mono">L3</span>실물 검증 없음 (실측 0건)</span></div>
+</section>
+
+<span class="k-lbl" style="color:#E8EDF2;margin-top:6px">(b) 달 열이 모델 밖일 때 (지구·화성 열과 머리, L3 줄은 (a)와 같음)</span>
+<div style="display:flex;gap:24px;align-items:flex-start">
+<div class="c-vd void" role="group" aria-label="달 열: 모델 밖" style="width:300px;flex:none" data-unit="달 열 (b)">
+<span class="k-ev none" style="align-self:flex-start"><svg width="30" height="12" viewBox="0 0 30 12" aria-hidden="true"><path d="M.5.5h5v11h-5zM8.5.5h5v11h-5zM16.5.5h5v11h-5zM24.5.5h5v11h-5z" fill="none" stroke="currentColor"/></svg>증거 없음 · 모델 밖</span>
+<div class="c-code" style="font-family:inherit;font-weight:600"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M1.5 1.5h9v9h-9z"/></svg>모델 밖</div>
+<span>모델 밖: 판정할 수 없습니다.</span>
+<div style="display:flex;flex-direction:column;gap:2px"><span class="k-cap">모델이 다루지 않는 현상</span><span>노즐 배기가 지면 먼지를 날려 접지와 시야를 바꾸는 일 <span class="k-ex">예시</span></span></div>
+<div class="c-nop"><b>확률 미산출</b> · 이 모델이 다루지 않는 현상입니다</div>
+<div class="c-nop"><b>민감도 미산출</b> · 이 모델이 다루지 않는 현상입니다</div>
+<button type="button" class="k-btn sm" data-ctl="달 판정 카드 열기 (b)" style="align-self:flex-start">판정 카드 열기</button>
+</div>
+<div class="k-cap" style="max-width:420px;display:flex;flex-direction:column;gap:8px"><span>모델 밖 열은 <span class="k-mono">color.evidence.none</span>(빈 막대 4칸)과 점선 테두리입니다. 약한 증거(달, (a))는 L2 색 점선에 바탕을 비웁니다. 두 열 모두 "판정할 수 없습니다", "찾지 못했습니다"라고만 쓰고 결과를 부정하는 말로 바꾸지 않습니다.</span><span>모델 밖 현상은 "이 모델이 보지 않는 것" 목록에도 같은 이름으로 더해집니다 [제안].</span></div>
+</div>
+</div>
+</div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":980}}'>
+class Component extends DCLogic {
+renderVals() {
+return {};
+}
+}
+</script>
+</body>
+</html>

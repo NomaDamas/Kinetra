@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>S3 행성 정보 팝오버</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="kin-sc07.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div class="k-root" style="width:1440px;height:640px">
+
+<div class="k-note"><span><strong>S3 행성 정보</strong> · 전환 직후 안내 줄의 <span class="k-mono">행성 정보</span>를 누른 모습(전환기에 포커스한 채 <span class="k-kbd">i</span>도 같음). 읽기 전용, 값은 모두 예시</span><span>팝오버 안 조작 6 (값 배지 4, 출처 열기 1, 닫기 1) · 편집 입력 0</span></div>
+
+<div class="k-scr" style="height:600px">
+
+<header class="k-top" data-outside="1">
+<button type="button" class="k-pname" data-ctl="프로젝트 이름" aria-label="프로젝트 이름: 점프대 시험 1">점프대 시험 1</button>
+<div class="k-seg pill" role="radiogroup" aria-label="행성" data-ctl="행성 전환기"><button type="button" role="radio" aria-checked="false" tabindex="-1">지구</button><button type="button" role="radio" aria-checked="false" tabindex="-1">화성</button><button type="button" role="radio" aria-checked="true">달</button></div>
+<div class="k-tabs" role="tablist" aria-label="모드" data-ctl="모드 전환기"><button type="button" role="tab" aria-selected="false" tabindex="-1">조립</button><button type="button" role="tab" aria-selected="false" tabindex="-1">실행</button><button type="button" role="tab" aria-selected="true">판정</button><button type="button" role="tab" aria-selected="false" tabindex="-1">Halo</button></div>
+<button type="button" class="k-evbtn none" data-ctl="증거 배지" aria-haspopup="dialog" aria-expanded="false" aria-label="증거: 무효, 행성 변경. 누르면 이유를 엽니다"><svg width="30" height="12" viewBox="0 0 30 12" aria-hidden="true"><path d="M.5.5h5v11h-5zM8.5.5h5v11h-5zM16.5.5h5v11h-5zM24.5.5h5v11h-5z" fill="none" stroke="currentColor"/></svg><span>무효: 행성 변경</span></button>
+<span class="k-sp"></span>
+<button type="button" class="k-prim" data-ctl="판정 실행" data-primary="1">판정 실행</button>
+<button type="button" class="k-btn" data-ctl="공유">공유</button>
+<button type="button" class="k-ib" data-ctl="더보기" aria-label="더보기" aria-haspopup="menu" aria-expanded="false"><svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor" aria-hidden="true"><circle cx="2.5" cy="7" r="1.3"/><circle cx="7" cy="7" r="1.3"/><circle cx="11.5" cy="7" r="1.3"/></svg></button>
+</header>
+<div class="k-info" role="status" data-outside="1"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="#8FB8E8" stroke-width="1.5" stroke-linecap="round" role="img" aria-label="알림"><circle cx="8" cy="8" r="6.5"/><path d="M8 7.5v4M8 4.8v.2"/></svg><span>달로 바꿨습니다. 이전 판정은 무효입니다. 다시 판정해야 합니다. 설계는 그대로입니다.</span><button type="button" class="k-btn sm" data-ctl="3행성 비교">3행성 비교</button><button type="button" class="k-btn sm" data-ctl="행성 정보" aria-haspopup="dialog" aria-expanded="true" style="background:#22324A;border-color:#5B9DFF">행성 정보</button><button type="button" class="k-ib sm" data-ctl="안내 닫기" aria-label="안내 닫기"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M2.5 2.5l7 7M9.5 2.5l-7 7"/></svg></button></div>
+
+<div class="k-wrap" style="position:relative">
+<div class="k-ann">
+<p><strong>무엇을 보이나</strong></p>
+<ul>
+<li>지금 행성의 상수: 중력, 대기 밀도, 지면 마찰 분포(요약), 일사 각. 값마다 단위와 값 배지.</li>
+<li>출처를 찾은 값은 <span class="k-mono">인용</span>, 찾지 못한 값은 <span class="k-mono">unverified</span>(W-01). unverified는 새 색 없이 점선 테두리와 물음표 글리프로 그립니다 [확인 필요: 디자인 시스템 4절에 없는 표지].</li>
+<li>대기가 없는 달의 대기 밀도는 빈칸이 아니라 <span class="k-mono">0</span>과 단위로 씁니다.</li>
+<li>모델 라벨 한 줄: 근사: 균일 중력(행성별 g 하나). 라벨은 표시일 뿐 g 값을 바꾸지 않습니다.</li>
+<li>행성 상수는 편집할 수 없습니다(C-02). 입력 칸이 없습니다.</li>
+</ul>
+<p>닫기: <span class="k-kbd">Esc</span>, 바깥 누르기, 닫기 단추. 이 팝오버는 판정도 1회 실행 결과도 아닙니다.</p>
+</div>
+<div class="k-vp" style="flex:1 1 0">
+<div class="k-3d"><div class="k-ground"></div><span class="k-3dl">3D 뷰포트 · 코드 프로토타입으로 검증</span></div>
+<div class="k-pop abs" role="dialog" aria-label="행성 정보: 달. 읽기 전용" data-transient="1" style="right:56px;top:8px;width:520px">
+<h3>달 · 행성 정보<span class="k-cap" style="font-weight:500">읽기 전용</span><span class="k-sp"></span><button type="button" class="k-ib sm" data-ctl="행성 정보 닫기" aria-label="행성 정보 닫기" aria-keyshortcuts="Escape"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M2.5 2.5l7 7M9.5 2.5l-7 7"/></svg></button></h3>
+<div class="c-at one" style="grid-template-columns:132px minmax(0,1fr)"><span>중력 g</span><span class="c-v"><span class="k-mono">1.62 <span class="k-u">m/s²</span></span><button type="button" class="kb kb-cite" data-ctl="값 배지: 중력" aria-haspopup="dialog" aria-label="값 배지 인용. 누르면 출처와 라이선스를 엽니다"><span class="kp"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 8.5v-3a2.5 2.5 0 0 1 2.5-2.5M7 8.5v-3a2.5 2.5 0 0 1 2.5-2.5"/></svg>인용</span></button><span class="k-ex">예시</span></span></div>
+<div class="c-at one" style="grid-template-columns:132px minmax(0,1fr)"><span>대기 밀도</span><span class="c-v"><span class="k-mono">0 <span class="k-u">kg/m³</span></span><button type="button" class="kb kb-cite" data-ctl="값 배지: 대기 밀도" aria-haspopup="dialog" aria-label="값 배지 인용. 누르면 출처와 라이선스를 엽니다"><span class="kp"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 8.5v-3a2.5 2.5 0 0 1 2.5-2.5M7 8.5v-3a2.5 2.5 0 0 1 2.5-2.5"/></svg>인용</span></button><span class="k-ex">예시</span><span class="k-cap">대기 없음으로 다룹니다</span></span></div>
+<div class="c-at one" style="grid-template-columns:132px minmax(0,1fr)"><span>지면 마찰 분포<span class="k-cap">요약 · 무차원</span></span><span class="c-v"><span class="k-mono">μ 0.4 ~ 0.7</span><span class="k-cap">균등 분포</span><button type="button" class="kb kb-unv" data-ctl="값 배지: 지면 마찰" aria-haspopup="dialog" aria-label="unverified. 출처를 찾지 못한 값입니다. 누르면 이유를 엽니다"><span class="kp"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" aria-hidden="true"><path d="M4.3 4.5a1.8 1.8 0 1 1 2.6 1.6c-.6.3-.9.7-.9 1.3M6 9.3v.2"/></svg>unverified</span></button><span class="k-ex">예시</span></span></div>
+<div class="c-at one" style="grid-template-columns:132px minmax(0,1fr)"><span>일사 각</span><span class="c-v"><span class="k-mono">37 <span class="k-u">°</span></span><button type="button" class="kb kb-unv" data-ctl="값 배지: 일사 각" aria-haspopup="dialog" aria-label="unverified. 출처를 찾지 못한 값입니다. 누르면 이유를 엽니다"><span class="kp"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" aria-hidden="true"><path d="M4.3 4.5a1.8 1.8 0 1 1 2.6 1.6c-.6.3-.9.7-.9 1.3M6 9.3v.2"/></svg>unverified</span></button><span class="k-ex">예시</span></span></div>
+<div class="c-at one" style="grid-template-columns:132px minmax(0,1fr)"><span>출처 · 받은 날짜</span><span class="c-v"><span>[출처 이름]</span><span class="c-dot">·</span><span>받은 날짜 [YYYY-MM-DD]</span><button type="button" class="k-btn sm" data-ctl="출처 열기">출처 열기</button></span></div>
+<div class="c-at one" style="grid-template-columns:132px minmax(0,1fr);border-bottom:0"><span>모델 라벨</span><span>근사: 균일 중력(행성별 g 하나)</span></div>
+<div class="k-band" style="border-style:solid;border-color:#3A4654;color:#A9B4C0"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="5.5" width="7" height="5" rx="1"/><path d="M4 5.5V4a2 2 0 0 1 4 0v1.5"/></svg>행성 상수는 편집할 수 없습니다. 이 값들은 출처를 바꾸지 않고는 달라지지 않습니다.</div>
+</div>
+</div>
+</div>
+
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":640}}'>
+class Component extends DCLogic {
+renderVals() {
+return {};
+}
+}
+</script>
+</body>
+</html>

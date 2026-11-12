@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>S10 열마다 상태가 다름</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="kin-sc07.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div class="k-root" style="width:1440px;height:940px">
+
+<div class="k-note"><span><strong>S10 열마다 상태가 다름</strong> · 지구 판정 있음, 화성 진행 중, 달 판정 없음(1회 실행이 오류로 끝나 판정할 수 없음). 있는 열만 비교 문구를 쓰고 빠진 열을 채우지 않습니다</span><span>상시 조작 요소 15 · 비교 보기 안 primary 0</span></div>
+
+<div class="k-scr">
+
+<header class="k-top" data-outside="1">
+<button type="button" class="k-pname" data-ctl="프로젝트 이름" aria-label="프로젝트 이름: 점프대 시험 1">점프대 시험 1</button>
+<div class="k-seg pill" role="radiogroup" aria-label="행성. 실행 중에는 행성을 바꿀 수 없습니다. 취소하면 바꿀 수 있습니다" aria-disabled="true" data-ctl="행성 전환기"><button type="button" role="radio" aria-checked="true" aria-disabled="true">지구</button><button type="button" role="radio" aria-checked="false" aria-disabled="true" tabindex="-1">화성</button><button type="button" role="radio" aria-checked="false" aria-disabled="true" tabindex="-1">달</button></div>
+<div class="k-tabs" role="tablist" aria-label="모드" data-ctl="모드 전환기"><button type="button" role="tab" aria-selected="false" tabindex="-1">조립</button><button type="button" role="tab" aria-selected="false" tabindex="-1">실행</button><button type="button" role="tab" aria-selected="true">판정</button><button type="button" role="tab" aria-selected="false" tabindex="-1">Halo</button></div>
+<button type="button" class="k-evbtn none" data-ctl="상단바 증거 배지" aria-haspopup="dialog" aria-expanded="false" aria-label="진행 중, 아직 판정이 아닙니다"><svg width="30" height="12" viewBox="0 0 30 12" aria-hidden="true"><path d="M.5.5h5v11h-5zM8.5.5h5v11h-5zM16.5.5h5v11h-5zM24.5.5h5v11h-5z" fill="none" stroke="currentColor"/></svg><span>진행 중</span></button>
+<span class="k-sp"></span>
+<button type="button" class="k-prim" data-ctl="판정 실행 · 3행성" data-primary="1" aria-disabled="true">판정 중… · 3행성</button>
+<button type="button" class="k-btn" data-ctl="공유">공유</button>
+<button type="button" class="k-ib" data-ctl="더보기" aria-label="더보기" aria-haspopup="menu" aria-expanded="false"><svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor" aria-hidden="true"><circle cx="2.5" cy="7" r="1.3"/><circle cx="7" cy="7" r="1.3"/><circle cx="11.5" cy="7" r="1.3"/></svg></button>
+</header>
+
+<div class="k-mid">
+
+<aside class="k-rail l" aria-label="라이브러리 (접힘)" data-outside="1"><button type="button" class="k-ib" data-ctl="라이브러리 펼치기" aria-label="라이브러리 펼치기" aria-expanded="false"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 2.5L8 6l-3.5 3.5"/></svg></button></aside>
+
+<section class="c-cmp" aria-label="3행성 비교 보기, 열마다 다른 상태" data-unit="비교 보기">
+
+<div class="c-head">
+<h2>비교 보기</h2>
+<span class="c-same">같은 설계 · 같은 시드 · 행성 상수만 다름</span>
+<span class="k-sp"></span>
+<button type="button" class="kb" data-ctl="증거 배지" aria-haspopup="dialog" aria-expanded="false" aria-label="열마다 증거가 다릅니다. 누르면 근거를 엽니다" style="color:#93A0AE"><span class="k-ev none"><svg width="30" height="12" viewBox="0 0 30 12" aria-hidden="true"><path d="M.5.5h5v11h-5zM8.5.5h5v11h-5zM16.5.5h5v11h-5zM24.5.5h5v11h-5z" fill="none" stroke="currentColor"/></svg>열마다 다름 · 판정 1열</span></button>
+<button type="button" class="k-btn sm" data-ctl="비교 닫기" aria-keyshortcuts="Escape"><svg width="10" height="10" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M2.5 2.5l7 7M9.5 2.5l-7 7"/></svg>닫기<span class="k-kbd">Esc</span></button>
+</div>
+
+<div class="c-sub"><b>1회 실행. 판정이 아닙니다</b><span>(장면과 타임라인)</span><span class="c-dot">·</span><span>근사: 균일 중력(행성별 g 하나)</span><span class="c-dot">·</span><span>시드 <span class="k-mono k-hi">4821</span> <span class="k-ex">예시</span></span><span class="c-dot">·</span><span>달의 1회 실행은 결과가 없습니다</span></div>
+
+<div class="c-scenes c-grid" role="group" aria-label="세 장면">
+<div class="c-gut"><b>장면</b><span>결과가 없는 칸은 비워 두고 이유를 씁니다. 가짜 장면을 그리지 않습니다</span></div>
+<div class="c-scene" role="img" aria-label="지구, 현재 행성. 1회 실행 · 판정 아님"><div class="c-sl"><span class="c-pn">지구</span><span class="c-cur">현재</span><span class="k-ev">1회 실행 · 판정 아님</span></div><div class="k-ground"></div><div class="k-3d"><span class="k-3dl">3D 뷰포트 · 코드 프로토타입으로 검증</span></div></div>
+<div class="c-scene" role="img" aria-label="화성. 1회 실행 · 판정 아님"><div class="c-sl"><span class="c-pn">화성</span><span class="k-ev">1회 실행 · 판정 아님</span></div><div class="k-ground"></div><div class="k-3d"><span class="k-3dl">3D 뷰포트 · 코드 프로토타입으로 검증</span></div></div>
+<div class="c-scene" role="group" aria-label="달. 이 행성의 실행을 계산하지 못했습니다"><div class="c-sl"><span class="c-pn">달</span><span class="k-cap">결과 없음</span></div>
+<div class="c-err" style="position:absolute;left:8px;right:8px;top:44px">
+<h4><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="#FF7B72" stroke-width="1.5" stroke-linecap="round" role="img" aria-label="오류"><circle cx="8" cy="8" r="6.5"/><path d="M8 4.5v4.5M8 11.2v.2"/></svg>이 행성의 실행을 계산하지 못했습니다</h4>
+<span class="k-cap">이유: 달 지면 접촉 모델을 컴파일하지 못했습니다 <span class="k-ex">예시</span> · 코드 <span class="k-mono k-hi">E-COMPILE-0412</span> <span class="k-ex">예시</span></span>
+<div style="display:flex;gap:6px"><button type="button" class="k-btn sm" data-ctl="오류 코드 복사">코드 복사</button><button type="button" class="k-btn sm" data-ctl="다시 시도">다시 시도</button></div>
+</div></div>
+</div>
+
+<div class="c-tl" role="group" aria-label="공통 타임라인">
+<div class="c-tlc">
+<span class="k-cap">공통 타임라인</span>
+<div class="c-crow"><button type="button" class="k-ib sm" data-ctl="재생/일시정지" aria-label="장면 재생" aria-keyshortcuts="Space"><svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><path d="M2 1l7 4-7 4z" fill="currentColor"/></svg></button><button type="button" class="k-ib sm" data-ctl="리셋" aria-label="처음으로"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 2L1.5 4.5 4 7M1.5 4.5h5.5a3 3 0 0 1 0 6H4"/></svg></button><span class="c-t">t = 0.0 s</span></div>
+<span class="c-lname">지구</span>
+<span class="c-lname">화성</span>
+<span class="c-lname">달</span>
+</div>
+<div class="c-trk">
+<div class="c-ticks" aria-hidden="true"><span class="c-tk first" style="left:0">0 s</span><span class="c-tk" style="left:20%">1 s</span><span class="c-tk" style="left:40%">2 s</span><span class="c-tk" style="left:60%">3 s</span><span class="c-tk" style="left:80%">4 s</span><span class="c-tk last" style="left:100%">5 s</span></div>
+<div class="c-scrub" role="slider" tabindex="0" data-ctl="시간 탐색 슬라이더" aria-label="시간 탐색" aria-valuemin="0" aria-valuemax="5" aria-valuenow="0" aria-valuetext="0.0 초"><div class="c-rail"></div><div class="c-done" style="width:0"></div><div class="c-thumb" style="left:0"></div></div>
+<div class="c-phl" style="left:0"></div>
+<div class="c-lane a" role="img" aria-label="지구 레인: 전복 표식 3.1 초"><div class="c-mk" style="left:62%"><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M7 1.5l6 11H1z" fill="currentColor"/></svg>전복 3.1 s</div></div>
+<div class="c-lane b" role="img" aria-label="화성 레인: 파단 표식 1.8 초"><div class="c-off" style="left:36%"></div><div class="c-mk" style="left:36%"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M3 3l8 8M11 3l-8 8"/></svg>파단 1.8 s · 단순화 모델</div></div>
+<div class="c-lane c" role="img" aria-label="달 레인: 실행 결과 없음"><div class="c-off" style="left:0"></div><span class="c-none" style="left:8px;background:#151A20;padding-right:6px">실행 결과 없음 · 오류</span></div>
+</div>
+<div class="c-tlc r">
+<span class="k-cap">시간 축 · 이번 실행 <span class="k-ex">예시</span></span>
+<button type="button" class="k-btn sm" data-ctl="재생 속도 선택" aria-haspopup="listbox" aria-expanded="false" aria-label="재생 속도 1×"><span>속도</span><span class="k-mono">1×</span><svg width="10" height="10" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 4.5L6 8l3.5-3.5"/></svg></button>
+<span class="c-lend">5.0 s까지</span>
+<span class="c-lend">1.8 s에 끝남</span>
+<span class="c-lend">결과 없음</span>
+</div>
+</div>
+
+<div class="c-tbl" role="table" aria-label="수치와 판정 비교">
+<div class="c-grid th" role="row"><span role="columnheader">행</span><span role="columnheader">지구 · 현재</span><span role="columnheader">화성</span><span role="columnheader">달</span></div>
+<div class="c-grid tr" role="row" style="min-height:40px">
+<div class="c-rh" role="rowheader"><b>추력 대 중량비</b><div class="c-rhb"><button type="button" class="kb kb-decl" data-ctl="행 배지: 추력 대 중량비" aria-haspopup="dialog" aria-label="행 배지 사용자 선언"><span class="kp"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 10l.6-2.6 5.6-5.6 2 2-5.6 5.6z"/></svg>사용자 선언</span></button><span class="k-cap">L0 해석 계산 · 무차원</span></div></div>
+<div class="c-v" role="cell"><span class="k-mono">2.5</span><span class="k-ex">예시</span></div>
+<div class="c-v" role="cell"><span class="k-mono">6.6</span><span class="k-ex">예시</span></div>
+<div class="c-v" role="cell"><span class="k-mono">15.1</span><span class="k-ex">예시</span><span class="k-cap">해석 계산이라 실행 오류와 무관</span></div>
+</div>
+<div class="c-grid tr" role="row" style="min-height:40px">
+<div class="c-rh" role="rowheader"><b>이번 실행에서는 · 최고 높이</b><div class="c-rhb"><button type="button" class="kb kb-sim" data-ctl="행 배지: 이번 실행의 값" aria-haspopup="dialog" aria-label="행 배지 시뮬"><span class="kp"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 6q1.25-5 2.5 0t2.5 0t2.5 0t2.5 0"/></svg>시뮬</span></button></div></div>
+<div class="c-v" role="cell"><span class="k-mono">3.2 <span class="k-u">m</span></span><span class="k-ex">예시</span></div>
+<div class="c-v" role="cell"><span class="k-mono">8.4 <span class="k-u">m</span></span><span class="k-ex">예시</span></div>
+<div class="c-nov" role="cell">값 없음 · 이 행성의 실행 결과가 없습니다</div>
+</div>
+<div class="c-grid tv" role="row">
+<div class="c-rh" role="rowheader"><b>판정</b><span class="k-cap">진행 중 · 화성 <span class="k-mono">212 / 500</span> 표본 <span class="k-ex">예시</span></span><div class="c-rhb" style="margin-top:4px"><button type="button" class="k-btn sm" data-ctl="취소" aria-label="판정 취소. 끝난 열의 판정은 남습니다">취소</button><span class="k-cap">세 열 공통</span></div></div>
+<div class="c-vd" role="cell">
+<div class="c-code"><span class="k-ev l2"><svg width="30" height="12" viewBox="0 0 30 12" aria-hidden="true"><path d="M0 0h6v12H0zM8 0h6v12H8zM16 0h6v12h-6z" fill="currentColor"/><path d="M24.5.5h5v11h-5z" fill="none" stroke="currentColor"/></svg>L2 판정</span><svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><circle cx="6" cy="6" r="4.5" fill="currentColor"/></svg>FEASIBLE_FOUND</div>
+<div class="c-p"><b>15.2%</b><span class="k-mono">[12.3, 18.6]</span><button type="button" class="kb kb-sim" data-ctl="지구 p_success 배지" aria-haspopup="dialog" aria-label="값 배지 시뮬"><span class="kp"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 6q1.25-5 2.5 0t2.5 0t2.5 0t2.5 0"/></svg>시뮬</span></button><span class="k-ex">예시</span></div>
+<span class="k-cap">95% CI · n = 500 표본 · 민감도 1위: 노즐별 추력 잡음</span>
+<button type="button" class="k-btn sm" data-ctl="지구 판정 카드 열기" style="align-self:flex-start">판정 카드 열기</button>
+</div>
+<div class="c-vd" role="cell" aria-busy="true">
+<span class="k-cap">진행 중 · <span class="k-mono k-hi">212 / 500</span> 표본 · 경과 <span class="k-mono k-hi">18 s</span> <span class="k-ex">예시</span></span>
+<div class="c-prog" role="progressbar" aria-label="화성 판정 진행" aria-valuemin="0" aria-valuemax="500" aria-valuenow="212"><i style="width:42.4%"></i></div>
+<div class="c-nop"><b>진행 중 · 아직 판정이 아닙니다</b></div>
+</div>
+<div class="c-vd void" role="cell">
+<span class="c-nov" style="color:#E8EDF2;font-weight:600">판정 없음</span>
+<span class="k-cap">이 행성의 1회 실행이 오류로 끝나 판정을 시작하지 않았습니다. 장면 칸의 <span class="k-mono">다시 시도</span> 뒤 판정할 수 있습니다.</span>
+</div>
+</div>
+<div class="c-grid tn" role="row"><span class="k-cap" role="cell">비교 문구</span><span class="c-cmpline" role="cell">확률이 있는 열이 하나라 신뢰구간을 비교하지 않습니다.<span class="k-cap">화성은 끝나면 다시 씁니다.</span></span></div>
+</div>
+
+<div class="c-heads">
+<button type="button" class="c-acc" data-ctl="가정 비교 머리" aria-expanded="false"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 2.5L8 6l-3.5 3.5"/></svg><span>가정 비교</span><span class="c-cnt">행성마다 다른 가정 5개 · 같은 가정 4개</span></button>
+<button type="button" class="c-acc" data-ctl="이 모델이 보지 않는 것 머리" aria-expanded="false"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 2.5L8 6l-3.5 3.5"/></svg><span>이 모델이 보지 않는 것</span><span class="c-cnt">5개</span></button>
+</div>
+
+<div class="c-foot"><span class="k-l3"><svg width="30" height="12" viewBox="0 0 30 12" role="img" aria-label="증거 강도 0/4"><path d="M.5.5h5v11h-5zM8.5.5h5v11h-5zM16.5.5h5v11h-5zM24.5.5h5v11h-5z" fill="none" stroke="currentColor"/></svg><span class="k-mono">L3</span>실물 검증 없음 (실측 0건)</span></div>
+
+</section>
+
+<aside class="k-rail r" aria-label="판정 패널 (접힘)" data-outside="1"><button type="button" class="k-ib" data-ctl="판정 패널 펼치기" aria-label="판정 패널 펼치기" aria-expanded="false"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7.5 2.5L4 6l3.5 3.5"/></svg></button></aside>
+
+</div>
+
+<div class="k-agent" role="group" aria-label="에이전트 바" data-outside="1"><button type="button" class="k-mic" data-ctl="마이크" aria-label="음성 입력 시작"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" aria-hidden="true"><rect x="5" y="1.5" width="4" height="7" rx="2"/><path d="M2.5 7a4.5 4.5 0 0 0 9 0M7 11.5v1.5"/></svg></button><div class="k-ask"><input data-ctl="에이전트 입력창" aria-label="에이전트에게 요청하기" placeholder="에이전트에게 요청하기"><span class="k-kbd">Enter</span><span class="k-cap">보내기</span></div></div>
+
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":940}}'>
+class Component extends DCLogic {
+renderVals() {
+return {};
+}
+}
+</script>
+</body>
+</html>
