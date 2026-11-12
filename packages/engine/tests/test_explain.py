@@ -187,6 +187,43 @@ def test_explain_number_check_cites_the_closest_datum_and_its_path():
     assert missing == () and [(c.text, c.path, c.value) for c in cited] == [("0.1", "a[1]", 0.1), ("0.12", "b.c", 0.12)]
 
 
+@pytest.mark.parametrize("written", ["1e999", "9e999", "-1e999", "1E+999", "1e-999", "0e999", "1" + "0" * 500])
+def test_explain_a_number_too_large_or_small_for_any_datum_is_never_cited(written):
+    """`float("1e999")` is infinity: such a number is not one value (`MAX_EXPONENT`), whatever the data holds."""
+    data = {"max": 1.7976931348623157e308, "tiny": 5e-324, "zero": 0.0, "one": 1.0}
+    assert check_numbers(f"하중 {written} N", data) == ((), (written,))
+    result = Explainer.check(f"하중은 {written} N이었습니다.", {"rollout_summary": {"run_id": "run-1", **data}})
+    assert result.status == "discarded" and result.ungrounded == (written,) and result.explanation is None
+
+
+def test_explain_the_largest_and_smallest_doubles_are_still_cited_exactly():
+    data = {"max": 1.7976931348623157e308, "tiny": 5e-324}
+    cited, missing = check_numbers("1.8e308, 9e308, 4.9e-324, 5e-324", data)
+    assert missing == ("9e308",) and [(c.text, c.path) for c in cited] == [("1.8e308", "max"), ("4.9e-324", "tiny"), ("5e-324", "tiny")]
+    assert all(c.value in (data["max"], data["tiny"]) for c in cited)
+
+
+@pytest.mark.parametrize(
+    ("text", "data", "cited", "ungrounded"),
+    [
+        ("하중 1,234 N", {"n": 1234}, [("1,234", 1234.0)], ()),  # thousands grouping: one number
+        ("하중 1,234 N", {"a": 1, "b": 234}, [], ("1,234",)),  # not the numbers 1 and 234
+        ("틱 1, 234", {"a": 1, "b": 234}, [("1", 1.0), ("234", 234.0)], ()),  # a list written with spaces
+        ("1,234.5 N", {"n": 1234.5}, [("1,234.5", 1234.5)], ()),
+        ("1,234.5 N", {"a": 1, "b": 234.5}, [], ("1,234.5",)),
+        ("12,345,678 N", {"n": 12345678}, [("12,345,678", 12345678.0)], ()),
+        ("1,234 N", {"n": 1234.4}, [("1,234", 1234.4)], ()),  # rounded like any number
+        ("-1,234 N", {"n": 1234}, [], ("-1,234",)),
+        ("틱 2,3", {"a": 2, "b": 3, "c": 23, "d": 2.3}, [], ("2,3",)),  # a list, 23 or 2.3: not one value, never cited
+        ("1,23,456 N", {"n": 123456}, [], ("1,23,456",)),  # not thousands grouping
+        ("1.234.567 N", {"a": 1.234, "b": 567, "c": 1234567}, [], ("1.234.567",)),  # dots as grouping, or a version: not one value
+    ],
+)
+def test_explain_commas_and_dots_between_digits(text, data, cited, ungrounded):
+    got, missing = check_numbers(text, data)
+    assert [(c.text, c.value) for c in got] == cited and missing == ungrounded
+
+
 # --- nothing to explain, and the gateway ------------------------------------------------------------------------------------
 
 

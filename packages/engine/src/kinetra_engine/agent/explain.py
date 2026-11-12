@@ -15,8 +15,10 @@ Rules (`docs/architecture/agent-explain.md`):
 - **Every number of the reply must be in the data, or the reply is thrown away whole.** `check_numbers` reads each number of the
   reply text (`NUMBER`; digits inside an id such as `plate-1`, `X-02d` are part of the id) and looks for a datum it is a rounding
   of: a number of the evidence (a JSON number, or a number inside one of its strings, such as a hash), equal to it when rounded to
-  as many decimals as the reply wrote. A minus sign written must be the datum's. One number not found and the reply is `discarded`:
-  nothing of it is shown, not even the sentences with only grounded numbers. Numbers of the question are not data.
+  as many decimals as the reply wrote, in exact decimal arithmetic. A minus sign written must be the datum's. Thousands grouping
+  (`1,234.5`) is one number; digits joined by dots and commas in any other way (`1.234.567`, `2,3`) and an exponent beyond
+  `MAX_EXPONENT` (`1e999`, infinity as a float) are not one value and so never cited. One number not found and the reply is
+  `discarded`: nothing of it is shown, not even the sentences with only grounded numbers. Numbers of the question are not data.
 - **The explanation is never a verdict (V1).** A reply that passes becomes G-03a's `Explanation`: `EXPLANATION_LABEL` and
   `is_verdict: false` always, and the verdict-like sentences taken out by its filter. The run is one preview run; the summary says
   so (`ROLLOUT_NOTICE`).
@@ -31,6 +33,7 @@ import math
 import re
 from collections.abc import Iterator, Mapping
 from dataclasses import dataclass
+from decimal import Decimal, localcontext
 from typing import Any, Literal
 
 from kinetra_core import Project, Reason
@@ -47,9 +50,18 @@ EVIDENCE_TOOLS = ("rollout_summary", "statics_check", "mass_properties")
 DISCARDED_NOTICE = "에이전트 설명에 실행·검사 데이터에 없는 수치가 있어 버렸습니다"
 """Shown instead of an explanation that quoted a number the data does not have."""
 
-NUMBER = re.compile(r"(?<![A-Za-z0-9_])(?<![A-Za-z0-9_][.\-])-?\d+(?:\.\d+)?(?:[eE][-+]?\d+)?")
-"""A number written in text. Digits that continue an ASCII id or name (`plate-1`, `run-2`, `X-02d`, `al6061`, `sha256`) are not a
-number; digits after Hangul or punctuation are (`틱25`, `높이-0.5`)."""
+NUMBER = re.compile(r"(?<![A-Za-z0-9_])(?<![A-Za-z0-9_][.\-])-?\d+(?:[.,]\d+)*(?:[eE][-+]?\d+)?")
+"""A number written in text, with every dot and comma that joins digits to it (`1,234.5`, `1.234.567`, `2,3`). Digits that
+continue an ASCII id or name (`plate-1`, `run-2`, `X-02d`, `al6061`, `sha256`) are not a number; digits after Hangul or punctuation
+are (`틱25`, `높이-0.5`). What it reads is a value only in one of the forms of `_PLAIN` and `_GROUPED` (`_value`)."""
+
+_PLAIN = re.compile(r"-?\d+(?:\.\d+)?(?:[eE][-+]?\d+)?")
+_GROUPED = re.compile(r"-?\d{1,3}(?:,\d{3})+(?:\.\d+)?(?:[eE][-+]?\d+)?")
+"""Digits grouped by thousands with commas (`1,234`, `12,345.6`; English and Korean writing): one number, read without them."""
+
+MAX_EXPONENT = 400
+"""Largest decimal exponent (`Decimal.adjusted`) of a number that is read as a value. A design choice (no source): every datum is a
+finite double, between about 4.9e-324 and 1.8e308 in size, so a written number beyond 1e±400 can be no datum's rounding."""
 
 SYSTEM_PROMPT = """You explain to a Kinetra user why a run of their design ended as it did, using only the data you are given:
 the summary of one recorded run and the checks the core computed on the design.
@@ -90,38 +102,51 @@ def evidence_of(tools: QueryTools, project: Project, run_id: str | None = None) 
     return evidence, ()
 
 
-def _data(value: Any, path: str = "") -> Iterator[tuple[str, str | None, float]]:
-    """Every number of a JSON value, in document order: `(path, text, value)`. `text` is the written number when it was read out
-    of a string (a hash, a sentence), `None` for a JSON number. Booleans are not numbers."""
+def _value(written: str) -> Decimal | None:
+    """The value of a number read by `NUMBER`, exactly, or `None` when it is not one value: dots and commas that are neither a
+    decimal point nor thousands grouping (`1.234.567`, `2,3`, `1,23,456`: a list, a version or another grouping, so possibly one
+    number nobody can say), or an exponent beyond `MAX_EXPONENT` (`1e999`, which a float would read as infinity)."""
+    if not (_PLAIN.fullmatch(written) or _GROUPED.fullmatch(written)):
+        return None
+    value = Decimal(written.replace(",", ""))
+    return value if abs(value.adjusted()) <= MAX_EXPONENT else None
+
+
+def _data(value: Any, path: str = "") -> Iterator[tuple[str, Decimal]]:
+    """Every number of a JSON value, in document order: `(path, value)`, exactly. A JSON number, or a number read by `NUMBER`
+    out of a string (a hash, a sentence) that is one value and a finite double. Booleans and non-finite numbers are not numbers."""
     stack: list[tuple[str, Any]] = [(path, value)]
     while stack:
         here, v = stack.pop()
         if isinstance(v, bool) or v is None:
             continue
         if isinstance(v, (int, float)):
-            yield here, None, float(v)
+            if math.isfinite(v):
+                yield here, Decimal(v)
         elif isinstance(v, str):
             for m in NUMBER.finditer(v):
-                yield here, m.group(), float(m.group())
+                d = _value(m.group())
+                if d is not None and math.isfinite(float(d)):
+                    yield here, d
         elif isinstance(v, Mapping):
             stack.extend(reversed([(f"{here}.{k}" if here else str(k), x) for k, x in v.items()]))
         elif isinstance(v, (list, tuple)):
             stack.extend(reversed([(f"{here}[{i}]", x) for i, x in enumerate(v)]))
 
 
-def _decimals(written: str) -> int:
-    """Decimals of a written number, its exponent counted: `0.12` → 2, `25` → 0, `1.5e-3` → 4, `2e3` → -3."""
-    mantissa, _, exponent = written.lstrip("-").lower().partition("e")
-    return len(mantissa.partition(".")[2]) - (int(exponent) if exponent else 0)
+_REL = Decimal("1e-9")
+_ABS = Decimal("1e-12")
 
 
-def _rounds_to(written: str, value: float, datum: float) -> bool:
-    """`written` (its value `value`) is `datum` rounded to the decimals written (ties either way). A minus sign written must be
-    the datum's; an unsigned number may be the size of a negative datum (\"0.08 m 모자라다\" for a margin of -0.08 m)."""
-    if not math.isfinite(datum) or (written.startswith("-") and datum >= 0):
-        return False
-    half = 0.5 * 10.0 ** -_decimals(written)
-    return abs(abs(datum) - abs(value)) <= half * (1 + 1e-9) + 1e-12 * abs(value)
+def _gap(written: str, value: Decimal, datum: Decimal) -> Decimal | None:
+    """How far `datum` is from `value` (the number `written`) when `written` is `datum` rounded to the decimals written (ties
+    either way, the exponent counted: `0.12` → 2 decimals, `2e3` → -3), else `None`. A minus sign written must be the datum's; an
+    unsigned number may be the size of a negative datum (\"0.08 m 모자라다\" for a margin of -0.08 m). Exact decimal arithmetic."""
+    if written.startswith("-") and datum >= 0:
+        return None
+    half = Decimal(5).scaleb(value.as_tuple().exponent - 1)  # type: ignore[operator]
+    gap = abs(abs(datum) - abs(value))
+    return gap if gap <= half * (1 + _REL) + _ABS * abs(value) else None
 
 
 @dataclass(frozen=True)
@@ -139,23 +164,25 @@ class Citation:
 
 def check_numbers(text: str, evidence: Mapping[str, Any]) -> tuple[tuple[Citation, ...], tuple[str, ...]]:
     """Each number of `text` against the data: `(citations, ungrounded)`. A number is cited from the datum closest to it (the
-    first in document order on a tie); a number no datum rounds to is ungrounded."""
+    first in document order on a tie); a number no datum rounds to, or that is not one value (`_value`), is ungrounded."""
     data = list(_data(evidence))
     cited: list[Citation] = []
     ungrounded: list[str] = []
     for m in NUMBER.finditer(text):
-        written, value = m.group(), float(m.group())
-        best: tuple[float, str, float] | None = None
-        for path, datum_text, datum in data:
-            if not _rounds_to(written, value, datum):
-                continue
-            gap = abs(abs(datum) - abs(value))
-            if best is None or gap < best[0]:
-                best = (gap, path, float(datum_text) if datum_text is not None else datum)
+        written = m.group()
+        value = _value(written)
+        best: tuple[Decimal, str, Decimal] | None = None
+        if value is not None:
+            with localcontext() as ctx:
+                ctx.prec = len(written) + 1500  # exact: a double spans 2^-1074 to 2^1024 (< 1100 decimal places), the value 1e±400
+                for path, datum in data:
+                    gap = _gap(written, value, datum)
+                    if gap is not None and (best is None or gap < best[0]):
+                        best = (gap, path, datum)
         if best is None:
             ungrounded.append(written)
         else:
-            cited.append(Citation(written, best[1], best[2]))
+            cited.append(Citation(written, best[1], float(best[2])))
     return tuple(cited), tuple(ungrounded)
 
 
