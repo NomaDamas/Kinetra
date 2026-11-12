@@ -2,7 +2,7 @@
 
 - 상태: 구현됨. 코드는 `packages/engine/src/kinetra_engine/statics/tipover.py`(`tipover`), 테스트는 `packages/engine/tests/test_tipover.py`(`uv run pytest packages/engine -q -k tipover`).
 - 근거: 이슈 #133, `docs/plan/studio-plan.md`의 정역학 행("실행 전 해석 검사: 지지 다각형, 전복각 … 모두 L0이다"), `client-adapter.md`(파생값 L0: 정역학 경고), `body-tree.md`(X-01a 바디 트리), `project-model.md`(지면 z = 0, +Z 위, `PLACEMENT_TOLERANCE`), 핵심 가치 V1.
-- 범위 밖: 구조 응력 해석. 결합부 정적 하중(X-03b), 화면 오버레이와 경고 목록(X-03c), 지형 소품 위의 받침, 판정.
+- 범위 밖: 구조 응력 해석. 결합부 정적 하중(X-03b, 구현됨: [`static-load.md`](static-load.md), 이 모듈의 받침점을 쓴다), 화면 오버레이와 경고 목록(X-03c), 지형 소품 위의 받침, 판정.
 
 ## 쓰는 법
 
