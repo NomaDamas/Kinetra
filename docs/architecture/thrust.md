@@ -2,7 +2,7 @@
 
 - 상태: 구현됨. 코드는 `packages/engine/src/kinetra_engine/compiler/thrust.py`(`compile_thrust`, `ThrustModel`, `ThrustRun`), 테스트는 `packages/engine/tests/test_thrust.py`. 확인: `uv run pytest packages/engine -q -k thrust`(B-03c의 `test_thruster.py`도 같이 돈다).
 - 근거: 이슈 #125(DoD: 제어 스케줄에 따른 추력과 추진제 소모, 질량 변화의 처리 방식과 근거, 무중력 직선 가속의 수계산 대조), `parts-thruster.md`(B-03c: `Thruster`, `burn`), `parts-battery-tank.md`(B-03d: `Supply`, `tank_supply`. 질량 변화를 엔진 모델에 반영하는 방식을 X-01c에 남겼다), `body-tree.md`(X-01a: 강체와 질량 합, X-01d: 컴파일 오류), `missing-definitions.md`(컴파일은 `require_complete`를 먼저 부른다).
-- 범위 밖: MJCF를 저장 원본으로 쓰는 것(MJCF는 산출물이다). 실행 API와 스트림(X-02a), 행성 중력과 `<option>`(W-03a), 모터와 결합 액추에이터(X-01b), 부품 단위 오류 형식(X-01d), 추력기 여러 개의 추력중심(X-06), 행성별 추력 대 중량비(X-07).
+- 범위 밖: MJCF를 저장 원본으로 쓰는 것(MJCF는 산출물이다). 실행 API와 스트림(X-02a), 행성 중력과 `<option>`(W-03a), 모터와 결합 액추에이터(X-01b), 부품 단위 오류 형식(X-01d), 추력기 여러 개의 추력중심(X-06, `statics-thrust-center.md`), 행성별 추력 대 중량비(X-07).
 
 ## 쓰는 법
 
