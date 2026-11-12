@@ -2,7 +2,8 @@
 
 - 상태: 구현됨. 코드는 `packages/engine/src/kinetra_engine/compiler/contact.py`(`contact_friction`, `ContactFriction`, `GeomFriction`, `CONTACT_PARAMETERS`, `contact_labels`), MJCF에 쓰는 곳은 `mjcf.py`(`to_mjcf(tree, ..., ground_friction=None)`), 행성 지면 마찰은 `planet.py`(`PlanetPhysics.ground_friction`). 테스트 `packages/engine/tests/test_contact_friction.py`(`uv run pytest packages/engine -q -k contact_friction`). 결정론적이라 시드가 없다(난수를 쓰지 않는다).
 - 근거: 이슈 #545, `materials.md`(`Material.friction`, 마찰 계수 절), `parts-wheel.md`(트레드 마찰 사양), `bodies.md`(지면 마찰 분포와 "tan φ는 상한"), `body-tree.md`, MuJoCo 문서 [XML reference](https://mujoco.readthedocs.io/en/stable/XMLreference.html)(`geom/friction`·`priority`·`condim`, `option/cone`·`impratio`)와 [Modeling: Contact parameters, Slow slippage](https://mujoco.readthedocs.io/en/stable/modeling.html), 2026-11-12에 읽음. MuJoCo는 4.0.0(`docs/decisions/engine.md`).
-- 범위 밖: 지면 마찰의 분포에서 표본을 뽑는 일, 몬테카를로, 판정 가정표의 행성 행 합성(W-03c). 두 재료 쌍별 마찰표(재료 DB, S2). 타이어 변형·미끄럼비 곡선. 실행 API가 라벨을 `run_started.model_labels`에 싣는 일(X-02).
+- 범위 밖: 지면 마찰의 분포에서 표본을 뽑는 일, 몬테카를로, 판정 가정표의 행성 행 합성(W-03c). 두 재료 쌍별 마찰표(재료 DB, S2). 타이어 변형·미끄럼비 곡선.
+- 실행(X-02a `PreviewRun`): `run_started.model_labels`가 `proxy_labels` 다음에 `contact_labels`를 싣는다. 컴파일된 모델에 지면이 있으므로 "미적용: 지면 없음" 라벨은 나오지 않는다(`test_simulate_stream`이 둘 다 확인).
 
 ## 쓰는 법
 
