@@ -48,4 +48,4 @@ t.polygon, t.com_projection, t.margin, t.tipover_angle, t.stable, t.edges, t.ass
 ## 한계
 
 - 프록시는 볼록 기본형이라 프록시가 메운 빈 곳(`body-tree.md` 근사 라벨)이 지면에 닿으면 실제 부품보다 넓은 받침이 될 수 있다. 그 근사는 컴파일의 모델 라벨이 이미 말한다.
-- 결과를 화면에 그리는 것과 경고 문구는 X-03c, 에이전트 조회는 G-02b(`statics_check`, [`agent-query-tools.md`](agent-query-tools.md)), 필요조건 스크린에서 쓰는 것은 J-01b다.
+- 결과를 화면에 그리는 것과 경고 문구는 X-03c, 에이전트 조회는 G-02b(`statics_check`, [`agent-query-tools.md`](agent-query-tools.md)), 필요조건 스크린(J-01b, [`necessary-screen.md`](necessary-screen.md))은 이 받침점을 쓰는 X-03b 정지 하중으로 정적 토크 경고를 낸다.

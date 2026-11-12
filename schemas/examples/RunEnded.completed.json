@@ -5,7 +5,7 @@
   "end": {
     "reason": "completed",
     "trajectory": {
-      "hash": "sha256:c10174ad6504511aefe162b51fbbd5532f8438907fae023e30b24eafea9c1e9a",
+      "hash": "sha256:d32bec4dd95e0574873754b6bf6e5751ed58605e493117ce552b83c005ba91f5",
       "platform": {
         "os": {
           "kind": "macos",

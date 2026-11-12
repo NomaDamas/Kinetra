@@ -1,11 +1,14 @@
 """Compile a project and run it once (X-02a): the run stream of `client-adapter.md` 3.3, produced by the engine.
 
-    compile_project(project, cache=None, timestep_s=None) -> CompiledModel
+    compile_project(project, cache=None, ground_friction=None, timestep_s=None) -> CompiledModel
     PreviewRun(project, run_id=..., project_id=..., revision=..., duration_s=..., seed=0, timestep_s=None) -> iterate: Frame ..., RunEnded
+    PreviewRun(..., kind=RunKind.VERDICT_SAMPLE, ground_friction=μ, assumption_values=values)  # one verdict sample (J-01a/#571)
 
 Port of the legacy live run (`legacy-v0`, `packages/engine/src/kinetra_engine/live.py`): the model is compiled from the
 document as it is, and every frame is produced by stepping the engine (`mj_step1`/`mj_step2`) while the stream is read. Nothing is a
-replay of a stored file.
+replay of a stored file. For a verdict sample, `assumption_values` replaces every bound target in an ephemeral validated
+copy through `apply_assumption_values`; the base project and its `definition_hash` still identify the run. Ordinary previews
+leave the project unchanged and need no such mapping.
 
 **Gate (C-06).** `compile_project` calls `require_complete(project, compile)` and `PreviewRun` calls
 `require_complete(project, run)` before anything else: a project with a missing definition is refused
@@ -17,11 +20,13 @@ the end tick (the end frame rule of 3.3), also when it falls between two interva
 before it is yielded. A body's pose is the world pose of its frame, which is the frame of its smallest-id instance
 (`bodytree.py`); the client places the other instances of a welded body by their saved poses relative to it.
 
-**Time (F2).** A tick is one engine step of `timestep_s` (`mj_step1` and `mj_step2`, see below). Iterating does not look at the wall clock: how fast the frames
-are read (a slow core, a slow client, the `speed` of the transport) cannot change a pose or a time. The trajectory is a
-function of the compiled model and the number of ticks only (`client-adapter.md` 4.1). The time step is MuJoCo's default
-0.002 s (`MAX_TIMESTEP_S`) unless the run is given a smaller `timestep_s`; it is fixed for the whole run (X-10 compares
-breaks at the time step, half and a quarter of it; no option changes it during a run).
+**Time (F2).** A public tick is `timestep_s`; a break-enabled run divides each tick into the fixed 16 internal steps chosen
+at construction, while other runs use one step. Frames, events and the trajectory hash retain public-tick semantics.
+Iterating does not look at the wall clock: how fast the frames are read (a slow core, a slow client, the `speed` of the
+transport) cannot change a pose or a time. The trajectory is a function of the compiled model and the number of ticks
+only (`client-adapter.md` 4.1). The public time step is MuJoCo's default 0.002 s (`MAX_TIMESTEP_S`) unless the run is
+given a smaller `timestep_s`; both it and the internal step count are fixed for the whole run (X-10 compares breaks at
+the public time step, half and a quarter of it; no option changes either during a run).
 
 **End.** `completed` at the first tick at or after `duration_s`. `failed` when the engine finds a non-finite position,
 velocity or acceleration (it then resets its state, so the run cannot go on): the end frame is the last finite tick,
@@ -54,20 +59,36 @@ its mean over the last `BREAK_LOAD_WINDOW` (0.02 s, `kinetra_core.break_window`)
 The joints over their threshold are released in joint id order: the tree loses them (`release`),
 the model is compiled again from it with the drives of the joints left, and the state of the tick is carried into it
 (`carry_state`); the motors, the tanks, the drag and the frames follow the new model by name. Each released
-joint is a `break` event of that tick (`joint`, `load` the window mean, `threshold`, in N), carried by the next frame (the
-frame of the tick itself when one is sent there). After a break the trajectory hash goes on over the new model's generalized
-positions. While a joint can still break, a `TimestepSensitivity` checks the run against the measured speed, mass-ratio and
+joint is a `break` event of that tick (`reason` `over_threshold`, `joint`, `load`, `threshold`, in N), carried by the next
+frame (the frame of the tick itself when one is sent there). After a break the trajectory hash goes on over the new model's
+generalized positions.
+
+**Separations (X-08).** Before the step from `t = (tick - 1) * timestep_s`, every schedule `separate` entry with `at <= t` not
+run yet, then every manual request (`PreviewRun.separate`, made between two frames), releases its separator's `face_b` joint
+by the same path as a break (`release`, compile again, `carry_state`, the runtimes follow), and `push_apart` gives the two
+sides the declared impulse (`compiler/separation.py`). Each is a `separation` event of that tick (`reason`
+`intended_separation`, `separator`, `joint`, `entry` or `None` for a manual one, `impulse` in N*s), never a `break`. A
+separator is let go of once: a second request is refused (`separate`) or, for a schedule entry after a manual request, does
+nothing; a separator whose joint broke before its time has nothing left to release and gives no event. The side that came
+away keeps running in the same world to the end, with its thrusters and motors on their own schedule entries.
+A released body is a free body of the run until the end tick (X-13): no rule removes a piece or takes it out of the
+physics by distance, count or time, every frame carries its pose, and the hash covers its free joint.
+
+**Contacts (#562).** A `ContactWatch` (`contacts.py`, which states the threshold, the dedupe and the order) reads the
+contacts of the pose at tick 0 and after every tick (after the break or separation of that tick, on the model the tick ends
+with) and adds a `contact` `begin`/`end` event for every body–ground, body–prop and body–body pair whose touching changed;
+the frame of that tick or the next carries them, after the tick's `break` or `separation` events. After a release the watch
+is bound to the model compiled again and goes on by name. Met conditions are not in the stream yet; their leaf adds them.
+While a joint can still break, a `TimestepSensitivity` checks the run against the measured speed, mass-ratio and
 spring limits and checks each break for time-step-dependent threshold overshoot; out of those bounds, `run_ended.labels`
-carries "시간 간격 민감: 파단 결과가 약한 증거" with the reasons (`docs/research/engine/break-timestep.md`). The original drop
-and ramp scenes do not meet the proposed 10 % break-load spread; the label does not claim otherwise.
-Contacts and met conditions are not in the stream yet; their leaves add them.
+carries "시간 간격 민감: 파단 결과가 약한 증거" with the reasons (`docs/research/engine/break-timestep.md`).
 """
 
 from __future__ import annotations
 
 import hashlib
 import math
-from collections.abc import Iterator
+from collections.abc import Iterator, Mapping
 from dataclasses import dataclass
 
 import mujoco
@@ -81,6 +102,7 @@ from kinetra_core import (
     RunEnded,
     RunKind,
     RunStarted,
+    apply_assumption_values,
     check_frame,
     project_hash,
     require_complete,
@@ -92,12 +114,14 @@ from kinetra_core.frames import MAX_TICK
 from ..compiler import (
     BREAK_LABEL,
     BREAK_SUBSTEPS_PER_TICK,
+    SEPARATION_LABEL,
     BodyTree,
     BreakWatch,
     Drag,
     DragRuntime,
     DriveRuntime,
     Drives,
+    SeparationSchedule,
     ThrustModel,
     ThrustRun,
     TimestepSensitivity,
@@ -107,10 +131,13 @@ from ..compiler import (
     compile_drives,
     compile_thrust,
     model_labels,
+    push_apart,
     release,
+    separator_joints,
     to_mjcf,
 )
 from ..parts import PartCache
+from .contacts import ContactWatch
 from .platform_tag import platform_tag
 
 FRAME_RATE_CEILING_HZ = 60.0
@@ -134,23 +161,29 @@ class CompiledModel:
     model: mujoco.MjModel
 
 
-def compile_project(project: Project, cache: PartCache | None = None, timestep_s: float | None = None) -> CompiledModel:
-    """Compile `project` with the time step `timestep_s` [s] (`None`: MuJoCo's default, `MAX_TIMESTEP_S`; else above 0 and at
-    most that). Raises `ProjectIncomplete` for a missing definition, `ValueError` for a time step out of range and
-    `CompileError` (with its `CompileErrorCode`) for a design the compiler refuses."""
+def compile_project(
+    project: Project,
+    cache: PartCache | None = None,
+    ground_friction: float | None = None,
+    timestep_s: float | None = None,
+) -> CompiledModel:
+    """Compile `project`, the ground at `ground_friction` (default the planet's nominal; a Monte Carlo sample of the planet's
+    `ground_friction` distribution, W-03c, J-01a), with the actual integrator step `timestep_s` [s] (`None`: MuJoCo's
+    default, `MAX_TIMESTEP_S`; else above 0 and at most that). Raises `ProjectIncomplete` for a missing definition,
+    `ValueError` for a time step out of range and `CompileError` (with its `CompileErrorCode`) for a refused design."""
     require_complete(project, BlockedOperation.COMPILE)
     if timestep_s is not None and not 0.0 < timestep_s <= MAX_TIMESTEP_S:
         raise ValueError(f"time step {timestep_s} s: a run's time step is above 0 and at most {MAX_TIMESTEP_S} s")
     thrust = compile_thrust(project, cache)  # build_body_tree, with the thrusters and the tanks' propellant
     tree = thrust.tree
     drives = compile_drives(tree)
-    mjcf = to_mjcf(tree, drives=drives, timestep_s=timestep_s)
+    mjcf = to_mjcf(tree, drives=drives, ground_friction=ground_friction, timestep_s=timestep_s)
     return CompiledModel(tree, thrust, drives, compile_drag(tree), mjcf, mujoco.MjModel.from_xml_string(mjcf))
 
 
 def commands_at(design: DesignSpec, t: float) -> dict[str, float]:
     """The command of every actuator that has a schedule entry covering simulated time `t` (`start <= t < end`)."""
-    return {e.actuator: e.command for e in design.schedule.entries if e.start <= t < e.end}
+    return {e.actuator: e.command for e in design.schedule.actuations if e.start <= t < e.end}
 
 
 def default_frame_every_ticks(timestep_s: float) -> int:
@@ -206,16 +239,22 @@ class PreviewRun:
         kind: RunKind = RunKind.PREVIEW,
         frame_every_ticks: int | None = None,
         cache: PartCache | None = None,
+        ground_friction: float | None = None,
+        assumption_values: Mapping[str, float] | None = None,
         timestep_s: float | None = None,
     ):
         require_complete(project, BlockedOperation.RUN)
         timestep_s = MAX_TIMESTEP_S if timestep_s is None else timestep_s
         if not 0.0 < timestep_s <= MAX_TIMESTEP_S:
             raise ValueError(f"time step {timestep_s} s: a run's public time step is above 0 and at most {MAX_TIMESTEP_S} s")
-        has_breaks = any(j.break_threshold is not None for j in project.design.joints)
+        # The run belongs to the base project revision; bound samples change only its ephemeral compile input, just as
+        # the ground-friction override does. Recompiles after a break keep the resulting body tree and sampled values.
+        compile_input = project if assumption_values is None else apply_assumption_values(project, assumption_values)
+        has_breaks = any(j.break_threshold is not None for j in compile_input.design.joints)
         self._substeps = BREAK_SUBSTEPS_PER_TICK if has_breaks else 1
         self._timestep_s = timestep_s / self._substeps  # actual integrator dt, also used when a release recompiles
-        compiled = compile_project(project, cache, self._timestep_s)
+        compiled = compile_project(compile_input, cache, ground_friction, self._timestep_s)
+        self._ground_friction = ground_friction
         self.compiled = compiled
         model = compiled.model
         self._model = model
@@ -224,7 +263,9 @@ class PreviewRun:
         bodies = compiled.tree.bodies
         self._body_ids = [b.id for b in bodies]
         self._follow(model)
-        breakable = [BREAK_LABEL] if has_breaks else []
+        breakable = [BREAK_LABEL] if breakable_joints(compiled.tree) else []
+        self._separators = separator_joints(compiled.tree.design)
+        separable = [SEPARATION_LABEL] if self._separators else []
         self.started = RunStarted.model_validate(
             {
                 "type": "run_started",
@@ -239,12 +280,33 @@ class PreviewRun:
                 "timestep_s": timestep_s,
                 "frame_every_ticks": frame_every_ticks or default_frame_every_ticks(timestep_s),
                 "bodies": [{"id": b.id, "instances": list(b.instances)} for b in bodies],
-                "model_labels": [label.text for label in model_labels(compiled.tree)] + list(environment_labels(project, model)) + breakable,
+                "model_labels": [label.text for label in model_labels(compiled.tree)]
+                + list(environment_labels(project, model))
+                + breakable
+                + separable,
                 "platform": tag,
             }
         )
         self._iterated = False
         self._events: list[dict] = []  # events since the last frame made; the next frame carries them
+        self._requested: list[str] = []  # manual separations asked since the last step (`separate`)
+        self._separated: set[str] = set()  # separators let go of (or asked to) during the run: never again
+
+    @property
+    def separators(self) -> tuple[str, ...]:
+        """The separator instances this run can separate (each holds a part at its `face_b`), in instance id order."""
+        return tuple(self._separators)
+
+    def separate(self, separator: str) -> None:
+        """Manual control (`client-adapter.md` I5): separate `separator` at the start of the next step, by the same path as a
+        schedule entry (the event's `entry` is `None`). Between two frames of the iteration, this is the step right after the
+        last frame read. Raises `ValueError` for an instance that is not one of `separators`, and for one already separated
+        or asked to: a separation cannot be undone."""
+        if separator not in self._separators:
+            raise ValueError(f"{separator!r} is not a separator holding a part at its face_b; the run's separators are {list(self._separators)}")
+        if separator in self._separated or separator in self._requested:
+            raise ValueError(f"separator {separator!r} is separated already: a separation cannot be undone")
+        self._requested.append(separator)
 
     def _follow(self, model: mujoco.MjModel) -> None:
         """Read the frames' poses from `model` (the compiled one, or the one compiled again after a break)."""
@@ -286,14 +348,62 @@ class PreviewRun:
         drag = DragRuntime(model, self.compiled.drag)
         watch = BreakWatch(tree, model, BREAK_LOAD_WINDOW.value.value)
         sensitivity = TimestepSensitivity(model, public_timestep_s=run.timestep_s) if watch.joints else None  # conservative pre-substep spring bound
+        schedule = SeparationSchedule(tree.design)
+        contacts = ContactWatch(model)
         design, dt = tree.design, run.timestep_s
+
+        def released(joints: list[str]) -> None:
+            """X-04b's release: `joints` leave the tree, the model is compiled again, the state is carried over and every
+            runtime follows the new model by name."""
+            nonlocal tree, drive_spec, model, data, drag
+            tree, drive_spec = release(tree, joints), drive_spec.without_joints(joints)
+            new_model = mujoco.MjModel.from_xml_string(
+                to_mjcf(tree, drives=drive_spec, ground_friction=self._ground_friction, timestep_s=self._timestep_s)
+            )
+            data = carry_state(model, data, new_model)
+            model = new_model
+            drives.rebind(model, drive_spec)
+            thrust.rebind(model, data)
+            drag = DragRuntime(model, self.compiled.drag)  # holds nothing between steps: the same bodies, found by name
+            watch.bind(tree, model)
+            contacts.bind(model)
+            self._follow(model)
+
         trajectory = hashlib.sha256(data.qpos.tobytes())
         last_good = data.qpos.copy()
+        self._events.extend(contacts.events(model, data, 0))
         frame = self._frame(data, 0)
         check_frame(run, frame, final=self.end_tick == 0)
         yield frame
         sent = 0
         for tick in range(1, self.end_tick + 1):
+            asked = [(e.separator, e.id) for e in schedule.due((tick - 1) * dt)] + [(s, None) for s in self._requested]
+            self._requested.clear()
+            held = {b.joint.id for b in tree.bodies if b.joint is not None}
+            going = []
+            for separator, entry in asked:
+                if separator in self._separated:
+                    continue  # apart already (a manual request before its entry, or the other way round): irreversible
+                self._separated.add(separator)
+                sep = self._separators[separator]
+                if sep.joint in held:  # else a break released it first: nothing left to release or push
+                    going.append((sep, entry))
+            if going:
+                released([sep.joint for sep, _ in going])
+                for sep, entry in going:
+                    push_apart(model, data, tree, sep)
+                    self._events.append(
+                        {
+                            "kind": "separation",
+                            "tick": tick,
+                            "reason": "intended_separation",
+                            "separator": sep.separator,
+                            "joint": sep.joint,
+                            "entry": entry,
+                            "impulse": {"value": sep.impulse, "unit": "N*s"},
+                        }
+                    )
+                last_good = data.qpos.copy()  # the new model's coordinates
             np.copyto(last_good, data.qpos)
             checkpoint = None
             if self._substeps > 1:
@@ -327,6 +437,8 @@ class PreviewRun:
                         thrust.rebind(model, data)
                         for name, values in mass_state.items():  # exact boundary mass, COM and inertia, not a fresh full-tank load
                             getattr(model, name)[:] = values
+                        watch.bind(tree, model)
+                        contacts.bind(model)
                         self._follow(model)
                         if sensitivity is not None:
                             sensitivity._found = sensitivity_found
@@ -343,20 +455,20 @@ class PreviewRun:
                     if sensitivity is not None:
                         sensitivity.observe_breaks(over)
                     broken = [o.joint for o in over]
-                    tree, drive_spec = release(tree, broken), drive_spec.without_joints(broken)
-                    released = mujoco.MjModel.from_xml_string(to_mjcf(tree, drives=drive_spec, timestep_s=self._timestep_s))
-                    data = carry_state(model, data, released)
-                    model = released
-                    drives.rebind(model, drive_spec)
-                    thrust.rebind(model, data)
-                    drag = DragRuntime(model, self.compiled.drag)  # holds nothing between steps: the same bodies, found by name
-                    watch.bind(tree, model)
-                    self._follow(model)
+                    released(broken)
                     last_good = data.qpos.copy()  # the new model's coordinates
                     self._events.extend(
-                        {"kind": "break", "tick": tick, "joint": o.joint, "load": {"value": o.load, "unit": "N"}, "threshold": {"value": o.threshold, "unit": "N"}}
+                        {
+                            "kind": "break",
+                            "tick": tick,
+                            "reason": "over_threshold",
+                            "joint": o.joint,
+                            "load": {"value": o.load, "unit": "N"},
+                            "threshold": {"value": o.threshold, "unit": "N"},
+                        }
                         for o in over
                     )
+            self._events.extend(contacts.events(model, data, tick))
             trajectory.update(data.qpos.tobytes())
             final = tick == self.end_tick
             if final or tick % every == 0:

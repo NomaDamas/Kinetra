@@ -11,7 +11,8 @@
       "id": "mount",
       "kind": "face",
       "accepts": [
-        "face"
+        "face",
+        "surface"
       ],
       "position": {
         "x": {

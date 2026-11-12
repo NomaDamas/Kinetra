@@ -937,7 +937,8 @@
             "kind": "fixed"
           },
           "confidence": "low",
-          "editable": true
+          "editable": true,
+          "binding": null
         }
       ]
     }

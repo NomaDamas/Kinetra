@@ -119,13 +119,14 @@
     {
       "badge": "default",
       "source": {
-        "ref": "B-02a: snap frame convention chosen by Kinetra: +Z of the snap frame points out of the part surface; tags are a first proposal for B-04b"
+        "ref": "B-02a: snap frame convention chosen by Kinetra: +Z of the snap frame points out of the part surface; tags are a first proposal for B-04b; #541: an end also accepts a face (a post butted onto a face)"
       },
       "id": "end-a",
       "kind": "end",
       "accepts": [
         "end",
-        "edge"
+        "edge",
+        "face"
       ],
       "position": {
         "x": {
@@ -156,13 +157,14 @@
     {
       "badge": "default",
       "source": {
-        "ref": "B-02a: snap frame convention chosen by Kinetra: +Z of the snap frame points out of the part surface; tags are a first proposal for B-04b"
+        "ref": "B-02a: snap frame convention chosen by Kinetra: +Z of the snap frame points out of the part surface; tags are a first proposal for B-04b; #541: an end also accepts a face (a post butted onto a face)"
       },
       "id": "end-b",
       "kind": "end",
       "accepts": [
         "end",
-        "edge"
+        "edge",
+        "face"
       ],
       "position": {
         "x": {
@@ -193,12 +195,13 @@
     {
       "badge": "default",
       "source": {
-        "ref": "B-02a: snap frame convention chosen by Kinetra: +Z of the snap frame points out of the part surface; tags are a first proposal for B-04b"
+        "ref": "B-02a: snap frame convention chosen by Kinetra: +Z of the snap frame points out of the part surface; tags are a first proposal for B-04b; #541: a face also accepts a beam end (a post butted onto the face)"
       },
       "id": "top",
       "kind": "face",
       "accepts": [
-        "face"
+        "face",
+        "end"
       ],
       "position": {
         "x": {
@@ -229,12 +232,13 @@
     {
       "badge": "default",
       "source": {
-        "ref": "B-02a: snap frame convention chosen by Kinetra: +Z of the snap frame points out of the part surface; tags are a first proposal for B-04b"
+        "ref": "B-02a: snap frame convention chosen by Kinetra: +Z of the snap frame points out of the part surface; tags are a first proposal for B-04b; #541: a face also accepts a beam end (a post butted onto the face)"
       },
       "id": "bottom",
       "kind": "face",
       "accepts": [
-        "face"
+        "face",
+        "end"
       ],
       "position": {
         "x": {

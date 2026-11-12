@@ -23,7 +23,7 @@ Shape rules (read by C-02b, C-02c, C-03, C-05a, XR-02):
   rejected and nothing changes. A `Project` that exists has no dangling state; a command cannot build one.
 - Removing something removes what hangs on it in the same command. `RemoveInstance` takes the instance's
   joints, the actuators on the instance, on those joints or drawing from it (`Actuator.supply`), and those
-  actuators' schedule entries with it;
+  actuators' schedule entries with it, and the separation entries of the instance when it is a separator (X-08);
   `RemoveJoint` takes the actuators on the joint and their entries; `RemoveActuator` takes its entries. The
   inverse is a `CommandBatch` that adds all of it back at the original positions. Definitions are the
   exception: `RemovePartDef` and `RemoveMaterialDef` are rejected while anything uses the definition
@@ -57,7 +57,7 @@ Shape rules (read by C-02b, C-02c, C-03, C-05a, XR-02):
   review of #497). Tracked in its own issue; it does not change the command shapes.
 
 Not here: the issuer and history (C-02b), policy checks and placement (C-02c, `validator.py`), save format
-and hashes (C-03), the wire messages (C-05a), water (FL-02b), release entries (X-08).
+and hashes (C-03), the wire messages (C-05a), water (FL-02b).
 """
 
 from __future__ import annotations
@@ -69,7 +69,7 @@ from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
 from .assumption import Assumption
 from .conventions import ID_PATTERN
-from .designspec import ActuateEntry, Actuator, Instance, Joint, ParamValue, Pose
+from .designspec import Actuator, ActuateEntry, Instance, Joint, ParamValue, Pose, ScheduleEntry, SeparateEntry
 from .geometry import Name
 from .material import Material
 from .missing import MissingDefinition
@@ -281,10 +281,11 @@ class RemoveActuator(_Cmd):
 
 
 class AddControlEntry(_Cmd):
-    """Add a schedule entry. `index` is only where it goes in the list; the entry is known by its `id`."""
+    """Add a schedule entry (an actuate or a separate entry, X-08). `index` is only where it goes in the list; the entry
+    is known by its `id`."""
 
     type: Literal["add_control_entry"]
-    entry: ActuateEntry
+    entry: ScheduleEntry
     index: _Index | None = None
 
 
@@ -296,10 +297,10 @@ class RemoveControlEntry(_Cmd):
 
 
 class ReplaceControlEntry(_Cmd):
-    """Replace the schedule entry with the same id (`entry.id`), in place."""
+    """Replace the schedule entry with the same id (`entry.id`), in place. The new entry may be of the other type."""
 
     type: Literal["replace_control_entry"]
-    entry: ActuateEntry
+    entry: ScheduleEntry
 
 
 # --- assumptions and world ---------------------------------------------------------------------------------
@@ -493,7 +494,12 @@ def _dependents(project: Project, *, instance=None, joint_ids=(), actuator_ids=(
         or (a.joint is not None and a.joint in removed_joints)
     ]
     removed_actuators = {a.id for _, a in actuators}
-    entries = [(n, e) for n, e in enumerate(d.schedule.entries) if e.actuator in removed_actuators]
+    entries = [
+        (n, e)
+        for n, e in enumerate(d.schedule.entries)
+        if (isinstance(e, ActuateEntry) and e.actuator in removed_actuators)
+        or (isinstance(e, SeparateEntry) and instance is not None and e.separator == instance)
+    ]
     return joints, actuators, entries
 
 

@@ -96,7 +96,7 @@ def test_query_tools_list_parts_carries_actuators_schedule_and_parameters_with_t
     proj = rocket(entries, tank_params=[("initial_fill", 0.5, "1")])
     data = ask(proj, "list_parts")
     assert data["actuators"] == [{"id": "main", "kind": "thruster", "instance": "jet", "joint": None, "supply": "tank"}]
-    assert data["schedule"] == [{"id": "burn", "actuator": "main", "start_s": 0.5, "end_s": 2.0, "command": 0.25, "badge": "declared"}]
+    assert data["schedule"] == [{"type": "actuate", "id": "burn", "actuator": "main", "start_s": 0.5, "end_s": 2.0, "command": 0.25, "badge": "declared"}]
     tank = next(i for i in data["instances"] if i["id"] == "tank")
     assert tank["role"] == "tank" and tank["parameters"] == [{"name": "initial_fill", "value": 0.5, "unit": "1", "badge": "declared"}]
 
@@ -242,7 +242,9 @@ def test_query_tools_rollout_summary_is_the_run_stream():
     assert body["lowest_at_tick"] == ticks[[p.position.z for p in poses].index(body["lowest_z_m"])]
     assert body["highest_at_tick"] == ticks[[p.position.z for p in poses].index(body["highest_z_m"])]
     assert body["horizontal_distance_m"] == math.hypot(last.x - first.x, last.y - first.y)
-    assert data["events"] == {} and data["breaks"] == [] and data["conditions_met"] == []
+    # the tower stands on the ground from the saved pose: one ground contact `begin` at tick 0 (#562), nothing else
+    assert data["events"] == {"contact": 1} and data["contacts_begun"] == 1
+    assert data["breaks"] == [] and data["conditions_met"] == []
 
 
 def test_query_tools_a_failed_rollout_has_no_trajectory_evidence():

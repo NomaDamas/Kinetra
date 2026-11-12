@@ -2,7 +2,7 @@
 
 - 상태: 구현됨. 정의는 `packages/engine/src/kinetra_engine/parts/library/wheel.json`(`PartDef`, 파일 이름이 부품 id). 테스트는 `packages/engine/tests/test_wheel.py`(`uv run pytest packages/engine -q -k wheel`). 고정 glb는 `packages/engine/tests/fixtures/gltf/wheel-pom.glb`.
 - 근거: 이슈 #101, `docs/process/add-part.md`(이 부품이 따른 절차), `part-mass.md`, `collision-proxy.md`, `part-visual.md`, 핵심 가치 V5.
-- 범위 밖: 모터와 토크-속도(B-03b), 결합(B-04a, 휠은 힌지 한쪽 끝의 스냅 포인트 `hub`만 낸다), 스냅 호환 규칙(B-04b), MJCF 접촉 매개변수와 두 재료의 마찰 합성(X-01e, [`contact.md`](contact.md)), 타이어 변형·공기압·접지면 늘어남·미끄럼비 곡선(이슈 "범위 밖": 타이어 변형), 연소와 노즐 유동, 살과 속 빈 림.
+- 범위 밖: 모터와 토크-속도(B-03b), 결합(B-04a, 휠은 힌지 한쪽 끝의 스냅 포인트 `hub`와 `mount`만 낸다), 스냅 호환 규칙(B-04b), MJCF 접촉 매개변수와 두 재료의 마찰 합성(X-01e, [`contact.md`](contact.md)), 타이어 변형·공기압·접지면 늘어남·미끄럼비 곡선(이슈 "범위 밖": 타이어 변형), 연소와 노즐 유동, 살과 속 빈 림.
 
 `role`은 `wheel`(B-03b의 `PartRole`)이다. 휠에는 필수 곡선이나 사양 검사가 걸리지 않는다(`PartDef`는 모터 역할만 곡선을 요구한다).
 
@@ -31,6 +31,7 @@
 - **충돌 프록시는 레시피와 같다.** 구멍이 없어서 `volume_error = 0`이고 `filled_voids`가 없다. 요소마다 정확한 **원기둥** 하나(`tire`가 첫째)다. 다각형으로 근사하지 않으므로 MuJoCo에 넘기면 둥근 접촉면 그대로다(매핑은 `collision-proxy.md` 표).
 - **땅에 닿는 것은 `tire` 하나다.** 축이 땅 위 D/2에 있을 때 `tire`의 가장 낮은 점이 땅이고, 다른 여섯 원기둥은 반지름이 가장 클 때(`sidewall`, 0.42 D)도 0.08 D 이상 위에 있다(`test_wheel_only_the_tire_touches_flat_ground...`가 파라미터 범위의 다섯 조합에서 확인한다). 평평한 땅과 `tire`의 접촉은 축에 나란한 선이고 길이는 `width`다. 옆면 원판들은 트레드 폭의 바깥(|y| > W/2)에 있다.
 - **스냅 포인트 `hub`**: 휠 중심, 축 위. 스냅 좌표계의 +Z가 축이고 부품 +y(바깥 허브쪽)를 가리킨다(`DesignSpec.four-wheel-car`의 `hub`와 같은 id와 태그 `shaft`·`axle_mount`; 그 예시는 자세를 항등으로 두었으므로 이 부품은 축을 자세로 말하는 첫 예다). 위치는 지름과 폭에 상관없이 원점이다.
+- **스냅 포인트 `mount`** (#541): 안쪽 허브(`hub_in`)의 안쪽 끝면 중심 $(0,\ -0.86W,\ 0)$, 휠의 가장 안쪽 점이다. 스냅 좌표계의 +Z는 그 면의 바깥 법선(부품 −y)이다. 종류 `shaft`, 받는 태그 `axle_mount`라서 차체 쉘의 `axle-*`(쉘 옆면 $y=\pm W/2$, [`parts-shell.md`](parts-shell.md))에 `opposed`로 대면 휠이 몸체를 지나지 않고 옆에 선다. `hub`(휠 중심)는 축이 휠 속을 지나는 자리(예: `Project.drive-car`의 차대 `axle-f*`)에 그대로 쓴다. 위치와 방향은 `test_wheel_mount_snap_point_is_on_the_inner_face_of_the_inner_hub_and_points_out_of_it`이 프록시와 대조한다.
 
 ## 마찰 재질 (DoD 1)
 

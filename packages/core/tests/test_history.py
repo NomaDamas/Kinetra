@@ -17,6 +17,7 @@ from kinetra_core import (
     History,
     HistoryEntry,
     Origin,
+    Pose,
     Project,
     ReasonCode,
     apply_command,
@@ -71,6 +72,78 @@ def pose_of(project, id):
 
 def batch(*commands):
     return CommandBatch(type="batch", commands=tuple(commands))
+
+
+def test_command_epic_add_move_join_then_three_undos_restore_the_original_project(project):
+    """C-02 integration: a consumer uses only History.execute/undo; every new edit goes through validate_command."""
+    spare = next(i for i in project.design.instances if i.id == "wheel-fl").model_dump(mode="json")
+    spare.update(id="spare", pose=pose(1.0, 2.0, 0.05))
+    axle_pose = pose_of(project, "wheel-fl").model_dump(mode="json")
+    joint = {
+        "id": "spare-hub",
+        "kind": "hinge",
+        "a": {"instance": "chassis-1", "snap_point": "axle-fl"},
+        "b": {"instance": "spare", "snap_point": "hub"},
+    }
+    steps = [
+        (cmd(type="add_instance", instance=spare), Origin.MOUSE),
+        (cmd(type="move_instance", id="spare", pose=axle_pose), Origin.AGENT),
+        (cmd(type="add_joint", joint=joint), Origin.XR),
+    ]
+
+    current = EditResult(project=project, history=History(), entry=None)
+    for command, origin in steps:
+        current = current.history.execute(current.project, command, origin)
+        assert current.entry is not None
+    assert [entry.command for entry in current.history.entries] == [command for command, _ in steps]
+    assert current.project.design.joints[-1].id == "spare-hub"
+
+    without_joint = current.history.undo(current.project)
+    assert without_joint.project.design.joints == ()
+    before_move = without_joint.history.undo(without_joint.project)
+    assert pose_of(before_move.project, "spare") == Pose.model_validate(spare["pose"])
+    restored = before_move.history.undo(before_move.project)
+
+    assert restored.project == project
+    assert restored.history.entries == current.history.entries
+    assert restored.history.cursor == 0
+    assert not restored.history.can_undo and restored.history.can_redo
+
+
+def forbidden_rejection_log(project):
+    """Emit the reproducible C-02 rejection log while asserting one policy for all five consumer origins."""
+    forbidden = cmd(
+        type="add_assumption",
+        assumption={
+            "key": "gravity",
+            "label": "Gravity",
+            "value": {"value": 1.62, "unit": "m/s^2", "badge": "declared", "source": SRC},
+            "confidence": "low",
+            "editable": True,
+        },
+    )
+    expected = None
+    records = []
+    for origin in Origin:
+        with pytest.raises(CommandRejected) as caught:
+            History().execute(project, forbidden, origin)
+        error = caught.value
+        assert error.reasons[0].code is ReasonCode.FORBIDDEN
+        assert expected is None or error.reasons == expected
+        expected = error.reasons
+        record = {
+            "origin": origin.value,
+            "command": forbidden.type,
+            "reasons": [reason.model_dump(mode="json") for reason in error.reasons],
+        }
+        records.append(record)
+        print(json.dumps(record, ensure_ascii=False, sort_keys=True))
+    assert len(records) == len(Origin) == 5
+    return records
+
+
+def test_command_epic_forbidden_command_rejection_log_is_the_same_for_every_origin(project):
+    forbidden_rejection_log(project)
 
 
 def test_history_starts_empty():

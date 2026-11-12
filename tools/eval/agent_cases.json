@@ -33,7 +33,7 @@
     {
       "id": "assemble-four-wheel-car", "group": "assemble", "base": "empty-earth",
       "request": "바퀴 네 개 달린 차를 만들어 줘",
-      "expect": "proposal", "check": {"instances_at_least": {"wheel": 4}}
+      "expect": "proposal", "check": {"instances_at_least": {"wheel": 4, "shell": 1}, "ground_contact_at_least": {"wheel": 4}, "connected": true}
     },
     {
       "id": "assemble-plate-and-post", "group": "assemble", "base": "empty-earth",

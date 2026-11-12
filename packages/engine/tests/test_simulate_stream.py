@@ -127,8 +127,8 @@ def free_flight(monkeypatch):
 
     real = preview.compile_project
 
-    def compiled(project, cache=None, timestep_s=None):
-        c = real(project, cache, timestep_s)
+    def compiled(project, cache=None, ground_friction=None, timestep_s=None):
+        c = real(project, cache, ground_friction, timestep_s)
         c.model.opt.disableflags |= mujoco.mjtDisableBit.mjDSBL_CONTACT
         return c
 

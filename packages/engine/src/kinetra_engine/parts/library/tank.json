@@ -124,7 +124,8 @@
       "id": "bottom",
       "kind": "face",
       "accepts": [
-        "face"
+        "face",
+        "surface"
       ],
       "position": {
         "x": {

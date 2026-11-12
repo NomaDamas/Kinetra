@@ -3,7 +3,8 @@
 These are the *content* of the run stream (rule G1: transport-neutral), in the same package as the document messages
 (`protocol.py`) so `export_schemas.py` types them for every client. Nothing here names an engine's internals (rule
 G2/F1): a body is a rigid body of the project, a pose is a position and a quaternion, an event is a contact, a break
-or a met condition. The engine's name and version appear only as *values* of the platform tag.
+(a joint released over its threshold), a separation (a joint released on purpose, X-08) or a met condition. The engine's
+name and version appear only as *values* of the platform tag.
 
 Two forms of one frame (same meaning, same checks):
 
@@ -305,14 +306,37 @@ class ContactEvent(_Obj):
     force: ForceN | None = None
 
 
+class ImpulseNs(_Obj):
+    """An impulse in newton-seconds (`unit` is always `N*s`)."""
+
+    value: _NonNegative
+    unit: Literal[Unit.N_S]
+
+
 class BreakEvent(_Obj):
-    """Joint `joint` released: the load on it reached its break threshold (both in N; plan 4.6, a simplified model)."""
+    """Joint `joint` released because the load on it went over its break threshold (both in N; plan 4.6, a simplified
+    model). `reason` is the release's cause, `over_threshold` ("임계 초과"): only this one is a break (X-08)."""
 
     kind: Literal["break"]
     tick: _Tick
+    reason: Literal["over_threshold"]
     joint: _Id
     load: ForceN
     threshold: ForceN
+
+
+class SeparationEvent(_Obj):
+    """Separator instance `separator` let go of joint `joint` on purpose (X-08): `reason` is `intended_separation` ("의도한
+    분리"), never a break. Each side received the declared separation `impulse`, equal and opposite. `entry` is the schedule
+    entry that asked for it, `null` for a manual request during the run. `tick` is the first tick whose state is apart."""
+
+    kind: Literal["separation"]
+    tick: _Tick
+    reason: Literal["intended_separation"]
+    separator: _Id
+    joint: _Id
+    entry: _Id | None
+    impulse: ImpulseNs
 
 
 class ConditionMetEvent(_Obj):
@@ -323,8 +347,9 @@ class ConditionMetEvent(_Obj):
     condition: _Id
 
 
-FrameEvent = Annotated[Union[ContactEvent, BreakEvent, ConditionMetEvent], Field(discriminator="kind")]
-"""Anything that happens during a run."""
+FrameEvent = Annotated[Union[ContactEvent, BreakEvent, SeparationEvent, ConditionMetEvent], Field(discriminator="kind")]
+"""Anything that happens during a run. A joint released during the run is a `break` (reason `over_threshold`) or a
+`separation` (reason `intended_separation`), never both."""
 
 _EVENTS = TypeAdapter(tuple[FrameEvent, ...])
 

@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Bind an assumption to one named specification of a part carried by the project.",
+  "properties": {
+    "kind": {
+      "const": "part_spec",
+      "title": "Kind",
+      "type": "string"
+    },
+    "part": {
+      "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+      "title": "Part",
+      "type": "string"
+    },
+    "spec": {
+      "pattern": "^[a-z][a-z0-9_]{0,63}$",
+      "title": "Spec",
+      "type": "string"
+    }
+  },
+  "required": [
+    "kind",
+    "part",
+    "spec"
+  ],
+  "title": "PartSpecBinding",
+  "type": "object"
+}

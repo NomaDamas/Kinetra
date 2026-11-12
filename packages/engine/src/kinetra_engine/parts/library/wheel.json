@@ -91,6 +91,42 @@
         "z": 0.0,
         "w": 0.7071067811865476
       }
+    },
+    {
+      "badge": "default",
+      "source": {
+        "ref": "#541: the inner end of the inner hub boss (part y = -0.86 width), where the wheel meets an axle mount on the side of a body (the shell's axle-*), so the wheel stands beside the body instead of through it; +Z points out of that face (part -y). Kind and tag as the hub's toward axle_mount; B-04b settles the matching rules"
+      },
+      "id": "mount",
+      "kind": "shaft",
+      "accepts": [
+        "axle_mount"
+      ],
+      "position": {
+        "x": {
+          "offset": 0.0,
+          "terms": []
+        },
+        "y": {
+          "offset": 0.0,
+          "terms": [
+            {
+              "param": "width",
+              "factor": -0.86
+            }
+          ]
+        },
+        "z": {
+          "offset": 0.0,
+          "terms": []
+        }
+      },
+      "orientation": {
+        "x": 0.7071067811865476,
+        "y": 0.0,
+        "z": 0.0,
+        "w": 0.7071067811865476
+      }
     }
   ],
   "specs": [

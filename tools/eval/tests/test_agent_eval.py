@@ -66,6 +66,7 @@ def test_eval_replay_of_the_recording_has_no_fabricated_number_and_no_verdict_on
     report = json.loads(out.read_text(encoding="utf-8"))
     totals = report["totals"]
     assert totals["cases"] == 20
+    assert (totals["valid"], totals["refusal_correct"]) == (10, 20)  # #576: the recorded chassis-supported car is not valid
     assert (totals["fabricated"], totals["verdict_leaks"], totals["label_missing"]) == (0, 0, 0)
     assert not any(c["status"] in ev.BROKEN for c in report["cases"])
     printed = capsys.readouterr().out
@@ -136,6 +137,39 @@ def test_eval_refusal_accuracy_counts_declined_only(library_pool):
 def test_eval_a_proposal_that_misses_the_request_is_not_valid(library_pool):
     s = score(case("판 위에 탱크", check={"instances_at_least": {"plate": 1, "tank": 1}}), {"calls": [PLATE]}, library_pool=library_pool)
     assert s.status == "proposed" and not s.valid and s.check_failures == ["tank: 0 instances, wanted at least 1"]
+
+
+def test_eval_a_car_stands_on_four_grounded_wheels_connected_to_its_shell(data, library_pool):
+    car = next(c for c in data["cases"] if c["id"] == "assemble-four-wheel-car")
+    calls = [
+        {"tool": "add_part", "arguments": {"part": "wheel", "instance_id": "wheel-fl", "material": "pom-delrin-150", "place": {"type": "on_ground"}}},
+        {"tool": "add_part", "arguments": {"part": "shell", "instance_id": "body", "material": "al6061-t6", "place": {"type": "snap_to", "snap_point": "axle-fl", "target": {"instance": "wheel-fl", "snap_point": "mount"}, "facing": "opposed", "joint": {"kind": "hinge"}}}},
+    ]
+    for side in ("fr", "rl", "rr"):
+        calls.append({"tool": "add_part", "arguments": {"part": "wheel", "instance_id": f"wheel-{side}", "material": "pom-delrin-150", "place": {"type": "snap_to", "snap_point": "mount", "target": {"instance": "body", "snap_point": f"axle-{side}"}, "facing": "opposed", "joint": {"kind": "hinge"}}}})
+    s = score(car, {"calls": calls, "message": "쉘과 바퀴 넷을 연결했습니다."}, library_pool=library_pool)
+    assert s.status == "proposed" and s.valid and s.check_failures == []
+
+
+def test_eval_grounded_wheels_without_a_connected_car_are_not_valid(data, library_pool):
+    car = next(c for c in data["cases"] if c["id"] == "assemble-four-wheel-car")
+    calls = [{"tool": "add_part", "arguments": {"part": "shell", "instance_id": "body", "place": {"type": "on_ground"}}}]
+    calls += [
+        {"tool": "add_part", "arguments": {"part": "wheel", "instance_id": f"wheel-{n}", "place": {"type": "on_ground", "x": n * 0.2, "y": 0.5}}}
+        for n in range(4)
+    ]
+    s = score(car, {"calls": calls, "message": "쉘과 바퀴 넷을 놓았습니다."}, library_pool=library_pool)
+    assert s.status == "proposed" and not s.valid
+    assert s.check_failures == ["connected: no joint path to 'wheel-0', 'wheel-1', 'wheel-2', 'wheel-3'"]
+
+
+def test_eval_the_recorded_chassis_supported_car_is_not_valid(data, library_pool):
+    """#576: its four wheels are 0.028 m above the ground; the recording stays unchanged and is scored honestly."""
+    car = next(c for c in data["cases"] if c["id"] == "assemble-four-wheel-car")
+    recorded = json.loads(ev.RECORDING.read_text(encoding="utf-8"))["cases"][car["id"]]
+    s = score(car, *(e["content"] for e in recorded), library_pool=library_pool)
+    assert s.status == "proposed" and not s.valid
+    assert s.check_failures == ["wheel: 0 ground contacts, wanted at least 4"]
 
 
 def test_eval_a_schedule_is_checked_by_its_part_times_and_command(library_pool):

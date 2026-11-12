@@ -69,12 +69,22 @@
 | `request_verdict` | `seed`(기본 0) | 문서의 지금 프로젝트를 코어의 판정기(`judge`)에 넘긴다 | 판정기의 내용 그대로를 읽기 전용으로(`Verdict`: `project_id`, `revision`, `definition_hash`, `seed`, `content`, `by: core`). 판정기가 없는 코어는 `ok: false`와 "판정 엔진이 아직 없다(J-01)"는 요약을 돌려주고 아무것도 돌리지 않는다 |
 
 - **요청은 문서를 바꾸지 않는다(C7).** `RunTools(hub, project_id, judge=None).call(tool, arguments)`는 `Hub`의 문서에서 지금 프로젝트, 개정 번호, 판정 상태를 읽기만 하고 아무것도 발행하지 않는다. 개정 번호, 이력, 프로젝트, 판정 상태(D5)가 그대로이고 `applied`도 없다. 두 결과 모두 읽은 개정 번호(`revision`)와 판정 상태(`verdict_state`: `none` `valid` `invalid`)를 싣는다. 셋(프로젝트, 개정 번호, 판정 상태)은 엔진이나 판정기가 시작하기 전에 한 번에 읽은 한 스냅숏이라서, 실행이나 판정 도중 다른 발행자가 편집해도 결과의 개정 번호, 판정 상태, 실행·판정은 모두 같은 개정의 것이다(`test_run_tools_an_edit_published_during_a_request_does_not_change_what_the_result_says_it_read`).
+- **끝난 실행은 조회 기록이 된다(#558).** `RunTools(hub, project_id, queries=query_tools)`에 G-02b의 `QueryTools`를 같이 연결하면 `request_run`이 `run_started`부터 모든 `frame`과 `run_ended`까지 실제로 소비한 스트림 전체를 끝난 뒤 그 저장소의 `record`에 넘긴다. 따라서 같은 `query_tools`의 `rollout_summary`가 첫·끝 프레임만으로 다시 만든 값이 아니라 그 실행의 온전한 스트림에서 계산한 요약을 돌려준다. `queries`가 없으면 결과에 필요한 첫·끝 프레임만 남기는 기존 동작이다. MCP는 실행을 작업 스레드에서 돌리고 조회는 이벤트 루프에서 읽으므로, 기록의 추가·교체와 읽기는 `QueryTools` 안의 잠금으로 원자적이다.
 - **실행은 미리보기이지 판정이 아니다(F6).** 인자에 실행 종류가 없어서 에이전트는 `verdict_sample`을 요청할 수 없다. 판정기가 없을 때 미리보기 실행을 판정 대신 내놓지 않는다(테스트가 그때 `PreviewRun`이 불리지 않음을 본다).
 - **판정은 코어의 판정기만 낸다.** 판정기는 `Judge = Callable[[VerdictRequest], Mapping]`이고 `VerdictRequest`는 도구가 읽은 `project_id`, `revision`, `definition_hash`(`project_hash`), `project`, `seed`다. J-01의 판정기를 이 자리에 연결하는 일은 J-01d다. 내용의 스키마(판정 카드)는 J 에픽의 것이고 이 도구는 고치지도 더하지도 않는다.
 - **결과는 읽기만 한다.** `RunToolResult`와 `Verdict`는 얼린 dataclass, 실행의 메시지는 얼린 모델(`frozen=True`)이고, 판정 내용은 받을 때 끝까지 얼린다(객체는 `MappingProxyType`, 목록은 튜플, JSON 값이 아니면 `TypeError`, NaN·±inf는 JSON 수가 아니므로 `ValueError`이고 판정이 나오지 않는다). 얼리면서 복사하므로 판정기가 나중에 제 dict를 바꿔도 결과는 그대로다. `to_json()`은 모델에게 주는 사본이고 그것을 바꿔도 결과는 그대로다.
 - **판정을 쓰려는 호출은 거부된다.** 편집 도구와 같은 순서다: 없는 도구 이름이 판정을 가리키면(`set_verdict`, `write_p_success`, `update_verdict_state`) `guard_tool`이, 어느 깊이든 판정 키(`verdict`, `p_success`, `ci`, `confidenceInterval`, `verdictState` 등)를 실은 인자는 `guard_arguments`가 스키마보다 먼저 `forbidden`으로 거부한다. 그 밖의 모르는 필드는 스키마(`extra="forbid"`)가 `invalid_command`로 거부한다. 거부된 호출은 판정기도 엔진도 부르지 않고 문서도 그대로다(`test_run_tools_a_call_that_tries_to_write_a_verdict_is_refused_as_forbidden_and_changes_nothing`). 편집 길에서도 판정은 쓸 수 없다(`Command` 합집합에 판정을 싣는 명령이 없다, C-02c).
 - **거부의 사유는 채널의 것과 같다.** 빠진 정의는 `ProjectIncomplete`의 사유 그대로(`missing_definition`), 컴파일되지 않는 설계는 채널의 `run`과 같은 `compile_reason`(`kinetra_engine.protocol.server`: 사유 문장이 `CompileErrorCode`로 시작하고 인스턴스·부품·결합·액추에이터를 참조), 틱 수가 u32를 넘는 `duration_s`는 `invalid_command`다.
 - `run_specs()`는 두 도구를 `specs()`와 같은 OpenAI 함수 도구 객체로 낸다. 편집 도구의 `specs()`에는 들어가지 않는다(`EditTools`는 두 이름을 모르는 도구로 거부한다).
+
+## 라이브러리만으로 짓는 조립 두 가지 (#541)
+
+G-06 평가(#153)에서 모델이 도구 한계로 거절한 두 조립이다. 도구는 그대로이고 라이브러리 스냅 포인트를 고쳐 길을 냈다. 두 호출 열 모두 단계마다 검증기를 통과한다(`test_edit_tools_build_a_four_wheel_car_from_the_shell_and_four_wheels`, `test_edit_tools_a_post_stands_on_a_plate_by_a_beam_end_on_the_plate_top`).
+
+| 조립 | 호출 열 | 고친 것 |
+|---|---|---|
+| 바퀴 네 개 차(쉘 + 바퀴 넷) | `add_part` 바퀴 `on_ground` → `add_part` 쉘 `snap_to`(쉘 `axle-fl` ↔ 바퀴 `mount`, `opposed`) → 바퀴 셋을 `snap_to`(바퀴 `mount` ↔ 쉘 `axle-fr`·`axle-rl`·`axle-rr`, `opposed`) | 바퀴에 스냅 `mount`를 더했다(안쪽 허브 끝면, [`parts-wheel.md`](parts-wheel.md)). 바퀴 중심인 `hub`를 쉘 옆면의 `axle-*`에 대면 바퀴 절반이 몸체를 지나고, 축이 쉘 바닥에서 약 2 cm 위라서 지름 0.1 m 바퀴는 지면 아래로도 간다(G-06의 실패, 테스트가 그대로 거부됨을 본다). `mount`로 대면 바퀴는 몸체 옆에 서고 쉘은 바퀴 위에 뜬다(기본 치수에서 바닥이 지면 위 0.032 m). 쉘을 먼저 지면에 놓으면 바퀴가 지면 아래로 가므로 바퀴가 먼저다 |
+| 판 위에 세운 기둥 | `add_part` 판 `on_ground` → `add_part` 빔 `snap_to`(빔 `end-a` ↔ 판 `top`, `opposed`) | 빔 끝(`end`)과 빔·판의 면(`face`)이 서로를 받는다([`parts-beam-plate.md`](parts-beam-plate.md)). 전에는 빔 `bottom`으로만 붙어 기둥이 눕혀졌다 |
 
 ## 한계 (숨기지 않는다)
 
@@ -87,5 +97,5 @@
 - 도구 스키마에 안전선(CB-07a)의 금지 범주 필드는 없다. 그 가드와 평가 세트는 CB-07a의 몫이다.
 - (G-04) 가드와 카탈로그 밖 확인은 도구 경로의 것이다. 도구를 거치지 않고 `Hub.publish`에 직접 보낸 명령은 출처가 `agent`여도 검증기(C-02c)만 거친다: 행성 상수·판정·카탈로그 재료 변경은 거기서도 `forbidden`이지만, 사용자가 쓰는 길인 `add_part_def`·`replace_part_def`는 출처로 막지 않는다(검증기는 출처를 받지 않는다). 그래서 에이전트와 MCP 서버(G-08)는 `HubEditTools`로만 문서를 고친다.
 - (G-04) 카탈로그 범위가 정의된 사양은 추력기의 정격 추력뿐이다(B-03c). 라이브러리에 있는 다른 부품의 사양은 라이브러리 자체가 카탈로그이고, 라이브러리에 없는 부품은 사양마다 `카탈로그 밖 · <배지>`로 표시한다. 카탈로그 확장은 이 이슈의 범위 밖이다.
-- (G-02c) `request_run`은 부른 스레드에서 실행이 끝날 때까지 엔진을 돌린다(채널의 `run`과 같이 `duration_s`의 상한은 실행이 세는 `MAX_TICK` 틱뿐이다). 이벤트 루프 위의 호출자는 작업 스레드에서 불러야 하므로 이벤트 루프에서 동기로 답하는 MCP 서버에는 아직 붙이지 않았다(#555). 첫 프레임과 끝 프레임 사이의 프레임은 결과에 남기지 않는다.
-- (G-02c) 판정 엔진(J-01)이 아직 없어서 `request_verdict`는 판정기를 받은 코어에서만 판정을 낸다. 테스트의 판정기는 받은 요청을 그대로 돌려주는 대역이고 확률을 만들지 않는다.
+- (G-02c) `request_run`은 부른 스레드에서 실행이 끝날 때까지 엔진을 돌린다(채널의 `run`과 같이 `duration_s`의 상한은 실행이 세는 `MAX_TICK` 틱뿐이다). 이벤트 루프 위의 호출자는 작업 스레드에서 불러야 한다. MCP 서버는 #555에서 `handle_async`가 실행·판정 요청만 `asyncio.to_thread`로 옮겨 Hub의 다른 연결이 멈추지 않게 했다. 첫 프레임과 끝 프레임 사이의 프레임은 결과에 남기지 않는다.
+- (G-02c) `request_verdict`는 실제 J-01 판정기를 받은 코어에서만 판정을 낸다. 판정기를 받지 않은 코어와 현재 stdio MCP 명령은 J-01 연결이 없음을 밝혀 거부하고 실행을 대신 내지 않는다. 테스트의 판정기는 받은 요청을 그대로 돌려주는 대역이고 확률을 만들지 않는다.

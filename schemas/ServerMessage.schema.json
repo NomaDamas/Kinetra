@@ -258,7 +258,7 @@
     },
     "AddControlEntry": {
       "additionalProperties": false,
-      "description": "Add a schedule entry. `index` is only where it goes in the list; the entry is known by its `id`.",
+      "description": "Add a schedule entry (an actuate or a separate entry, X-08). `index` is only where it goes in the list; the entry\nis known by its `id`.",
       "properties": {
         "type": {
           "const": "add_control_entry",
@@ -266,7 +266,22 @@
           "type": "string"
         },
         "entry": {
-          "$ref": "#/$defs/ActuateEntry"
+          "discriminator": {
+            "mapping": {
+              "actuate": "#/$defs/ActuateEntry",
+              "separate": "#/$defs/SeparateEntry"
+            },
+            "propertyName": "type"
+          },
+          "oneOf": [
+            {
+              "$ref": "#/$defs/ActuateEntry"
+            },
+            {
+              "$ref": "#/$defs/SeparateEntry"
+            }
+          ],
+          "title": "Entry"
         },
         "index": {
           "anyOf": [
@@ -692,6 +707,36 @@
           "default": true,
           "title": "Editable",
           "type": "boolean"
+        },
+        "binding": {
+          "anyOf": [
+            {
+              "discriminator": {
+                "mapping": {
+                  "instance_parameter": "#/$defs/InstanceParameterBinding",
+                  "material_property": "#/$defs/MaterialPropertyBinding",
+                  "part_spec": "#/$defs/PartSpecBinding"
+                },
+                "propertyName": "kind"
+              },
+              "oneOf": [
+                {
+                  "$ref": "#/$defs/InstanceParameterBinding"
+                },
+                {
+                  "$ref": "#/$defs/MaterialPropertyBinding"
+                },
+                {
+                  "$ref": "#/$defs/PartSpecBinding"
+                }
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Binding"
         }
       },
       "required": [
@@ -850,7 +895,7 @@
       "type": "object"
     },
     "BreakEvent": {
-      "description": "Joint `joint` released: the load on it reached its break threshold (both in N; plan 4.6, a simplified model).",
+      "description": "Joint `joint` released because the load on it went over its break threshold (both in N; plan 4.6, a simplified\nmodel). `reason` is the release's cause, `over_threshold` (\"임계 초과\"): only this one is a break (X-08).",
       "properties": {
         "kind": {
           "const": "break",
@@ -862,6 +907,11 @@
           "minimum": 0,
           "title": "Tick",
           "type": "integer"
+        },
+        "reason": {
+          "const": "over_threshold",
+          "title": "Reason",
+          "type": "string"
         },
         "joint": {
           "pattern": "^[a-z][a-z0-9_-]{0,63}$",
@@ -878,6 +928,7 @@
       "required": [
         "kind",
         "tick",
+        "reason",
         "joint",
         "load",
         "threshold"
@@ -1251,7 +1302,21 @@
         "entries": {
           "default": [],
           "items": {
-            "$ref": "#/$defs/ActuateEntry"
+            "discriminator": {
+              "mapping": {
+                "actuate": "#/$defs/ActuateEntry",
+                "separate": "#/$defs/SeparateEntry"
+              },
+              "propertyName": "type"
+            },
+            "oneOf": [
+              {
+                "$ref": "#/$defs/ActuateEntry"
+              },
+              {
+                "$ref": "#/$defs/SeparateEntry"
+              }
+            ]
           },
           "title": "Entries",
           "type": "array"
@@ -1609,7 +1674,8 @@
               "mapping": {
                 "break": "#/$defs/BreakEvent",
                 "condition_met": "#/$defs/ConditionMetEvent",
-                "contact": "#/$defs/ContactEvent"
+                "contact": "#/$defs/ContactEvent",
+                "separation": "#/$defs/SeparationEvent"
               },
               "propertyName": "kind"
             },
@@ -1619,6 +1685,9 @@
               },
               {
                 "$ref": "#/$defs/BreakEvent"
+              },
+              {
+                "$ref": "#/$defs/SeparationEvent"
               },
               {
                 "$ref": "#/$defs/ConditionMetEvent"
@@ -1706,6 +1775,27 @@
       "title": "Hello",
       "type": "object"
     },
+    "ImpulseNs": {
+      "description": "An impulse in newton-seconds (`unit` is always `N*s`).",
+      "properties": {
+        "value": {
+          "minimum": 0,
+          "title": "Value",
+          "type": "number"
+        },
+        "unit": {
+          "const": "N*s",
+          "title": "Unit",
+          "type": "string"
+        }
+      },
+      "required": [
+        "value",
+        "unit"
+      ],
+      "title": "ImpulseNs",
+      "type": "object"
+    },
     "Incline": {
       "additionalProperties": false,
       "description": "Slope angle above the ground in radians, strictly between 0 and pi/2.",
@@ -1782,6 +1872,34 @@
         "pose"
       ],
       "title": "Instance",
+      "type": "object"
+    },
+    "InstanceParameterBinding": {
+      "additionalProperties": false,
+      "description": "Bind an assumption to one instance's parameter (the part default when the instance omits it).",
+      "properties": {
+        "kind": {
+          "const": "instance_parameter",
+          "title": "Kind",
+          "type": "string"
+        },
+        "instance": {
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+          "title": "Instance",
+          "type": "string"
+        },
+        "parameter": {
+          "pattern": "^[a-z][a-z0-9_]{0,63}$",
+          "title": "Parameter",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "instance",
+        "parameter"
+      ],
+      "title": "InstanceParameterBinding",
       "type": "object"
     },
     "Joint": {
@@ -1941,6 +2059,39 @@
         "friction"
       ],
       "title": "Material",
+      "type": "object"
+    },
+    "MaterialPropertyBinding": {
+      "additionalProperties": false,
+      "description": "Bind an assumption to one physical property of a material carried by the project.",
+      "properties": {
+        "kind": {
+          "const": "material_property",
+          "title": "Kind",
+          "type": "string"
+        },
+        "material": {
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+          "title": "Material",
+          "type": "string"
+        },
+        "property": {
+          "enum": [
+            "density",
+            "yield_strength",
+            "elastic_modulus",
+            "friction"
+          ],
+          "title": "Property",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "material",
+        "property"
+      ],
+      "title": "MaterialPropertyBinding",
       "type": "object"
     },
     "MoveInstance": {
@@ -2271,6 +2422,34 @@
       ],
       "title": "PartRole",
       "type": "string"
+    },
+    "PartSpecBinding": {
+      "additionalProperties": false,
+      "description": "Bind an assumption to one named specification of a part carried by the project.",
+      "properties": {
+        "kind": {
+          "const": "part_spec",
+          "title": "Kind",
+          "type": "string"
+        },
+        "part": {
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+          "title": "Part",
+          "type": "string"
+        },
+        "spec": {
+          "pattern": "^[a-z][a-z0-9_]{0,63}$",
+          "title": "Spec",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "part",
+        "spec"
+      ],
+      "title": "PartSpecBinding",
+      "type": "object"
     },
     "Placement": {
       "additionalProperties": false,
@@ -3087,7 +3266,7 @@
     },
     "ReplaceControlEntry": {
       "additionalProperties": false,
-      "description": "Replace the schedule entry with the same id (`entry.id`), in place.",
+      "description": "Replace the schedule entry with the same id (`entry.id`), in place. The new entry may be of the other type.",
       "properties": {
         "type": {
           "const": "replace_control_entry",
@@ -3095,7 +3274,22 @@
           "type": "string"
         },
         "entry": {
-          "$ref": "#/$defs/ActuateEntry"
+          "discriminator": {
+            "mapping": {
+              "actuate": "#/$defs/ActuateEntry",
+              "separate": "#/$defs/SeparateEntry"
+            },
+            "propertyName": "type"
+          },
+          "oneOf": [
+            {
+              "$ref": "#/$defs/ActuateEntry"
+            },
+            {
+              "$ref": "#/$defs/SeparateEntry"
+            }
+          ],
+          "title": "Entry"
         }
       },
       "required": [
@@ -3504,6 +3698,105 @@
         "planet"
       ],
       "title": "SelectPlanet",
+      "type": "object"
+    },
+    "SeparateEntry": {
+      "additionalProperties": false,
+      "description": "Release separator instance `separator` at `at` seconds of simulated time (X-08, `docs/architecture/separation.md`).\n\nOne entry of the same time-axis schedule as `ActuateEntry` (no separate staging list); the `type` tag tells them apart.\n`separator` is the id of an instance of a `separator` part (B-15). A separation cannot be undone, so the schedule\nholds at most one per separator; that rule (and two at one time) is the compiler's (`separation_twice`,\n`separation_conflict`, X-01d), not this model's. One badge and source cover the entry.",
+      "properties": {
+        "badge": {
+          "$ref": "#/$defs/Badge"
+        },
+        "source": {
+          "$ref": "#/$defs/Source"
+        },
+        "type": {
+          "const": "separate",
+          "title": "Type",
+          "type": "string"
+        },
+        "id": {
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "separator": {
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+          "title": "Separator",
+          "type": "string"
+        },
+        "at": {
+          "minimum": 0,
+          "title": "At",
+          "type": "number"
+        }
+      },
+      "required": [
+        "badge",
+        "source",
+        "type",
+        "id",
+        "separator",
+        "at"
+      ],
+      "title": "SeparateEntry",
+      "type": "object"
+    },
+    "SeparationEvent": {
+      "description": "Separator instance `separator` let go of joint `joint` on purpose (X-08): `reason` is `intended_separation` (\"의도한\n분리\"), never a break. Each side received the declared separation `impulse`, equal and opposite. `entry` is the schedule\nentry that asked for it, `null` for a manual request during the run. `tick` is the first tick whose state is apart.",
+      "properties": {
+        "kind": {
+          "const": "separation",
+          "title": "Kind",
+          "type": "string"
+        },
+        "tick": {
+          "maximum": 4294967295,
+          "minimum": 0,
+          "title": "Tick",
+          "type": "integer"
+        },
+        "reason": {
+          "const": "intended_separation",
+          "title": "Reason",
+          "type": "string"
+        },
+        "separator": {
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+          "title": "Separator",
+          "type": "string"
+        },
+        "joint": {
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+          "title": "Joint",
+          "type": "string"
+        },
+        "entry": {
+          "anyOf": [
+            {
+              "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Entry"
+        },
+        "impulse": {
+          "$ref": "#/$defs/ImpulseNs"
+        }
+      },
+      "required": [
+        "kind",
+        "tick",
+        "reason",
+        "separator",
+        "joint",
+        "entry",
+        "impulse"
+      ],
+      "title": "SeparationEvent",
       "type": "object"
     },
     "SetAssumption": {

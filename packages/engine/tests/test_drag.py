@@ -216,7 +216,7 @@ def stream(monkeypatch, planet: str, density: float, duration_s: float):
     from kinetra_engine.run import PreviewRun
 
     real = preview.compile_project
-    monkeypatch.setattr(preview, "compile_project", lambda project, cache=None, timestep_s=None: _airborne_compiled(real(project, cache, timestep_s)))
+    monkeypatch.setattr(preview, "compile_project", lambda project, cache=None, ground_friction=None, timestep_s=None: _airborne_compiled(real(project, cache, ground_friction, timestep_s)))
 
     run = PreviewRun(ball(planet, density), run_id="run-1", project_id="ball", revision=1, duration_s=duration_s)
     items = list(run)

@@ -110,6 +110,7 @@ from kinetra_core import (
     RemoveJoint,
     ReplaceControlEntry,
     ReplaceJoint,
+    ScheduleEntry,
     SetInstanceMaterial,
     SetParameter,
     SnapRef,
@@ -860,7 +861,7 @@ class EditTools:
         entry = ActuateEntry(type="actuate", id=ident, actuator=a.actuator, start=a.start, end=a.end, command=a.command, **self._declared(a.source))
         return AddControlEntry(type="add_control_entry", entry=entry), f"scheduled {a.command:g} on {a.actuator!r} from {a.start:g} s to {a.end:g} s as {ident!r}"
 
-    def _find_entry(self, project: Project, ident: str) -> ActuateEntry:
+    def _find_entry(self, project: Project, ident: str) -> ScheduleEntry:
         for e in project.design.schedule.entries:
             if e.id == ident:
                 return e
@@ -868,6 +869,12 @@ class EditTools:
 
     def _change_command(self, project: Project, a: ChangeCommandArgs) -> tuple[Command, str]:
         old = self._find_entry(project, a.entry)
+        if not isinstance(old, ActuateEntry):
+            raise _refuse(
+                ReasonCode.INVALID_COMMAND,
+                f"schedule entry {old.id!r} is a separation, not an actuator command: it has no start, end or command to change",
+                Ref(kind=RefKind.SCHEDULE_ENTRY, id=old.id),
+            )
         new = ActuateEntry(
             type="actuate",
             id=old.id,

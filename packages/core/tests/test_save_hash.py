@@ -676,6 +676,7 @@ def test_save_open_the_hash_says_same_or_different_not_who_wrote_it():
 OMITTED_DEFAULTS = {
     "Actuator.joint": None,
     "Actuator.supply": None,
+    "Assumption.binding": None,
     "Assumption.distribution": {"kind": "fixed"},
     "Assumption.editable": True,
     "AssumptionTable.assumptions": [],

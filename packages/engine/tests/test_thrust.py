@@ -16,8 +16,10 @@ import numpy as np
 import pytest
 from gltf_samples import catalog_material, library_part
 
-from kinetra_core import Project, ProjectIncomplete, check_placement
+from kinetra_core import ContactEvent, Project, ProjectIncomplete, check_placement
+from kinetra_core.bodies import load_body
 from kinetra_engine.compiler import CompileError, CompileErrorCode, ThrustRun, compile_thrust, to_mjcf
+from kinetra_engine.run import PreviewRun
 
 SRC = {"ref": "X-01c test fixture: value chosen by the test", "locator": "test_thrust.py"}
 LBF, LBM = 4.4482216152605, 0.45359237  # exact definitions
@@ -156,6 +158,71 @@ def test_thrust_empty_tank_gives_back_the_compiled_dry_inertia():
     assert m.body_mass[row] == pytest.approx(compiled.body_mass[row], rel=1e-14)
     assert m.body_ipos[row] == pytest.approx(compiled.body_ipos[row], abs=1e-15)
     assert tensor(m) == pytest.approx(tensor(compiled), rel=1e-12, abs=1e-15)
+
+
+def test_thrust_inertial_refresh_preserves_the_live_mjdata():
+    """#580: `mj_setConst` needs scratch data. Passing the live data would rewind qpos, clear contacts/constraints and
+    wake trees; a mass refresh must leave the already integrated state and solver warm start byte-for-byte intact."""
+    _, m, d, run = start(rocket([]), 0.01)
+    d.qpos[2] -= 1e-6  # declared soft ground overlap: make the contact and constraint arrays non-empty
+    d.xfrc_applied[1, 2] = 0.125  # declared applied force, so the continuity assertion covers a non-zero row
+    mujoco.mj_step(m, d)
+    assert d.ncon > 0 and d.nefc > 0 and d.time > 0.0
+    before = mujoco.MjData(m)
+    mujoco.mj_copyData(before, m, d)
+
+    run._load({"tank": 0.5}, ["jet"])
+
+    for name in (
+        "time", "qpos", "qvel", "qacc", "qacc_warmstart", "act", "actuator_force",
+        "ctrl", "qfrc_applied", "xfrc_applied", "efc_force", "tree_asleep",
+    ):
+        np.testing.assert_array_equal(getattr(d, name), getattr(before, name), err_msg=name)
+    assert (d.ncon, d.nefc) == (before.ncon, before.nefc)
+    for name in ("dist", "pos", "frame"):
+        np.testing.assert_array_equal(getattr(d.contact[:before.ncon], name), getattr(before.contact[:before.ncon], name))
+
+
+def _moon_ground_run(project, duration_s):
+    project = project.model_copy(update={"world": project.world.model_copy(update={"planet": "moon"})})
+    # A mathematically exact tangent produces no MuJoCo contact point at tick 0 (the dry model has ncon == 0 too).
+    # Start with a declared 1 µm soft-contact overlap so tick 0 really is in contact; do not relax the begin assertion.
+    instances = []
+    for instance in project.design.instances:
+        # Move the joined jet+tank together; moving only jet would correctly fail the snap equality check.
+        position = instance.pose.position.model_copy(update={"z": instance.pose.position.z - 1e-6})
+        instance = instance.model_copy(update={"pose": instance.pose.model_copy(update={"position": position})})
+        instances.append(instance)
+    project = project.model_copy(update={"design": project.design.model_copy(update={"instances": tuple(instances)})})
+    preview = PreviewRun(project, run_id="tank-ground", project_id="p", revision=1, duration_s=duration_s, frame_every_ticks=1)
+    items = list(preview)
+    frames = items[:-1]
+    events = [e for f in frames for e in f.events if isinstance(e, ContactEvent) and e.body == "jet" and e.other.kind == "ground"]
+    return preview, frames, events
+
+
+def test_thrust_loaded_rocket_keeps_its_ground_contact_for_one_second():
+    """#580: the full tank moves `body_ipos`; MuJoCo must refit the body BVH in that new inertial frame. On the Moon the
+    rocket simply stands for 1 s: ground `begin` at tick 0, no `end`, and its frame never falls through the ground."""
+    _, frames, events = _moon_ground_run(rocket([]), 1.0)
+    assert [(e.tick, e.phase) for e in events] == [(0, "begin")]
+    heights = [next(p.position.z for p in f.poses if p.body == "jet") for f in frames]
+    assert min(heights) > 0.0 and heights[-1] == pytest.approx(JET_Z, abs=1e-3)
+
+
+def test_thrust_takeoff_matches_the_tick_when_thrust_reaches_weight():
+    """The same loaded rocket fires from rest. During the linear opening ramp the instantaneous thrust is F t/T_OPEN,
+    so F = m0 g at t = m0 g T_OPEN/F; the ground `end` must be at the first tick at/after that hand calculation (one-tick
+    tolerance for the soft contact's initial overlap), with no later ground `begin` in this short ascent."""
+    preview, _, events = _moon_ground_run(rocket([entry("burn", "main", 0.0, 0.02, 1.0)]), 0.02)
+    assert (events[0].tick, events[0].phase) == (0, "begin")
+    ends = [e for e in events if e.phase == "end"]
+    assert len(ends) == 1 and not [e for e in events[1:] if e.phase == "begin"]
+    m0 = M_TANK + M_THRUSTER + CAPACITY
+    g = load_body("moon").gravity.value
+    crossing_s = m0 * g * T_OPEN / F
+    expected_tick = math.ceil(crossing_s / preview.started.timestep_s)
+    assert abs(ends[0].tick - expected_tick) <= 1
 
 
 def test_thrust_zero_gravity_straight_line_burn_to_empty_matches_the_rocket_equation():

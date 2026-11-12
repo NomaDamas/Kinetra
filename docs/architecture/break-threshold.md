@@ -1,7 +1,7 @@
-# 결합부 임계 하중 (X-04a), 런타임 결합 해제 (X-04b), 시간 간격 불변 기준 (X-10)
+# 결합부 임계 하중 (X-04a), 런타임 결합 해제 (X-04b), 시간 간격 불변 기준 (X-10), 파단 뒤 조각 (X-13)
 
-- 상태: 구현됨. 임계: `packages/engine/src/kinetra_engine/break_threshold.py`(`critical_load`), 테스트 `packages/engine/tests/test_break_threshold.py`(`uv run pytest packages/engine -q -k break_threshold`). 런타임 해제: `packages/engine/src/kinetra_engine/compiler/breaks.py`와 `run/preview.py`, 테스트 `packages/engine/tests/test_break_runtime.py`(`uv run pytest packages/engine -q -k break_runtime`). 시간 창 평균과 시간 간격 민감 표시(X-10, #453): `packages/core/src/kinetra_core/break_window.py`, `compiler/breaks.py`(`BreakWatch`, `TimestepSensitivity`), 테스트 `packages/engine/tests/test_break_timestep.py`(`uv run pytest packages/engine -q -k break_timestep`), 측정 `docs/research/engine/break-timestep.md`.
-- 근거: 이슈 #137, #138, `docs/plan/studio-plan.md` 4.6절("파단은 FEM이 아니라 결합부 임계값(물성 × 단면, '단순화 모델' 표시)"), `materials.md`(강도 기준 혼재), `project-model.md`(`Joint.break_threshold`), `client-adapter.md`(`break` 이벤트, F8), 핵심 가치 V1·V5.
+- 상태: 구현됨. 임계: `packages/engine/src/kinetra_engine/break_threshold.py`(`critical_load`), 테스트 `packages/engine/tests/test_break_threshold.py`(`uv run pytest packages/engine -q -k break_threshold`). 런타임 해제: `packages/engine/src/kinetra_engine/compiler/breaks.py`와 `run/preview.py`, 테스트 `packages/engine/tests/test_break_runtime.py`(`uv run pytest packages/engine -q -k break_runtime`). 시간 창 평균과 시간 간격 민감 표시(X-10, #453): `packages/core/src/kinetra_core/break_window.py`, `compiler/breaks.py`(`BreakWatch`, `TimestepSensitivity`), 테스트 `packages/engine/tests/test_break_timestep.py`(`uv run pytest packages/engine -q -k break_timestep`), 측정 `docs/research/engine/break-timestep.md`. 파단 뒤 조각: 테스트 `packages/engine/tests/test_break_pieces.py`(`uv run pytest packages/engine -q -k break_pieces`).
+- 근거: 이슈 #137, #138, #453, #463, `docs/plan/studio-plan.md` 4.6절("파단은 FEM이 아니라 결합부 임계값(물성 × 단면, '단순화 모델' 표시)"), `materials.md`(강도 기준 혼재), `project-model.md`(`Joint.break_threshold`), `client-adapter.md`(`break` 이벤트, F8), `goal-eval.md`(J-02a), `docs/research/benchmarks/kerbal-space-program.md` C3, 핵심 가치 V1·V4·V5.
 - 범위 밖: FEM, 피로, 균열(이슈). 정지 하중과 임계의 비교(X-03b, 구현됨: [`static-load.md`](static-load.md)). `critical_load`는 하중을 받지 않고 임계만 낸다. 파단 표시는 X-04c.
 
 ## 하는 일
@@ -43,7 +43,7 @@
 
 ## 런타임 결합 해제 (X-04b)
 
-실행(`PreviewRun`) 도중 `break_threshold`가 있는 결합의 하중이 임계를 **넘으면**(`load > threshold`) 그 결합이 풀리고, 스트림에 `break` 이벤트(`tick`, `joint`, `load`, `threshold`, 모두 N)가 실린다.
+실행(`PreviewRun`) 도중 `break_threshold`가 있는 결합의 하중이 임계를 **넘으면**(`load > threshold`) 그 결합이 풀리고, 스트림에 `break` 이벤트(`tick`, `reason` `over_threshold`("임계 초과"), `joint`, `load`, `threshold`, 모두 N)가 실린다. 같은 해제 경로를 분리 스케줄이 부르는 의도한 분리는 `separation` 이벤트(`reason` `intended_separation`)이고 파단이 아니다(X-08, [`separation.md`](separation.md)).
 
 - **컴파일.** 임계가 있는 `fixed` 결합은 두 인스턴스를 한 강체로 용접하지 않는다. 두 쪽은 처음부터 두 강체이고 트리에서 그 고정 결합으로 이어진다(MJCF에서는 관절 요소가 없는 자식 바디: MuJoCo가 부모에 단단히 붙여 둔다). 그래서 강체 목록은 실행 내내 같다(`client-adapter.md` F8: S1의 파단은 결합이 풀리는 것이고 강체 수는 그대로다). 임계가 없는 고정 결합은 전처럼 용접이다. 임계가 있는 고정 결합이 이미 용접된 두 인스턴스를 이으면 `welded_joint`, 고리를 닫으면 `loop` 컴파일 오류다(힌지·슬라이더와 같은 규칙).
 - **하중.** 매 틱 `mj_step` 바로 뒤(추력·항력의 `xfrc_applied`와 그 스텝의 질량이 그대로일 때) `mj_rnePostConstraint`로 구한 자식 바디의 `cfrc_int`(부모에게서 받는 공간 힘)의 **힘 부분**이 그 스텝에 결합이 전한 힘이다. 결합이 붙든 부분 트리 전체에 전하는 힘으로, 축 방향(스프링·모터의 힘 포함)과 축에 수직인 성분을 모두 담는다. 토크는 비교하지 않는다(임계가 N이므로). 임계와 비교하는 **하중은 이 힘 벡터를 지난 0.02 s 창으로 평균한 크기**다(X-10, 아래 절).
@@ -84,3 +84,39 @@
 - **보강은 질량이 있는 부품으로만.** 결합은 `fixed`, `hinge`, `slider` 셋뿐이고 두 인스턴스의 스냅 포인트 사이에만 있다. 질량 없는 보강 연결(KSP의 스트럿·오토스트럿)은 스키마에 없다. 빔(B-02a `beam`)으로 보강하면 컴파일된 총질량이 빔의 질량(기본 치수·6061-T6에서 0.7128 kg)만큼 는다(테스트).
 - **CB-02.** 고속 충돌 스파이크 결과는 [확인 필요](CB-02 #312 미실행). CB-05b는 S2에서 이 창 평균을 다시 쓴다.
 - **한계.** 경계 값은 측정한 장치에서 잰 값이고 그 안이라고 기준을 보장하지 않는다. 회전 결합의 스프링, 얇은 두 바디의 충돌(터널링)은 재지 않았다. 속도는 매 스텝 앞 상태의 `cvel`로 읽는다.
+## 파단 뒤 조각 (X-13)
+
+결합이 풀려 생긴 조각은 **같은 월드의 강체로 실행 끝까지 시뮬된다.** 거리·개수·시간을 기준으로 조각을 지우거나 물리에서 빼는 규칙은 없다(코드에 없고, 두지 않는다). 실행이 느려져도 조각을 지우지 않는다: 코어는 벽시계를 보지 않고(`run/preview.py` F2), 느리면 클라이언트가 받아 둔 프레임을 느리게 재생한다(`client-adapter.md` 4절).
+
+- **물리.** 풀린 바디는 새 모델의 자유 바디다(X-04b `release`). 강체 목록, 질량, 충돌 프록시는 파단 전과 같고(`client-adapter.md` F8), 접촉 매개변수(X-01e)도 같다. 그래서 조각은 지면과 다른 강체에 파단 전과 같은 접촉 물리를 갖는다. 부모·자식이 아니게 된 두 쪽은 서로도 충돌한다(위 "한계").
+- **스트림과 궤적.** 모든 프레임이 `run_started.bodies`의 모든 몸의 자세를 싣고(마지막 프레임 포함), 궤적 해시는 매 공개 틱 새 모델의 일반화 위치 전체(조각의 자유 관절 포함)로 이어진다.
+- **성공 조건.** J-02a 평가기는 조건의 인스턴스가 속한 몸을 따라가므로, 떨어져 나간 부품을 가리키는 조건은 그 조각의 실제 궤적으로 평가된다(`goal-eval.md`).
+
+### 시험 (`test_break_pieces.py`)
+
+| 장면 | 확인 | 결과 |
+|---|---|---|
+| 달, 144 kg 기둥 옆에 1 kg 정육면체(밑면 0.75 m, 임계 0.5 m g) | 낙하 시간: 수계산 $\sqrt{2h/g}$ = 0.962 s(481.1틱) | 틱 2에 풀리고 밑면이 2틱 안에 닿는다. 낙하 중 높이는 반암시 오일러의 자유 낙하 $z_b + v_b t - g t^2/2 - g\,\Delta t\,t/2$와 1e-9 m 안에서 같다($v_b$는 해제 순간 속도, 측정 −2.6 mm/s: 기둥이 소프트 지면에 자리 잡는 중) |
+| 같은 장면 | 총질량 | 해제 뒤 다시 컴파일한 모델의 바디 수, 각 바디 질량, 합(145 kg)이 같다 |
+| 같은 장면, 2 s | 지면 접촉 | 조각 중심은 한 번도 지면 아래로 가지 않고(충돌 1.56 m/s에서 밑면이 최대 9.4 mm 들어갔다 나온다, 소프트 접촉), 마지막 밑면은 지면 1 mm 안, 마지막 0.1 s의 매 프레임 간 속력 1 mm/s 미만 |
+| 같은 장면, 2 s | 스트림과 해시 | 마지막 프레임에 `pillar`, `piece` 자세가 있고, 해시가 받은 바이트(틱 0부터 끝 틱까지 매 틱 `qpos`)의 마지막 틱에 조각 자유 관절의 위치·쿼터니언이 마지막 프레임 값 그대로 있다. 반복 실행의 프레임과 해시가 같다 |
+| 무중력(테스트가 MJCF 중력을 0으로 바꾸고 실행의 `model_labels`에 "미적용: … 중력"이 실린다): 기둥(`anchor`) 옆 0.25 m 높이의 1 kg 정육면체 뒤에 VACCO 2 lbf 추력기(0.1 s 연소), 임계 2 N. 0.3 m 앞에 x축 자유 슬라이더로 기둥에 매단 1 kg 표적 | 다른 강체와 충돌 | 틱 2에 풀린 조각이 표적을 친다. 표적 x 속도 0 → 0.398 m/s, 조각 0.619 → 0.330 m/s. 두 몸 질량중심 모멘텀 합(충돌 20틱 전과 후): x 성분 상대 1e-4 안(측정 7e-6), 벡터 크기 1 % 안(측정 0.23 %; 슬라이더가 y·z 힘을 기둥과 주고받는다) |
+| 기둥 장면, 밑면 0.75 m / 1.45 m, 조건 "조각이 1.2 s 안에 기둥 옆 지면 상자에 도달" | 성공 조건 | 0.75 m: 충족(도달 틱이 수계산 0.962 s ± 3틱). 1.45 m(수계산 1.338 s): 한도 뒤 도달이라 한도 틱 600에 실패. 조각이 평가에서 빠지면(몸 목록에 없거나 풀린 자리에 멈춤) 0.75 m 장면이 실패해 테스트가 깨진다 |
+
+시드 0(미리보기 실행은 무작위를 쓰지 않는다), MuJoCo 4.0.0, 시간 간격 0.002 s, `frame_every_ticks=1`. 측정값(틱, 속도, 모멘텀, 침투 깊이)은 macOS arm64 개발 머신의 값이다(값 배지 `시뮬`).
+
+### 실시간 배속 (기준 장면)
+
+조각이 생기는 기준 장면(위 기둥 장면, 밑면 0.75 m, 2 s, 1,000틱, 파단 1건, 기본 프레임 간격 9틱)을 `PreviewRun` 반복 전체(스텝, 해제와 재컴파일, 프레임 만들기와 검사)로 쟀다. `PreviewRun` 생성(첫 컴파일)은 넣지 않았다.
+
+| 항목 | 값 |
+|---|---|
+| 명령 | `uv run python packages/engine/tests/test_break_pieces.py` (저장소 루트, 같은 프로세스 안 3회) |
+| 시드 | 0 |
+| 머신 | Apple M2 Pro, 논리 10코어, 32 GiB, macOS 15.6.1 arm64, Python 3.12.11, MuJoCo 4.0.0 |
+| 부하(1분 load average) | 실행 전 61.8, 후 59.6(다른 작업이 머신을 쓰는 중) |
+| 배속(시뮬 시간 / 벽시계) | 2.02, 11.37, 6.94 |
+| 프로세스 CPU 시간 기준 배속 | 45.4, 55.3, 56.2 |
+| 궤적 해시 | 3회 같음(`sha256:bdf157f73fdce823…`), 마지막 프레임에 몸 2개 |
+
+값 배지 `추정`: 부하 아래 한 번의 측정이고 벽시계 값이 5배 넘게 흔들린다. 장면이 작아(강체 2개) 여러 조각이 생기는 장면의 배속을 말해 주지 않는다. 같은 사양의 머신(Apple M2 Pro, 위 표)에서 A0-01a는 박스 100개 결합 해제 100건 장면에서 배속 0.5~0.6(CPU 기준 2.7~3.0, load 118~120)을 쟀다(`spikes/mujoco-limits/REPORT.md`, `client-adapter.md` 4절). 그 장면은 MuJoCo `weld` 등식을 끄는 방식이라 이 코어의 재컴파일 해제와 하는 일이 다르다.

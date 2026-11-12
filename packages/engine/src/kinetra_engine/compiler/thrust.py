@@ -25,8 +25,11 @@ momentum a step gives is the impulse of the curve over that step, whatever `dt` 
 propellant (`legacy-v0:packages/engine/src/kinetra_engine/templates/rocket_car.py` docstring, "constant mass (fuel only
 accounted)", and `fuel = impulse / (isp * G0)` there). That is not ported: a burn that empties a tank heavier than the dry
 vehicle would be wrong by the whole mass ratio. Here the tank's propellant is mass on the tank's body, changed in place on
-the compiled model between steps (no recompile; MuJoCo reads `body_mass`, `body_ipos`, `body_inertia` and `body_iquat` on
-every step):
+the compiled model between steps (no recompile). Every such change is followed by `mj_setConst`, MuJoCo's documented safe
+update for `body_mass`, `body_ipos`, `body_inertia` and `body_iquat`: it propagates them to the body collision BVH (whose
+local frame is the inertial frame), subtree masses and constraint weights. `mj_setConst` uses its `mjData` argument as
+qpos0 scratch and clears contacts/constraints, so a dedicated scratch object preserves the live time, integrated state,
+forces, warm start, contacts and sleeping state. The caller's `mj_kinematics`/`mj_step` refreshes pose-derived data:
 
 - what the tank holds is spread evenly over its inside (the shape's `subtract` components), at density
   `remaining / inside volume`. So the propellant's centre of mass is the inside's centroid, it does not move as the tank
@@ -42,9 +45,7 @@ every step):
 
 What this does not do (the same list is in `docs/architecture/thrust.md`): the propellant does not move inside the tank
 (no slosh, no settling under acceleration, no centre-of-mass travel as it empties); the thrust does not fall with the tank's
-pressure (B-03c); MuJoCo's constraint weights computed at compile time (`body_invweight0`, `dof_invweight0`) are not
-recomputed as the mass changes, which only scales how soft contacts and limits are; the free joint's velocity is that of the
-body frame's origin, so a rotating body whose centre of mass moves in its frame does not get the small velocity correction
+pressure (B-03c); the free joint's velocity is that of the body frame's origin, so a rotating body whose centre of mass moves in its frame does not get the small velocity correction
 that would keep the centre of mass's velocity continuous. `to_mjcf(model.tree)` alone writes the dry masses: the propellant is
 put on by `ThrustRun` before the first step.
 
@@ -157,7 +158,7 @@ def _curve_impulse(th: Thruster, x: float) -> float:
 
 
 def _openings(design, actuator: str) -> tuple[Opening, ...]:
-    entries = sorted((e for e in design.schedule.entries if e.actuator == actuator), key=lambda e: (e.start, e.id))
+    entries = sorted((e for e in design.schedule.actuations if e.actuator == actuator), key=lambda e: (e.start, e.id))
     out: list[Opening] = []
     for e in entries:
         if e.command == 0.0:
@@ -287,6 +288,7 @@ class ThrustRun:
                 raise ValueError(f"the MuJoCo model has no body {b.id!r}: it was not compiled from this body tree")
             rows[b.id] = row
         self._m, self._d, self._row = mj_model, mj_data, rows
+        self._const_data = mujoco.MjData(mj_model)  # never clear or rewind the live mjData in mj_setConst
         self._load({i: s.remaining for i, s in self.supplies.items()}, self._loaded)
 
     def body_mass(self, body: str) -> tuple[float, Vec, Inertia6]:
@@ -294,6 +296,8 @@ class ThrustRun:
         return self.model.mass_of(body, {i: s.remaining for i, s in self.supplies.items()})
 
     def _load(self, propellant: dict[str, float], bodies: list[str]) -> None:
+        if not bodies:
+            return
         m = self._m
         for body in bodies:
             mass, com, (ixx, iyy, izz, ixy, ixz, iyz) = self.model.mass_of(body, propellant)
@@ -304,6 +308,12 @@ class ThrustRun:
             m.body_ipos[row] = com
             m.body_inertia[row] = eigval
             m.body_iquat[row] = quat
+        # MuJoCo's body BVH is expressed in the inertial frame: changing ipos/iquat without this propagation leaves
+        # the collision bounds in the old frame (#580). mj_setConst is the documented safe update for mass and inertia;
+        # it also refreshes subtree masses and constraint weights. Its qpos0 computations overwrite data.qpos, clear
+        # contacts/constraints and wake sleeping trees, so use dedicated scratch data. The live time, integrated state,
+        # applied forces, warm start, contacts and constraints stay untouched; mj_kinematics/mj_step refresh derived data.
+        mujoco.mj_setConst(m, self._const_data)
 
     def step(self) -> ThrustStep:
         record = self.begin_step()

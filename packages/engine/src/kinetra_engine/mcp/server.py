@@ -1,5 +1,5 @@
-"""The command layer as an MCP server (G-08): the edit tools of G-02a, offered to an outside agent (Claude Code and the like)
-over the Model Context Protocol, published into the document as `Origin.MCP`.
+"""The command layer as an MCP server (G-08): the edit tools of G-02a, queries of G-02b and run/verdict requests of G-02c,
+offered to an outside agent (Claude Code and the like) over the Model Context Protocol. Edits are published as `Origin.MCP`.
 
     server = McpServer(hub, "car")                   # one project of a `Hub` (C-05a)
     reply = server.handle({"jsonrpc": "2.0", "id": 1, "method": "tools/list"})   # one JSON-RPC message in, its reply out
@@ -7,15 +7,15 @@ over the Model Context Protocol, published into the document as `Origin.MCP`.
 
 Rules (`docs/architecture/mcp-server.md`):
 
-- **The same tools, the same path.** `tools/list` is `edit_tools.specs()` as MCP tools (name, description, the argument schema as
-  `inputSchema`), nothing added or left out. `tools/call` is `HubEditTools(hub, project_id, origin=Origin.MCP).call(name,
-  arguments)`: the very call the in-app agent makes, so the argument schema, the `validate_command` check (C-02c) and the
-  document's own check in `Hub.publish` are the same ones, and every subscriber (the Studio screen) gets the `applied` with
-  `origin: "mcp"`. There is no other way in: the server holds no project and edits nothing itself.
-- **No verdicts, no constants.** The tools have no field for a planet constant or a verdict (G-02a); the server adds no tool, so a
-  verdict cannot be changed through MCP (out of scope of G-08, and refused by the closed `Command` union anyway).
+- **The same tools, the same path.** `tools/list` is `edit_tools.specs()`, `run_specs()` and `query_specs()` as MCP tools
+  (name, description, the argument schema as `inputSchema`), nothing added or left out. Edit calls go through `HubEditTools`
+  with `Origin.MCP`; queries go through `HubQueryTools.call`; run and verdict calls go through the same `RunTools.call` as
+  the in-app agent. One `QueryTools` is shared by queries and run requests, so a terminal run stream is recorded for
+  `rollout_summary`. The server holds no project and edits nothing itself.
+- **No invented verdicts, no constants.** No tool has a field for changing a planet constant or verdict. A preview is labelled
+  as not a verdict, and a core without J-01's judge explicitly refuses `request_verdict` instead of substituting a run.
 - **A refused call is a tool result, not a protocol error.** The validator's reasons go back as `isError: true` with the
-  `ToolResult.to_json()` both as text and as `structuredContent`, so the calling model can read why and try again. An unknown tool,
+  tool result's `to_json()` both as text and as `structuredContent`, so the calling model can read why and try again. An unknown tool,
   arguments that are not an object, and a malformed message are JSON-RPC errors (MCP 2025-11-25, "Error Handling").
 - **Local only.** The transport is stdio: the client starts this process and is its only peer; there is no listening socket for
   MCP. (The document channel the screen follows is `Hub.serve`, loopback by default, C-05a.)
@@ -35,7 +35,7 @@ from importlib.metadata import version
 from typing import Any
 
 from kinetra_core import Origin
-from kinetra_engine.agent import EditTools, HubEditTools, specs
+from kinetra_engine.agent import QUERY_TOOL_NAMES, RUN_TOOL_NAMES, EditTools, HubEditTools, HubQueryTools, Judge, QueryTools, RunTools, query_specs, run_specs, specs
 from kinetra_engine.protocol import Hub
 
 log = logging.getLogger(__name__)
@@ -74,15 +74,26 @@ def _is_id(value: Any) -> bool:
 
 
 class McpServer:
-    """The MCP server of one project of a `Hub`. Transport-free: `handle` takes one decoded JSON-RPC message and returns the reply
-    (or `None` for a notification or a response). Call it from the event loop that runs the hub (`Hub.publish` queues on it)."""
+    """The MCP server of one project of a `Hub`. Transport-free: handlers take one decoded JSON-RPC message and return its reply
+    (or `None` for a notification or a response). Use `handle_async` on the event loop that runs the hub; it keeps edit calls on
+    that loop (`Hub.publish` queues on it) and moves blocking run/verdict calls to a worker thread."""
 
-    def __init__(self, hub: Hub, project_id: str, *, tools: EditTools | None = None):
+    def __init__(
+        self,
+        hub: Hub,
+        project_id: str,
+        *,
+        tools: EditTools | None = None,
+        judge: Judge | None = None,
+        queries: QueryTools | None = None,
+    ):
         self._project_id = project_id
         self._tools = HubEditTools(hub, project_id, origin=Origin.MCP, tools=tools)
+        self._query_tools = HubQueryTools(hub, project_id, tools=queries)
+        self._run_tools = RunTools(hub, project_id, judge=judge, queries=self._query_tools.tools)
         self._listing = [
             {"name": spec["function"]["name"], "description": spec["function"]["description"], "inputSchema": spec["function"]["parameters"]}
-            for spec in specs()
+            for spec in [*specs(), *run_specs(), *query_specs()]
         ]
         self._names = frozenset(tool["name"] for tool in self._listing)
         self.protocol_version: str | None = None
@@ -112,6 +123,17 @@ class McpServer:
             log.exception("mcp: internal error in %s", method)
             return _error(ident, INTERNAL_ERROR, "internal error")
 
+    async def handle_async(self, message: Any) -> dict | None:
+        """Answer on the event loop, moving run and judge work to a worker thread so Hub connections stay responsive."""
+        if (
+            isinstance(message, dict)
+            and message.get("method") == "tools/call"
+            and isinstance(message.get("params"), dict)
+            and message["params"].get("name") in RUN_TOOL_NAMES
+        ):
+            return await asyncio.to_thread(self.handle, message)
+        return self.handle(message)
+
     def _request(self, ident: Any, method: str, params: dict) -> dict:
         if method == "ping":
             return _result(ident, {})
@@ -135,10 +157,12 @@ class McpServer:
                 "capabilities": {"tools": {"listChanged": False}},
                 "serverInfo": {"name": SERVER_NAME, "version": version("kinetra-engine")},
                 "instructions": (
-                    f"Edit the Kinetra Studio project {self._project_id!r}. Every tool call becomes one command checked by the "
+                    f"Edit the Kinetra Studio project {self._project_id!r}. Every edit call becomes one command checked by the "
                     "project's validator and shown on the Studio screen at once; a refused call changes nothing and says why. "
-                    "Parts are placed by snap point (or on the ground), never by free coordinates. Verdicts and planet constants "
-                    "cannot be changed here."
+                    "Parts are placed by snap point (or on the ground), never by free coordinates. Query tools read the current "
+                    "project and recorded runs without publishing. A requested run is one preview, never a verdict; its summary "
+                    "is queryable after it ends. Only the core's judge can answer a verdict request; a core without one refuses. "
+                    "Verdicts and planet constants cannot be changed here."
                 ),
             },
         )
@@ -150,7 +174,13 @@ class McpServer:
             return _error(ident, INVALID_PARAMS, f"unknown tool {str(name)[:64]!r}; tools/list names the tools")
         if not isinstance(arguments, dict):
             return _error(ident, INVALID_PARAMS, "arguments must be an object")
-        outcome = self._tools.call(name, arguments).to_json()
+        if name in RUN_TOOL_NAMES:
+            selected = self._run_tools
+        elif name in QUERY_TOOL_NAMES:
+            selected = self._query_tools
+        else:
+            selected = self._tools
+        outcome = selected.call(name, arguments).to_json()
         return _result(
             ident,
             {
@@ -192,13 +222,13 @@ async def serve_stdio(server: McpServer, reader: asyncio.StreamReader, writer: a
             if discarding:  # the tail of an overlong line
                 discarding = False
                 continue
-            reply = _answer(server, line)
+            reply = await _answer(server, line)
             if reply is not None:
                 writer.write(_encode(reply))
         await writer.drain()
 
 
-def _answer(server: McpServer, line: bytes) -> dict | None:
+async def _answer(server: McpServer, line: bytes) -> dict | None:
     if not line.strip():
         return None
     if len(line) > MAX_LINE_BYTES:
@@ -207,4 +237,4 @@ def _answer(server: McpServer, line: bytes) -> dict | None:
         message = json.loads(line)
     except (ValueError, RecursionError):
         return _error(None, PARSE_ERROR, "the line is not UTF-8 JSON")
-    return server.handle(message)
+    return await server.handle_async(message)

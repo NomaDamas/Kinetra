@@ -34,6 +34,7 @@ from __future__ import annotations
 
 import json
 import math
+import threading
 from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
 from typing import Any
@@ -41,6 +42,7 @@ from typing import Any
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
 from kinetra_core import (
+    ActuateEntry,
     Badge,
     BreakEvent,
     ConditionMetEvent,
@@ -54,6 +56,7 @@ from kinetra_core import (
     RefKind,
     RunEnded,
     RunStarted,
+    SeparationEvent,
     check_run,
     project_hash,
 )
@@ -236,7 +239,9 @@ def list_parts(project: Project) -> dict[str, Any]:
         "joints": joints,
         "actuators": [{"id": a.id, "kind": a.kind.value, "instance": a.instance, "joint": a.joint, "supply": a.supply} for a in design.actuators],
         "schedule": [
-            {"id": e.id, "actuator": e.actuator, "start_s": e.start, "end_s": e.end, "command": e.command, "badge": e.badge.value}
+            {"type": "actuate", "id": e.id, "actuator": e.actuator, "start_s": e.start, "end_s": e.end, "command": e.command, "badge": e.badge.value}
+            if isinstance(e, ActuateEntry)
+            else {"type": "separate", "id": e.id, "separator": e.separator, "at_s": e.at, "badge": e.badge.value}
             for e in design.schedule.entries
         ],
     }
@@ -397,6 +402,7 @@ def summarize_rollout(started: RunStarted, frames: Iterable[Frame], ended: RunEn
         "bodies": bodies,
         "events": counts,
         "breaks": [e.model_dump(mode="json") for e in events if isinstance(e, BreakEvent)],
+        "separations": [e.model_dump(mode="json") for e in events if isinstance(e, SeparationEvent)],
         "conditions_met": [e.model_dump(mode="json") for e in events if isinstance(e, ConditionMetEvent)],
         "contacts_begun": sum(1 for e in events if isinstance(e, ContactEvent) and e.phase == "begin"),
     }
@@ -409,13 +415,15 @@ class QueryTools:
 
     def __init__(self) -> None:
         self._rollouts: dict[str, str] = {}  # run_id -> the summary as JSON text: every read is a new object, no caller can change a record
+        self._rollouts_lock = threading.Lock()  # MCP runs in a worker thread while queries stay on the event loop
 
     def record(self, started: RunStarted, frames: Iterable[Frame], ended: RunEnded) -> dict[str, Any]:
         """Summarize a finished run (`summarize_rollout`) and keep the summary under its `run_id` for `rollout_summary`. The
         record is kept as JSON text; what is returned (here and by every query) is a fresh copy."""
         text = json.dumps(summarize_rollout(started, frames, ended), ensure_ascii=False)
-        self._rollouts.pop(started.run_id, None)
-        self._rollouts[started.run_id] = text
+        with self._rollouts_lock:
+            self._rollouts.pop(started.run_id, None)
+            self._rollouts[started.run_id] = text
         return json.loads(text)
 
     def run(self, project: Project, tool: str, arguments: str | Mapping[str, Any]) -> QueryResult:
@@ -464,12 +472,13 @@ class QueryTools:
         return data, f"support {data['support']}, margin {data['margin_m']!r} m, tip-over angle {data['tipover_angle_deg']!r} deg ({STATICS_LABEL})"
 
     def _rollout_summary(self, project: Project, args: RolloutSummaryArgs) -> tuple[dict, str]:
-        if not self._rollouts:
-            raise QueryError((Reason(code=ReasonCode.UNKNOWN_ID, message="no run has been recorded yet; a run is summarized once it has ended"),))
-        run_id = args.run_id or next(reversed(self._rollouts))
-        text = self._rollouts.get(run_id)
-        if text is None:
-            raise QueryError((Reason(code=ReasonCode.UNKNOWN_ID, message=f"no recorded run {run_id!r}; the recorded runs are {list(self._rollouts)}"),))
+        with self._rollouts_lock:
+            if not self._rollouts:
+                raise QueryError((Reason(code=ReasonCode.UNKNOWN_ID, message="no run has been recorded yet; a run is summarized once it has ended"),))
+            run_id = args.run_id or next(reversed(self._rollouts))
+            text = self._rollouts.get(run_id)
+            if text is None:
+                raise QueryError((Reason(code=ReasonCode.UNKNOWN_ID, message=f"no recorded run {run_id!r}; the recorded runs are {list(self._rollouts)}"),))
         summary = json.loads(text)
         current = summary["definition_hash"] == project_hash(project)
         data = {**summary, "current_design": current}

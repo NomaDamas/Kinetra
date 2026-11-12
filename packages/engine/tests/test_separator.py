@@ -523,7 +523,7 @@ def test_separator_results_come_out_of_the_cache_unchanged_and_the_impulse_chang
 
 def test_separator_snap_points_carry_a_pose_with_a_badge_and_a_tag():
     assert {s.id for s in SEPARATOR.snap_points} == {"face_a", "face_b"}
-    assert all(s.badge is Badge.DEFAULT and s.accepts and s.kind == "surface" for s in SEPARATOR.snap_points)
+    assert all(s.badge is Badge.DEFAULT and set(s.accepts) == {"face", "surface"} and s.kind == "surface" for s in SEPARATOR.snap_points)
 
 
 def test_separator_check_command_reports_the_part(capsys, tmp_path):

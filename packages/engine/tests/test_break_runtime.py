@@ -242,7 +242,8 @@ def test_break_runtime_drop_releases_only_the_expected_joint():
     assert previous.tick < event.tick <= carrier.tick  # the next frame carries it
     assert 0 < event.tick < 200  # during the swing, not at the saved pose
     bodies = [b.id for b in preview.started.bodies]
-    assert decode_frame(encode_frame(carrier, bodies), preview.started.run_id, bodies).events == (event,)  # the wire carries it
+    # C-05b contact transitions share the frame; the wire must preserve the break and every contact, in stream order.
+    assert decode_frame(encode_frame(carrier, bodies), preview.started.run_id, bodies).events == carrier.events
     # before the break the tip block rides on the arm; after it, it falls away; the middle block stays where it was welded
     start = relative(frames[0], "arm", "bob-tip")
     before = [f for f in frames if f.tick < event.tick]

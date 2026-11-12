@@ -382,12 +382,17 @@ version = "0.0.0"
 source = { editable = "packages/judge" }
 dependencies = [
     { name = "kinetra-core" },
+    { name = "kinetra-engine" },
+    { name = "numpy", version = "2.4.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.12'" },
+    { name = "numpy", version = "2.5.4", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12'" },
     { name = "pydantic" },
 ]
 
 [package.metadata]
 requires-dist = [
     { name = "kinetra-core", editable = "packages/core" },
+    { name = "kinetra-engine", editable = "packages/engine" },
+    { name = "numpy", specifier = ">=2.4" },
     { name = "pydantic", specifier = ">=2.14,<3" },
 ]
 

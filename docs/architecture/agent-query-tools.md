@@ -1,8 +1,8 @@
 # 에이전트 조회 도구 (G-02b)
 
-- 상태: 구현됨. 코드는 `packages/engine/src/kinetra_engine/agent/query_tools.py`, 테스트는 `packages/engine/tests/test_query_tools.py`(`uv run pytest packages/engine -q -k query_tools`).
+- 상태: 구현됨. 코드는 `packages/engine/src/kinetra_engine/agent/query_tools.py`, 테스트는 `packages/engine/tests/test_query_tools.py`와 실제 실행 기록을 대조하는 `test_run_tools.py`(`uv run pytest packages/engine -q -k 'query_tools or run_tools'`).
 - 근거: `docs/plan/studio-plan.md` 4.4절(에이전트와의 협업, "롤아웃 수치만 인용한 실패 설명"), 이슈 #145(G-02b). 읽는 코어 계산은 B-02 질량([`part-mass.md`](part-mass.md), `assembly_mass`), X-01a 바디 트리([`body-tree.md`](body-tree.md)), X-01c 추진제([`thrust.md`](thrust.md)), X-03a 정역학([`statics-tipover.md`](statics-tipover.md)), X-02a 실행 스트림([`client-adapter.md`](client-adapter.md) 3.3).
-- 범위 밖: UI. 편집 도구(G-02a, [`agent-edit-tools.md`](agent-edit-tools.md)), 실행·판정 요청 도구(G-02c), 실패 설명(G-05, [`agent-explain.md`](agent-explain.md): 이 도구의 수치만 인용한다). MCP 노출과 실행 기록 연결은 #558.
+- 범위 밖: UI. 편집 도구(G-02a, [`agent-edit-tools.md`](agent-edit-tools.md)), 실행·판정 요청 도구의 동작(G-02c), 실패 설명(G-05, [`agent-explain.md`](agent-explain.md): 이 도구의 수치만 인용한다). MCP 노출과 실제 실행 기록 연결은 #558에서 [`mcp-server.md`](mcp-server.md)와 [`agent-edit-tools.md`](agent-edit-tools.md)에 함께 기록한다.
 
 ## 쓰는 법
 
@@ -29,13 +29,13 @@ HubQueryTools(hub, "desk").call("statics_check", {}) # Hub 문서의 현재 프�
 
 | 도구 | 코어 계산 | 내는 것 |
 |---|---|---|
-| `list_parts` | 프로젝트 그대로(컴파일 없음) | 행성; 인스턴스마다 부품, 부품 이름·역할, 재료, 파라미터(값·단위·배지), 포즈(위치 m, 쿼터니언, 배지), 스냅 포인트 id; 결합(종류, 양쪽 스냅, 한계, 파단 임계); 액추에이터; 제어 스케줄(시작·끝 s, 명령, 배지). 정의가 빠진 인스턴스는 `missing_definition`(`part`/`material`)이고 스냅 포인트를 지어내지 않는다 |
+| `list_parts` | 프로젝트 그대로(컴파일 없음) | 행성; 인스턴스마다 부품, 부품 이름·역할, 재료, 파라미터(값·단위·배지), 포즈(위치 m, 쿼터니언, 배지), 스냅 포인트 id; 결합(종류, 양쪽 스냅, 한계, 파단 임계); 액추에이터; 제어 스케줄(항목마다 `type`: `actuate`는 시작·끝 s, 명령, 배지; `separate`는 분리기와 시점 s, 배지, X-08). 정의가 빠진 인스턴스는 `missing_definition`(`part`/`material`)이고 스냅 포인트를 지어내지 않는다 |
 | `mass_properties` | `compile_thrust`의 바디 트리(인스턴스마다 B-02 `mass_properties`를 저장된 포즈에 놓은 것)와 탱크의 `Supply` | 인스턴스마다 질량 kg와 월드 무게중심 m, 입력 배지; `dry`(건조 질량과 무게중심, `math.fsum`); `propellant`(탱크마다 실행 시작 때 든 양 `Supply.remaining`과 용량); `with_propellant`(추진제를 탱크 안쪽 중심 `PropellantStore.centroid`에 더한 질량과 무게중심) |
 | `statics_check` | X-03a `tipover`(같은 바디 트리) | 입력별 배지 `inputs`와 가장 약한 배지 `badge`, 질량, 무게중심, 투영점, 높이, 받침 종류(`none`/`point`/`segment`/`polygon`), 받침점 수, 지지 다각형 꼭짓점(인스턴스·geom·좌표), 변마다 거리와 각(rad, deg), 여유 m, 전복각(rad, deg), `stable`, 근사와 가정 |
-| `rollout_summary` | `summarize_rollout`: 기록된 실행 스트림(`run_started`, 프레임, `run_ended`) | 실행 id·종류·개정·정의 해시·행성·시드·시간 간격·프레임 간격, 프레임 수, 끝 틱과 시각, 종료 사유, 궤적 증거 `trajectory`(해시와 플랫폼 태그 한 객체, `run_ended.end.trajectory` 그대로: H1, 태그 없는 해시는 내지 않는다. 실패한 실행은 `null`), 모델 라벨; 강체마다 시작·끝 위치, 변위, 거리, 수평 거리, 가장 낮은·높은 z와 그 틱, 끝과 최대 기울기(deg); 이벤트 종류별 수, 파단과 조건 충족 이벤트 전체, 시작된 접촉 수; 지금 조회한 설계에서 돌린 실행인지(`current_design`: `definition_hash`와 `project_hash`가 같음) |
+| `rollout_summary` | `summarize_rollout`: 기록된 실행 스트림(`run_started`, 프레임, `run_ended`) | 실행 id·종류·개정·정의 해시·행성·시드·시간 간격·프레임 간격, 프레임 수, 끝 틱과 시각, 종료 사유, 궤적 증거 `trajectory`(해시와 플랫폼 태그 한 객체, `run_ended.end.trajectory` 그대로: H1, 태그 없는 해시는 내지 않는다. 실패한 실행은 `null`), 모델 라벨; 강체마다 시작·끝 위치, 변위, 거리, 수평 거리, 가장 낮은·높은 z와 그 틱, 끝과 최대 기울기(deg); 이벤트 종류별 수, 파단(`breaks`, 사유 `over_threshold`)·의도한 분리(`separations`, X-08)·조건 충족 이벤트 전체, 시작된 접촉 수; 지금 조회한 설계에서 돌린 실행인지(`current_design`: `definition_hash`와 `project_hash`가 같음) |
 
 - **기울기.** 첫 프레임의 자세에서 그 프레임의 자세로 돈 회전이 월드 위쪽(+Z)을 돌린 각이다: $\arccos((R_1 R_0^\top)_{zz})$. 연직축 둘레로만 돈 것은 0이다(테스트: 마지막 자세를 x축 둘레로 0.4 rad 돌리면 22.918°).
-- **실행 기록.** `record`는 `check_run`을 통과한 온전한 스트림만 받고(끝 프레임이 빠지면 `ValueError`) 요약만 `run_id`로 JSON 문장으로 보관한다. `record`와 모든 조회는 매번 새 객체를 돌려주므로 받은 쪽이 고쳐도 기록은 바뀌지 않는다(테스트). 같은 `run_id`를 다시 기록하면 새 것이 옛 것을 바꾼다. `run_id`를 빼면 가장 최근 기록이다. 기록이 없거나 모르는 id는 `unknown_id`.
+- **실행 기록.** `record`는 `check_run`을 통과한 온전한 스트림만 받고(끝 프레임이 빠지면 `ValueError`) 요약만 `run_id`로 JSON 문장으로 보관한다. G-02c `RunTools(..., queries=tools)`가 끝낸 실제 실행도 자동으로 같은 `record`에 기록하므로 실행 요청 뒤 별도 복사나 수동 기록 없이 `rollout_summary`로 읽는다(`test_run_tools_a_finished_run_records_its_whole_stream_in_the_shared_query_tools`). `record`와 모든 조회는 매번 새 객체를 돌려주므로 받은 쪽이 고쳐도 기록은 바뀌지 않는다(테스트). 같은 `run_id`를 다시 기록하면 새 것이 옛 것을 바꾼다. `run_id`를 빼면 가장 최근 기록이다. 기록이 없거나 모르는 id는 `unknown_id`. 작업 스레드의 기록 추가·교체와 이벤트 루프의 읽기는 한 잠금으로 보호한다.
 
 ## 코어와 일치 (테스트)
 
@@ -51,7 +51,7 @@ HubQueryTools(hub, "desk").call("statics_check", {}) # Hub 문서의 현재 프�
 ## 한계 (숨기지 않는다)
 
 - 실행 요약의 최저·최고 높이와 기울기는 받은 프레임(`frame_every_ticks` 틱마다와 끝 틱)에서만 읽었다. 프레임 사이 틱의 극값은 보지 않는다(`sampling` 문장이 요약에 있다). 위치는 강체 프레임 원점(가장 작은 ID 인스턴스의 프레임)의 위치이고 강체의 무게중심이 아니다.
-- 실행 요약은 기록된 실행만 읽는다. MCP 서버(G-08)의 도구 목록에 조회 도구를 싣는 것과, 실행 요청 도구(G-02c)·Hub가 끝난 실행을 `record`하는 연결은 #558이다.
+- 실행 요약은 기록된 실행만 읽는다. MCP 서버(G-08)는 실행 요청과 조회가 같은 `QueryTools` 기록을 공유한다(#558).
 - 정역학 검사는 X-03a의 지지 다각형과 전복각뿐이다. 결합부 정적 하중(X-03b)은 그 잎이 들어오면 더한다. `statics_check`의 질량은 X-03a 그대로 건조 질량이다(탱크의 추진제를 넣지 않는다); 추진제를 넣은 무게중심은 `mass_properties`의 `with_propellant`다.
 - 질량과 정역학은 컴파일되는 설계에서만 나온다(바디 트리가 필요하다). 컴파일되지 않는 설계는 컴파일러의 사유로 거부되고, 부품 목록은 언제나 나온다.
 - 배터리 에너지 같은 다른 공급원의 양은 내지 않는다(DoD 밖).

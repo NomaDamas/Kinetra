@@ -11,7 +11,9 @@ Moved from the legacy `SpecSheet` assumption structure (`legacy-v0:schemas/spec_
 | `label` (any string), `confidence` (`low`/`med`/`high`), `editable` | `label`: 1 to 100 characters, not blank; the others unchanged |
 
 `value` is the nominal (the deterministic search uses it); the distribution is what Monte-Carlo samples. The
-distribution's numbers are in `value.unit`; that the unit means something for this assumption is not checked.
+distribution's numbers are in `value.unit`. An optional typed `binding` names an instance parameter, material
+property or part specification; `Project` rejects a missing target, a unit mismatch and two rows bound to one target. An unbound row has no
+unit meaning to check and remains explicitly unapplied by the verdict (#571).
 Not carried over from the legacy `SpecSheet`: parts, param bounds, success criteria, template id and tier; they
 belong to other leaves (C-01b, J-02).
 
@@ -31,7 +33,7 @@ from typing import Annotated, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, StrictBool, field_validator, model_validator
 
-from .conventions import NAME_PATTERN
+from .conventions import ID_PATTERN, NAME_PATTERN
 from .provenance import Number, Provenance, Quantity
 from .world import PLANET_CONSTANT_NAMES
 
@@ -84,6 +86,42 @@ Distribution = Annotated[
 ]
 
 
+class InstanceParameterBinding(BaseModel):
+    """Bind an assumption to one instance's parameter (the part default when the instance omits it)."""
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    kind: Literal["instance_parameter"]
+    instance: str = Field(pattern=ID_PATTERN)
+    parameter: str = Field(pattern=NAME_PATTERN)
+
+
+class MaterialPropertyBinding(BaseModel):
+    """Bind an assumption to one physical property of a material carried by the project."""
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    kind: Literal["material_property"]
+    material: str = Field(pattern=ID_PATTERN)
+    property: Literal["density", "yield_strength", "elastic_modulus", "friction"]
+
+
+class PartSpecBinding(BaseModel):
+    """Bind an assumption to one named specification of a part carried by the project."""
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    kind: Literal["part_spec"]
+    part: str = Field(pattern=ID_PATTERN)
+    spec: str = Field(pattern=NAME_PATTERN)
+
+
+AssumptionBinding = Annotated[
+    InstanceParameterBinding | MaterialPropertyBinding | PartSpecBinding, Field(discriminator="kind")
+]
+"""A typed design-value target. `Project` checks that it exists and has the assumption's unit."""
+
+
 class Assumption(BaseModel):
     """One assumption of the verdict, as the human-review panel shows it."""
 
@@ -97,6 +135,8 @@ class Assumption(BaseModel):
     distribution: Distribution = Field(default_factory=lambda: FixedDistribution(kind="fixed"))
     confidence: Confidence
     editable: StrictBool = True
+    binding: AssumptionBinding | None = None
+    """The design value this row varies. `None` leaves the row explicitly unapplied by a verdict."""
 
     @field_validator("label")
     @classmethod

@@ -247,8 +247,8 @@
 - 라이선스: MIT
 - 원본: https://www.npmjs.com/package/@types/node/v/26.6.6 https://github.com/DefinitelyTyped/DefinitelyTyped https://github.com/DefinitelyTyped/DefinitelyTyped/blob/master/LICENSE
 - 경로: `tools/design/package.json`
-- 용도: 개발 도구: tools/design 의 node:* 타입
-- 변경 내역: 없음(수정 없이 사용). npm 배포 tarball 의 sha256. tools/design/package.json 의 devDependencies와 pnpm-lock.yaml 에서 26.6.6 로 고정.
+- 용도: 개발 도구: tools/design 및 packages/ui 토큰 생성 스크립트와 테스트의 node:* 타입
+- 변경 내역: 없음(수정 없이 사용). npm 배포 tarball 의 sha256. tools/design/package.json과 packages/ui/package.json 의 devDependencies와 pnpm-lock.yaml 에서 26.6.6 로 고정.
 - 받은 날짜: 2026-11-10
 - 원본 해시: `sha256:7ef006842f7a647868e9d53588148cb058008b107aea6a728143730bee020456`
 - 확인자: omp
@@ -264,6 +264,32 @@
 - 변경 내역: 없음(수정 없이 사용). npm 배포 tarball 의 sha256. tools/design/package.json 의 devDependencies와 pnpm-lock.yaml 에서 6.0.5 로 고정.
 - 받은 날짜: 2026-11-10
 - 원본 해시: `sha256:db919544cdd5c9bd50928619fee0498341e4c0845b03d38752b510cff3994e07`
+- 확인자: omp
+
+### dep-@types/react-19.3.0
+
+- 표기: @types/react, DefinitelyTyped contributors. MIT License.
+- 저작자: DefinitelyTyped contributors
+- 라이선스: MIT
+- 원본: https://www.npmjs.com/package/@types/react/v/19.3.0 https://github.com/DefinitelyTyped/DefinitelyTyped https://github.com/DefinitelyTyped/DefinitelyTyped/blob/master/LICENSE
+- 경로: `packages/ui/package.json`
+- 용도: 개발 도구: React 타입(tsc lint·빌드)
+- 변경 내역: 없음(수정 없이 사용). npm 배포 tarball 의 sha256. packages/ui/package.json 의 devDependencies와 pnpm-lock.yaml 에서 19.3.0 로 고정. 하위 의존성의 라이선스는 pnpm licenses list 로 확인(MIT, Apache-2.0, BSD-3-Clause, ISC, MPL-2.0)
+- 받은 날짜: 2026-11-10
+- 원본 해시: `sha256:ffa77ffdbdc82e5f67a0fd74d750990375a7dfd8685ec7f10a27c0db128f7766`
+- 확인자: omp
+
+### dep-@types/react-dom-19.3.0
+
+- 표기: @types/react-dom, DefinitelyTyped contributors. MIT License.
+- 저작자: DefinitelyTyped contributors
+- 라이선스: MIT
+- 원본: https://www.npmjs.com/package/@types/react-dom/v/19.3.0 https://github.com/DefinitelyTyped/DefinitelyTyped https://github.com/DefinitelyTyped/DefinitelyTyped/blob/master/LICENSE
+- 경로: `packages/ui/package.json`
+- 용도: 개발 도구: react-dom/server 타입
+- 변경 내역: 없음(수정 없이 사용). npm 배포 tarball 의 sha256. packages/ui/package.json 의 devDependencies와 pnpm-lock.yaml 에서 19.3.0 로 고정. 하위 의존성의 라이선스는 pnpm licenses list 로 확인(MIT, Apache-2.0, BSD-3-Clause, ISC, MPL-2.0)
+- 받은 날짜: 2026-11-10
+- 원본 해시: `sha256:0782e1cd4af4a6a030843235a48e55dc690c36f9428b0b672dc53350806dcf21`
 - 확인자: omp
 
 ### dep-annotated-types-0.8.0
@@ -638,7 +664,7 @@
 - 원본: https://pypi.org/project/numpy/2.4.6/ https://github.com/numpy/numpy
 - 경로: `packages/engine/pyproject.toml`
 - 용도: 실행 의존성: 로컬 받아쓰기(I-01a)의 추이 의존성
-- 변경 내역: 없음(수정 없이 사용). 추이 의존성(Python 3.12 미만에서만 이 버전, 이상은 numpy 2.5.4 행): ctranslate2, onnxruntime 이(가) 요구하며 uv.lock 에서 2.4.6 로 고정(루트는 faster-whisper). 해시는 sdist
+- 변경 내역: 없음(수정 없이 사용). 추이 의존성(Python 3.12 미만에서만 이 버전, 이상은 numpy 2.5.4 행): ctranslate2, onnxruntime 이(가) 요구하며 uv.lock 에서 2.4.6 로 고정(루트는 faster-whisper). 해시는 sdist. J-01a 부터 추가 소비자 packages/judge/pyproject.toml 의 직접 의존성(`numpy>=2.4`, 몬테카를로 표본 `np.random.default_rng`, `kinetra_judge/mc.py`)
 - 받은 날짜: 2026-11-11
 - 원본 해시: `sha256:f3a3570c4a2a16746ac2c31a7c7c7b0c186b95ce902e33db6f28094ed7387dda`
 - 확인자: omp
@@ -651,7 +677,7 @@
 - 원본: https://pypi.org/project/numpy/2.5.4/ https://github.com/numpy/numpy https://github.com/numpy/numpy/blob/main/LICENSE.txt
 - 경로: `spikes/mujoco-limits/scale.py`
 - 용도: 실행 의존성: MuJoCo 한계 측정 스파이크(A0-01a)의 수치 계산과 물 스파이크(FL-01 spikes/mujoco-water/mujoco_water.py. 같은 고정 버전)
-- 변경 내역: 없음(PEP 723 헤더에서 numpy==2.5.4 고정, 수정 없이 사용). NumPy 자체의 라이선스는 BSD-3-Clause(저장소 LICENSE.txt). PyPI 메타데이터 license_expression은 휠에 번들된 구성요소까지 합쳐 'BSD-3-Clause AND 0BSD AND MIT AND Zlib AND CC0-1.0'이다
+- 변경 내역: 없음(PEP 723 헤더에서 numpy==2.5.4 고정, 수정 없이 사용). NumPy 자체의 라이선스는 BSD-3-Clause(저장소 LICENSE.txt). PyPI 메타데이터 license_expression은 휠에 번들된 구성요소까지 합쳐 'BSD-3-Clause AND 0BSD AND MIT AND Zlib AND CC0-1.0'이다. J-01a 부터 추가 소비자 packages/judge/pyproject.toml 의 직접 의존성(`numpy>=2.4`, Python 3.12 이상에서 uv.lock 이 2.5.4 로 고정, 몬테카를로 표본 `kinetra_judge/mc.py`)
 - 받은 날짜: 2026-11-10
 - 원본 해시: `sha256:9a94cf751c9ad8ebaa835bcd3d40dacf8534ad086b88c38029b65123c7999d2a`
 - 확인자: omp
@@ -773,6 +799,32 @@
 - 원본 해시: `sha256:d76623373421df22fb4cf8817020cbb7ef15c725b9d5e45f17e189bfc384190f`
 - 확인자: omp
 
+### dep-react-19.3.1
+
+- 표기: React, Copyright (c) Meta Platforms, Inc. and affiliates. MIT License.
+- 저작자: Meta Platforms, Inc. and affiliates
+- 라이선스: MIT
+- 원본: https://www.npmjs.com/package/react/v/19.3.1 https://github.com/facebook/react https://github.com/facebook/react/blob/main/LICENSE
+- 경로: `packages/ui/package.json`
+- 용도: React 컴포넌트 렌더링(ValueBadge, EvidenceLevel). peerDependency ^19 와 개발용 19.3.1
+- 변경 내역: 없음(수정 없이 사용). npm 배포 tarball 의 sha256. packages/ui/package.json 의 peerDependencies(^19)와 devDependencies와 pnpm-lock.yaml 에서 19.3.1 로 고정. 하위 의존성의 라이선스는 pnpm licenses list 로 확인(MIT, Apache-2.0, BSD-3-Clause, ISC, MPL-2.0)
+- 받은 날짜: 2026-11-10
+- 원본 해시: `sha256:56936913918dcf1f7a6fe58784e79df54b18200a88655ce809cf5e9c4ef871aa`
+- 확인자: omp
+
+### dep-react-dom-19.3.1
+
+- 표기: React DOM, Copyright (c) Meta Platforms, Inc. and affiliates. MIT License.
+- 저작자: Meta Platforms, Inc. and affiliates
+- 라이선스: MIT
+- 원본: https://www.npmjs.com/package/react-dom/v/19.3.1 https://github.com/facebook/react https://github.com/facebook/react/blob/main/LICENSE
+- 경로: `packages/ui/package.json`
+- 용도: 스냅샷 테스트의 서버 렌더링(react-dom/server)
+- 변경 내역: 없음(수정 없이 사용). npm 배포 tarball 의 sha256. packages/ui/package.json 의 devDependencies와 pnpm-lock.yaml 에서 19.3.1 로 고정. 하위 의존성의 라이선스는 pnpm licenses list 로 확인(MIT, Apache-2.0, BSD-3-Clause, ISC, MPL-2.0)
+- 받은 날짜: 2026-11-10
+- 원본 해시: `sha256:8b49975821eec6311e00d2b3f4b8337923253c876517388a33f9839c61ab262e`
+- 확인자: omp
+
 ### dep-referencing-0.37.0
 
 - 표기: referencing, Copyright (c) 2022 Julian Berman. MIT License.
@@ -884,8 +936,8 @@
 - 라이선스: Apache-2.0
 - 원본: https://www.npmjs.com/package/typescript/v/7.0.2 https://github.com/microsoft/TypeScript https://github.com/microsoft/TypeScript/blob/main/LICENSE.txt
 - 경로: `tools/design/package.json`
-- 용도: 개발 도구: tools/design 의 타입 검사(lint)
-- 변경 내역: 없음(수정 없이 사용). npm 배포 tarball 의 sha256. tools/design/package.json 의 devDependencies와 pnpm-lock.yaml 에서 7.0.2 로 고정.
+- 용도: 개발 도구: tools/design 및 packages/ui 의 타입 검사(lint)와 빌드(tsc)
+- 변경 내역: 없음(수정 없이 사용). npm 배포 tarball 의 sha256. tools/design/package.json과 packages/ui/package.json 의 devDependencies와 pnpm-lock.yaml 에서 7.0.2 로 고정.
 - 받은 날짜: 2026-11-10
 - 원본 해시: `sha256:da2513f4b95176d6dde8b51aab7afe8a927656c9d277369793f77f7e59371c08`
 - 확인자: omp
@@ -914,6 +966,19 @@
 - 변경 내역: 없음(수정 없이 사용). packages/core/pyproject.toml 의 pydantic>=2.14,<3 과 uv.lock 에서 고정. 해시는 PyPI sdist 의 sha256
 - 받은 날짜: 2026-11-11
 - 원본 해시: `sha256:7f16c411e7930dc79596d42ab44672a3fe5f60eb34b781a1647e7872363120c7`
+- 확인자: omp
+
+### dep-vitest-5.1.0
+
+- 표기: Vitest, Copyright (c) 2021-Present VoidZero Inc. and Vitest contributors. MIT License.
+- 저작자: Vitest contributors (VoidZero Inc.)
+- 라이선스: MIT
+- 원본: https://www.npmjs.com/package/vitest/v/5.1.0 https://github.com/vitest-dev/vitest https://github.com/vitest-dev/vitest/blob/main/LICENSE
+- 경로: `packages/ui/package.json`
+- 용도: 개발 도구: packages/ui 스냅샷 테스트
+- 변경 내역: 없음(수정 없이 사용). npm 배포 tarball 의 sha256. packages/ui/package.json 의 devDependencies와 pnpm-lock.yaml 에서 5.1.0 로 고정. 하위 의존성의 라이선스는 pnpm licenses list 로 확인(MIT, Apache-2.0, BSD-3-Clause, ISC, MPL-2.0)
+- 받은 날짜: 2026-11-10
+- 원본 해시: `sha256:3a56217bdf139acc6514819b274de08c02350cc96e6df616a0bc5219f4c7edad`
 - 확인자: omp
 
 ### dep-websockets-17.4
