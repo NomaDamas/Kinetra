@@ -202,7 +202,8 @@ def test_break_pieces_total_mass_is_the_same_before_and_after_the_break():
 
 def test_break_pieces_piece_lands_on_the_ground_and_stops():
     """After its fall the cube rests on the ground: its last height is above the ground (its underside within 1 mm of it,
-    the soft contact's resting depth), it never went through it, and it has stopped (under 1 mm/s over the last 0.1 s).
+    the soft contact's resting depth), it never went through it, and it has stopped: the frame-to-frame speed (frames are
+    every tick here) is under 1 mm/s at every frame of the last 0.1 s.
     At the hit (sqrt(2 g h) = 1.56 m/s) the soft contact lets the underside in by up to 9.4 mm (measured) for a few ticks, then pushes it
     back; the cube's centre never goes below the ground."""
     started, frames, _, _ = run(ledge(False), 2.0)
@@ -210,7 +211,8 @@ def test_break_pieces_piece_lands_on_the_ground_and_stops():
     assert z.min() > 0.0 and z.min() - PIECE_HALF > -0.02  # never through the ground
     assert z[-1] > 0.0 and z[-1] - PIECE_HALF == pytest.approx(0.0, abs=1e-3)
     last = np.array([position(f, "piece") for f in frames[-51:]])
-    assert np.linalg.norm(last[-1] - last[0]) / (50 * started.timestep_s) < 1e-3
+    speeds = np.linalg.norm(np.diff(last, axis=0), axis=1) / started.timestep_s
+    assert len(speeds) == 50 and (speeds < 1e-3).all()
 
 
 def test_break_pieces_every_body_is_in_the_last_frame_and_in_the_trajectory_hash(monkeypatch):
