@@ -17,9 +17,11 @@ from .bodies import (
     Gravity,
     Insolation,
     Unverified,
+    VerdictAssumptionTable,
     check_world_references,
     load_bodies,
     load_body,
+    verdict_assumption_table,
 )
 from .canonical import CanonicalError, canonical_json, canonical_order, definition_hash, project_hash
 from .collision import CollisionProxy, DecomposedVoid, FilledVoid, ProxyDerivation, ProxyGeom, RingReport
@@ -213,6 +215,7 @@ from .protocol import (
 )
 from .provenance import BADGE_LABEL_KO, Badge, Provenance, Quantity, Source
 from .shape import Box, Cylinder, Shape, ShapeComponent, Sphere
+from .trajectory import TrajectoryComparison, UntaggedTrajectory, compare_trajectories, trajectory_evidence
 from .validator import (
     PLACEMENT_TOLERANCE,
     ProjectIncomplete,
@@ -394,6 +397,7 @@ __all__ = [
     "UniformDistribution",
     "Unit",
     "Unverified",
+    "VerdictAssumptionTable",
     "VerdictState",
     "World",
     "WorldPosition",
@@ -419,6 +423,7 @@ __all__ = [
     "open_report",
     "parse_command",
     "validate_command",
+    "verdict_assumption_table",
     "open_project",
     "parse_project",
     "project_file",
@@ -468,4 +473,8 @@ __all__ = [
     "WasmEngine",
     "WheelEngine",
     "check_run",
+    "TrajectoryComparison",
+    "UntaggedTrajectory",
+    "compare_trajectories",
+    "trajectory_evidence",
 ]
