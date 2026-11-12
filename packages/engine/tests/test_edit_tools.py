@@ -281,6 +281,50 @@ def test_edit_tools_aligned_and_opposed_differ_by_a_flip(tools):
     assert not aligned.ok and ReasonCode.OVERLAP in codes(aligned)  # flipped over: it dives into the plate
 
 
+def test_edit_tools_build_a_four_wheel_car_from_the_shell_and_four_wheels(tools):
+    # #541: the call sequence an agent can send. The shell's axle points sit only ~2 cm above its floor and a wheel is 0.1 m across, so the
+    # car stands on its wheels: a wheel goes on the ground first, the shell's `axle-fl` meets that wheel's `mount` (the inner face of its
+    # hub, part y = -0.86 width) and the other three wheels' `mount`s meet the other three `axle-*`. Every step is one the validator accepts.
+    hinge = {"kind": "hinge"}
+    p = ok(tools, empty(), "add_part", {"part": "wheel", "instance_id": "wheel-fl", "material": "pom-delrin-150", "place": GROUND}).project
+    p = ok(tools, p, "add_part", {"part": "shell", "instance_id": "body", "material": "al6061-t6", "place": snap("axle-fl", "wheel-fl", "mount", joint=hinge)}).project
+    for side in ("fr", "rl", "rr"):
+        p = ok(tools, p, "add_part", {"part": "wheel", "instance_id": f"wheel-{side}", "material": "pom-delrin-150", "place": snap("mount", "body", f"axle-{side}", joint=hinge)}).project
+    assert check_placement(p) == ()
+    assert sorted(i.part for i in p.design.instances) == ["shell", "wheel", "wheel", "wheel", "wheel"]
+    joints = {j.b.instance: (j.a.instance, j.a.snap_point, j.b.snap_point, j.kind.value) for j in p.design.joints}
+    assert joints == {
+        "body": ("wheel-fl", "mount", "axle-fl", "hinge"),
+        "wheel-fr": ("body", "axle-fr", "mount", "hinge"),
+        "wheel-rl": ("body", "axle-rl", "mount", "hinge"),
+        "wheel-rr": ("body", "axle-rr", "mount", "hinge"),
+    }
+    # hand calculation, default sizes (shell L 0.4, W 0.2, H 0.12, t 0.004; wheel D 0.1, width 0.04): wheel centres at z = D/2 = 0.05;
+    # shell centre at 0.05 + 3H/8 - 3t/4 = 0.092 (floor 0.032 above the ground); the axle points are 0.64 L = 0.256 apart in x and the
+    # wheel centres 0.86 * 0.04 = 0.0344 outside y = +-W/2, so the left and right centres are W + 2 * 0.0344 = 0.2688 apart in y
+    assert near(pos(p, "wheel-fl"), (0.0, 0.0, 0.05))
+    assert near(pos(p, "body"), (-0.128, -0.1344, 0.092))
+    assert near(pos(p, "wheel-fr"), (0.0, -0.2688, 0.05)) and near(pos(p, "wheel-rl"), (-0.256, 0.0, 0.05)) and near(pos(p, "wheel-rr"), (-0.256, -0.2688, 0.05))
+    body = next(i for i in p.design.instances if i.id == "body").pose.orientation
+    assert (body.x, body.y, body.z, body.w) == (0.0, 0.0, 0.0, 1.0)  # upright
+    # the hub snap is the wheel's centre: on the shell's axle point the wheel passes through the body and below the ground (the G-06 failure)
+    q = ok(tools, empty(), "add_part", {"part": "shell", "instance_id": "body", "place": GROUND}).project
+    r = run(tools, q, "add_part", {"part": "wheel", "place": snap("hub", "body", "axle-fl", "aligned")})
+    assert not r.ok and ReasonCode.OVERLAP in codes(r)
+
+
+def test_edit_tools_a_post_stands_on_a_plate_by_a_beam_end_on_the_plate_top(tools):
+    # #541: a beam `end` and a plate or beam `face` accept each other, so a beam end butts onto the plate top and the beam stands upright
+    p = ok(tools, empty(), "add_part", {"part": "plate", "material": "al6061-t6", "place": GROUND}).project
+    p = ok(tools, p, "add_part", {"part": "beam", "parameters": {"length": 0.1}, "material": "steel-a36", "place": snap("end-a", "plate-1", "top")}).project
+    assert check_placement(p) == ()
+    # plate top z = 0.005; the beam's end-a is L/2 = 0.05 from its centre along its -x, turned to point down: centre z = 0.055
+    assert near(pos(p, "beam-1"), (0.0, 0.0, 0.055))
+    # beam-to-world rotation: its local x (the length) points along world z, so the post stands upright from z = 0.005 to 0.105
+    q = next(i for i in p.design.instances if i.id == "beam-1").pose.orientation
+    assert math.isclose(abs(2.0 * (q.x * q.z - q.w * q.y)), 1.0, abs_tol=1e-9)
+
+
 def test_edit_tools_an_unknown_snap_point_or_target_is_unknown_id(tools, tower):
     r = run(tools, tower, "add_part", {"part": "plate", "place": snap("nowhere", "plate-1", "top")})
     assert codes(r) == [ReasonCode.UNKNOWN_ID] and r.reasons[0].ids[0].kind.value == "snap_point"

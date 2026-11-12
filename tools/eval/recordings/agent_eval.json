@@ -5,41 +5,32 @@
  "cases": {
   "assemble-four-wheel-car": [
    {
-    "request": "sha256:6a3ec17445c8bda0a13f2c161b9733d82f714244123c917a02a30a88ad558c97",
+    "request": "sha256:75ca6cdbd3e4e4a4090a124690a37997dcdae315f0653eebe0c7a64191d70f2a",
     "status": 200,
     "model": "gpt-6.1-sol",
-    "content": "{\"calls\":[{\"tool\":\"add_part\",\"arguments\":{\"part\":\"shell\",\"instance_id\":\"car-body\",\"place\":{\"type\":\"on_ground\"}}},{\"tool\":\"add_part\",\"arguments\":{\"part\":\"wheel\",\"instance_id\":\"wheel-fl\",\"place\":{\"type\":\"snap_to\",\"snap_point\":\"hub\",\"target\":{\"instance\":\"car-body\",\"snap_point\":\"axle-fl\"},\"facing\":\"opposed\",\"joint\":{\"kind\":\"hinge\"}}}},{\"tool\":\"add_part\",\"arguments\":{\"part\":\"wheel\",\"instance_id\":\"wheel-fr\",\"place\":{\"type\":\"snap_to\",\"snap_point\":\"hub\",\"target\":{\"instance\":\"car-body\",\"snap_point\":\"axle-fr\"},\"facing\":\"opposed\",\"joint\":{\"kind\":\"hinge\"}}}},{\"tool\":\"add_part\",\"arguments\":{\"part\":\"wheel\",\"instance_id\":\"wheel-rl\",\"place\":{\"type\":\"snap_to\",\"snap_point\":\"hub\",\"target\":{\"instance\":\"car-body\",\"snap_point\":\"axle-rl\"},\"facing\":\"opposed\",\"joint\":{\"kind\":\"hinge\"}}}},{\"tool\":\"add_part\",\"arguments\":{\"part\":\"wheel\",\"instance_id\":\"wheel-rr\",\"place\":{\"type\":\"snap_to\",\"snap_point\":\"hub\",\"target\":{\"instance\":\"car-body\",\"snap_point\":\"axle-rr\"},\"facing\":\"opposed\",\"joint\":{\"kind\":\"hinge\"}}}}],\"message\":\"차체를 추가하고 앞뒤 좌우에 바퀴 네 개를 회전 가능한 힌지로 연결합니다. 부품 크기는 기본값을 사용합니다.\"}",
-    "prompt_tokens": 7726,
-    "completion_tokens": 354,
+    "content": "{\"calls\":[{\"tool\":\"add_part\",\"arguments\":{\"part\":\"shell\",\"instance_id\":\"car_body\",\"place\":{\"type\":\"on_ground\"}}},{\"tool\":\"add_part\",\"arguments\":{\"part\":\"wheel\",\"instance_id\":\"wheel_fl\",\"place\":{\"type\":\"snap_to\",\"snap_point\":\"mount\",\"target\":{\"instance\":\"car_body\",\"snap_point\":\"axle-fl\"},\"facing\":\"opposed\",\"joint\":{\"kind\":\"hinge\"}}}},{\"tool\":\"add_part\",\"arguments\":{\"part\":\"wheel\",\"instance_id\":\"wheel_fr\",\"place\":{\"type\":\"snap_to\",\"snap_point\":\"mount\",\"target\":{\"instance\":\"car_body\",\"snap_point\":\"axle-fr\"},\"facing\":\"opposed\",\"joint\":{\"kind\":\"hinge\"}}}},{\"tool\":\"add_part\",\"arguments\":{\"part\":\"wheel\",\"instance_id\":\"wheel_rl\",\"place\":{\"type\":\"snap_to\",\"snap_point\":\"mount\",\"target\":{\"instance\":\"car_body\",\"snap_point\":\"axle-rl\"},\"facing\":\"opposed\",\"joint\":{\"kind\":\"hinge\"}}}},{\"tool\":\"add_part\",\"arguments\":{\"part\":\"wheel\",\"instance_id\":\"wheel_rr\",\"place\":{\"type\":\"snap_to\",\"snap_point\":\"mount\",\"target\":{\"instance\":\"car_body\",\"snap_point\":\"axle-rr\"},\"facing\":\"opposed\",\"joint\":{\"kind\":\"hinge\"}}}}],\"message\":\"기본 크기의 차체에 바퀴 네 개를 추가하고, 각 바퀴를 회전 가능한 힌지로 연결하는 제안입니다.\"}",
+    "prompt_tokens": 7766,
+    "completion_tokens": 358,
     "cost_usd": null
    },
    {
-    "request": "sha256:4f723e7a0fedbe05017f5de94730ba5f940dd40014041fb13c5928e277f907c9",
+    "request": "sha256:ccb1259ab84b0e7543988b1f3f468e88c94813031bd6286bf0d505eec7ed629e",
     "status": 200,
     "model": "gpt-6.1-sol",
-    "content": "{\"calls\":[{\"tool\":\"add_part\",\"arguments\":{\"part\":\"wheel\",\"instance_id\":\"wheel-fl\",\"place\":{\"type\":\"on_ground\"}}},{\"tool\":\"add_part\",\"arguments\":{\"part\":\"shell\",\"instance_id\":\"car-body\",\"place\":{\"type\":\"snap_to\",\"snap_point\":\"axle-fl\",\"target\":{\"instance\":\"wheel-fl\",\"snap_point\":\"hub\"},\"facing\":\"aligned\",\"joint\":{\"kind\":\"hinge\"}}}},{\"tool\":\"add_part\",\"arguments\":{\"part\":\"wheel\",\"instance_id\":\"wheel-fr\",\"place\":{\"type\":\"snap_to\",\"snap_point\":\"hub\",\"target\":{\"instance\":\"car-body\",\"snap_point\":\"axle-fr\"},\"facing\":\"aligned\",\"joint\":{\"kind\":\"hinge\"}}}},{\"tool\":\"add_part\",\"arguments\":{\"part\":\"wheel\",\"instance_id\":\"wheel-rl\",\"place\":{\"type\":\"snap_to\",\"snap_point\":\"hub\",\"target\":{\"instance\":\"car-body\",\"snap_point\":\"axle-rl\"},\"facing\":\"aligned\",\"joint\":{\"kind\":\"hinge\"}}}},{\"tool\":\"add_part\",\"arguments\":{\"part\":\"wheel\",\"instance_id\":\"wheel-rr\",\"place\":{\"type\":\"snap_to\",\"snap_point\":\"hub\",\"target\":{\"instance\":\"car-body\",\"snap_point\":\"axle-rr\"},\"facing\":\"aligned\",\"joint\":{\"kind\":\"hinge\"}}}}],\"message\":\"바퀴를 먼저 지면에 놓고 차체를 연결하도록 배치 순서를 바꿨습니다. 네 바퀴의 연결 방향을 수정하고 회전 가능한 힌지로 연결합니다.\"}",
-    "prompt_tokens": 8233,
-    "completion_tokens": 675,
-    "cost_usd": null
-   },
-   {
-    "request": "sha256:b31ded524b8c5ab3406b632ad7163d4a2b43589cc61ff151e8422a9e30f6c33a",
-    "status": 200,
-    "model": "gpt-6.1-sol",
-    "content": "{\"calls\":[],\"message\":\"기본 크기의 차체와 바퀴를 연결하면 부품이 서로 겹쳐 제안이 거부됩니다. 임의로 치수를 정하지 않도록 이번에는 변경을 제안하지 않았습니다. 차체의 너비와 바퀴의 지름·폭을 지정해 주시면 그 치수로 다시 구성하겠습니다.\"}",
-    "prompt_tokens": 8689,
-    "completion_tokens": 174,
+    "content": "{\"calls\":[{\"tool\":\"add_part\",\"arguments\":{\"part\":\"beam\",\"instance_id\":\"chassis_beam\",\"place\":{\"type\":\"on_ground\"}}},{\"tool\":\"add_part\",\"arguments\":{\"part\":\"shell\",\"instance_id\":\"car_body\",\"place\":{\"type\":\"snap_to\",\"snap_point\":\"underside\",\"target\":{\"instance\":\"chassis_beam\",\"snap_point\":\"top\"},\"facing\":\"opposed\"}}},{\"tool\":\"add_part\",\"arguments\":{\"part\":\"wheel\",\"instance_id\":\"wheel_fl\",\"place\":{\"type\":\"snap_to\",\"snap_point\":\"mount\",\"target\":{\"instance\":\"car_body\",\"snap_point\":\"axle-fl\"},\"facing\":\"opposed\",\"joint\":{\"kind\":\"hinge\"}}}},{\"tool\":\"add_part\",\"arguments\":{\"part\":\"wheel\",\"instance_id\":\"wheel_fr\",\"place\":{\"type\":\"snap_to\",\"snap_point\":\"mount\",\"target\":{\"instance\":\"car_body\",\"snap_point\":\"axle-fr\"},\"facing\":\"opposed\",\"joint\":{\"kind\":\"hinge\"}}}},{\"tool\":\"add_part\",\"arguments\":{\"part\":\"wheel\",\"instance_id\":\"wheel_rl\",\"place\":{\"type\":\"snap_to\",\"snap_point\":\"mount\",\"target\":{\"instance\":\"car_body\",\"snap_point\":\"axle-rl\"},\"facing\":\"opposed\",\"joint\":{\"kind\":\"hinge\"}}}},{\"tool\":\"add_part\",\"arguments\":{\"part\":\"wheel\",\"instance_id\":\"wheel_rr\",\"place\":{\"type\":\"snap_to\",\"snap_point\":\"mount\",\"target\":{\"instance\":\"car_body\",\"snap_point\":\"axle-rr\"},\"facing\":\"opposed\",\"joint\":{\"kind\":\"hinge\"}}}}],\"message\":\"지면에 놓은 기본 규격 빔 위에 차체를 연결하도록 수정했습니다. 차체의 네 축에는 바퀴를 각각 회전 가능한 힌지로 연결합니다.\"}",
+    "prompt_tokens": 8192,
+    "completion_tokens": 467,
     "cost_usd": null
    }
   ],
   "assemble-plate-and-post": [
    {
-    "request": "sha256:40a4125cfded1533898307df07bb08881bd0348f5e511fec53c78fc0868e396f",
+    "request": "sha256:babf00b15b8482b5c07ba6df28c629b6ea6604315008963b34b325f3a53ea9bb",
     "status": 200,
     "model": "gpt-6.1-sol",
-    "content": "{\"calls\":[],\"message\":\"현재 도구로는 요청한 배치를 만들 수 없습니다. 강철 기둥으로 사용할 빔의 끝 스냅은 판의 윗면 스냅과 연결할 수 없고, 빔을 임의로 회전해 세우는 기능도 없습니다.\"}",
-    "prompt_tokens": 7745,
-    "completion_tokens": 177,
+    "content": "{\"calls\":[{\"tool\":\"add_part\",\"arguments\":{\"part\":\"plate\",\"instance_id\":\"aluminum_plate\",\"material\":\"al6061-t6\",\"place\":{\"type\":\"on_ground\"},\"source\":\"알루미늄 판을 바닥에 놓고\"}},{\"tool\":\"add_part\",\"arguments\":{\"part\":\"beam\",\"instance_id\":\"steel_column\",\"parameters\":{\"length\":0.1},\"material\":\"steel-a36\",\"place\":{\"type\":\"snap_to\",\"snap_point\":\"end-a\",\"target\":{\"instance\":\"aluminum_plate\",\"snap_point\":\"top\"},\"facing\":\"opposed\"},\"source\":\"그 위에 길이 10 cm 강철 기둥을 세워 줘\"}}],\"message\":\"바닥에 알루미늄 판을 놓고, 판 위쪽 스냅점에 길이 10 cm의 강철 I형 기둥을 수직으로 고정하는 제안입니다. 나머지 치수는 기본값을 유지합니다.\"}",
+    "prompt_tokens": 7785,
+    "completion_tokens": 235,
     "cost_usd": null
    }
   ],

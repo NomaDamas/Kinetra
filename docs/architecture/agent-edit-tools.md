@@ -76,6 +76,15 @@
 - **거부의 사유는 채널의 것과 같다.** 빠진 정의는 `ProjectIncomplete`의 사유 그대로(`missing_definition`), 컴파일되지 않는 설계는 채널의 `run`과 같은 `compile_reason`(`kinetra_engine.protocol.server`: 사유 문장이 `CompileErrorCode`로 시작하고 인스턴스·부품·결합·액추에이터를 참조), 틱 수가 u32를 넘는 `duration_s`는 `invalid_command`다.
 - `run_specs()`는 두 도구를 `specs()`와 같은 OpenAI 함수 도구 객체로 낸다. 편집 도구의 `specs()`에는 들어가지 않는다(`EditTools`는 두 이름을 모르는 도구로 거부한다).
 
+## 라이브러리만으로 짓는 조립 두 가지 (#541)
+
+G-06 평가(#153)에서 모델이 도구 한계로 거절한 두 조립이다. 도구는 그대로이고 라이브러리 스냅 포인트를 고쳐 길을 냈다. 두 호출 열 모두 단계마다 검증기를 통과한다(`test_edit_tools_build_a_four_wheel_car_from_the_shell_and_four_wheels`, `test_edit_tools_a_post_stands_on_a_plate_by_a_beam_end_on_the_plate_top`).
+
+| 조립 | 호출 열 | 고친 것 |
+|---|---|---|
+| 바퀴 네 개 차(쉘 + 바퀴 넷) | `add_part` 바퀴 `on_ground` → `add_part` 쉘 `snap_to`(쉘 `axle-fl` ↔ 바퀴 `mount`, `opposed`) → 바퀴 셋을 `snap_to`(바퀴 `mount` ↔ 쉘 `axle-fr`·`axle-rl`·`axle-rr`, `opposed`) | 바퀴에 스냅 `mount`를 더했다(안쪽 허브 끝면, [`parts-wheel.md`](parts-wheel.md)). 바퀴 중심인 `hub`를 쉘 옆면의 `axle-*`에 대면 바퀴 절반이 몸체를 지나고, 축이 쉘 바닥에서 약 2 cm 위라서 지름 0.1 m 바퀴는 지면 아래로도 간다(G-06의 실패, 테스트가 그대로 거부됨을 본다). `mount`로 대면 바퀴는 몸체 옆에 서고 쉘은 바퀴 위에 뜬다(기본 치수에서 바닥이 지면 위 0.032 m). 쉘을 먼저 지면에 놓으면 바퀴가 지면 아래로 가므로 바퀴가 먼저다 |
+| 판 위에 세운 기둥 | `add_part` 판 `on_ground` → `add_part` 빔 `snap_to`(빔 `end-a` ↔ 판 `top`, `opposed`) | 빔 끝(`end`)과 빔·판의 면(`face`)이 서로를 받는다([`parts-beam-plate.md`](parts-beam-plate.md)). 전에는 빔 `bottom`으로만 붙어 기둥이 눕혀졌다 |
+
 ## 한계 (숨기지 않는다)
 
 - 파라미터를 바꾸면 그 인스턴스를 자기가 매달린 결합(`b` 쪽)에 다시 맞추고(결합이 없으면 지면에 놓여 있던 경우 다시 지면에), 그 인스턴스에서 다른 결합으로 매달린 조립체를 같은 양만큼 옮긴다(스냅 포인트는 움직여도 방향은 안 바뀌므로 평행이동이다). 결합이 두 쪽에서 닫힌 고리는 옮기지 않고, 검증기가 어느 결합이 만나지 않는지 말하며 거부한다.
