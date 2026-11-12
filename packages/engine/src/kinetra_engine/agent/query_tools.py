@@ -63,7 +63,7 @@ from kinetra_engine.protocol.server import compile_reasons
 
 from ..compiler import CompileError, ThrustModel, compile_thrust
 from ..compiler.bodytree import Vec, mv, quat_of, rot, vadd
-from ..statics import TipoverError, tipover
+from ..statics import BADGE_STRENGTH, InputBadges, TipoverError, tipover, weakest
 from . import guard as gd
 
 ROLLOUT_NOTICE = "1회 실행. 판정이 아닙니다"
@@ -169,6 +169,11 @@ def _quantity(q: Any) -> dict[str, Any]:
 def _badges(badges: Iterable[Badge]) -> list[str]:
     order = list(Badge)
     return [b.value for b in sorted(set(badges), key=order.index)]
+
+
+def _strength(badges: Iterable[Badge]) -> tuple[Badge, ...]:
+    """Distinct `badges`, strongest first (`BADGE_STRENGTH`, X-07)."""
+    return tuple(sorted(set(badges), key=BADGE_STRENGTH.index))
 
 
 def _weighted(rows: Iterable[tuple[float, Vec]]) -> tuple[float, Vec]:
@@ -279,7 +284,11 @@ def mass_summary(model: ThrustModel) -> dict[str, Any]:
 
 
 def statics_summary(model: ThrustModel) -> dict[str, Any]:
-    """X-03a's `tipover` of `model`'s body tree, as numbers with their units. Raises `QueryError` for a design in the ground."""
+    """X-03a's `tipover` of `model`'s body tree, as numbers with their units, and the badges of what it was computed from
+    (`inputs`, rows like X-07's `InputBadges`, strongest first): `mass` is every instance's B-01a `Derivation.input_badges` (the
+    shape, density and parameters the masses and the collision proxies both come from), `pose` the stored poses' badges, and
+    `gravity` the data file's (`data/bodies`; only its direction enters the check). `badge` is the weakest of them (X-07's
+    `weakest`): a computed value is never better than its weakest input. Raises `QueryError` for a design in the ground."""
     try:
         t = tipover(model.tree)
     except TipoverError as e:
@@ -288,9 +297,16 @@ def statics_summary(model: ThrustModel) -> dict[str, Any]:
     def point(s: Any) -> dict[str, Any]:
         return {"instance": s.instance, "geom": s.geom, **_xyz(s.point)}
 
+    tree = model.tree
+    inputs = (
+        InputBadges("mass", _strength(b for ci in tree.instances for b in ci.properties.derivation.input_badges)),
+        InputBadges("pose", _strength(i.pose.badge for i in tree.design.instances)),
+        InputBadges("gravity", (tree.planet.gravity.badge,)),
+    )
     return {
         "label": STATICS_LABEL,
-        "badge": Badge.SIM.value,
+        "badge": weakest(b for r in inputs for b in r.badges).value,
+        "inputs": [{"input": r.input, "badges": [b.value for b in r.badges]} for r in inputs],
         "computed_by": _STATICS_BY,
         "mass_kg": t.mass,
         "center_of_mass_m": _xyz(t.center_of_mass),
@@ -391,14 +407,15 @@ class QueryTools:
     specs = staticmethod(query_specs)
 
     def __init__(self) -> None:
-        self._rollouts: dict[str, dict[str, Any]] = {}
+        self._rollouts: dict[str, str] = {}  # run_id -> the summary as JSON text: every read is a new object, no caller can change a record
 
     def record(self, started: RunStarted, frames: Iterable[Frame], ended: RunEnded) -> dict[str, Any]:
-        """Summarize a finished run (`summarize_rollout`) and keep the summary under its `run_id` for `rollout_summary`."""
-        summary = summarize_rollout(started, frames, ended)
+        """Summarize a finished run (`summarize_rollout`) and keep the summary under its `run_id` for `rollout_summary`. The
+        record is kept as JSON text; what is returned (here and by every query) is a fresh copy."""
+        text = json.dumps(summarize_rollout(started, frames, ended), ensure_ascii=False)
         self._rollouts.pop(started.run_id, None)
-        self._rollouts[started.run_id] = summary
-        return summary
+        self._rollouts[started.run_id] = text
+        return json.loads(text)
 
     def run(self, project: Project, tool: str, arguments: str | Mapping[str, Any]) -> QueryResult:
         """Answer one query about `project`. Never raises for a bad call and never changes `project`; the result says why."""
@@ -449,9 +466,10 @@ class QueryTools:
         if not self._rollouts:
             raise QueryError((Reason(code=ReasonCode.UNKNOWN_ID, message="no run has been recorded yet; a run is summarized once it has ended"),))
         run_id = args.run_id or next(reversed(self._rollouts))
-        summary = self._rollouts.get(run_id)
-        if summary is None:
+        text = self._rollouts.get(run_id)
+        if text is None:
             raise QueryError((Reason(code=ReasonCode.UNKNOWN_ID, message=f"no recorded run {run_id!r}; the recorded runs are {list(self._rollouts)}"),))
+        summary = json.loads(text)
         current = summary["definition_hash"] == project_hash(project)
         data = {**summary, "current_design": current}
         return data, f"run {run_id!r} ended {summary['end']} at tick {summary['last_tick']}; {ROLLOUT_NOTICE}" + ("" if current else "; it was run on another version of the design")

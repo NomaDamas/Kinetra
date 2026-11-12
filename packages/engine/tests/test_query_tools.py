@@ -18,6 +18,7 @@ from test_thrust import CAPACITY, M_TANK, M_THRUSTER, TANK_ON_JET_Z, rocket
 from test_tipover import WHEEL_R, WHEEL_W, cart
 
 from kinetra_core import PLANET_CONSTANT_NAMES, Project, project_hash
+from kinetra_core.bodies import load_body
 from kinetra_core.validator import VERDICT_FIELD_NAMES
 from kinetra_engine.agent import (
     QUERY_TOOL_NAMES,
@@ -161,7 +162,11 @@ def test_query_tools_statics_check_is_x03a_tipover():
     proj = cart()
     data = ask(proj, "statics_check")
     t = tipover(build_body_tree(proj))
-    assert data["label"] == STATICS_LABEL and data["badge"] == "sim"
+    assert data["label"] == STATICS_LABEL
+    # the badges of what the check was computed from (X-07's rows): the test's declared shapes, density and poses, the cited gravity
+    assert data["inputs"] == [{"input": "mass", "badges": ["declared"]}, {"input": "pose", "badges": ["declared"]}, {"input": "gravity", "badges": ["cite"]}]
+    assert load_body("earth").gravity.badge.value == "cite"
+    assert data["badge"] == "declared"  # the weakest input, never `sim` over declared inputs
     assert data["support"] == t.kind == "polygon" and data["stable"] is t.stable is True
     assert data["margin_m"] == t.margin and data["tipover_angle_rad"] == t.tipover_angle
     assert data["tipover_angle_deg"] == math.degrees(t.tipover_angle)
@@ -169,6 +174,18 @@ def test_query_tools_statics_check_is_x03a_tipover():
     assert [(p["instance"], p["geom"], xyz(p)) for p in data["polygon"]] == [(s.instance, s.geom, s.point) for s in t.polygon]
     assert [(e["distance_m"], e["angle_rad"]) for e in data["edges"]] == [(e.distance, e.angle) for e in t.edges]
     assert data["support_points"] == len(t.contacts) and data["assumptions"] == list(t.assumptions)
+
+
+def test_query_tools_statics_check_input_badges_follow_the_inputs():
+    # a library tank in the catalog's aluminium and a thruster in its steel: the inputs' own badges, not the test's
+    proj = rocket([])
+    data = ask(proj, "statics_check")
+    tree = compile_thrust(proj).tree
+    mass = {b.value for ci in tree.instances for b in ci.properties.derivation.input_badges}
+    rows = {r["input"]: r["badges"] for r in data["inputs"]}
+    assert set(rows["mass"]) == mass and rows["pose"] == ["declared"] and rows["gravity"] == [load_body("earth").gravity.badge.value]
+    strength = ["sim", "cite", "default", "declared", "estimate"]  # X-07's BADGE_STRENGTH
+    assert data["badge"] == max((b for bs in rows.values() for b in bs), key=strength.index)
 
 
 def test_query_tools_statics_check_reports_an_overhang_as_not_stable():
@@ -200,7 +217,11 @@ def test_query_tools_rollout_summary_is_the_run_stream():
     run = run_of(proj, duration_s=0.25)
     frames, ended = split(run)
     tools = QueryTools()
-    tools.record(run.started, frames, ended)
+    recorded = tools.record(run.started, frames, ended)
+    recorded["bodies"][0]["end_m"]["z"] = 99.0  # a caller changing what it was given cannot change the record
+    data = ask(proj, "rollout_summary", {"run_id": "run-1"}, tools)
+    data["bodies"].clear()
+    data["model_labels"].append("changed")
     data = ask(proj, "rollout_summary", {"run_id": "run-1"}, tools)
     assert data["notice"] == ROLLOUT_NOTICE and data["badge"] == "sim" and data["kind"] == "preview"
     assert data["end"] == ended.end.reason == "completed" and data["last_tick"] == ended.last_tick
