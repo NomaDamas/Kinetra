@@ -1,0 +1,644 @@
+{
+ "issue": "A0-02a-f #420",
+ "flow": "ack",
+ "win": 2,
+ "client": {
+  "commit": "5eb381da11d81389e1c5cde1fbd2e9d5a9eb95eb",
+  "dirty_client_files": 0
+ },
+ "machine_before": {
+  "cpu": "Apple M2 Pro",
+  "ncpu": 10,
+  "platform": "Darwin 24.6.0 arm64",
+  "load_avg": [
+   13,
+   13.7,
+   15.2
+  ],
+  "swap": "total = 18432.00M  used = 16983.94M  free = 1448.06M  (encrypted)",
+  "node": "v22.22.2"
+ },
+ "gl_backend": "swiftshader",
+ "launch_args": [],
+ "browser": {
+  "name": "chromium-headless-shell (playwright-core 1.65.0)",
+  "version": "158.0.8127.18"
+ },
+ "runs": [
+  {
+   "config": {
+    "n": 5000,
+    "seed": 0,
+    "warmup_ms": 1500,
+    "measure_ms": 8000,
+    "bench_frames": 60,
+    "presses": 40,
+    "w": 960,
+    "h": 540,
+    "flow": "ack",
+    "win": 2
+   },
+   "bytes_per_frame": 140024,
+   "marker_px": [
+    [
+     404,
+     307
+    ],
+    [
+     556,
+     307
+    ]
+   ],
+   "env": {
+    "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/158.0.8127.18 Safari/537.36",
+    "webgl_renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (LLVM 10.0.0) (0x0000C0DE)), SwiftShader driver)",
+    "webgl_vendor": "Google Inc. (Google)",
+    "cross_origin_isolated": true,
+    "device_pixel_ratio": 1,
+    "three_revision": "187",
+    "used_js_heap_mb": 10
+   },
+   "render_info": {
+    "calls": 1,
+    "triangles": 60000
+   },
+   "phase_a": {
+    "wall_s": 8.148,
+    "raf_frames": 95,
+    "raf_fps": 11.66,
+    "raf_dt_ms": {
+     "n_valid": 94,
+     "n_missing": 0,
+     "mean": 85.812,
+     "min": 66.665,
+     "p50": 83.33,
+     "p95": 99.995,
+     "p99": 116.665,
+     "max": 116.665
+    },
+    "raf_dt_over_20ms": 94,
+    "raf_dt_over_33ms": 94,
+    "raf_dt_samples_ms": [
+     83.33,
+     83.33,
+     99.99,
+     83.34,
+     83.32,
+     83.33,
+     83.33,
+     100,
+     66.66,
+     83.32,
+     100,
+     83.33,
+     83.34,
+     83.33,
+     83.33,
+     83.33,
+     83.33,
+     83.33,
+     83.33,
+     83.33,
+     83.33,
+     83.33,
+     83.32,
+     83.34,
+     100,
+     66.66,
+     99.99,
+     83.33,
+     83.33,
+     83.33,
+     83.33,
+     83.33,
+     83.33,
+     83.33,
+     83.33,
+     83.33,
+     83.33,
+     83.33,
+     83.33,
+     83.33,
+     83.33,
+     83.33,
+     83.33,
+     83.33,
+     99.99,
+     83.33,
+     83.34,
+     83.33,
+     83.32,
+     83.33,
+     83.33,
+     83.34,
+     83.33,
+     83.32,
+     83.33,
+     83.33,
+     83.33,
+     83.33,
+     100,
+     83.33,
+     83.33,
+     83.34,
+     83.33,
+     83.32,
+     83.34,
+     99.99,
+     116.66,
+     99.99,
+     83.33,
+     116.66,
+     100,
+     83.33,
+     83.33,
+     83.33,
+     83.33,
+     100,
+     83.33,
+     83.33,
+     83.33,
+     83.33,
+     83.33,
+     100,
+     83.33,
+     66.66,
+     100,
+     66.66,
+     83.33,
+     100,
+     83.33,
+     83.33,
+     83.33,
+     83.33,
+     83.33,
+     83.33
+    ],
+    "update_ms": {
+     "n_valid": 95,
+     "n_missing": 0,
+     "mean": 0.062,
+     "min": 0.035,
+     "p50": 0.07,
+     "p95": 0.085,
+     "p99": 0.095,
+     "max": 0.095
+    },
+    "render_call_ms": {
+     "n_valid": 95,
+     "n_missing": 0,
+     "mean": 0.117,
+     "min": 0.09,
+     "p50": 0.11,
+     "p95": 0.15,
+     "p99": 0.29,
+     "max": 0.29
+    },
+    "cpu_ms": {
+     "n_valid": 95,
+     "n_missing": 0,
+     "mean": 0.178,
+     "min": 0.135,
+     "p50": 0.175,
+     "p95": 0.21,
+     "p99": 0.33,
+     "max": 0.33
+    },
+    "distinct_ticks_drawn": 55,
+    "distinct_ticks_per_s": 6.75,
+    "tick_gap": {
+     "n_valid": 54,
+     "n_missing": 0,
+     "mean": 9.037,
+     "min": 5,
+     "p50": 10,
+     "p95": 11,
+     "p99": 13,
+     "max": 13
+    },
+    "tick_gap_over_1": 54,
+    "frames_received": 54,
+    "frames_overwritten_before_draw": 0,
+    "frames_unaccounted": -1,
+    "frame_age_at_draw_ms": {
+     "n_valid": 95,
+     "n_missing": 0,
+     "mean": 37.258,
+     "min": 0.22,
+     "p50": 0.285,
+     "p95": 89.26,
+     "p99": 110.51,
+     "max": 110.51
+    }
+   },
+   "net": {
+    "frames": 54,
+    "bytes": 7561296,
+    "bad_frames": 0,
+    "frames_per_s": 6.63,
+    "payload_bytes_per_s": 928033,
+    "payload_mbit_per_s": 7.424,
+    "arrive_dt_ms": {
+     "n_valid": 54,
+     "n_missing": 0,
+     "mean": 150.913,
+     "min": 82.645,
+     "p50": 167.925,
+     "p95": 191.92,
+     "p99": 218.6,
+     "max": 218.6
+    },
+    "recv_tick_gap": {
+     "n_valid": 54,
+     "n_missing": 0,
+     "mean": 9.037,
+     "min": 5,
+     "p50": 10,
+     "p95": 11,
+     "p99": 13,
+     "max": 13
+    },
+    "recv_tick_gap_over_1": 54,
+    "acks_sent": 113
+   },
+   "bench": {
+    "frames": 60,
+    "update_ms": {
+     "n_valid": 60,
+     "n_missing": 0,
+     "mean": 0.038,
+     "min": 0.03,
+     "p50": 0.04,
+     "p95": 0.045,
+     "p99": 0.055,
+     "max": 0.055
+    },
+    "render_call_ms": {
+     "n_valid": 60,
+     "n_missing": 0,
+     "mean": 0.112,
+     "min": 0.085,
+     "p50": 0.1,
+     "p95": 0.16,
+     "p99": 0.235,
+     "max": 0.235
+    },
+    "sync_ms": {
+     "n_valid": 60,
+     "n_missing": 0,
+     "mean": 85.16,
+     "min": 70.68,
+     "p50": 81.855,
+     "p95": 116.5,
+     "p99": 126.58,
+     "max": 126.58
+    },
+    "total_ms": {
+     "n_valid": 60,
+     "n_missing": 0,
+     "mean": 85.311,
+     "min": 70.955,
+     "p50": 82.02,
+     "p95": 116.655,
+     "p99": 126.72,
+     "max": 126.72
+    },
+    "frames_per_s_sync": 11.72
+   },
+   "latency": {
+    "requested": 40,
+    "inputs": 40,
+    "measured": 18,
+    "superseded": 11,
+    "no_visible_change": 11,
+    "unverified_start": 0,
+    "unresolved": 0,
+    "samples": [
+     {
+      "seq": 3,
+      "input_to_handler": 73.48000001907349,
+      "handler_to_sent": 0.04499983787536621,
+      "sent_to_first_frame_recv": 817.7200000286102,
+      "recv_to_draw_start": 0.39499998092651367,
+      "draw_start_to_pixels": 75.8050000667572,
+      "total": 967.4449999332428,
+      "frame_tick": 1077
+     },
+     {
+      "seq": 4,
+      "input_to_handler": 57.829999923706055,
+      "handler_to_sent": 0.03500008583068848,
+      "sent_to_first_frame_recv": 572.414999961853,
+      "recv_to_draw_start": 0.24499988555908203,
+      "draw_start_to_pixels": 82.08000016212463,
+      "total": 712.6050000190735,
+      "frame_tick": 1092
+     },
+     {
+      "seq": 5,
+      "input_to_handler": 34.700000047683716,
+      "handler_to_sent": 0.08500003814697266,
+      "sent_to_first_frame_recv": 942.9750001430511,
+      "recv_to_draw_start": 0.5099999904632568,
+      "draw_start_to_pixels": 187.46999979019165,
+      "total": 1165.7400000095367,
+      "frame_tick": 1112
+     },
+     {
+      "seq": 12,
+      "input_to_handler": 37.02999997138977,
+      "handler_to_sent": 0.029999971389770508,
+      "sent_to_first_frame_recv": 923.0550000667572,
+      "recv_to_draw_start": 0.28999996185302734,
+      "draw_start_to_pixels": 82.91000008583069,
+      "total": 1043.3150000572205,
+      "frame_tick": 1274
+     },
+     {
+      "seq": 13,
+      "input_to_handler": 57.55999994277954,
+      "handler_to_sent": 0.040000200271606445,
+      "sent_to_first_frame_recv": 859.1299998760223,
+      "recv_to_draw_start": 0.315000057220459,
+      "draw_start_to_pixels": 191.49000000953674,
+      "total": 1108.5350000858307,
+      "frame_tick": 1301
+     },
+     {
+      "seq": 14,
+      "input_to_handler": 57.265000104904175,
+      "handler_to_sent": 0.034999847412109375,
+      "sent_to_first_frame_recv": 1281.6449999809265,
+      "recv_to_draw_start": 0.5150001049041748,
+      "draw_start_to_pixels": 136.29999995231628,
+      "total": 1475.7599999904633,
+      "frame_tick": 1316
+     },
+     {
+      "seq": 15,
+      "input_to_handler": 15.980000019073486,
+      "handler_to_sent": 0.03500008583068848,
+      "sent_to_first_frame_recv": 1256.5650000572205,
+      "recv_to_draw_start": 0.375,
+      "draw_start_to_pixels": 86.82999992370605,
+      "total": 1359.7850000858307,
+      "frame_tick": 1337
+     },
+     {
+      "seq": 18,
+      "input_to_handler": 18.555000066757202,
+      "handler_to_sent": 0.034999847412109375,
+      "sent_to_first_frame_recv": 634.6449999809265,
+      "recv_to_draw_start": 0.3000001907348633,
+      "draw_start_to_pixels": 83.07499980926514,
+      "total": 736.6099998950958,
+      "frame_tick": 1402
+     },
+     {
+      "seq": 19,
+      "input_to_handler": 44.03500008583069,
+      "handler_to_sent": 0.034999847412109375,
+      "sent_to_first_frame_recv": 847.3200001716614,
+      "recv_to_draw_start": 0.9549999237060547,
+      "draw_start_to_pixels": 87.61500000953674,
+      "total": 979.960000038147,
+      "frame_tick": 1429
+     },
+     {
+      "seq": 22,
+      "input_to_handler": 48.72499990463257,
+      "handler_to_sent": 0.039999961853027344,
+      "sent_to_first_frame_recv": 857.3849999904633,
+      "recv_to_draw_start": 0.46000003814697266,
+      "draw_start_to_pixels": 86.99500012397766,
+      "total": 993.6050000190735,
+      "frame_tick": 1491
+     },
+     {
+      "seq": 23,
+      "input_to_handler": 4.109999895095825,
+      "handler_to_sent": 0.029999971389770508,
+      "sent_to_first_frame_recv": 592.8400001525879,
+      "recv_to_draw_start": 0.25499987602233887,
+      "draw_start_to_pixels": 81.46500015258789,
+      "total": 678.7000000476837,
+      "frame_tick": 1506
+     },
+     {
+      "seq": 24,
+      "input_to_handler": 37.84500002861023,
+      "handler_to_sent": 0.034999847412109375,
+      "sent_to_first_frame_recv": 857.8650000095367,
+      "recv_to_draw_start": 1.0350000858306885,
+      "draw_start_to_pixels": 85.78999996185303,
+      "total": 982.5699999332428,
+      "frame_tick": 1531
+     },
+     {
+      "seq": 29,
+      "input_to_handler": 68.47000002861023,
+      "handler_to_sent": 0.029999971389770508,
+      "sent_to_first_frame_recv": 589.4800000190735,
+      "recv_to_draw_start": 0.7699999809265137,
+      "draw_start_to_pixels": 75.15499997138977,
+      "total": 733.9049999713898,
+      "frame_tick": 1631
+     },
+     {
+      "seq": 30,
+      "input_to_handler": 36.33999991416931,
+      "handler_to_sent": 0.029999971389770508,
+      "sent_to_first_frame_recv": 825.875,
+      "recv_to_draw_start": 0.4500000476837158,
+      "draw_start_to_pixels": 79.75999999046326,
+      "total": 942.454999923706,
+      "frame_tick": 1655
+     },
+     {
+      "seq": 37,
+      "input_to_handler": 78.78499984741211,
+      "handler_to_sent": 0.039999961853027344,
+      "sent_to_first_frame_recv": 585.3100001811981,
+      "recv_to_draw_start": 0.31999993324279785,
+      "draw_start_to_pixels": 80.17000007629395,
+      "total": 744.625,
+      "frame_tick": 1791
+     },
+     {
+      "seq": 38,
+      "input_to_handler": 15.674999952316284,
+      "handler_to_sent": 0.029999971389770508,
+      "sent_to_first_frame_recv": 579.8550000190735,
+      "recv_to_draw_start": 0.2200000286102295,
+      "draw_start_to_pixels": 102.0550000667572,
+      "total": 697.835000038147,
+      "frame_tick": 1816
+     },
+     {
+      "seq": 39,
+      "input_to_handler": 47.75499987602234,
+      "handler_to_sent": 0.03500008583068848,
+      "sent_to_first_frame_recv": 701.9950001239777,
+      "recv_to_draw_start": 0.869999885559082,
+      "draw_start_to_pixels": 98.98499989509583,
+      "total": 849.6399998664856,
+      "frame_tick": 1836
+     },
+     {
+      "seq": 40,
+      "input_to_handler": 29.975000143051147,
+      "handler_to_sent": 0.029999971389770508,
+      "sent_to_first_frame_recv": 618.8800001144409,
+      "recv_to_draw_start": 0.3549997806549072,
+      "draw_start_to_pixels": 86.07500004768372,
+      "total": 735.3150000572205,
+      "frame_tick": 1863
+     }
+    ],
+    "summary": {
+     "input_to_handler": {
+      "n_valid": 18,
+      "n_missing": 0,
+      "mean": 42.451,
+      "min": 4.11,
+      "p50": 37.845,
+      "p95": 78.785,
+      "p99": 78.785,
+      "max": 78.785
+     },
+     "handler_to_sent": {
+      "n_valid": 18,
+      "n_missing": 0,
+      "mean": 0.037,
+      "min": 0.03,
+      "p50": 0.035,
+      "p95": 0.085,
+      "p99": 0.085,
+      "max": 0.085
+     },
+     "sent_to_first_frame_recv": {
+      "n_valid": 18,
+      "n_missing": 0,
+      "mean": 796.942,
+      "min": 572.415,
+      "p50": 817.72,
+      "p95": 1281.645,
+      "p99": 1281.645,
+      "max": 1281.645
+     },
+     "recv_to_draw_start": {
+      "n_valid": 18,
+      "n_missing": 0,
+      "mean": 0.48,
+      "min": 0.22,
+      "p50": 0.375,
+      "p95": 1.035,
+      "p99": 1.035,
+      "max": 1.035
+     },
+     "draw_start_to_pixels": {
+      "n_valid": 18,
+      "n_missing": 0,
+      "mean": 99.446,
+      "min": 75.155,
+      "p50": 85.79,
+      "p95": 191.49,
+      "p99": 191.49,
+      "max": 191.49
+     },
+     "total": {
+      "n_valid": 18,
+      "n_missing": 0,
+      "mean": 939.356,
+      "min": 678.7,
+      "p50": 942.455,
+      "p95": 1475.76,
+      "p99": 1475.76,
+      "max": 1475.76
+     }
+    }
+   },
+   "server": {
+    "frames_sent": 124,
+    "backpressure_skipped": 0,
+    "window_skipped": 1764,
+    "acks": 113,
+    "acks_ignored": 0,
+    "ack_lag_ms": {
+     "n_valid": 113,
+     "n_missing": 0,
+     "mean": 469.565,
+     "min": 39.585,
+     "p50": 330.709,
+     "p95": 1130.589,
+     "p99": 2113.896,
+     "max": 3014.32
+    },
+    "inflight_at_tick": {
+     "n_valid": 1888,
+     "n_missing": 0,
+     "mean": 1.929,
+     "min": 0,
+     "p50": 2,
+     "p95": 2,
+     "p99": 2,
+     "max": 2
+    },
+    "clock_rebases": 0,
+    "bytes": 17362976,
+    "tick_lateness_ms": {
+     "n_valid": 1888,
+     "n_missing": 0,
+     "mean": 0.347,
+     "min": 0,
+     "p50": 0.283,
+     "p95": 0.822,
+     "p99": 1.163,
+     "max": 13.225
+    },
+    "frame_build_ms": {
+     "n_valid": 124,
+     "n_missing": 0,
+     "mean": 0.686,
+     "min": 0.507,
+     "p50": 0.594,
+     "p95": 1.126,
+     "p99": 2.414,
+     "max": 2.544
+    },
+    "control_wait_for_tick_ms": {
+     "n_valid": 40,
+     "n_missing": 0,
+     "mean": 8.515,
+     "min": 1.187,
+     "p50": 8.972,
+     "p95": 15.535,
+     "p99": 16.557,
+     "max": 16.557
+    }
+   },
+   "load_avg_1m": [
+    13.1,
+    13.8
+   ],
+   "console": [
+    "warning: [.WebGL-0x10c0083de00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+    "warning: [.WebGL-0x10c0083de00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+    "warning: [.WebGL-0x10c0083de00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+    "warning: [.WebGL-0x10c0083de00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels (this message will no longer repeat)"
+   ]
+  }
+ ],
+ "machine_after": {
+  "cpu": "Apple M2 Pro",
+  "ncpu": 10,
+  "platform": "Darwin 24.6.0 arm64",
+  "load_avg": [
+   13.8,
+   13.8,
+   15.2
+  ],
+  "swap": "total = 18432.00M  used = 16983.94M  free = 1448.06M  (encrypted)",
+  "node": "v22.22.2"
+ }
+}
