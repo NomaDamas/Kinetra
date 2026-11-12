@@ -45,7 +45,7 @@ HubQueryTools(hub, "desk").call("statics_check", {}) # Hub 문서의 현재 프�
 | `mass_properties`, 4륜 카트(X-03a 손계산 2) | `assembly_mass` 합(상대 1e-15), `tipover` 무게중심(상대 1e-12), 손계산 Σm, Σmc/Σm(상대 1e-12), 인스턴스마다 `mass_properties` 그대로 |
 | `mass_properties`, 탱크 위 추력기(X-01c 픽스처) | `tank_supply().remaining`, test_thrust의 손 질량 $M_\text{tank}+M_\text{thruster}(+\text{capacity})$(상대 1e-12), `ThrustModel.mass_of`, 추진제를 탱크 원점에 더한 무게중심 |
 | `statics_check`, 카트와 내민 팔 | `tipover`의 모든 필드와 같음, 내민 팔은 여유 -0.08 m, 불안정 |
-| `rollout_summary`, X-02a 탑 낙하 | 스트림의 첫·끝 포즈, 최저·최고 z, 궤적 해시, 끝 틱·시각, 모델 라벨과 같음 |
+| `rollout_summary`, X-02a 탑(`test_simulate_stream`의 픽스처) 실행 | 스트림의 첫·끝 포즈, 최저·최고 z, 궤적 해시, 끝 틱·시각, 모델 라벨과 같음 |
 
 ## 한계 (숨기지 않는다)
 

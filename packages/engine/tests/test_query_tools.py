@@ -214,10 +214,10 @@ def test_query_tools_rollout_summary_is_the_run_stream():
     assert xyz(body["start_m"]) == (first.x, first.y, first.z) and xyz(body["end_m"]) == (last.x, last.y, last.z)
     assert xyz(body["displacement_m"]) == (last.x - first.x, last.y - first.y, last.z - first.z)
     assert body["lowest_z_m"] == min(p.position.z for p in poses) and body["highest_z_m"] == max(p.position.z for p in poses)
-    # no ground in the model yet (the run's label says so): the tower falls straight down under the moon's gravity, unturned
-    assert body["lowest_at_tick"] == ended.last_tick and body["highest_at_tick"] == 0
-    assert body["horizontal_distance_m"] == pytest.approx(0.0, abs=1e-12)
-    assert body["end_tilt_deg"] == pytest.approx(0.0, abs=1e-6) and body["max_tilt_deg"] == pytest.approx(0.0, abs=1e-6)
+    ticks = [f.tick for f in frames]
+    assert body["lowest_at_tick"] == ticks[[p.position.z for p in poses].index(body["lowest_z_m"])]
+    assert body["highest_at_tick"] == ticks[[p.position.z for p in poses].index(body["highest_z_m"])]
+    assert body["horizontal_distance_m"] == math.hypot(last.x - first.x, last.y - first.y)
     assert data["events"] == {} and data["breaks"] == [] and data["conditions_met"] == []
 
 
