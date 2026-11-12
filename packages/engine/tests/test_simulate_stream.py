@@ -42,7 +42,7 @@ from kinetra_core import (
 )
 from kinetra_core.bodies import load_body
 from kinetra_core.frames import MAX_TICK
-from kinetra_engine.protocol import Hub, ReferenceClient
+from kinetra_engine.protocol import CoreError, Hub, ReferenceClient
 from kinetra_engine.run import (
     FRAME_RATE_CEILING_HZ,
     PreviewRun,
@@ -433,3 +433,54 @@ def test_simulate_stream_compile_refusals_carry_the_compile_error_code():
     reason = next(m for m in received if m.type == "rejected").reasons[0]
     assert reason.code is ReasonCode.FLOATING and reason.message.startswith("floating:")
     assert {r.id for r in reason.ids if r.kind == "instance"} == {"base", "top"}
+
+
+def test_simulate_stream_an_internal_error_mid_run_still_ends_the_stream(monkeypatch):
+    """A frame that cannot be made at tick 18 (an injected exception): the client gets the frames up to tick 9, a
+    `run_ended` `failed` at tick 9 (the last frame sent is the end frame, `check_run` passes in the reference client),
+    then a non-fatal `error` that does not repeat the exception's text; the connection's run slot is free again."""
+    original = PreviewRun._frame
+
+    def broken(self, data, tick):
+        if tick == 18:
+            raise RuntimeError("secret internal detail")
+        return original(self, data, tick)
+
+    monkeypatch.setattr(PreviewRun, "_frame", broken)
+
+    async def scenario():
+        hub = Hub({"tower": tower()})
+        async with hub.serve(allowed_origins=[None]) as server:
+            client = ReferenceClient(f"ws://127.0.0.1:{server.sockets[0].getsockname()[1]}")
+            await client.connect()
+            try:
+                await client.subscribe("tower")
+                await client.ws.send(json.dumps({"type": "run", "id": "breaks", "duration_s": 0.1, "speed": 0}))
+                failed = await client.receive_run()
+                with pytest.raises(CoreError) as error:
+                    await client.receive()
+                await client.ws.send(json.dumps({"type": "run", "id": "after", "duration_s": 0.02, "speed": 0}))
+                return failed, error.value.error, await client.receive_run()
+            finally:
+                await client.close()
+
+    failed, error, after = asyncio.run(scenario())
+    assert [f.tick for f in failed.frames] == [0, 9]
+    assert isinstance(failed.ended.end, RunFailed) and failed.ended.last_tick == 9
+    assert error.fatal is False and "breaks" in error.message and "secret" not in error.message
+    assert after.started.run_id == "after" and isinstance(after.ended.end, RunCompleted)  # the slot was released
+    assert [f.tick for f in after.frames] == [0, 9, 10]
+
+
+def test_simulate_stream_an_internal_error_before_the_first_frame_opens_no_stream(monkeypatch):
+    def broken(self, data, tick):
+        raise RuntimeError("secret internal detail")
+
+    monkeypatch.setattr(PreviewRun, "_frame", broken)
+    hub = Hub({"tower": tower()})
+    received = asyncio.run(
+        _session(hub, {"type": "run", "id": "early", "duration_s": 0.1}, until=lambda r: any(m.type == "error" for m in r))
+    )
+    assert not any(isinstance(m, (RunStarted, RunEnded, Frame)) for m in received)
+    error = next(m for m in received if m.type == "error")
+    assert "early" in error.message and "secret" not in error.message

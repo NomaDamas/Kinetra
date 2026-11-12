@@ -59,6 +59,8 @@ from kinetra_core import (
     Ref,
     RefKind,
     Rejected,
+    RunEnded,
+    RunFailed,
     Request,
     RunRequest,
     Subscribe,
@@ -388,7 +390,15 @@ class Hub:
         ticks at a time, so the event loop keeps serving every connection. Two things may hold a frame back, and
         neither changes it: the `speed` pace (a frame of simulated time `t` goes out no earlier than `t / speed` after
         the start) and the connection (the next frame waits until everything queued before it was sent, so a slow
-        client slows the run down instead of piling frames up: `client-adapter.md` 4.1)."""
+        client slows the run down instead of piling frames up: `client-adapter.md` 4.1).
+
+        An internal error after `run_started` (making, checking or encoding a frame) still ends the stream: the last
+        frame sent becomes the end frame, a `run_ended` `failed` at its tick follows (a whole stream for `check_run`),
+        then a non-fatal `error` whose text names the run and not the exception (it is logged here, not sent).
+        `run_started` goes out together with the first frame, so a run that fails before it has one opened no stream
+        and gets only the `error`. Either way the task ends, which frees the connection's one run slot."""
+        open_stream = False
+        last_sent: Frame | None = None
         try:
             try:
                 run = await asyncio.to_thread(
@@ -409,26 +419,36 @@ class Hub:
             except ValueError as e:  # a duration longer than a run can count
                 self._send(conn, _refuse(message.id, ReasonCode.INVALID_COMMAND, str(e)))
                 return
-            self._send(conn, run.started)
             bodies = [b.id for b in run.started.bodies]
             loop = asyncio.get_running_loop()
             start = loop.time()
             stream = iter(run)
             while (item := await asyncio.to_thread(next, stream, None)) is not None:
                 if not isinstance(item, Frame):
-                    self._send(conn, item)  # run_ended
+                    self._send(conn, item)  # run_ended (after at least one frame: the run always yields one first)
+                    open_stream = False  # the stream is whole
                     continue
                 if message.speed > 0:
                     delay = start + item.sim_time_s / message.speed - loop.time()
                     if delay > 0:
                         await asyncio.sleep(delay)
+                binary = encode_frame(item, bodies)
                 await conn.idle.wait()
-                if not conn.enqueue(encode_frame(item, bodies)):
+                if not open_stream:  # announced with its first frame, so a run that cannot make one leaves no open stream
+                    self._send(conn, run.started)
+                    open_stream = True
+                if not conn.enqueue(binary):
                     self._drop(conn)
                     return
-        except Exception as e:
+                last_sent = item
+        except Exception:
             log.exception("run %r: internal error", message.id)
-            self._send(conn, ProtocolError(type="error", message=f"the core could not run {message.id!r}: {e}", fatal=False))
+            if open_stream and last_sent is not None:  # a stream is open: close it with its last frame
+                self._send(
+                    conn,
+                    RunEnded(type="run_ended", run_id=message.id, last_tick=last_sent.tick, end=RunFailed(reason="failed")),
+                )
+            self._send(conn, ProtocolError(type="error", message=f"internal error: the core could not run {message.id!r}", fatal=False))
 
 
 def _is_loopback(host: str) -> bool:
