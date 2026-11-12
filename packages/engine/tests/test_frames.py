@@ -114,9 +114,15 @@ def test_a_run_that_ends_between_intervals_sends_a_last_frame_with_the_rest_of_i
     last = frames[-1]
     assert last.tick % run.frame_every_ticks and last.tick == ended.last_tick
     assert [e.kind for e in last.events] == ["break"] and frames[-2].tick < last.events[0].tick <= last.tick
+    event = last.events[0]
+    assert event.load == event.threshold and event.release_load.value > event.threshold.value
+    assert (event.tick - 1) * run.timestep_s < event.crossing_time_s < event.tick * run.timestep_s
     with pytest.raises(ValueError, match="multiple"):
         check_frame(run, last)  # off the grid: only the final frame may be
     check_frame(run, last, final=True)
+    bad_event = event.model_copy(update={"crossing_time_s": event.tick * run.timestep_s + run.timestep_s})
+    with pytest.raises(ValueError, match="outside the step"):
+        check_frame(run, last.model_copy(update={"events": (bad_event,)}), final=True)
 
 
 @pytest.mark.parametrize(
@@ -433,7 +439,8 @@ def test_a_pose_is_a_named_position_and_a_named_quaternion_in_project_order():
 def test_events_validate_by_kind_and_carry_si_units():
     contact = {"kind": "contact", "tick": 3, "phase": "begin", "body": "wheel-fl", "other": {"kind": "prop", "id": "prop-a"},
                "force": {"value": 12.5, "unit": "N"}}
-    brk = {"kind": "break", "tick": 3, "joint": "axle-fl", "load": {"value": 150.0, "unit": "N"}, "threshold": {"value": 120.0, "unit": "N"}}
+    brk = {"kind": "break", "tick": 3, "joint": "axle-fl", "crossing_time_s": 0.005, "load": {"value": 120.0, "unit": "N"},
+           "release_load": {"value": 150.0, "unit": "N"}, "threshold": {"value": 120.0, "unit": "N"}}
     met = {"kind": "condition_met", "tick": 3, "condition": "landed"}
     for event in (contact, brk, met):
         assert schema_ok("Frame", frame_with_event(event))

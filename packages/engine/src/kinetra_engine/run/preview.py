@@ -54,12 +54,12 @@ its mean over the last `BREAK_LOAD_WINDOW` (0.02 s, `kinetra_core.break_window`)
 The joints over their threshold are released in joint id order: the tree loses them (`release`),
 the model is compiled again from it with the drives of the joints left, and the state of the tick is carried into it
 (`carry_state`); the motors, the tanks, the drag and the frames follow the new model by name. Each released
-joint is a `break` event of that tick (`joint`, `load` the window mean, `threshold`, in N), carried by the next frame (the
-frame of the tick itself when one is sent there). After a break the trajectory hash goes on over the new model's generalized
-positions. While a joint can still break, a `TimestepSensitivity` checks the run against the measured speed, mass-ratio and
-spring limits and checks each break for time-step-dependent threshold overshoot; out of those bounds, `run_ended.labels`
-carries "시간 간격 민감: 파단 결과가 약한 증거" with the reasons (`docs/research/engine/break-timestep.md`). The original drop
-and ramp scenes do not meet the proposed 10 % break-load spread; the label does not claim otherwise.
+joint is a `break` event of that tick (`joint`, `load` the linearly interpolated window mean at `crossing_time_s`,
+`release_load` the actual window mean at the release tick, `threshold`, in N), carried by the next frame (the frame of the
+tick itself when one is sent there). The release still uses the full-tick state; `crossing_time_s` does not claim a sub-tick
+release. After a break the trajectory hash goes on over the new model's generalized positions. While a joint can still break,
+a `TimestepSensitivity` checks the measured speed, mass-ratio and spring limits; outside them, `run_ended.labels` carries
+"시간 간격 민감: 파단 결과가 약한 증거" with the reasons (`docs/research/engine/break-timestep.md`).
 Contacts and met conditions are not in the stream yet; their leaves add them.
 """
 
@@ -310,8 +310,6 @@ class PreviewRun:
                 yield RunEnded.model_validate({"type": "run_ended", "run_id": run.run_id, "last_tick": good, "end": {"reason": "failed"}, "labels": self._labels(sensitivity)})
                 return
             if over:
-                if sensitivity is not None:
-                    sensitivity.observe_breaks(over)
                 broken = [o.joint for o in over]
                 tree, drive_spec = release(tree, broken), drive_spec.without_joints(broken)
                 released = mujoco.MjModel.from_xml_string(to_mjcf(tree, drives=drive_spec, timestep_s=self._timestep_s))
@@ -324,7 +322,15 @@ class PreviewRun:
                 self._follow(model)
                 last_good = data.qpos.copy()  # the new model's coordinates
                 self._events.extend(
-                    {"kind": "break", "tick": tick, "joint": o.joint, "load": {"value": o.load, "unit": "N"}, "threshold": {"value": o.threshold, "unit": "N"}}
+                    {
+                        "kind": "break",
+                        "tick": tick,
+                        "joint": o.joint,
+                        "crossing_time_s": (tick - 1 + o.crossing_fraction) * dt,
+                        "load": {"value": o.load, "unit": "N"},
+                        "release_load": {"value": o.release_load, "unit": "N"},
+                        "threshold": {"value": o.threshold, "unit": "N"},
+                    }
                     for o in over
                 )
             trajectory.update(data.qpos.tobytes())

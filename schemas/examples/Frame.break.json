@@ -80,7 +80,12 @@
       "kind": "break",
       "tick": 129,
       "joint": "axle-fl",
+      "crossing_time_s": 0.2575,
       "load": {
+        "value": 120.0,
+        "unit": "N"
+      },
+      "release_load": {
         "value": 150.0,
         "unit": "N"
       },

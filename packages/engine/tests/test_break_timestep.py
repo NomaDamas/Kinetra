@@ -13,10 +13,10 @@ are chosen by the tests (`SRC`), not data; the measured numbers quoted are in `d
 - **thrust** (추력기 과하중): the X-01c rocket (`test_thrust.rocket`, tank welded on the 2 lbf thruster by `w`, 6.5 N) on the Moon,
   lit at 0.1 s: the jet pushes the tank harder than its weight (4.9 N) and `w` breaks.
 
-In the original scenes themselves, every joint that breaks breaks at all three time steps. The thrust scene meets the proposed
-10 % break-event load spread; the original drop and ramp do not (45.9 % on `weld-tip`, 19.8 % on `seat`). Those two strict
-xfails keep the unmet DoD visible instead of tuning thresholds to make it pass. A break load more than 10 % over its threshold
-adds the weak-evidence run label: if every compared break stays within that bound, pairwise spread is necessarily at most 10 %.
+In the original scenes themselves, every joint that breaks breaks at all three time steps. The event's `load` is the linearly
+interpolated window mean at the threshold crossing between two samples, and `crossing_time_s` locates that estimate. The actual
+release still happens at the full tick and its sampled load is `release_load`: the original 45.9 % / 19.8 % spreads remain
+visible there, rather than being hidden by the crossing estimate or by changing thresholds. Crossing loads agree within 10 %.
 Each scene also runs with the joints whose loads are compared made unbreakable (`measure`): their largest window loads agree
 within 10 %. The speed, mass-ratio and spring bounds are checked by sweeps that step the engine directly (`BreakWatch`).
 """
@@ -50,13 +50,11 @@ from kinetra_core import (
 from kinetra_core.assumption import Assumption
 from kinetra_engine.compiler import (
     BREAK_LABEL,
-    BREAK_LOAD_SPREAD_LIMIT,
     MASS_RATIO_LIMIT,
     SPEED_LIMIT_M_S,
     SPRING_LIMIT,
     TIMESTEP_SENSITIVE_LABEL,
     BreakWatch,
-    OverThreshold,
     TimestepSensitivity,
 )
 from kinetra_engine.parts import mass_properties
@@ -67,6 +65,7 @@ from test_break_runtime import BOB_KG, FLIP, G_EARTH, G_MOON, HANGING_KG, SRC, T
 from test_thrust import rocket
 
 WINDOW = BREAK_LOAD_WINDOW.value.value
+LOAD_SPREAD_LIMIT = 0.10  # issue #453's proposed acceptance limit [제안]
 TIMESTEPS = (MAX_TIMESTEP_S, MAX_TIMESTEP_S / 2, MAX_TIMESTEP_S / 4)
 ROOT = Path(__file__).resolve().parents[3]
 
@@ -136,9 +135,6 @@ SCENES = {
     "ramp": (rig(threshold=5 * 1.0 * G_EARTH), {"seat"}, rig(), ("seat",), 0.6),
     "thrust": (thrust(6.5), {"w"}, thrust(1.0e9), ("w",), 0.3),
 }
-
-# Measured on the original scenes (break-timestep.md 2.1): every drop step and the coarse ramp have >10 % threshold overshoot.
-OVERSHOOT_SENSITIVE = {"drop": set(TIMESTEPS), "ramp": {MAX_TIMESTEP_S}, "thrust": set()}
 
 
 @pytest.fixture
@@ -249,8 +245,12 @@ def test_break_timestep_a_one_step_spike_over_the_threshold_does_not_break_a_sus
         loads.append(watch.loads["weld"])
         if over:
             break
-    assert step == 6 and [o.joint for o in over] == ["weld"] and over[0].load == loads[-1]
+    assert step == 6 and [o.joint for o in over] == ["weld"] and over[0].release_load == loads[-1]
     assert loads[-2] <= threshold < loads[-1]
+    fraction = (threshold - loads[-2]) / (loads[-1] - loads[-2])
+    assert over[0].crossing_fraction == pytest.approx(fraction)
+    assert over[0].load == pytest.approx(loads[-2] + fraction * (loads[-1] - loads[-2]))
+    assert over[0].load == pytest.approx(threshold)
     assert all(b > a for a, b in zip(loads, loads[1:]))
 
 
@@ -281,50 +281,32 @@ def test_break_timestep_scenes_break_the_same_joints_at_every_time_step(scene, p
         events = broken(frames)
         assert {e.joint for e in events} == expected, dt
         assert len(events) == len(expected)
-        assert all(e.load.value > e.threshold.value for e in events)
-        if dt in OVERSHOOT_SENSITIVE[scene]:
-            (label,) = ended.labels
-            assert label.startswith(TIMESTEP_SENSITIVE_LABEL) and "파단 하중 초과" in label
-        else:
-            assert ended.labels == ()
+        for e in events:
+            assert e.load.value == pytest.approx(e.threshold.value)
+            assert e.release_load.value > e.threshold.value
+            assert (e.tick - 1) * dt <= e.crossing_time_s <= e.tick * dt
+        assert ended.labels == ()  # inside the measured range: no "시간 간격 민감" label
 
 
-@pytest.mark.parametrize(
-    "scene",
-    [
-        pytest.param("drop", marks=pytest.mark.xfail(strict=True, reason="#453 unmet: original weld-tip break loads differ by 45.9 %")),
-        pytest.param("ramp", marks=pytest.mark.xfail(strict=True, reason="#453 unmet: original seat break loads differ by 19.8 %")),
-        "thrust",
-    ],
-)
+@pytest.mark.parametrize("scene", SCENES)
 def test_break_timestep_scenes_break_loads_agree_within_ten_percent(scene):
-    """The scene as it is, every joint breaking: the load each `break` event carries agrees within 10 % across the three steps."""
+    """Interpolated crossing loads agree within 10 %. The original sampled release loads stay visible and keep their adverse
+    45.9 % / 19.8 % spreads: the estimate is not misrepresented as the load of the full-tick release state."""
     project, expected, _, _, duration = SCENES[scene]
     loads: dict[str, list[float]] = {j: [] for j in expected}
+    release_loads: dict[str, list[float]] = {j: [] for j in expected}
     for dt in TIMESTEPS:
         _, frames, _ = run(project, duration, dt)
         for e in broken(frames):
             loads[e.joint].append(e.load.value)
+            release_loads[e.joint].append(e.release_load.value)
     adverse = {"drop": ("weld-tip", 0.459), "ramp": ("seat", 0.198)}.get(scene)
     if adverse is not None:
         joint, measured = adverse
-        assert spread(loads[joint]) == pytest.approx(measured, abs=0.001), loads[joint]
+        assert spread(release_loads[joint]) == pytest.approx(measured, abs=0.001), release_loads[joint]
     for j, values in loads.items():
         assert len(values) == len(TIMESTEPS), (j, values)
-        assert spread(values) <= BREAK_LOAD_SPREAD_LIMIT, (j, values)
-
-
-def test_break_timestep_ten_percent_overshoot_is_the_cross_run_spread_bound():
-    """Loads in `[threshold, 1.1 * threshold]` have at most 10 % spread. The run labels only an overshoot strictly over that."""
-    sensitivity = TimestepSensitivity(compile_project(rig()).model)
-    threshold = 100.0
-    at_bound = threshold * (1 + BREAK_LOAD_SPREAD_LIMIT)
-    assert spread([threshold, at_bound]) == pytest.approx(BREAK_LOAD_SPREAD_LIMIT)
-    sensitivity.observe_breaks([OverThreshold("seat", "load", at_bound, threshold)])
-    assert sensitivity.reasons == []
-    sensitivity.observe_breaks([OverThreshold("seat", "load", at_bound + 0.001, threshold)])
-    label = sensitivity.label()
-    assert label is not None and label.startswith(TIMESTEP_SENSITIVE_LABEL) and "파단 하중 초과 seat" in label
+        assert spread(values) <= LOAD_SPREAD_LIMIT, (j, values)
 
 
 @pytest.mark.parametrize("scene", SCENES)
@@ -337,7 +319,7 @@ def test_break_timestep_scenes_window_loads_agree_within_ten_percent(scene, peak
         for j in compared:
             found[j].append(peaks[j])
     for j, values in found.items():
-        assert spread(values) <= BREAK_LOAD_SPREAD_LIMIT, (j, values)
+        assert spread(values) <= LOAD_SPREAD_LIMIT, (j, values)
 
 
 @pytest.mark.parametrize("scene", SCENES)
@@ -376,7 +358,7 @@ def test_break_timestep_speed_bound(speed, holds):
     """The block hits the ground at `speed`: the window load agrees within 10 % up to 512 m/s, not at 1024 m/s; the run's check
     calls a body over `SPEED_LIMIT_M_S` time-step sensitive."""
     values = [_peak_after_push(drop(), "seat", speed, dt, 0.05, None) for dt in TIMESTEPS]
-    assert (spread(values) <= BREAK_LOAD_SPREAD_LIMIT) is holds, values
+    assert (spread(values) <= LOAD_SPREAD_LIMIT) is holds, values
     compiled = compile_project(drop())
     model, data = compiled.model, mujoco.MjData(compiled.model)
     data.qvel[2] = -speed
@@ -392,7 +374,7 @@ def test_break_timestep_mass_ratio_bound(ratio, holds):
     within 10 % at 4096, not at 32768; the run's check calls a heaviest-to-lightest ratio over `MASS_RATIO_LIMIT` sensitive."""
     project = rig(travel=0.2, load_density=ratio / 0.05**3)
     values = [_peak_after_push(project, "seat", 2.0, dt, 0.2, "rail") for dt in TIMESTEPS]
-    assert (spread(values) <= BREAK_LOAD_SPREAD_LIMIT) is holds, values
+    assert (spread(values) <= LOAD_SPREAD_LIMIT) is holds, values
     assert bool(TimestepSensitivity(compile_project(project).model).reasons) is (ratio > MASS_RATIO_LIMIT)
 
 
@@ -419,7 +401,7 @@ def test_break_timestep_spring_bound(stiffness, holds):
             watch.over(model, data)
             best = max(best, watch.loads["seat"])
         values.append(best)
-    assert (spread(values) <= BREAK_LOAD_SPREAD_LIMIT) is holds, values
+    assert (spread(values) <= LOAD_SPREAD_LIMIT) is holds, values
 
 
 def test_break_timestep_a_run_out_of_range_says_its_breaks_are_weak_evidence():

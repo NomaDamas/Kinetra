@@ -42,7 +42,7 @@
       "type": "object"
     },
     "BreakEvent": {
-      "description": "Joint `joint` released: the load on it reached its break threshold (both in N; plan 4.6, a simplified model).",
+      "description": "Joint `joint` released at `tick` after its window load crossed `threshold` (loads in N; plan 4.6, simplified model).\n`load` is the linearly interpolated load at `crossing_time_s` in the preceding step; `release_load` is the sampled load\nat the actual release tick. The crossing estimate does not mean the body was released between ticks.",
       "properties": {
         "kind": {
           "const": "break",
@@ -60,7 +60,15 @@
           "title": "Joint",
           "type": "string"
         },
+        "crossing_time_s": {
+          "minimum": 0,
+          "title": "Crossing Time S",
+          "type": "number"
+        },
         "load": {
+          "$ref": "#/$defs/ForceN"
+        },
+        "release_load": {
           "$ref": "#/$defs/ForceN"
         },
         "threshold": {
@@ -71,7 +79,9 @@
         "kind",
         "tick",
         "joint",
+        "crossing_time_s",
         "load",
+        "release_load",
         "threshold"
       ],
       "title": "BreakEvent",

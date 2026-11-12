@@ -3,7 +3,6 @@
 from .bodytree import Body, BodyGeom, BodyJoint, BodyTree, CompiledInstance, build_body_tree
 from .breaks import (
     BREAK_LABEL,
-    BREAK_LOAD_SPREAD_LIMIT,
     MASS_RATIO_LIMIT,
     SPEED_LIMIT_M_S,
     SPRING_LIMIT,
@@ -41,7 +40,6 @@ from .thrust import CompiledThruster, Opening, PropellantStore, ThrustModel, Thr
 __all__ = [
     "AXIS_TOLERANCE",
     "BREAK_LABEL",
-    "BREAK_LOAD_SPREAD_LIMIT",
     "CONTACT_PARAMETERS",
     "DEFAULT_FRICTION",
     "GROUND_GEOM",
