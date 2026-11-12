@@ -120,6 +120,41 @@ def test_call_request_uses_model_reasoning_high_and_key_only_in_stdin(fake_env, 
     assert FAKE_KEY in c["stdin"] and "https://openrouter.ai/api/v1/chat/completions" in c["argv"]
 
 
+def test_call_endpoint_model_and_effort_follow_the_environment(fake_env, curl_queue, tmp_path, monkeypatch):
+    monkeypatch.setenv(call.ENDPOINT_ENV, "https://proxy.example.org/v1/chat/completions")
+    monkeypatch.setenv(call.MODEL_ENV, "gpt-6.1-sol")
+    monkeypatch.setenv(call.EFFORT_ENV, "medium")
+    curl_queue("ok.json")
+    res = run(fake_env, tmp_path)
+    (c,) = curl_queue.log()
+    assert c["request"]["model"] == "gpt-6.1-sol" and c["request"]["reasoning"] == {"effort": "medium"}
+    assert "https://proxy.example.org/v1/chat/completions" in c["argv"] and "https://openrouter.ai/api/v1/chat/completions" not in c["argv"]
+    assert FAKE_KEY in c["stdin"] and FAKE_KEY not in json.dumps(c["argv"])  # 키는 여전히 표준입력으로만
+    assert (res.model, res.effort) == ("gpt-6.1-sol", "medium")
+    rows = [json.loads(ln) for ln in (tmp_path / "cost.jsonl").read_text().splitlines()]
+    assert rows[0]["model"] == "gpt-6.1-sol" and rows[0]["effort"] == "medium"
+    assert "--globoff" in c["argv"]
+
+
+@pytest.mark.parametrize(
+    "env,value",
+    [
+        ("KINETRA_REVIEW_ENDPOINT", "http://proxy.example.org/v1/chat/completions"),
+        ("KINETRA_REVIEW_ENDPOINT", "https://evil.example.org/x -o /tmp/y"),
+        ("KINETRA_REVIEW_ENDPOINT", "https://proxy.example.org/v1/{a,b}"),
+        ("KINETRA_REVIEW_ENDPOINT", "https://proxy.example.org/v1/[1-9]"),
+        ("KINETRA_REVIEW_MODEL", "gpt 6"),
+        ("KINETRA_REVIEW_EFFORT", "max"),
+    ],
+)
+def test_call_rejects_bad_environment_settings_before_any_request(fake_env, curl_queue, tmp_path, monkeypatch, env, value):
+    monkeypatch.setenv(env, value)
+    curl_queue("ok.json")
+    with pytest.raises(common.ReviewError, match=env):
+        run(fake_env, tmp_path)
+    assert curl_queue.count == 0
+
+
 @pytest.mark.parametrize("first", ["http_429.json", "http_500.json", "no_choices.json", "not_json.json", "bad_verdict.json"])
 def test_call_retries_once_then_succeeds(fake_env, curl_queue, tmp_path, first):
     curl_queue(first, "ok.json")

@@ -70,7 +70,7 @@ def render_comment(result: call.Result, items: dict[str, str], head_sha: str | N
     sha = f" · 대상 `{head_sha[:12]}`" if head_sha else ""
     lines += [
         "",
-        f"<sub>{esc(result.model)}, reasoning high{sha} · 모델 요청 {result.attempts}회 · 토큰 {u.prompt_tokens}+{u.completion_tokens}(reasoning {u.reasoning_tokens}) · 비용 {cost} · diff 부분 {result.parts}개</sub>",
+        f"<sub>{esc(result.model)}, reasoning {esc(result.effort)}{sha} · 모델 요청 {result.attempts}회 · 토큰 {u.prompt_tokens}+{u.completion_tokens}(reasoning {u.reasoning_tokens}) · 비용 {cost} · diff 부분 {result.parts}개</sub>",
     ]
     text = "\n".join(lines) + "\n"
     if len(text) > MAX_COMMENT:

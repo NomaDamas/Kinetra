@@ -21,6 +21,8 @@ def fake_env(tmp_path, monkeypatch):
     monkeypatch.setenv("FAKE_GH_STATE", str(state))
     monkeypatch.setenv("FAKE_GH_LOG", str(tmp_path / "gh_log.jsonl"))
     monkeypatch.setenv("OPENROUTER_API_KEY", FAKE_KEY)
+    for name in ("KINETRA_REVIEW_ENDPOINT", "KINETRA_REVIEW_MODEL", "KINETRA_REVIEW_EFFORT"):
+        monkeypatch.delenv(name, raising=False)  # 바깥 셸의 끝점 설정이 테스트에 새지 않게
     return state
 
 
