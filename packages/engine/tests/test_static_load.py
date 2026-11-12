@@ -88,6 +88,22 @@ def test_static_load_margin_to_a_threshold_and_an_exceeded_one():
     assert s.exceeding == (tip,)
 
 
+def test_static_load_thresholded_welds_compile_to_separate_bodies_with_the_same_loads():
+    # X-04b: a fixed joint with a break_threshold does not weld, so wall, arm and tip are three bodies instead of one.
+    # The joint loads are a free-body result over instances and must not change with that grouping.
+    welded = cantilever()
+    split = cantilever(root_threshold=newton(1000.0), tip_threshold=newton(1000.0))
+    assert len(welded.bodies) == 1 and len(split.bodies) == 3
+    a, b = static_loads(welded), static_loads(split)
+    for jid in ("root", "tip"):
+        assert b.joint(jid).status is LoadStatus.HANGING
+        assert b.joint(jid).force == pytest.approx(a.joint(jid).force, rel=1e-12)
+        assert b.joint(jid).moment == pytest.approx(a.joint(jid).moment, rel=1e-12, abs=1e-12)
+    assert b.joint("root").load == pytest.approx(7.0 * G_EARTH, rel=1e-12)
+    assert b.joint("root").margin == pytest.approx(1000.0 - 7.0 * G_EARTH, rel=1e-12)
+    assert b.tipover.margin == pytest.approx(a.tipover.margin, rel=1e-12) and b.tipover.stable
+
+
 def test_static_load_threshold_equal_to_the_load_does_not_exceed():
     # BreakThreshold is the load *above* which the joint releases
     s = static_loads(cantilever(tip_threshold=newton(M_TIP * G_EARTH)))
