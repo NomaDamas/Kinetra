@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>S5 1회 실행 표시 지도</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="kin-sc06.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div class="k-root" style="width:1440px;height:1000px">
+
+<div class="k-note"><span><strong>S5 "1회 실행" 표시 지도</strong> · 같은 문구가 있는 3곳 × 넓은 폭 · 좁은 폭, 상태 5종, 속도 3종</span><span>문구는 접거나 숨길 수 없습니다 (design-system 5.1)</span></div>
+
+<div class="k-wrap">
+<div class="k-ann">
+<p><strong>세 곳, 한 문구</strong></p>
+<ol>
+<li><span class="k-hi">상단바 증거 배지</span>(SC-01): 누르면 근거 팝오버. 이 화면의 몫이 아니라 세지 않습니다.</li>
+<li><span class="k-hi">HUD</span>: 상태 칩 옆, 읽기 전용.</li>
+<li><span class="k-hi">타임라인 머리</span>: 접어도 남습니다(접힘 32 px).</li>
+</ol>
+<p>반복이 허락된 것은 L1 문구뿐입니다(SC-01 4절). 원인 · 시점 · 여유는 리포트 카드에만 있습니다.</p>
+<p>좁은 폭(HUD 최대 너비 240 px 이하, 타임라인 머리 960 px 이하 [제안])에서는 <span class="k-hi">1회 실행 · 판정 아님</span>으로 줄입니다. 뜻은 같고 "L1" 코드와 막대는 그대로입니다.</p>
+<p>상태 칩의 모양(○ ● ⏸ ■ ⊘)은 상태를, 색은 증거 단계(L1) 하나를 말합니다. 칩에 ▲ ✕ ◇를 쓰지 않습니다.</p>
+</div>
+
+<div class="k-pad">
+
+<div class="k-lbl">넓은 폭</div>
+<div class="k-cols">
+<div class="k-stack"><span class="k-cap">① 상단바 배지</span><div data-outside="1" style="padding:10px;background:#151A20;border:1px solid #26303A"><button type="button" class="k-evbtn" data-ctl="증거 배지" aria-haspopup="dialog" aria-expanded="false"><svg width="30" height="12" viewBox="0 0 30 12" aria-hidden="true"><path d="M0 0h6v12H0zM8 0h6v12H8z" fill="currentColor"/><path d="M16.5.5h5v11h-5zM24.5.5h5v11h-5z" fill="none" stroke="currentColor"/></svg><span class="k-mono">L1</span><span>미리보기 · 1회 실행. 판정이 아닙니다</span></button></div></div>
+<div class="k-stack"><span class="k-cap">② HUD</span><div class="k-hud static"><div class="k-hrow"><span class="k-chip"><svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><path d="M1.5 1.5h7v7h-7z" fill="currentColor"/></svg>끝남</span><span class="k-ev"><svg width="30" height="12" viewBox="0 0 30 12" role="img" aria-label="증거 강도 2/4"><path d="M0 0h6v12H0zM8 0h6v12H8z" fill="currentColor"/><path d="M16.5.5h5v11h-5zM24.5.5h5v11h-5z" fill="none" stroke="currentColor"/></svg>L1 · 1회 실행. 판정이 아닙니다</span></div></div></div>
+<div class="k-stack"><span class="k-cap">③ 타임라인 머리</span><div class="k-tl solo fold" style="width:420px"><div class="k-tlh"><span class="k-fold" style="cursor:default"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 4.5L6 8l3.5-3.5"/></svg>타임라인</span><span class="k-ev"><svg width="30" height="12" viewBox="0 0 30 12" role="img" aria-label="증거 강도 2/4"><path d="M0 0h6v12H0zM8 0h6v12H8z" fill="currentColor"/><path d="M16.5.5h5v11h-5zM24.5.5h5v11h-5z" fill="none" stroke="currentColor"/></svg>L1 · 1회 실행. 판정이 아닙니다</span></div></div></div>
+</div>
+
+<div class="k-lbl" style="margin-top:8px">좁은 폭</div>
+<div class="k-cols">
+<div class="k-stack"><span class="k-cap">① 상단바 배지</span><div data-outside="1" style="padding:10px;background:#151A20;border:1px solid #26303A"><button type="button" class="k-evbtn" data-ctl="증거 배지" aria-haspopup="dialog" aria-expanded="false" aria-label="증거 단계 L1. 1회 실행. 판정이 아닙니다"><svg width="30" height="12" viewBox="0 0 30 12" aria-hidden="true"><path d="M0 0h6v12H0zM8 0h6v12H8z" fill="currentColor"/><path d="M16.5.5h5v11h-5zM24.5.5h5v11h-5z" fill="none" stroke="currentColor"/></svg><span class="k-mono">L1</span><span>1회 실행 · 판정 아님</span></button></div></div>
+<div class="k-stack"><span class="k-cap">② HUD (240 px)</span><div class="k-hud static" style="width:240px"><div class="k-hrow"><span class="k-chip"><svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><path d="M1.5 1.5h7v7h-7z" fill="currentColor"/></svg>끝남</span></div><div class="k-hrow"><span class="k-ev"><svg width="30" height="12" viewBox="0 0 30 12" role="img" aria-label="증거 강도 2/4"><path d="M0 0h6v12H0zM8 0h6v12H8z" fill="currentColor"/><path d="M16.5.5h5v11h-5zM24.5.5h5v11h-5z" fill="none" stroke="currentColor"/></svg>L1 · 1회 실행 · 판정 아님</span></div></div></div>
+<div class="k-stack"><span class="k-cap">③ 타임라인 머리 · 접힘 32 px</span><div class="k-tl solo fold" style="width:470px"><div class="k-tlh"><span class="k-fold" style="cursor:default"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 2.5L8 6l-3.5 3.5"/></svg>타임라인</span><span class="k-ev"><svg width="30" height="12" viewBox="0 0 30 12" role="img" aria-label="증거 강도 2/4"><path d="M0 0h6v12H0zM8 0h6v12H8z" fill="currentColor"/><path d="M16.5.5h5v11h-5zM24.5.5h5v11h-5z" fill="none" stroke="currentColor"/></svg>L1 · 1회 실행 · 판정 아님</span><span class="k-sp"></span><span class="k-l3"><svg width="30" height="12" viewBox="0 0 30 12" role="img" aria-label="증거 강도 0/4"><path d="M.5.5h5v11h-5zM8.5.5h5v11h-5zM16.5.5h5v11h-5zM24.5.5h5v11h-5z" fill="none" stroke="currentColor"/></svg><span class="k-mono">L3</span>실물 검증 없음</span></div></div></div>
+</div>
+
+<div class="k-lbl" style="margin-top:8px">상태 5종 · HUD (문구 같음)</div>
+<div class="k-cols" style="flex-wrap:wrap;gap:12px">
+<div class="k-hud static"><div class="k-hrow"><span class="k-chip"><svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><circle cx="5" cy="5" r="3.8" fill="none" stroke="currentColor" stroke-width="1.4"/></svg>실행 전</span><span class="k-ev">L1 · 1회 실행. 판정이 아닙니다</span></div></div>
+<div class="k-hud static"><div class="k-hrow"><span class="k-chip"><svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><circle cx="5" cy="5" r="4" fill="currentColor"/></svg>실행 중</span><span class="k-ev">L1 · 1회 실행. 판정이 아닙니다</span></div></div>
+<div class="k-hud static"><div class="k-hrow"><span class="k-chip"><svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><path d="M2 1h2v8H2zM6 1h2v8H6z" fill="currentColor"/></svg>일시정지</span><span class="k-ev">L1 · 1회 실행. 판정이 아닙니다</span></div></div>
+<div class="k-hud static"><div class="k-hrow"><span class="k-chip"><svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><path d="M1.5 1.5h7v7h-7z" fill="currentColor"/></svg>끝남</span><span class="k-ev">L1 · 1회 실행. 판정이 아닙니다</span></div></div>
+<div class="k-hud static"><div class="k-hrow"><span class="k-chip"><svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><circle cx="5" cy="5" r="3.8"/><path d="M2.4 7.6l5.2-5.2"/></svg>취소됨</span><span class="k-ev">L1 · 1회 실행. 판정이 아닙니다</span></div></div>
+</div>
+
+<div class="k-lbl" style="margin-top:8px">속도 3종 · HUD (문구 같음, 1×가 아니면 속도 칩)</div>
+<div class="k-cols" style="gap:12px">
+<div class="k-hud static"><div class="k-hrow"><span class="k-chip"><svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><path d="M1.5 1.5h7v7h-7z" fill="currentColor"/></svg>끝남</span><span class="k-chip">보는 속도 느리게 <span class="k-mono">0.25×</span></span><span class="k-ex">예시</span></div><div class="k-hrow"><span class="k-ev">L1 · 1회 실행. 판정이 아닙니다</span></div></div>
+<div class="k-hud static"><div class="k-hrow"><span class="k-chip"><svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><path d="M1.5 1.5h7v7h-7z" fill="currentColor"/></svg>끝남</span><span class="k-cap">1×에는 속도 칩이 없습니다</span></div><div class="k-hrow"><span class="k-ev">L1 · 1회 실행. 판정이 아닙니다</span></div></div>
+<div class="k-hud static"><div class="k-hrow"><span class="k-chip"><svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><path d="M1.5 1.5h7v7h-7z" fill="currentColor"/></svg>끝남</span><span class="k-chip">보는 속도 빠르게 <span class="k-mono">2×</span></span><span class="k-ex">예시</span></div><div class="k-hrow"><span class="k-ev">L1 · 1회 실행. 판정이 아닙니다</span></div></div>
+</div>
+
+<div style="margin-top:8px;padding:12px;border:1px dashed #7A899B;border-radius:6px;font-size:12px;line-height:16px"><span data-quote="1">이 화면 어디에도 확률, CI, 판정 코드, "성공" · "통과" 같은 말이 없습니다.</span> 결과는 "이번 실행에서는 …"으로만 말합니다. 판정이 필요하면 <span class="k-hi">판정 카드 열기</span>(SC-04)입니다.</div>
+
+</div>
+</div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1000}}'>
+class Component extends DCLogic {
+renderVals() {
+return {};
+}
+}
+</script>
+</body>
+</html>

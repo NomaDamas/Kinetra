@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>S10 리포트 원인 여러 건</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="kin-sc06.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div class="k-root" style="width:1100px;height:800px">
+
+<div class="k-note"><span><strong>S10 리포트 · 원인 여러 건</strong> · 시점 순 3건, 아코디언(한 번에 하나). 의도한 분리는 원인 목록 밖 한 줄</span><span>카드 안 primary 0</span></div>
+
+<div class="k-wrap">
+<div class="k-ann">
+<p><strong>시점 순</strong>: ▲ 전복 2.4 s, ✕ 파단 3.1 s, ▲ 토크 부족 3.8 s(예시). J-06이 원인으로 뽑은 사건만 목록에 듭니다.</p>
+<p><strong>아코디언</strong>: 펼쳐진 항목은 하나입니다. 다른 머리를 누르면 지금 항목이 접힙니다 [제안]. 머리에는 모양 · 이름 · 시점만, 값은 펼친 곳에만 있습니다.</p>
+<p>✕ 파단에는 <span class="k-hi">단순화 모델</span>이 붙습니다.</p>
+<p><strong>의도한 분리</strong>는 원인이 아니라 목록에 넣지 않고, 맨 아래 접힌 한 줄 "의도한 분리 · 1건 기록 · 실패 원인이 아닙니다"로만 남깁니다. 펼치면 분리기 이름과 시점, 누르면 그 시점으로 갑니다.</p>
+<p>고정 문구 둘은 항목 수와 관계없이 그대로입니다.</p>
+</div>
+
+<div class="k-pad" style="flex-direction:row;gap:24px">
+<div class="k-stack">
+<div class="k-lbl">오른쪽 패널 · 리포트 카드 (320 × 676)</div>
+<aside class="k-side" aria-label="실패 리포트" data-unit="리포트 카드" data-transient="1" style="height:676px;border:1px solid #26303A">
+<div class="k-ph"><h2>실패 리포트</h2><button type="button" class="k-btn ghost sm" data-ctl="닫기" aria-keyshortcuts="Escape">닫기<span class="k-kbd">Esc</span></button></div>
+<div class="k-rep">
+<div class="k-hrow"><span class="k-ev"><svg width="30" height="12" viewBox="0 0 30 12" role="img" aria-label="증거 강도 2/4"><path d="M0 0h6v12H0zM8 0h6v12H8z" fill="currentColor"/><path d="M16.5.5h5v11h-5zM24.5.5h5v11h-5z" fill="none" stroke="currentColor"/></svg>L1 · 1회 실행. 판정이 아닙니다</span></div>
+<div class="k-rsum">이번 실행에서는 성공 조건이 실패했습니다. 원인 3건 · 시점 순</div>
+<div class="k-acc">
+<div class="k-item"><button type="button" class="k-ihead" aria-expanded="false" data-ctl="항목 머리: 전복"><svg class="k-chev" width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 2.5L8 6l-3.5 3.5"/></svg><span class="k-g"><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M7 1.5l6 11H1z" fill="currentColor"/></svg></span>전복<span class="k-meta">2.4 s</span></button></div>
+<div class="k-item">
+<button type="button" class="k-ihead" aria-expanded="true" aria-controls="s10-i2" data-ctl="항목 머리: 파단"><svg class="k-chev" width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 2.5L8 6l-3.5 3.5"/></svg><span class="k-g"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M2.5 2.5l9 9M11.5 2.5l-9 9"/></svg></span>파단<span class="k-meta">3.1 s</span></button>
+<div class="k-ibd" id="s10-i2" role="region" aria-label="파단 상세">
+<div class="k-hrow"><span class="k-tag">단순화 모델</span><span class="k-small">결합부 임계값 모델입니다</span></div>
+<div class="k-rows">
+<span>원인</span><span>파단 · 빔–차체 결합<span class="k-ex">예시</span></span>
+<span>시점</span><span><button type="button" class="k-link" data-ctl="시점 링크: 3.1 s" aria-label="시점 3.1 초. 누르면 타임라인의 파단 표식으로 이동합니다">3.1 s</button><button type="button" class="kb kb-sim" data-ctl="값 배지: 시점" aria-label="값 배지 시뮬. 누르면 근거를 엽니다"><span class="kp"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 6q1.25-5 2.5 0t2.5 0t2.5 0t2.5 0"/></svg>시뮬</span></button><span class="k-ex">예시</span></span>
+<span>측정값</span><span><span class="k-mono">1.2 <span class="k-u">kN</span></span><span class="k-small">하중</span><button type="button" class="kb kb-sim" data-ctl="값 배지: 측정값" aria-label="값 배지 시뮬. 누르면 근거를 엽니다"><span class="kp"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 6q1.25-5 2.5 0t2.5 0t2.5 0t2.5 0"/></svg>시뮬</span></button><span class="k-ex">예시</span></span>
+<span>임계값</span><span><span class="k-mono">1.0 <span class="k-u">kN</span></span><button type="button" class="kb kb-def" data-ctl="값 배지: 임계값" aria-label="값 배지 기본값. 임계값의 출처를 엽니다"><span class="kp"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><circle cx="6" cy="6" r="4"/></svg>기본값</span></button><span class="k-ex">예시</span></span>
+<span>임계 대비 여유</span><span><span class="k-mono">-0.2 <span class="k-u">kN</span></span><button type="button" class="kb kb-sim" data-ctl="값 배지: 여유" aria-label="값 배지 시뮬. 누르면 근거를 엽니다"><span class="kp"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 6q1.25-5 2.5 0t2.5 0t2.5 0t2.5 0"/></svg>시뮬</span></button><span class="k-ex">예시</span></span>
+</div>
+<div class="k-fixed">성공 조건이 실패하기 전에 임계를 넘은 사건입니다. 원인을 증명한 것은 아닙니다.</div>
+</div>
+</div>
+<div class="k-item"><button type="button" class="k-ihead" aria-expanded="false" data-ctl="항목 머리: 토크 부족"><svg class="k-chev" width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 2.5L8 6l-3.5 3.5"/></svg><span class="k-g"><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M7 1.5l6 11H1z" fill="currentColor"/></svg></span>토크 부족<span class="k-meta">3.8 s</span></button></div>
+<div class="k-item flat"><button type="button" class="k-ihead" aria-expanded="false" data-ctl="접힌 줄: 의도한 분리" style="font-size:12px;line-height:16px;font-weight:500;color:#A9B4C0"><svg class="k-chev" width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 2.5L8 6l-3.5 3.5"/></svg><span class="k-g"><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M7 1.5L12.5 7 7 12.5 1.5 7z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg></span>의도한 분리 · 1건 기록 · 실패 원인이 아닙니다</button></div>
+</div>
+</div>
+<div class="k-rfoot"><span class="k-hi">1회 실행의 기록이고 판정이 아닙니다</span><span>에이전트 설명은 이 카드의 수치만 인용합니다</span></div>
+</aside>
+</div>
+
+<div class="k-stack" style="width:396px">
+<div class="k-lbl">같은 실행의 타임라인 일부</div>
+<div style="position:relative;height:86px;box-sizing:border-box;padding:0 12px;background:#151A20;border:1px solid #26303A">
+<div style="position:relative;height:86px">
+<div class="k-ticks" aria-hidden="true"><span class="k-tk first" style="left:0">0 s</span><span class="k-tk" style="left:40%">2 s</span><span class="k-tk last" style="left:100%">5 s</span></div>
+<div style="position:absolute;left:0;right:0;top:49px;height:2px;background:#3A4654"></div>
+<div class="k-phl" style="left:62%"></div>
+<div class="k-lane up"><div class="k-mk" style="left:30%"><span class="k-mkb"><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M7 1.5L12.5 7 7 12.5 1.5 7z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg></span><span class="k-mkl">분리</span></div></div>
+<div class="k-lane dn"><div class="k-mk" style="left:48%"><span class="k-mkb"><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M7 1.5l6 11H1z" fill="currentColor"/></svg></span></div><div class="k-mk" style="left:62%"><span class="k-mkb sel"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M2.5 2.5l9 9M11.5 2.5l-9 9"/></svg></span></div><div class="k-mk" style="left:76%"><span class="k-mkb"><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M7 1.5l6 11H1z" fill="currentColor"/></svg></span></div></div>
+</div>
+</div>
+<span class="k-cap">이름표는 좁은 그림이라 생략했습니다. 실제 타임라인에서는 상시 보입니다. 펼친 항목(✕ 파단)의 표식이 선택됨, 재생 위치가 3.1 s입니다.</span>
+</div>
+</div>
+</div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1100,"height":800}}'>
+class Component extends DCLogic {
+renderVals() {
+return {};
+}
+}
+</script>
+</body>
+</html>
