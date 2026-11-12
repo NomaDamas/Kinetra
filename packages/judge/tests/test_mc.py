@@ -27,6 +27,7 @@ from kinetra_engine.run import PreviewRun
 
 from kinetra_judge import (
     Goal,
+    SensitivityReport,
     Verdict,
     VerdictComparison,
     VerdictComparisonResult,
@@ -34,6 +35,7 @@ from kinetra_judge import (
     compare_verdicts,
     goal_hash,
     monte_carlo,
+    run_sensitivity,
     run_verdict,
     sample_assumptions,
     wilson_ci,
@@ -387,3 +389,97 @@ def test_mc_refuses_samples_that_did_not_run_the_requested_duration():
             monte_carlo(table, goal, n=1, seed=SEED, duration_s=0.1, applied=ENGINE_APPLIED, run_sample=run_sample)
     v = monte_carlo(table, goal, n=1, seed=SEED, duration_s=0.1, applied=ENGINE_APPLIED, run_sample=engine_sample(project, duration_s=0.1))
     assert v.duration_s == 0.1 and v.n_samples == 1  # the run that ran 0.1 s (50 ticks of 0.002 s) is counted
+
+
+# --- J-03: real one-at-a-time verdict sensitivity ---------------------------------------------------------------
+
+
+def sensitivity_project() -> Project:
+    """A material-friction switch, an irrelevant ground row, and two broad rows the model never consumes."""
+    data = block_on_ramp().model_dump(mode="json")
+    grip = data["design"]["materials"][0]
+    data["design"]["materials"] += [
+        {"id": "surface", "name": "Declared sensitivity surface", "density": q(1000.0, "kg/m^3"),
+         "yield_strength": q(1.0e8, "Pa"), "elastic_modulus": q(1.0e9, "Pa"), "friction": q(0.5, "1")},
+        {**grip, "id": "unused"},
+    ]
+    data["world"]["terrain_props"][0]["material"] = "surface"
+
+    def uniform(key, value, low, high, unit, binding=None):
+        return {"key": key, "label": key, "value": q(value, unit), "confidence": "med", "binding": binding,
+                "distribution": {"kind": "uniform", "low": low, "high": high, "badge": "estimate", "source": SRC}}
+
+    data["assumptions"]["assumptions"] = [
+        uniform("surface_friction", 0.5, 0.1, 1.0, "1",
+                {"kind": "material_property", "material": "surface", "property": "friction"}),
+        uniform("unbound_mass", 10.0, 0.1, 1000.0, "kg"),
+        uniform("unused_friction", 0.5, 0.0, 2.0, "1",
+                {"kind": "material_property", "material": "unused", "property": "friction"}),
+        {"key": "fixed_note", "label": "fixed_note", "value": q(1.0, "1"), "confidence": "low"},
+    ]
+    return Project.model_validate(data)
+
+
+@pytest.fixture(scope="module")
+def sensitivity_case():
+    project = sensitivity_project()
+    before = project.model_dump(mode="json")
+    # Three is deliberately odd: the baseline cannot be exactly 0.5, so the hand-computed crossing is unambiguous.
+    report = run_sensitivity(project, slid_goal(project), n=3, seed=SEED, duration_s=DURATION_S,
+                             project_id="sensitivity-ramp", revision=0)
+    return project, before, report
+
+
+def test_sensitivity_dominant_flip_is_the_real_consumed_friction(sensitivity_case):
+    project, before, report = sensitivity_case
+    assert project.model_dump(mode="json") == before  # counterfactual pins never mutate the project or its provenance
+    assert report.badge == "sim" and report.method == "one_at_a_time_q05_q95"
+    assert [r.assumption_key for r in report.rows] == ["surface_friction", "ground_friction"]
+    dominant = report.rows[0]
+    assert dominant.rank == 1 and dominant.effect == -1.0 and dominant.flips_verdict is True
+    assert report.dominant_flip_assumption == "surface_friction"
+    assert (dominant.low.quantile, dominant.low.value) == (0.05, pytest.approx(0.145))
+    assert (dominant.high.quantile, dominant.high.value) == (0.95, pytest.approx(0.955))
+    assert dominant.low.value_source == dominant.high.value_source == "original_assumption_distribution_quantile"
+    # q05 < tan(30°): all three slide; q95 > tan(30°): all three hold. These are actual engine goal outcomes.
+    assert (dominant.low.n_met, dominant.low.n_failed, dominant.low.n_undetermined) == (3, 0, 0)
+    assert (dominant.high.n_met, dominant.high.n_failed, dominant.high.n_undetermined) == (0, 3, 0)
+    assert dominant.low.p_success == 1.0 and dominant.high.p_success == 0.0
+    assert dominant.low.assumptions_hash != dominant.high.assumptions_hash != report.baseline.assumptions_hash
+
+    # The ground cannot affect this material-material ramp contact. Common random numbers keep the surface draws fixed,
+    # so both ground pins reproduce the baseline verdict instead of inventing an effect.
+    ground = report.rows[1]
+    assert ground.effect == 0.0 and ground.flips_verdict is False
+    assert ground.low.p_success == ground.high.p_success == report.baseline.p_success
+    assert (ground.low.n_met, ground.low.n_failed) == (ground.high.n_met, ground.high.n_failed)
+    assert (ground.low.n_met, ground.low.n_failed) == (report.baseline.n_met, report.baseline.n_failed)
+
+
+def test_sensitivity_report_exposes_all_assumptions_method_limits_and_unmeasured_rows(sensitivity_case):
+    _, _, report = sensitivity_case
+    assert tuple(a.key for a in report.assumptions) == (
+        "ground_friction", "surface_friction", "unbound_mass", "unused_friction", "fixed_note",
+    )
+    # The derived pin cites this key/path instead of nesting a near-500-character citation; no original evidence is lost.
+    assert report.assumptions[0] == load_body("earth").ground_friction
+    assert report.assumptions[1] == sensitivity_project().assumptions.assumptions[0]
+    assert report.not_applied == ("unbound_mass", "unused_friction")
+    assert report.fixed == ("fixed_note",)
+    assert not {"unbound_mass", "unused_friction", "fixed_note"} & {r.assumption_key for r in report.rows}
+    assert any("일변량 국소 비교" in label and "전역 민감도는 측정하지 않으며" in label for label in report.labels)
+    assert any("같은 시드·표본 인덱스" in label for label in report.labels)
+    assert any("0.5의 엄격히 반대편" in label for label in report.labels)
+    assert all(f"미적용: 가정 '{key}'는 모델이 소비하지 않아 민감도를 측정하지 않았다" in report.labels
+               for key in report.not_applied)
+
+
+def test_sensitivity_seed_reproduction_and_json_consumer_round_trip(sensitivity_case):
+    project, _, report = sensitivity_case
+    again = run_sensitivity(project, slid_goal(project), n=3, seed=SEED, duration_s=DURATION_S,
+                            project_id="sensitivity-ramp", revision=0)
+    assert again == report
+    record = report.model_dump(mode="json")
+    assert [row["assumption_key"] for row in record["rows"]] == ["surface_friction", "ground_friction"]
+    assert record["dominant_flip_assumption"] == "surface_friction"
+    assert SensitivityReport.model_validate(record) == report

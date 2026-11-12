@@ -10,8 +10,8 @@ Port of the legacy sampler (`legacy-v0:packages/engine/src/kinetra_engine/mc.py`
 `wilson_ci`, `feasibility_fields`). Kept as it was: each row draws from its own NumPy `default_rng` stream seeded by
 `derive_seed(seed, "assumption", key)`, so adding or removing a row never shifts another row's samples; `fixed` is the
 nominal, `uniform` is `rng.uniform(low, high, n)`, `normal` is `rng.normal(mean, std, n)` clipped to `clip_low`/`clip_high`;
-the interval is Wilson's, widened to contain p. Not carried over: the one-at-a-time sensitivities (J-03), the failure
-taxonomy counts (J-06), the Clopper-Pearson interval (unused by the legacy verdict).
+the interval is Wilson's, widened to contain p. One-at-a-time sensitivities (J-03) build on this runner in
+`sensitivity.py`. Not carried over: the failure taxonomy counts (J-06), the Clopper-Pearson interval (unused by the legacy verdict).
 
 A verdict is the simulation of every sample (V1): sample i runs the project once (`RunKind.VERDICT_SAMPLE`, one frame per
 tick) with the values of row i, and `evaluate_goal` (J-02a) says `met`, `failed` or `undetermined`. p_success is
@@ -362,9 +362,10 @@ def _consumed_bindings(project: Project, compiled: CompiledModel, duration_s: fl
     return frozenset(consumed)
 
 
-def run_verdict(
+def _run_verdict_table(
     project: Project,
     goal: Goal,
+    table: VerdictAssumptionTable,
     *,
     n: int,
     seed: int,
@@ -373,11 +374,11 @@ def run_verdict(
     revision: int,
     cache: PartCache | None = None,
 ) -> Verdict:
-    """The verdict of `project` on `goal` from the engine: the table is `verdict_assumption_table` of the project on its
-    planet (W-03c), and sample i is one `PreviewRun` of kind `verdict_sample` (run id `verdict-{seed}-{i}`, the verdict's
-    seed, one frame per tick) with the ground at the sample's `ground_friction` and every bound project row applied to its
-    typed target. The base project is never mutated; its hash remains the run/request identity."""
-    table = verdict_assumption_table(project.assumptions, load_body(project.world.planet))
+    """Run a verdict table against the same project and engine path as `run_verdict`.
+
+    J-03 supplies a counterfactual table with one row pinned. Its independent per-row streams leave every other row's
+    draws unchanged; the pinned table also gives the counterfactual its own honest `assumptions_hash`.
+    """
     applied = set(ENGINE_APPLIED) | {a.key for a in project.assumptions.assumptions if a.binding is not None}
 
     def run_sample(i: int, values: Mapping[str, float]) -> tuple[RunStarted, Sequence[Frame], RunEnded]:
@@ -399,6 +400,28 @@ def run_verdict(
         return run.started, stream[:-1], stream[-1]
 
     return monte_carlo(table, goal, n=n, seed=seed, duration_s=duration_s, applied=applied, run_sample=run_sample)
+
+
+def run_verdict(
+    project: Project,
+    goal: Goal,
+    *,
+    n: int,
+    seed: int,
+    duration_s: float,
+    project_id: str,
+    revision: int,
+    cache: PartCache | None = None,
+) -> Verdict:
+    """The verdict of `project` on `goal` from the engine: the table is `verdict_assumption_table` of the project on its
+    planet (W-03c), and sample i is one `PreviewRun` of kind `verdict_sample` (run id `verdict-{seed}-{i}`, the verdict's
+    seed, one frame per tick) with the ground at the sample's `ground_friction` and every bound project row applied to its
+    typed target. The base project is never mutated; its hash remains the run/request identity."""
+    table = verdict_assumption_table(project.assumptions, load_body(project.world.planet))
+    return _run_verdict_table(
+        project, goal, table, n=n, seed=seed, duration_s=duration_s,
+        project_id=project_id, revision=revision, cache=cache,
+    )
 
 
 class VerdictComparison(StrEnum):
