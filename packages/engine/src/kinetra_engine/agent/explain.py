@@ -31,6 +31,7 @@ from __future__ import annotations
 import json
 import math
 import re
+import sys
 from collections.abc import Iterator, Mapping
 from dataclasses import dataclass
 from decimal import Decimal, localcontext
@@ -50,12 +51,13 @@ EVIDENCE_TOOLS = ("rollout_summary", "statics_check", "mass_properties")
 DISCARDED_NOTICE = "에이전트 설명에 실행·검사 데이터에 없는 수치가 있어 버렸습니다"
 """Shown instead of an explanation that quoted a number the data does not have."""
 
-NUMBER = re.compile(r"(?<![A-Za-z0-9_])(?<![A-Za-z0-9_][.\-])-?\d+(?:[.,]\d+)*(?:[eE][-+]?\d+)?")
-"""A number written in text, with every dot and comma that joins digits to it (`1,234.5`, `1.234.567`, `2,3`). Digits that
-continue an ASCII id or name (`plate-1`, `run-2`, `X-02d`, `al6061`, `sha256`) are not a number; digits after Hangul or punctuation
-are (`틱25`, `높이-0.5`). What it reads is a value only in one of the forms of `_PLAIN` and `_GROUPED` (`_value`)."""
+NUMBER = re.compile(r"(?<![A-Za-z0-9_])(?<![A-Za-z0-9_][.\-])-?(?:\d+|\.\d+)(?:[.,]\d+)*(?:[eE][-+]?\d+)?")
+"""A number written in text, with every dot and comma that joins digits to it (`1,234.5`, `1.234.567`, `2,3`) and a decimal point
+that starts it (`.5`, `-.25`: 0.5 and -0.25, never 5 and 25). Digits that continue an ASCII id or name (`plate-1`, `run-2`, `X-02d`,
+`al6061`, `sha256`, `v.5`) are not a number; digits after Hangul or punctuation are (`틱25`, `높이-0.5`). What it reads is a value
+only in one of the forms of `_PLAIN` and `_GROUPED` (`_value`)."""
 
-_PLAIN = re.compile(r"-?\d+(?:\.\d+)?(?:[eE][-+]?\d+)?")
+_PLAIN = re.compile(r"-?(?:\d+(?:\.\d+)?|\.\d+)(?:[eE][-+]?\d+)?")
 _GROUPED = re.compile(r"-?\d{1,3}(?:,\d{3})+(?:\.\d+)?(?:[eE][-+]?\d+)?")
 """Digits grouped by thousands with commas (`1,234`, `12,345.6`; English and Korean writing): one number, read without them."""
 
@@ -113,16 +115,21 @@ def _value(written: str) -> Decimal | None:
 
 
 def _data(value: Any, path: str = "") -> Iterator[tuple[str, Decimal]]:
-    """Every number of a JSON value, in document order: `(path, value)`, exactly. A JSON number, or a number read by `NUMBER`
-    out of a string (a hash, a sentence) that is one value and a finite double. Booleans and non-finite numbers are not numbers."""
+    """Every number of a JSON value, in document order: `(path, value)`, as the model reads it in the JSON text: a float is its
+    shortest round-trip decimal (`repr`, what `json.dumps` writes: 0.145, not the binary 0.14499…), an int is itself, a number in a
+    string (a hash, a sentence) is read by `NUMBER` when it is one value and a finite double. Booleans and non-finite numbers are not
+    numbers."""
     stack: list[tuple[str, Any]] = [(path, value)]
     while stack:
         here, v = stack.pop()
         if isinstance(v, bool) or v is None:
             continue
-        if isinstance(v, (int, float)):
-            if math.isfinite(v):
+        if isinstance(v, int):
+            if abs(v) <= sys.float_info.max:
                 yield here, Decimal(v)
+        elif isinstance(v, float):
+            if math.isfinite(v):
+                yield here, Decimal(repr(v))
         elif isinstance(v, str):
             for m in NUMBER.finditer(v):
                 d = _value(m.group())
@@ -134,19 +141,16 @@ def _data(value: Any, path: str = "") -> Iterator[tuple[str, Decimal]]:
             stack.extend(reversed([(f"{here}[{i}]", x) for i, x in enumerate(v)]))
 
 
-_REL = Decimal("1e-9")
-_ABS = Decimal("1e-12")
-
-
 def _gap(written: str, value: Decimal, datum: Decimal) -> Decimal | None:
-    """How far `datum` is from `value` (the number `written`) when `written` is `datum` rounded to the decimals written (ties
-    either way, the exponent counted: `0.12` → 2 decimals, `2e3` → -3), else `None`. A minus sign written must be the datum's; an
-    unsigned number may be the size of a negative datum (\"0.08 m 모자라다\" for a margin of -0.08 m). Exact decimal arithmetic."""
+    """How far `datum` is from `value` (the number `written`) when `written` is `datum` rounded to the digits written, else
+    `None`: at most half a unit of the last digit written (`1.23` cites 1.2349 and 1.225, not 1.2351; the exponent counted, `2e3`
+    is rounded to thousands), exactly, with no tolerance; a datum exactly halfway may be rounded either way. A minus sign written
+    must be the datum's; an unsigned number may be the size of a negative datum (\"0.08 m 모자라다\" for a margin of -0.08 m)."""
     if written.startswith("-") and datum >= 0:
         return None
     half = Decimal(5).scaleb(value.as_tuple().exponent - 1)  # type: ignore[operator]
     gap = abs(abs(datum) - abs(value))
-    return gap if gap <= half * (1 + _REL) + _ABS * abs(value) else None
+    return gap if gap <= half else None
 
 
 @dataclass(frozen=True)
@@ -166,6 +170,7 @@ def check_numbers(text: str, evidence: Mapping[str, Any]) -> tuple[tuple[Citatio
     """Each number of `text` against the data: `(citations, ungrounded)`. A number is cited from the datum closest to it (the
     first in document order on a tie); a number no datum rounds to, or that is not one value (`_value`), is ungrounded."""
     data = list(_data(evidence))
+    span = max((len(d.as_tuple().digits) for _, d in data), default=1)
     cited: list[Citation] = []
     ungrounded: list[str] = []
     for m in NUMBER.finditer(text):
@@ -174,7 +179,8 @@ def check_numbers(text: str, evidence: Mapping[str, Any]) -> tuple[tuple[Citatio
         best: tuple[Decimal, str, Decimal] | None = None
         if value is not None:
             with localcontext() as ctx:
-                ctx.prec = len(written) + 1500  # exact: a double spans 2^-1074 to 2^1024 (< 1100 decimal places), the value 1e±400
+                # exact: the digits of the widest datum, the value's (exponent within ±MAX_EXPONENT) and a double's (down to 1e-341)
+                ctx.prec = len(written) + span + 2 * MAX_EXPONENT + 400
                 for path, datum in data:
                     gap = _gap(written, value, datum)
                     if gap is not None and (best is None or gap < best[0]):

@@ -197,10 +197,45 @@ def test_explain_a_number_too_large_or_small_for_any_datum_is_never_cited(writte
 
 
 def test_explain_the_largest_and_smallest_doubles_are_still_cited_exactly():
-    data = {"max": 1.7976931348623157e308, "tiny": 5e-324}
-    cited, missing = check_numbers("1.8e308, 9e308, 4.9e-324, 5e-324", data)
-    assert missing == ("9e308",) and [(c.text, c.path) for c in cited] == [("1.8e308", "max"), ("4.9e-324", "tiny"), ("5e-324", "tiny")]
-    assert all(c.value in (data["max"], data["tiny"]) for c in cited)
+    data = {"max": 1.7976931348623157e308, "tiny": 5e-324, "huge_int": 10**400}  # an int no double can hold is not a datum
+    cited, missing = check_numbers("1.8e308, 9e308, 5e-324, 4.9e-324, 1e400", data)
+    assert missing == ("9e308", "4.9e-324", "1e400") and [(c.text, c.path) for c in cited] == [("1.8e308", "max"), ("5e-324", "tiny")]
+    assert [c.value for c in cited] == [data["max"], data["tiny"]]
+
+
+@pytest.mark.parametrize(
+    ("text", "data", "ungrounded"),
+    [
+        (".5 m", {"a": 0.5}, ()),  # a leading decimal point is kept: .5 is 0.5
+        (".5 m", {"a": 5}, (".5",)),  # and never 5
+        ("-.25 m", {"a": -0.25}, ()),
+        ("-.25 m", {"a": 25, "b": 0.25}, ("-.25",)),  # neither 25 nor the positive 0.25
+        ("높이 .5e1 m", {"a": 5}, ()),
+        ("v.5", {"a": 0.5}, ()),  # digits continuing an ASCII name are not a number
+    ],
+)
+def test_explain_a_leading_decimal_point_is_part_of_the_number(text, data, ungrounded):
+    assert check_numbers(text, data)[1] == ungrounded
+
+
+@pytest.mark.parametrize(
+    ("written", "datum", "cited"),
+    [
+        ("1.23", 1.2349, True),  # rounds to 1.23
+        ("1.23", 1.2351, False),  # rounds to 1.24: no tolerance past half a unit of the last digit
+        ("1.23", 1.225, True),  # halfway (the JSON text 1.225): either way
+        ("1.23", 1.235, True),
+        ("1.23", 1.2350001, False),
+        ("1.23", 1.2249999, False),
+        ("0.15", 0.145, True),  # the data as the model reads it (repr 0.145, halfway), not the binary 0.14499…
+        ("0.14", 0.145, True),
+        ("2e3", 2499.0, True),  # rounded to thousands
+        ("2e3", 2500.5, False),
+    ],
+)
+def test_explain_rounding_is_exact_to_half_a_unit_of_the_last_digit_written(written, datum, cited):
+    got, missing = check_numbers(written, {"d": datum})
+    assert ([(c.path, c.value) for c in got], missing) == (([("d", datum)], ()) if cited else ([], (written,)))
 
 
 @pytest.mark.parametrize(
