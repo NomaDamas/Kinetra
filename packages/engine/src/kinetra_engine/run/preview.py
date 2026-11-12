@@ -32,7 +32,8 @@ X-02d.
 the friction rule, slow slip, no rolling friction, tread and default friction per instance), and what the compiled model
 does not apply of the planet, read from the model itself so a label goes away once a leaf sets it: the planet's gravity
 when the model's gravity differs from the planet's `data/bodies` value (W-03a sets it, so this label does not appear
-today), and the ground when the model has none (X-01e compiles it, so this label does not appear today either).
+today), and the ground when the model has none (X-01e compiles it, so this label does not appear today either). Last,
+`BREAK_LABEL` when a joint has a `break_threshold` (X-04b: a break compares one force against one threshold).
 
 **Drives (X-01b) and thrust (X-01c).** The model is compiled from `compile_thrust` (the body tree with its thrusters and the
 propellant of its tanks) and `compile_drives` (springs on sliders, one motor per motor actuator). This run owns the step

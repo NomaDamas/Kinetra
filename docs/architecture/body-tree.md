@@ -2,7 +2,7 @@
 
 - 상태: 구현됨. 코드는 `packages/engine/src/kinetra_engine/compiler/`(`bodytree.py`, `labels.py`, `mjcf.py`, 오류는 `errors.py`·`checks.py`), 테스트는 `packages/engine/tests/test_body_tree.py`, `test_compile_errors.py`. `uv run pytest packages/engine -q -k body_tree`(정규 순서 규칙은 `-k canonical_order`, 컴파일 오류는 `-k compile_error`).
 - 근거: `docs/decisions/engine.md`(MuJoCo 네이티브 4.0.0이 코어), `collision-proxy.md`(매핑 표), `part-mass.md`, `project-model.md`(결합), `missing-definitions.md`(`require_complete`), `part-motor.md`(역할 없는 부품의 "곡선 없음"), 이슈 #123, #126, #511.
-- 범위 밖: 힌지·슬라이더의 스프링·댐퍼, 모터와 토크-속도 제한(X-01b), 추력기와 추진제(X-01c, [`thrust.md`](thrust.md)), 접촉 매개변수와 마찰 합성(X-01e, [`contact.md`](contact.md)), 결합 해제(X-04b), 정역학 경고와 한 목록으로 합치기(X-11). MJCF는 산출물이고 저장 원본이 아니다. 행성 상수와 `<option>`은 W-03a(`bodies.md`의 "엔진이 읽는 법").
+- 범위 밖: 힌지·슬라이더의 스프링·댐퍼, 모터와 토크-속도 제한(X-01b), 추력기와 추진제(X-01c, [`thrust.md`](thrust.md)), 접촉 매개변수와 마찰 합성(X-01e, [`contact.md`](contact.md)), 실행 중 결합 해제(X-04b, [`break-threshold.md`](break-threshold.md)), 정역학 경고와 한 목록으로 합치기(X-11). MJCF는 산출물이고 저장 원본이 아니다. 행성 상수와 `<option>`은 W-03a(`bodies.md`의 "엔진이 읽는 법").
 
 ## 쓰는 법
 
@@ -16,14 +16,14 @@ labels = proxy_labels(tree)                                    # 근사 라벨(M
 ## 규칙
 
 - **정규 순서(#511).** 컴파일러는 프로젝트를 `kinetra_core.canonical_order`로만 읽는다. 인스턴스, 결합, 형상 요소, 스냅 포인트, 파라미터가 모두 ID 순이다. `project_hash`가 같은 두 프로젝트는 비트 단위로 같은 MJCF와 같은 `MassProperties`를 낸다. 바디 트리의 루트, 형제 순서, geom 순서도 ID 순이다.
-- **강체.** `fixed` 결합으로 이어진 인스턴스는 한 강체다(스트림 프레임이 강체를 인스턴스 목록으로 가리키는 것과 같다, `client-adapter.md` F8). 강체 ID는 그 묶음의 가장 작은 인스턴스 ID이고 강체의 좌표계는 그 인스턴스의 것이다. 질량·무게중심·관성은 인스턴스의 `MassProperties`의 합이다(`math.fsum`, 평행축 정리, 강체 좌표계). **프록시에서 구하지 않는다.**
-- **트리.** 힌지·슬라이더가 강체를 잇는다. 강체와 이 결합은 한 덩어리의 트리여야 한다. 루트는 어느 결합의 `b`쪽도 아닌 강체 가운데 ID가 가장 작은 것이고 자유 관절(`freejoint`, 이름 `__kinetra_root_<강체 ID>`: 프로젝트 ID는 `_`로 시작할 수 없어 결합 ID와 겹치지 않는다)이다. `b`쪽에서 만나는 결합은 축의 부호만 바꾼다: `a`에 대해 `b`가 q만큼 도는 것은 `b`에 대해 `a`가 반대 축으로 q만큼 도는 것이므로 좌표와 한계는 프로젝트의 결합 그대로다(테스트: 같은 힌지를 양쪽에서 만나도 상대 운동과 범위가 같다). 결합 좌표 0이 저장된 자세다.
+- **강체.** 임계(`break_threshold`)가 없는 `fixed` 결합으로 이어진 인스턴스는 한 강체다(스트림 프레임이 강체를 인스턴스 목록으로 가리키는 것과 같다, `client-adapter.md` F8). 강체 ID는 그 묶음의 가장 작은 인스턴스 ID이고 강체의 좌표계는 그 인스턴스의 것이다. 질량·무게중심·관성은 인스턴스의 `MassProperties`의 합이다(`math.fsum`, 평행축 정리, 강체 좌표계). **프록시에서 구하지 않는다.** 임계가 **있는** `fixed` 결합은 용접하지 않는다: 두 쪽은 두 강체로 남고 트리에서 그 결합으로 이어진다(X-04b, 실행이 그 힘을 읽고 풀 수 있게).
+- **트리.** 힌지·슬라이더와 임계가 있는 `fixed` 결합이 강체를 잇는다. 강체와 이 결합은 한 덩어리의 트리여야 한다. 루트는 어느 결합의 `b`쪽도 아닌 강체 가운데 ID가 가장 작은 것이고 자유 관절(`freejoint`, 이름 `__kinetra_root_<강체 ID>`: 프로젝트 ID는 `_`로 시작할 수 없어 결합 ID와 겹치지 않는다)이다. `b`쪽에서 만나는 결합은 축의 부호만 바꾼다: `a`에 대해 `b`가 q만큼 도는 것은 `b`에 대해 `a`가 반대 축으로 q만큼 도는 것이므로 좌표와 한계는 프로젝트의 결합 그대로다(테스트: 같은 힌지를 양쪽에서 만나도 상대 운동과 범위가 같다). 결합 좌표 0이 저장된 자세다. 임계가 있는 `fixed` 결합의 자식 바디는 MJCF에 관절 요소가 없다(부모에 단단히 붙음, `BodyJoint.axis`는 `(0, 0, 0)`). 실행이 결합을 풀면 그 바디는 자유 관절을 가진 또 하나의 루트가 된다(`BodyTree.roots`, `breaks.release`).
 - **월드 축.** 결합 축은 `a` 인스턴스 자세 × `a` 스냅 포인트 자세 × `Joint.unit_axis`(`project-model.md`의 B-04a 문단이 이 계산을 X-01a의 몫으로 남겼다)이고 MJCF에는 자식 강체 좌표계로 옮겨 적는다. 결합점은 `a` 스냅 포인트의 월드 위치다. 두 스냅 포인트가 저장된 자세에서 만나지 않거나 `b` 스냅 좌표계로 읽은 축이 다른 직선이면 컴파일 오류다(아래 X-01d). 그래서 `a` 쪽을 기준으로 써도 `b` 쪽과 같은 점, 같은 직선이다(자세가 권위다).
 - **프록시 → `geom`**(`collision-proxy.md`의 매핑 표): 상자는 반치수, 원기둥은 `(반지름, 반길이)`, 구는 반지름, 중심은 `pos`, 방향은 `quat="w x y z"`. 강체 안의 다른 인스턴스의 geom은 강체 좌표계로 옮긴다. `geom` 이름은 `<인스턴스>/<프록시 geom id>`.
 - **`<inertial>`.** `mass`, `pos`(`MassProperties.center_of_mass`), `fullinertia`(`Ixx Iyy Izz Ixy Ixz Iyz`, 질량 중심 둘레, 강체 축)를 `MassProperties`에서 명시한다. `inertiafromgeom="false"`라 `<inertial>`이 없는 바디는 MuJoCo가 거절한다(프록시의 메운 빈 곳이 질량에 들어가지 않는다는 보증).
 - **`<option>`(W-03a)**: 중력은 `data/bodies`의 그 행성 값, MuJoCo 매질(`density`, `viscosity`)은 0이다(이유는 `bodies.md`의 "엔진이 읽는 법"). 시간 간격과 적분기는 아직 MuJoCo 기본값이다(X-02). `cone="elliptic"`은 X-01e다.
 - **지면과 접촉(X-01e, [`contact.md`](contact.md))**: `<worldbody>`의 첫 geom은 지면 평면 z = 0(`__kinetra_ground`, 행성 지면 마찰)이다. 모든 geom에 `friction`과 `priority`(두 면 중 작은 계수가 이기게)를, `<default>`에 `condim`·`solref`·`solimp`를 쓴다. `to_mjcf(tree, ground_friction=μ)`가 몬테카를로 표본을 받는다.
-- **MJCF에 아직 없는 것**: 시간 간격·적분기 설정, 공기 항력(W-03b). `break_threshold`는 이 MJCF에 들어가지 않는다(X-04b). 결합의 스프링·댐퍼와 모터는 `to_mjcf(tree, drives=compile_drives(tree))`가 더한다(X-01b, [`joints-actuators.md`](joints-actuators.md)).
+- **MJCF에 아직 없는 것**: 시간 간격·적분기 설정, 공기 항력(W-03b). `break_threshold` 값은 MJCF에 들어가지 않는다: 실행이 `tree.joints`에서 읽고 하중과 비교한다(X-04b). 결합의 스프링·댐퍼와 모터는 `to_mjcf(tree, drives=compile_drives(tree))`가 더한다(X-01b, [`joints-actuators.md`](joints-actuators.md)).
 
 ## 근사 라벨
 

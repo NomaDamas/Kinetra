@@ -1,8 +1,8 @@
-# 결합부 임계 하중 (X-04a)
+# 결합부 임계 하중 (X-04a), 런타임 결합 해제 (X-04b)
 
-- 상태: 구현됨. 코드는 `packages/engine/src/kinetra_engine/break_threshold.py`(`critical_load`), 테스트는 `packages/engine/tests/test_break_threshold.py`(`uv run pytest packages/engine -q -k break_threshold`).
-- 근거: 이슈 #137, `docs/plan/studio-plan.md` 4.6절("파단은 FEM이 아니라 결합부 임계값(물성 × 단면, '단순화 모델' 표시)"), `materials.md`(강도 기준 혼재), `project-model.md`(`Joint.break_threshold`), 핵심 가치 V1·V5.
-- 범위 밖: FEM, 피로, 균열(이슈). 런타임에서 결합을 푸는 일(X-04b), 정지 하중과 임계의 비교(X-03b). 이 모듈은 하중을 받지 않고 임계만 낸다.
+- 상태: 구현됨. 임계: `packages/engine/src/kinetra_engine/break_threshold.py`(`critical_load`), 테스트 `packages/engine/tests/test_break_threshold.py`(`uv run pytest packages/engine -q -k break_threshold`). 런타임 해제: `packages/engine/src/kinetra_engine/compiler/breaks.py`와 `run/preview.py`, 테스트 `packages/engine/tests/test_break_runtime.py`(`uv run pytest packages/engine -q -k break_runtime`).
+- 근거: 이슈 #137, #138, `docs/plan/studio-plan.md` 4.6절("파단은 FEM이 아니라 결합부 임계값(물성 × 단면, '단순화 모델' 표시)"), `materials.md`(강도 기준 혼재), `project-model.md`(`Joint.break_threshold`), `client-adapter.md`(`break` 이벤트, F8), 핵심 가치 V1·V5.
+- 범위 밖: FEM, 피로, 균열(이슈). 정지 하중과 임계의 비교(X-03b). `critical_load`는 하중을 받지 않고 임계만 낸다. 파단 표시는 X-04c.
 
 ## 하는 일
 
@@ -39,4 +39,33 @@
 ## 열린 질문
 
 - 이방성(CFRP)과 취성 재료의 강도 필드의 뜻과 기준 혼재의 정리는 #481에서 정한다. 그 결정 전까지 이 모듈은 위 4·2번대로 읽는다.
-- 호출 쪽(어느 결합에 어느 단면을 쓰는지)은 이 이슈 밖이다. X-03b·X-04b·HW-03a가 정한다.
+- 호출 쪽(어느 결합에 어느 단면을 쓰는지)은 이 이슈 밖이다. X-03b·HW-03a가 정한다. X-04b는 저장된 `Joint.break_threshold`를 그대로 읽고 단면을 고르지 않는다.
+
+## 런타임 결합 해제 (X-04b)
+
+실행(`PreviewRun`) 도중 `break_threshold`가 있는 결합의 하중이 임계를 **넘으면**(`load > threshold`) 그 결합이 풀리고, 스트림에 `break` 이벤트(`tick`, `joint`, `load`, `threshold`, 모두 N)가 실린다.
+
+- **컴파일.** 임계가 있는 `fixed` 결합은 두 인스턴스를 한 강체로 용접하지 않는다. 두 쪽은 처음부터 두 강체이고 트리에서 그 고정 결합으로 이어진다(MJCF에서는 관절 요소가 없는 자식 바디: MuJoCo가 부모에 단단히 붙여 둔다). 그래서 강체 목록은 실행 내내 같다(`client-adapter.md` F8: S1의 파단은 결합이 풀리는 것이고 강체 수는 그대로다). 임계가 없는 고정 결합은 전처럼 용접이다. 임계가 있는 고정 결합이 이미 용접된 두 인스턴스를 이으면 `welded_joint`, 고리를 닫으면 `loop` 컴파일 오류다(힌지·슬라이더와 같은 규칙).
+- **하중.** 매 틱 `mj_step` 바로 뒤(추력·항력의 `xfrc_applied`와 그 스텝의 질량이 그대로일 때) `mj_rnePostConstraint`로 구한 자식 바디의 `cfrc_int`(부모에게서 받는 공간 힘)의 **힘 부분의 크기**다. 결합이 붙든 부분 트리 전체에 전하는 힘으로, 축 방향(스프링·모터의 힘 포함)과 축에 수직인 성분을 모두 담는다. 토크는 비교하지 않는다(임계가 N이므로).
+- **해제.** 같은 틱에 넘은 결합을 결합 ID 순으로 모두 푼다. 트리에서 그 결합이 사라지고 붙들던 바디(그 아래 바디와 함께)는 자유 바디가 된다(`release`). 그 트리로 모델을 다시 컴파일하고 `carry_state`가 그 틱의 상태를 옮긴다: 두 모델에 다 있는 관절은 이름으로 좌표·속도·솔버 웜스타트를, 새 자유 관절은 그 바디 프레임의 월드 자세와 속도를. 모든 바디의 자세와 6차원 속도가 1e-12 안에서 같다(테스트). 풀린 결합의 스프링과 모터는 함께 사라진다(`Drives.without_joints`). 모터·탱크·프레임은 새 모델을 이름으로 다시 찾는다(`DriveRuntime.rebind`, `ThrustRun.rebind`). 궤적 해시는 해제 뒤 새 모델의 일반화 위치로 이어진다.
+- **이벤트.** `break` 이벤트의 `tick`은 넘은 틱이고 그 틱 또는 다음 프레임이 싣는다(`previous.tick < event.tick <= frame.tick`). 임계가 있는 결합이 하나라도 있으면 `run_started.model_labels`에 `BREAK_LABEL`("단순화 모델: 결합 파단은 결합을 지나는 힘의 크기 [N]만 임계와 비교한다(토크, 피로, 균열, FEM 없음)")이 붙는다.
+- **결정론.** 하중은 엔진 상태에서만 읽고, 푸는 순서는 결합 ID 순이며, 같은 트리는 같은 MJCF 바이트를 낸다. 같은 프로젝트를 두 번 돌리면 프레임·이벤트·궤적 해시가 같다(테스트).
+
+### 시험 (`test_break_runtime.py`)
+
+| 장면 | 임계 | 결과 |
+|---|---|---|
+| 두 블록 탑(달, 위 블록 4 kg), 정지 | 하중 = m g = 6.48 N(상대 1e-6) | 하중 읽기의 손계산 대조 |
+| 같은 탑 | 0.9 m g / 1.5 m g | 풀림 / 유지. 접촉이 자리 잡는 처음 몇 틱은 최대 1.17 m g(틱 2에서 측정)를 읽는다 |
+| 낙하 시험: 96 kg 받침에 힌지로 단 팔(수평에서 놓음), 끝(`weld-tip`)과 가운데(`weld-mid`)에 1 kg 블록(지구) | `weld-tip` 2 m g, `weld-mid` 6 m g, `pin` 걸린 무게의 10배 | `weld-tip`만 풀린다(틱 95). 해제 전 블록은 팔에 붙어 있고 뒤에는 떨어져 나간다. 해제가 없을 때 읽은 최대 하중: `weld-tip` 31.9 N(3.25 m g; 가벼운 진자의 바닥 장력 3 m g), 나머지는 유지 임계 아래 |
+| 같은 낙하, `pin` 1.5배 | — | `pin`이 풀리고 팔과 두 블록이 한 덩어리로 날아가다 지면 충돌 틱에 `weld-mid`, `weld-tip`이 함께(ID 순) 풀린다 |
+
+시드: 미리보기 실행은 무작위를 쓰지 않는다(시드 0). MuJoCo 4.0.0, 시간 간격은 엔진 기본 0.002 s. 틱 번호와 31.9 N, 1.17 m g는 macOS arm64 개발 머신에서 잰 값이다(값 배지 `시뮬`). 테스트는 이 값 자체가 아니라 풀리는 결합의 집합, 임계와의 대소, 같은 플랫폼에서의 비트 일치를 단언한다(H6).
+
+### 한계 (숨기지 않는다)
+
+- 하중은 한 스텝의 순간 구속력이다. 충돌처럼 짧은 하중은 시간 간격과 접촉 매개변수(X-01e의 `solref`)에 따라 달라질 수 있다. 시간 간격을 바꿔도 같은 결합이 풀린다는 기준은 이 이슈의 DoD가 아니며 재지 않았다(`docs/research/benchmarks/kerbal-space-program.md` 열린 질문 6, CB-05의 시간 창 평균).
+- 토크(굽힘)를 비교하지 않는다. 힌지·슬라이더의 축 방향 힘에는 그 결합의 스프링·모터 힘이 들어 있다.
+- 풀린 뒤 두 쪽은 부모·자식이 아니므로 서로 충돌한다. 저장된 자세에서 두 쪽의 충돌 프록시가 겹쳐 있으면 해제 순간 접촉이 밀어낸다. 풀린 힌지의 모터는 더 이상 토크를 내지도 배터리를 쓰지도 않는다.
+- 용접과 달리 임계가 있는 고정 결합의 두 쪽은 두 바디라서, MuJoCo가 부모·자식 사이만 충돌에서 빼므로 그런 결합이 사슬로 이어지면(A–B–C) A와 C는 풀리기 전에도 서로 충돌한다.
+- 해제 이벤트의 사유("임계 초과", "의도한 분리")는 X-08이 더한다.
