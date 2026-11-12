@@ -1373,6 +1373,9 @@ export interface ThreadTag {
   solver: number;
 }
 
+/** The result of comparing two trajectory records (H2). */
+export type TrajectoryComparison = "match" | "mismatch" | "not_comparable";
+
 /**
  * A trajectory hash and the platform tag it belongs to. A hash without its tag is not evidence (H1), so the two
  * are one object. Two of these are compared only when their tags are equal (H2).

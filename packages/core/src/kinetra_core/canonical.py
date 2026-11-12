@@ -42,7 +42,7 @@ a change to these rules is a new file `version` (`projectfile.py`).
 
 `definition_hash` is the hash of one definition (a `PartDef` or a `Material`), `project_hash` of a whole `Project`
 (design, world and assumptions). Not here: what a client does with a hash that differs from the catalog's (C-06),
-the trajectory hash of a run (X-02d), asset content hashes (A2).
+the trajectory hash of a run (`kinetra_engine.run.preview`, compared in `trajectory.py`), asset content hashes (A2).
 
 What this promises about the engine's input (#511). Two projects with equal hashes are equal as documents, and `canonical_order`
 returns the one project in this module's order: every registered collection sorted by the key above, all the way down
@@ -51,7 +51,7 @@ number or a model whose bits depend on order (the float sum of a mass, the order
 through `canonical_order` and nothing else (`kinetra_engine.compiler`), so equal hashes give equal engine input. The order is a
 property of the compiler's input, not of the stored file: the file keeps its order (`project-model.md`). `part_key`
 (`kinetra_engine.parts.cache`, strict, a cache key) stays order-sensitive on purpose: it names a result computed from one order.
-Not here: the trajectory hash of a run (X-02d); the hash of the physical part of a definition alone (B-16).
+Not here: the trajectory hash of a run (`kinetra_engine.run.preview`); the hash of the physical part of a definition alone (B-16).
 """
 
 from __future__ import annotations

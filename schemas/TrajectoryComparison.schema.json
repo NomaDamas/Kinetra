@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "The result of comparing two trajectory records (H2).",
+  "enum": [
+    "match",
+    "mismatch",
+    "not_comparable"
+  ],
+  "title": "TrajectoryComparison",
+  "type": "string"
+}
