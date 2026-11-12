@@ -132,7 +132,7 @@ def test_call_endpoint_model_and_effort_follow_the_environment(fake_env, curl_qu
     assert FAKE_KEY in c["stdin"] and FAKE_KEY not in json.dumps(c["argv"])  # 키는 여전히 표준입력으로만
     assert (res.model, res.effort) == ("gpt-6.1-sol", "medium")
     rows = [json.loads(ln) for ln in (tmp_path / "cost.jsonl").read_text().splitlines()]
-    assert rows[0]["model"] == "gpt-6.1-sol"
+    assert rows[0]["model"] == "gpt-6.1-sol" and rows[0]["effort"] == "medium"
 
 
 @pytest.mark.parametrize(

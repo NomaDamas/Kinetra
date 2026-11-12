@@ -422,7 +422,7 @@ def review_bundle(
         for attempt in range(1, ATTEMPTS + 1):
             attempts += 1
             spent: list[dict] = []
-            entry = {"ts": time.strftime("%Y-%m-%dT%H:%M:%S%z"), "pr": bundle.pr["number"], "part": part + 1, "attempt": attempt, "model": model()}
+            entry = {"ts": time.strftime("%Y-%m-%dT%H:%M:%S%z"), "pr": bundle.pr["number"], "part": part + 1, "attempt": attempt, "model": model(), "effort": effort()}
             try:
                 review, one = _once(build_payload(system, user, extra), key, transport, usage, items, spent)
             except common.ReviewError as e:
