@@ -267,10 +267,12 @@ class RunTools:
     def _request_run(self, args: RequestRunArgs) -> RunToolResult:
         tool = "request_run"
         document = self._hub.documents[self._project_id]
-        revision = document.revision
+        # one snapshot, read before the run: an edit published while the engine steps (from another thread) belongs to a
+        # later revision and changes neither the run nor what the result says it ran
+        project, revision, state = document.project, document.revision, document.verdict.value
         try:
             run = PreviewRun(
-                document.project,
+                project,
                 run_id=uuid.uuid4().hex,
                 project_id=self._project_id,
                 revision=revision,
@@ -299,7 +301,7 @@ class RunTools:
             tool=tool,
             summary=f"one preview run of revision {revision}, {how} at tick {ended.last_tick} ({last.sim_time_s:g} s); {RUN_LABEL}",
             revision=revision,
-            verdict_state=document.verdict.value,
+            verdict_state=state,
             started=run.started,
             first_frame=first,
             last_frame=last,
@@ -309,7 +311,7 @@ class RunTools:
     def _request_verdict(self, args: RequestVerdictArgs) -> RunToolResult:
         tool = "request_verdict"
         document = self._hub.documents[self._project_id]
-        revision, state = document.revision, document.verdict.value
+        project, revision, state = document.project, document.revision, document.verdict.value  # one snapshot
         if self._judge is None:
             return RunToolResult(
                 ok=False,
@@ -321,7 +323,7 @@ class RunTools:
                 revision=revision,
                 verdict_state=state,
             )
-        project = document.project
+        # the judge is given the snapshot above, never the document read again
         request = VerdictRequest(self._project_id, revision, project_hash(project), project, args.seed)
         verdict = Verdict(self._project_id, revision, request.definition_hash, args.seed, freeze(self._judge(request)))
         return RunToolResult(

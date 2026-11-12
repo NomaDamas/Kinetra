@@ -21,7 +21,7 @@ from kinetra_core import PLANET_CONSTANT_NAMES, Project, ReasonCode, RunComplete
 from kinetra_core.validator import VERDICT_FIELD_NAMES
 from kinetra_engine.agent import RUN_LABEL, RUN_TOOL_NAMES, EditTools, HubEditTools, RunTools, Verdict, VerdictRequest, run_specs
 from kinetra_engine.agent import run_tools as rt
-from kinetra_engine.protocol import Hub
+from kinetra_engine.protocol import Document, Hub
 from kinetra_engine.run import PreviewRun
 
 PLATE = {"part": "plate", "material": "al6061-t6", "place": {"type": "on_ground"}}
@@ -109,6 +109,47 @@ def test_run_tools_a_request_reads_the_current_revision_and_changes_no_document(
     assert run.started.revision == run.revision == verdict.revision == verdict.verdict.revision == 1
     assert run.started.definition_hash == verdict.verdict.definition_hash == project_hash(hub.documents["car"].project)
     assert state(hub) == before  # no revision, no history entry, same project, same verdict state
+
+
+def test_run_tools_an_edit_published_during_a_request_does_not_change_what_the_result_says_it_read(monkeypatch):
+    """Revision, verdict state, run and verdict all belong to one snapshot taken before the engine or the judge starts. The
+    document starts with a `valid` verdict state (as a J-01 verdict will leave it), so the edit during the request moves both
+    its revision (0 -> 1) and its verdict state (valid -> invalid, D5)."""
+    project = plate_project()
+    hub = Hub({"car": project})
+    hub.documents["car"] = Document("car", project, VerdictState.VALID)
+    thickness = {"instance": "plate-1", "name": "thickness"}
+
+    def edit(value: float) -> None:
+        assert HubEditTools(hub, "car").call("set_parameter", {**thickness, "value": value}).ok
+
+    class EditedMidRun(PreviewRun):
+        def __iter__(self):
+            for n, item in enumerate(super().__iter__()):
+                if n == 1:
+                    edit(0.01)  # published between two frames of the run
+                yield item
+
+    monkeypatch.setattr(rt, "PreviewRun", EditedMidRun)
+    run = RunTools(hub, "car").call("request_run", {"duration_s": 0.05})
+    doc = hub.documents["car"]
+    assert (doc.revision, doc.verdict) == (1, VerdictState.INVALID)  # the edit happened, during the run
+    assert (run.revision, run.verdict_state, run.started.revision) == (0, "valid", 0)
+    assert run.started.definition_hash == project_hash(project) != project_hash(doc.project)
+    assert run.to_json()["revision"] == 0 and run.to_json()["verdict_state"] == "valid"
+
+    hub.documents["car"] = Document("car", project, VerdictState.VALID)
+
+    def judge(request: VerdictRequest):
+        edit(0.012)  # published while the judge works
+        return {"asked": {"revision": request.revision}}
+
+    verdict = RunTools(hub, "car", judge=judge).call("request_verdict", {})
+    doc = hub.documents["car"]
+    assert (doc.revision, doc.verdict) == (1, VerdictState.INVALID)
+    assert (verdict.revision, verdict.verdict_state, verdict.verdict.revision) == (0, "valid", 0)
+    assert verdict.verdict.definition_hash == project_hash(project) != project_hash(doc.project)
+
 
 
 def test_run_tools_a_design_that_does_not_compile_or_a_run_too_long_is_refused_with_the_channels_reasons():
