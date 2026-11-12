@@ -98,8 +98,13 @@ def default_frame_every_ticks(timestep_s: float) -> int:
 
 
 def end_tick(duration_s: float, timestep_s: float) -> int:
-    """The first tick whose time `tick * timestep_s` is at or after `duration_s`."""
-    tick = max(1, math.ceil(duration_s / timestep_s))
+    """The first tick whose time `tick * timestep_s` is at or after `duration_s`. Raises `ValueError` when that is more
+    than `MAX_TICK` ticks; the cap is checked on the float quotient first, so a huge finite duration (whose quotient
+    is `inf`) is refused instead of overflowing."""
+    ticks = duration_s / timestep_s
+    if not ticks <= MAX_TICK:
+        raise ValueError(f"{duration_s} s is more than {MAX_TICK} ticks of {timestep_s} s, the most a run has")
+    tick = max(1, math.ceil(ticks))
     while tick > 1 and (tick - 1) * timestep_s >= duration_s:
         tick -= 1
     while tick * timestep_s < duration_s:

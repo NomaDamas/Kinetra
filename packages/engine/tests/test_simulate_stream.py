@@ -41,6 +41,7 @@ from kinetra_core import (
     project_hash,
 )
 from kinetra_core.bodies import load_body
+from kinetra_core.frames import MAX_TICK
 from kinetra_engine.protocol import Hub, ReferenceClient
 from kinetra_engine.run import (
     FRAME_RATE_CEILING_HZ,
@@ -314,6 +315,21 @@ def test_simulate_stream_refusals_carry_reasons():
     started, frames, ended = _stream(received)
     assert started.run_id == "first"
     check_run(started, frames, ended)
+
+
+def test_simulate_stream_a_duration_beyond_the_tick_cap_is_refused_not_overflowed():
+    for duration_s in (1e308, (MAX_TICK + 1) * 0.002):
+        with pytest.raises(ValueError, match="ticks"):
+            end_tick(duration_s, 0.002)
+    assert end_tick(MAX_TICK * 0.002, 0.002) <= MAX_TICK
+    hub = Hub({"tower": tower()})
+    received = asyncio.run(
+        _session(hub, {"type": "run", "id": "huge", "duration_s": 1e308}, until=lambda r: any(m.type == "rejected" for m in r))
+    )
+    rejected = next(m for m in received if m.type == "rejected")
+    assert rejected.id == "huge" and rejected.reasons[0].code is ReasonCode.INVALID_COMMAND
+    assert "ticks" in rejected.reasons[0].message
+    assert not any(isinstance(m, RunStarted) for m in received)
 
 
 def test_simulate_stream_platform_tag_names_the_locked_engine_wheel_and_the_commit():
