@@ -16,10 +16,12 @@ Conventions (G4): SI units (m, s, N), right-handed, +Z up. A quaternion has the 
 unit length), exactly as in the Project JSON (`conventions.QUATERNION_COMPONENTS`). In JSON they are named; in the
 binary pose block they are four consecutive float32 in that order.
 
-Time (F2): a `tick` is a step of the physics integrator, counted from 0; `sim_time_s = tick * timestep_s`. A frame is
-sent every `frame_every_ticks` ticks, so the frame rate is `1 / (timestep_s * frame_every_ticks)` of *simulated* time and
-means nothing about wall time. An event carries the tick it happened at, which can lie between two frames; a frame
-carries the events since the previous frame (`previous.tick < event.tick <= frame.tick`).
+Time (F2): a `tick` is a public physics/output interval, counted from 0; `sim_time_s = tick * timestep_s`. A break-enabled
+run divides every tick into the fixed number of internal integrator steps recorded by `platform.compute`; an event is
+attributed to the public tick containing its actual internal release boundary. A frame is sent every `frame_every_ticks`
+ticks, so the frame rate is `1 / (timestep_s * frame_every_ticks)` of *simulated* time and means nothing about wall time.
+An event carries the tick it happened at, which can lie between two frames; a frame carries the events since the previous
+frame (`previous.tick < event.tick <= frame.tick`).
 
 Values: every number in the stream is the engine's own output, badge `sim` (G6), said once by `RunStarted.badge`
 instead of per number. The stream is what the engine produced, not a verdict: `RunStarted.kind` says whether the client
@@ -167,11 +169,12 @@ def _solver_names_schema(schema: dict) -> None:
 
 
 class ComputeTag(_Strict):
-    """⑦ The settings the run actually used: integrator, `timestep_s` [s] and the solver's settings by name
-    (`NAME_PATTERN`)."""
+    """⑦ The settings the run actually used: integrator, actual internal `timestep_s` [s], fixed substep count per public
+    tick, and the solver's settings by name (`NAME_PATTERN`)."""
 
     integrator: _Text
     timestep_s: _Positive
+    substeps_per_tick: Annotated[int, Field(strict=True, ge=1)]
     solver: Annotated[dict[_Name, SolverValue], Field(json_schema_extra=_solver_names_schema)]
 
 
@@ -236,8 +239,9 @@ class RunStarted(_Obj):
 
     @model_validator(mode="after")
     def _consistent(self) -> "RunStarted":
-        if self.timestep_s != self.platform.compute.timestep_s:
-            raise ValueError("timestep_s differs from platform.compute.timestep_s: one run has one time step")
+        compute = self.platform.compute
+        if not math.isclose(compute.timestep_s * compute.substeps_per_tick, self.timestep_s, rel_tol=1e-12, abs_tol=1e-15):
+            raise ValueError("platform.compute.timestep_s x substeps_per_tick must equal the public run timestep_s")
         ids = [b.id for b in self.bodies]
         if len(set(ids)) != len(ids):
             raise ValueError("body ids must be unique")

@@ -91,6 +91,7 @@ from kinetra_core.frames import MAX_TICK
 
 from ..compiler import (
     BREAK_LABEL,
+    BREAK_SUBSTEPS_PER_TICK,
     BodyTree,
     BreakWatch,
     Drag,
@@ -208,18 +209,22 @@ class PreviewRun:
         timestep_s: float | None = None,
     ):
         require_complete(project, BlockedOperation.RUN)
-        compiled = compile_project(project, cache, timestep_s)
-        self._timestep_s = timestep_s
+        timestep_s = MAX_TIMESTEP_S if timestep_s is None else timestep_s
+        if not 0.0 < timestep_s <= MAX_TIMESTEP_S:
+            raise ValueError(f"time step {timestep_s} s: a run's public time step is above 0 and at most {MAX_TIMESTEP_S} s")
+        has_breaks = any(j.break_threshold is not None for j in project.design.joints)
+        self._substeps = BREAK_SUBSTEPS_PER_TICK if has_breaks else 1
+        self._timestep_s = timestep_s / self._substeps  # actual integrator dt, also used when a release recompiles
+        compiled = compile_project(project, cache, self._timestep_s)
         self.compiled = compiled
         model = compiled.model
         self._model = model
-        timestep_s = float(model.opt.timestep)
         self.end_tick = end_tick(duration_s, timestep_s)
-        tag = platform_tag(model)
+        tag = platform_tag(model, substeps_per_tick=self._substeps)
         bodies = compiled.tree.bodies
         self._body_ids = [b.id for b in bodies]
         self._follow(model)
-        breakable = [BREAK_LABEL] if breakable_joints(compiled.tree) else []
+        breakable = [BREAK_LABEL] if has_breaks else []
         self.started = RunStarted.model_validate(
             {
                 "type": "run_started",
@@ -280,7 +285,7 @@ class PreviewRun:
         thrust = ThrustRun(self.compiled.thrust, model, data)  # puts the tanks' propellant on their bodies
         drag = DragRuntime(model, self.compiled.drag)
         watch = BreakWatch(tree, model, BREAK_LOAD_WINDOW.value.value)
-        sensitivity = TimestepSensitivity(model) if watch.joints else None  # with the propellant on the bodies
+        sensitivity = TimestepSensitivity(model, public_timestep_s=run.timestep_s) if watch.joints else None  # conservative pre-substep spring bound
         design, dt = tree.design, run.timestep_s
         trajectory = hashlib.sha256(data.qpos.tobytes())
         last_good = data.qpos.copy()
@@ -290,43 +295,64 @@ class PreviewRun:
         sent = 0
         for tick in range(1, self.end_tick + 1):
             np.copyto(last_good, data.qpos)
-            drives.apply(data, commands_at(design, (tick - 1) * dt), dt)
-            thrust.begin_step()
-            mujoco.mj_step1(model, data)
-            drag.apply(data)
-            mujoco.mj_step2(model, data)
-            over = watch.over(model, data)  # with this step's applied forces (thrust, drag) and masses
-            if sensitivity is not None and watch.joints:
-                sensitivity.observe(model, data)
-            drag.restore(data)
-            thrust.end_step()
-            if any(data.warning[w].number for w in _UNSTABLE) or not np.isfinite(data.qpos).all():
-                good = tick - 1
-                if good != sent:
-                    data.qpos[:] = last_good
-                    frame = self._frame(data, good)
-                    check_frame(run, frame, final=True)
-                    yield frame
-                yield RunEnded.model_validate({"type": "run_ended", "run_id": run.run_id, "last_tick": good, "end": {"reason": "failed"}, "labels": self._labels(sensitivity)})
-                return
-            if over:
-                if sensitivity is not None:
-                    sensitivity.observe_breaks(over)
-                broken = [o.joint for o in over]
-                tree, drive_spec = release(tree, broken), drive_spec.without_joints(broken)
-                released = mujoco.MjModel.from_xml_string(to_mjcf(tree, drives=drive_spec, timestep_s=self._timestep_s))
-                data = carry_state(model, data, released)
-                model = released
-                drives.rebind(model, drive_spec)
-                thrust.rebind(model, data)
-                drag = DragRuntime(model, self.compiled.drag)  # holds nothing between steps: the same bodies, found by name
-                watch.bind(tree, model)
-                self._follow(model)
-                last_good = data.qpos.copy()  # the new model's coordinates
-                self._events.extend(
-                    {"kind": "break", "tick": tick, "joint": o.joint, "load": {"value": o.load, "unit": "N"}, "threshold": {"value": o.threshold, "unit": "N"}}
-                    for o in over
+            checkpoint = None
+            if self._substeps > 1:
+                saved_data = mujoco.MjData(model)
+                mujoco.mj_copyData(saved_data, model, data)
+                checkpoint = (
+                    model, tree, drive_spec, saved_data, dict(drives.supplies), dict(drives.energy), dict(thrust.supplies),
+                    dict(sensitivity._found) if sensitivity is not None else {}, len(self._events)
                 )
+            for substep in range(self._substeps):
+                drives.apply(data, commands_at(design, float(data.time)), self._timestep_s)
+                thrust.begin_step()
+                mujoco.mj_step1(model, data)
+                drag.apply(data)
+                mujoco.mj_step2(model, data)
+                over = watch.over(model, data)  # actual force of this internal step, with its applied forces and masses
+                if sensitivity is not None and watch.joints:
+                    sensitivity.observe(model, data)
+                drag.restore(data)
+                thrust.end_step()
+                if any(data.warning[w].number for w in _UNSTABLE) or not np.isfinite(data.qpos).all():
+                    good = tick - 1
+                    if checkpoint is not None:
+                        model, tree, drive_spec, data, drive_supplies, drive_energy, thrust_supplies, sensitivity_found, event_count = checkpoint
+                        drives = DriveRuntime(model, drive_spec, supplies=drive_supplies)
+                        drives.energy = drive_energy
+                        thrust = ThrustRun(self.compiled.thrust, model, data)
+                        thrust.supplies = thrust_supplies
+                        thrust.rebind(model, data)  # also restores the tank masses at the completed public tick
+                        self._follow(model)
+                        if sensitivity is not None:
+                            sensitivity._found = sensitivity_found
+                        del self._events[event_count:]  # a partial tick's releases were not completed public events
+                    elif good != sent:
+                        data.qpos[:] = last_good
+                    if good != sent:
+                        frame = self._frame(data, good)
+                        check_frame(run, frame, final=True)
+                        yield frame
+                    yield RunEnded.model_validate({"type": "run_ended", "run_id": run.run_id, "last_tick": good, "end": {"reason": "failed"}, "labels": self._labels(sensitivity)})
+                    return
+                if over:
+                    if sensitivity is not None:
+                        sensitivity.observe_breaks(over)
+                    broken = [o.joint for o in over]
+                    tree, drive_spec = release(tree, broken), drive_spec.without_joints(broken)
+                    released = mujoco.MjModel.from_xml_string(to_mjcf(tree, drives=drive_spec, timestep_s=self._timestep_s))
+                    data = carry_state(model, data, released)
+                    model = released
+                    drives.rebind(model, drive_spec)
+                    thrust.rebind(model, data)
+                    drag = DragRuntime(model, self.compiled.drag)  # holds nothing between steps: the same bodies, found by name
+                    watch.bind(tree, model)
+                    self._follow(model)
+                    last_good = data.qpos.copy()  # the new model's coordinates
+                    self._events.extend(
+                        {"kind": "break", "tick": tick, "joint": o.joint, "load": {"value": o.load, "unit": "N"}, "threshold": {"value": o.threshold, "unit": "N"}}
+                        for o in over
+                    )
             trajectory.update(data.qpos.tobytes())
             final = tick == self.end_tick
             if final or tick % every == 0:

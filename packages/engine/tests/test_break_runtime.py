@@ -402,12 +402,13 @@ def test_break_runtime_motor_battery_and_drag_follow_the_recompiled_model(spied)
     for k in sorted(drive):
         supplies, energy, _ = drive[k]
         assert supplies["b1"].remaining + energy["drive"] == pytest.approx(start, rel=0.0, abs=1e-9)
-    window = range(tick, tick + 5)  # the break tick's step (old model, the first at command 1) and four on the new model
+    change = next(k for k in sorted(drag) if k > 1 and drag[k][1] is not drag[k - 1][1])
+    window = range(change - 1, change + 4)  # releasing internal step (old model) and four on the new model
     speeds = [drive[k][2][0][2] for k in window]
     assert all(drive[k][2][0][0] == "drive" and drive[k][2][0][1] > 0.0 for k in window)  # the motor still writes its torque
     assert all(b > a for a, b in zip(speeds, speeds[1:]))  # and its hinge keeps speeding up through the recompile
-    assert drive[tick + 1][0]["b1"].remaining < drive[tick][0]["b1"].remaining  # the battery keeps paying for it
-    before, after = drag[tick], drag[tick + 1]
+    assert drive[change][0]["b1"].remaining < drive[change - 1][0]["b1"].remaining  # the battery keeps paying for it
+    before, after = drag[change - 1], drag[change]
     assert after[1] is not before[1] and after[1].nq == before[1].nq + 7  # bound to the recompiled model (b1 got a free joint)
     assert before[0] == after[0] == len(preview.started.bodies)  # every body still gets its drag
 
@@ -425,11 +426,13 @@ def test_break_runtime_tank_propellant_and_mass_follow_the_recompiled_model(spie
     thrust = spied["thrust"]
     left = {k: thrust[k][0]["tank"] for k in sorted(thrust)}
     dry = {k: thrust[k][1]["tank"] - left[k] for k in sorted(thrust)}
-    assert thrust[tick + 1][2] is not thrust[tick - 1][2]  # the step after the break ran on the recompiled model
-    assert all(d == pytest.approx(dry[tick - 1], rel=0.0, abs=1e-12) for d in dry.values())  # propellant on the new model too
+    change = next(k for k in sorted(thrust) if k > 1 and thrust[k][2] is not thrust[k - 1][2])
+    assert thrust[change][2] is not thrust[change - 1][2]  # the step after the break ran on the recompiled model
+    assert all(d == pytest.approx(dry[change - 1], rel=0.0, abs=1e-12) for d in dry.values())  # propellant on the new model too
     ks = sorted(left)
-    assert all(left[b] < left[a] for a, b in zip(ks, ks[1:]) if b > 50)  # burning: strictly falling, through the break
-    draw = [left[k - 1] - left[k] for k in range(tick - 1, tick + 3)]
+    burn_start = 800  # 0.1 s at the default public tick's 0.000125 s internal step
+    assert all(left[b] < left[a] for a, b in zip(ks, ks[1:]) if b > burn_start)  # strictly falling, through the break
+    draw = [left[k - 1] - left[k] for k in range(change - 1, change + 3)]
     assert all(d > 0.0 for d in draw) and max(draw) / min(draw) < 2.0  # the step's draw does not jump at the break
 
 

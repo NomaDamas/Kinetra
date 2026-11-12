@@ -4,6 +4,8 @@ from .bodytree import Body, BodyGeom, BodyJoint, BodyTree, CompiledInstance, bui
 from .breaks import (
     BREAK_LABEL,
     BREAK_LOAD_SPREAD_LIMIT,
+    BREAK_MAX_INTERNAL_TIMESTEP_S,
+    BREAK_SUBSTEPS_PER_TICK,
     MASS_RATIO_LIMIT,
     SPEED_LIMIT_M_S,
     SPRING_LIMIT,
@@ -42,6 +44,8 @@ __all__ = [
     "AXIS_TOLERANCE",
     "BREAK_LABEL",
     "BREAK_LOAD_SPREAD_LIMIT",
+    "BREAK_MAX_INTERNAL_TIMESTEP_S",
+    "BREAK_SUBSTEPS_PER_TICK",
     "CONTACT_PARAMETERS",
     "DEFAULT_FRICTION",
     "GROUND_GEOM",

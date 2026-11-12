@@ -13,10 +13,11 @@ are chosen by the tests (`SRC`), not data; the measured numbers quoted are in `d
 - **thrust** (추력기 과하중): the X-01c rocket (`test_thrust.rocket`, tank welded on the 2 lbf thruster by `w`, 6.5 N) on the Moon,
   lit at 0.1 s: the jet pushes the tank harder than its weight (4.9 N) and `w` breaks.
 
-In the original scenes themselves, every joint that breaks breaks at all three time steps. The thrust scene meets the proposed
-10 % break-event load spread; the original drop and ramp do not (45.9 % on `weld-tip`, 19.8 % on `seat`). Those two strict
-xfails keep the unmet DoD visible instead of tuning thresholds to make it pass. A break load more than 10 % over its threshold
-adds the weak-evidence run label: if every compared break stays within that bound, pairwise spread is necessarily at most 10 %.
+Every original joint and threshold is unchanged. A break-enabled public tick has 16 fixed internal steps, so the three requests
+still have actual integrator steps in the ratio 1:1/2:1/4. Detection and release happen at those internal boundaries and the
+`break` event carries the actual computed window load, attributed to its containing public tick. A break load more than 10 %
+over its threshold adds the weak-evidence run label: if every compared break stays within that bound, pairwise spread is
+necessarily at most 10 %.
 Each scene also runs with the joints whose loads are compared made unbreakable (`measure`): their largest window loads agree
 within 10 %. The speed, mass-ratio and spring bounds are checked by sweeps that step the engine directly (`BreakWatch`).
 """
@@ -51,12 +52,16 @@ from kinetra_core.assumption import Assumption
 from kinetra_engine.compiler import (
     BREAK_LABEL,
     BREAK_LOAD_SPREAD_LIMIT,
+    BREAK_MAX_INTERNAL_TIMESTEP_S,
+    BREAK_SUBSTEPS_PER_TICK,
     MASS_RATIO_LIMIT,
     SPEED_LIMIT_M_S,
     SPRING_LIMIT,
     TIMESTEP_SENSITIVE_LABEL,
     BreakWatch,
+    DriveRuntime,
     OverThreshold,
+    ThrustRun,
     TimestepSensitivity,
 )
 from kinetra_engine.parts import mass_properties
@@ -136,10 +141,6 @@ SCENES = {
     "ramp": (rig(threshold=5 * 1.0 * G_EARTH), {"seat"}, rig(), ("seat",), 0.6),
     "thrust": (thrust(6.5), {"w"}, thrust(1.0e9), ("w",), 0.3),
 }
-
-# Measured on the original scenes (break-timestep.md 2.1): every drop step and the coarse ramp have >10 % threshold overshoot.
-OVERSHOOT_SENSITIVE = {"drop": set(TIMESTEPS), "ramp": {MAX_TIMESTEP_S}, "thrust": set()}
-
 
 @pytest.fixture
 def peaks(monkeypatch):
@@ -266,8 +267,77 @@ def test_break_timestep_a_run_takes_a_smaller_time_step_never_a_larger_one():
         with pytest.raises(ValueError, match="at most"):
             compile_project(rig(), timestep_s=bad)
     preview = PreviewRun(rig(), run_id="x10", project_id="p", revision=1, duration_s=0.01, timestep_s=MAX_TIMESTEP_S / 4)
-    assert preview.started.timestep_s == preview.started.platform.compute.timestep_s == MAX_TIMESTEP_S / 4
+    compute = preview.started.platform.compute
+    assert preview.started.timestep_s == MAX_TIMESTEP_S / 4
+    assert compute.substeps_per_tick == BREAK_SUBSTEPS_PER_TICK == 16
+    assert compute.timestep_s == preview.compiled.model.opt.timestep == MAX_TIMESTEP_S / 4 / 16
+    assert compute.timestep_s * compute.substeps_per_tick == preview.started.timestep_s
     assert BREAK_LABEL in preview.started.model_labels
+
+
+def test_break_timestep_refinement_preserves_actual_dt_ratios_and_leaves_plain_runs_alone():
+    actual = []
+    for dt in TIMESTEPS:
+        preview = PreviewRun(rig(), run_id="x10", project_id="p", revision=1, duration_s=0.01, timestep_s=dt)
+        compute = preview.started.platform.compute
+        assert compute.substeps_per_tick == 16 and compute.timestep_s == dt / 16
+        actual.append(compute.timestep_s)
+    assert actual[0] == BREAK_MAX_INTERNAL_TIMESTEP_S
+    assert actual[0] / actual[1] == actual[1] / actual[2] == 2.0
+    plain = PreviewRun(rig(threshold=None), run_id="x10", project_id="p", revision=1, duration_s=0.01)
+    assert plain.started.platform.compute.timestep_s == MAX_TIMESTEP_S
+    assert plain.started.platform.compute.substeps_per_tick == 1
+
+
+def test_break_timestep_failure_after_an_internal_release_rolls_back_the_whole_public_tick(monkeypatch):
+    """A release early in tick 1 followed by a non-finite later substep must not leak that release or consumed supplies."""
+    data = Project.model_validate_json((ROOT / "schemas/examples/Project.drive-car.json").read_text(encoding="utf-8")).model_dump(mode="json")
+    next(j for j in data["design"]["joints"] if j["id"] == "seat-tank")["break_threshold"] = q(1.0e-12, "N")
+    next(e for e in data["design"]["schedule"]["entries"] if e["id"] == "burn")["start"] = 0.0
+    preview = PreviewRun(Project.model_validate(data), run_id="x10", project_id="p", revision=1, duration_s=0.01)
+    initial_masses = preview._model.body_mass.copy()
+    initial_tanks = {s.instance: s.supply.remaining for s in preview.compiled.thrust.stores}
+    initial_batteries = {instance: supply.remaining for instance, supply in preview.compiled.drives.supplies}
+    drives, thrusts = [], []
+    drive_init, thrust_init = DriveRuntime.__init__, ThrustRun.__init__
+
+    def capture_drive(self, *args, **kwargs):
+        drive_init(self, *args, **kwargs)
+        drives.append(self)
+
+    def capture_thrust(self, *args, **kwargs):
+        thrust_init(self, *args, **kwargs)
+        thrusts.append(self)
+
+    monkeypatch.setattr(DriveRuntime, "__init__", capture_drive)
+    monkeypatch.setattr(ThrustRun, "__init__", capture_thrust)
+    original_over, original_step2 = BreakWatch.over, mujoco.mj_step2
+    released = False
+
+    def over_and_mark(self, model, step_data):
+        nonlocal released
+        over = original_over(self, model, step_data)
+        released = released or bool(over)
+        return over
+
+    def step2_then_fail(model, step_data):
+        nonlocal released
+        original_step2(model, step_data)
+        if released:
+            step_data.qpos[0] = float("nan")
+            released = False
+
+    monkeypatch.setattr(BreakWatch, "over", over_and_mark)
+    monkeypatch.setattr(mujoco, "mj_step2", step2_then_fail)
+    items = list(preview)
+    frames, ended = items[:-1], items[-1]
+    check_run(preview.started, frames, ended)
+    assert ended.end.reason == "failed" and ended.last_tick == 0
+    assert frames[-1].tick == 0 and not [e for f in frames for e in f.events if isinstance(e, BreakEvent)]
+    assert {i: s.remaining for i, s in drives[-1].supplies.items()} == initial_batteries
+    assert set(drives[-1].energy.values()) == {0.0}
+    assert {i: s.remaining for i, s in thrusts[-1].supplies.items()} == initial_tanks
+    np.testing.assert_array_equal(preview._model.body_mass, initial_masses)
 
 
 # --- the three scenes ----------------------------------------------------------------------------------------------------
@@ -282,21 +352,10 @@ def test_break_timestep_scenes_break_the_same_joints_at_every_time_step(scene, p
         assert {e.joint for e in events} == expected, dt
         assert len(events) == len(expected)
         assert all(e.load.value > e.threshold.value for e in events)
-        if dt in OVERSHOOT_SENSITIVE[scene]:
-            (label,) = ended.labels
-            assert label.startswith(TIMESTEP_SENSITIVE_LABEL) and "파단 하중 초과" in label
-        else:
-            assert ended.labels == ()
+        assert ended.labels == ()
 
 
-@pytest.mark.parametrize(
-    "scene",
-    [
-        pytest.param("drop", marks=pytest.mark.xfail(strict=True, reason="#453 unmet: original weld-tip break loads differ by 45.9 %")),
-        pytest.param("ramp", marks=pytest.mark.xfail(strict=True, reason="#453 unmet: original seat break loads differ by 19.8 %")),
-        "thrust",
-    ],
-)
+@pytest.mark.parametrize("scene", SCENES)
 def test_break_timestep_scenes_break_loads_agree_within_ten_percent(scene):
     """The scene as it is, every joint breaking: the load each `break` event carries agrees within 10 % across the three steps."""
     project, expected, _, _, duration = SCENES[scene]
@@ -305,10 +364,6 @@ def test_break_timestep_scenes_break_loads_agree_within_ten_percent(scene):
         _, frames, _ = run(project, duration, dt)
         for e in broken(frames):
             loads[e.joint].append(e.load.value)
-    adverse = {"drop": ("weld-tip", 0.459), "ramp": ("seat", 0.198)}.get(scene)
-    if adverse is not None:
-        joint, measured = adverse
-        assert spread(loads[joint]) == pytest.approx(measured, abs=0.001), loads[joint]
     for j, values in loads.items():
         assert len(values) == len(TIMESTEPS), (j, values)
         assert spread(values) <= BREAK_LOAD_SPREAD_LIMIT, (j, values)

@@ -278,10 +278,10 @@
               }
             },
             "orientation": {
-              "x": 0.0,
+              "x": -0.7071067811865476,
               "y": 0.0,
               "z": 0.0,
-              "w": 1.0
+              "w": 0.7071067811865476
             }
           },
           {
@@ -314,10 +314,10 @@
               }
             },
             "orientation": {
-              "x": 0.0,
+              "x": -0.7071067811865476,
               "y": 0.0,
               "z": 0.0,
-              "w": 1.0
+              "w": 0.7071067811865476
             }
           },
           {
@@ -459,9 +459,9 @@
             },
             "orientation": {
               "x": 0.0,
-              "y": 0.0,
+              "y": 0.7071067811865476,
               "z": 0.0,
-              "w": 1.0
+              "w": 0.7071067811865476
             }
           },
           {
@@ -495,9 +495,9 @@
             },
             "orientation": {
               "x": 0.0,
-              "y": 0.0,
+              "y": 0.7071067811865476,
               "z": 0.0,
-              "w": 1.0
+              "w": 0.7071067811865476
             }
           }
         ],
@@ -1332,6 +1332,47 @@
             },
             "orientation": {
               "x": -0.7071067811865476,
+              "y": 0.0,
+              "z": 0.0,
+              "w": 0.7071067811865476
+            }
+          },
+          {
+            "badge": "default",
+            "source": {
+              "ref": "#541: the inner end of the inner hub boss (part y = -0.86 width), where the wheel meets an axle mount on the side of a body (the shell's axle-*), so the wheel stands beside the body instead of through it; +Z points out of that face (part -y). Kind and tag as the hub's toward axle_mount; B-04b settles the matching rules",
+              "locator": null,
+              "url": null,
+              "license": null,
+              "declared_by": null,
+              "declared_at": null
+            },
+            "id": "mount",
+            "kind": "shaft",
+            "accepts": [
+              "axle_mount"
+            ],
+            "position": {
+              "x": {
+                "offset": 0.0,
+                "terms": []
+              },
+              "y": {
+                "offset": 0.0,
+                "terms": [
+                  {
+                    "param": "width",
+                    "factor": -0.86
+                  }
+                ]
+              },
+              "z": {
+                "offset": 0.0,
+                "terms": []
+              }
+            },
+            "orientation": {
+              "x": 0.7071067811865476,
               "y": 0.0,
               "z": 0.0,
               "w": 0.7071067811865476
@@ -2485,7 +2526,8 @@
             "id": "bottom",
             "kind": "face",
             "accepts": [
-              "face"
+              "face",
+              "surface"
             ],
             "position": {
               "x": {
@@ -2892,7 +2934,8 @@
             "id": "mount",
             "kind": "face",
             "accepts": [
-              "face"
+              "face",
+              "surface"
             ],
             "position": {
               "x": {
@@ -4304,8 +4347,8 @@
             "declared_at": "2026-11-12T00:00:00Z"
           },
           "x": 0.0,
-          "y": 1.0,
-          "z": 0.0
+          "y": 0.0,
+          "z": 1.0
         },
         "limits": null,
         "break_threshold": null
@@ -4332,8 +4375,8 @@
             "declared_at": "2026-11-12T00:00:00Z"
           },
           "x": 0.0,
-          "y": 1.0,
-          "z": 0.0
+          "y": 0.0,
+          "z": 1.0
         },
         "limits": null,
         "break_threshold": null
@@ -4385,7 +4428,7 @@
       },
       {
         "id": "bumper-l",
-        "kind": "fixed",
+        "kind": "slider",
         "a": {
           "instance": "chassis",
           "snap_point": "spring-l"
@@ -4394,13 +4437,26 @@
           "instance": "spring-l",
           "snap_point": "end_a"
         },
-        "axis": null,
+        "axis": {
+          "badge": "declared",
+          "source": {
+            "ref": "B-03 drive-car example: slider axis along the bumper spring (world +x), so a positive travel stretches it forward",
+            "locator": null,
+            "url": null,
+            "license": null,
+            "declared_by": "kinetra-b03-drive-car",
+            "declared_at": "2026-11-12T00:00:00Z"
+          },
+          "x": 0.0,
+          "y": 0.0,
+          "z": 1.0
+        },
         "limits": null,
         "break_threshold": null
       },
       {
         "id": "bumper-r",
-        "kind": "fixed",
+        "kind": "slider",
         "a": {
           "instance": "chassis",
           "snap_point": "spring-r"
@@ -4409,7 +4465,20 @@
           "instance": "spring-r",
           "snap_point": "end_a"
         },
-        "axis": null,
+        "axis": {
+          "badge": "declared",
+          "source": {
+            "ref": "B-03 drive-car example: slider axis along the bumper spring (world +x), so a positive travel stretches it forward",
+            "locator": null,
+            "url": null,
+            "license": null,
+            "declared_by": "kinetra-b03-drive-car",
+            "declared_at": "2026-11-12T00:00:00Z"
+          },
+          "x": 0.0,
+          "y": 0.0,
+          "z": 1.0
+        },
         "limits": null,
         "break_threshold": null
       }

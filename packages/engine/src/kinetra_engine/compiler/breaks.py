@@ -14,8 +14,8 @@ over the last `window_s` seconds of simulated time (X-10): the impulse the joint
 window. One step's force depends on the time step, most of all in a collision; the impulse over a fixed time does much less
 (`docs/research/engine/break-timestep.md`). The window counts whole steps and, when the time step does not divide it, the
 fitting part of one more; before the run's start the force is 0. The window must be longer than the time step
-(`kinetra_core.break_window`: 0.02 s against at most 0.002 s). A joint breaks at the first tick where its load is **over** its
-threshold (`load > threshold`); the load in the event is that tick's load. A breakable `fixed` joint is a body held rigidly to
+(`kinetra_core.break_window`: 0.02 s against at most 0.002 s). A joint breaks at the first internal step where its load is **over** its
+threshold (`load > threshold`); the load in the event is that internal step's actual load. A breakable `fixed` joint is a body held rigidly to
 its parent without a degree of freedom (`bodytree.py`), so the same `cfrc_int` reads it.
 
 **Release.** A broken joint's child body (with the bodies hung from it) becomes a free body: in the tree its parent and joint
@@ -27,12 +27,12 @@ way. A spring or motor on the broken joint goes with it (`Drives.without_joints`
 **Determinism.** The load is read from the engine's state only, released joints are taken in joint id order, and the new
 model is the same text for the same tree, so the same project and the same ticks give the same breaks and the same states.
 
-**Time-step sensitivity (X-10).** With the window, the three original reference scenes break the same joints at the time step,
-half and a quarter of it, but the drop and ramp do **not** meet the proposed 10 % limit for break-event loads (45.9 % and
-19.8 %). `docs/research/engine/break-timestep.md` records that unmet criterion and the measured speed, mass-ratio and spring
-limits. `TimestepSensitivity` checks those limits and also reports a break load more than 10 % over its threshold: if every
-break in every compared run stays within that bound, their pairwise load spread cannot exceed 10 %. Its `reasons` are why the
-run's breaks are weak evidence (`TIMESTEP_SENSITIVE_LABEL`).
+**Time-step sensitivity (X-10).** Whole-tick release left 45.9 % and 19.8 % event-load spreads in the original drop and ramp.
+`PreviewRun` therefore uses the fixed refinement below and releases at actual internal boundaries; the original scenes and
+thresholds remain mandatory tests. The speed, mass-ratio and spring bounds in `break-timestep.md` are pre-substep measurements,
+not evidence for the refined runs. `TimestepSensitivity` conservatively checks those bounds and also reports a break load more
+than 10 % over its threshold: if every break in every compared run stays within that bound, their pairwise load spread cannot
+exceed 10 %. Its `reasons` are why the run's breaks are weak evidence (`TIMESTEP_SENSITIVE_LABEL`).
 
 This is a simplified model (plan 4.6, `break-threshold.md`): one scalar force against one scalar threshold. No torque, no
 fatigue, no cracks, no FEM.
@@ -59,6 +59,15 @@ BREAK_LOAD_SPREAD_LIMIT = 0.10
 """X-10's proposed maximum relative break-load spread. A break event overshooting its threshold by more than this fraction is
 marked sensitive: if all events instead overshoot by at most this fraction, every load is in `[threshold, 1.1 * threshold]`,
 so their `(maximum - minimum) / minimum` cannot exceed 10 %. This is an acceptance limit [제안], not a measured constant."""
+
+BREAK_SUBSTEPS_PER_TICK = 16
+BREAK_MAX_INTERNAL_TIMESTEP_S = 0.000125
+"""Fixed refinement and internal-step ceiling for a break-enabled run. The original drop at 0.0005 s overshot `weld-tip`
+by 32 %; linear scaling gives an estimated (not bounded) 8 % rise after fourfold refinement. The ramp already overshot by only
+7.6 % at 0.0005 s. `PreviewRun` uses 16 equal internal steps per requested tick, chosen at construction and never adapted.
+Thus the 0.002/0.001/0.0005 s requests retain actual integrator steps 0.000125/0.0000625/0.00003125 s (1:1/2:1/4), rather
+than secretly normalizing away the convergence comparison. Value badge `기본값`: a conservative cap derived from the
+documented original-scene measurements, not a general stability guarantee."""
 
 SPEED_LIMIT_M_S = 512.0
 """The fastest body [m/s] at which the measurements kept breaks time-step invariant (`break-timestep.md`: a block dropped on the
@@ -215,8 +224,10 @@ class TimestepSensitivity:
     (`observe`): the model may be one compiled again after a break, and the masses change as tanks drain. `observe_breaks`
     reads each event before its joint is released. `reasons` reports each condition once, at its first value out of range."""
 
-    def __init__(self, model: mujoco.MjModel) -> None:
+    def __init__(self, model: mujoco.MjModel, *, public_timestep_s: float | None = None) -> None:
         self._found: dict[str, str] = {}
+        # Production deliberately applies the pre-substep spring sweep at public Delta, not the smaller actual h.
+        self._dt = float(model.opt.timestep) if public_timestep_s is None else public_timestep_s
         self._check_model(model)
 
     @property
@@ -236,7 +247,7 @@ class TimestepSensitivity:
         subtree = masses.copy()  # from the current masses (propellant on), not the compiled `body_subtreemass`
         for b in range(model.nbody - 1, 0, -1):
             subtree[model.body_parentid[b]] += subtree[b]
-        dt = float(model.opt.timestep)
+        dt = self._dt
         for j in range(model.njnt):
             k = float(model.jnt_stiffness[j])
             if k <= 0.0 or model.jnt_type[j] != mujoco.mjtJoint.mjJNT_SLIDE:  # springs are on sliders only (`drives.py`)

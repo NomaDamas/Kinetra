@@ -72,6 +72,7 @@
     "compute": {
       "integrator": "closed-form free fall",
       "timestep_s": 0.002,
+      "substeps_per_tick": 1,
       "solver": {}
     },
     "threads": {

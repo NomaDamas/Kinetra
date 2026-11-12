@@ -307,12 +307,13 @@ export interface ComponentContribution {
 }
 
 /**
- * ⑦ The settings the run actually used: integrator, `timestep_s` [s] and the solver's settings by name
- * (`NAME_PATTERN`).
+ * ⑦ The settings the run actually used: integrator, actual internal `timestep_s` [s], fixed substep count per public
+ * tick, and the solver's settings by name (`NAME_PATTERN`).
  */
 export interface ComputeTag {
   integrator: string;
   timestep_s: number;
+  substeps_per_tick: number;
   solver: Record<string, number | boolean | string>;
 }
 
