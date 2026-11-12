@@ -231,6 +231,15 @@ def compile_drives(tree: BodyTree) -> Drives:
     return Drives(tuple(springs), tuple(motors), tuple(sorted(supplies.items())))
 
 
+@dataclass(frozen=True)
+class MotorStep:
+    """One motor's command demand and available torque [N*m] for J-06 observation; both are computed, not inferred later."""
+
+    actuator: str
+    required: float
+    limit: float
+
+
 class DriveRuntime:
     """The motors of one run against a loaded model: writes `data.ctrl` before each step and keeps the batteries.
 
@@ -243,6 +252,8 @@ class DriveRuntime:
         self._rows: list[tuple[MotorDrive, int, int]] = []
         self.energy: dict[str, float] = {m.actuator: 0.0 for m in drives.motors}
         """Energy [J] each metered motor has taken so far."""
+        self.last_steps: tuple[MotorStep, ...] = ()
+        """The demand/limit pairs written by the latest `apply`, in actuator id order (J-06)."""
         self.rebind(model, drives)
 
     def rebind(self, model, drives: Drives) -> None:
@@ -263,13 +274,19 @@ class DriveRuntime:
     def apply(self, data, commands: Mapping[str, float], dt: float) -> None:
         """Set each motor's `ctrl` for the next step of `dt` seconds from its command (absent: 0) and its joint speed now (the
         back-EMF is the hinge's damping, applied by MuJoCo), and draw that step's energy from its battery."""
+        records = []
         for m, act, dof in self._rows:
             u = commands.get(m.actuator, 0.0)
             speed = float(data.qvel[dof])
             ctrl = m.ctrl(u, speed)
+            torque = m.torque(u, speed)
+            satisfied = 1.0
             if m.supply is not None:
-                draw = self.supplies[m.supply].draw_rate(m.electrical_power(u, m.torque(u, speed)), dt)
+                draw = self.supplies[m.supply].draw_rate(m.electrical_power(u, torque), dt)
                 self.supplies[m.supply] = draw.supply
                 self.energy[m.actuator] += draw.delivered
-                ctrl *= draw.satisfied
+                satisfied = draw.satisfied
+                ctrl *= satisfied
             data.ctrl[act] = ctrl
+            records.append(MotorStep(m.actuator, abs(u) * m.stall_torque, abs(torque) * satisfied))
+        self.last_steps = tuple(records)

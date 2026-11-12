@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "A non-negative torque magnitude in newton-metres.",
+  "properties": {
+    "value": {
+      "minimum": 0,
+      "title": "Value",
+      "type": "number"
+    },
+    "unit": {
+      "const": "N*m",
+      "title": "Unit",
+      "type": "string"
+    }
+  },
+  "required": [
+    "value",
+    "unit"
+  ],
+  "title": "TorqueNm",
+  "type": "object"
+}

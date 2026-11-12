@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Observed centre-of-mass projection outside the support polygon. This is not automatically a failure cause:\n`grounded` is false after liftoff (the polygon is the last ground support), and J-06 excludes that observation.",
+  "properties": {
+    "kind": {
+      "const": "overturn",
+      "title": "Kind",
+      "type": "string"
+    },
+    "tick": {
+      "maximum": 4294967295,
+      "minimum": 0,
+      "title": "Tick",
+      "type": "integer"
+    },
+    "grounded": {
+      "title": "Grounded",
+      "type": "boolean"
+    },
+    "margin": {
+      "$ref": "#/$defs/LengthM"
+    },
+    "reference_length": {
+      "$ref": "#/$defs/LengthM"
+    }
+  },
+  "required": [
+    "kind",
+    "tick",
+    "grounded",
+    "margin",
+    "reference_length"
+  ],
+  "title": "OverturnEvent",
+  "type": "object",
+  "$defs": {
+    "LengthM": {
+      "description": "A signed length in metres (a support margin is negative outside the support region).",
+      "properties": {
+        "value": {
+          "title": "Value",
+          "type": "number"
+        },
+        "unit": {
+          "const": "m",
+          "title": "Unit",
+          "type": "string"
+        }
+      },
+      "required": [
+        "value",
+        "unit"
+      ],
+      "title": "LengthM",
+      "type": "object"
+    }
+  }
+}

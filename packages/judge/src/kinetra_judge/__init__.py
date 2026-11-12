@@ -1,5 +1,13 @@
 """Judgment: necessary-condition screen, search, Monte-Carlo verdicts."""
 
+from .failure_cause import (
+    CAUSE_RULE,
+    CRITERIA,
+    FailureCause,
+    FailureCauseReport,
+    SimValue,
+    classify_failure_causes,
+)
 from .goal import (
     Box,
     Condition,
@@ -39,10 +47,14 @@ from .necessary import (
 
 __all__ = [
     "Box",
+    "CAUSE_RULE",
+    "CRITERIA",
     "CheckStatus",
     "Condition",
     "ConditionResult",
     "ENGINE_APPLIED",
+    "FailureCause",
+    "FailureCauseReport",
     "Goal",
     "GoalResult",
     "LandingCondition",
@@ -52,12 +64,14 @@ __all__ = [
     "Point",
     "ReachCondition",
     "RotationCondition",
+    "SimValue",
     "Status",
     "TimeLimitCondition",
     "Verdict",
     "VerdictComparison",
     "VerdictComparisonResult",
     "assumptions_hash",
+    "classify_failure_causes",
     "compare_verdicts",
     "evaluate_goal",
     "goal_hash",

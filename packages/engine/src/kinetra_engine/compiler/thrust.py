@@ -239,13 +239,17 @@ def compile_thrust(project: Project, cache: PartCache | None = None, tolerance: 
 @dataclass(frozen=True)
 class ThrusterStep:
     """What one thruster did in one step: impulse [N s] given to the body, mean thrust [N] (= impulse / dt), propellant [kg]
-    drawn from its tank (0 when not metered) and `satisfied`, the fraction of the asked impulse the tank could feed."""
+    drawn from its tank (0 when not metered), `satisfied`, the fraction of the asked impulse the tank could feed, and
+    `supply`, the tank instance whose remaining mass J-06 reads (`None`: unmetered)."""
 
     actuator: str
     impulse: float
     thrust: float
     propellant: float
     satisfied: float
+    supply: str | None
+    requested: float
+    """Mean thrust [N] requested before supply rationing (zero outside the control schedule)."""
 
 
 @dataclass(frozen=True)
@@ -349,7 +353,7 @@ class ThrustRun:
             s = 1.0 if th.supply is None else satisfied[th.supply]
             impulse = asked[th.actuator] * s
             drawn = 0.0 if th.supply is None else impulse * self._k[th.actuator]
-            records.append(ThrusterStep(th.actuator, impulse, impulse / dt, drawn, s))
+            records.append(ThrusterStep(th.actuator, impulse, impulse / dt, drawn, s, th.supply, asked[th.actuator] / dt))
             if impulse == 0.0:
                 continue
             row = self._row[th.body]

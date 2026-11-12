@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Observed motor command's zero-speed torque request over the speed- and supply-dependent available torque.",
+  "properties": {
+    "kind": {
+      "const": "torque_shortage",
+      "title": "Kind",
+      "type": "string"
+    },
+    "tick": {
+      "maximum": 4294967295,
+      "minimum": 0,
+      "title": "Tick",
+      "type": "integer"
+    },
+    "actuator": {
+      "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+      "title": "Actuator",
+      "type": "string"
+    },
+    "required": {
+      "$ref": "#/$defs/TorqueNm"
+    },
+    "limit": {
+      "$ref": "#/$defs/TorqueNm"
+    }
+  },
+  "required": [
+    "kind",
+    "tick",
+    "actuator",
+    "required",
+    "limit"
+  ],
+  "title": "TorqueShortageEvent",
+  "type": "object",
+  "$defs": {
+    "TorqueNm": {
+      "description": "A non-negative torque magnitude in newton-metres.",
+      "properties": {
+        "value": {
+          "minimum": 0,
+          "title": "Value",
+          "type": "number"
+        },
+        "unit": {
+          "const": "N*m",
+          "title": "Unit",
+          "type": "string"
+        }
+      },
+      "required": [
+        "value",
+        "unit"
+      ],
+      "title": "TorqueNm",
+      "type": "object"
+    }
+  }
+}

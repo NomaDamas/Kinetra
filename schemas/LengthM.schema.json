@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "A signed length in metres (a support margin is negative outside the support region).",
+  "properties": {
+    "value": {
+      "title": "Value",
+      "type": "number"
+    },
+    "unit": {
+      "const": "m",
+      "title": "Unit",
+      "type": "string"
+    }
+  },
+  "required": [
+    "value",
+    "unit"
+  ],
+  "title": "LengthM",
+  "type": "object"
+}

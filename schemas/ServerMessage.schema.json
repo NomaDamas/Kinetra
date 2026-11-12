@@ -1639,7 +1639,11 @@
                 "break": "#/$defs/BreakEvent",
                 "condition_met": "#/$defs/ConditionMetEvent",
                 "contact": "#/$defs/ContactEvent",
-                "separation": "#/$defs/SeparationEvent"
+                "overturn": "#/$defs/OverturnEvent",
+                "propellant_depleted": "#/$defs/PropellantDepletedEvent",
+                "separation": "#/$defs/SeparationEvent",
+                "slip": "#/$defs/SlipEvent",
+                "torque_shortage": "#/$defs/TorqueShortageEvent"
               },
               "propertyName": "kind"
             },
@@ -1655,6 +1659,18 @@
               },
               {
                 "$ref": "#/$defs/ConditionMetEvent"
+              },
+              {
+                "$ref": "#/$defs/OverturnEvent"
+              },
+              {
+                "$ref": "#/$defs/SlipEvent"
+              },
+              {
+                "$ref": "#/$defs/TorqueShortageEvent"
+              },
+              {
+                "$ref": "#/$defs/PropellantDepletedEvent"
               }
             ]
           },
@@ -1959,6 +1975,47 @@
       "title": "JointLimits",
       "type": "object"
     },
+    "LengthM": {
+      "description": "A signed length in metres (a support margin is negative outside the support region).",
+      "properties": {
+        "value": {
+          "title": "Value",
+          "type": "number"
+        },
+        "unit": {
+          "const": "m",
+          "title": "Unit",
+          "type": "string"
+        }
+      },
+      "required": [
+        "value",
+        "unit"
+      ],
+      "title": "LengthM",
+      "type": "object"
+    },
+    "MassKg": {
+      "description": "A non-negative mass in kilograms.",
+      "properties": {
+        "value": {
+          "minimum": 0,
+          "title": "Value",
+          "type": "number"
+        },
+        "unit": {
+          "const": "kg",
+          "title": "Unit",
+          "type": "string"
+        }
+      },
+      "required": [
+        "value",
+        "unit"
+      ],
+      "title": "MassKg",
+      "type": "object"
+    },
     "Material": {
       "additionalProperties": false,
       "properties": {
@@ -2135,6 +2192,41 @@
         "kernel_release"
       ],
       "title": "OsTag",
+      "type": "object"
+    },
+    "OverturnEvent": {
+      "description": "Observed centre-of-mass projection outside the support polygon. This is not automatically a failure cause:\n`grounded` is false after liftoff (the polygon is the last ground support), and J-06 excludes that observation.",
+      "properties": {
+        "kind": {
+          "const": "overturn",
+          "title": "Kind",
+          "type": "string"
+        },
+        "tick": {
+          "maximum": 4294967295,
+          "minimum": 0,
+          "title": "Tick",
+          "type": "integer"
+        },
+        "grounded": {
+          "title": "Grounded",
+          "type": "boolean"
+        },
+        "margin": {
+          "$ref": "#/$defs/LengthM"
+        },
+        "reference_length": {
+          "$ref": "#/$defs/LengthM"
+        }
+      },
+      "required": [
+        "kind",
+        "tick",
+        "grounded",
+        "margin",
+        "reference_length"
+      ],
+      "title": "OverturnEvent",
       "type": "object"
     },
     "ParamDef": {
@@ -2672,6 +2764,57 @@
         "id"
       ],
       "title": "PropTarget",
+      "type": "object"
+    },
+    "PropellantDepletedEvent": {
+      "description": "Observed empty tank. `unmet` distinguishes an unfulfilled thrust request from a scheduled burn that ended\nexactly as the tank became empty; only the former can become a J-06 cause.",
+      "properties": {
+        "kind": {
+          "const": "propellant_depleted",
+          "title": "Kind",
+          "type": "string"
+        },
+        "tick": {
+          "maximum": 4294967295,
+          "minimum": 0,
+          "title": "Tick",
+          "type": "integer"
+        },
+        "actuator": {
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+          "title": "Actuator",
+          "type": "string"
+        },
+        "tank": {
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+          "title": "Tank",
+          "type": "string"
+        },
+        "requested": {
+          "$ref": "#/$defs/ForceN"
+        },
+        "available": {
+          "$ref": "#/$defs/ForceN"
+        },
+        "remaining": {
+          "$ref": "#/$defs/MassKg"
+        },
+        "unmet": {
+          "title": "Unmet",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "kind",
+        "tick",
+        "actuator",
+        "tank",
+        "requested",
+        "available",
+        "remaining",
+        "unmet"
+      ],
+      "title": "PropellantDepletedEvent",
       "type": "object"
     },
     "ProtocolError": {
@@ -3840,6 +3983,65 @@
       "title": "ShapeComponent",
       "type": "object"
     },
+    "SlipEvent": {
+      "description": "Observed nonzero tangential contact force at or over its Coulomb friction limit, aggregated per body/target pair.",
+      "properties": {
+        "kind": {
+          "const": "slip",
+          "title": "Kind",
+          "type": "string"
+        },
+        "tick": {
+          "maximum": 4294967295,
+          "minimum": 0,
+          "title": "Tick",
+          "type": "integer"
+        },
+        "body": {
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+          "title": "Body",
+          "type": "string"
+        },
+        "other": {
+          "discriminator": {
+            "mapping": {
+              "body": "#/$defs/BodyTarget",
+              "ground": "#/$defs/GroundTarget",
+              "prop": "#/$defs/PropTarget"
+            },
+            "propertyName": "kind"
+          },
+          "oneOf": [
+            {
+              "$ref": "#/$defs/BodyTarget"
+            },
+            {
+              "$ref": "#/$defs/PropTarget"
+            },
+            {
+              "$ref": "#/$defs/GroundTarget"
+            }
+          ],
+          "title": "Other"
+        },
+        "tangential": {
+          "$ref": "#/$defs/ForceN"
+        },
+        "friction_limit": {
+          "$ref": "#/$defs/ForceN"
+        }
+      },
+      "required": [
+        "kind",
+        "tick",
+        "body",
+        "other",
+        "tangential",
+        "friction_limit"
+      ],
+      "title": "SlipEvent",
+      "type": "object"
+    },
     "SnapPoint": {
       "additionalProperties": false,
       "description": "A place where this part can attach to another. `kind` and `accepts` are compatibility tags (B-04b matches them).\n\n`position` is in metres in the part's local frame and may follow length parameters; `orientation` is the\nlocal frame of the snap point. Badge and source cover the whole pose.",
@@ -4157,6 +4359,63 @@
         "solver"
       ],
       "title": "ThreadTag",
+      "type": "object"
+    },
+    "TorqueNm": {
+      "description": "A non-negative torque magnitude in newton-metres.",
+      "properties": {
+        "value": {
+          "minimum": 0,
+          "title": "Value",
+          "type": "number"
+        },
+        "unit": {
+          "const": "N*m",
+          "title": "Unit",
+          "type": "string"
+        }
+      },
+      "required": [
+        "value",
+        "unit"
+      ],
+      "title": "TorqueNm",
+      "type": "object"
+    },
+    "TorqueShortageEvent": {
+      "description": "Observed motor command's zero-speed torque request over the speed- and supply-dependent available torque.",
+      "properties": {
+        "kind": {
+          "const": "torque_shortage",
+          "title": "Kind",
+          "type": "string"
+        },
+        "tick": {
+          "maximum": 4294967295,
+          "minimum": 0,
+          "title": "Tick",
+          "type": "integer"
+        },
+        "actuator": {
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+          "title": "Actuator",
+          "type": "string"
+        },
+        "required": {
+          "$ref": "#/$defs/TorqueNm"
+        },
+        "limit": {
+          "$ref": "#/$defs/TorqueNm"
+        }
+      },
+      "required": [
+        "kind",
+        "tick",
+        "actuator",
+        "required",
+        "limit"
+      ],
+      "title": "TorqueShortageEvent",
       "type": "object"
     },
     "TrajectoryEvidence": {

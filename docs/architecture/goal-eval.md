@@ -2,7 +2,7 @@
 
 - 상태: 구현됨. `packages/judge/src/kinetra_judge/goal.py`(`Goal`, `evaluate_goal`), 테스트 `packages/judge/tests/test_goal_eval.py`(`uv run pytest packages/judge -q -k goal_eval`).
 - 근거: 이슈 #167, `docs/plan/studio-plan.md` 4.5절(판정)과 J-06·X-13 행, `client-adapter.md` 3.3(실행 스트림), `break-threshold.md`(X-04b `break` 이벤트), 핵심 가치 V1.
-- 범위 밖: 미션 예산과 점수(S2), 조건 블록 편집기와 타임라인 표시(J-02b), Project에 조건을 저장하는 형식과 스키마 내보내기(J-02b), 몬테카를로 판정(J-01), 실패 원인 분류(J-06). 이 조건에서 유도하는 필요조건 스크린은 J-01b([`necessary-screen.md`](necessary-screen.md)).
+- 범위 밖: 미션 예산과 점수(S2), 조건 블록 편집기와 타임라인 표시(J-02b), Project에 조건을 저장하는 형식과 스키마 출력(J-02b), 몬테카를로 판정(J-01). 실패 원인 분류는 J-06([`failure-cause.md`](failure-cause.md)), 이 조건에서 유도하는 필요조건 스크린은 J-01b([`necessary-screen.md`](necessary-screen.md)).
 
 ## 하는 일
 

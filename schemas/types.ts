@@ -535,7 +535,7 @@ export interface Frame {
   tick: number;
   sim_time_s: number;
   poses: BodyPose[];
-  events?: (ContactEvent | BreakEvent | SeparationEvent | ConditionMetEvent)[];
+  events?: (ContactEvent | BreakEvent | SeparationEvent | ConditionMetEvent | OverturnEvent | SlipEvent | TorqueShortageEvent | PropellantDepletedEvent)[];
 }
 
 /** Dimensionless Coulomb coefficient. */
@@ -662,6 +662,18 @@ export interface JointLimits {
   upper: Quantity;
 }
 
+/** A signed length in metres (a support margin is negative outside the support region). */
+export interface LengthM {
+  value: number;
+  unit: "m";
+}
+
+/** A non-negative mass in kilograms. */
+export interface MassKg {
+  value: number;
+  unit: "kg";
+}
+
 export interface MassProperties {
   part_id: string;
   volume: DerivedScalar;
@@ -730,6 +742,18 @@ export type Origin = "mouse" | "agent" | "voice" | "xr" | "mcp";
 export interface OsTag {
   kind: string;
   kernel_release: string;
+}
+
+/**
+ * Observed centre-of-mass projection outside the support polygon. This is not automatically a failure cause:
+ * `grounded` is false after liftoff (the polygon is the last ground support), and J-06 excludes that observation.
+ */
+export interface OverturnEvent {
+  kind: "overturn";
+  tick: number;
+  grounded: boolean;
+  margin: LengthM;
+  reference_length: LengthM;
 }
 
 /** A named parameter of the part with its default and allowed range, all in `unit`. */
@@ -897,6 +921,21 @@ export interface PropSize {
 export interface PropTarget {
   kind: "prop";
   id: string;
+}
+
+/**
+ * Observed empty tank. `unmet` distinguishes an unfulfilled thrust request from a scheduled burn that ended
+ * exactly as the tank became empty; only the former can become a J-06 cause.
+ */
+export interface PropellantDepletedEvent {
+  kind: "propellant_depleted";
+  tick: number;
+  actuator: string;
+  tank: string;
+  requested: ForceN;
+  available: ForceN;
+  remaining: MassKg;
+  unmet: boolean;
 }
 
 /**
@@ -1343,6 +1382,16 @@ export interface SimProvenance {
   source: Source;
 }
 
+/** Observed nonzero tangential contact force at or over its Coulomb friction limit, aggregated per body/target pair. */
+export interface SlipEvent {
+  kind: "slip";
+  tick: number;
+  body: string;
+  other: BodyTarget | PropTarget | GroundTarget;
+  tangential: ForceN;
+  friction_limit: ForceN;
+}
+
 /**
  * A place where this part can attach to another. `kind` and `accepts` are compatibility tags (B-04b matches them).
  *
@@ -1435,6 +1484,21 @@ export interface Subscribe {
 export interface ThreadTag {
   physics: number;
   solver: number;
+}
+
+/** A non-negative torque magnitude in newton-metres. */
+export interface TorqueNm {
+  value: number;
+  unit: "N*m";
+}
+
+/** Observed motor command's zero-speed torque request over the speed- and supply-dependent available torque. */
+export interface TorqueShortageEvent {
+  kind: "torque_shortage";
+  tick: number;
+  actuator: string;
+  required: TorqueNm;
+  limit: TorqueNm;
 }
 
 /** The result of comparing two trajectory records (H2). */
@@ -1531,7 +1595,7 @@ export type EditCommand = AddPartDef | ReplacePartDef | RemovePartDef | AddMater
 
 export type EngineTag = WheelEngine | WasmEngine | CustomBuildEngine;
 
-export type FrameEvent = ContactEvent | BreakEvent | SeparationEvent | ConditionMetEvent;
+export type FrameEvent = ContactEvent | BreakEvent | SeparationEvent | ConditionMetEvent | OverturnEvent | SlipEvent | TorqueShortageEvent | PropellantDepletedEvent;
 
 export type RunEnd = RunCompleted | RunStopped | RunFailed;
 

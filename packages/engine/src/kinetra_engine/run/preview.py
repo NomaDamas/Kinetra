@@ -72,6 +72,11 @@ contacts of the pose at tick 0 and after every tick (after the break or separati
 with) and adds a `contact` `begin`/`end` event for every body–ground, body–prop and body–body pair whose touching changed;
 the frame of that tick or the next carries them, after the tick's `break` or `separation` events. After a release the watch
 is bound to the model compiled again and goes on by name. Met conditions are not in the stream yet; their leaf adds them.
+
+**Failure observations (J-06).** `FailureObservationWatch` reads tick 0 and each completed public tick's final model/data
+without changing stepping or release. It records grounded and airborne COM/support-margin crossings, contact tangential
+force versus Coulomb limit, motor demand versus available torque, and empty tanks (distinguishing unmet demand from an
+exact scheduled burn end). These observations are not causes or a verdict; `kinetra_judge.failure_cause` applies J-02a.
 """
 
 from __future__ import annotations
@@ -124,6 +129,7 @@ from ..compiler import (
 )
 from ..parts import PartCache
 from .contacts import ContactWatch
+from .failure_observations import FailureObservationWatch
 from .platform_tag import platform_tag
 
 FRAME_RATE_CEILING_HZ = 60.0
@@ -317,6 +323,7 @@ class PreviewRun:
         watch = BreakWatch(tree, model)
         schedule = SeparationSchedule(tree.design)
         contacts = ContactWatch(model)
+        observations = FailureObservationWatch()
         design, dt = tree.design, run.timestep_s
 
         def released(joints: list[str]) -> None:
@@ -337,6 +344,7 @@ class PreviewRun:
         trajectory = hashlib.sha256(data.qpos.tobytes())
         last_good = data.qpos.copy()
         self._events.extend(contacts.events(model, data, 0))
+        self._events.extend(observations.events(model, data, 0))
         frame = self._frame(data, 0)
         check_frame(run, frame, final=self.end_tick == 0)
         yield frame
@@ -371,7 +379,7 @@ class PreviewRun:
                 last_good = data.qpos.copy()  # the new model's coordinates
             np.copyto(last_good, data.qpos)
             drives.apply(data, commands_at(design, (tick - 1) * dt), dt)
-            thrust.begin_step()
+            thrust_step = thrust.begin_step()
             mujoco.mj_step1(model, data)
             drag.apply(data)
             mujoco.mj_step2(model, data)
@@ -402,6 +410,9 @@ class PreviewRun:
                     for o in over
                 )
             self._events.extend(contacts.events(model, data, tick))
+            self._events.extend(
+                observations.events(model, data, tick, motor_steps=drives.last_steps, thrust_step=thrust_step)
+            )
             trajectory.update(data.qpos.tobytes())
             final = tick == self.end_tick
             if final or tick % every == 0:

@@ -2,9 +2,10 @@
 
 These are the *content* of the run stream (rule G1: transport-neutral), in the same package as the document messages
 (`protocol.py`) so `export_schemas.py` types them for every client. Nothing here names an engine's internals (rule
-G2/F1): a body is a rigid body of the project, a pose is a position and a quaternion, an event is a contact, a break
-(a joint released over its threshold), a separation (a joint released on purpose, X-08) or a met condition. The engine's
-name and version appear only as *values* of the platform tag.
+(G2/F1): a body is a rigid body of the project, a pose is a position and a quaternion, an event is a contact, a break
+(a joint released over its threshold), a separation (a joint released on purpose, X-08), a met condition, or an observed
+overturn/slip/torque-shortage/propellant-depletion threshold crossing (J-06 telemetry). The engine's name and version
+appear only as *values* of the platform tag.
 
 Two forms of one frame (same meaning, same checks):
 
@@ -266,6 +267,62 @@ class ForceN(_Obj):
     unit: Literal[Unit.N]
 
 
+class LengthM(_Obj):
+    """A signed length in metres (a support margin is negative outside the support region)."""
+
+    value: Annotated[float, Field(strict=True, allow_inf_nan=False)]
+    unit: Literal[Unit.M]
+
+
+class TorqueNm(_Obj):
+    """A non-negative torque magnitude in newton-metres."""
+
+    value: _NonNegative
+    unit: Literal[Unit.N_M]
+
+
+class MassKg(_Obj):
+    """A non-negative mass in kilograms."""
+
+    value: _NonNegative
+    unit: Literal[Unit.KG]
+
+
+class OverturnEvent(_Obj):
+    """Observed centre-of-mass projection outside the support polygon. This is not automatically a failure cause:
+    `grounded` is false after liftoff (the polygon is the last ground support), and J-06 excludes that observation."""
+
+    kind: Literal["overturn"]
+    tick: _Tick
+    grounded: bool
+    margin: LengthM
+    reference_length: LengthM
+
+
+class TorqueShortageEvent(_Obj):
+    """Observed motor command's zero-speed torque request over the speed- and supply-dependent available torque."""
+
+    kind: Literal["torque_shortage"]
+    tick: _Tick
+    actuator: _Id
+    required: TorqueNm
+    limit: TorqueNm
+
+
+class PropellantDepletedEvent(_Obj):
+    """Observed empty tank. `unmet` distinguishes an unfulfilled thrust request from a scheduled burn that ended
+    exactly as the tank became empty; only the former can become a J-06 cause."""
+
+    kind: Literal["propellant_depleted"]
+    tick: _Tick
+    actuator: _Id
+    tank: _Id
+    requested: ForceN
+    available: ForceN
+    remaining: MassKg
+    unmet: bool
+
+
 class BodyTarget(_Obj):
     """What a body touched: another body of the run."""
 
@@ -288,6 +345,17 @@ class GroundTarget(_Strict):
 
 ContactTarget = Annotated[Union[BodyTarget, PropTarget, GroundTarget], Field(discriminator="kind")]
 """The other side of a contact. A body or a prop requires an `id`; the ground has none."""
+
+
+class SlipEvent(_Obj):
+    """Observed nonzero tangential contact force at or over its Coulomb friction limit, aggregated per body/target pair."""
+
+    kind: Literal["slip"]
+    tick: _Tick
+    body: _Id
+    other: ContactTarget
+    tangential: ForceN
+    friction_limit: ForceN
 
 
 class ContactEvent(_Obj):
@@ -343,9 +411,22 @@ class ConditionMetEvent(_Obj):
     condition: _Id
 
 
-FrameEvent = Annotated[Union[ContactEvent, BreakEvent, SeparationEvent, ConditionMetEvent], Field(discriminator="kind")]
-"""Anything that happens during a run. A joint released during the run is a `break` (reason `over_threshold`) or a
-`separation` (reason `intended_separation`), never both."""
+FrameEvent = Annotated[
+    Union[
+        ContactEvent,
+        BreakEvent,
+        SeparationEvent,
+        ConditionMetEvent,
+        OverturnEvent,
+        SlipEvent,
+        TorqueShortageEvent,
+        PropellantDepletedEvent,
+    ],
+    Field(discriminator="kind"),
+]
+"""Anything observed during a run. A joint released during the run is a `break` (reason `over_threshold`) or a
+`separation` (reason `intended_separation`), never both. Threshold observations are not failure causes by themselves:
+J-06 filters them by goal status, failure tick, ground contact and unmet thrust demand."""
 
 _EVENTS = TypeAdapter(tuple[FrameEvent, ...])
 
@@ -387,8 +468,8 @@ def check_frame(run: RunStarted, frame: Frame, *, final: bool = False) -> None:
     if not math.isclose(frame.sim_time_s, frame.tick * run.timestep_s, rel_tol=1e-9, abs_tol=1e-12):
         raise ValueError(f"sim_time_s {frame.sim_time_s} is not tick {frame.tick} x timestep_s {run.timestep_s}")
     for e in frame.events:
-        named = [e.body] if isinstance(e, ContactEvent) else []
-        if isinstance(e, ContactEvent) and isinstance(e.other, BodyTarget):
+        named = [e.body] if isinstance(e, (ContactEvent, SlipEvent)) else []
+        if isinstance(e, (ContactEvent, SlipEvent)) and isinstance(e.other, BodyTarget):
             named.append(e.other.id)
         unknown = [b for b in named if b not in ids]
         if unknown:

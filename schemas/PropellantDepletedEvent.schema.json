@@ -1,0 +1,96 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Observed empty tank. `unmet` distinguishes an unfulfilled thrust request from a scheduled burn that ended\nexactly as the tank became empty; only the former can become a J-06 cause.",
+  "properties": {
+    "kind": {
+      "const": "propellant_depleted",
+      "title": "Kind",
+      "type": "string"
+    },
+    "tick": {
+      "maximum": 4294967295,
+      "minimum": 0,
+      "title": "Tick",
+      "type": "integer"
+    },
+    "actuator": {
+      "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+      "title": "Actuator",
+      "type": "string"
+    },
+    "tank": {
+      "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+      "title": "Tank",
+      "type": "string"
+    },
+    "requested": {
+      "$ref": "#/$defs/ForceN"
+    },
+    "available": {
+      "$ref": "#/$defs/ForceN"
+    },
+    "remaining": {
+      "$ref": "#/$defs/MassKg"
+    },
+    "unmet": {
+      "title": "Unmet",
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "kind",
+    "tick",
+    "actuator",
+    "tank",
+    "requested",
+    "available",
+    "remaining",
+    "unmet"
+  ],
+  "title": "PropellantDepletedEvent",
+  "type": "object",
+  "$defs": {
+    "ForceN": {
+      "description": "A force in newtons (`unit` is always `N`, so a client never guesses).",
+      "properties": {
+        "value": {
+          "minimum": 0,
+          "title": "Value",
+          "type": "number"
+        },
+        "unit": {
+          "const": "N",
+          "title": "Unit",
+          "type": "string"
+        }
+      },
+      "required": [
+        "value",
+        "unit"
+      ],
+      "title": "ForceN",
+      "type": "object"
+    },
+    "MassKg": {
+      "description": "A non-negative mass in kilograms.",
+      "properties": {
+        "value": {
+          "minimum": 0,
+          "title": "Value",
+          "type": "number"
+        },
+        "unit": {
+          "const": "kg",
+          "title": "Unit",
+          "type": "string"
+        }
+      },
+      "required": [
+        "value",
+        "unit"
+      ],
+      "title": "MassKg",
+      "type": "object"
+    }
+  }
+}
