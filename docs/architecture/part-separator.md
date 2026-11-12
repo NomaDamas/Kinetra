@@ -1,7 +1,7 @@
 # 분리기 (B-15)
 
 - 상태: 구현됨. 검증은 `packages/core/src/kinetra_core/partdef.py`(`PartRole.SEPARATOR`, `PartDef._check_separator`, 이름 상수 `SEPARATOR_IMPULSE`, `SEPARATOR_FACE_A`, `SEPARATOR_FACE_B`, `SEPARATOR_BADGES`)와 `designspec.py`(분리기에 닿는 결합은 고정, 인스턴스가 쓴 충격량의 배지). 읽기는 `packages/engine/src/kinetra_engine/parts/separator.py`. 부품 정의는 `packages/engine/src/kinetra_engine/parts/library/separator.json`(같은 파일이 `schemas/examples/PartDef.separator.json`). 테스트 `packages/engine/tests/test_separator.py`(`uv run pytest packages/engine -q -k separator`).
-- 근거: 이슈 #447, 계획 변경 PC-02(`docs/plan/studio-plan.md` 5.3절), `docs/research/benchmarks/kerbal-space-program.md` A10, `docs/process/add-part.md`, 안전선 `docs/process/review-rubric.md` 1번.
+- 근거: 이슈 #447, 라이브러리 스냅 호환 #567, 계획 변경 PC-02(`docs/plan/studio-plan.md` 5.3절), `docs/research/benchmarks/kerbal-space-program.md` A10, `docs/process/add-part.md`, 안전선 `docs/process/review-rubric.md` 1번.
 - 범위 밖: 분리 표식(X-09), 화약·연소·점화·가스·스프링의 모델, 낙하산, `export_policy`(HW-02a, S2). 분리 이벤트의 실행(`face_b` 결합이 풀리는 순간, 두 쪽에 충격량이 들어가는 일, 사유 기록)과 분리 스케줄 항목은 X-08이 더했다: [`separation.md`](separation.md).
 
 ## 이 부품이 하는 것
@@ -14,8 +14,10 @@
 | 질량 | `mass`(kg, `mass_parameter`) | 선언 질량. 재료를 읽지 않는다(`part-payload.md`와 같은 규칙). 기본 0.5 kg(0.01~200)은 `기본값`이고 "자리 표시값"이라고 출처에 쓴다 |
 | 치수 | `radius`, `length`(m) | 기본 0.05, 0.04 m. 범위는 우리가 정했고 실제 제품이 아니다(`기본값`) |
 | **선언 분리 충격량** | `separation_impulse`(N·s) | 분리 때 두 쪽이 각각 받는 충격량의 크기. **0 허용**, 음수 불가. 기본 0, 범위 0~1000(`기본값`). 사용자가 인스턴스에 적으면 `사용자 선언` |
-| 스냅 포인트 | `face_a`, `face_b` | 윗면(+z)과 아랫면(바깥 법선이 -z). 붙잡힌 두 부품이 각각 여기에 고정 결합으로 이어진다. 태그 `surface` |
+| 스냅 포인트 | `face_a`, `face_b` | 윗면(+z)과 아랫면(바깥 법선이 -z). 붙잡힌 두 부품이 각각 여기에 고정 결합으로 이어진다. 종류 `surface`, 받는 태그 `surface`·`face` |
 | 윤곽 | 아래 플랜지, 허리, 위 플랜지(원기둥 셋) | 분리 링 모양. 겹치지 않는 합이고 구멍이 없어 충돌 프록시 부피 오차는 0이다 |
+
+#567은 어댑터 부품을 새로 두는 대신 기존 평면 고정 장착면의 호환 태그를 넓혔다. 어댑터는 조립에 또 다른 질량·형상·고정 결합을 추가하지만 스냅 호환 문제 자체는 그대로 남기 때문이다. 검증기는 `b.kind in a.accepts`와 `a.kind in b.accepts`를 **모두** 요구하므로 분리기만 넓히는 절반 수정은 하지 않는다. 분리기의 `face_a`·`face_b`가 `face`를 받게 하고, 실제 단 조립에 쓰는 라이브러리 추력기 `mount`와 탱크 `bottom`이 `surface`를 받게 했다. 기존 `surface`끼리의 결합과 탱크·추력기의 `face`끼리 결합은 그대로다.
 
 두 면의 규칙(`PartDef`가 강제): `face_a`와 `face_b`의 바깥 법선(스냅 프레임의 +Z)은 서로 **반대 방향**이어야 하고(허용 오차 1e-9, 한쪽 성분의 합이 이를 넘으면 거절), 두 위치의 차는 **파라미터 식으로** `length × (face_a의 법선)`이어야 한다(옆으로 어긋나거나 틈이 있거나 다른 파라미터를 따르면 거절). 그래서 `length`가 범위 어디에 있어도 두 면은 `length`만큼 떨어져 마주 본다. 파라미터 `length`(m)가 없으면 거절한다.
 

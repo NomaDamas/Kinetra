@@ -2526,7 +2526,8 @@
             "id": "bottom",
             "kind": "face",
             "accepts": [
-              "face"
+              "face",
+              "surface"
             ],
             "position": {
               "x": {
@@ -2933,7 +2934,8 @@
             "id": "mount",
             "kind": "face",
             "accepts": [
-              "face"
+              "face",
+              "surface"
             ],
             "position": {
               "x": {

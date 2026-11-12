@@ -124,6 +124,7 @@
       "id": "face_a",
       "kind": "surface",
       "accepts": [
+        "face",
         "surface"
       ],
       "position": {
@@ -160,6 +161,7 @@
       "id": "face_b",
       "kind": "surface",
       "accepts": [
+        "face",
         "surface"
       ],
       "position": {
