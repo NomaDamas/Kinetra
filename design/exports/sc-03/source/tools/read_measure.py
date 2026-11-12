@@ -4,10 +4,13 @@ m=re.search(r'<pre id="out">MEASURE(.*?)ENDMEASURE</pre>',d,re.S)
 r=json.loads(html.unescape(m.group(1)))
 json.dump(r,open(sys.argv[2],'w'),ensure_ascii=False,indent=1)
 for b in r:
+    if 'fonts' in b: print('fonts loaded:', b['fonts']); continue
     print('==',b['name'],b['size'],'children',round(b['childSum'],1),'scrollH',b['scrollH'],'primary',b['primary'],'minC',b['minContrast'])
     for s in b['screens']:
         print('   ',s['screen'],s['controls'],s['names'],'T',s['transient'],'area',s['cardArea'],'card',s['card'],'bar',s['bar'])
         if s['outside']: print('      outside',s['outside'])
+        if s.get('cellOut'): print('      cellOut',s['cellOut'])
+        for v in s.get('valueRows', []): print('      valueRow', v)
         if s['disabled']: print('      disabled',s['disabled'])
-    for k in ['stray','small','overflow','clipped','lowContrast','offToken','danger','banned']:
+    for k in ['noteOver','stray','small','overflow','clipped','lowContrast','offToken','danger','banned']:
         if b[k]: print('   ',k,b[k])

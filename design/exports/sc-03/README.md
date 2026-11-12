@@ -7,7 +7,7 @@
 - 규격(브리프): `design/briefs/sc-03.md`. 0절 창업자 지시(기능은 빠짐없이, 화면은 단순하게, 진행형 공개)가 첫 조건이다. 토큰과 컴포넌트는 `design/exports/design-system/`(v0), 셸 안의 자리는 `design/exports/sc-01/`(승인, 하단 에이전트 바 56 px, 카드 영역은 바 위로 올라오며 최대 306 px)을 그대로 쓴다.
 - **Claude Design 산출물 URL:** https://claude.ai/artifact/YcLuwMRPM6uUn9RRHYszLs (제목 "SC-03 에이전트 바와 변경안 카드", 비공개). 로그의 `…QKN21…`은 Artifact 유형 안내(디자인 아님) [추정].
 - 만든 방법: omp가 `docs/decisions/design-pty.md` 절차대로 expect로 `claude --model opus`(상태 막대 **Opus 5.5**, Claude Code 2.1.322, 창업자 결정)를 신뢰 폴더 `/tmp/kin-design-probe`에서 띄웠다. `/design`만 먼저 입력해 자동완성을 확인한 뒤 브리프 경로를 가리키는 짧은 지시를 보냈다. `Artifact(` 호출이 3분 안에 나왔다. 실행 id `sc03-20261110T223024`, `DONE.json` 실행 id 일치로 1728초(약 29분) 뒤 완료(고정 제한 없음).
-- `NOTES.md`와 `DONE.json`은 Claude Design 세션이 쓴 그대로이고 omp가 고치지 않았다. 이 폴더는 **수정 실행(아래 "수정 1회")의 결과**로 첫 시안을 대체한 것이다(첫 시안은 git 이력).
+- `NOTES.md`와 `DONE.json`은 Claude Design 세션이 쓴 그대로이고 omp가 고치지 않았다. 이 산출물은 **수정 실행(아래 "수정 2회")의 결과**로 첫 시안을 대체한 것이다(첫 시안과 수정 1회는 git 이력).
 
 ## 편차 (창업자가 수용할지 정한다)
 
@@ -29,6 +29,15 @@
 
 수정 뒤 S1 조작 요소 2개 유지, 카드 안 `primary` 0, 새 색 0. S7 조작 요소는 (a) 21 · (b) 21 · (c) 18로 이전 15보다 늘었다(값 배지 6개가 눌리는 배지). `NOTES.md`가 "화면은 단순하게" 관점의 확인을 요청했다: 배지를 읽기 전용 글자로 바꾸면 15개로 줄지만 S5·S6과 배지 동작이 달라진다.
 
+## 수정 2회 (리뷰 반영, #412 코멘트)
+
+수정 지시: `design/briefs/sc-03-revision-2.md`. 같은 artifact(https://claude.ai/artifact/YcLuwMRPM6uUn9RRHYszLs, 버전 19)를 Claude Design(Opus 5.5)으로 이어서 고쳤다. 실행 id `sc03rev2-20261111T170500`, `DONE.json`의 실행 id가 일치한다.
+
+1. S7 (a)(b)(c)의 값 열을 480→600 px로 넓히고 체크박스 열을 638→518 px로 조정했다. `DONE.json`은 시스템 글꼴·웹 글꼴·자간 스트레스 측정에서 값 행, 셀, 카드, 상태 영역의 넘침이 0이라고 기록했다. 리뷰어가 보고한 넘침은 수정 전 측정에서도 재현되지 않았다.
+2. S7 머리 줄에 세 장이 정적 목업이며 실제 화면에서는 체크박스 선택에 따라 수치 변화와 "선택 N개 적용"이 함께 바뀐다는 설명을 추가했다. 상호작용을 구현한 것은 아니다.
+
+`DONE.json` 기준 S1 조작 요소 2개, 카드·바 안 `primary` 0, 새 색 0, 최소 텍스트 대비 5.76, 아트보드 넘침 0이다. 측정은 임시 `--user-data-dir`를 쓴 헤드리스 Chrome에서 했고 프로필은 삭제했다.
+
 ## 비용과 한도 (상태 막대에서 읽은 값)
 
 | 시점 | 세션 비용 | 주간 한도 |
@@ -43,7 +52,7 @@
 
 | 경로 | 내용 |
 |---|---|
-| `index.html` | 독립 갤러리(213353바이트, 수정 후). 아트보드 13장(S1~S13) |
+| `index.html` | 독립 갤러리(213766바이트, 수정 2회). 아트보드 13장(S1~S13) |
 | `source/*.dc.html`, `source/canvas.json`, `source/tools/` | 캔버스 아트보드 원본 13개, 배치 정보, 내보내기·측정 스크립트 |
 | `NOTES.md`, `DONE.json` | Claude Design 세션이 쓴 노트(자기 점검 표, 기능 단계 표, 변경안 카드 4행동 위치, 브리프 밖 결정)와 완료 표식 |
 | `preview.png` | omp가 찍은 스크린샷(1440×2400, 수정 후). 맨 위 약 2400px만 보인다 |

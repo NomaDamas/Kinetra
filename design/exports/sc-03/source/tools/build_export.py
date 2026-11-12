@@ -109,12 +109,39 @@ window.addEventListener('load', function () {
         if (!shown(e) || hidden(e)) return; var r = e.getBoundingClientRect();
         if (r.top < sr.top - 0.5 || r.bottom > sr.bottom + 0.5 || r.left < sr.left - 0.5 || r.right > sr.right + 0.5) outside.push((e.getAttribute('aria-label') || e.tagName) + ' ' + Math.round(r.top - sr.top) + '..' + Math.round(r.bottom - sr.top) + ' in 0..' + Math.round(sr.height));
       });
-      return { outside: outside, disabled: [].filter.call(screen.querySelectorAll('[data-ctl][disabled]'), shown).map(function (e) { return e.getAttribute('data-ctl') + ' :: ' + e.textContent.trim(); }), screen: screen.getAttribute('data-screen'), controls: ctl.length, names: ctl.map(function (e) { return e.getAttribute('data-ctl'); }),
+      // sc-03-rev2: anything that leaves its parent's content box sideways or bottom ("칸 밖"), and rows whose content is wider than the row
+      var cellOut = [];
+      screen.querySelectorAll('*').forEach(function (e) {
+        if (!shown(e) || hidden(e) || e.closest('svg') && e.tagName !== 'svg') return;
+        var pa = e.parentElement; if (!pa || pa === screen.parentElement) return;
+        var cs = getComputedStyle(e); if (cs.position === 'absolute' || cs.position === 'fixed') return;
+        var pr = pa.getBoundingClientRect(), ps = getComputedStyle(pa), r = e.getBoundingClientRect();
+        var L = pr.left + parseFloat(ps.borderLeftWidth), R = pr.right - parseFloat(ps.borderRightWidth);
+        if (r.right > R + 0.5 || r.left < L - 0.5) cellOut.push((e.getAttribute('data-ctl') || e.getAttribute('aria-label') || e.textContent || e.tagName).trim().slice(0, 24) + ' ' + Math.round(r.left - L) + '..' + Math.round(r.right - L) + ' in 0..' + Math.round(R - L));
+        if (e.scrollWidth > e.clientWidth + 1 && e.clientWidth > 0 && !/^(svg|INPUT)$/.test(e.tagName)) cellOut.push('scrollW ' + (e.getAttribute('aria-label') || e.tagName) + ' ' + e.scrollWidth + '>' + e.clientWidth);
+      });
+      // sc-03-rev2: S7 value rows ("이전 → 이후 · 단위 · 배지"): space used by the row's items vs the row's width
+      var valueRows = [];
+      screen.querySelectorAll('[aria-label="고른 명령만 적용했을 때 수치 변화"] > div').forEach(function (row) {
+        var items = [].filter.call(row.children, function (c) { return getComputedStyle(c).position !== 'absolute'; });
+        if (items.length < 2) return;
+        var rr = row.getBoundingClientRect(), right = 0, squeezed = 0;
+        items.forEach(function (c) {
+          var r = c.getBoundingClientRect(); if (r.right > right) right = r.right;
+          var rg = document.createRange(); rg.selectNodeContents(c); if (rg.getBoundingClientRect().width > r.width + 0.5) squeezed++;
+        });
+        valueRows.push({ row: items[0].textContent.trim(), width: +rr.width.toFixed(1), used: +(right - rr.left).toFixed(1), spare: +(rr.right - right).toFixed(1), squeezed: squeezed, lines: Math.round(rr.height / 28) });
+      });
+      return { valueRows: valueRows, cellOut: cellOut, outside: outside, disabled: [].filter.call(screen.querySelectorAll('[data-ctl][disabled]'), shown).map(function (e) { return e.getAttribute('data-ctl') + ' :: ' + e.textContent.trim(); }), screen: screen.getAttribute('data-screen'), controls: ctl.length, names: ctl.map(function (e) { return e.getAttribute('data-ctl'); }),
         transient: transient.map(function (e) { return e.getAttribute('data-ctl'); }),
         cardArea: area ? Math.round(area.getBoundingClientRect().height) : null,
         card: area && area.querySelector('section') ? Math.round(area.querySelector('section').getBoundingClientRect().height) : null,
         bar: bar ? Math.round(bar.getBoundingClientRect().height) : null };
     });
+    // sc-03-rev2: note lines (artboard head, state names) must hold their text on the drawn lines
+    var noteOver = [].filter.call(board.querySelectorAll('[data-note], [data-note] *'), function (e) {
+      return shown(e) && (e.scrollWidth > e.clientWidth + 1 || e.scrollHeight > e.clientHeight + 1) && e.clientWidth > 0;
+    }).map(function (e) { return e.textContent.trim().slice(0, 24) + ' ' + e.scrollWidth + 'x' + e.scrollHeight + ' in ' + e.clientWidth + 'x' + e.clientHeight; });
     var stray = [].filter.call(board.querySelectorAll(SEL), function (e) {
       return shown(e) && !hidden(e) && !e.closest('[data-ctl]') && e.getAttribute('tabindex') !== '-1';
     }).map(label);
@@ -160,7 +187,7 @@ window.addEventListener('load', function () {
       name: board.getAttribute('data-board'), size: [Math.round(p.width), Math.round(p.height)],
       childSum: [].reduce.call(board.children, function (s, c) { return s + c.getBoundingClientRect().height; }, 0),
       scrollH: board.scrollHeight,
-      screens: screens,
+      screens: screens, noteOver: noteOver,
       primary: [].filter.call(board.querySelectorAll('[data-primary]'), shown).length,
       stray: stray, small: small, overflow: over, clipped: clip,
       minContrast: +minc.toFixed(2), lowContrast: bad,
@@ -211,7 +238,7 @@ a{{color:#5B9DFF}}a:hover{{color:#A8CBFF}}
 <body>
 <header class="kin-top">
 <h1>Kinetra Studio SC-03 에이전트 바와 변경안 카드</h1>
-<p>아트보드 S1~S13. 규격: design/briefs/sc-03.md. 토큰과 컴포넌트: design/exports/design-system/. 셸 안의 자리: design/exports/sc-01/. 폭 1200 px(셸 하단 영역), 바 56 px, 카드 영역 상한 306 px. 각 아트보드 위 40 px 줄과 변형 이름 줄은 주석입니다. 수정본: design/briefs/sc-03-revision.md(#412)의 두 항목(S11 높이, S7 부분 수락 미리보기)을 반영했습니다.</p>
+<p>아트보드 S1~S13. 규격: design/briefs/sc-03.md. 토큰과 컴포넌트: design/exports/design-system/. 셸 안의 자리: design/exports/sc-01/. 폭 1200 px(셸 하단 영역), 바 56 px, 카드 영역 상한 306 px. 각 아트보드 위 40 px 줄과 변형 이름 줄은 주석입니다. 수정본: design/briefs/sc-03-revision.md(#412)의 두 항목(S11 높이, S7 부분 수락 미리보기)과 design/briefs/sc-03-revision-2.md의 두 항목(S7 수치 열 넘침, S7이 정적 목업 3장임을 밝힘)을 반영했습니다.</p>
 <nav class="kin-nav" aria-label="아트보드 목차">{nav}</nav>
 </header>
 <main>{sections}</main>
