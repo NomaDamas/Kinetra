@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>S12 빈 화면과 실행 불가</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="kin-sc07.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div class="k-root" style="width:1440px;height:1000px">
+
+<div class="k-note"><span><strong>S12 빈 화면과 실행 불가</strong> · (a) 실행 기록 없이 비교 보기를 연 모습 (b) 실행할 수 없는 설계. 가짜 장면·수치·질량·형상을 그리지 않습니다</span><span>(a) 비교 보기 안 조작 4 · (b) 4 · primary는 상단바에만(b는 비활성 + 이유)</span></div>
+
+<div class="k-pad" style="gap:10px">
+
+<span class="k-lbl" style="color:#E8EDF2">(a) 실행 기록 없음 · 비교 보기 자리(위치: 뷰포트 3분할 자리, S1과 같은 크기의 가운데 부분)</span>
+<section class="c-cmp solo" aria-label="3행성 비교 보기, 비교할 실행 없음" data-unit="비교 보기 (a)" style="height:340px">
+<div class="c-head">
+<h2>비교 보기</h2>
+<span class="c-same">같은 설계 · 같은 시드 · 행성 상수만 다름</span>
+<span class="k-sp"></span>
+<button type="button" class="kb" data-ctl="증거 배지" aria-haspopup="dialog" aria-expanded="false" aria-label="증거 없음, 실행 기록이 없습니다. 누르면 근거를 엽니다" style="color:#93A0AE"><span class="k-ev none"><svg width="30" height="12" viewBox="0 0 30 12" aria-hidden="true"><path d="M.5.5h5v11h-5zM8.5.5h5v11h-5zM16.5.5h5v11h-5zM24.5.5h5v11h-5z" fill="none" stroke="currentColor"/></svg>실행 기록 없음</span></button>
+<button type="button" class="k-btn sm" data-ctl="비교 닫기"><svg width="10" height="10" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M2.5 2.5l7 7M9.5 2.5l-7 7"/></svg>닫기<span class="k-kbd">Esc</span></button>
+</div>
+<div class="c-sub"><b>1회 실행. 판정이 아닙니다</b><span>(실행하면 장면마다 붙습니다)</span><span class="c-dot">·</span><span>근사: 균일 중력(행성별 g 하나)</span></div>
+<div class="c-empty" role="status">
+<h3>비교할 실행이 없습니다</h3>
+<span class="k-cap" style="font-size:12px">같은 설계를 지구, 화성, 달에서 한 번씩 돌리면 여기에 나란히 보입니다.</span>
+<span style="font-size:12px;color:#E8EDF2;display:flex;align-items:center;gap:6px">다음 행동: 실행 모드에서 <span class="k-code">▶ 1회 실행 · 3행성</span></span>
+</div>
+<div class="c-heads">
+<button type="button" class="c-acc" data-ctl="가정 비교 머리" aria-expanded="false"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 2.5L8 6l-3.5 3.5"/></svg><span>가정 비교</span><span class="c-cnt">행성마다 다른 가정 5개 · 같은 가정 4개</span></button>
+<button type="button" class="c-acc" data-ctl="이 모델이 보지 않는 것 머리" aria-expanded="false"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 2.5L8 6l-3.5 3.5"/></svg><span>이 모델이 보지 않는 것</span><span class="c-cnt">5개</span></button>
+</div>
+<div class="c-foot"><span class="k-l3"><svg width="30" height="12" viewBox="0 0 30 12" role="img" aria-label="증거 강도 0/4"><path d="M.5.5h5v11h-5zM8.5.5h5v11h-5zM16.5.5h5v11h-5zM24.5.5h5v11h-5z" fill="none" stroke="currentColor"/></svg><span class="k-mono">L3</span>실물 검증 없음 (실측 0건)</span></div>
+</section>
+
+<span class="k-lbl" style="color:#E8EDF2;margin-top:10px">(b) 실행할 수 없음 · 상단바(위치: 맨 위 48 px) + 비교 보기 자리</span>
+<div class="c-frag" data-outside="1" style="padding-bottom:40px">
+<header class="k-top solo">
+<button type="button" class="k-pname" data-ctl="프로젝트 이름" aria-label="프로젝트 이름: 점프대 시험 1">점프대 시험 1</button>
+<div class="k-seg pill" role="radiogroup" aria-label="행성" data-ctl="행성 전환기"><button type="button" role="radio" aria-checked="true">지구</button><button type="button" role="radio" aria-checked="false" tabindex="-1">화성</button><button type="button" role="radio" aria-checked="false" tabindex="-1">달</button></div>
+<div class="k-tabs" role="tablist" aria-label="모드" data-ctl="모드 전환기"><button type="button" role="tab" aria-selected="false" tabindex="-1">조립</button><button type="button" role="tab" aria-selected="true">실행</button><button type="button" role="tab" aria-selected="false" tabindex="-1">판정</button><button type="button" role="tab" aria-selected="false" tabindex="-1">Halo</button></div>
+<button type="button" class="k-evbtn none" data-ctl="증거 배지" aria-haspopup="dialog" aria-expanded="false" aria-label="증거 없음"><svg width="30" height="12" viewBox="0 0 30 12" aria-hidden="true"><path d="M.5.5h5v11h-5zM8.5.5h5v11h-5zM16.5.5h5v11h-5zM24.5.5h5v11h-5z" fill="none" stroke="currentColor"/></svg><span>실행 기록 없음</span></button>
+<span class="k-sp"></span>
+<button type="button" class="k-prim" data-ctl="1회 실행 · 3행성" data-primary="1" aria-disabled="true" aria-describedby="s12-why" style="outline:2px solid #A8CBFF;outline-offset:2px"><svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><path d="M2 1l7 4-7 4z" fill="currentColor"/></svg><span>1회 실행 · 3행성</span></button>
+<button type="button" class="k-btn" data-ctl="공유">공유</button>
+<button type="button" class="k-ib" data-ctl="더보기" aria-label="더보기" aria-haspopup="menu" aria-expanded="false"><svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor" aria-hidden="true"><circle cx="2.5" cy="7" r="1.3"/><circle cx="7" cy="7" r="1.3"/><circle cx="11.5" cy="7" r="1.3"/></svg></button>
+</header>
+<div class="k-tip abs" role="tooltip" id="s12-why" style="right:96px;top:56px"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="#A9B4C0" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><circle cx="8" cy="8" r="6.5"/><path d="M8 7.5v4M8 4.8v.2"/></svg>실행할 수 없습니다: 부품 "노즐 2"에 정의가 없습니다</div>
+</div>
+<div style="display:flex;gap:24px;align-items:flex-start">
+<section class="c-cmp solo" aria-label="3행성 비교 보기, 실행할 수 없음" data-unit="비교 보기 (b)" style="flex:1 1 0;min-width:0;height:340px">
+<div class="c-head">
+<h2>비교 보기</h2>
+<span class="c-same">같은 설계 · 같은 시드 · 행성 상수만 다름</span>
+<span class="k-sp"></span>
+<button type="button" class="kb" data-ctl="증거 배지" aria-haspopup="dialog" aria-expanded="false" aria-label="증거 없음, 실행할 수 없습니다" style="color:#93A0AE"><span class="k-ev none"><svg width="30" height="12" viewBox="0 0 30 12" aria-hidden="true"><path d="M.5.5h5v11h-5zM8.5.5h5v11h-5zM16.5.5h5v11h-5zM24.5.5h5v11h-5z" fill="none" stroke="currentColor"/></svg>실행할 수 없음</span></button>
+<button type="button" class="k-btn sm" data-ctl="비교 닫기"><svg width="10" height="10" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M2.5 2.5l7 7M9.5 2.5l-7 7"/></svg>닫기<span class="k-kbd">Esc</span></button>
+</div>
+<div class="c-sub"><b>1회 실행. 판정이 아닙니다</b><span>(실행하면 장면마다 붙습니다)</span><span class="c-dot">·</span><span>근사: 균일 중력(행성별 g 하나)</span></div>
+<div class="c-empty" role="status">
+<h3>실행할 수 없습니다</h3>
+<div style="display:flex;flex-direction:column;gap:4px;font-size:12px;line-height:16px;text-align:left">
+<span>· 부품 "노즐 2"에 정의가 없습니다. 질량과 형상을 지어내지 않습니다.</span>
+<span>· 그래서 정의된 추력기가 없습니다. 추력 대 중량비 행을 보이지 않습니다.</span>
+</div>
+<span style="font-size:12px;color:#E8EDF2;display:flex;align-items:center;gap:6px">다음 행동: 조립 모드에서 "노즐 2"를 정의하거나 지웁니다</span>
+</div>
+<div class="c-heads">
+<button type="button" class="c-acc" data-ctl="가정 비교 머리" aria-expanded="false"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 2.5L8 6l-3.5 3.5"/></svg><span>가정 비교</span><span class="c-cnt">행성마다 다른 가정 5개 · 같은 가정 3개</span></button>
+<button type="button" class="c-acc" data-ctl="이 모델이 보지 않는 것 머리" aria-expanded="false"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 2.5L8 6l-3.5 3.5"/></svg><span>이 모델이 보지 않는 것</span><span class="c-cnt">5개</span></button>
+</div>
+<div class="c-foot"><span class="k-l3"><svg width="30" height="12" viewBox="0 0 30 12" role="img" aria-label="증거 강도 0/4"><path d="M.5.5h5v11h-5zM8.5.5h5v11h-5zM16.5.5h5v11h-5zM24.5.5h5v11h-5z" fill="none" stroke="currentColor"/></svg><span class="k-mono">L3</span>실물 검증 없음 (실측 0건)</span></div>
+</section>
+<div class="k-cap" style="width:320px;flex:none;display:flex;flex-direction:column;gap:8px"><span>주 행동은 비활성이지만 포커스를 받고 이유를 읽습니다(<span class="k-mono">aria-disabled</span> + 툴팁).</span><span>추력기가 없으면 수치 표에 추력 대 중량비 행이 없습니다. 0이나 가짜 값을 넣지 않습니다(B-14). 노즐당 추력이 가정에서 빠져 "같은 가정"이 3개가 됩니다.</span><span>정의 없는 부품의 질량·형상은 비워 두고 지어내지 않습니다.</span></div>
+</div>
+
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1000}}'>
+class Component extends DCLogic {
+renderVals() {
+return {};
+}
+}
+</script>
+</body>
+</html>

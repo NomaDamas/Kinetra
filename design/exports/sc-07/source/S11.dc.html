@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>S11 가정 비교 펼침</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="kin-sc07.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div class="k-root" style="width:1440px;height:1080px">
+
+<div class="k-note"><span><strong>S11 펼침</strong> · (a) <span class="k-mono">가정 비교</span> 머리를 연 모습 (b) <span class="k-mono">이 모델이 보지 않는 것</span>을 연 모습. 머리는 하나만 열립니다(아코디언). 비교 보기 아래쪽 크롭, 장면은 그만큼 낮아집니다</span><span>(a) 펼친 칸 안 조작 11 (값 배지) · (b) 0 · primary 0</span></div>
+
+<div class="k-wrap">
+<div class="k-ann">
+<p><strong>가정 비교</strong></p>
+<ul>
+<li>위 그룹 "행성마다 다른 가정", 아래 그룹 "세 행성이 같은 가정". 차이는 색이 아니라 그룹 제목과 행 머리의 "행성마다 다름" 글자로 말합니다.</li>
+<li>세 값의 출처 종류가 같은 행(중력)은 배지를 행 머리에 한 번만 둡니다. 섞인 행은 칸마다 둡니다.</li>
+<li>출처를 찾지 못한 행성 상수는 <span class="k-mono">unverified</span>(W-01). 편집 입력은 없습니다(C-02).</li>
+<li>"근사: 균일 중력(행성별 g 하나)"는 세 행성에 똑같이 붙는 모델 라벨이고 g 값을 바꾸지 않습니다(W-06).</li>
+</ul>
+<p><strong>이 모델이 보지 않는 것</strong></p>
+<ul>
+<li>판정 카드의 넷(CFD, 연소, FEM, 열)에 균일 중력 가정 때문에 "높이에 따른 중력 변화 · 중력 구배"가 자동으로 더해져 5개입니다.</li>
+</ul>
+<p>값은 모두 <span class="k-ex">예시</span>, 출처 배정도 예시입니다. 실제 행성 상수는 W-01이 정합니다.</p>
+</div>
+<div class="k-pad" style="gap:10px">
+<span class="k-lbl" style="color:#E8EDF2">(a) 가정 비교 열림</span>
+<section class="c-cmp solo" aria-label="3행성 비교 보기, 가정 비교 열림" data-unit="비교 보기 (a)">
+<div class="c-head">
+<h2>비교 보기</h2>
+<span class="c-same">같은 설계 · 같은 시드 · 행성 상수만 다름</span>
+<span class="k-sp"></span>
+<button type="button" class="kb" data-ctl="증거 배지" aria-haspopup="dialog" aria-expanded="false" aria-label="증거 단계 L1 미리보기"><span class="k-ev"><svg width="30" height="12" viewBox="0 0 30 12" aria-hidden="true"><path d="M0 0h6v12H0zM8 0h6v12H8z" fill="currentColor"/><path d="M16.5.5h5v11h-5zM24.5.5h5v11h-5z" fill="none" stroke="currentColor"/></svg><span class="k-mono">L1</span>미리보기 · 세 번의 1회 실행</span></button>
+<button type="button" class="k-btn sm" data-ctl="비교 닫기"><svg width="10" height="10" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M2.5 2.5l7 7M9.5 2.5l-7 7"/></svg>닫기<span class="k-kbd">Esc</span></button>
+</div>
+<div class="c-sub"><b>1회 실행. 판정이 아닙니다</b><span class="c-dot">·</span><span>근사: 균일 중력(행성별 g 하나)</span><span class="c-dot">·</span><span>시드 <span class="k-mono k-hi">4821</span> <span class="k-ex">예시</span></span></div>
+<div class="c-heads">
+<button type="button" class="c-acc" data-ctl="가정 비교 머리" aria-expanded="true" aria-controls="s11-assume"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 2.5L8 6l-3.5 3.5"/></svg><span>가정 비교</span><span class="c-cnt">행성마다 다른 가정 5개 · 같은 가정 4개</span></button>
+<button type="button" class="c-acc" data-ctl="이 모델이 보지 않는 것 머리" aria-expanded="false"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 2.5L8 6l-3.5 3.5"/></svg><span>이 모델이 보지 않는 것</span><span class="c-cnt">5개</span></button>
+</div>
+<div class="c-accb" id="s11-assume" role="region" aria-label="가정 비교" data-transient="1">
+<div class="c-grp">행성마다 다른 가정<span class="k-cap">5개</span></div>
+<div class="c-at" style="min-height:24px;font-size:11px;color:#A9B4C0"><span></span><span>지구</span><span>화성</span><span>달</span></div>
+<div class="c-at"><span>중력 g<span class="k-cap" style="display:flex;align-items:center;gap:4px">행성마다 다름 · <button type="button" class="kb kb-cite" data-ctl="행 배지: 중력" aria-haspopup="dialog" aria-label="행 배지 인용. 세 값 모두 인용입니다"><span class="kp"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 8.5v-3a2.5 2.5 0 0 1 2.5-2.5M7 8.5v-3a2.5 2.5 0 0 1 2.5-2.5"/></svg>인용</span></button></span></span><span class="c-v"><span class="k-mono">9.81 <span class="k-u">m/s²</span></span><span class="k-ex">예시</span></span><span class="c-v"><span class="k-mono">3.71 <span class="k-u">m/s²</span></span><span class="k-ex">예시</span></span><span class="c-v"><span class="k-mono">1.62 <span class="k-u">m/s²</span></span><span class="k-ex">예시</span></span></div>
+<div class="c-at"><span>대기 밀도<span class="k-cap">행성마다 다름</span></span><span class="c-v"><span class="k-mono">1.225 <span class="k-u">kg/m³</span></span><button type="button" class="kb kb-cite" data-ctl="지구 대기 밀도 배지" aria-haspopup="dialog" aria-label="값 배지 인용"><span class="kp"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 8.5v-3a2.5 2.5 0 0 1 2.5-2.5M7 8.5v-3a2.5 2.5 0 0 1 2.5-2.5"/></svg>인용</span></button><span class="k-ex">예시</span></span><span class="c-v"><span class="k-mono">0.020 <span class="k-u">kg/m³</span></span><button type="button" class="kb kb-unv" data-ctl="화성 대기 밀도 배지" aria-haspopup="dialog" aria-label="unverified. 출처를 찾지 못한 값입니다"><span class="kp"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" aria-hidden="true"><path d="M4.3 4.5a1.8 1.8 0 1 1 2.6 1.6c-.6.3-.9.7-.9 1.3M6 9.3v.2"/></svg>unverified</span></button><span class="k-ex">예시</span></span><span class="c-v"><span class="k-mono">0 <span class="k-u">kg/m³</span></span><button type="button" class="kb kb-cite" data-ctl="달 대기 밀도 배지" aria-haspopup="dialog" aria-label="값 배지 인용"><span class="kp"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 8.5v-3a2.5 2.5 0 0 1 2.5-2.5M7 8.5v-3a2.5 2.5 0 0 1 2.5-2.5"/></svg>인용</span></button><span class="k-ex">예시</span></span></div>
+<div class="c-at"><span>지면 마찰 분포<span class="k-cap">행성마다 다름 · 요약 · 무차원</span></span><span class="c-v"><span class="k-mono">μ 0.6 ~ 0.9</span><button type="button" class="kb kb-cite" data-ctl="지구 마찰 배지" aria-haspopup="dialog" aria-label="값 배지 인용"><span class="kp"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 8.5v-3a2.5 2.5 0 0 1 2.5-2.5M7 8.5v-3a2.5 2.5 0 0 1 2.5-2.5"/></svg>인용</span></button><span class="k-ex">예시</span></span><span class="c-v"><span class="k-mono">μ 0.4 ~ 0.7</span><button type="button" class="kb kb-unv" data-ctl="화성 마찰 배지" aria-haspopup="dialog" aria-label="unverified"><span class="kp"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" aria-hidden="true"><path d="M4.3 4.5a1.8 1.8 0 1 1 2.6 1.6c-.6.3-.9.7-.9 1.3M6 9.3v.2"/></svg>unverified</span></button><span class="k-ex">예시</span></span><span class="c-v"><span class="k-mono">μ 0.4 ~ 0.7</span><button type="button" class="kb kb-unv" data-ctl="달 마찰 배지" aria-haspopup="dialog" aria-label="unverified"><span class="kp"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" aria-hidden="true"><path d="M4.3 4.5a1.8 1.8 0 1 1 2.6 1.6c-.6.3-.9.7-.9 1.3M6 9.3v.2"/></svg>unverified</span></button><span class="k-ex">예시</span></span></div>
+<div class="c-at"><span>근사: 균일 중력(행성별 g 하나)<span class="k-cap">모델 라벨 · 행성마다 g만 다름</span></span><span>높이와 무관하게 g 하나</span><span>높이와 무관하게 g 하나</span><span>높이와 무관하게 g 하나</span></div>
+<div class="c-at" style="border-bottom:0"><span>근사: 집중 항력<span class="k-cap">모델 라벨 · 행성마다 다름</span></span><span>대기 밀도로 계산</span><span>대기 밀도로 계산</span><span>대기 밀도 0이라 항력 0</span></div>
+<div class="c-grp" style="margin-top:6px">세 행성이 같은 가정<span class="k-cap">4개 · 설계는 행성 사이에 그대로입니다</span></div>
+<div class="c-at one"><span>차체 질량</span><span class="c-v"><span class="k-mono">1.3 <span class="k-u">t</span></span><button type="button" class="kb kb-decl" data-ctl="차체 질량 배지" aria-haspopup="dialog" aria-label="값 배지 사용자 선언"><span class="kp"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 10l.6-2.6 5.6-5.6 2 2-5.6 5.6z"/></svg>사용자 선언</span></button></span></div>
+<div class="c-at one"><span>노즐당 추력</span><span class="c-v"><span class="k-mono">8 <span class="k-u">kN</span></span><button type="button" class="kb kb-decl" data-ctl="노즐당 추력 배지" aria-haspopup="dialog" aria-label="값 배지 카탈로그 밖, 사용자 선언"><span class="kp"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 10l.6-2.6 5.6-5.6 2 2-5.6 5.6z"/></svg>카탈로그 밖 · 사용자 선언</span></button></span></div>
+<div class="c-at one"><span>제어 스케줄</span><span class="c-v"><span>점화 <span class="k-mono">0.5 <span class="k-u">s</span></span> → 끔 <span class="k-mono">1.7 <span class="k-u">s</span></span>, 노즐 <span class="k-mono">4 <span class="k-u">개</span></span> 함께</span><button type="button" class="kb kb-decl" data-ctl="제어 스케줄 배지" aria-haspopup="dialog" aria-label="값 배지 사용자 선언"><span class="kp"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 10l.6-2.6 5.6-5.6 2 2-5.6 5.6z"/></svg>사용자 선언</span></button><span class="k-ex">예시</span></span></div>
+<div class="c-at one" style="border-bottom:0"><span>시드</span><span class="c-v"><span class="k-mono">4821</span><span class="k-cap">식별자</span><button type="button" class="kb kb-def" data-ctl="시드 배지" aria-haspopup="dialog" aria-label="값 배지 기본값"><span class="kp"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><circle cx="6" cy="6" r="4"/></svg>기본값</span></button><span class="k-ex">예시</span></span></div>
+</div>
+<div class="c-foot"><span class="k-l3"><svg width="30" height="12" viewBox="0 0 30 12" role="img" aria-label="증거 강도 0/4"><path d="M.5.5h5v11h-5zM8.5.5h5v11h-5zM16.5.5h5v11h-5zM24.5.5h5v11h-5z" fill="none" stroke="currentColor"/></svg><span class="k-mono">L3</span>실물 검증 없음 (실측 0건)</span></div>
+</section>
+
+<span class="k-lbl" style="color:#E8EDF2;margin-top:6px">(b) 이 모델이 보지 않는 것 열림 (가정 비교는 닫힘)</span>
+<section class="c-cmp solo" aria-label="3행성 비교 보기, 이 모델이 보지 않는 것 열림" data-unit="비교 보기 (b)">
+<div class="c-head">
+<h2>비교 보기</h2>
+<span class="c-same">같은 설계 · 같은 시드 · 행성 상수만 다름</span>
+<span class="k-sp"></span>
+<button type="button" class="kb" data-ctl="증거 배지" aria-haspopup="dialog" aria-expanded="false" aria-label="증거 단계 L1 미리보기"><span class="k-ev"><svg width="30" height="12" viewBox="0 0 30 12" aria-hidden="true"><path d="M0 0h6v12H0zM8 0h6v12H8z" fill="currentColor"/><path d="M16.5.5h5v11h-5zM24.5.5h5v11h-5z" fill="none" stroke="currentColor"/></svg><span class="k-mono">L1</span>미리보기 · 세 번의 1회 실행</span></button>
+<button type="button" class="k-btn sm" data-ctl="비교 닫기"><svg width="10" height="10" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M2.5 2.5l7 7M9.5 2.5l-7 7"/></svg>닫기<span class="k-kbd">Esc</span></button>
+</div>
+<div class="c-sub"><b>1회 실행. 판정이 아닙니다</b><span class="c-dot">·</span><span>근사: 균일 중력(행성별 g 하나)</span><span class="c-dot">·</span><span>시드 <span class="k-mono k-hi">4821</span> <span class="k-ex">예시</span></span></div>
+<div class="c-heads">
+<button type="button" class="c-acc" data-ctl="가정 비교 머리" aria-expanded="false"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 2.5L8 6l-3.5 3.5"/></svg><span>가정 비교</span><span class="c-cnt">행성마다 다른 가정 5개 · 같은 가정 4개</span></button>
+<button type="button" class="c-acc" data-ctl="이 모델이 보지 않는 것 머리" aria-expanded="true" aria-controls="s11-unseen"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 2.5L8 6l-3.5 3.5"/></svg><span>이 모델이 보지 않는 것</span><span class="c-cnt">5개</span></button>
+</div>
+<div class="c-accb" id="s11-unseen" role="region" aria-label="이 모델이 보지 않는 것" data-transient="1">
+<div class="c-at one"><span>CFD</span><span>공기 흐름을 계산하지 않습니다. 항력은 집중 항력 근사 하나입니다</span></div>
+<div class="c-at one"><span>연소</span><span>추력은 선언한 값이고 연소 과정을 계산하지 않습니다</span></div>
+<div class="c-at one"><span>FEM</span><span>구조의 변형을 계산하지 않습니다. 파단은 결합부 임계값 단순화 모델입니다</span></div>
+<div class="c-at one"><span>열</span><span>온도와 열 전달을 계산하지 않습니다</span></div>
+<div class="c-at one" style="border-bottom:0"><span>높이에 따른 중력 변화 · 중력 구배<span class="k-cap">균일 중력 가정 때문에 자동으로 더함 (W-06)</span></span><span>행성마다 g 하나로 계산합니다. 높이가 달라져도 g는 그대로입니다</span></div>
+</div>
+<div class="c-foot"><span class="k-l3"><svg width="30" height="12" viewBox="0 0 30 12" role="img" aria-label="증거 강도 0/4"><path d="M.5.5h5v11h-5zM8.5.5h5v11h-5zM16.5.5h5v11h-5zM24.5.5h5v11h-5z" fill="none" stroke="currentColor"/></svg><span class="k-mono">L3</span>실물 검증 없음 (실측 0건)</span></div>
+</section>
+</div>
+</div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1080}}'>
+class Component extends DCLogic {
+renderVals() {
+return {};
+}
+}
+</script>
+</body>
+</html>
