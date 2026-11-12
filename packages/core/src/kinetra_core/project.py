@@ -159,8 +159,9 @@ def apply_assumption_values(project: Project, values: Mapping[str, float]) -> Pr
         if quantity["badge"] != "declared":
             source["declared_by"] = source["declared_at"] = None
         source["ref"] = (
-            f"Sample of assumption {assumption.key!r}; distribution evidence: {evidence.source.ref}; "
-            f"nominal evidence: {assumption.value.source.ref}"
+            f"Sample of assumption {assumption.key!r}; distribution evidence: {evidence.source.ref[:120]}; "
+            f"nominal evidence: {assumption.value.source.ref[:120]}; "
+            f"nominal locator: {(assumption.value.source.url or assumption.value.source.locator or '')[:100]}"
         )[:500]
         quantity["source"] = source
         if isinstance(binding, InstanceParameterBinding):

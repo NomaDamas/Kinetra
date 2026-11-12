@@ -345,9 +345,9 @@ def _consumed_bindings(project: Project, compiled: CompiledModel, duration_s: fl
                 parameters.update((thruster.instance, term.param) for term in axis.terms)
     for store in compiled.thrust.stores:
         parameters.update((store.instance, name) for name in ("propellant_density", "initial_fill"))
-    for inst in tree.design.instances:
-        if parts[inst.part].role == "separator" and any(inst.id in (j.a.instance, j.b.instance) for j in tree.joints):
-            parameters.add((inst.id, "separation_impulse"))
+    for entry in tree.design.schedule.entries:
+        if entry.type == "separate" and entry.at < duration_s:
+            parameters.add((entry.separator, "separation_impulse"))
     consumed = set()
     for row in project.assumptions.assumptions:
         binding = row.binding
