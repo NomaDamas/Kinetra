@@ -26,6 +26,8 @@ Values chosen by the test (`SRC`), not data:
 - the swinging arm of `test_break_runtime.py` with its hinge `pin` breakable: the arm and both blocks fly off, hit the
   ground, and the impact breaks both welds. The base and the arm were parent and child (MuJoCo does not collide them) and
   the welded blocks too, so every body–body contact here exists only in a model compiled again after a break.
+- the separated pair of `test_separation.py` with zero impulse: its boxes remain touching on the ground when the scheduled
+  separation recompiles the model, so their new body–body contact must appear after the `separation` event of that tick.
 """
 
 from __future__ import annotations
@@ -34,13 +36,15 @@ import math
 
 import pytest
 
-from kinetra_core import BreakEvent, ContactEvent, Frame, Project, RunCompleted, check_run
+from kinetra_core import BreakEvent, ContactEvent, Frame, Project, RunCompleted, SeparationEvent, check_run
 from kinetra_core.bodies import load_body
 from kinetra_engine.run import PreviewRun
 from kinetra_judge import Goal, Status, evaluate_goal
 
 import test_terrain_ramp as ramps
 from test_break_runtime import BOB_KG, G_EARTH, HANGING_KG, swing
+from test_separation import pair as separating_pair
+from test_separation import separate
 
 SRC = {"ref": "#562 test fixture: value chosen by the test", "locator": "test_contact_events.py"}
 DROP_M = 1.0
@@ -204,6 +208,24 @@ def test_contact_events_go_on_in_the_model_compiled_again_after_a_break():
     assert all(b.other.kind != "body" or b.tick >= min(broke.values()) for b in events)
     # the same run again gives the same events
     assert contacts(run(swing(tip, mid, pin), 1.0)[1]) == events
+
+
+def test_contact_events_go_on_in_the_model_compiled_again_after_a_separation():
+    """X-08 uses the same release path as a break. The zero-impulse boxes stay touching, but MuJoCo excluded them as
+    parent–child before the release: their first body–body `begin` is therefore in the recompiled model, after the
+    `separation` event of that tick. Their ground contacts survive the rebind without duplicate `begin` events."""
+    _, frames, _ = run(separating_pair([separate("stage", "sep", 0.01)], impulse=0.0), 0.03)
+    events = contacts(frames)
+    assert_alternating(events)
+    (separation,) = [e for f in frames for e in f.events if isinstance(e, SeparationEvent)]
+    begin = next(e for e in events if pair(e) == ("a", "body", "b"))
+    assert (begin.tick, begin.phase) == (separation.tick, "begin")
+    carrier = next(f for f in frames if begin in f.events)
+    assert separation in carrier.events and carrier.events.index(separation) < carrier.events.index(begin)
+    assert [(e.tick, pair(e)) for e in events if e.phase == "begin" and e.other.kind == "ground"] == [
+        (0, ("a", "ground", None)),
+        (0, ("b", "ground", None)),
+    ]
 
 
 @pytest.mark.parametrize(("max_speed", "status"), [(5.0, Status.MET), (4.0, Status.FAILED)])
