@@ -2,11 +2,13 @@
 
     compile_project(project, cache=None, ground_friction=None) -> CompiledModel
     PreviewRun(project, run_id=..., project_id=..., revision=..., duration_s=..., seed=0) -> iterate: Frame ..., RunEnded
-    PreviewRun(..., kind=RunKind.VERDICT_SAMPLE, ground_friction=μ)   # one Monte Carlo sample of a verdict (J-01a)
+    PreviewRun(..., kind=RunKind.VERDICT_SAMPLE, ground_friction=μ, assumption_values=values)  # one verdict sample (J-01a/#571)
 
 Port of the legacy live run (`legacy-v0`, `packages/engine/src/kinetra_engine/live.py`): the model is compiled from the
 document as it is, and every frame is produced by stepping the engine (`mj_step1`/`mj_step2`) while the stream is read. Nothing is a
-replay of a stored file.
+replay of a stored file. For a verdict sample, `assumption_values` replaces every bound target in an ephemeral validated
+copy through `apply_assumption_values`; the base project and its `definition_hash` still identify the run. Ordinary previews
+leave the project unchanged and need no such mapping.
 
 **Gate (C-06).** `compile_project` calls `require_complete(project, compile)` and `PreviewRun` calls
 `require_complete(project, run)` before anything else: a project with a missing definition is refused
@@ -78,7 +80,7 @@ from __future__ import annotations
 
 import hashlib
 import math
-from collections.abc import Iterator
+from collections.abc import Iterator, Mapping
 from dataclasses import dataclass
 
 import mujoco
@@ -92,6 +94,7 @@ from kinetra_core import (
     RunEnded,
     RunKind,
     RunStarted,
+    apply_assumption_values,
     check_frame,
     project_hash,
     require_complete,
@@ -218,9 +221,13 @@ class PreviewRun:
         frame_every_ticks: int | None = None,
         cache: PartCache | None = None,
         ground_friction: float | None = None,
+        assumption_values: Mapping[str, float] | None = None,
     ):
         require_complete(project, BlockedOperation.RUN)
-        compiled = compile_project(project, cache, ground_friction)
+        # The run belongs to the base project revision; bound samples change only its ephemeral compile input, just as
+        # the ground-friction override does. Recompiles after a break keep the resulting body tree and sampled values.
+        compile_input = project if assumption_values is None else apply_assumption_values(project, assumption_values)
+        compiled = compile_project(compile_input, cache, ground_friction)
         self._ground_friction = ground_friction
         self.compiled = compiled
         model = compiled.model
