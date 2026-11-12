@@ -16,7 +16,7 @@ import numpy as np
 import pytest
 
 from kinetra_core import Material, PartDef, Project, canonical_order, project_hash
-from kinetra_engine.compiler import CompileError, build_body_tree, proxy_labels, to_mjcf
+from kinetra_engine.compiler import CompileError, CompileErrorCode, build_body_tree, proxy_labels, to_mjcf
 from kinetra_engine.parts import PartCache, assembly_mass, collision_proxy, mass_properties
 
 SRC = {"ref": "X-01a test fixture: value chosen by the test", "locator": "test_body_tree.py"}
@@ -105,14 +105,18 @@ def rotation_matrix(quat):
 
 # --- three parts, welded and hinged: mass and centre of mass are the sums ------------------------------------------------
 
-BLOCK = part("block", [box("b", 0.2, 0.1, 0.3, at=(0.1, 0.0, 0.15))])  # 6 kg, centre (0.1, 0, 0.15)
-BALL = part("ball", [sphere("s", 0.1, at=(0.1, 0.0, 0.0))])  # 4/3 pi 1e-3 * 1000 kg, centre (0.1, 0, 0)
-ROD = part("rod", [cyl("c", 0.05, 0.4)])  # pi 0.0025 0.4 * 1000 kg, centre at the origin
+# Joined snap points meet in the world and the assembly rests on the ground (X-01d compile errors): the snap points sit
+# where the poses below put them together.
+BLOCK = part("block", [box("b", 0.2, 0.1, 0.3, at=(0.1, 0.0, 0.15))],  # 6 kg, centre (0.1, 0, 0.15)
+             [snap("s1", (-1.0, 2.0, 0.0)), snap("s2", (-0.5, -1.75, -2.875))])
+BALL = part("ball", [sphere("s", 0.1, at=(0.1, 0.0, 0.0))], [snap("s1"), snap("s2")])  # 4/3 pi 1e-3 * 1000 kg, centre (0.1, 0, 0)
+ROD = part("rod", [cyl("c", 0.05, 0.4)], [snap("s1", (-3.0, 1.0, -1.0), ROT_Z90)])  # pi 0.0025 0.4 * 1000 kg, centre at the origin
 M_BLOCK, M_BALL, M_ROD = 6.0, 4.0 / 3.0 * math.pi * 1e-3 * RHO, math.pi * 0.0025 * 0.4 * RHO
 
 
 def chain(order=1):
-    """block (1, 0, 0) welded to ball (0, 2, 0) turned 90 deg about z, a rod (3, 1, 1) on a hinge about +y of the ball's snap s2."""
+    """block (1, 0, 0) welded to ball (0, 2, 0) turned 90 deg about z, a rod (3, 1, 1) on a hinge about +y of the ball's snap s2.
+    Both joints meet at the ball's origin; the rod's snap is turned like the ball, so +y of either snap is one world line."""
     instances = [instance("blk", "block", (1, 0, 0)), instance("ball", "ball", (0, 2, 0), ROT_Z90), instance("rod", "rod", (3, 1, 1))]
     joints = [joint("weld", "fixed", ("blk", "s1"), ("ball", "s1")),
               joint("hinge", "hinge", ("ball", "s2"), ("rod", "s1"), axis=(0, 1, 0), limits=(-1.0, 2.0))]
@@ -168,9 +172,9 @@ def test_body_tree_parallel_axis_keeps_a_small_perpendicular_offset_along_a_long
     # two equal small balls welded 1e4 m apart along x and 1e-3 m apart along y. About their common centre each is
     # (+-5e3, +-5e-4, 0) away: Ixx gets 2 m (5e-4)^2, which |d|^2 - dx^2 (|d|^2 ~ 2.5e7) would round away entirely.
     L, h, r = 1.0e4, 1.0e-3, 0.01
-    parts = [part("ball", [sphere("s", r)])]
+    parts = [part("ball", [sphere("s", r)], [snap("s1"), snap("s2", (-L, -h, 0.0))])]  # q's s2 lands on p's s1
     instances = [instance("p", "ball", (0, 0, 0)), instance("q", "ball", (L, h, 0))]
-    tree = build_body_tree(project(parts, instances, [joint("w", "fixed", ("p", "s1"), ("q", "s1"))]))
+    tree = build_body_tree(project(parts, instances, [joint("w", "fixed", ("p", "s1"), ("q", "s2"))]))
     (body,) = tree.bodies
     m = tree.instances[0].properties.mass.value
     own = 0.4 * m * r * r
@@ -196,10 +200,10 @@ def test_body_tree_hinge_axis_pos_and_limits_in_the_world():
 
 def test_body_tree_a_joint_met_from_its_b_side_is_reversed_with_its_limits():
     # B is the b side of both joints; the root is the smaller of the a sides (A), and C hangs from B through j2 backwards.
-    parts = [part("blk", [box("b", 0.1, 0.1, 0.1)])]
+    parts = [part("blk", [box("b", 0.1, 0.1, 0.1)], [snap("s1", (0.5, 0.0, 0.0)), snap("s2", (-0.5, 0.0, 0.0))])]
     instances = [instance("a", "blk", (0, 0, 0)), instance("b", "blk", (1, 0, 0)), instance("c", "blk", (2, 0, 0))]
-    joints = [joint("j1", "hinge", ("a", "s1"), ("b", "s1"), axis=(0, 0, 1), limits=(-0.5, 1.0)),
-              joint("j2", "slider", ("c", "s1"), ("b", "s2"), axis=(1, 0, 0), limits=(-0.25, 0.75))]
+    joints = [joint("j1", "hinge", ("a", "s1"), ("b", "s2"), axis=(0, 0, 1), limits=(-0.5, 1.0)),
+              joint("j2", "slider", ("c", "s2"), ("b", "s1"), axis=(1, 0, 0), limits=(-0.25, 0.75))]
     tree = build_body_tree(project(parts, instances, joints))
     assert [b.id for b in tree.bodies] == ["a", "b", "c"] and tree.body("c").parent == "b"
     assert tree.body("c").joint.reversed and not tree.body("b").joint.reversed
@@ -222,12 +226,12 @@ def test_body_tree_a_joint_met_from_its_b_side_is_reversed_with_its_limits():
 def hinge_pair(reverse):
     """c and b, a hinge with `a` = c, `b` = b, axis +z of c's snap, limits [-0.5, 1.0]. `reverse`: b is also the `b` side of a
     hinge `h0` from `a0` (the smallest id), so the root is `a0`, the tree reaches b through `h0` and meets `h` from its `b` side."""
-    parts = [part("blk", [box("b", 0.1, 0.1, 0.1)])]
+    parts = [part("blk", [box("b", 0.1, 0.1, 0.1)], [snap("s1"), snap("s2", (-1.0, 0.0, 0.0)), snap("s3", (0.0, 1.0, 0.0))])]
     instances = [instance("c", "blk", (0, 0, 0)), instance("b", "blk", (1, 0, 0))]
-    joints = [joint("h", "hinge", ("c", "s1"), ("b", "s1"), axis=(0, 0, 1), limits=(-0.5, 1.0))]
+    joints = [joint("h", "hinge", ("c", "s1"), ("b", "s2"), axis=(0, 0, 1), limits=(-0.5, 1.0))]
     if reverse:
         instances.append(instance("a0", "blk", (1, 1, 0)))
-        joints.append(joint("h0", "hinge", ("a0", "s1"), ("b", "s2"), axis=(1, 0, 0)))
+        joints.append(joint("h0", "hinge", ("a0", "s1"), ("b", "s3"), axis=(1, 0, 0)))
     return build_body_tree(project(parts, instances, joints))
 
 
@@ -255,9 +259,9 @@ def test_body_tree_a_hinge_met_from_either_side_gives_the_same_relative_motion_o
 
 
 def test_body_tree_root_free_joint_name_cannot_collide_with_a_project_joint():
-    parts = [part("blk", [box("b", 0.1, 0.1, 0.1)])]
+    parts = [part("blk", [box("b", 0.1, 0.1, 0.1)], [snap("s1"), snap("s2", (-1.0, 0.0, 0.0))])]
     instances = [instance("a", "blk", (0, 0, 0)), instance("b", "blk", (1, 0, 0))]
-    joints = [joint("free-a", "hinge", ("a", "s1"), ("b", "s1"))]  # a legal joint id, the name the root once had
+    joints = [joint("free-a", "hinge", ("a", "s1"), ("b", "s2"))]  # a legal joint id, the name the root once had
     model = mj(build_body_tree(project(parts, instances, joints)))
     names = [mujoco.mj_id2name(model, mujoco.mjtObj.mjOBJ_JOINT, k) for k in range(model.njnt)]
     assert names == ["__kinetra_root_a", "free-a"]
@@ -288,7 +292,7 @@ def test_body_tree_box_proxy_maps_to_half_extents_mass_and_volume():
 
 
 def test_body_tree_cylinder_proxy_maps_to_radius_half_length_and_wxyz_quaternion():
-    tree = one([cyl("c", 0.05, 0.4, at=(0.0, 0.0, 0.2), quat=ROT_X90)])  # the axis (part z) turned onto -y
+    tree = one([cyl("c", 0.05, 0.4, at=(0.0, 0.0, 0.05), quat=ROT_X90)])  # the axis (part z) turned onto -y, lying on the ground
     model = mj(tree)
     assert model.geom_type[0] == mujoco.mjtGeom.mjGEOM_CYLINDER
     assert list(model.geom_size[0][:2]) == pytest.approx([0.05, 0.2], rel=1e-15)  # radius, half of the length 0.4
@@ -305,15 +309,15 @@ def test_body_tree_cylinder_proxy_maps_to_radius_half_length_and_wxyz_quaternion
 
 
 def test_body_tree_sphere_proxy_maps_to_its_radius_and_the_instance_pose_composes():
-    tree = one([sphere("s", 0.1, at=(0.1, 0.0, 0.0))], at=(1.0, 2.0, 3.0), quat=ROT_Z90)
+    tree = one([sphere("s", 0.1, at=(0.1, 0.0, 0.0))], at=(1.0, 2.0, 0.1), quat=ROT_Z90)  # resting on the ground
     model = mj(tree)
     data = mujoco.MjData(model)
     mujoco.mj_forward(model, data)
     assert model.geom_type[0] == mujoco.mjtGeom.mjGEOM_SPHERE and model.geom_size[0][0] == pytest.approx(0.1, rel=1e-15)
     assert 4 / 3 * math.pi * model.geom_size[0][0] ** 3 == pytest.approx(4 / 3 * math.pi * 1e-3, rel=1e-12)
     assert model.body_mass[1] == pytest.approx(RHO * 4 / 3 * math.pi * 1e-3, rel=1e-12)
-    assert list(data.geom_xpos[0]) == pytest.approx([1.0, 2.1, 3.0], abs=1e-12)  # (0.1, 0, 0) turned onto +y, then moved
-    assert list(data.xipos[1]) == pytest.approx([1.0, 2.1, 3.0], abs=1e-12)  # the inertial frame is MassProperties' centre
+    assert list(data.geom_xpos[0]) == pytest.approx([1.0, 2.1, 0.1], abs=1e-12)  # (0.1, 0, 0) turned onto +y, then moved
+    assert list(data.xipos[1]) == pytest.approx([1.0, 2.1, 0.1], abs=1e-12)  # the inertial frame is MassProperties' centre
     assert model.body_mass[1] == pytest.approx(RHO * (4 / 3) * math.pi * 0.1**3, rel=1e-12)
 
 
@@ -402,7 +406,8 @@ def test_body_tree_label_mixed_part_keeps_both_labels_while_the_total_volume_err
 
 def test_body_tree_label_a_design_without_voids_has_none_and_two_instances_label_separately():
     assert labelled([box("b", 0.1, 0.1, 0.1), sphere("s", 0.05, at=(0.5, 0.0, 0.0))]) == ()
-    parts = [part("tube", TUBE), part("pocket", POCKET), part("solid", [box("b", 0.1, 0.1, 0.1)])]
+    at_origin, one_back = [snap("s1"), snap("s2")], [snap("s1", (-1.0, 0.0, 0.0)), snap("s2")]
+    parts = [part("tube", TUBE, at_origin), part("pocket", POCKET, one_back), part("solid", [box("b", 0.1, 0.1, 0.1)], one_back)]
     instances = [instance("i-tube", "tube", (0, 0, 0)), instance("i-pocket", "pocket", (1, 0, 0)), instance("i-solid", "solid", (2, 0, 0))]
     joints = [joint("w1", "fixed", ("i-tube", "s1"), ("i-pocket", "s1")), joint("w2", "fixed", ("i-pocket", "s2"), ("i-solid", "s1"))]
     labels = proxy_labels(build_body_tree(project(parts, instances, joints)))
@@ -413,7 +418,8 @@ def test_body_tree_label_a_design_without_voids_has_none_and_two_instances_label
 
 
 def blocks(*names):
-    return [part("blk", [box("b", 0.1, 0.1, 0.1)])], [instance(n, "blk", (float(k), 0, 0)) for k, n in enumerate(names)]
+    """Blocks all at the origin, so every snap point (at the part origin) meets every other: these tests are about the tree."""
+    return [part("blk", [box("b", 0.1, 0.1, 0.1)])], [instance(n, "blk") for n in names]
 
 
 def test_body_tree_rejects_a_loop_of_fixed_joints_a_hinge_inside_a_weld_and_a_loop_of_bodies():
@@ -421,26 +427,26 @@ def test_body_tree_rejects_a_loop_of_fixed_joints_a_hinge_inside_a_weld_and_a_lo
     loop = [joint("j1", "fixed", ("a", "s1"), ("b", "s1")), joint("j2", "fixed", ("b", "s2"), ("c", "s1")), joint("j3", "fixed", ("c", "s2"), ("a", "s2"))]
     with pytest.raises(CompileError, match="loop of fixed joints") as e:
         build_body_tree(project(parts, inst, loop))
-    assert e.value.joints == ("j3",)
+    assert e.value.code is CompileErrorCode.FIXED_LOOP and e.value.joints == ("j3",) and e.value.parts == ("blk",)
     inside = [joint("j1", "fixed", ("a", "s1"), ("b", "s1")), joint("j2", "hinge", ("a", "s2"), ("b", "s2")), joint("j3", "fixed", ("b", "s3"), ("c", "s1"))]
     with pytest.raises(CompileError, match="could not move") as e:
         build_body_tree(project(parts, inst, inside))
-    assert e.value.joints == ("j2",) and set(e.value.instances) == {"a", "b"}
+    assert e.value.code is CompileErrorCode.WELDED_JOINT and e.value.joints == ("j2",) and set(e.value.instances) == {"a", "b"}
     ring = [joint("j1", "hinge", ("a", "s1"), ("b", "s1")), joint("j2", "hinge", ("b", "s2"), ("c", "s1")), joint("j3", "hinge", ("c", "s2"), ("a", "s2"))]
     with pytest.raises(CompileError, match="loop between bodies") as e:
         build_body_tree(project(parts, inst, ring))
-    assert e.value.joints == ("j3",)
+    assert e.value.code is CompileErrorCode.LOOP and e.value.joints == ("j3",)
 
 
 def test_body_tree_rejects_two_pieces_and_a_part_that_cannot_be_compiled():
     parts, inst = blocks("a", "b", "c")
     with pytest.raises(CompileError, match="not one piece") as e:
         build_body_tree(project(parts, inst, [joint("j1", "fixed", ("a", "s1"), ("b", "s1"))]))
-    assert e.value.instances == ("a", "c")
+    assert e.value.code is CompileErrorCode.NOT_ONE_PIECE and e.value.instances == ("a", "c") and e.value.parts == ("blk",)
     bad = [instance("a", "blk", material=None)]  # no material and no declared mass
     with pytest.raises(CompileError, match=r"instance 'a' \(part 'blk'\)") as e:
         build_body_tree(project(parts, bad))
-    assert e.value.instances == ("a",) and e.value.parts == ("blk",)
+    assert e.value.code is CompileErrorCode.PART and e.value.instances == ("a",) and e.value.parts == ("blk",)
 
 
 # --- canonical order (#511) ------------------------------------------------------------------------------------------------
@@ -454,7 +460,7 @@ def shuffled_chain(seed):
     rng = random.Random(seed)
     comps = list(FIVE)
     rng.shuffle(comps)
-    parts = [part("five", comps), BLOCK, BALL]
+    parts = [part("five", comps, [snap("s1", (4.0, 0.0, 3.0))]), BLOCK, BALL]  # i-five's s1 meets i-blk's s1 at (0, 4, 3)
     rng.shuffle(parts)
     instances = [instance("i-five", "five", (0, 0, 0), ROT_Z90), instance("i-blk", "block", (1, 2, 3)), instance("i-ball", "ball", (0.5, 0.25, 0.125))]
     rng.shuffle(instances)

@@ -33,6 +33,12 @@ apply of the planet, read from the model itself so a label goes away once a leaf
 model's gravity differs from the planet's `data/bodies` value (W-03a sets it, so this label does not appear today), and
 the ground when the model has none.
 
+**Drives (X-01b).** The model is compiled with `compile_drives` (springs on sliders, one motor per motor actuator), and every
+tick a `DriveRuntime` writes the motors' torque from the project's control schedule before `mj_step`: the command of an
+actuator during the step from `t = (tick - 1) * timestep_s` is the `command` of its schedule entry with `start <= t < end`
+(a schedule has at most one such entry per actuator, `DesignSpec`), else 0. Batteries drain as the runtime says. Thruster
+actuators are not applied yet (X-01c): a project that has any carries the label "미적용: 추력기".
+
 **Events.** The stream carries no events yet: contacts, breaks (X-04b) and met conditions are added by their leaves.
 """
 
@@ -47,7 +53,9 @@ import mujoco
 import numpy as np
 
 from kinetra_core import (
+    ActuatorKind,
     BlockedOperation,
+    DesignSpec,
     Frame,
     Project,
     RunEnded,
@@ -60,7 +68,7 @@ from kinetra_core import (
 from kinetra_core.bodies import load_body
 from kinetra_core.frames import MAX_TICK
 
-from ..compiler import BodyTree, build_body_tree, proxy_labels, to_mjcf
+from ..compiler import BodyTree, DriveRuntime, Drives, build_body_tree, compile_drives, proxy_labels, to_mjcf
 from ..parts import PartCache
 from .platform_tag import platform_tag
 
@@ -74,21 +82,28 @@ _UNSTABLE = (mujoco.mjtWarning.mjWARN_BADQPOS, mujoco.mjtWarning.mjWARN_BADQVEL,
 
 @dataclass(frozen=True)
 class CompiledModel:
-    """A project compiled for the engine: its body tree, the MJCF text (an artifact, never saved or sent: 2절) and the
-    loaded model."""
+    """A project compiled for the engine: its body tree, its springs and motors, the MJCF text (an artifact, never saved
+    or sent: 2절) and the loaded model."""
 
     tree: BodyTree
+    drives: Drives
     mjcf: str
     model: mujoco.MjModel
 
 
 def compile_project(project: Project, cache: PartCache | None = None) -> CompiledModel:
-    """Compile `project`. Raises `ProjectIncomplete` for a missing definition and `CompileError` for a design that is
-    not one tree of bodies."""
+    """Compile `project`. Raises `ProjectIncomplete` for a missing definition and `CompileError` (with its
+    `CompileErrorCode`) for a design the compiler refuses."""
     require_complete(project, BlockedOperation.COMPILE)
     tree = build_body_tree(project, cache)
-    mjcf = to_mjcf(tree)
-    return CompiledModel(tree, mjcf, mujoco.MjModel.from_xml_string(mjcf))
+    drives = compile_drives(tree)
+    mjcf = to_mjcf(tree, drives=drives)
+    return CompiledModel(tree, drives, mjcf, mujoco.MjModel.from_xml_string(mjcf))
+
+
+def commands_at(design: DesignSpec, t: float) -> dict[str, float]:
+    """The command of every actuator that has a schedule entry covering simulated time `t` (`start <= t < end`)."""
+    return {e.actuator: e.command for e in design.schedule.entries if e.start <= t < e.end}
 
 
 def default_frame_every_ticks(timestep_s: float) -> int:
@@ -115,7 +130,8 @@ def end_tick(duration_s: float, timestep_s: float) -> int:
 
 
 def environment_labels(project: Project, model: mujoco.MjModel) -> tuple[str, ...]:
-    """What the model does not apply of the project's planet, as `model_labels` sentences."""
+    """What the run does not apply of the project (its planet's gravity and ground, its thrusters), as `model_labels`
+    sentences."""
     labels = []
     planet = load_body(project.world.planet)
     g_model = float(np.linalg.norm(model.opt.gravity))
@@ -126,6 +142,9 @@ def environment_labels(project: Project, model: mujoco.MjModel) -> tuple[str, ..
         )
     if not any(model.geom_bodyid[g] == 0 for g in range(model.ngeom)):
         labels.append("미적용: 지면 없음. 몸체는 아무것에도 닿지 않고 떨어진다")
+    thrusters = sorted(a.id for a in project.design.actuators if a.kind is ActuatorKind.THRUSTER)
+    if thrusters:
+        labels.append(f"미적용: 추력기({', '.join(thrusters)})는 이 실행에서 힘을 내지 않는다(X-01c 전)")
     return tuple(labels)
 
 
@@ -197,6 +216,8 @@ class PreviewRun:
         self._iterated = True
         model, run, every = self._model, self.started, self.started.frame_every_ticks
         data = mujoco.MjData(model)
+        drives = DriveRuntime(model, self.compiled.drives)
+        design, dt = self.compiled.tree.design, run.timestep_s
         trajectory = hashlib.sha256(data.qpos.tobytes())
         last_good = data.qpos.copy()
         frame = self._frame(data, 0)
@@ -205,6 +226,7 @@ class PreviewRun:
         sent = 0
         for tick in range(1, self.end_tick + 1):
             np.copyto(last_good, data.qpos)
+            drives.apply(data, commands_at(design, (tick - 1) * dt), dt)
             mujoco.mj_step(model, data)
             if any(data.warning[w].number for w in _UNSTABLE) or not np.isfinite(data.qpos).all():
                 good = tick - 1

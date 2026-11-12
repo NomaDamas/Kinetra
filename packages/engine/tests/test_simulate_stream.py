@@ -364,3 +364,72 @@ def test_simulate_stream_the_c05c_reference_client_receives_the_run():
     assert isinstance(record.ended.end, RunCompleted)
     assert record.frames[-1].tick == record.ended.last_tick == end_tick(0.25, record.started.timestep_s)
     assert client.errors == [] and client.interrupted_runs == []
+
+
+def _qmul(a, b):
+    ax_, ay, az, aw = a
+    bx, by, bz, bw = b
+    return (aw * bx + ax_ * bw + ay * bz - az * by, aw * by - ax_ * bz + ay * bw + az * bx,
+            aw * bz + ax_ * by - ay * bx + az * bw, aw * bw - ax_ * bx - ay * by - az * bz)
+
+
+def _relative(frame, a, b):
+    """Body `b`'s orientation in body `a`'s frame, `(x, y, z, w)`."""
+    qa, qb = (next(p.orientation for p in frame.poses if p.body == x) for x in (a, b))
+    return _qmul((-qa.x, -qa.y, -qa.z, qa.w), (qb.x, qb.y, qb.z, qb.w))
+
+
+def _turned(frames, a, b):
+    """Total angle [rad] `b` turned relative to `a` over the frames: the sum of the frame-to-frame relative rotations (each
+    under half a turn at these speeds, so nothing is lost to wrapping)."""
+    total, previous = 0.0, _relative(frames[0], a, b)
+    for frame in frames[1:]:
+        current = _relative(frame, a, b)
+        step = _qmul((-previous[0], -previous[1], -previous[2], previous[3]), current)
+        total += 2.0 * math.acos(min(1.0, abs(step[3])))
+        previous = current
+    return total
+
+
+def _scheduled(project, command):
+    data = project.model_dump(mode="json")
+    entry = {"type": "actuate", "id": "spin", "actuator": "drive", "start": 0.0, "end": 1.0, "command": command,
+             "badge": "declared", "source": SRC}
+    data["design"]["schedule"] = {"entries": [entry]}
+    return Project.model_validate(data)
+
+
+def test_simulate_stream_a_scheduled_motor_turns_its_hinge_in_the_stream():
+    """X-01b in the run: the 37D gearmotor (`test_actuator.motor_rig`) with a schedule entry `drive` = 1 over [0, 1) s turns
+    its wheel relative to itself in the frames; with command 0 the two bodies keep their relative orientation. Both
+    bodies fall together (no ground yet), which does not turn one against the other. How fast the free rig spins is
+    X-01b's model and not asserted here (#546): the stream test asserts that the motion reaches the frames."""
+    from test_actuator import motor_rig
+
+    turning = _scheduled(motor_rig(), 1.0)
+    run = run_of(turning, duration_s=0.2)
+    assert [m.actuator for m in run.compiled.drives.motors] == ["drive"]
+    frames, ended = split(run)
+    check_run(run.started, frames, ended)
+    bodies = [b.id for b in run.started.bodies]
+    assert len(bodies) == 2
+    turned = _turned(frames, *bodies)
+    assert turned > 1.0  # rad; the hinge coordinate the engine reached, read back from the two bodies' poses
+
+    idle_frames, _ = split(run_of(_scheduled(motor_rig(), 0.0), duration_s=0.2))
+    assert _turned(idle_frames, *bodies) < 1e-6
+
+
+def test_simulate_stream_compile_refusals_carry_the_compile_error_code():
+    """A tower lifted off the ground is the compiler's `floating` (X-01d): refused with the validator's `floating` reason,
+    the `CompileErrorCode` leading the sentence and the instances named."""
+    data = tower().model_dump(mode="json")
+    for inst in data["design"]["instances"]:
+        inst["pose"]["position"]["z"] += 0.5
+    hub = Hub({"tower": Project.model_validate(data)})
+    received = asyncio.run(
+        _session(hub, {"type": "run", "id": "lifted", "duration_s": 0.1}, until=lambda r: any(m.type == "rejected" for m in r))
+    )
+    reason = next(m for m in received if m.type == "rejected").reasons[0]
+    assert reason.code is ReasonCode.FLOATING and reason.message.startswith("floating:")
+    assert {r.id for r in reason.ids if r.kind == "instance"} == {"base", "top"}

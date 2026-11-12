@@ -66,7 +66,7 @@ from kinetra_core import (
 )
 from kinetra_core.conventions import ID_PATTERN
 
-from ..compiler import CompileError
+from ..compiler import CompileError, CompileErrorCode
 from ..run import PreviewRun
 from .document import Document, Outcome, refuse_unsubscribed
 
@@ -161,13 +161,20 @@ def _refuse(request_id: str, code: ReasonCode, text: str, ids: tuple[Ref, ...] =
     return Rejected(type="rejected", id=request_id, reasons=(Reason(code=code, message=text, ids=ids),))
 
 
+_COMPILE_REASONS = {CompileErrorCode.SNAP_MISMATCH: ReasonCode.INVALID_SNAP, CompileErrorCode.FLOATING: ReasonCode.FLOATING}
+"""The compile errors that are the validator's own rules (`check_placement`, `body-tree.md`) keep the validator's reason
+code; every other compile error is `invalid_project`. The `CompileErrorCode` itself leads the sentence (`<code>: ...`)."""
+
+
 def _compile_refused(request_id: str, error: CompileError) -> Rejected:
     ids = (
         tuple(Ref(kind=RefKind.INSTANCE, id=i) for i in error.instances)
-        + tuple(Ref(kind=RefKind.JOINT, id=j) for j in error.joints)
         + tuple(Ref(kind=RefKind.PART, id=p) for p in error.parts)
+        + tuple(Ref(kind=RefKind.JOINT, id=j) for j in error.joints)
+        + tuple(Ref(kind=RefKind.ACTUATOR, id=a) for a in error.actuators)
     )
-    return _refuse(request_id, ReasonCode.INVALID_PROJECT, f"the design does not compile: {error}", ids)
+    code = _COMPILE_REASONS.get(error.code, ReasonCode.INVALID_PROJECT)
+    return _refuse(request_id, code, f"{error.code.value}: the design does not compile: {error}", ids)
 
 
 class Hub:
