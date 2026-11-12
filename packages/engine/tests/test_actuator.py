@@ -4,7 +4,7 @@ Expected numbers are written out by hand from the datasheet values the parts cit
 `parts-battery-tank.md`) and from textbook formulas; MuJoCo 4.0.0 runs the compiled MJCF. Poses, the test blocks and the incline
 angle are fixtures declared by the test (`사용자 선언`). The test anchors a rig's root body to the world by removing its free
 joint from the MJCF (a bench clamp; the project has no "fixed to the ground" yet), sets the gravity it needs on the loaded model
-(the planet's `<option>` is W-03a), turns contact off on the clamped rigs (nothing in them touches anything) and, for the
+(overriding the planet gravity of the MJCF `<option>`, W-03a), turns contact off on the clamped rigs (nothing in them touches anything) and, for the
 rolling test, adds the ground plane.
 """
 
@@ -19,7 +19,7 @@ import pytest
 from gltf_samples import catalog_material, library_part
 
 from kinetra_core import Project, load_body
-from kinetra_engine.compiler import CompileError, DriveRuntime, build_body_tree, compile_drives, to_mjcf
+from kinetra_engine.compiler import CompileError, CompileErrorCode, DriveRuntime, build_body_tree, compile_drives, to_mjcf
 from kinetra_engine.parts import collision_proxy
 
 SRC = {"ref": "X-01b test fixture: value chosen by the test", "locator": "test_actuator.py"}
@@ -234,7 +234,7 @@ def test_actuator_motor_without_current_specs_cannot_be_metered():
     proj = motor_rig(supply=True, motor=bare)
     with pytest.raises(CompileError, match="stall_current") as e:
         compile_drives(build_body_tree(proj))
-    assert e.value.parts == (MOTOR.id,)
+    assert e.value.code is CompileErrorCode.NO_CURRENT and e.value.parts == (MOTOR.id,) and e.value.actuators == ("drive",)
 
 
 # --- spring-damper on a slider ---------------------------------------------------------------------------------------------
@@ -311,28 +311,31 @@ def test_actuator_damped_spring_in_mujoco_matches_the_hand_calculation():
 def test_actuator_spring_damper_on_a_hinge_is_a_compile_error():
     with pytest.raises(CompileError, match="exactly one slider") as e:
         compile_drives(build_body_tree(spring_rig(joint_kind="hinge")))
-    assert e.value.instances == ("sp",) and e.value.joints == ("susp",)
+    assert e.value.code is CompileErrorCode.SPRING_JOINT and e.value.instances == ("sp",) and e.value.joints == ("susp",)
 
 
 def test_actuator_spring_damper_at_no_moving_joint_is_a_compile_error():
     proj = project([BASE, SPRING], [instance("base", "base", (0.0, 0.0, 0.01), material="mat"), instance("sp", SPRING.id, (0.0, 0.0, 0.02 + HALF))],
                    [joint("weld", "fixed", ("base", "top"), ("sp", "end_a"))])
-    with pytest.raises(CompileError, match="found none"):
+    with pytest.raises(CompileError, match="found none") as e:
         compile_drives(build_body_tree(proj))
+    assert e.value.code is CompileErrorCode.SPRING_JOINT
 
 
 def test_actuator_motor_on_a_part_without_curve_or_on_a_slider_is_a_compile_error():
     plain = block_part("block", (0.1, 0.1, 0.1), (("top", "plug", (0.0, 0.0, 0.05)), ("bottom", "plug", (0.0, 0.0, -0.05))))
     proj = project([plain], [instance("a", "block", (0.0, 0.0, 0.05), material="mat"), instance("b", "block", (0.0, 0.0, 0.15), material="mat")],
                    [joint("j", "hinge", ("a", "top"), ("b", "bottom"))], [{"id": "drive", "kind": "motor", "instance": "a", "joint": "j"}])
-    with pytest.raises(CompileError):  # no torque-speed curve on a part with no role
+    with pytest.raises(CompileError) as e:  # no torque-speed curve on a part with no role: refused by build_body_tree (X-01d)
         compile_drives(build_body_tree(proj))
+    assert e.value.code is CompileErrorCode.NO_CURVE
     rig = motor_rig()
     slid = project([MOTOR, WHEEL], [i.model_dump(mode="json") for i in rig.design.instances],
                    [{**rig.design.joints[0].model_dump(mode="json", exclude_none=True), "kind": "slider"}],
                    [{"id": "drive", "kind": "motor", "instance": "m1", "joint": "axle"}], materials=(POM,))
-    with pytest.raises(CompileError, match="drives a hinge"):
+    with pytest.raises(CompileError, match="drives a hinge") as e:
         compile_drives(build_body_tree(slid))
+    assert e.value.code is CompileErrorCode.MOTOR_JOINT and e.value.actuators == ("drive",)
 
 
 def test_actuator_mjcf_with_drives_is_byte_identical_for_the_same_project():

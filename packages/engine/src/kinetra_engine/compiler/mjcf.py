@@ -19,8 +19,10 @@ centre of mass in the body frame, the same signs as `MassProperties`. Angles are
 `ROOT_JOINT_PREFIX + <body id>`; every
 other body has the one `hinge` or `slider` joint of its tree joint, `pos`/`axis` in the body frame, `range` the limits (the
 coordinate is 0 at the saved pose, which is also the model's reference pose). Numbers are written with `repr`, so they read
-back as the same doubles; bodies, joints and geoms are in tree order. No `<option>`: gravity, time step, integrator and contact
-parameters are not set here (W-03a, X-02), so MuJoCo's own defaults stand until those leaves set them.
+back as the same doubles; bodies, joints and geoms are in tree order. `<option>` carries the planet (W-03a, `planet.py`):
+`gravity="0 0 -g"` with g from `data/bodies`, and MuJoCo's medium off (`density="0" viscosity="0"`; the planet's air density
+is on `tree.planet` for the drag of W-03b, `planet.py` says why it is not MuJoCo's medium). Time step, integrator and
+contact parameters are not set here (X-02), so MuJoCo's own defaults stand until those leaves set them.
 
 With `drives` (`compile_drives`, X-01b) a slider that carries a spring-damper gets `stiffness` and `damping` (the spring's force is 0
 at coordinate 0, `springref` 0) and each motor actuator is a `<motor joint gear="1">` whose `ctrl` is the joint torque in N*m,
@@ -80,6 +82,7 @@ def to_mjcf(tree: BodyTree, name: str = "kinetra", drives: Drives | None = None)
     lines = [
         f"<mujoco model={quoteattr(name)}>",
         '  <compiler angle="radian" inertiafromgeom="false"/>',
+        f"  <option gravity={quoteattr(_n(tree.planet.gravity_vector))} density=\"0\" viscosity=\"0\"/>",
         "  <worldbody>",
     ]
     lines.extend(_body(tree, tree.root, 2, drives))

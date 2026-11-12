@@ -9,13 +9,14 @@
 joint whose `a` or `b` end is on that instance. Its `stiffness` [N/m] and `damping` [N*s/m] (the instance's values, or the
 part's defaults) become the MuJoCo joint's `stiffness` and `damping`; the spring's force is 0 at joint coordinate 0, the saved
 pose (MJCF `springref` 0, the model's reference pose). A spring-damper instance at no slider, at more than one, or at a hinge
-(N/m is not a rotational rate) is a `CompileError`: it would act nowhere, twice, or in the wrong unit. A hinge or slider with
+(N/m is not a rotational rate) is a `CompileError` `spring_joint`: it would act nowhere, twice, or in the wrong unit. A hinge or slider with
 no spring-damper has neither.
 
 **Motors (B-03b).** A motor actuator (`DesignSpec.actuators`, kind `motor`) on an instance whose part has role `motor` drives
 its `hinge` joint. Its MJCF element is `<motor joint gear="1">` and `ctrl` is the joint torque [N*m], limited to the stall
-torque; `DriveRuntime` writes it every step from the command and the joint speed. A motor on a part with no `torque_speed`
-curve (no role) or on a slider (the curve is N*m against rad/s) is a `CompileError`.
+torque; `DriveRuntime` writes it every step from the command and the joint speed. A motor on a slider (the curve is N*m
+against rad/s) is a `CompileError` `motor_joint`; one on a part with no role (no curve) `build_body_tree` already refused
+(`no_curve`, X-01d).
 
 What a command means (`motor_torque`): the curve is the torque limit at command 1, the part's rated voltage. A command `u` in
 [-1, 1] is the fraction of that voltage with its sign (a PWM duty): a DC motor at a fraction `a = |u|` of its voltage has the
@@ -27,7 +28,7 @@ command 0 is no torque (the motor coasts).
 
 **Supply draw (B-03d).** A motor with `supply` draws electrical energy from that battery instance. The current of a DC motor is
 linear in its torque, and the datasheet gives the two ends: `I = I0 + (Is - I0) |tau| / T0` (specs `no_load_current`,
-`stall_current` [A] and the curve's stall torque `T0`), so a metered motor's part must carry both current specs. At command
+`stall_current` [A] and the curve's stall torque `T0`), so a metered motor's part must carry both current specs (else `CompileError` `no_current`). At command
 `u` the battery gives `P = |u| V I` [W] (V the rated voltage, the PWM average), every step `P dt` from the one `Supply` per
 battery instance. When it gives less (`Draw.satisfied < 1`) the torque that step is scaled by `satisfied`, and an empty
 battery drives nothing. Motors that share a battery draw in actuator id order. Nothing is given back (no regeneration).
@@ -46,7 +47,8 @@ from dataclasses import dataclass
 from kinetra_core import ActuatorKind, JointKind, PartDef, PartRole, Quantity
 
 from ..parts import Supply, battery_supply, motor_characteristics, motor_torque_limit, spring_damper_characteristics
-from .bodytree import BodyTree, CompileError
+from .bodytree import BodyTree
+from .errors import CompileError, CompileErrorCode
 
 MOTOR_NO_LOAD_CURRENT = "no_load_current"
 MOTOR_STALL_CURRENT = "stall_current"
@@ -145,15 +147,18 @@ def compile_drives(tree: BodyTree) -> Drives:
             raise CompileError(
                 f"spring-damper instance {inst.id!r} (part {part.id!r}) acts along exactly one slider joint at its snap points; "
                 f"found {found}",
+                code=CompileErrorCode.SPRING_JOINT,
                 instances=(inst.id,),
-                joints=tuple(j.id for j in moving),
                 parts=(part.id,),
+                joints=tuple(j.id for j in moving),
             )
         joint = moving[0]
         if any(s.joint == joint.id for s in springs):
             raise CompileError(
                 f"slider joint {joint.id!r} has a spring-damper at both ends ({joint.a.instance!r} and {joint.b.instance!r})",
+                code=CompileErrorCode.SPRING_JOINT,
                 instances=(joint.a.instance, joint.b.instance),
+                parts=tuple(dict.fromkeys(instances[i].part for i in (joint.a.instance, joint.b.instance))),
                 joints=(joint.id,),
             )
         c = spring_damper_characteristics(part, params(inst.id))
@@ -166,19 +171,14 @@ def compile_drives(tree: BodyTree) -> Drives:
         if act.kind is not ActuatorKind.MOTOR:
             continue  # thrusters: X-01c
         assert act.joint is not None  # a motor names its joint (Actuator validation)
-        part = parts[instances[act.instance].part]
+        part = parts[instances[act.instance].part]  # role `motor`: build_body_tree refused a role-less part (no_curve)
         joint = joints[act.joint]
-        ids = dict(instances=(act.instance,), joints=(joint.id,), parts=(part.id,))
-        if part.role is not PartRole.MOTOR:
-            raise CompileError(
-                f"motor actuator {act.id!r}: part {part.id!r} of instance {act.instance!r} has no torque-speed curve (its role is "
-                f"{'none' if part.role is None else repr(part.role.value)}, not 'motor')",
-                **ids,
-            )
+        ids = dict(instances=(act.instance,), parts=(part.id,), joints=(joint.id,), actuators=(act.id,))
         if joint.kind is not JointKind.HINGE:
             raise CompileError(
                 f"motor actuator {act.id!r} drives {joint.kind.value} joint {joint.id!r}: a motor's curve is torque [N*m] against "
                 "speed [rad/s], so it drives a hinge",
+                code=CompileErrorCode.MOTOR_JOINT,
                 **ids,
             )
         mc = motor_characteristics(part)
@@ -189,6 +189,7 @@ def compile_drives(tree: BodyTree) -> Drives:
                 raise CompileError(
                     f"motor actuator {act.id!r} draws from {act.supply!r}, but part {part.id!r} does not give the specs "
                     f"{MOTOR_NO_LOAD_CURRENT!r} and {MOTOR_STALL_CURRENT!r} [A] the draw is computed from",
+                    code=CompileErrorCode.NO_CURRENT,
                     **ids,
                 )
             if act.supply not in supplies:

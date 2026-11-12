@@ -1,0 +1,4503 @@
+{
+  "design": {
+    "materials": [
+      {
+        "id": "al6061-t6",
+        "name": "Aluminum 6061-T6",
+        "density": {
+          "badge": "cite",
+          "source": {
+            "ref": "Kaiser Aluminum, Rod & Bar Alloy 6061 Technical Data (KA-RBH-6061-8.10), typical values; accessed 2026-11-11. Nominal Density (68 F / 20 C) 0.098 lb/in3 = 2.70 Mg/m3. Chosen 2700 kg/m^3 = the printed SI value; no range given.",
+            "locator": "Typical Physical Properties, Nominal Density (page 2)",
+            "url": "https://online.kaiseraluminum.com/depot/PublicProductInformation/Document/1025/Kaiser_Aluminum_6061_Rod_and_Bar.pdf",
+            "license": null,
+            "declared_by": null,
+            "declared_at": null
+          },
+          "value": 2700.0,
+          "unit": "kg/m^3"
+        },
+        "yield_strength": {
+          "badge": "cite",
+          "source": {
+            "ref": "Kaiser Aluminum, Rod & Bar Alloy 6061 Technical Data (KA-RBH-6061-8.10), typical values; accessed 2026-11-11. Basis: TYPICAL (not a guaranteed minimum). Temper T6, T651: tensile yield 40 ksi = 276 MPa (ultimate 45 ksi = 310 MPa). Chosen 276 MPa = the printed SI value; the Kaiser Sheet, Coil & Plate 6061 sheet (Rev. 05/06) is the same document family.",
+            "locator": "Typical Mechanical Properties, row T6, T651, Yield MPa (page 1)",
+            "url": "https://online.kaiseraluminum.com/depot/PublicProductInformation/Document/1025/Kaiser_Aluminum_6061_Rod_and_Bar.pdf",
+            "license": null,
+            "declared_by": null,
+            "declared_at": null
+          },
+          "value": 276000000.0,
+          "unit": "Pa"
+        },
+        "elastic_modulus": {
+          "badge": "cite",
+          "source": {
+            "ref": "Kaiser Aluminum, Rod & Bar Alloy 6061 Technical Data (KA-RBH-6061-8.10), typical values; accessed 2026-11-11. Modulus of Elasticity printed as 10.0 x 10^3 ksi (US column) and 68.3 GPa (metric column). The two disagree: 10.0 x 10^3 ksi x 6.894757 MPa/ksi = 68.95 GPa, 0.95% above the printed 68.3 GPa. Chosen 68.95 GPa, the exact conversion of the primary US value; range 68.3 to 68.95 GPa.",
+            "locator": "Typical Mechanical Properties, row T6, T651, Modulus KSI x 10^3 and GPa (page 1)",
+            "url": "https://online.kaiseraluminum.com/depot/PublicProductInformation/Document/1025/Kaiser_Aluminum_6061_Rod_and_Bar.pdf",
+            "license": null,
+            "declared_by": null,
+            "declared_at": null
+          },
+          "value": 68950000000.0,
+          "unit": "Pa"
+        },
+        "friction": {
+          "badge": "cite",
+          "source": {
+            "ref": "Blau, 'Appendix: Static and Kinetic Friction Coefficients for Selected Materials', ASM Handbook Vol. 18, ASM Intl 1992, ISBN 0-87170-380-7 (dry, room temp.). Rule (all metals): steel 1032 fixed, test material moving, kinetic; Magnaplate 1988 rig, 1.96 N, 54% RH. Steel 1032 / Al 6061-T6: static 0.47, kinetic 0.38. Reverse (Al fixed / steel moving): 0.35, 0.25. Engineering ToolBox Al on mild steel kinetic 0.47. Range 0.25 to 0.47.",
+            "locator": "ASM Hb 18 pp. 70-75, Table 1, row Steel 1032 / Al alloy 6061-T6, Kinetic",
+            "url": null,
+            "license": null,
+            "declared_by": null,
+            "declared_at": null
+          },
+          "value": 0.38,
+          "unit": "1"
+        }
+      },
+      {
+        "id": "pom-delrin-150",
+        "name": "POM acetal homopolymer (Delrin 150)",
+        "density": {
+          "badge": "cite",
+          "source": {
+            "ref": "DuPont Delrin 150 NC010 Product Information sheet (c) 2006, as distributed by Boedeker Plastics (cdn.thomasnet.com); accessed 2026-11-11. Density 1420 kg/m3 (1.42 g/cm3), ISO 1183. Chosen 1420 kg/m^3; DuPont's 2018 and 2020 revisions of the sheet (third-party copies) print the same.",
+            "locator": "Other properties, Density (page 3)",
+            "url": "https://cdn.thomasnet.com/ccp/00072207/74788.pdf",
+            "license": null,
+            "declared_by": null,
+            "declared_at": null
+          },
+          "value": 1420.0,
+          "unit": "kg/m^3"
+        },
+        "yield_strength": {
+          "badge": "cite",
+          "source": {
+            "ref": "DuPont Delrin 150 NC010 Product Information sheet (c) 2006, as distributed by Boedeker Plastics (cdn.thomasnet.com); accessed 2026-11-11. Basis: TYPICAL (the sheet says not for design). Yield Stress 72 MPa (10.4 kpsi), ISO 527. Range 69 to 76.5 MPa: DuPont's 2018 sheet 73 MPa; an unattributed distributor sheet (Protolabs) 11,100 psi = 76.5 MPa (ASTM D638); HPC Europe 69 N/mm2. Chosen 72 MPa. Values shift with temperature and rate.",
+            "locator": "Mechanical, Yield Stress, ISO 527 (page 1)",
+            "url": "https://cdn.thomasnet.com/ccp/00072207/74788.pdf",
+            "license": null,
+            "declared_by": null,
+            "declared_at": null
+          },
+          "value": 72000000.0,
+          "unit": "Pa"
+        },
+        "elastic_modulus": {
+          "badge": "cite",
+          "source": {
+            "ref": "DuPont Delrin 150 NC010 Product Information sheet (c) 2006, as distributed by Boedeker Plastics (cdn.thomasnet.com); accessed 2026-11-11. Tensile Modulus 3100 MPa (450 kpsi), ISO 527; DuPont's 2018 sheet and the HPC Europe sheet print 3100 too. Chosen 3100 MPa. Creep is not modelled.",
+            "locator": "Mechanical, Tensile Modulus, ISO 527 (page 1)",
+            "url": "https://cdn.thomasnet.com/ccp/00072207/74788.pdf",
+            "license": null,
+            "declared_by": null,
+            "declared_at": null
+          },
+          "value": 3100000000.0,
+          "unit": "Pa"
+        },
+        "friction": {
+          "badge": "cite",
+          "source": {
+            "ref": "Blau, 'Appendix: Static and Kinetic Friction Coefficients for Selected Materials', ASM Handbook Vol. 18, ASM Intl 1992, ISBN 0-87170-380-7 (dry, room temp.). Table 3, steel mild / acetal, thrust washer 0.28 MPa, 0.25 m/s (ICI Lubricomp bulletin): static 0.14, kinetic 0.21 (steel fixed, polymer moving). Generic acetal, not Delrin 150. Range 0.20 to 0.45: distributor Delrin 150 sheet dynamic 0.2 on steel (ASTM D3702); POM on steel 52100 0.45 (Table 3).",
+            "locator": "ASM Hb 18 pp. 70-75, Table 3, row Steel, mild / Acetal, Kinetic",
+            "url": null,
+            "license": null,
+            "declared_by": null,
+            "declared_at": null
+          },
+          "value": 0.21,
+          "unit": "1"
+        }
+      },
+      {
+        "id": "steel-a36",
+        "name": "Structural steel ASTM A36",
+        "density": {
+          "badge": "cite",
+          "source": {
+            "ref": "FHWA LRFD for Highway Bridge Superstructures Reference Manual (NHI-15047), Table 3.2.1.2-1 (excerpt of AASHTO LRFD Table 3.5.1-1): Steel 0.490 kcf = 490 lb/ft3 = 7849 kg/m^3 (x 16.01846). A design unit weight for structural steel, not A36-specific; usually rounded to 7850. Chosen 7849; accessed 2026-11-11.",
+            "locator": "Table 3.2.1.2-1 Unit Weights, row Steel (PDF page 85)",
+            "url": "https://www.fhwa.dot.gov/bridge/pubs/nhi15047.pdf",
+            "license": null,
+            "declared_by": null,
+            "declared_at": null
+          },
+          "value": 7849.0,
+          "unit": "kg/m^3"
+        },
+        "yield_strength": {
+          "badge": "cite",
+          "source": {
+            "ref": "SSAB ASTM A36 data sheet (2019-05-20): Basis: specified MINIMUM, a floor, not a typical value. Yield min 36 ksi = 248.2 MPa (tensile 58 to 80 ksi); FHWA-HIF-16-002 Table 5 agrees (A709 Grade 36). ASTM A36M states 250 MPa. FHWA: delivered Grade 36 may be nearer 50 ksi. Chosen 248.2 MPa; accessed 2026-11-11.",
+            "locator": "Mechanical Properties table, Yield strength (min ksi), row A36",
+            "url": "https://www.ssab.com/en-us/brands-and-products/commercial-steel/structural-steel/astm-a36",
+            "license": null,
+            "declared_by": null,
+            "declared_at": null
+          },
+          "value": 248200000.0,
+          "unit": "Pa"
+        },
+        "elastic_modulus": {
+          "badge": "cite",
+          "source": {
+            "ref": "FHWA-HIF-16-002 Steel Bridge Design Handbook, Bridge Steels and Their Mechanical Properties, sec. 4.1: E = 29,000 ksi taken for all structural steels in bridge construction = 199.95 GPa (x 6.894757). Round-number SI usage is 200 GPa. Chosen 199.95 GPa; accessed 2026-11-11.",
+            "locator": "Section 4.1 Stress-Strain Behavior (PDF page 27)",
+            "url": "https://rosap.ntl.bts.gov/view/dot/42712/dot_42712_DS1.pdf",
+            "license": null,
+            "declared_by": null,
+            "declared_at": null
+          },
+          "value": 199950000000.0,
+          "unit": "Pa"
+        },
+        "friction": {
+          "badge": "estimate",
+          "source": {
+            "ref": "Blau, 'Appendix: Static and Kinetic Friction Coefficients for Selected Materials', ASM Handbook Vol. 18, ASM Intl 1992, ISBN 0-87170-380-7 (dry, room temp.). Estimate: steel 1032 / steel 1032 (static 0.31, kinetic 0.23; rule: steel 1032 fixed, material moving; Magnaplate rig as the Al and Ti rows) used as a PROXY for A36. Range: 0.62 mild steel on mild steel (Table 1, Archard, pin-on-ring); Engineering ToolBox steel/steel kinetic 0.42. accessed 2026-11-11.",
+            "locator": "ASM Hb 18 pp. 70-75, Table 1, row Steel 1032 / Steel 1032, Kinetic",
+            "url": null,
+            "license": null,
+            "declared_by": null,
+            "declared_at": null
+          },
+          "value": 0.23,
+          "unit": "1"
+        }
+      }
+    ],
+    "parts": [
+      {
+        "id": "drive-chassis",
+        "name": "Drive car chassis (deck with motor hangers)",
+        "parameters": [],
+        "snap_points": [
+          {
+            "badge": "declared",
+            "source": {
+              "ref": "B-03 drive-car example: rear left motor face plate, under its hanger",
+              "locator": null,
+              "url": null,
+              "license": null,
+              "declared_by": "kinetra-b03-drive-car",
+              "declared_at": "2026-11-12T00:00:00Z"
+            },
+            "id": "motor-rl",
+            "kind": "motor_mount",
+            "accepts": [
+              "motor_mount"
+            ],
+            "position": {
+              "x": {
+                "offset": -0.12,
+                "terms": []
+              },
+              "y": {
+                "offset": 0.08,
+                "terms": []
+              },
+              "z": {
+                "offset": -0.039999999999999994,
+                "terms": []
+              }
+            },
+            "orientation": {
+              "x": 0.0,
+              "y": 0.0,
+              "z": 0.0,
+              "w": 1.0
+            }
+          },
+          {
+            "badge": "declared",
+            "source": {
+              "ref": "B-03 drive-car example: rear right motor face plate, under its hanger",
+              "locator": null,
+              "url": null,
+              "license": null,
+              "declared_by": "kinetra-b03-drive-car",
+              "declared_at": "2026-11-12T00:00:00Z"
+            },
+            "id": "motor-rr",
+            "kind": "motor_mount",
+            "accepts": [
+              "motor_mount"
+            ],
+            "position": {
+              "x": {
+                "offset": -0.12,
+                "terms": []
+              },
+              "y": {
+                "offset": -0.08,
+                "terms": []
+              },
+              "z": {
+                "offset": -0.039999999999999994,
+                "terms": []
+              }
+            },
+            "orientation": {
+              "x": 0.0,
+              "y": 0.0,
+              "z": 0.0,
+              "w": 1.0
+            }
+          },
+          {
+            "badge": "declared",
+            "source": {
+              "ref": "B-03 drive-car example: front left axle end (the wheel centre); the axle is not drawn",
+              "locator": null,
+              "url": null,
+              "license": null,
+              "declared_by": "kinetra-b03-drive-car",
+              "declared_at": "2026-11-12T00:00:00Z"
+            },
+            "id": "axle-fl",
+            "kind": "axle_mount",
+            "accepts": [
+              "shaft"
+            ],
+            "position": {
+              "x": {
+                "offset": 0.12,
+                "terms": []
+              },
+              "y": {
+                "offset": 0.145,
+                "terms": []
+              },
+              "z": {
+                "offset": -0.039999999999999994,
+                "terms": []
+              }
+            },
+            "orientation": {
+              "x": 0.0,
+              "y": 0.0,
+              "z": 0.0,
+              "w": 1.0
+            }
+          },
+          {
+            "badge": "declared",
+            "source": {
+              "ref": "B-03 drive-car example: front right axle end (the wheel centre); the axle is not drawn",
+              "locator": null,
+              "url": null,
+              "license": null,
+              "declared_by": "kinetra-b03-drive-car",
+              "declared_at": "2026-11-12T00:00:00Z"
+            },
+            "id": "axle-fr",
+            "kind": "axle_mount",
+            "accepts": [
+              "shaft"
+            ],
+            "position": {
+              "x": {
+                "offset": 0.12,
+                "terms": []
+              },
+              "y": {
+                "offset": -0.145,
+                "terms": []
+              },
+              "z": {
+                "offset": -0.039999999999999994,
+                "terms": []
+              }
+            },
+            "orientation": {
+              "x": 0.0,
+              "y": 0.0,
+              "z": 0.0,
+              "w": 1.0
+            }
+          },
+          {
+            "badge": "declared",
+            "source": {
+              "ref": "B-03 drive-car example: battery seat on the deck top",
+              "locator": null,
+              "url": null,
+              "license": null,
+              "declared_by": "kinetra-b03-drive-car",
+              "declared_at": "2026-11-12T00:00:00Z"
+            },
+            "id": "battery-seat",
+            "kind": "face",
+            "accepts": [
+              "face"
+            ],
+            "position": {
+              "x": {
+                "offset": 0.05,
+                "terms": []
+              },
+              "y": {
+                "offset": 0.0,
+                "terms": []
+              },
+              "z": {
+                "offset": 0.004,
+                "terms": []
+              }
+            },
+            "orientation": {
+              "x": 0.0,
+              "y": 0.0,
+              "z": 0.0,
+              "w": 1.0
+            }
+          },
+          {
+            "badge": "declared",
+            "source": {
+              "ref": "B-03 drive-car example: tank seat on the deck top",
+              "locator": null,
+              "url": null,
+              "license": null,
+              "declared_by": "kinetra-b03-drive-car",
+              "declared_at": "2026-11-12T00:00:00Z"
+            },
+            "id": "tank-seat",
+            "kind": "face",
+            "accepts": [
+              "face"
+            ],
+            "position": {
+              "x": {
+                "offset": -0.04,
+                "terms": []
+              },
+              "y": {
+                "offset": 0.0,
+                "terms": []
+              },
+              "z": {
+                "offset": 0.004,
+                "terms": []
+              }
+            },
+            "orientation": {
+              "x": 0.0,
+              "y": 0.0,
+              "z": 0.0,
+              "w": 1.0
+            }
+          },
+          {
+            "badge": "declared",
+            "source": {
+              "ref": "B-03 drive-car example: thruster mount: the back face of its valve body, which lies on the deck",
+              "locator": null,
+              "url": null,
+              "license": null,
+              "declared_by": "kinetra-b03-drive-car",
+              "declared_at": "2026-11-12T00:00:00Z"
+            },
+            "id": "thruster-mount",
+            "kind": "face",
+            "accepts": [
+              "face"
+            ],
+            "position": {
+              "x": {
+                "offset": -0.1,
+                "terms": []
+              },
+              "y": {
+                "offset": 0.0,
+                "terms": []
+              },
+              "z": {
+                "offset": 0.018000000000000002,
+                "terms": []
+              }
+            },
+            "orientation": {
+              "x": 0.0,
+              "y": 0.0,
+              "z": 0.0,
+              "w": 1.0
+            }
+          },
+          {
+            "badge": "declared",
+            "source": {
+              "ref": "B-03 drive-car example: left bumper spring seat on the deck's front face",
+              "locator": null,
+              "url": null,
+              "license": null,
+              "declared_by": "kinetra-b03-drive-car",
+              "declared_at": "2026-11-12T00:00:00Z"
+            },
+            "id": "spring-l",
+            "kind": "spring_end",
+            "accepts": [
+              "spring_end"
+            ],
+            "position": {
+              "x": {
+                "offset": 0.18,
+                "terms": []
+              },
+              "y": {
+                "offset": 0.06,
+                "terms": []
+              },
+              "z": {
+                "offset": 0.0,
+                "terms": []
+              }
+            },
+            "orientation": {
+              "x": 0.0,
+              "y": 0.0,
+              "z": 0.0,
+              "w": 1.0
+            }
+          },
+          {
+            "badge": "declared",
+            "source": {
+              "ref": "B-03 drive-car example: right bumper spring seat on the deck's front face",
+              "locator": null,
+              "url": null,
+              "license": null,
+              "declared_by": "kinetra-b03-drive-car",
+              "declared_at": "2026-11-12T00:00:00Z"
+            },
+            "id": "spring-r",
+            "kind": "spring_end",
+            "accepts": [
+              "spring_end"
+            ],
+            "position": {
+              "x": {
+                "offset": 0.18,
+                "terms": []
+              },
+              "y": {
+                "offset": -0.06,
+                "terms": []
+              },
+              "z": {
+                "offset": 0.0,
+                "terms": []
+              }
+            },
+            "orientation": {
+              "x": 0.0,
+              "y": 0.0,
+              "z": 0.0,
+              "w": 1.0
+            }
+          }
+        ],
+        "specs": [],
+        "shape": {
+          "badge": "declared",
+          "source": {
+            "ref": "B-03 drive-car example: a flat deck and two motor hangers drawn from boxes; dimensions chosen by the example",
+            "locator": null,
+            "url": null,
+            "license": null,
+            "declared_by": "kinetra-b03-drive-car",
+            "declared_at": "2026-11-12T00:00:00Z"
+          },
+          "components": [
+            {
+              "id": "deck",
+              "primitive": {
+                "kind": "box",
+                "size_x": {
+                  "offset": 0.36,
+                  "terms": []
+                },
+                "size_y": {
+                  "offset": 0.24,
+                  "terms": []
+                },
+                "size_z": {
+                  "offset": 0.008,
+                  "terms": []
+                }
+              },
+              "operation": "add",
+              "position": {
+                "x": {
+                  "offset": 0.0,
+                  "terms": []
+                },
+                "y": {
+                  "offset": 0.0,
+                  "terms": []
+                },
+                "z": {
+                  "offset": 0.0,
+                  "terms": []
+                }
+              },
+              "orientation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+              }
+            },
+            {
+              "id": "hanger_l",
+              "primitive": {
+                "kind": "box",
+                "size_x": {
+                  "offset": 0.02,
+                  "terms": []
+                },
+                "size_y": {
+                  "offset": 0.024,
+                  "terms": []
+                },
+                "size_z": {
+                  "offset": 0.01759999999999999,
+                  "terms": []
+                }
+              },
+              "operation": "add",
+              "position": {
+                "x": {
+                  "offset": -0.12,
+                  "terms": []
+                },
+                "y": {
+                  "offset": 0.068,
+                  "terms": []
+                },
+                "z": {
+                  "offset": -0.012800000000000006,
+                  "terms": []
+                }
+              },
+              "orientation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+              }
+            },
+            {
+              "id": "hanger_r",
+              "primitive": {
+                "kind": "box",
+                "size_x": {
+                  "offset": 0.02,
+                  "terms": []
+                },
+                "size_y": {
+                  "offset": 0.024,
+                  "terms": []
+                },
+                "size_z": {
+                  "offset": 0.01759999999999999,
+                  "terms": []
+                }
+              },
+              "operation": "add",
+              "position": {
+                "x": {
+                  "offset": -0.12,
+                  "terms": []
+                },
+                "y": {
+                  "offset": -0.068,
+                  "terms": []
+                },
+                "z": {
+                  "offset": -0.012800000000000006,
+                  "terms": []
+                }
+              },
+              "orientation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+              }
+            }
+          ]
+        },
+        "mass_parameter": null,
+        "role": null,
+        "curves": []
+      },
+      {
+        "id": "motor-37d-12v-50-1",
+        "name": "Pololu 37D gearmotor 12 V, 50:1, encoder",
+        "parameters": [
+          {
+            "name": "mass",
+            "unit": "kg",
+            "default": {
+              "badge": "cite",
+              "source": {
+                "ref": "Pololu 37D Metal Gearmotor item #4753 (50:1, 12 V, 64 CPR encoder, helical pinion), Pololu product page",
+                "locator": "Specs table: Weight 205 g",
+                "url": "https://www.pololu.com/product/4753/specs",
+                "license": null,
+                "declared_by": null,
+                "declared_at": null
+              },
+              "value": 0.205,
+              "unit": "kg"
+            },
+            "min": {
+              "badge": "cite",
+              "source": {
+                "ref": "Pololu 37D Metal Gearmotor item #4753 (50:1, 12 V, 64 CPR encoder, helical pinion), Pololu product page",
+                "locator": "Specs table: Weight 205 g",
+                "url": "https://www.pololu.com/product/4753/specs",
+                "license": null,
+                "declared_by": null,
+                "declared_at": null
+              },
+              "value": 0.205,
+              "unit": "kg"
+            },
+            "max": {
+              "badge": "cite",
+              "source": {
+                "ref": "Pololu 37D Metal Gearmotor item #4753 (50:1, 12 V, 64 CPR encoder, helical pinion), Pololu product page",
+                "locator": "Specs table: Weight 205 g",
+                "url": "https://www.pololu.com/product/4753/specs",
+                "license": null,
+                "declared_by": null,
+                "declared_at": null
+              },
+              "value": 0.205,
+              "unit": "kg"
+            }
+          }
+        ],
+        "snap_points": [
+          {
+            "badge": "declared",
+            "source": {
+              "ref": "Kinetra: the centre of the gearbox face plate, which is the part origin (z axis = output shaft, pointing out of the face plate); dimensions of the face from the Pololu drawing",
+              "locator": null,
+              "url": null,
+              "license": null,
+              "declared_by": "kinetra-b03b",
+              "declared_at": "2026-11-12T00:00:00Z"
+            },
+            "id": "mount",
+            "kind": "motor_mount",
+            "accepts": [
+              "motor_mount"
+            ],
+            "position": {
+              "x": {
+                "offset": 0.0,
+                "terms": []
+              },
+              "y": {
+                "offset": 0.0,
+                "terms": []
+              },
+              "z": {
+                "offset": 0.0,
+                "terms": []
+              }
+            },
+            "orientation": {
+              "x": 0.0,
+              "y": 0.0,
+              "z": 0.0,
+              "w": 1.0
+            }
+          },
+          {
+            "badge": "declared",
+            "source": {
+              "ref": "Kinetra: middle of the 16 mm output shaft, which starts 6 mm from the face plate (Pololu drawing); a wheel hub centres here",
+              "locator": null,
+              "url": null,
+              "license": null,
+              "declared_by": "kinetra-b03b",
+              "declared_at": "2026-11-12T00:00:00Z"
+            },
+            "id": "shaft",
+            "kind": "shaft",
+            "accepts": [
+              "shaft"
+            ],
+            "position": {
+              "x": {
+                "offset": 0.0,
+                "terms": []
+              },
+              "y": {
+                "offset": 0.0,
+                "terms": []
+              },
+              "z": {
+                "offset": 0.014,
+                "terms": []
+              }
+            },
+            "orientation": {
+              "x": 0.0,
+              "y": 0.0,
+              "z": 0.0,
+              "w": 1.0
+            }
+          }
+        ],
+        "specs": [
+          {
+            "badge": "cite",
+            "source": {
+              "ref": "Pololu 37D Metal Gearmotor item #4753 (50:1, 12 V, 64 CPR encoder, helical pinion), Pololu 37D Metal Gearmotors datasheet rev 1.2 (January 2020)",
+              "locator": "Performance summary table: Rated Voltage 12 V, items 4743/4753",
+              "url": "https://www.pololu.com/file/0J1736/pololu-37d-metal-gearmotors-rev-1-2.pdf",
+              "license": null,
+              "declared_by": null,
+              "declared_at": null
+            },
+            "value": 12.0,
+            "unit": "V",
+            "name": "rated_voltage"
+          },
+          {
+            "badge": "cite",
+            "source": {
+              "ref": "Pololu 37D Metal Gearmotor item #4753 (50:1, 12 V, 64 CPR encoder, helical pinion), Pololu 37D Metal Gearmotors datasheet rev 1.2 (January 2020)",
+              "locator": "Performance summary table: No Load Speed 200 RPM at 12 V, items 4743/4753",
+              "url": "https://www.pololu.com/file/0J1736/pololu-37d-metal-gearmotors-rev-1-2.pdf",
+              "license": null,
+              "declared_by": null,
+              "declared_at": null
+            },
+            "value": 20.943951023931955,
+            "unit": "rad/s",
+            "name": "no_load_speed"
+          },
+          {
+            "badge": "cite",
+            "source": {
+              "ref": "Pololu 37D Metal Gearmotor item #4753 (50:1, 12 V, 64 CPR encoder, helical pinion), Pololu 37D Metal Gearmotors datasheet rev 1.2 (January 2020)",
+              "locator": "Performance summary table: No Load Current 0.2 A",
+              "url": "https://www.pololu.com/file/0J1736/pololu-37d-metal-gearmotors-rev-1-2.pdf",
+              "license": null,
+              "declared_by": null,
+              "declared_at": null
+            },
+            "value": 0.2,
+            "unit": "A",
+            "name": "no_load_current"
+          },
+          {
+            "badge": "cite",
+            "source": {
+              "ref": "Pololu 37D Metal Gearmotor item #4753 (50:1, 12 V, 64 CPR encoder, helical pinion), Pololu 37D Metal Gearmotors datasheet rev 1.2 (January 2020); kgf*mm x 9.80665e-3; theoretical extrapolation, see the torque_speed curve",
+              "locator": "Performance summary table: Stall Extrapolation 210 kg*mm",
+              "url": "https://www.pololu.com/file/0J1736/pololu-37d-metal-gearmotors-rev-1-2.pdf",
+              "license": null,
+              "declared_by": null,
+              "declared_at": null
+            },
+            "value": 2.0593964999999996,
+            "unit": "N*m",
+            "name": "stall_torque"
+          },
+          {
+            "badge": "cite",
+            "source": {
+              "ref": "Pololu 37D Metal Gearmotor item #4753 (50:1, 12 V, 64 CPR encoder, helical pinion), Pololu 37D Metal Gearmotors datasheet rev 1.2 (January 2020); theoretical extrapolation (page 13 graph labels 5.4 A)",
+              "locator": "Performance summary table: Stall Extrapolation 5.5 A",
+              "url": "https://www.pololu.com/file/0J1736/pololu-37d-metal-gearmotors-rev-1-2.pdf",
+              "license": null,
+              "declared_by": null,
+              "declared_at": null
+            },
+            "value": 5.5,
+            "unit": "A",
+            "name": "stall_current"
+          },
+          {
+            "badge": "cite",
+            "source": {
+              "ref": "Pololu 37D Metal Gearmotor item #4753 (50:1, 12 V, 64 CPR encoder, helical pinion), Pololu 37D Metal Gearmotors datasheet rev 1.2 (January 2020); kgf*mm x 9.80665e-3",
+              "locator": "Performance summary table note (2): recommended upper limit for continuously applied loads 100 kg*mm",
+              "url": "https://www.pololu.com/file/0J1736/pololu-37d-metal-gearmotors-rev-1-2.pdf",
+              "license": null,
+              "declared_by": null,
+              "declared_at": null
+            },
+            "value": 0.980665,
+            "unit": "N*m",
+            "name": "continuous_torque_limit"
+          },
+          {
+            "badge": "cite",
+            "source": {
+              "ref": "Pololu 37D Metal Gearmotor item #4753 (50:1, 12 V, 64 CPR encoder, helical pinion), Pololu 37D Metal Gearmotors datasheet rev 1.2 (January 2020)",
+              "locator": "Performance summary table: Gear Ratio 50, exact (25x30x25x40)/(10x10x15x10) on the product page",
+              "url": "https://www.pololu.com/file/0J1736/pololu-37d-metal-gearmotors-rev-1-2.pdf",
+              "license": null,
+              "declared_by": null,
+              "declared_at": null
+            },
+            "value": 50.0,
+            "unit": "1",
+            "name": "gear_ratio"
+          }
+        ],
+        "shape": {
+          "badge": "cite",
+          "source": {
+            "ref": "Pololu 37D Metal Gearmotor item #4753 (50:1, 12 V, 64 CPR encoder, helical pinion), Pololu dimension drawing dated 10 January 2020. Simplified: the D-flat on the shaft, six M3 holes, motor terminals, the encoder end cap shape and the leads are not modelled",
+            "locator": "Dimension diagram: shaft 6 mm dia x 16 mm (22.0 mm from face plate, 6.0 mm boss 12.0 mm dia), gearbox 36.8 mm dia x 24.0 mm, motor 34.8 mm dia x 30.7 mm, encoder 34.0 mm dia x 15.4 mm",
+            "url": "https://www.pololu.com/file/0J1735/37d-metal-gearmotors-dimension-diagram.pdf",
+            "license": null,
+            "declared_by": null,
+            "declared_at": null
+          },
+          "components": [
+            {
+              "id": "shaft",
+              "primitive": {
+                "kind": "cylinder",
+                "radius": {
+                  "offset": 0.003,
+                  "terms": []
+                },
+                "length": {
+                  "offset": 0.016,
+                  "terms": []
+                }
+              },
+              "operation": "add",
+              "position": {
+                "x": {
+                  "offset": 0.0,
+                  "terms": []
+                },
+                "y": {
+                  "offset": 0.0,
+                  "terms": []
+                },
+                "z": {
+                  "offset": 0.014,
+                  "terms": []
+                }
+              },
+              "orientation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+              }
+            },
+            {
+              "id": "boss",
+              "primitive": {
+                "kind": "cylinder",
+                "radius": {
+                  "offset": 0.006,
+                  "terms": []
+                },
+                "length": {
+                  "offset": 0.006,
+                  "terms": []
+                }
+              },
+              "operation": "add",
+              "position": {
+                "x": {
+                  "offset": 0.0,
+                  "terms": []
+                },
+                "y": {
+                  "offset": 0.0,
+                  "terms": []
+                },
+                "z": {
+                  "offset": 0.003,
+                  "terms": []
+                }
+              },
+              "orientation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+              }
+            },
+            {
+              "id": "gearbox",
+              "primitive": {
+                "kind": "cylinder",
+                "radius": {
+                  "offset": 0.0184,
+                  "terms": []
+                },
+                "length": {
+                  "offset": 0.024,
+                  "terms": []
+                }
+              },
+              "operation": "add",
+              "position": {
+                "x": {
+                  "offset": 0.0,
+                  "terms": []
+                },
+                "y": {
+                  "offset": 0.0,
+                  "terms": []
+                },
+                "z": {
+                  "offset": -0.012,
+                  "terms": []
+                }
+              },
+              "orientation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+              }
+            },
+            {
+              "id": "motor",
+              "primitive": {
+                "kind": "cylinder",
+                "radius": {
+                  "offset": 0.0174,
+                  "terms": []
+                },
+                "length": {
+                  "offset": 0.0307,
+                  "terms": []
+                }
+              },
+              "operation": "add",
+              "position": {
+                "x": {
+                  "offset": 0.0,
+                  "terms": []
+                },
+                "y": {
+                  "offset": 0.0,
+                  "terms": []
+                },
+                "z": {
+                  "offset": -0.03935,
+                  "terms": []
+                }
+              },
+              "orientation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+              }
+            },
+            {
+              "id": "encoder",
+              "primitive": {
+                "kind": "cylinder",
+                "radius": {
+                  "offset": 0.017,
+                  "terms": []
+                },
+                "length": {
+                  "offset": 0.0154,
+                  "terms": []
+                }
+              },
+              "operation": "add",
+              "position": {
+                "x": {
+                  "offset": 0.0,
+                  "terms": []
+                },
+                "y": {
+                  "offset": 0.0,
+                  "terms": []
+                },
+                "z": {
+                  "offset": -0.0624,
+                  "terms": []
+                }
+              },
+              "orientation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+              }
+            }
+          ]
+        },
+        "mass_parameter": "mass",
+        "role": "motor",
+        "curves": [
+          {
+            "name": "torque_speed",
+            "curve": {
+              "badge": "cite",
+              "source": {
+                "ref": "Pololu 37D Metal Gearmotor item #4753 (50:1, 12 V, 64 CPR encoder, helical pinion), Pololu 37D Metal Gearmotors datasheet rev 1.2 (January 2020); kg*mm read as kgf*mm (x 9.80665e-3 N*m); only these two summary values are used, the line between them is the DC-motor model, the stall point is the datasheet's theoretical extrapolation (a real unit stalls earlier and the stall torque falls as the motor heats)",
+                "locator": "Performance summary table: no load 200 RPM, stall extrapolation 210 kg*mm (page 13 graph 'Performance at 12 V' plots speed against torque as a straight line between them)",
+                "url": "https://www.pololu.com/file/0J1736/pololu-37d-metal-gearmotors-rev-1-2.pdf",
+                "license": null,
+                "declared_by": null,
+                "declared_at": null
+              },
+              "x_unit": "rad/s",
+              "y_unit": "N*m",
+              "points": [
+                {
+                  "x": 0.0,
+                  "y": 2.0593964999999996
+                },
+                {
+                  "x": 20.943951023931955,
+                  "y": 0.0
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "id": "drive-stub",
+        "name": "Axle stub (motor shaft to wheel hub)",
+        "parameters": [],
+        "snap_points": [
+          {
+            "badge": "declared",
+            "source": {
+              "ref": "B-03 drive-car example: on the motor's shaft snap; the rod starts at the shaft tip",
+              "locator": null,
+              "url": null,
+              "license": null,
+              "declared_by": "kinetra-b03-drive-car",
+              "declared_at": "2026-11-12T00:00:00Z"
+            },
+            "id": "in",
+            "kind": "shaft",
+            "accepts": [
+              "shaft"
+            ],
+            "position": {
+              "x": {
+                "offset": 0.0,
+                "terms": []
+              },
+              "y": {
+                "offset": 0.0,
+                "terms": []
+              },
+              "z": {
+                "offset": 0.0,
+                "terms": []
+              }
+            },
+            "orientation": {
+              "x": 0.0,
+              "y": 0.0,
+              "z": 0.0,
+              "w": 1.0
+            }
+          },
+          {
+            "badge": "declared",
+            "source": {
+              "ref": "B-03 drive-car example: the wheel centre; the rod ends at the wheel's inner hub boss",
+              "locator": null,
+              "url": null,
+              "license": null,
+              "declared_by": "kinetra-b03-drive-car",
+              "declared_at": "2026-11-12T00:00:00Z"
+            },
+            "id": "out",
+            "kind": "axle_mount",
+            "accepts": [
+              "shaft"
+            ],
+            "position": {
+              "x": {
+                "offset": 0.0,
+                "terms": []
+              },
+              "y": {
+                "offset": 0.0,
+                "terms": []
+              },
+              "z": {
+                "offset": 0.05099999999999999,
+                "terms": []
+              }
+            },
+            "orientation": {
+              "x": 0.0,
+              "y": 0.0,
+              "z": 0.0,
+              "w": 1.0
+            }
+          }
+        ],
+        "specs": [],
+        "shape": {
+          "badge": "declared",
+          "source": {
+            "ref": "B-03 drive-car example: a rod of radius 4 mm along the axle, end to end with the motor shaft and the wheel hub",
+            "locator": null,
+            "url": null,
+            "license": null,
+            "declared_by": "kinetra-b03-drive-car",
+            "declared_at": "2026-11-12T00:00:00Z"
+          },
+          "components": [
+            {
+              "id": "rod",
+              "primitive": {
+                "kind": "cylinder",
+                "radius": {
+                  "offset": 0.004,
+                  "terms": []
+                },
+                "length": {
+                  "offset": 0.008599999999999983,
+                  "terms": []
+                }
+              },
+              "operation": "add",
+              "position": {
+                "x": {
+                  "offset": 0.0,
+                  "terms": []
+                },
+                "y": {
+                  "offset": 0.0,
+                  "terms": []
+                },
+                "z": {
+                  "offset": 0.01229999999999999,
+                  "terms": []
+                }
+              },
+              "orientation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+              }
+            }
+          ]
+        },
+        "mass_parameter": null,
+        "role": null,
+        "curves": []
+      },
+      {
+        "id": "wheel",
+        "name": "Wheel",
+        "parameters": [
+          {
+            "name": "diameter",
+            "unit": "m",
+            "default": {
+              "badge": "default",
+              "source": {
+                "ref": "B-03a: overall tire diameter (the tread, the part that touches the ground), chosen by Kinetra for game-scale cars; not a datasheet value and not a standard tire size; the wheel turns about its local y axis",
+                "locator": null,
+                "url": null,
+                "license": null,
+                "declared_by": null,
+                "declared_at": null
+              },
+              "value": 0.1,
+              "unit": "m"
+            },
+            "min": {
+              "badge": "default",
+              "source": {
+                "ref": "B-03a: overall tire diameter (the tread, the part that touches the ground), chosen by Kinetra for game-scale cars; not a datasheet value and not a standard tire size; the wheel turns about its local y axis",
+                "locator": null,
+                "url": null,
+                "license": null,
+                "declared_by": null,
+                "declared_at": null
+              },
+              "value": 0.04,
+              "unit": "m"
+            },
+            "max": {
+              "badge": "default",
+              "source": {
+                "ref": "B-03a: overall tire diameter (the tread, the part that touches the ground), chosen by Kinetra for game-scale cars; not a datasheet value and not a standard tire size; the wheel turns about its local y axis",
+                "locator": null,
+                "url": null,
+                "license": null,
+                "declared_by": null,
+                "declared_at": null
+              },
+              "value": 0.3,
+              "unit": "m"
+            }
+          },
+          {
+            "name": "width",
+            "unit": "m",
+            "default": {
+              "badge": "default",
+              "source": {
+                "ref": "B-03a: tread width (the contact width along the axle), chosen by Kinetra for game-scale cars; not a datasheet value and not a standard tire size; the sidewalls, rims and hub bosses are added beside it and are not part of this width",
+                "locator": null,
+                "url": null,
+                "license": null,
+                "declared_by": null,
+                "declared_at": null
+              },
+              "value": 0.04,
+              "unit": "m"
+            },
+            "min": {
+              "badge": "default",
+              "source": {
+                "ref": "B-03a: tread width (the contact width along the axle), chosen by Kinetra for game-scale cars; not a datasheet value and not a standard tire size; the sidewalls, rims and hub bosses are added beside it and are not part of this width",
+                "locator": null,
+                "url": null,
+                "license": null,
+                "declared_by": null,
+                "declared_at": null
+              },
+              "value": 0.01,
+              "unit": "m"
+            },
+            "max": {
+              "badge": "default",
+              "source": {
+                "ref": "B-03a: tread width (the contact width along the axle), chosen by Kinetra for game-scale cars; not a datasheet value and not a standard tire size; the sidewalls, rims and hub bosses are added beside it and are not part of this width",
+                "locator": null,
+                "url": null,
+                "license": null,
+                "declared_by": null,
+                "declared_at": null
+              },
+              "value": 0.12,
+              "unit": "m"
+            }
+          }
+        ],
+        "snap_points": [
+          {
+            "badge": "default",
+            "source": {
+              "ref": "B-03a: the wheel centre, on the axle; the snap frame's +Z is the axle direction (part +y, the outer hub boss side). Tags follow the four-wheel-car example (shaft, axle_mount); B-04b settles the matching rules",
+              "locator": null,
+              "url": null,
+              "license": null,
+              "declared_by": null,
+              "declared_at": null
+            },
+            "id": "hub",
+            "kind": "shaft",
+            "accepts": [
+              "shaft",
+              "axle_mount"
+            ],
+            "position": {
+              "x": {
+                "offset": 0.0,
+                "terms": []
+              },
+              "y": {
+                "offset": 0.0,
+                "terms": []
+              },
+              "z": {
+                "offset": 0.0,
+                "terms": []
+              }
+            },
+            "orientation": {
+              "x": -0.7071067811865476,
+              "y": 0.0,
+              "z": 0.0,
+              "w": 0.7071067811865476
+            }
+          }
+        ],
+        "specs": [
+          {
+            "badge": "cite",
+            "source": {
+              "ref": "OpenStax College Physics 2e, 5.1 Friction, Table 5.1, 'Rubber on dry concrete', static 1.0 (the book gives one digit and says the values are approximate). A reference pair for a rubber tread, not this wheel on any Kinetra planet's ground (that is planet data in data/bodies; how the two combine is X-01's rule). Book licence CC BY-NC-SA 4.0; only factual values cited, no text or table copied. Accessed 2026-11-11",
+              "locator": "Table 5.1, row 'Rubber on dry concrete', column 'Static friction'",
+              "url": "https://openstax.org/books/college-physics-2e/pages/5-1-friction",
+              "license": null,
+              "declared_by": null,
+              "declared_at": null
+            },
+            "value": 1.0,
+            "unit": "1",
+            "name": "tread_friction_static"
+          },
+          {
+            "badge": "cite",
+            "source": {
+              "ref": "OpenStax College Physics 2e, 5.1 Friction, Table 5.1, 'Rubber on dry concrete', kinetic 0.7 (one digit, approximate). Same reference-pair caveat as tread_friction_static. Book licence CC BY-NC-SA 4.0; only factual values cited, no text or table copied. Wikipedia 'Friction', approximate coefficients, concrete/rubber, dry kinetic 0.6-0.85, contains it (cross-check only). Accessed 2026-11-11",
+              "locator": "Table 5.1, row 'Rubber on dry concrete', column 'Kinetic friction'",
+              "url": "https://openstax.org/books/college-physics-2e/pages/5-1-friction",
+              "license": null,
+              "declared_by": null,
+              "declared_at": null
+            },
+            "value": 0.7,
+            "unit": "1",
+            "name": "tread_friction_kinetic"
+          }
+        ],
+        "shape": {
+          "badge": "default",
+          "source": {
+            "ref": "B-03a: drawn by Kinetra as a game-scale wheel, axle along part y. The tire (full diameter, the one element that touches flat ground) has on each side a sidewall (0.84 of the diameter, 0.06 of the tread width thick), a rim (0.64, 0.10) and a hub boss (0.2, 0.20); the proportions are Kinetra's choice, not a datasheet or a standard wheel. Solid discs: no spokes, no hollow rim, no tread pattern, no tire deformation",
+            "locator": null,
+            "url": null,
+            "license": null,
+            "declared_by": null,
+            "declared_at": null
+          },
+          "components": [
+            {
+              "id": "tire",
+              "primitive": {
+                "kind": "cylinder",
+                "radius": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "diameter",
+                      "factor": 0.5
+                    }
+                  ]
+                },
+                "length": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "width",
+                      "factor": 1.0
+                    }
+                  ]
+                }
+              },
+              "operation": "add",
+              "position": {
+                "x": {
+                  "offset": 0.0,
+                  "terms": []
+                },
+                "y": {
+                  "offset": 0.0,
+                  "terms": []
+                },
+                "z": {
+                  "offset": 0.0,
+                  "terms": []
+                }
+              },
+              "orientation": {
+                "x": -0.7071067811865476,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 0.7071067811865476
+              }
+            },
+            {
+              "id": "sidewall_out",
+              "primitive": {
+                "kind": "cylinder",
+                "radius": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "diameter",
+                      "factor": 0.42
+                    }
+                  ]
+                },
+                "length": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "width",
+                      "factor": 0.06
+                    }
+                  ]
+                }
+              },
+              "operation": "add",
+              "position": {
+                "x": {
+                  "offset": 0.0,
+                  "terms": []
+                },
+                "y": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "width",
+                      "factor": 0.53
+                    }
+                  ]
+                },
+                "z": {
+                  "offset": 0.0,
+                  "terms": []
+                }
+              },
+              "orientation": {
+                "x": -0.7071067811865476,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 0.7071067811865476
+              }
+            },
+            {
+              "id": "rim_out",
+              "primitive": {
+                "kind": "cylinder",
+                "radius": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "diameter",
+                      "factor": 0.32
+                    }
+                  ]
+                },
+                "length": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "width",
+                      "factor": 0.1
+                    }
+                  ]
+                }
+              },
+              "operation": "add",
+              "position": {
+                "x": {
+                  "offset": 0.0,
+                  "terms": []
+                },
+                "y": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "width",
+                      "factor": 0.61
+                    }
+                  ]
+                },
+                "z": {
+                  "offset": 0.0,
+                  "terms": []
+                }
+              },
+              "orientation": {
+                "x": -0.7071067811865476,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 0.7071067811865476
+              }
+            },
+            {
+              "id": "hub_out",
+              "primitive": {
+                "kind": "cylinder",
+                "radius": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "diameter",
+                      "factor": 0.1
+                    }
+                  ]
+                },
+                "length": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "width",
+                      "factor": 0.2
+                    }
+                  ]
+                }
+              },
+              "operation": "add",
+              "position": {
+                "x": {
+                  "offset": 0.0,
+                  "terms": []
+                },
+                "y": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "width",
+                      "factor": 0.76
+                    }
+                  ]
+                },
+                "z": {
+                  "offset": 0.0,
+                  "terms": []
+                }
+              },
+              "orientation": {
+                "x": -0.7071067811865476,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 0.7071067811865476
+              }
+            },
+            {
+              "id": "sidewall_in",
+              "primitive": {
+                "kind": "cylinder",
+                "radius": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "diameter",
+                      "factor": 0.42
+                    }
+                  ]
+                },
+                "length": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "width",
+                      "factor": 0.06
+                    }
+                  ]
+                }
+              },
+              "operation": "add",
+              "position": {
+                "x": {
+                  "offset": 0.0,
+                  "terms": []
+                },
+                "y": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "width",
+                      "factor": -0.53
+                    }
+                  ]
+                },
+                "z": {
+                  "offset": 0.0,
+                  "terms": []
+                }
+              },
+              "orientation": {
+                "x": -0.7071067811865476,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 0.7071067811865476
+              }
+            },
+            {
+              "id": "rim_in",
+              "primitive": {
+                "kind": "cylinder",
+                "radius": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "diameter",
+                      "factor": 0.32
+                    }
+                  ]
+                },
+                "length": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "width",
+                      "factor": 0.1
+                    }
+                  ]
+                }
+              },
+              "operation": "add",
+              "position": {
+                "x": {
+                  "offset": 0.0,
+                  "terms": []
+                },
+                "y": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "width",
+                      "factor": -0.61
+                    }
+                  ]
+                },
+                "z": {
+                  "offset": 0.0,
+                  "terms": []
+                }
+              },
+              "orientation": {
+                "x": -0.7071067811865476,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 0.7071067811865476
+              }
+            },
+            {
+              "id": "hub_in",
+              "primitive": {
+                "kind": "cylinder",
+                "radius": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "diameter",
+                      "factor": 0.1
+                    }
+                  ]
+                },
+                "length": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "width",
+                      "factor": 0.2
+                    }
+                  ]
+                }
+              },
+              "operation": "add",
+              "position": {
+                "x": {
+                  "offset": 0.0,
+                  "terms": []
+                },
+                "y": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "width",
+                      "factor": -0.76
+                    }
+                  ]
+                },
+                "z": {
+                  "offset": 0.0,
+                  "terms": []
+                }
+              },
+              "orientation": {
+                "x": -0.7071067811865476,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 0.7071067811865476
+              }
+            }
+          ]
+        },
+        "mass_parameter": null,
+        "role": "wheel",
+        "curves": []
+      },
+      {
+        "id": "battery-pack-4s",
+        "name": "Battery pack 4S1P (four 18650 cells in series)",
+        "parameters": [
+          {
+            "name": "mass",
+            "unit": "kg",
+            "default": {
+              "badge": "estimate",
+              "source": {
+                "ref": "Method: 4 x 48.5 g (datasheet 'Weight (max.)' of one NCR18650B) = 194 g. Cells only: a real pack adds holder, wiring and protection board. Panasonic NCR18650B datasheet v13.11 R1 (copy on batteryspace.com; 'For Reference Only'), accessed 2026-11-12",
+                "locator": "Specifications table, Weight (max.)",
+                "url": "https://www.batteryspace.com/prod-specs/NCR18650B.pdf",
+                "license": null,
+                "declared_by": null,
+                "declared_at": null
+              },
+              "value": 0.194,
+              "unit": "kg"
+            },
+            "min": {
+              "badge": "estimate",
+              "source": {
+                "ref": "Method: 4 x 48.5 g (datasheet 'Weight (max.)' of one NCR18650B) = 194 g. Cells only: a real pack adds holder, wiring and protection board. Panasonic NCR18650B datasheet v13.11 R1 (copy on batteryspace.com; 'For Reference Only'), accessed 2026-11-12",
+                "locator": "Specifications table, Weight (max.)",
+                "url": "https://www.batteryspace.com/prod-specs/NCR18650B.pdf",
+                "license": null,
+                "declared_by": null,
+                "declared_at": null
+              },
+              "value": 0.194,
+              "unit": "kg"
+            },
+            "max": {
+              "badge": "estimate",
+              "source": {
+                "ref": "Method: 4 x 48.5 g (datasheet 'Weight (max.)' of one NCR18650B) = 194 g. Cells only: a real pack adds holder, wiring and protection board. Panasonic NCR18650B datasheet v13.11 R1 (copy on batteryspace.com; 'For Reference Only'), accessed 2026-11-12",
+                "locator": "Specifications table, Weight (max.)",
+                "url": "https://www.batteryspace.com/prod-specs/NCR18650B.pdf",
+                "license": null,
+                "declared_by": null,
+                "declared_at": null
+              },
+              "value": 0.194,
+              "unit": "kg"
+            }
+          },
+          {
+            "name": "initial_charge",
+            "unit": "1",
+            "default": {
+              "badge": "default",
+              "source": {
+                "ref": "B-03d: fraction of the capacity the pack starts with; 1 = full. A modelling choice",
+                "locator": null,
+                "url": null,
+                "license": null,
+                "declared_by": null,
+                "declared_at": null
+              },
+              "value": 1.0,
+              "unit": "1"
+            },
+            "min": {
+              "badge": "default",
+              "source": {
+                "ref": "B-03d: fraction of the capacity the pack starts with; 1 = full. A modelling choice",
+                "locator": null,
+                "url": null,
+                "license": null,
+                "declared_by": null,
+                "declared_at": null
+              },
+              "value": 0.0,
+              "unit": "1"
+            },
+            "max": {
+              "badge": "default",
+              "source": {
+                "ref": "B-03d: fraction of the capacity the pack starts with; 1 = full. A modelling choice",
+                "locator": null,
+                "url": null,
+                "license": null,
+                "declared_by": null,
+                "declared_at": null
+              },
+              "value": 1.0,
+              "unit": "1"
+            }
+          }
+        ],
+        "snap_points": [
+          {
+            "badge": "default",
+            "source": {
+              "ref": "B-03d: snap frame convention chosen by Kinetra: +Z of the snap frame points out of the part surface; tags are a first proposal for B-04b",
+              "locator": null,
+              "url": null,
+              "license": null,
+              "declared_by": null,
+              "declared_at": null
+            },
+            "id": "top",
+            "kind": "face",
+            "accepts": [
+              "face"
+            ],
+            "position": {
+              "x": {
+                "offset": 0.0,
+                "terms": []
+              },
+              "y": {
+                "offset": 0.0,
+                "terms": []
+              },
+              "z": {
+                "offset": 0.03315,
+                "terms": []
+              }
+            },
+            "orientation": {
+              "x": 0.0,
+              "y": 0.0,
+              "z": 0.0,
+              "w": 1.0
+            }
+          },
+          {
+            "badge": "default",
+            "source": {
+              "ref": "B-03d: snap frame convention chosen by Kinetra: +Z of the snap frame points out of the part surface; tags are a first proposal for B-04b",
+              "locator": null,
+              "url": null,
+              "license": null,
+              "declared_by": null,
+              "declared_at": null
+            },
+            "id": "bottom",
+            "kind": "face",
+            "accepts": [
+              "face"
+            ],
+            "position": {
+              "x": {
+                "offset": 0.0,
+                "terms": []
+              },
+              "y": {
+                "offset": 0.0,
+                "terms": []
+              },
+              "z": {
+                "offset": -0.03215,
+                "terms": []
+              }
+            },
+            "orientation": {
+              "x": 1.0,
+              "y": 0.0,
+              "z": 0.0,
+              "w": 0.0
+            }
+          },
+          {
+            "badge": "default",
+            "source": {
+              "ref": "B-03d: snap frame convention chosen by Kinetra: +Z of the snap frame points out of the part surface; tags are a first proposal for B-04b",
+              "locator": null,
+              "url": null,
+              "license": null,
+              "declared_by": null,
+              "declared_at": null
+            },
+            "id": "side-xp",
+            "kind": "face",
+            "accepts": [
+              "face"
+            ],
+            "position": {
+              "x": {
+                "offset": 0.0185,
+                "terms": []
+              },
+              "y": {
+                "offset": 0.0,
+                "terms": []
+              },
+              "z": {
+                "offset": 0.0,
+                "terms": []
+              }
+            },
+            "orientation": {
+              "x": 0.0,
+              "y": 0.7071067811865476,
+              "z": 0.0,
+              "w": 0.7071067811865476
+            }
+          },
+          {
+            "badge": "default",
+            "source": {
+              "ref": "B-03d: snap frame convention chosen by Kinetra: +Z of the snap frame points out of the part surface; tags are a first proposal for B-04b",
+              "locator": null,
+              "url": null,
+              "license": null,
+              "declared_by": null,
+              "declared_at": null
+            },
+            "id": "side-xn",
+            "kind": "face",
+            "accepts": [
+              "face"
+            ],
+            "position": {
+              "x": {
+                "offset": -0.0185,
+                "terms": []
+              },
+              "y": {
+                "offset": 0.0,
+                "terms": []
+              },
+              "z": {
+                "offset": 0.0,
+                "terms": []
+              }
+            },
+            "orientation": {
+              "x": 0.0,
+              "y": -0.7071067811865476,
+              "z": 0.0,
+              "w": 0.7071067811865476
+            }
+          }
+        ],
+        "specs": [
+          {
+            "badge": "estimate",
+            "source": {
+              "ref": "Method: 4 cells in series hold 4 x 42120 J (see battery-18650 energy_capacity: 3250 mAh x 3.6 V per cell, datasheet minimum capacity) = 168480 J (46.8 Wh = 3.25 Ah x 14.4 V). No balancing or protection losses. Panasonic NCR18650B datasheet v13.11 R1 (copy on batteryspace.com; 'For Reference Only'), accessed 2026-11-12",
+              "locator": "Specifications table: Capacity (2), Nominal voltage",
+              "url": "https://www.batteryspace.com/prod-specs/NCR18650B.pdf",
+              "license": null,
+              "declared_by": null,
+              "declared_at": null
+            },
+            "value": 168480.0,
+            "unit": "J",
+            "name": "energy_capacity"
+          },
+          {
+            "badge": "estimate",
+            "source": {
+              "ref": "Method: 4 cells in series x 3.6 V (datasheet 'Nominal voltage' of one cell) = 14.4 V. Panasonic NCR18650B datasheet v13.11 R1 (copy on batteryspace.com; 'For Reference Only'), accessed 2026-11-12",
+              "locator": "Specifications table, Nominal voltage",
+              "url": "https://www.batteryspace.com/prod-specs/NCR18650B.pdf",
+              "license": null,
+              "declared_by": null,
+              "declared_at": null
+            },
+            "value": 14.4,
+            "unit": "V",
+            "name": "nominal_voltage"
+          }
+        ],
+        "shape": {
+          "badge": "default",
+          "source": {
+            "ref": "B-03d: 4 NCR18650B cells in series (4S1P), 2 x 2, touching; no holder, wiring or protection board, so their mass is not in it. Cell values: Panasonic NCR18650B datasheet v13.11 R1 (copy on batteryspace.com; 'For Reference Only'), accessed 2026-11-12",
+            "locator": null,
+            "url": null,
+            "license": null,
+            "declared_by": null,
+            "declared_at": null
+          },
+          "components": [
+            {
+              "id": "cell_0",
+              "primitive": {
+                "kind": "cylinder",
+                "radius": {
+                  "offset": 0.00925,
+                  "terms": []
+                },
+                "length": {
+                  "offset": 0.0643,
+                  "terms": []
+                }
+              },
+              "operation": "add",
+              "position": {
+                "x": {
+                  "offset": -0.00925,
+                  "terms": []
+                },
+                "y": {
+                  "offset": -0.00925,
+                  "terms": []
+                },
+                "z": {
+                  "offset": 0.0,
+                  "terms": []
+                }
+              },
+              "orientation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+              }
+            },
+            {
+              "id": "button_0",
+              "primitive": {
+                "kind": "cylinder",
+                "radius": {
+                  "offset": 0.0033,
+                  "terms": []
+                },
+                "length": {
+                  "offset": 0.001,
+                  "terms": []
+                }
+              },
+              "operation": "add",
+              "position": {
+                "x": {
+                  "offset": -0.00925,
+                  "terms": []
+                },
+                "y": {
+                  "offset": -0.00925,
+                  "terms": []
+                },
+                "z": {
+                  "offset": 0.03265,
+                  "terms": []
+                }
+              },
+              "orientation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+              }
+            },
+            {
+              "id": "cell_1",
+              "primitive": {
+                "kind": "cylinder",
+                "radius": {
+                  "offset": 0.00925,
+                  "terms": []
+                },
+                "length": {
+                  "offset": 0.0643,
+                  "terms": []
+                }
+              },
+              "operation": "add",
+              "position": {
+                "x": {
+                  "offset": 0.00925,
+                  "terms": []
+                },
+                "y": {
+                  "offset": -0.00925,
+                  "terms": []
+                },
+                "z": {
+                  "offset": 0.0,
+                  "terms": []
+                }
+              },
+              "orientation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+              }
+            },
+            {
+              "id": "button_1",
+              "primitive": {
+                "kind": "cylinder",
+                "radius": {
+                  "offset": 0.0033,
+                  "terms": []
+                },
+                "length": {
+                  "offset": 0.001,
+                  "terms": []
+                }
+              },
+              "operation": "add",
+              "position": {
+                "x": {
+                  "offset": 0.00925,
+                  "terms": []
+                },
+                "y": {
+                  "offset": -0.00925,
+                  "terms": []
+                },
+                "z": {
+                  "offset": 0.03265,
+                  "terms": []
+                }
+              },
+              "orientation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+              }
+            },
+            {
+              "id": "cell_2",
+              "primitive": {
+                "kind": "cylinder",
+                "radius": {
+                  "offset": 0.00925,
+                  "terms": []
+                },
+                "length": {
+                  "offset": 0.0643,
+                  "terms": []
+                }
+              },
+              "operation": "add",
+              "position": {
+                "x": {
+                  "offset": -0.00925,
+                  "terms": []
+                },
+                "y": {
+                  "offset": 0.00925,
+                  "terms": []
+                },
+                "z": {
+                  "offset": 0.0,
+                  "terms": []
+                }
+              },
+              "orientation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+              }
+            },
+            {
+              "id": "button_2",
+              "primitive": {
+                "kind": "cylinder",
+                "radius": {
+                  "offset": 0.0033,
+                  "terms": []
+                },
+                "length": {
+                  "offset": 0.001,
+                  "terms": []
+                }
+              },
+              "operation": "add",
+              "position": {
+                "x": {
+                  "offset": -0.00925,
+                  "terms": []
+                },
+                "y": {
+                  "offset": 0.00925,
+                  "terms": []
+                },
+                "z": {
+                  "offset": 0.03265,
+                  "terms": []
+                }
+              },
+              "orientation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+              }
+            },
+            {
+              "id": "cell_3",
+              "primitive": {
+                "kind": "cylinder",
+                "radius": {
+                  "offset": 0.00925,
+                  "terms": []
+                },
+                "length": {
+                  "offset": 0.0643,
+                  "terms": []
+                }
+              },
+              "operation": "add",
+              "position": {
+                "x": {
+                  "offset": 0.00925,
+                  "terms": []
+                },
+                "y": {
+                  "offset": 0.00925,
+                  "terms": []
+                },
+                "z": {
+                  "offset": 0.0,
+                  "terms": []
+                }
+              },
+              "orientation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+              }
+            },
+            {
+              "id": "button_3",
+              "primitive": {
+                "kind": "cylinder",
+                "radius": {
+                  "offset": 0.0033,
+                  "terms": []
+                },
+                "length": {
+                  "offset": 0.001,
+                  "terms": []
+                }
+              },
+              "operation": "add",
+              "position": {
+                "x": {
+                  "offset": 0.00925,
+                  "terms": []
+                },
+                "y": {
+                  "offset": 0.00925,
+                  "terms": []
+                },
+                "z": {
+                  "offset": 0.03265,
+                  "terms": []
+                }
+              },
+              "orientation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+              }
+            }
+          ]
+        },
+        "mass_parameter": "mass",
+        "role": "battery",
+        "curves": []
+      },
+      {
+        "id": "tank",
+        "name": "Propellant tank",
+        "parameters": [
+          {
+            "name": "radius",
+            "unit": "m",
+            "default": {
+              "badge": "default",
+              "source": {
+                "ref": "B-03d: generic propellant tank, a game-level storage vessel chosen by Kinetra; not a datasheet value, no real vessel, no pressure rating; outer radius of the body",
+                "locator": null,
+                "url": null,
+                "license": null,
+                "declared_by": null,
+                "declared_at": null
+              },
+              "value": 0.06,
+              "unit": "m"
+            },
+            "min": {
+              "badge": "default",
+              "source": {
+                "ref": "B-03d: generic propellant tank, a game-level storage vessel chosen by Kinetra; not a datasheet value, no real vessel, no pressure rating; outer radius of the body",
+                "locator": null,
+                "url": null,
+                "license": null,
+                "declared_by": null,
+                "declared_at": null
+              },
+              "value": 0.03,
+              "unit": "m"
+            },
+            "max": {
+              "badge": "default",
+              "source": {
+                "ref": "B-03d: generic propellant tank, a game-level storage vessel chosen by Kinetra; not a datasheet value, no real vessel, no pressure rating; outer radius of the body",
+                "locator": null,
+                "url": null,
+                "license": null,
+                "declared_by": null,
+                "declared_at": null
+              },
+              "value": 0.15,
+              "unit": "m"
+            }
+          },
+          {
+            "name": "length",
+            "unit": "m",
+            "default": {
+              "badge": "default",
+              "source": {
+                "ref": "B-03d: generic propellant tank, a game-level storage vessel chosen by Kinetra; not a datasheet value, no real vessel, no pressure rating; length of the cylindrical body along local z",
+                "locator": null,
+                "url": null,
+                "license": null,
+                "declared_by": null,
+                "declared_at": null
+              },
+              "value": 0.2,
+              "unit": "m"
+            },
+            "min": {
+              "badge": "default",
+              "source": {
+                "ref": "B-03d: generic propellant tank, a game-level storage vessel chosen by Kinetra; not a datasheet value, no real vessel, no pressure rating; length of the cylindrical body along local z",
+                "locator": null,
+                "url": null,
+                "license": null,
+                "declared_by": null,
+                "declared_at": null
+              },
+              "value": 0.05,
+              "unit": "m"
+            },
+            "max": {
+              "badge": "default",
+              "source": {
+                "ref": "B-03d: generic propellant tank, a game-level storage vessel chosen by Kinetra; not a datasheet value, no real vessel, no pressure rating; length of the cylindrical body along local z",
+                "locator": null,
+                "url": null,
+                "license": null,
+                "declared_by": null,
+                "declared_at": null
+              },
+              "value": 0.6,
+              "unit": "m"
+            }
+          },
+          {
+            "name": "propellant_density",
+            "unit": "kg/m^3",
+            "default": {
+              "badge": "default",
+              "source": {
+                "ref": "B-03d: generic propellant tank, a game-level storage vessel chosen by Kinetra; not a datasheet value, no real vessel, no pressure rating; mean density of what the tank holds when full. 1000 kg/m^3 is a placeholder (liquid-like), NOT a propellant: set the value of what you model. Capacity [kg] = this x inside volume. The range spans compressed gas to a dense liquid",
+                "locator": null,
+                "url": null,
+                "license": null,
+                "declared_by": null,
+                "declared_at": null
+              },
+              "value": 1000.0,
+              "unit": "kg/m^3"
+            },
+            "min": {
+              "badge": "default",
+              "source": {
+                "ref": "B-03d: generic propellant tank, a game-level storage vessel chosen by Kinetra; not a datasheet value, no real vessel, no pressure rating; mean density of what the tank holds when full. 1000 kg/m^3 is a placeholder (liquid-like), NOT a propellant: set the value of what you model. Capacity [kg] = this x inside volume. The range spans compressed gas to a dense liquid",
+                "locator": null,
+                "url": null,
+                "license": null,
+                "declared_by": null,
+                "declared_at": null
+              },
+              "value": 1.0,
+              "unit": "kg/m^3"
+            },
+            "max": {
+              "badge": "default",
+              "source": {
+                "ref": "B-03d: generic propellant tank, a game-level storage vessel chosen by Kinetra; not a datasheet value, no real vessel, no pressure rating; mean density of what the tank holds when full. 1000 kg/m^3 is a placeholder (liquid-like), NOT a propellant: set the value of what you model. Capacity [kg] = this x inside volume. The range spans compressed gas to a dense liquid",
+                "locator": null,
+                "url": null,
+                "license": null,
+                "declared_by": null,
+                "declared_at": null
+              },
+              "value": 2000.0,
+              "unit": "kg/m^3"
+            }
+          },
+          {
+            "name": "initial_fill",
+            "unit": "1",
+            "default": {
+              "badge": "default",
+              "source": {
+                "ref": "B-03d: generic propellant tank, a game-level storage vessel chosen by Kinetra; not a datasheet value, no real vessel, no pressure rating; fraction of the capacity the tank starts with; 1 = full",
+                "locator": null,
+                "url": null,
+                "license": null,
+                "declared_by": null,
+                "declared_at": null
+              },
+              "value": 1.0,
+              "unit": "1"
+            },
+            "min": {
+              "badge": "default",
+              "source": {
+                "ref": "B-03d: generic propellant tank, a game-level storage vessel chosen by Kinetra; not a datasheet value, no real vessel, no pressure rating; fraction of the capacity the tank starts with; 1 = full",
+                "locator": null,
+                "url": null,
+                "license": null,
+                "declared_by": null,
+                "declared_at": null
+              },
+              "value": 0.0,
+              "unit": "1"
+            },
+            "max": {
+              "badge": "default",
+              "source": {
+                "ref": "B-03d: generic propellant tank, a game-level storage vessel chosen by Kinetra; not a datasheet value, no real vessel, no pressure rating; fraction of the capacity the tank starts with; 1 = full",
+                "locator": null,
+                "url": null,
+                "license": null,
+                "declared_by": null,
+                "declared_at": null
+              },
+              "value": 1.0,
+              "unit": "1"
+            }
+          }
+        ],
+        "snap_points": [
+          {
+            "badge": "default",
+            "source": {
+              "ref": "B-03d: snap frame convention chosen by Kinetra: +Z of the snap frame points out of the part surface; tags are a first proposal for B-04b",
+              "locator": null,
+              "url": null,
+              "license": null,
+              "declared_by": null,
+              "declared_at": null
+            },
+            "id": "bottom",
+            "kind": "face",
+            "accepts": [
+              "face"
+            ],
+            "position": {
+              "x": {
+                "offset": 0.0,
+                "terms": []
+              },
+              "y": {
+                "offset": 0.0,
+                "terms": []
+              },
+              "z": {
+                "offset": -0.01,
+                "terms": [
+                  {
+                    "param": "length",
+                    "factor": -0.5
+                  }
+                ]
+              }
+            },
+            "orientation": {
+              "x": 1.0,
+              "y": 0.0,
+              "z": 0.0,
+              "w": 0.0
+            }
+          },
+          {
+            "badge": "default",
+            "source": {
+              "ref": "B-03d: snap frame convention chosen by Kinetra: +Z of the snap frame points out of the part surface; tags are a first proposal for B-04b",
+              "locator": null,
+              "url": null,
+              "license": null,
+              "declared_by": null,
+              "declared_at": null
+            },
+            "id": "outlet",
+            "kind": "feed",
+            "accepts": [
+              "feed"
+            ],
+            "position": {
+              "x": {
+                "offset": 0.0,
+                "terms": []
+              },
+              "y": {
+                "offset": 0.0,
+                "terms": []
+              },
+              "z": {
+                "offset": 0.045,
+                "terms": [
+                  {
+                    "param": "length",
+                    "factor": 0.5
+                  }
+                ]
+              }
+            },
+            "orientation": {
+              "x": 0.0,
+              "y": 0.0,
+              "z": 0.0,
+              "w": 1.0
+            }
+          },
+          {
+            "badge": "default",
+            "source": {
+              "ref": "B-03d: snap frame convention chosen by Kinetra: +Z of the snap frame points out of the part surface; tags are a first proposal for B-04b",
+              "locator": null,
+              "url": null,
+              "license": null,
+              "declared_by": null,
+              "declared_at": null
+            },
+            "id": "side-xp",
+            "kind": "face",
+            "accepts": [
+              "face"
+            ],
+            "position": {
+              "x": {
+                "offset": 0.0,
+                "terms": [
+                  {
+                    "param": "radius",
+                    "factor": 1.0
+                  }
+                ]
+              },
+              "y": {
+                "offset": 0.0,
+                "terms": []
+              },
+              "z": {
+                "offset": 0.0,
+                "terms": []
+              }
+            },
+            "orientation": {
+              "x": 0.0,
+              "y": 0.7071067811865476,
+              "z": 0.0,
+              "w": 0.7071067811865476
+            }
+          },
+          {
+            "badge": "default",
+            "source": {
+              "ref": "B-03d: snap frame convention chosen by Kinetra: +Z of the snap frame points out of the part surface; tags are a first proposal for B-04b",
+              "locator": null,
+              "url": null,
+              "license": null,
+              "declared_by": null,
+              "declared_at": null
+            },
+            "id": "side-xn",
+            "kind": "face",
+            "accepts": [
+              "face"
+            ],
+            "position": {
+              "x": {
+                "offset": 0.0,
+                "terms": [
+                  {
+                    "param": "radius",
+                    "factor": -1.0
+                  }
+                ]
+              },
+              "y": {
+                "offset": 0.0,
+                "terms": []
+              },
+              "z": {
+                "offset": 0.0,
+                "terms": []
+              }
+            },
+            "orientation": {
+              "x": 0.0,
+              "y": -0.7071067811865476,
+              "z": 0.0,
+              "w": 0.7071067811865476
+            }
+          }
+        ],
+        "specs": [],
+        "shape": {
+          "badge": "default",
+          "source": {
+            "ref": "B-03d: generic propellant tank, a game-level storage vessel chosen by Kinetra; not a datasheet value, no real vessel, no pressure rating; a closed cylindrical shell: wall 3 mm fixed, a valve neck 24 mm diameter x 30 mm and a 30 x 30 x 15 mm cap on top, a skirt 0.8 x the radius x 10 mm below. The inside (the void) is what holds the propellant",
+            "locator": null,
+            "url": null,
+            "license": null,
+            "declared_by": null,
+            "declared_at": null
+          },
+          "components": [
+            {
+              "id": "body",
+              "primitive": {
+                "kind": "cylinder",
+                "radius": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "radius",
+                      "factor": 1.0
+                    }
+                  ]
+                },
+                "length": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "length",
+                      "factor": 1.0
+                    }
+                  ]
+                }
+              },
+              "operation": "add",
+              "position": {
+                "x": {
+                  "offset": 0.0,
+                  "terms": []
+                },
+                "y": {
+                  "offset": 0.0,
+                  "terms": []
+                },
+                "z": {
+                  "offset": 0.0,
+                  "terms": []
+                }
+              },
+              "orientation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+              }
+            },
+            {
+              "id": "inside",
+              "primitive": {
+                "kind": "cylinder",
+                "radius": {
+                  "offset": -0.003,
+                  "terms": [
+                    {
+                      "param": "radius",
+                      "factor": 1.0
+                    }
+                  ]
+                },
+                "length": {
+                  "offset": -0.006,
+                  "terms": [
+                    {
+                      "param": "length",
+                      "factor": 1.0
+                    }
+                  ]
+                }
+              },
+              "operation": "subtract",
+              "position": {
+                "x": {
+                  "offset": 0.0,
+                  "terms": []
+                },
+                "y": {
+                  "offset": 0.0,
+                  "terms": []
+                },
+                "z": {
+                  "offset": 0.0,
+                  "terms": []
+                }
+              },
+              "orientation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+              }
+            },
+            {
+              "id": "neck",
+              "primitive": {
+                "kind": "cylinder",
+                "radius": {
+                  "offset": 0.012,
+                  "terms": []
+                },
+                "length": {
+                  "offset": 0.03,
+                  "terms": []
+                }
+              },
+              "operation": "add",
+              "position": {
+                "x": {
+                  "offset": 0.0,
+                  "terms": []
+                },
+                "y": {
+                  "offset": 0.0,
+                  "terms": []
+                },
+                "z": {
+                  "offset": 0.015,
+                  "terms": [
+                    {
+                      "param": "length",
+                      "factor": 0.5
+                    }
+                  ]
+                }
+              },
+              "orientation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+              }
+            },
+            {
+              "id": "cap",
+              "primitive": {
+                "kind": "box",
+                "size_x": {
+                  "offset": 0.03,
+                  "terms": []
+                },
+                "size_y": {
+                  "offset": 0.03,
+                  "terms": []
+                },
+                "size_z": {
+                  "offset": 0.015,
+                  "terms": []
+                }
+              },
+              "operation": "add",
+              "position": {
+                "x": {
+                  "offset": 0.0,
+                  "terms": []
+                },
+                "y": {
+                  "offset": 0.0,
+                  "terms": []
+                },
+                "z": {
+                  "offset": 0.0375,
+                  "terms": [
+                    {
+                      "param": "length",
+                      "factor": 0.5
+                    }
+                  ]
+                }
+              },
+              "orientation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+              }
+            },
+            {
+              "id": "skirt",
+              "primitive": {
+                "kind": "cylinder",
+                "radius": {
+                  "offset": 0.0,
+                  "terms": [
+                    {
+                      "param": "radius",
+                      "factor": 0.8
+                    }
+                  ]
+                },
+                "length": {
+                  "offset": 0.01,
+                  "terms": []
+                }
+              },
+              "operation": "add",
+              "position": {
+                "x": {
+                  "offset": 0.0,
+                  "terms": []
+                },
+                "y": {
+                  "offset": 0.0,
+                  "terms": []
+                },
+                "z": {
+                  "offset": -0.005,
+                  "terms": [
+                    {
+                      "param": "length",
+                      "factor": -0.5
+                    }
+                  ]
+                }
+              },
+              "orientation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+              }
+            }
+          ]
+        },
+        "mass_parameter": null,
+        "role": "tank",
+        "curves": []
+      },
+      {
+        "id": "thruster-vacco-48003040",
+        "name": "Cold gas thruster 2 lbf (VACCO 48003040)",
+        "parameters": [],
+        "snap_points": [
+          {
+            "badge": "default",
+            "source": {
+              "ref": "B-03c: snap frame convention chosen by Kinetra: +Z of a snap frame points out of the part surface. `nozzle`: +Z is the exhaust direction, so the force on the part is along -Z. Where the datasheet draws no mounting, the mount is the back face of the valve body",
+              "locator": null,
+              "url": null,
+              "license": null,
+              "declared_by": null,
+              "declared_at": null
+            },
+            "id": "mount",
+            "kind": "face",
+            "accepts": [
+              "face"
+            ],
+            "position": {
+              "x": {
+                "offset": 0.0,
+                "terms": []
+              },
+              "y": {
+                "offset": 0.0,
+                "terms": []
+              },
+              "z": {
+                "offset": -0.04729059031466532,
+                "terms": []
+              }
+            },
+            "orientation": {
+              "x": 1.0,
+              "y": 0.0,
+              "z": 0.0,
+              "w": 0.0
+            }
+          },
+          {
+            "badge": "default",
+            "source": {
+              "ref": "B-03c: snap frame convention chosen by Kinetra: +Z of a snap frame points out of the part surface. `nozzle`: +Z is the exhaust direction, so the force on the part is along -Z. Where the datasheet draws no mounting, the mount is the back face of the valve body",
+              "locator": null,
+              "url": null,
+              "license": null,
+              "declared_by": null,
+              "declared_at": null
+            },
+            "id": "nozzle",
+            "kind": "nozzle",
+            "accepts": [],
+            "position": {
+              "x": {
+                "offset": 0.0,
+                "terms": []
+              },
+              "y": {
+                "offset": 0.0,
+                "terms": []
+              },
+              "z": {
+                "offset": 0.04729059031466532,
+                "terms": []
+              }
+            },
+            "orientation": {
+              "x": 0.0,
+              "y": 0.0,
+              "z": 0.0,
+              "w": 1.0
+            }
+          }
+        ],
+        "specs": [
+          {
+            "badge": "cite",
+            "source": {
+              "ref": "VACCO Industries, 2 LBF COLD GAS THRUSTER 48003040 datasheet (07 July 2004)",
+              "locator": "Operating parameters: Thrust @ 250 psia GN2 inlet 2.0 lbf (x 4.4482216152605 N/lbf)",
+              "url": "https://www.vacco.com/images/uploads/pdfs/cold_gas_thrusters.pdf",
+              "license": null,
+              "declared_by": null,
+              "declared_at": null
+            },
+            "value": 8.896443230521,
+            "unit": "N",
+            "name": "rated_thrust"
+          },
+          {
+            "badge": "cite",
+            "source": {
+              "ref": "VACCO Industries, 2 LBF COLD GAS THRUSTER 48003040 datasheet (07 July 2004)",
+              "locator": "Description: Flow 0.0267 lbm/sec GN2 @ 235 psia inlet (x 0.45359237 kg/lbm). Measured at 235 psia inlet, thrust is given at 250 psia: the datasheet's two conditions differ",
+              "url": "https://www.vacco.com/images/uploads/pdfs/cold_gas_thrusters.pdf",
+              "license": null,
+              "declared_by": null,
+              "declared_at": null
+            },
+            "value": 0.012110916279000001,
+            "unit": "kg/s",
+            "name": "propellant_flow"
+          },
+          {
+            "badge": "cite",
+            "source": {
+              "ref": "VACCO Industries, 2 LBF COLD GAS THRUSTER 48003040 datasheet (07 July 2004)",
+              "locator": "Operating parameters: Weight 0.83 lbm (x 0.45359237 kg/lbm)",
+              "url": "https://www.vacco.com/images/uploads/pdfs/cold_gas_thrusters.pdf",
+              "license": null,
+              "declared_by": null,
+              "declared_at": null
+            },
+            "value": 0.37648166710000003,
+            "unit": "kg",
+            "name": "mass"
+          },
+          {
+            "badge": "cite",
+            "source": {
+              "ref": "VACCO Industries, 2 LBF COLD GAS THRUSTER 48003040 datasheet (07 July 2004)",
+              "locator": "Description: Response, Opening 7 msec @ 16.8 VDC, 230 psig",
+              "url": "https://www.vacco.com/images/uploads/pdfs/cold_gas_thrusters.pdf",
+              "license": null,
+              "declared_by": null,
+              "declared_at": null
+            },
+            "value": 0.007,
+            "unit": "s",
+            "name": "opening_response"
+          },
+          {
+            "badge": "cite",
+            "source": {
+              "ref": "VACCO Industries, 2 LBF COLD GAS THRUSTER 48003040 datasheet (07 July 2004)",
+              "locator": "Description: Response, Closing 4 msec @ 230 psig",
+              "url": "https://www.vacco.com/images/uploads/pdfs/cold_gas_thrusters.pdf",
+              "license": null,
+              "declared_by": null,
+              "declared_at": null
+            },
+            "value": 0.004,
+            "unit": "s",
+            "name": "closing_response"
+          }
+        ],
+        "shape": {
+          "badge": "estimate",
+          "source": {
+            "ref": "B-03c: the datasheet gives no dimensions. Valve body, neck and bell are three coaxial cylinders drawn by Kinetra; the body length (0.06458118062933065 m) is solved so that the solid steel-a36 part (7849.0 kg/m^3, B-07) has the datasheet mass 0.83 lbm = 0.37648166710000003 kg. Assign steel-a36 to the instance",
+            "locator": "VACCO 48003040 datasheet, Weight",
+            "url": null,
+            "license": null,
+            "declared_by": null,
+            "declared_at": null
+          },
+          "components": [
+            {
+              "id": "valve_body",
+              "primitive": {
+                "kind": "cylinder",
+                "radius": {
+                  "offset": 0.014,
+                  "terms": []
+                },
+                "length": {
+                  "offset": 0.06458118062933065,
+                  "terms": []
+                }
+              },
+              "operation": "add",
+              "position": {
+                "x": {
+                  "offset": 0.0,
+                  "terms": []
+                },
+                "y": {
+                  "offset": 0.0,
+                  "terms": []
+                },
+                "z": {
+                  "offset": -0.015,
+                  "terms": []
+                }
+              },
+              "orientation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+              }
+            },
+            {
+              "id": "neck",
+              "primitive": {
+                "kind": "cylinder",
+                "radius": {
+                  "offset": 0.006,
+                  "terms": []
+                },
+                "length": {
+                  "offset": 0.012,
+                  "terms": []
+                }
+              },
+              "operation": "add",
+              "position": {
+                "x": {
+                  "offset": 0.0,
+                  "terms": []
+                },
+                "y": {
+                  "offset": 0.0,
+                  "terms": []
+                },
+                "z": {
+                  "offset": 0.02329059031466532,
+                  "terms": []
+                }
+              },
+              "orientation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+              }
+            },
+            {
+              "id": "bell",
+              "primitive": {
+                "kind": "cylinder",
+                "radius": {
+                  "offset": 0.011,
+                  "terms": []
+                },
+                "length": {
+                  "offset": 0.018,
+                  "terms": []
+                }
+              },
+              "operation": "add",
+              "position": {
+                "x": {
+                  "offset": 0.0,
+                  "terms": []
+                },
+                "y": {
+                  "offset": 0.0,
+                  "terms": []
+                },
+                "z": {
+                  "offset": 0.03829059031466532,
+                  "terms": []
+                }
+              },
+              "orientation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+              }
+            }
+          ]
+        },
+        "mass_parameter": null,
+        "role": "thruster",
+        "curves": [
+          {
+            "name": "thrust",
+            "curve": {
+              "badge": "estimate",
+              "source": {
+                "ref": "B-03c: thrust rises linearly from 0 to the cited rated thrust over the cited opening response (7 ms); the datasheet does not give the shape of the rise. The closing response (4 ms) is not modelled: the force stops when the command goes off",
+                "locator": "VACCO 48003040 datasheet, Response",
+                "url": null,
+                "license": null,
+                "declared_by": null,
+                "declared_at": null
+              },
+              "x_unit": "s",
+              "y_unit": "N",
+              "points": [
+                {
+                  "x": 0.0,
+                  "y": 0.0
+                },
+                {
+                  "x": 0.007,
+                  "y": 8.896443230521
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "id": "spring-damper-lee-lc032b08",
+        "name": "Spring-damper, Lee Spring LC 032B 08 S316 spring (5.99 N/mm) with a damping coefficient",
+        "parameters": [
+          {
+            "name": "stiffness",
+            "unit": "N/m",
+            "default": {
+              "badge": "cite",
+              "source": {
+                "ref": "Lee Spring standard compression spring LC 032B 08 S316 (stainless steel type 316, squared and ground), Lee Spring product page",
+                "locator": "Rate (N/mm): 5.99 (Rate (lb/inch): 34.2)",
+                "url": "https://www.leespring.com/compression-specific/331081",
+                "license": null,
+                "declared_by": null,
+                "declared_at": null
+              },
+              "value": 5990.0,
+              "unit": "N/m"
+            },
+            "min": {
+              "badge": "default",
+              "source": {
+                "ref": "B-03e: tuning range chosen by Kinetra for game-scale suspensions (a hobby-size spring up to a car-size spring); not a datasheet value",
+                "locator": null,
+                "url": null,
+                "license": null,
+                "declared_by": null,
+                "declared_at": null
+              },
+              "value": 100.0,
+              "unit": "N/m"
+            },
+            "max": {
+              "badge": "default",
+              "source": {
+                "ref": "B-03e: tuning range chosen by Kinetra for game-scale suspensions (a hobby-size spring up to a car-size spring); not a datasheet value",
+                "locator": null,
+                "url": null,
+                "license": null,
+                "declared_by": null,
+                "declared_at": null
+              },
+              "value": 100000.0,
+              "unit": "N/m"
+            }
+          },
+          {
+            "name": "damping",
+            "unit": "N*s/m",
+            "default": {
+              "badge": "default",
+              "source": {
+                "ref": "B-03e: Kinetra default. The datasheet of a coil spring has no damping; 20 N*s/m gives a damping ratio of about 0.18 (zeta = c / (2 sqrt(k m))) for a 0.5 kg load on the cited 5990 N/m spring. Not measured; tune it",
+                "locator": null,
+                "url": null,
+                "license": null,
+                "declared_by": null,
+                "declared_at": null
+              },
+              "value": 20.0,
+              "unit": "N*s/m"
+            },
+            "min": {
+              "badge": "default",
+              "source": {
+                "ref": "B-03e: tuning range chosen by Kinetra for game-scale suspensions; not a datasheet value. 0 is an undamped spring",
+                "locator": null,
+                "url": null,
+                "license": null,
+                "declared_by": null,
+                "declared_at": null
+              },
+              "value": 0.0,
+              "unit": "N*s/m"
+            },
+            "max": {
+              "badge": "default",
+              "source": {
+                "ref": "B-03e: tuning range chosen by Kinetra for game-scale suspensions; not a datasheet value. 0 is an undamped spring",
+                "locator": null,
+                "url": null,
+                "license": null,
+                "declared_by": null,
+                "declared_at": null
+              },
+              "value": 500.0,
+              "unit": "N*s/m"
+            }
+          },
+          {
+            "name": "mass",
+            "unit": "kg",
+            "default": {
+              "badge": "estimate",
+              "source": {
+                "ref": "B-03e estimate: the product page gives no weight. Wire length = pi (OD - d) x total coils = pi (4.57 - 0.81) mm x 13.82 = 163.3 mm; wire volume = pi/4 d^2 x length = 84.1 mm^3; x 8000 kg/m^3 (generic austenitic stainless steel, not the supplier's value) = 0.67 g. Inputs from the same page",
+                "locator": null,
+                "url": null,
+                "license": null,
+                "declared_by": null,
+                "declared_at": null
+              },
+              "value": 0.000673,
+              "unit": "kg"
+            },
+            "min": {
+              "badge": "estimate",
+              "source": {
+                "ref": "B-03e estimate: the product page gives no weight. Wire length = pi (OD - d) x total coils = pi (4.57 - 0.81) mm x 13.82 = 163.3 mm; wire volume = pi/4 d^2 x length = 84.1 mm^3; x 8000 kg/m^3 (generic austenitic stainless steel, not the supplier's value) = 0.67 g. Inputs from the same page",
+                "locator": null,
+                "url": null,
+                "license": null,
+                "declared_by": null,
+                "declared_at": null
+              },
+              "value": 0.000673,
+              "unit": "kg"
+            },
+            "max": {
+              "badge": "estimate",
+              "source": {
+                "ref": "B-03e estimate: the product page gives no weight. Wire length = pi (OD - d) x total coils = pi (4.57 - 0.81) mm x 13.82 = 163.3 mm; wire volume = pi/4 d^2 x length = 84.1 mm^3; x 8000 kg/m^3 (generic austenitic stainless steel, not the supplier's value) = 0.67 g. Inputs from the same page",
+                "locator": null,
+                "url": null,
+                "license": null,
+                "declared_by": null,
+                "declared_at": null
+              },
+              "value": 0.000673,
+              "unit": "kg"
+            }
+          }
+        ],
+        "snap_points": [
+          {
+            "badge": "declared",
+            "source": {
+              "ref": "Kinetra: centre of the spring's lower end face; the part's z axis is the spring axis, the spring acts along it; the part origin is the middle of the free length",
+              "locator": null,
+              "url": null,
+              "license": null,
+              "declared_by": "kinetra-b03e",
+              "declared_at": "2026-11-12T00:00:00Z"
+            },
+            "id": "end_a",
+            "kind": "spring_end",
+            "accepts": [
+              "spring_end"
+            ],
+            "position": {
+              "x": {
+                "offset": 0.0,
+                "terms": []
+              },
+              "y": {
+                "offset": 0.0,
+                "terms": []
+              },
+              "z": {
+                "offset": -0.009525,
+                "terms": []
+              }
+            },
+            "orientation": {
+              "x": 0.0,
+              "y": 0.0,
+              "z": 0.0,
+              "w": 1.0
+            }
+          },
+          {
+            "badge": "declared",
+            "source": {
+              "ref": "Kinetra: centre of the spring's upper end face (z = +free length / 2), the other end of the spring axis",
+              "locator": null,
+              "url": null,
+              "license": null,
+              "declared_by": "kinetra-b03e",
+              "declared_at": "2026-11-12T00:00:00Z"
+            },
+            "id": "end_b",
+            "kind": "spring_end",
+            "accepts": [
+              "spring_end"
+            ],
+            "position": {
+              "x": {
+                "offset": 0.0,
+                "terms": []
+              },
+              "y": {
+                "offset": 0.0,
+                "terms": []
+              },
+              "z": {
+                "offset": 0.009525,
+                "terms": []
+              }
+            },
+            "orientation": {
+              "x": 0.0,
+              "y": 0.0,
+              "z": 0.0,
+              "w": 1.0
+            }
+          }
+        ],
+        "specs": [
+          {
+            "badge": "cite",
+            "source": {
+              "ref": "Lee Spring standard compression spring LC 032B 08 S316 (stainless steel type 316, squared and ground), Lee Spring product page",
+              "locator": "Free Length (mm): 19.05 (0.75 in)",
+              "url": "https://www.leespring.com/compression-specific/331081",
+              "license": null,
+              "declared_by": null,
+              "declared_at": null
+            },
+            "value": 0.01905,
+            "unit": "m",
+            "name": "free_length"
+          },
+          {
+            "badge": "cite",
+            "source": {
+              "ref": "Lee Spring standard compression spring LC 032B 08 S316 (stainless steel type 316, squared and ground), Lee Spring product page",
+              "locator": "Solid Height (mm): 11.43 (0.45 in)",
+              "url": "https://www.leespring.com/compression-specific/331081",
+              "license": null,
+              "declared_by": null,
+              "declared_at": null
+            },
+            "value": 0.01143,
+            "unit": "m",
+            "name": "solid_height"
+          },
+          {
+            "badge": "cite",
+            "source": {
+              "ref": "Lee Spring standard compression spring LC 032B 08 S316 (stainless steel type 316, squared and ground), Lee Spring product page",
+              "locator": "Outside Diameter (mm): 4.57 (0.18 in)",
+              "url": "https://www.leespring.com/compression-specific/331081",
+              "license": null,
+              "declared_by": null,
+              "declared_at": null
+            },
+            "value": 0.00457,
+            "unit": "m",
+            "name": "outside_diameter"
+          },
+          {
+            "badge": "cite",
+            "source": {
+              "ref": "Lee Spring standard compression spring LC 032B 08 S316 (stainless steel type 316, squared and ground), Lee Spring product page",
+              "locator": "Wire Diameter (mm): 0.81 (0.032 in)",
+              "url": "https://www.leespring.com/compression-specific/331081",
+              "license": null,
+              "declared_by": null,
+              "declared_at": null
+            },
+            "value": 0.00081,
+            "unit": "m",
+            "name": "wire_diameter"
+          },
+          {
+            "badge": "cite",
+            "source": {
+              "ref": "Lee Spring standard compression spring LC 032B 08 S316 (stainless steel type 316, squared and ground), Lee Spring product page",
+              "locator": "Active Coils: 11.82",
+              "url": "https://www.leespring.com/compression-specific/331081",
+              "license": null,
+              "declared_by": null,
+              "declared_at": null
+            },
+            "value": 11.82,
+            "unit": "1",
+            "name": "active_coils"
+          },
+          {
+            "badge": "cite",
+            "source": {
+              "ref": "Lee Spring standard compression spring LC 032B 08 S316 (stainless steel type 316, squared and ground), Lee Spring product page",
+              "locator": "Total Coils: 13.82",
+              "url": "https://www.leespring.com/compression-specific/331081",
+              "license": null,
+              "declared_by": null,
+              "declared_at": null
+            },
+            "value": 13.82,
+            "unit": "1",
+            "name": "total_coils"
+          },
+          {
+            "badge": "cite",
+            "source": {
+              "ref": "Lee Spring standard compression spring LC 032B 08 S316 (stainless steel type 316, squared and ground), Lee Spring product page",
+              "locator": "Load at Solid Height (N): 45.64 (10.26 lb)",
+              "url": "https://www.leespring.com/compression-specific/331081",
+              "license": null,
+              "declared_by": null,
+              "declared_at": null
+            },
+            "value": 45.64,
+            "unit": "N",
+            "name": "load_at_solid_height"
+          }
+        ],
+        "shape": {
+          "badge": "declared",
+          "source": {
+            "ref": "Kinetra drawing of the spring: the envelope is the cited outside diameter 4.57 mm and free length 19.05 mm (Lee Spring product page); seven discs stand for the coil turns, each 1/13 of the free length with a gap of the same size between them. The wire, its helix and the ground ends are not modelled",
+            "locator": null,
+            "url": null,
+            "license": null,
+            "declared_by": "kinetra-b03e",
+            "declared_at": "2026-11-12T00:00:00Z"
+          },
+          "components": [
+            {
+              "id": "turn1",
+              "primitive": {
+                "kind": "cylinder",
+                "radius": {
+                  "offset": 0.002285,
+                  "terms": []
+                },
+                "length": {
+                  "offset": 0.0014653846153846154,
+                  "terms": []
+                }
+              },
+              "operation": "add",
+              "position": {
+                "x": {
+                  "offset": 0.0,
+                  "terms": []
+                },
+                "y": {
+                  "offset": 0.0,
+                  "terms": []
+                },
+                "z": {
+                  "offset": -0.008792307692307693,
+                  "terms": []
+                }
+              },
+              "orientation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+              }
+            },
+            {
+              "id": "turn2",
+              "primitive": {
+                "kind": "cylinder",
+                "radius": {
+                  "offset": 0.002285,
+                  "terms": []
+                },
+                "length": {
+                  "offset": 0.0014653846153846154,
+                  "terms": []
+                }
+              },
+              "operation": "add",
+              "position": {
+                "x": {
+                  "offset": 0.0,
+                  "terms": []
+                },
+                "y": {
+                  "offset": 0.0,
+                  "terms": []
+                },
+                "z": {
+                  "offset": -0.005861538461538462,
+                  "terms": []
+                }
+              },
+              "orientation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+              }
+            },
+            {
+              "id": "turn3",
+              "primitive": {
+                "kind": "cylinder",
+                "radius": {
+                  "offset": 0.002285,
+                  "terms": []
+                },
+                "length": {
+                  "offset": 0.0014653846153846154,
+                  "terms": []
+                }
+              },
+              "operation": "add",
+              "position": {
+                "x": {
+                  "offset": 0.0,
+                  "terms": []
+                },
+                "y": {
+                  "offset": 0.0,
+                  "terms": []
+                },
+                "z": {
+                  "offset": -0.0029307692307692316,
+                  "terms": []
+                }
+              },
+              "orientation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+              }
+            },
+            {
+              "id": "turn4",
+              "primitive": {
+                "kind": "cylinder",
+                "radius": {
+                  "offset": 0.002285,
+                  "terms": []
+                },
+                "length": {
+                  "offset": 0.0014653846153846154,
+                  "terms": []
+                }
+              },
+              "operation": "add",
+              "position": {
+                "x": {
+                  "offset": 0.0,
+                  "terms": []
+                },
+                "y": {
+                  "offset": 0.0,
+                  "terms": []
+                },
+                "z": {
+                  "offset": 0.0,
+                  "terms": []
+                }
+              },
+              "orientation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+              }
+            },
+            {
+              "id": "turn5",
+              "primitive": {
+                "kind": "cylinder",
+                "radius": {
+                  "offset": 0.002285,
+                  "terms": []
+                },
+                "length": {
+                  "offset": 0.0014653846153846154,
+                  "terms": []
+                }
+              },
+              "operation": "add",
+              "position": {
+                "x": {
+                  "offset": 0.0,
+                  "terms": []
+                },
+                "y": {
+                  "offset": 0.0,
+                  "terms": []
+                },
+                "z": {
+                  "offset": 0.00293076923076923,
+                  "terms": []
+                }
+              },
+              "orientation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+              }
+            },
+            {
+              "id": "turn6",
+              "primitive": {
+                "kind": "cylinder",
+                "radius": {
+                  "offset": 0.002285,
+                  "terms": []
+                },
+                "length": {
+                  "offset": 0.0014653846153846154,
+                  "terms": []
+                }
+              },
+              "operation": "add",
+              "position": {
+                "x": {
+                  "offset": 0.0,
+                  "terms": []
+                },
+                "y": {
+                  "offset": 0.0,
+                  "terms": []
+                },
+                "z": {
+                  "offset": 0.00586153846153846,
+                  "terms": []
+                }
+              },
+              "orientation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+              }
+            },
+            {
+              "id": "turn7",
+              "primitive": {
+                "kind": "cylinder",
+                "radius": {
+                  "offset": 0.002285,
+                  "terms": []
+                },
+                "length": {
+                  "offset": 0.0014653846153846154,
+                  "terms": []
+                }
+              },
+              "operation": "add",
+              "position": {
+                "x": {
+                  "offset": 0.0,
+                  "terms": []
+                },
+                "y": {
+                  "offset": 0.0,
+                  "terms": []
+                },
+                "z": {
+                  "offset": 0.008792307692307693,
+                  "terms": []
+                }
+              },
+              "orientation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+              }
+            }
+          ]
+        },
+        "mass_parameter": "mass",
+        "role": "spring_damper",
+        "curves": []
+      }
+    ],
+    "instances": [
+      {
+        "id": "chassis",
+        "part": "drive-chassis",
+        "parameters": [],
+        "material": "al6061-t6",
+        "pose": {
+          "badge": "declared",
+          "source": {
+            "ref": "B-03 drive-car example: placed by solving the joints so that joined snap points meet",
+            "locator": null,
+            "url": null,
+            "license": null,
+            "declared_by": "kinetra-b03-drive-car",
+            "declared_at": "2026-11-12T00:00:00Z"
+          },
+          "position": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.09
+          },
+          "orientation": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0,
+            "w": 1.0
+          }
+        }
+      },
+      {
+        "id": "motor-rl",
+        "part": "motor-37d-12v-50-1",
+        "parameters": [],
+        "material": null,
+        "pose": {
+          "badge": "declared",
+          "source": {
+            "ref": "B-03 drive-car example: placed by solving the joints so that joined snap points meet",
+            "locator": null,
+            "url": null,
+            "license": null,
+            "declared_by": "kinetra-b03-drive-car",
+            "declared_at": "2026-11-12T00:00:00Z"
+          },
+          "position": {
+            "x": -0.12,
+            "y": 0.08,
+            "z": 0.05
+          },
+          "orientation": {
+            "x": -0.7071067811865476,
+            "y": 0.0,
+            "z": 0.0,
+            "w": 0.7071067811865476
+          }
+        }
+      },
+      {
+        "id": "motor-rr",
+        "part": "motor-37d-12v-50-1",
+        "parameters": [],
+        "material": null,
+        "pose": {
+          "badge": "declared",
+          "source": {
+            "ref": "B-03 drive-car example: placed by solving the joints so that joined snap points meet",
+            "locator": null,
+            "url": null,
+            "license": null,
+            "declared_by": "kinetra-b03-drive-car",
+            "declared_at": "2026-11-12T00:00:00Z"
+          },
+          "position": {
+            "x": -0.12,
+            "y": -0.08,
+            "z": 0.05
+          },
+          "orientation": {
+            "x": 0.7071067811865476,
+            "y": 0.0,
+            "z": 0.0,
+            "w": 0.7071067811865476
+          }
+        }
+      },
+      {
+        "id": "stub-rl",
+        "part": "drive-stub",
+        "parameters": [],
+        "material": "al6061-t6",
+        "pose": {
+          "badge": "declared",
+          "source": {
+            "ref": "B-03 drive-car example: placed by solving the joints so that joined snap points meet",
+            "locator": null,
+            "url": null,
+            "license": null,
+            "declared_by": "kinetra-b03-drive-car",
+            "declared_at": "2026-11-12T00:00:00Z"
+          },
+          "position": {
+            "x": -0.12,
+            "y": 0.094,
+            "z": 0.05
+          },
+          "orientation": {
+            "x": -0.7071067811865476,
+            "y": 0.0,
+            "z": 0.0,
+            "w": 0.7071067811865476
+          }
+        }
+      },
+      {
+        "id": "stub-rr",
+        "part": "drive-stub",
+        "parameters": [],
+        "material": "al6061-t6",
+        "pose": {
+          "badge": "declared",
+          "source": {
+            "ref": "B-03 drive-car example: placed by solving the joints so that joined snap points meet",
+            "locator": null,
+            "url": null,
+            "license": null,
+            "declared_by": "kinetra-b03-drive-car",
+            "declared_at": "2026-11-12T00:00:00Z"
+          },
+          "position": {
+            "x": -0.12,
+            "y": -0.094,
+            "z": 0.05
+          },
+          "orientation": {
+            "x": 0.7071067811865476,
+            "y": 0.0,
+            "z": 0.0,
+            "w": 0.7071067811865476
+          }
+        }
+      },
+      {
+        "id": "wheel-rl",
+        "part": "wheel",
+        "parameters": [],
+        "material": "pom-delrin-150",
+        "pose": {
+          "badge": "declared",
+          "source": {
+            "ref": "B-03 drive-car example: placed by solving the joints so that joined snap points meet",
+            "locator": null,
+            "url": null,
+            "license": null,
+            "declared_by": "kinetra-b03-drive-car",
+            "declared_at": "2026-11-12T00:00:00Z"
+          },
+          "position": {
+            "x": -0.12,
+            "y": 0.145,
+            "z": 0.049999999999999996
+          },
+          "orientation": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0,
+            "w": 1.0
+          }
+        }
+      },
+      {
+        "id": "wheel-rr",
+        "part": "wheel",
+        "parameters": [],
+        "material": "pom-delrin-150",
+        "pose": {
+          "badge": "declared",
+          "source": {
+            "ref": "B-03 drive-car example: placed by solving the joints so that joined snap points meet",
+            "locator": null,
+            "url": null,
+            "license": null,
+            "declared_by": "kinetra-b03-drive-car",
+            "declared_at": "2026-11-12T00:00:00Z"
+          },
+          "position": {
+            "x": -0.12,
+            "y": -0.145,
+            "z": 0.049999999999999996
+          },
+          "orientation": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 1.0,
+            "w": 0.0
+          }
+        }
+      },
+      {
+        "id": "wheel-fl",
+        "part": "wheel",
+        "parameters": [],
+        "material": "pom-delrin-150",
+        "pose": {
+          "badge": "declared",
+          "source": {
+            "ref": "B-03 drive-car example: placed by solving the joints so that joined snap points meet",
+            "locator": null,
+            "url": null,
+            "license": null,
+            "declared_by": "kinetra-b03-drive-car",
+            "declared_at": "2026-11-12T00:00:00Z"
+          },
+          "position": {
+            "x": 0.12,
+            "y": 0.145,
+            "z": 0.05
+          },
+          "orientation": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0,
+            "w": 1.0
+          }
+        }
+      },
+      {
+        "id": "wheel-fr",
+        "part": "wheel",
+        "parameters": [],
+        "material": "pom-delrin-150",
+        "pose": {
+          "badge": "declared",
+          "source": {
+            "ref": "B-03 drive-car example: placed by solving the joints so that joined snap points meet",
+            "locator": null,
+            "url": null,
+            "license": null,
+            "declared_by": "kinetra-b03-drive-car",
+            "declared_at": "2026-11-12T00:00:00Z"
+          },
+          "position": {
+            "x": 0.12,
+            "y": -0.145,
+            "z": 0.05
+          },
+          "orientation": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 1.0,
+            "w": 0.0
+          }
+        }
+      },
+      {
+        "id": "battery",
+        "part": "battery-pack-4s",
+        "parameters": [],
+        "material": null,
+        "pose": {
+          "badge": "declared",
+          "source": {
+            "ref": "B-03 drive-car example: placed by solving the joints so that joined snap points meet",
+            "locator": null,
+            "url": null,
+            "license": null,
+            "declared_by": "kinetra-b03-drive-car",
+            "declared_at": "2026-11-12T00:00:00Z"
+          },
+          "position": {
+            "x": 0.05,
+            "y": 0.0,
+            "z": 0.12614999999999998
+          },
+          "orientation": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0,
+            "w": 1.0
+          }
+        }
+      },
+      {
+        "id": "tank",
+        "part": "tank",
+        "parameters": [
+          {
+            "badge": "declared",
+            "source": {
+              "ref": "B-03 drive-car example: radius chosen by the example, not a measured part",
+              "locator": null,
+              "url": null,
+              "license": null,
+              "declared_by": "kinetra-b03-drive-car",
+              "declared_at": "2026-11-12T00:00:00Z"
+            },
+            "value": 0.035,
+            "unit": "m",
+            "name": "radius"
+          },
+          {
+            "badge": "declared",
+            "source": {
+              "ref": "B-03 drive-car example: length chosen by the example, not a measured part",
+              "locator": null,
+              "url": null,
+              "license": null,
+              "declared_by": "kinetra-b03-drive-car",
+              "declared_at": "2026-11-12T00:00:00Z"
+            },
+            "value": 0.1,
+            "unit": "m",
+            "name": "length"
+          }
+        ],
+        "material": "al6061-t6",
+        "pose": {
+          "badge": "declared",
+          "source": {
+            "ref": "B-03 drive-car example: placed by solving the joints so that joined snap points meet",
+            "locator": null,
+            "url": null,
+            "license": null,
+            "declared_by": "kinetra-b03-drive-car",
+            "declared_at": "2026-11-12T00:00:00Z"
+          },
+          "position": {
+            "x": -0.04,
+            "y": 0.0,
+            "z": 0.154
+          },
+          "orientation": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0,
+            "w": 1.0
+          }
+        }
+      },
+      {
+        "id": "thruster",
+        "part": "thruster-vacco-48003040",
+        "parameters": [],
+        "material": "steel-a36",
+        "pose": {
+          "badge": "declared",
+          "source": {
+            "ref": "B-03 drive-car example: placed by solving the joints so that joined snap points meet",
+            "locator": null,
+            "url": null,
+            "license": null,
+            "declared_by": "kinetra-b03-drive-car",
+            "declared_at": "2026-11-12T00:00:00Z"
+          },
+          "position": {
+            "x": -0.14729059031466535,
+            "y": 0.0,
+            "z": 0.10799999999999998
+          },
+          "orientation": {
+            "x": 0.0,
+            "y": -0.7071067811865476,
+            "z": 0.0,
+            "w": 0.7071067811865476
+          }
+        }
+      },
+      {
+        "id": "spring-l",
+        "part": "spring-damper-lee-lc032b08",
+        "parameters": [],
+        "material": null,
+        "pose": {
+          "badge": "declared",
+          "source": {
+            "ref": "B-03 drive-car example: placed by solving the joints so that joined snap points meet",
+            "locator": null,
+            "url": null,
+            "license": null,
+            "declared_by": "kinetra-b03-drive-car",
+            "declared_at": "2026-11-12T00:00:00Z"
+          },
+          "position": {
+            "x": 0.189525,
+            "y": 0.06,
+            "z": 0.09
+          },
+          "orientation": {
+            "x": 0.0,
+            "y": 0.7071067811865476,
+            "z": 0.0,
+            "w": 0.7071067811865476
+          }
+        }
+      },
+      {
+        "id": "spring-r",
+        "part": "spring-damper-lee-lc032b08",
+        "parameters": [],
+        "material": null,
+        "pose": {
+          "badge": "declared",
+          "source": {
+            "ref": "B-03 drive-car example: placed by solving the joints so that joined snap points meet",
+            "locator": null,
+            "url": null,
+            "license": null,
+            "declared_by": "kinetra-b03-drive-car",
+            "declared_at": "2026-11-12T00:00:00Z"
+          },
+          "position": {
+            "x": 0.189525,
+            "y": -0.06,
+            "z": 0.09
+          },
+          "orientation": {
+            "x": 0.0,
+            "y": 0.7071067811865476,
+            "z": 0.0,
+            "w": 0.7071067811865476
+          }
+        }
+      }
+    ],
+    "joints": [
+      {
+        "id": "mount-rl",
+        "kind": "fixed",
+        "a": {
+          "instance": "chassis",
+          "snap_point": "motor-rl"
+        },
+        "b": {
+          "instance": "motor-rl",
+          "snap_point": "mount"
+        },
+        "axis": null,
+        "limits": null,
+        "break_threshold": null
+      },
+      {
+        "id": "mount-rr",
+        "kind": "fixed",
+        "a": {
+          "instance": "chassis",
+          "snap_point": "motor-rr"
+        },
+        "b": {
+          "instance": "motor-rr",
+          "snap_point": "mount"
+        },
+        "axis": null,
+        "limits": null,
+        "break_threshold": null
+      },
+      {
+        "id": "drive-rl",
+        "kind": "hinge",
+        "a": {
+          "instance": "motor-rl",
+          "snap_point": "shaft"
+        },
+        "b": {
+          "instance": "stub-rl",
+          "snap_point": "in"
+        },
+        "axis": {
+          "badge": "declared",
+          "source": {
+            "ref": "B-03 drive-car example: hinge axis along the axle (world +y), so a positive angle rolls the car forward (+x)",
+            "locator": null,
+            "url": null,
+            "license": null,
+            "declared_by": "kinetra-b03-drive-car",
+            "declared_at": "2026-11-12T00:00:00Z"
+          },
+          "x": 0.0,
+          "y": 0.0,
+          "z": 1.0
+        },
+        "limits": null,
+        "break_threshold": null
+      },
+      {
+        "id": "drive-rr",
+        "kind": "hinge",
+        "a": {
+          "instance": "motor-rr",
+          "snap_point": "shaft"
+        },
+        "b": {
+          "instance": "stub-rr",
+          "snap_point": "in"
+        },
+        "axis": {
+          "badge": "declared",
+          "source": {
+            "ref": "B-03 drive-car example: hinge axis along the axle (world +y), so a positive angle rolls the car forward (+x)",
+            "locator": null,
+            "url": null,
+            "license": null,
+            "declared_by": "kinetra-b03-drive-car",
+            "declared_at": "2026-11-12T00:00:00Z"
+          },
+          "x": 0.0,
+          "y": 0.0,
+          "z": -1.0
+        },
+        "limits": null,
+        "break_threshold": null
+      },
+      {
+        "id": "hub-rl",
+        "kind": "fixed",
+        "a": {
+          "instance": "stub-rl",
+          "snap_point": "out"
+        },
+        "b": {
+          "instance": "wheel-rl",
+          "snap_point": "hub"
+        },
+        "axis": null,
+        "limits": null,
+        "break_threshold": null
+      },
+      {
+        "id": "hub-rr",
+        "kind": "fixed",
+        "a": {
+          "instance": "stub-rr",
+          "snap_point": "out"
+        },
+        "b": {
+          "instance": "wheel-rr",
+          "snap_point": "hub"
+        },
+        "axis": null,
+        "limits": null,
+        "break_threshold": null
+      },
+      {
+        "id": "axle-fl",
+        "kind": "hinge",
+        "a": {
+          "instance": "chassis",
+          "snap_point": "axle-fl"
+        },
+        "b": {
+          "instance": "wheel-fl",
+          "snap_point": "hub"
+        },
+        "axis": {
+          "badge": "declared",
+          "source": {
+            "ref": "B-03 drive-car example: hinge axis along the axle (world +y), so a positive angle rolls the car forward (+x)",
+            "locator": null,
+            "url": null,
+            "license": null,
+            "declared_by": "kinetra-b03-drive-car",
+            "declared_at": "2026-11-12T00:00:00Z"
+          },
+          "x": 0.0,
+          "y": 1.0,
+          "z": 0.0
+        },
+        "limits": null,
+        "break_threshold": null
+      },
+      {
+        "id": "axle-fr",
+        "kind": "hinge",
+        "a": {
+          "instance": "chassis",
+          "snap_point": "axle-fr"
+        },
+        "b": {
+          "instance": "wheel-fr",
+          "snap_point": "hub"
+        },
+        "axis": {
+          "badge": "declared",
+          "source": {
+            "ref": "B-03 drive-car example: hinge axis along the axle (world +y), so a positive angle rolls the car forward (+x)",
+            "locator": null,
+            "url": null,
+            "license": null,
+            "declared_by": "kinetra-b03-drive-car",
+            "declared_at": "2026-11-12T00:00:00Z"
+          },
+          "x": 0.0,
+          "y": 1.0,
+          "z": 0.0
+        },
+        "limits": null,
+        "break_threshold": null
+      },
+      {
+        "id": "seat-battery",
+        "kind": "fixed",
+        "a": {
+          "instance": "chassis",
+          "snap_point": "battery-seat"
+        },
+        "b": {
+          "instance": "battery",
+          "snap_point": "bottom"
+        },
+        "axis": null,
+        "limits": null,
+        "break_threshold": null
+      },
+      {
+        "id": "seat-tank",
+        "kind": "fixed",
+        "a": {
+          "instance": "chassis",
+          "snap_point": "tank-seat"
+        },
+        "b": {
+          "instance": "tank",
+          "snap_point": "bottom"
+        },
+        "axis": null,
+        "limits": null,
+        "break_threshold": null
+      },
+      {
+        "id": "mount-thruster",
+        "kind": "fixed",
+        "a": {
+          "instance": "chassis",
+          "snap_point": "thruster-mount"
+        },
+        "b": {
+          "instance": "thruster",
+          "snap_point": "mount"
+        },
+        "axis": null,
+        "limits": null,
+        "break_threshold": null
+      },
+      {
+        "id": "bumper-l",
+        "kind": "fixed",
+        "a": {
+          "instance": "chassis",
+          "snap_point": "spring-l"
+        },
+        "b": {
+          "instance": "spring-l",
+          "snap_point": "end_a"
+        },
+        "axis": null,
+        "limits": null,
+        "break_threshold": null
+      },
+      {
+        "id": "bumper-r",
+        "kind": "fixed",
+        "a": {
+          "instance": "chassis",
+          "snap_point": "spring-r"
+        },
+        "b": {
+          "instance": "spring-r",
+          "snap_point": "end_a"
+        },
+        "axis": null,
+        "limits": null,
+        "break_threshold": null
+      }
+    ],
+    "actuators": [
+      {
+        "id": "drive-motor-rl",
+        "kind": "motor",
+        "instance": "motor-rl",
+        "joint": "drive-rl",
+        "supply": "battery"
+      },
+      {
+        "id": "drive-motor-rr",
+        "kind": "motor",
+        "instance": "motor-rr",
+        "joint": "drive-rr",
+        "supply": "battery"
+      },
+      {
+        "id": "thrust",
+        "kind": "thruster",
+        "instance": "thruster",
+        "joint": null,
+        "supply": "tank"
+      }
+    ],
+    "schedule": {
+      "entries": [
+        {
+          "badge": "declared",
+          "source": {
+            "ref": "B-03 drive-car example: a demonstration program, not a tuned run",
+            "locator": null,
+            "url": null,
+            "license": null,
+            "declared_by": "kinetra-b03-drive-car",
+            "declared_at": "2026-11-12T00:00:00Z"
+          },
+          "type": "actuate",
+          "id": "run-rl",
+          "actuator": "drive-motor-rl",
+          "start": 0.0,
+          "end": 3.0,
+          "command": 1.0
+        },
+        {
+          "badge": "declared",
+          "source": {
+            "ref": "B-03 drive-car example: a demonstration program, not a tuned run",
+            "locator": null,
+            "url": null,
+            "license": null,
+            "declared_by": "kinetra-b03-drive-car",
+            "declared_at": "2026-11-12T00:00:00Z"
+          },
+          "type": "actuate",
+          "id": "run-rr",
+          "actuator": "drive-motor-rr",
+          "start": 0.0,
+          "end": 3.0,
+          "command": 1.0
+        },
+        {
+          "badge": "declared",
+          "source": {
+            "ref": "B-03 drive-car example: a demonstration program, not a tuned run",
+            "locator": null,
+            "url": null,
+            "license": null,
+            "declared_by": "kinetra-b03-drive-car",
+            "declared_at": "2026-11-12T00:00:00Z"
+          },
+          "type": "actuate",
+          "id": "burn",
+          "actuator": "thrust",
+          "start": 1.0,
+          "end": 2.0,
+          "command": 1.0
+        }
+      ]
+    }
+  },
+  "world": {
+    "planet": "earth",
+    "terrain_props": []
+  },
+  "assumptions": {
+    "assumptions": []
+  }
+}

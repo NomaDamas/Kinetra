@@ -2,7 +2,7 @@
 
 - 상태: 구현됨. 데이터는 `data/bodies/{earth,mars,moon}.json`, 모델과 로더는 `packages/core/src/kinetra_core/bodies.py`(`load_body`, `load_bodies`, `check_world_references`), 테스트는 `packages/core/tests/test_bodies.py`(`uv run pytest packages/core -q -k bodies`).
 - 근거: 이슈 #76, 핵심 가치 V1(가정과 한계를 숨기지 않는다)·V5(출처가 있는 수치만), `client-adapter.md` 규칙 C4·P2.
-- 범위 밖: 지형 고도 자료, 시각·장소에 따른 대기·바람·낮밤, 행성 상수를 읽는 엔진 코드(W-03a), 가정표의 "근사: 균일 중력" 라벨(W-06).
+- 범위 밖: 지형 고도 자료, 시각·장소에 따른 대기·바람·낮밤, 가정표의 "근사: 균일 중력" 라벨(W-06). 엔진이 읽는 법은 아래 "엔진이 읽는 법 (W-03a)".
 
 ## 규칙
 
@@ -33,6 +33,14 @@
 | 모두 `추정`, 신뢰도 | `low` | `low` | `low` |
 
 출처: NASA NSSDCA 행성 팩트시트 [지구](https://nssdc.gsfc.nasa.gov/planetary/factsheet/earthfact.html)(2024-11-15 갱신), [화성](https://nssdc.gsfc.nasa.gov/planetary/factsheet/marsfact.html)(2025-05-19), [달](https://nssdc.gsfc.nasa.gov/planetary/factsheet/moonfact.html)(2024-01-11), 모두 2026-11-11에 읽음. 교차 확인: JPL SSD [Planetary Physical Parameters](https://ssd.jpl.nasa.gov/planets/phys_par.html)와 [위성 GM](https://ssd.jpl.nasa.gov/sats/phys_par/)(달 GM 4902.800, DE440), NASA Glenn 대기 모델([지구](https://www.grc.nasa.gov/www/k-12/airplane/atmosmet.html): h = 0에서 식으로 1.227, 우리 계산; [화성](https://www.grc.nasa.gov/www/k-12/airplane/atmosmrm.html) 0.0150). 지면 마찰: [FHWA NHI-06-088](https://www.fhwa.dot.gov/engineering/geotech/pubs/nhi06088.pdf) 표 5-15, [Sullivan 외 2010](https://www.lpi.usra.edu/meetings/lpsc2010/pdf/1879.pdf), [Moore 외 1987, USGS PP 1389](https://pubs.usgs.gov/pp/1389/report.pdf), [Lunar Sourcebook 9장](https://www.lpi.usra.edu/publications/books/lunar_sourcebook/pdf/Chapter09.pdf), 계면 마찰 [NAVFAC DM 7.02 표 1](https://www.tugraz.at/fileadmin/user_upload/Institute/IAG/Files/24_NAVFAC_DM_7_02.pdf)(p. 7.2-63, 정부 간행물). NASA 콘텐츠는 미국에서 일반적으로 저작권 대상이 아니다(https://www.nasa.gov/nasa-brand-center/images-and-media/). 값과 위치만 인용했고 문서를 복제하지 않았다.
+
+## 엔진이 읽는 법 (W-03a)
+
+- 코드는 `packages/engine/src/kinetra_engine/compiler/planet.py`(`planet_physics`, `PlanetPhysics`), 테스트는 `packages/engine/tests/test_freefall.py`(`uv run pytest packages/engine -q -k freefall`). 이슈 #83.
+- `build_body_tree(project)`가 `project.world.planet`으로 `load_body`를 불러 `BodyTree.planet`(`PlanetPhysics`: 중력과 대기 밀도의 `Quantity`, 배지와 출처 그대로)에 싣는다. 컴파일러가 행성 상수를 얻는 길은 이것 하나다. 데이터가 없거나 읽히지 않는 행성은 `CompileError`다. `bodies_directory`로 다른 디렉터리를 줄 수 있다(시험이 파일의 값을 바꾸면 낙하가 바뀌는 것을 본다).
+- MJCF: `<option gravity="0 0 -g" density="0" viscosity="0"/>`. +Z가 위이고 g는 데이터 파일의 값을 `repr`로 적어 같은 double로 읽힌다.
+- **대기 밀도는 `BodyTree.planet.atmosphere_density`로 실리고 MuJoCo 매질(`option density`)에는 넣지 않는다.** MuJoCo 매질은 모든 바디에 같은 전역 값이고, 넣으면 관성 상자 항력(항력 계수 1에 해당하는 고정 식, 부력 없음, MuJoCo 4.0.0 `engine_passive.c` `mj_inertiaBoxFluidModel`)이 라벨 없이 붙는다. 항력은 W-03b가 이 밀도로 바디별 힘을 주고 "근사: 집중 항력"으로 표시한다(`docs/research/fluids/mujoco-water.md` 7.1절의 권고). 그래서 W-03b가 들어오기 전까지 지구·화성에서도 공기 저항이 없다. 이 사실을 숨기지 않는다.
+- 자유낙하 대조(정지 상태에서 1 m, 지면에 놓인 0.1 m 정육면체를 실행 초기 조건으로 2 m 올려 바닥에 닿지 않게, MuJoCo 기본 시간 간격 0.002 s와 반암시 오일러): 수계산 t = √(2h/g)는 지구 0.45160 s, 화성 0.73225 s, 달 1.11111 s. 시뮬은 세 행성 모두 수계산보다 0.99962 ~ 0.99998 ms 빠르다(`시뮬`). 적분기가 h_n = g·dt²·n(n+1)/2로 움직이므로 √(T² + dt²/4) − dt/2에서 h를 지나는 것과 맞는다(시간 간격의 1% 안). 시뮬과 수계산의 차이는 적분 오차뿐이고, 같은 식끼리의 대조라서 행성 모델이 현실과 맞는다는 증거는 아니다.
 
 ## 지면 마찰: 규칙 하나, 세 행성
 
