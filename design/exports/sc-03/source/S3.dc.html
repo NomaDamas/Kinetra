@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>S3 음성 입력: 듣는 중, 받아쓰는 중, 인식문 확인</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+button,input{font-family:inherit}
+input::placeholder{color:#93A0AE;opacity:1}
+:focus-visible{outline:2px solid #A8CBFF;outline-offset:2px}
+.kin-sr{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+@media (prefers-reduced-motion:reduce){*{transition-property:opacity!important;animation:none!important}}
+</style>
+</helmet>
+<div style="width:1200px;height:460px;box-sizing:border-box;background:#0F1216;color:#E8EDF2;font-family:Pretendard,'Pretendard Variable',-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Malgun Gothic','Noto Sans KR',sans-serif;font-size:13px;line-height:20px;font-variant-numeric:tabular-nums;display:flex;flex-direction:column">
+
+<div data-note="1" style="flex:none;height:40px;box-sizing:border-box;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:0 16px;border-bottom:1px dashed #7A899B;font-size:12px;line-height:16px;color:#A9B4C0"><span><strong style="color:#E8EDF2;font-weight:600">S3 음성</strong> · 듣는 중 → 받아쓰는 중 → 인식문 확인. 음성은 인식문을 확인한 뒤에만 보냅니다. 권한 거부와 지원 안 됨은 오류가 아니라 안내입니다</span><span>조작 요소 2 → 2 → 5 · 안내 2 · primary 0</span></div>
+
+<div data-note="1" style="flex:none;height:28px;box-sizing:border-box;display:flex;align-items:center;gap:8px;padding:0 16px;font-size:11px;line-height:16px;font-weight:500;color:#A9B4C0"><span style="color:#E8EDF2">(a) 듣는 중</span><span>· 조작 요소 2: 마이크(멈춤), 취소 · 입력창 자리에 듣기 상태가 들어옵니다</span></div>
+<div data-screen="S3a" style="position:relative;flex:none;height:56px;display:flex;flex-direction:column">
+<div role="group" aria-label="에이전트 바" style="flex:none;height:56px;box-sizing:border-box;display:flex;align-items:center;gap:8px;padding:0 12px;background:#151A20;border-top:1px solid #26303A">
+<div role="status" aria-live="polite" style="order:2;flex:1 1 0;min-width:0;display:flex;align-items:center;gap:10px;height:32px;box-sizing:border-box;padding:0 8px;border:1px solid #5B9DFF;border-radius:4px;background:#0F1318"><svg width="28" height="16" viewBox="0 0 28 16" fill="#E8EDF2" role="img" aria-label="입력 음량"><rect x="0" y="6" width="3" height="4"/><rect x="6" y="3" width="3" height="10"/><rect x="12" y="0" width="3" height="16"/><rect x="18" y="4" width="3" height="8"/><rect x="24" y="6" width="3" height="4"/></svg><span>듣는 중입니다. 말을 마치면 멈춤을 누르세요.</span></div>
+<button type="button" data-ctl="마이크" aria-label="듣기 멈춤" aria-pressed="true" title="듣기 멈춤" style="order:0;flex:none;width:32px;height:32px;padding:0;border:1px solid #5B9DFF;border-radius:999px;background:#22324A;color:#E8EDF2;display:inline-flex;align-items:center;justify-content:center"><svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><rect x="2.5" y="2.5" width="7" height="7" rx="1" fill="currentColor"/></svg></button>
+<button type="button" data-ctl="취소" title="취소 (Esc)" aria-keyshortcuts="Escape" style="order:3;flex:none;height:28px;padding:0 12px;border:1px solid transparent;border-radius:4px;background:transparent;color:#E8EDF2;font-size:12px;font-weight:500">취소</button>
+<div style="order:4;flex:none;min-width:96px;display:flex;align-items:center;justify-content:flex-end;gap:6px;font-size:12px;line-height:16px;color:#E8EDF2"><span class="kin-sr">에이전트 상태:</span><svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="#93A0AE" stroke-width="1.4" aria-hidden="true"><circle cx="5" cy="5" r="3.5"/></svg>대기</div>
+</div>
+</div>
+
+<div data-note="1" style="flex:none;height:28px;box-sizing:border-box;display:flex;align-items:center;gap:8px;padding:0 16px;border-top:1px dashed #3A4654;font-size:11px;line-height:16px;font-weight:500;color:#A9B4C0"><span style="color:#E8EDF2">(b) 받아쓰는 중</span><span>· 조작 요소 2: 마이크(비활성), 취소 · 받아쓰기가 끝나면 (c)로 넘어가고 아무것도 보내지 않습니다</span></div>
+<div data-screen="S3b" style="position:relative;flex:none;height:56px;display:flex;flex-direction:column">
+<div role="group" aria-label="에이전트 바" style="flex:none;height:56px;box-sizing:border-box;display:flex;align-items:center;gap:8px;padding:0 12px;background:#151A20;border-top:1px solid #26303A">
+<div role="status" aria-live="polite" aria-busy="true" style="order:2;flex:1 1 0;min-width:0;display:flex;align-items:center;gap:8px;height:32px;box-sizing:border-box;padding:0 8px;border:1px solid #7A899B;border-radius:4px;background:#0F1318"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="#E8EDF2" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M6 1.5a4.5 4.5 0 1 1-4.5 4.5"/></svg><span style="color:#A9B4C0">뒤쪽 추력기 두 개를…</span><span style="font-size:11px;line-height:16px;font-weight:500;color:#A9B4C0">받아쓰는 중</span></div>
+<button type="button" data-ctl="마이크" aria-label="음성 입력. 받아쓰는 동안 쓸 수 없습니다" aria-disabled="true" title="받아쓰는 동안 쓸 수 없습니다" style="order:0;flex:none;width:32px;height:32px;padding:0;border:1px solid #3A4654;border-radius:999px;background:#222A33;color:#93A0AE;display:inline-flex;align-items:center;justify-content:center;cursor:not-allowed"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" aria-hidden="true"><rect x="5" y="1.5" width="4" height="7" rx="2"/><path d="M2.5 7a4.5 4.5 0 0 0 9 0M7 11.5v1.5"/></svg></button>
+<button type="button" data-ctl="취소" title="취소 (Esc)" aria-keyshortcuts="Escape" style="order:3;flex:none;height:28px;padding:0 12px;border:1px solid transparent;border-radius:4px;background:transparent;color:#E8EDF2;font-size:12px;font-weight:500">취소</button>
+<div style="order:4;flex:none;min-width:96px;display:flex;align-items:center;justify-content:flex-end;gap:6px;font-size:12px;line-height:16px;color:#E8EDF2"><span class="kin-sr">에이전트 상태:</span><svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="#93A0AE" stroke-width="1.4" aria-hidden="true"><circle cx="5" cy="5" r="3.5"/></svg>대기</div>
+</div>
+</div>
+
+<div data-note="1" style="flex:none;height:28px;box-sizing:border-box;display:flex;align-items:center;gap:8px;padding:0 16px;border-top:1px dashed #3A4654;font-size:11px;line-height:16px;font-weight:500;color:#A9B4C0"><span style="color:#E8EDF2">(c) 인식문 확인 · 확인한 뒤에만 보냅니다</span><span>· 조작 요소 5: 인식문 입력, 마이크(다시 말하기), 보내기, 고치기, 취소 · Esc는 취소</span></div>
+<div data-screen="S3c" style="position:relative;flex:none;height:56px;display:flex;flex-direction:column">
+<div role="group" aria-label="음성 인식문 확인" style="flex:none;height:56px;box-sizing:border-box;display:flex;align-items:center;gap:8px;padding:0 12px;background:#151A20;border-top:1px solid #26303A">
+<div style="order:2;flex:1 1 0;min-width:0;display:flex;align-items:center;gap:8px;height:32px;box-sizing:border-box;padding:0 8px;border:1px solid #7A899B;border-radius:4px;background:#0F1318"><label for="s3c-text" style="flex:none;font-size:11px;line-height:16px;font-weight:500;color:#A9B4C0">인식문</label><input id="s3c-text" data-ctl="인식문 입력" readonly value="뒤쪽 추력기 두 개를 삭제해 줘" style="flex:1 1 0;min-width:0;height:24px;padding:0;border:0;background:transparent;color:#E8EDF2;font-size:13px"></div>
+<button type="button" data-ctl="마이크" aria-label="다시 말하기" title="다시 말하기" style="order:0;flex:none;width:32px;height:32px;padding:0;border:1px solid #7A899B;border-radius:999px;background:transparent;color:#E8EDF2;display:inline-flex;align-items:center;justify-content:center"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" aria-hidden="true"><rect x="5" y="1.5" width="4" height="7" rx="2"/><path d="M2.5 7a4.5 4.5 0 0 0 9 0M7 11.5v1.5"/></svg></button>
+<button type="button" data-ctl="보내기" title="보내기 (Enter)" aria-keyshortcuts="Enter" style="order:3;flex:none;height:28px;padding:0 12px;border:1px solid #7A899B;border-radius:4px;background:transparent;color:#E8EDF2;font-size:12px;font-weight:500">보내기</button>
+<button type="button" data-ctl="고치기" title="고치기: 인식문을 입력창으로 옮겨 글로 고칩니다" style="order:4;flex:none;height:28px;padding:0 12px;border:1px solid transparent;border-radius:4px;background:transparent;color:#E8EDF2;font-size:12px;font-weight:500">고치기</button>
+<button type="button" data-ctl="취소" title="취소 (Esc)" aria-keyshortcuts="Escape" style="order:5;flex:none;height:28px;padding:0 12px;border:1px solid transparent;border-radius:4px;background:transparent;color:#E8EDF2;font-size:12px;font-weight:500">취소</button>
+<div style="order:6;flex:none;min-width:96px;display:flex;align-items:center;justify-content:flex-end;gap:6px;font-size:12px;line-height:16px;color:#E8EDF2"><span class="kin-sr">에이전트 상태:</span><svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="#93A0AE" stroke-width="1.4" aria-hidden="true"><circle cx="5" cy="5" r="3.5"/></svg>대기</div>
+</div>
+</div>
+
+<div data-note="1" style="flex:none;height:28px;box-sizing:border-box;display:flex;align-items:center;gap:8px;padding:0 16px;border-top:1px dashed #3A4654;font-size:11px;line-height:16px;font-weight:500;color:#A9B4C0"><span style="color:#E8EDF2">변형 · 마이크 권한 거부</span><span>· 조작 요소 2: 마이크(비활성), 입력창 · 안내 문구와 함께 글 입력으로 이어집니다</span></div>
+<div data-screen="S3d" style="position:relative;flex:none;height:56px;display:flex;flex-direction:column">
+<div role="group" aria-label="에이전트 바" style="flex:none;height:56px;box-sizing:border-box;display:flex;align-items:center;gap:8px;padding:0 12px;background:#151A20;border-top:1px solid #26303A">
+<div style="order:2;flex:1 1 0;min-width:0;display:flex;align-items:center;gap:8px;height:32px;box-sizing:border-box;padding:0 8px;border:1px solid #7A899B;border-radius:4px;background:#0F1318">
+<input data-ctl="입력창" aria-label="에이전트에게 요청하기" aria-describedby="s3d-why" placeholder="에이전트에게 요청하기" style="flex:1 1 0;min-width:0;height:24px;padding:0;border:0;background:transparent;color:#E8EDF2;font-size:13px">
+<span style="flex:none;display:inline-flex;align-items:center;gap:4px;font-size:11px;line-height:16px;color:#93A0AE"><kbd style="font-family:'JetBrains Mono',monospace;font-size:11px;line-height:16px;color:#A9B4C0;border:1px solid #3A4654;border-radius:2px;padding:0 4px">Enter</kbd>보내기</span>
+</div>
+<button type="button" data-ctl="마이크" aria-label="음성 입력. 마이크 권한이 꺼져 있습니다" aria-disabled="true" aria-describedby="s3d-why" title="마이크 권한이 꺼져 있습니다" style="order:0;flex:none;width:32px;height:32px;padding:0;border:1px solid #3A4654;border-radius:999px;background:#222A33;color:#93A0AE;display:inline-flex;align-items:center;justify-content:center;cursor:not-allowed"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" aria-hidden="true"><rect x="5" y="1.5" width="4" height="7" rx="2"/><path d="M2.5 7a4.5 4.5 0 0 0 9 0M7 11.5v1.5M1.5 1.5l11 11"/></svg></button>
+<span id="s3d-why" style="order:3;flex:none;display:inline-flex;align-items:center;gap:6px;font-size:12px;line-height:16px;color:#E8EDF2"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="#8FB8E8" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><circle cx="8" cy="8" r="6.25"/><path d="M8 7.2v4M8 4.8v.2"/></svg>마이크 권한이 꺼져 있습니다. 브라우저 설정에서 허용하거나 글로 입력하세요</span>
+<div style="order:4;flex:none;min-width:96px;display:flex;align-items:center;justify-content:flex-end;gap:6px;font-size:12px;line-height:16px;color:#E8EDF2"><span class="kin-sr">에이전트 상태:</span><svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="#93A0AE" stroke-width="1.4" aria-hidden="true"><circle cx="5" cy="5" r="3.5"/></svg>대기</div>
+</div>
+</div>
+
+<div data-note="1" style="flex:none;height:28px;box-sizing:border-box;display:flex;align-items:center;gap:8px;padding:0 16px;border-top:1px dashed #3A4654;font-size:11px;line-height:16px;font-weight:500;color:#A9B4C0"><span style="color:#E8EDF2">변형 · 음성 입력 지원 안 됨</span><span>· 조작 요소 2: 마이크(비활성, 점선), 입력창 · 안내 문구와 함께 글 입력으로 이어집니다</span></div>
+<div data-screen="S3e" style="position:relative;flex:none;height:56px;display:flex;flex-direction:column">
+<div role="group" aria-label="에이전트 바" style="flex:none;height:56px;box-sizing:border-box;display:flex;align-items:center;gap:8px;padding:0 12px;background:#151A20;border-top:1px solid #26303A">
+<div style="order:2;flex:1 1 0;min-width:0;display:flex;align-items:center;gap:8px;height:32px;box-sizing:border-box;padding:0 8px;border:1px solid #7A899B;border-radius:4px;background:#0F1318">
+<input data-ctl="입력창" aria-label="에이전트에게 요청하기" aria-describedby="s3e-why" placeholder="에이전트에게 요청하기" style="flex:1 1 0;min-width:0;height:24px;padding:0;border:0;background:transparent;color:#E8EDF2;font-size:13px">
+<span style="flex:none;display:inline-flex;align-items:center;gap:4px;font-size:11px;line-height:16px;color:#93A0AE"><kbd style="font-family:'JetBrains Mono',monospace;font-size:11px;line-height:16px;color:#A9B4C0;border:1px solid #3A4654;border-radius:2px;padding:0 4px">Enter</kbd>보내기</span>
+</div>
+<button type="button" data-ctl="마이크" aria-label="음성 입력. 이 브라우저는 지원하지 않습니다" aria-disabled="true" aria-describedby="s3e-why" title="이 브라우저는 음성 입력을 지원하지 않습니다" style="order:0;flex:none;width:32px;height:32px;padding:0;border:1px dashed #7A899B;border-radius:999px;background:transparent;color:#93A0AE;display:inline-flex;align-items:center;justify-content:center;cursor:not-allowed"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" aria-hidden="true"><rect x="5" y="1.5" width="4" height="7" rx="2"/><path d="M2.5 7a4.5 4.5 0 0 0 9 0M7 11.5v1.5"/></svg></button>
+<span id="s3e-why" style="order:3;flex:none;display:inline-flex;align-items:center;gap:6px;font-size:12px;line-height:16px;color:#E8EDF2"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="#8FB8E8" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><circle cx="8" cy="8" r="6.25"/><path d="M8 7.2v4M8 4.8v.2"/></svg>이 브라우저는 음성 입력을 지원하지 않습니다. 글로 입력하세요</span>
+<div style="order:4;flex:none;min-width:96px;display:flex;align-items:center;justify-content:flex-end;gap:6px;font-size:12px;line-height:16px;color:#E8EDF2"><span class="kin-sr">에이전트 상태:</span><svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="#93A0AE" stroke-width="1.4" aria-hidden="true"><circle cx="5" cy="5" r="3.5"/></svg>대기</div>
+</div>
+</div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1200,"height":460}}'>
+class Component extends DCLogic {
+renderVals() {
+return {};
+}
+}
+</script>
+</body>
+</html>

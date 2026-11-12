@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>S13 키보드: 탭 순서와 포커스 링 주석</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+button,input{font-family:inherit}
+input::placeholder{color:#93A0AE;opacity:1}
+:focus-visible{outline:2px solid #A8CBFF;outline-offset:2px}
+.kin-sr{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+@media (prefers-reduced-motion:reduce){*{transition-property:opacity!important;animation:none!important}}
+</style>
+</helmet>
+<div style="width:1200px;height:596px;box-sizing:border-box;background:#0F1216;color:#E8EDF2;font-family:Pretendard,'Pretendard Variable',-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Malgun Gothic','Noto Sans KR',sans-serif;font-size:13px;line-height:20px;font-variant-numeric:tabular-nums;display:flex;flex-direction:column">
+
+<div data-note="1" style="flex:none;height:40px;box-sizing:border-box;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:0 16px;border-bottom:1px dashed #7A899B;font-size:12px;line-height:16px;color:#A9B4C0"><span><strong style="color:#E8EDF2;font-weight:600">S13 키보드</strong> · S5에 문맥 칩을 더한 바탕 위에 탭 순서 번호와 포커스 링 예를 겹쳤습니다. 앱 화면이 아니라 설명용입니다</span><span>바탕 조작 요소 17 (S5 16 + 칩) · 탭 정지 17 · primary 0</span></div>
+
+<div data-screen="S13" style="position:relative;flex:none;height:316px;display:flex;flex-direction:column">
+
+<div role="group" aria-label="에이전트 바" style="order:1;flex:none;height:56px;box-sizing:border-box;display:flex;align-items:center;gap:8px;padding:0 12px;background:#151A20;border-top:1px solid #26303A">
+<div style="order:4;flex:1 1 0;min-width:0;display:flex;align-items:center;gap:8px;height:32px;box-sizing:border-box;padding:0 8px;border:1px solid #7A899B;border-radius:4px;background:#0F1318">
+<span aria-hidden="true" data-note="1" style="flex:none;display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;box-sizing:border-box;padding:0 4px;border-radius:999px;background:#E8EDF2;color:#0F1216;font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600">1</span>
+<input data-ctl="입력창" aria-label="에이전트에게 요청하기. 선택한 부품: 차체" aria-describedby="s13-hint" placeholder="에이전트에게 요청하기" style="flex:1 1 0;min-width:0;height:24px;padding:0;border:0;background:transparent;color:#E8EDF2;font-size:13px">
+<span id="s13-hint" style="flex:none;display:inline-flex;align-items:center;gap:4px;font-size:11px;line-height:16px;color:#93A0AE"><kbd style="font-family:'JetBrains Mono',monospace;font-size:11px;line-height:16px;color:#A9B4C0;border:1px solid #3A4654;border-radius:2px;padding:0 4px">Enter</kbd>보내기</span>
+</div>
+<span aria-hidden="true" data-note="1" style="order:0;flex:none;display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;box-sizing:border-box;padding:0 4px;border-radius:999px;background:#E8EDF2;color:#0F1216;font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600">2</span>
+<button type="button" data-ctl="마이크" aria-label="음성 입력 시작" title="음성 입력 시작" style="order:1;flex:none;width:32px;height:32px;padding:0;border:1px solid #7A899B;border-radius:999px;background:transparent;color:#E8EDF2;display:inline-flex;align-items:center;justify-content:center"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" aria-hidden="true"><rect x="5" y="1.5" width="4" height="7" rx="2"/><path d="M2.5 7a4.5 4.5 0 0 0 9 0M7 11.5v1.5"/></svg></button>
+<span aria-hidden="true" data-note="1" style="order:2;flex:none;display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;box-sizing:border-box;padding:0 4px;border-radius:999px;background:#E8EDF2;color:#0F1216;font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600">3</span>
+<button type="button" data-ctl="문맥 칩" aria-label="선택: 차체. 누르면 선택을 풉니다" title="선택 풀기" style="order:3;flex:none;display:inline-flex;align-items:center;gap:4px;height:24px;box-sizing:border-box;padding:0 6px 0 10px;border:1px solid #7A899B;border-radius:999px;background:#222A33;color:#E8EDF2;font-size:11px;line-height:16px;font-weight:500">선택: 차체<svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" aria-hidden="true"><path d="M2.5 2.5l5 5M7.5 2.5l-5 5"/></svg></button>
+<div role="status" aria-live="polite" style="order:5;flex:none;min-width:96px;display:flex;align-items:center;justify-content:flex-end;gap:6px;font-size:12px;line-height:16px;color:#E8EDF2"><span class="kin-sr">에이전트 상태:</span><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="#E8EDF2" stroke-width="1.4" stroke-linejoin="round" aria-hidden="true"><path d="M2 2.5h10v7H2zM4.5 12h5" stroke-dasharray="2 1.5"/></svg>변경안 <span style="font-family:'JetBrains Mono',monospace;font-weight:500">4</span><span style="color:#A9B4C0">건</span></div>
+</div>
+
+<div role="region" aria-label="변경안 카드 영역" style="order:0;flex:none;height:260px;box-sizing:border-box;padding:12px 16px 8px;display:flex;flex-direction:column;justify-content:flex-end">
+<section aria-label="변경안" style="max-height:306px;background:#1B2129;border:1px dashed #7A899B;border-radius:6px;display:flex;flex-direction:column">
+
+<div style="flex:none;display:flex;align-items:flex-end;justify-content:space-between;gap:8px;padding:4px 12px 0 8px;border-bottom:1px solid #26303A">
+<div style="display:flex;align-items:center;gap:6px">
+<span aria-hidden="true" data-note="1" style="flex:none;display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;box-sizing:border-box;padding:0 4px;border-radius:999px;background:#E8EDF2;color:#0F1216;font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600">4</span>
+<div role="tablist" aria-label="변경안 4건" data-ctl="요약 탭" style="display:flex;gap:2px">
+<button type="button" role="tab" id="s13-t1" aria-selected="true" aria-controls="s13-p1" style="display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 12px;border:0;border-radius:4px 4px 0 0;background:#22324A;color:#E8EDF2;box-shadow:inset 0 -2px 0 #5B9DFF;font-size:13px;font-weight:600;outline:2px solid #A8CBFF;outline-offset:2px"><span style="font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:500;color:#A9B4C0">1</span>차체와 바퀴</button>
+<button type="button" role="tab" aria-selected="false" tabindex="-1" style="display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 12px;border:0;border-radius:4px 4px 0 0;background:transparent;color:#A9B4C0;font-size:13px;font-weight:500"><span style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#93A0AE">2</span>추력기 배치</button>
+<button type="button" role="tab" aria-selected="false" tabindex="-1" style="display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 12px;border:0;border-radius:4px 4px 0 0;background:transparent;color:#A9B4C0;font-size:13px;font-weight:500"><span style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#93A0AE">3</span>점프대 소품</button>
+<button type="button" role="tab" aria-selected="false" tabindex="-1" style="display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 12px;border:0;border-radius:4px 4px 0 0;background:transparent;color:#A9B4C0;font-size:13px;font-weight:500"><span style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#93A0AE">4</span>성공 조건</button>
+</div>
+</div>
+<span style="flex:none;margin-bottom:6px;display:inline-flex;align-items:center;height:20px;box-sizing:border-box;padding:0 8px;border:1px dashed #7A899B;border-radius:999px;font-size:11px;line-height:16px;font-weight:500;color:#A9B4C0">제안됨 · 아직 적용 전</span>
+</div>
+
+<div role="tabpanel" id="s13-p1" aria-labelledby="s13-t1" style="min-height:0;overflow-y:auto;padding:8px 12px 12px;display:flex;flex-direction:column;gap:8px">
+
+<div style="display:flex;align-items:center;gap:12px;min-height:28px">
+<p style="margin:0;flex:1 1 0;min-width:0;color:#A9B4C0">차체에 앞뒤 차축과 바퀴를 결합하고, 바퀴 재질과 지상고를 바꿉니다.</p>
+<div style="flex:none;display:flex;align-items:center;gap:4px">
+<span aria-hidden="true" data-note="1" style="flex:none;display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;box-sizing:border-box;padding:0 4px;border-radius:999px;background:#E8EDF2;color:#0F1216;font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600">5</span>
+<button type="button" data-ctl="접힌 머리: 명령" aria-expanded="false" style="display:inline-flex;align-items:center;gap:4px;height:28px;padding:0 6px 0 8px;border:1px solid transparent;border-radius:4px;background:transparent;color:#E8EDF2;font-size:12px;font-weight:500">명령 7개<svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 2.5L8 6l-3.5 3.5"/></svg></button>
+<span aria-hidden="true" data-note="1" style="flex:none;display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;box-sizing:border-box;padding:0 4px;border-radius:999px;background:#E8EDF2;color:#0F1216;font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600">6</span>
+<button type="button" data-ctl="접힌 머리: 검증기" aria-expanded="false" style="display:inline-flex;align-items:center;gap:4px;height:28px;padding:0 6px 0 8px;border:1px solid transparent;border-radius:4px;background:transparent;color:#E8EDF2;font-size:12px;font-weight:500">검증기 상세<svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 2.5L8 6l-3.5 3.5"/></svg></button>
+<span aria-hidden="true" data-note="1" style="flex:none;display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;box-sizing:border-box;padding:0 4px;border-radius:999px;background:#E8EDF2;color:#0F1216;font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600">7</span>
+<button type="button" data-ctl="접힌 머리: 비용" aria-expanded="false" style="display:inline-flex;align-items:center;gap:4px;height:28px;padding:0 6px 0 8px;border:1px solid transparent;border-radius:4px;background:transparent;color:#E8EDF2;font-size:12px;font-weight:500">비용 내역<svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 2.5L8 6l-3.5 3.5"/></svg></button>
+</div>
+</div>
+
+<div role="group" aria-label="수치 변화" style="display:flex;flex-direction:column;border-top:1px solid #26303A;padding-top:4px">
+<div style="display:flex;align-items:center;gap:8px;min-height:28px;flex-wrap:wrap">
+<span style="flex:0 0 112px;font-size:12px;font-weight:500;color:#A9B4C0">조립체 질량</span>
+<span class="kin-sr">지금</span><span style="font-family:'JetBrains Mono',monospace;font-weight:500;color:#93A0AE">1.3 t</span>
+<span aria-hidden="true" data-note="1" style="flex:none;display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;box-sizing:border-box;padding:0 4px;border-radius:999px;background:#E8EDF2;color:#0F1216;font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600">8</span>
+<button type="button" data-ctl="배지: 질량 이전" aria-haspopup="dialog" aria-label="값 배지 사용자 선언. 누르면 근거를 엽니다" style="display:inline-flex;align-items:center;height:24px;padding:0;border:0;background:none;color:#F2A8D0;font-size:11px;line-height:16px;font-weight:500;white-space:nowrap;cursor:pointer"><span style="display:inline-flex;align-items:center;gap:4px;height:20px;box-sizing:border-box;padding:0 8px;border-radius:999px;background:#3A1D2E"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 10l.6-2.6 5.6-5.6 2 2-5.6 5.6z"/></svg>사용자 선언</span></button>
+<span aria-hidden="true" style="color:#A9B4C0;padding:0 4px">→</span><span class="kin-sr">바뀐 뒤</span>
+<span style="font-family:'JetBrains Mono',monospace;font-weight:500">1.8 <span style="color:#A9B4C0">t</span></span>
+<span aria-hidden="true" data-note="1" style="flex:none;display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;box-sizing:border-box;padding:0 4px;border-radius:999px;background:#E8EDF2;color:#0F1216;font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600">9</span>
+<button type="button" data-ctl="배지: 질량 이후" aria-haspopup="dialog" aria-label="값 배지 추정. 누르면 근거를 엽니다" style="display:inline-flex;align-items:center;height:24px;padding:0;border:0;background:none;color:#D2C6A0;font-size:11px;line-height:16px;font-weight:500;white-space:nowrap;cursor:pointer"><span style="display:inline-flex;align-items:center;gap:4px;height:20px;box-sizing:border-box;padding:0 8px;border-radius:999px;background:#2C2819;border:1px dashed #D2C6A0"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 4.5q2-2 4 0t4 0M2 8q2-2 4 0t4 0"/></svg>추정</span></button>
+<span style="font-size:11px;line-height:16px;color:#93A0AE;border:1px dotted #7A899B;border-radius:2px;padding:0 4px">예시</span>
+</div>
+<div style="display:flex;align-items:center;gap:8px;min-height:28px;flex-wrap:wrap">
+<span style="flex:0 0 112px;font-size:12px;font-weight:500;color:#A9B4C0">무게중심 높이</span>
+<span class="kin-sr">지금</span><span style="font-family:'JetBrains Mono',monospace;font-weight:500;color:#93A0AE">0.42 m</span>
+<span aria-hidden="true" data-note="1" style="flex:none;display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;box-sizing:border-box;padding:0 4px;border-radius:999px;background:#E8EDF2;color:#0F1216;font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600">10</span>
+<button type="button" data-ctl="배지: 무게중심 이전" aria-haspopup="dialog" aria-label="값 배지 시뮬. 누르면 근거를 엽니다" style="display:inline-flex;align-items:center;height:24px;padding:0;border:0;background:none;color:#E8EDF2;font-size:11px;line-height:16px;font-weight:500;white-space:nowrap;cursor:pointer"><span style="display:inline-flex;align-items:center;gap:4px;height:20px;box-sizing:border-box;padding:0 8px;border-radius:999px;background:#303B49"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 6q1.25-5 2.5 0t2.5 0t2.5 0t2.5 0"/></svg>시뮬</span></button>
+<span style="font-size:11px;line-height:16px;color:#93A0AE;border:1px dotted #7A899B;border-radius:2px;padding:0 4px">예시</span>
+<span aria-hidden="true" style="color:#A9B4C0;padding:0 4px">→</span><span class="kin-sr">바뀐 뒤</span>
+<span style="font-family:'JetBrains Mono',monospace;font-weight:500">0.38 <span style="color:#A9B4C0">m</span></span>
+<span aria-hidden="true" data-note="1" style="flex:none;display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;box-sizing:border-box;padding:0 4px;border-radius:999px;background:#E8EDF2;color:#0F1216;font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600">11</span>
+<button type="button" data-ctl="배지: 무게중심 이후" aria-haspopup="dialog" aria-label="값 배지 추정. 누르면 근거를 엽니다" style="display:inline-flex;align-items:center;height:24px;padding:0;border:0;background:none;color:#D2C6A0;font-size:11px;line-height:16px;font-weight:500;white-space:nowrap;cursor:pointer"><span style="display:inline-flex;align-items:center;gap:4px;height:20px;box-sizing:border-box;padding:0 8px;border-radius:999px;background:#2C2819;border:1px dashed #D2C6A0"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 4.5q2-2 4 0t4 0M2 8q2-2 4 0t4 0"/></svg>추정</span></button>
+<span style="font-size:11px;line-height:16px;color:#93A0AE;border:1px dotted #7A899B;border-radius:2px;padding:0 4px">예시</span>
+</div>
+<div style="display:flex;align-items:center;gap:8px;min-height:28px;flex-wrap:wrap">
+<span style="flex:0 0 112px;font-size:12px;font-weight:500;color:#A9B4C0">부품 수</span>
+<span class="kin-sr">지금</span><span style="font-family:'JetBrains Mono',monospace;font-weight:500;color:#93A0AE">1 개</span>
+<span aria-hidden="true" data-note="1" style="flex:none;display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;box-sizing:border-box;padding:0 4px;border-radius:999px;background:#E8EDF2;color:#0F1216;font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600">12</span>
+<button type="button" data-ctl="배지: 부품 수 이전" aria-haspopup="dialog" aria-label="값 배지 시뮬. 누르면 근거를 엽니다" style="display:inline-flex;align-items:center;height:24px;padding:0;border:0;background:none;color:#E8EDF2;font-size:11px;line-height:16px;font-weight:500;white-space:nowrap;cursor:pointer"><span style="display:inline-flex;align-items:center;gap:4px;height:20px;box-sizing:border-box;padding:0 8px;border-radius:999px;background:#303B49"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 6q1.25-5 2.5 0t2.5 0t2.5 0t2.5 0"/></svg>시뮬</span></button>
+<span style="font-size:11px;line-height:16px;color:#93A0AE;border:1px dotted #7A899B;border-radius:2px;padding:0 4px">예시</span>
+<span aria-hidden="true" style="color:#A9B4C0;padding:0 4px">→</span><span class="kin-sr">바뀐 뒤</span>
+<span style="font-family:'JetBrains Mono',monospace;font-weight:500">7 <span style="color:#A9B4C0">개</span></span>
+<span aria-hidden="true" data-note="1" style="flex:none;display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;box-sizing:border-box;padding:0 4px;border-radius:999px;background:#E8EDF2;color:#0F1216;font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600">13</span>
+<button type="button" data-ctl="배지: 부품 수 이후" aria-haspopup="dialog" aria-label="값 배지 시뮬. 누르면 근거를 엽니다" style="display:inline-flex;align-items:center;height:24px;padding:0;border:0;background:none;color:#E8EDF2;font-size:11px;line-height:16px;font-weight:500;white-space:nowrap;cursor:pointer"><span style="display:inline-flex;align-items:center;gap:4px;height:20px;box-sizing:border-box;padding:0 8px;border-radius:999px;background:#303B49"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 6q1.25-5 2.5 0t2.5 0t2.5 0t2.5 0"/></svg>시뮬</span></button>
+<span style="font-size:11px;line-height:16px;color:#93A0AE;border:1px dotted #7A899B;border-radius:2px;padding:0 4px">예시</span>
+</div>
+</div>
+
+<div style="display:flex;align-items:center;gap:8px">
+<span aria-hidden="true" data-note="1" style="flex:none;display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;box-sizing:border-box;padding:0 4px;border-radius:999px;background:#E8EDF2;color:#0F1216;font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600">14</span>
+<button type="button" data-ctl="미리보기" aria-pressed="false" style="height:28px;padding:0 12px;border:1px solid #7A899B;border-radius:4px;background:transparent;color:#E8EDF2;font-size:12px;font-weight:500">미리보기</button>
+<span aria-hidden="true" data-note="1" style="flex:none;display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;box-sizing:border-box;padding:0 4px;border-radius:999px;background:#E8EDF2;color:#0F1216;font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600">15</span>
+<button type="button" data-ctl="수락" style="height:28px;padding:0 12px;border:1px solid #7A899B;border-radius:4px;background:transparent;color:#E8EDF2;font-size:12px;font-weight:500">수락</button>
+<span aria-hidden="true" data-note="1" style="flex:none;display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;box-sizing:border-box;padding:0 4px;border-radius:999px;background:#E8EDF2;color:#0F1216;font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600">16</span>
+<button type="button" data-ctl="부분 수락" style="height:28px;padding:0 12px;border:1px solid transparent;border-radius:4px;background:transparent;color:#E8EDF2;font-size:12px;font-weight:500">부분 수락</button>
+<span aria-hidden="true" data-note="1" style="flex:none;display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;box-sizing:border-box;padding:0 4px;border-radius:999px;background:#E8EDF2;color:#0F1216;font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600">17</span>
+<button type="button" data-ctl="거절" style="height:28px;padding:0 12px;border:1px solid transparent;border-radius:4px;background:transparent;color:#E8EDF2;font-size:12px;font-weight:500">거절</button>
+</div>
+
+</div>
+</section>
+</div>
+
+</div>
+
+<div data-note="1" data-legend="1" style="flex:none;height:240px;box-sizing:border-box;padding:16px;border-top:1px dashed #7A899B;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px;font-size:12px;line-height:16px">
+<div style="display:flex;flex-direction:column;gap:8px">
+<div style="font-size:13px;line-height:20px;font-weight:600">탭 순서</div>
+<div style="display:grid;grid-template-columns:48px minmax(0,1fr);gap:4px 12px;align-items:baseline;color:#E8EDF2">
+<span style="font-family:'JetBrains Mono',monospace;font-weight:500">1</span><span>입력창. 마이크는 화면 왼쪽에 보이지만 탭은 입력창이 먼저입니다</span>
+<span style="font-family:'JetBrains Mono',monospace;font-weight:500">2</span><span>마이크</span>
+<span style="font-family:'JetBrains Mono',monospace;font-weight:500">3</span><span>문맥 칩. 부품을 고른 경우에만 있습니다</span>
+<span style="font-family:'JetBrains Mono',monospace;font-weight:500">4</span><span>요약 탭. 탭 목록 전체가 탭 정지 하나이고 안에서는 ← →로 옮깁니다</span>
+<span style="font-family:'JetBrains Mono',monospace;font-weight:500">5–7</span><span>접힌 머리: 명령, 검증기 상세, 비용 내역</span>
+<span style="font-family:'JetBrains Mono',monospace;font-weight:500">8–13</span><span>값 배지(수치 변화 3행의 이전과 이후)</span>
+<span style="font-family:'JetBrains Mono',monospace;font-weight:500">14–17</span><span>카드 행동: 미리보기, 수락, 부분 수락, 거절</span>
+</div>
+<div style="color:#A9B4C0">브리프의 순서(입력창 → 마이크 → 칩 → 요약 탭 → 카드 행동)를 지키고, 그 사이에 읽는 순서대로 접힌 머리와 값 배지를 넣었습니다.</div>
+</div>
+<div style="display:flex;flex-direction:column;gap:8px">
+<div style="font-size:13px;line-height:20px;font-weight:600">키와 알림</div>
+<div style="display:grid;grid-template-columns:112px minmax(0,1fr);gap:4px 12px;align-items:baseline;color:#A9B4C0">
+<span><kbd style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#E8EDF2;border:1px solid #7A899B;border-radius:2px;padding:0 4px">Tab</kbd> <kbd style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#E8EDF2;border:1px solid #7A899B;border-radius:2px;padding:0 4px">Shift Tab</kbd></span><span>다음, 이전 조작 요소. 카드 네 행동 모두 Tab으로 닿습니다</span>
+<span><kbd style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#E8EDF2;border:1px solid #7A899B;border-radius:2px;padding:0 4px">←</kbd> <kbd style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#E8EDF2;border:1px solid #7A899B;border-radius:2px;padding:0 4px">→</kbd></span><span>요약 탭 사이를 옮기고 그 카드를 엽니다</span>
+<span><kbd style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#E8EDF2;border:1px solid #7A899B;border-radius:2px;padding:0 4px">Enter</kbd></span><span>입력창에서는 보내기, 버튼에서는 누르기</span>
+<span><kbd style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#E8EDF2;border:1px solid #7A899B;border-radius:2px;padding:0 4px">Esc</kbd></span><span>미리보기, 팝오버(근거, 예산 내역), 인식문 확인을 닫습니다. 삭제 확인에서는 취소</span>
+<span><kbd style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#E8EDF2;border:1px solid #7A899B;border-radius:2px;padding:0 4px">Ctrl Z</kbd></span><span>수락 직후 되돌리기(SC-01과 같은 키)</span>
+</div>
+<div style="color:#A9B4C0">상태 줄은 aria-live 영역입니다. 변경안이 생기면 "변경안 4건"을, 생각 중에서 변경안으로 바뀌면 그 바뀜을 읽어 줍니다. 포커스 링은 2 px color.focus.ring에 2 px 간격이고 위의 4번 탭이 예입니다. 카드 등장과 접힘은 줄인 움직임 설정에서 불투명도 전환만 씁니다.</div>
+</div>
+</div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1200,"height":596}}'>
+class Component extends DCLogic {
+renderVals() {
+return {};
+}
+}
+</script>
+</body>
+</html>

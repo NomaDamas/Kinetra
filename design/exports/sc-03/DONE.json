@@ -1,0 +1,111 @@
+{
+  "run_id": "sc03rev2-20261111T170500",
+  "previous_run_id": "sc03rev-20261111T144401",
+  "screen": "SC-03",
+  "title": "에이전트 바와 변경안 카드 (수정 2)",
+  "kind": "revision",
+  "status": "done",
+  "brief": "design/briefs/sc-03.md",
+  "revision_brief": "design/briefs/sc-03-revision-2.md",
+  "issue": "#412",
+  "previous_export": "design/exports/sc-03/",
+  "artifact_url": "https://claude.ai/artifact/YcLuwMRPM6uUn9RRHYszLs",
+  "artifact_version": 19,
+  "artifact_version_id": "1794454960-b13d",
+  "artifact_version_before": "1794454459-fd9e",
+  "canvas_matched_previous_export_before_edit": true,
+  "canvas_matches_this_source_after_publish": true,
+  "fixed": {
+    "1_s7_value_column_overflow": "value column 480 -> 600 px in (a)(b)(c) (checkbox column 638 -> 518 px); before -> after stays on one row; tightest row spare 157.2 px system fonts / 157.4 px JetBrains Mono+Pretendard / 136.2 px letter-spacing +1px (was 37.2 / 37.4 / 16.2); cell/card/state-region overflow 0 in all three; reviewer's overflow not reproduced before the fix",
+    "2_static_mockup_note": "S7 head line now two lines (40 -> 56 px): '정적 목업 3장: 실제 화면에서는 체크박스를 바꾸면 수치 변화와 '선택 N개 적용'이 함께 바뀝니다'; same fact in NOTES.md (artboard table S7 row, item 15); no interaction added"
+  },
+  "changed": {
+    "S7.dc.html": "value column 600 px, two-line head with static-mockup line, 1200x1180 -> 1200x1196",
+    "canvas.json": "S7 h 1180 -> 1196 (positions unchanged)",
+    "tools/build_export.py": "cell overflow, S7 value-row width, note-line overflow checks; gallery intro mentions revision 2",
+    "tools/read_measure.py": "prints the new checks",
+    "tools/measure.sh": "new: headless Chrome measurement in plain / webfonts / stress modes"
+  },
+  "unchanged_artboards": [
+    "Main",
+    "S2",
+    "S3",
+    "S4",
+    "S5",
+    "S6",
+    "S8",
+    "S9",
+    "S10",
+    "S11",
+    "S12",
+    "S13"
+  ],
+  "self_check": {
+    "s1_controls": 2,
+    "s1_control_names": [
+      "마이크",
+      "입력창"
+    ],
+    "s7_controls": {
+      "a_7": 21,
+      "b_5": 21,
+      "c_0": 18
+    },
+    "primary_in_card_and_bar": 0,
+    "artboards_with_top_bar": 0,
+    "new_color_tokens": 0,
+    "colors_used": 25,
+    "max_reach_steps": 2,
+    "banned_phrases": 0,
+    "min_text_contrast": 5.76,
+    "targets_under_24px": 0,
+    "overflow_or_clipped": 0,
+    "outside_state_region": 0,
+    "outside_cell": 0,
+    "note_line_overflow": 0,
+    "children_sum_equals_height": true,
+    "card_area_max_px": 296,
+    "card_area_cap_px": 306,
+    "s7_value_row_min_spare_px": {
+      "system_fonts": 157.2,
+      "web_fonts": 157.4,
+      "letter_spacing_plus_1px": 136.2
+    },
+    "s7_value_row_min_spare_px_before": {
+      "system_fonts": 37.2,
+      "web_fonts": 37.4,
+      "letter_spacing_plus_1px": 16.2
+    },
+    "reported_s7_overflow_reproduced": false,
+    "needs_confirmation": [
+      "S7 수치 열 넘침은 헤드리스 Chrome 세 조건에서 재현 안 됨(리뷰어 환경에서 다시 봐 달라)",
+      "S7 조작 요소 21/21/18(값 배지 6)",
+      "배지 없이 둔 항목 수",
+      "탭 순서 입력창→마이크",
+      "예산 단위(G-01)"
+    ]
+  },
+  "measurement": "headless Chrome 156 only, throwaway --user-data-dir /tmp/kin-sc03rev2-chrome.XXXXXX, deleted after each run (0 left); user's Chrome profile untouched; web fonts loaded from local files into the measure page only",
+  "files": {
+    "NOTES.md": "8da7e1ba48206b5f7a4d6968c1f5672829476a739717870f3907d98e4faffa1b",
+    "index.html": "8c33b56f3d4741606ea5ebfed31534ac5027eff7b2f7b7b1f3b0ccac5ed1e286",
+    "source/Main.dc.html": "e8f5861013d27819fea7eda38bf5ccf16998a9672f4d7485a4094e14133fa860",
+    "source/S10.dc.html": "bd06d52c4a8df934d1c36e6fb6ef2896051b3fd07d152ff150dba94153abc4d0",
+    "source/S11.dc.html": "ad9203c42a9303112e3e9d25d1dde884f7f90cb7e799e35b327bb4fdb0267b34",
+    "source/S12.dc.html": "3e9bed2d6ca47b7b53b98afca600aabb9560ae97f9b118bd9e6f1e7889876cec",
+    "source/S13.dc.html": "cf25cf566b6ca3ad349eadd75327a059fbdc7418226f4e73ff739ef9a28c0756",
+    "source/S2.dc.html": "692e426a9519f24c2140ccdb435862672dc5b3f3b18a7776f9c2a14653c48777",
+    "source/S3.dc.html": "4df6b86c90284eba03608cb9d8860c9c89ad44f8ef0b222013168025e87655c9",
+    "source/S4.dc.html": "5bd613f5e7ea0d4a187f7efef0658f6dbb31c1eacb4fac1ccd6402dd62863c1d",
+    "source/S5.dc.html": "72c2cb0372d449e6f8be223889af3bda4d509911124852c1d271a0feb645b6fa",
+    "source/S6.dc.html": "6d19bba9506b6a4d7aab8ee35b5b7b2ad7921ad6d95d537d924ef9ebc30da2a8",
+    "source/S7.dc.html": "799938660811c89d05ddc913a2ec17749335049645009fa0219452477f02a129",
+    "source/S8.dc.html": "4a8daa24bf5783c53903892ec845209c1cccbb6d9e0b8c7de759d3f09e9dc952",
+    "source/S9.dc.html": "0048b6d774aba70f6de6545d8dcb95faa7d4210d5c766d7d4aeb9a85bf3abccd",
+    "source/canvas.json": "7267464bf2d178d65f50476301771101bdd2a7b019f68a912a327703e28a3be3",
+    "source/tools/build_export.py": "4d1372f1f2f9579eda3c982838d5c4b67d3b89830ba818ca7a2edde7d4d29e26",
+    "source/tools/measure.sh": "b3c515533d0fb716f693e04cf37aaa5408b48984b84efbe4e34e12c14ce2a702",
+    "source/tools/read_measure.py": "ce1a85cb1c4f7c087d292ab510f887dc08be409aa734bf577e205e5dc69b1c16"
+  },
+  "finished_at": "2026-11-12T03:45:46Z"
+}
