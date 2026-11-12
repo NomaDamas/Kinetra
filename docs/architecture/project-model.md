@@ -221,6 +221,7 @@ uv run python packages/core/scripts/export_schemas.py --check  # 쓰지 않고 �
 - 단위 `V`, `A`는 B-03b가 더했다. `kg/s`(추진제 소모율), `N*s`(충격량)는 B-03c가 더했다(`KG_PER_S`, `N_S`).
 - 추력기 부품: B-03c. `PartRole.THRUSTER`의 요건(`thrust` 곡선, `rated_thrust`·`propellant_flow` 사양, `nozzle` 스냅 포인트), 엔진 쪽 계산과 카탈로그 범위. `docs/architecture/parts-thruster.md`.
 - 배터리와 탱크(`PartRole.BATTERY`, `TANK`), 잔량(`kinetra_engine.parts.Supply`)과 `Actuator.supply`: B-03d. `docs/architecture/parts-battery-tank.md`.
+- 스케줄에 따른 추력과 추진제 소모, 그에 따른 바디 질량 변화(`kinetra_engine.compiler.compile_thrust`, `ThrustRun`): X-01c. `docs/architecture/thrust.md`.
 - 형상 레시피와 파생값의 입력: B-01a에서 들어왔다. `PartDef.shape`, `MassProperties.derivation`. `docs/architecture/part-mass.md`. 같은 레시피에서 시각 glTF와 재질 슬롯: B-01c, `docs/architecture/part-visual.md`.
 - 충돌 프록시: B-01b에서 들어왔다. `CollisionProxy`(기본형 지오메트리, 메운 빈 곳 또는 B-01f의 분해한 빈 곳, 부호 있는 부피 오차). `docs/architecture/collision-proxy.md`.
 - 컴파일 캐시와 부품 추가 절차서: B-01d. `docs/architecture/part-cache.md`, `docs/process/add-part.md`.

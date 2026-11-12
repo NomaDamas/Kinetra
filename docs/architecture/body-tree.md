@@ -2,7 +2,7 @@
 
 - 상태: 구현됨. 코드는 `packages/engine/src/kinetra_engine/compiler/`(`bodytree.py`, `labels.py`, `mjcf.py`), 테스트는 `packages/engine/tests/test_body_tree.py`. `uv run pytest packages/engine -q -k body_tree`(정규 순서 규칙은 `-k canonical_order`).
 - 근거: `docs/decisions/engine.md`(MuJoCo 네이티브 4.0.0이 코어), `collision-proxy.md`(매핑 표), `part-mass.md`, `project-model.md`(결합), 이슈 #123, #511.
-- 범위 밖: 힌지·슬라이더의 스프링·댐퍼, 모터와 토크-속도 제한(X-01b), 추력기와 추진제(X-01c), 부품 단위 오류 형식(X-01d), 행성 상수와 `<option>`(W-03a), 접촉 매개변수와 마찰 합성(X-01b), 결합 해제(X-04b). MJCF는 산출물이고 저장 원본이 아니다.
+- 범위 밖: 힌지·슬라이더의 스프링·댐퍼, 모터와 토크-속도 제한(X-01b), 추력기와 추진제(X-01c, [`thrust.md`](thrust.md)), 부품 단위 오류 형식(X-01d), 행성 상수와 `<option>`(W-03a), 접촉 매개변수와 마찰 합성(X-01b), 결합 해제(X-04b). MJCF는 산출물이고 저장 원본이 아니다.
 
 ## 쓰는 법
 
