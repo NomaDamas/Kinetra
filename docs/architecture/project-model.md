@@ -229,6 +229,7 @@ uv run python packages/core/scripts/export_schemas.py --check  # 쓰지 않고 �
 - 구동 부품 휠: B-03a. 정의는 같은 디렉터리의 `wheel.json`. `docs/architecture/parts-wheel.md`.
 - 구조 부품 차체 쉘: B-02b. 정의는 같은 `library/shell.json`. `docs/architecture/parts-shell.md`.
 - 구조 부품 통합 시연: B-02 에픽(#96). 빔·판·쉘·탑재체·고정대로 만든 뼈대 예시와 `assembly_mass`(인스턴스 질량의 합), CI 그림. `docs/architecture/parts-structural-skeleton.md`.
+- 구동 부품 통합 시연: B-03 에픽(#100). 휠 넷·모터 둘(배터리 공급)·추력기(탱크 공급)·스프링-댐퍼 둘을 단 차 예시 `Project.drive-car.json`, 부품 목록과 사양 표(값·단위·배지·출처가 부품 정의와 같은지), CI 그림. `docs/architecture/parts-drive-car.md`.
 - 바인딩 안 된 가정(가정이 설계의 어느 값을 흔드는지)과 가정 단위의 의미 검사: J-01a, L-02.
 - PBR 재질 슬롯: B-07(구현됨, [`materials.md`](materials.md)).
 - `export_policy`: HW-02a.
