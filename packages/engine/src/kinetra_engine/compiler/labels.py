@@ -1,6 +1,8 @@
-"""Model labels of a compile (X-01a): the approximations the collision proxy makes, stated where the user reads the assumptions.
+"""Model labels of a compile (X-01a, W-03b): the approximations the model makes, stated where the user reads the assumptions.
 
+    model_labels(tree) -> tuple[ModelLabel, ...]    # proxy labels, then the drag label
     proxy_labels(tree) -> tuple[ModelLabel, ...]
+    drag_labels(tree) -> tuple[ModelLabel, ...]
 
 A collision proxy is made of convex primitives, so it cannot have a hole. A void it could not keep is filled; a through-bore it
 could keep is approximated by box pieces (`collision-proxy.md`). Either way the contact geometry differs from the part, and the
@@ -14,6 +16,8 @@ other fields say what it is about (D4: the core computes them, a client shows th
 - **(b) decomposed void** (`decomposed_voids` not empty, B-01f): `근사: 충돌 프록시가 빈 곳을 상자 조각으로 근사함(오차 N%, 허용 오차 T%[, 기본값])`,
   one per decomposed host, N = that host's signed `error`, T = `derivation.tolerance`; `, 기본값` follows T when its badge is `default`.
 - A part with no void has no label.
+- **(c) lumped drag** (W-03b, `drag.py`): `근사: 집중 항력`, one per compile, when the planet's atmosphere density is above 0
+  (Earth, Mars). On the Moon the density is 0, no drag force is applied and there is no label.
 
 Percentages are written with three significant digits (`+7.0%`, `-2.47%`, `10%`) and a sign on N.
 """
@@ -26,6 +30,7 @@ from typing import Literal
 from kinetra_core import Badge
 
 from .bodytree import BodyTree, CompiledInstance
+from .drag import DRAG_LABEL
 
 FILLED_PREFIX = "근사: 충돌 프록시가 빈 곳을 메움"
 DECOMPOSED_PREFIX = "근사: 충돌 프록시가 빈 곳을 상자 조각으로 근사함"
@@ -33,15 +38,16 @@ DECOMPOSED_PREFIX = "근사: 충돌 프록시가 빈 곳을 상자 조각으로 
 
 @dataclass(frozen=True)
 class ModelLabel:
-    """One approximation label. `kind` `filled` or `decomposed`; `instance` and `part` say whose proxy it is; `host` is the
-    decomposed host component (`None` for `filled`); `percent` is N, the number in the text (percent, signed for `decomposed`)."""
+    """One approximation label. `kind` `filled`, `decomposed` or `drag`; `instance` and `part` say whose proxy it is (`None`
+    for `drag`, which is about every body); `host` is the decomposed host component (`None` otherwise); `percent` is N, the
+    number in the text (percent, signed for `decomposed`; `None` for `drag`, whose text has no number)."""
 
     text: str
-    kind: Literal["filled", "decomposed"]
-    instance: str
-    part: str
+    kind: Literal["filled", "decomposed", "drag"]
+    instance: str | None
+    part: str | None
     host: str | None
-    percent: float
+    percent: float | None
 
 
 def _g(x: float) -> str:
@@ -70,3 +76,16 @@ def _labels_of(ci: CompiledInstance) -> list[ModelLabel]:
 def proxy_labels(tree: BodyTree) -> tuple[ModelLabel, ...]:
     """Every proxy approximation label of the compile, in canonical order (instances by id; per instance (a) then (b) by host id)."""
     return tuple(label for ci in tree.instances for label in _labels_of(ci))
+
+
+def drag_labels(tree: BodyTree) -> tuple[ModelLabel, ...]:
+    """`(c)`: the lumped-drag label when the planet's atmosphere density is above 0, else nothing."""
+    if tree.planet.atmosphere_density.value > 0.0:
+        return (ModelLabel(DRAG_LABEL, "drag", None, None, None, None),)
+    return ()
+
+
+def model_labels(tree: BodyTree) -> tuple[ModelLabel, ...]:
+    """Every model label of the compile: `proxy_labels`, then `drag_labels`. The list the run's `model_labels` and the
+    verdict's assumption table show."""
+    return proxy_labels(tree) + drag_labels(tree)

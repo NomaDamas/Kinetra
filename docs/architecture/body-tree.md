@@ -22,7 +22,7 @@ labels = proxy_labels(tree)                                    # 근사 라벨(M
 - **프록시 → `geom`**(`collision-proxy.md`의 매핑 표): 상자는 반치수, 원기둥은 `(반지름, 반길이)`, 구는 반지름, 중심은 `pos`, 방향은 `quat="w x y z"`. 강체 안의 다른 인스턴스의 geom은 강체 좌표계로 옮긴다. `geom` 이름은 `<인스턴스>/<프록시 geom id>`.
 - **`<inertial>`.** `mass`, `pos`(`MassProperties.center_of_mass`), `fullinertia`(`Ixx Iyy Izz Ixy Ixz Iyz`, 질량 중심 둘레, 강체 축)를 `MassProperties`에서 명시한다. `inertiafromgeom="false"`라 `<inertial>`이 없는 바디는 MuJoCo가 거절한다(프록시의 메운 빈 곳이 질량에 들어가지 않는다는 보증).
 - **`<option>`(W-03a)**: 중력은 `data/bodies`의 그 행성 값, MuJoCo 매질(`density`, `viscosity`)은 0이다(이유는 `bodies.md`의 "엔진이 읽는 법"). 시간 간격과 적분기는 아직 MuJoCo 기본값이다(X-02).
-- **MJCF에 아직 없는 것**: 시간 간격·적분기 설정, 공기 항력(W-03b), 접촉 매개변수. `break_threshold`는 이 MJCF에 들어가지 않는다(X-04b). 결합의 스프링·댐퍼와 모터는 `to_mjcf(tree, drives=compile_drives(tree))`가 더한다(X-01b, [`joints-actuators.md`](joints-actuators.md)).
+- **MJCF에 아직 없는 것**: 시간 간격·적분기 설정, 접촉 매개변수. 공기 항력은 MJCF가 아니라 실행 중 바디별 힘이다(W-03b, `compile_drag`·`DragRuntime`, [`bodies.md`](bodies.md) "집중 항력"). `break_threshold`는 이 MJCF에 들어가지 않는다(X-04b). 결합의 스프링·댐퍼와 모터는 `to_mjcf(tree, drives=compile_drives(tree))`가 더한다(X-01b, [`joints-actuators.md`](joints-actuators.md)).
 
 ## 근사 라벨
 
