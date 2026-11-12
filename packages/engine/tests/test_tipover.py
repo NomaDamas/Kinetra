@@ -61,11 +61,11 @@ WHEELS = {"wfl": (0.5, 0.35), "wfr": (0.5, -0.35), "wrl": (-0.5, 0.35), "wrr": (
 def cart():
     # chassis 1.0 x 0.6 x 0.1 m centred at z = 0.25; wheels r 0.15, width 0.1, axles along y at (+-0.5, +-0.35, 0.15);
     # an 0.2 m cube payload welded on top at (0.3, 0.2, 0.4).
-    chassis_snaps = [snap(w, (x, y, -0.1)) for w, (x, y) in WHEELS.items()] + [snap("pay", (0.3, 0.2, 0.15))]
+    chassis_snaps = [snap(w, (x, y, -0.1), ROT_X90) for w, (x, y) in WHEELS.items()] + [snap("pay", (0.3, 0.2, 0.15))]
     parts = [part("chassis", [box("c", 1.0, 0.6, 0.1)], chassis_snaps), part("wheel", [cyl("w", WHEEL_R, WHEEL_W)]), part("payload", [box("p", 0.2, 0.2, 0.2)])]
     instances = [instance("chassis", "chassis", (0, 0, 0.25)), instance("payload", "payload", (0.3, 0.2, 0.4))]
     instances += [instance(w, "wheel", (x, y, WHEEL_R), ROT_X90) for w, (x, y) in WHEELS.items()]
-    joints = [joint(f"h_{w}", "hinge", ("chassis", w), (w, "s1"), axis=(0, 1, 0)) for w in WHEELS]
+    joints = [joint(f"h_{w}", "hinge", ("chassis", w), (w, "s1"), axis=(0, 0, 1)) for w in WHEELS]
     joints.append(joint("weld", "fixed", ("chassis", "pay"), ("payload", "s1")))
     return project(parts, instances, joints)
 
