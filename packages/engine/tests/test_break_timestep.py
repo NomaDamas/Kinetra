@@ -7,15 +7,20 @@ Three reference scenes run at the largest time step a run may take (`MAX_TIMESTE
 are chosen by the tests (`SRC`), not data; the measured numbers quoted are in `docs/research/engine/break-timestep.md`.
 
 - **drop** (낙하): the X-04b swinging arm (`test_break_runtime.swing`) with `pin` at 1.5 x the hanging weight: the arm swings
-  down, `pin` breaks, the arm and both blocks fly off and hit the ground, where `weld-tip` and `weld-mid` break.
+  down, `pin` breaks, the arm and both blocks fly off and hit the ground, where `weld-tip` (180 N) and `weld-mid` (120 N) break.
 - **ramp** (경사로 충돌): a cart on an inclined rail (a slider 30 degrees down from the horizontal, `rig`) slides 0.5 m from rest
-  and hits the rail's end stop (the slider's upper limit); a 1 kg block is welded on the cart (`seat`, 5 m g).
+  and hits the rail's end stop (the slider's upper limit); a 1 kg block is welded on the cart (`seat`, 100 N).
 - **thrust** (추력기 과하중): the X-01c rocket (`test_thrust.rocket`, tank welded on the 2 lbf thruster by `w`, 6.5 N) on the Moon,
   lit at 0.1 s: the jet pushes the tank harder than its weight (4.9 N) and `w` breaks.
 
-Each scene also runs with the joints whose loads are compared made unbreakable (`measure`): their largest window loads agree
-within 10 % across the three time steps. The bounds of the range where this holds (speed, mass ratio, spring stiffness) are
-checked by sweeps that step the engine directly (`BreakWatch`), as the research note measured them.
+In the scenes themselves, every joint that breaks breaks at all three time steps and the load in its `break` event (the window
+mean at the break tick) agrees within 10 %. The impact thresholds sit near the window peaks of the impacts (215, 139 and 117 N
+measured): the event's load is the first window mean over the threshold, so it overshoots the threshold by up to the rise of
+the window in one step, and low on a steep rise that overshoot is time-step dependent (`break-timestep.md` 2.3: with X-04b's
+19.6 N on `weld-tip` the break-tick loads differ by 46 % although the same joints break). Each scene also runs with the joints
+whose loads are compared made unbreakable (`measure`): their largest window loads agree within 10 % too. The bounds of the
+range where this holds (speed, mass ratio, spring stiffness) are checked by sweeps that step the engine directly
+(`BreakWatch`), as the research note measured them.
 """
 
 from __future__ import annotations
@@ -58,13 +63,12 @@ from kinetra_engine.parts import mass_properties
 from kinetra_engine.run import PreviewRun, compile_project
 from kinetra_engine.run import preview as preview_module
 from pydantic import ValidationError
-from test_break_runtime import BOB_KG, FLIP, G_EARTH, G_MOON, HANGING_KG, SRC, TOP_KG, _actuate, _with, box, breakable_tower, instance, q, snap, swing
+from test_break_runtime import FLIP, G_EARTH, G_MOON, HANGING_KG, SRC, TOP_KG, _actuate, _with, box, breakable_tower, instance, q, snap, swing
 from test_thrust import rocket
 
 WINDOW = BREAK_LOAD_WINDOW.value.value
 TIMESTEPS = (MAX_TIMESTEP_S, MAX_TIMESTEP_S / 2, MAX_TIMESTEP_S / 4)
 ROOT = Path(__file__).resolve().parents[3]
-G0 = 9.80665  # standard gravity, only to size thresholds in multiples of a weight on Earth (the run reads g from data/bodies)
 
 
 def spread(values) -> float:
@@ -126,9 +130,9 @@ def thrust(threshold: float) -> Project:
 
 SCENES = {
     # name: (breaking variant, expected breaks, measure variant, joints whose window loads are compared, duration [s])
-    "drop": (swing(2 * BOB_KG * G_EARTH, 6 * BOB_KG * G_EARTH, 1.5 * HANGING_KG * G_EARTH), {"pin", "weld-tip", "weld-mid"},
+    "drop": (swing(180.0, 120.0, 1.5 * HANGING_KG * G_EARTH), {"pin", "weld-tip", "weld-mid"},
              swing(1.0e9, 1.0e9, 1.5 * HANGING_KG * G_EARTH), ("weld-tip", "weld-mid"), 0.5),
-    "ramp": (rig(threshold=5 * 1.0 * G0), {"seat"}, rig(), ("seat",), 0.6),
+    "ramp": (rig(threshold=100.0), {"seat"}, rig(), ("seat",), 0.6),
     "thrust": (thrust(6.5), {"w"}, thrust(1.0e9), ("w",), 0.3),
 }
 
@@ -275,6 +279,20 @@ def test_break_timestep_scenes_break_the_same_joints_at_every_time_step(scene, p
         assert len(events) == len(expected)
         assert all(e.load.value > e.threshold.value for e in events)
         assert ended.labels == ()  # inside the measured range: no "시간 간격 민감" label
+
+
+@pytest.mark.parametrize("scene", SCENES)
+def test_break_timestep_scenes_break_loads_agree_within_ten_percent(scene):
+    """The scene as it is, every joint breaking: the load each `break` event carries agrees within 10 % across the three steps."""
+    project, expected, _, _, duration = SCENES[scene]
+    loads: dict[str, list[float]] = {j: [] for j in expected}
+    for dt in TIMESTEPS:
+        _, frames, _ = run(project, duration, dt)
+        for e in broken(frames):
+            loads[e.joint].append(e.load.value)
+    for j, values in loads.items():
+        assert len(values) == len(TIMESTEPS), (j, values)
+        assert spread(values) <= 0.10, (j, values)
 
 
 @pytest.mark.parametrize("scene", SCENES)
