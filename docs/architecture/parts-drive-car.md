@@ -1,8 +1,8 @@
 # 구동 부품 통합 시연: 휠·모터·추력기·배터리·탱크·스프링을 단 차 (B-03 에픽, #100)
 
-- 상태: 구현됨. 예시 프로젝트 `schemas/examples/Project.drive-car.json`, 생성기 `packages/engine/tests/drive_car_sample.py`, 테스트 `packages/engine/tests/test_drive_parts.py`(`uv run pytest packages/engine -q -k drive_parts`), 그림 `tools/gltf-check/drive-car.ts`(CI `screenshots` 잡의 `out/gltf-check/drive-car.png`).
+- 상태: 구현됨. 예시 프로젝트 `schemas/examples/Project.drive-car.json`, 생성기 `packages/engine/tests/drive_car_sample.py`, 테스트 `packages/engine/tests/test_drive_parts.py`(`uv run pytest packages/engine -q -k drive_parts`)와 컴파일 테스트 `packages/engine/tests/test_example_projects.py`(#553), 그림 `tools/gltf-check/drive-car.ts`(CI `screenshots` 잡의 `out/gltf-check/drive-car.png`).
 - 근거: 이슈 #100의 통합 시연 항목("휠·모터·추력기·배터리·스프링을 단 차가 부품 목록과 사양 출처와 함께 보이는 스크린샷"), B-03a(`parts-wheel.md`), B-03b(`part-motor.md`), B-03c(`parts-thruster.md`), B-03d(`parts-battery-tank.md`), B-03e(`part-spring-damper.md`), B-04a(결합 축, `project-model.md`), 핵심 가치 V2(상상에서 현실까지)와 V5(출처).
-- 범위 밖: 연소, 노즐 유동, 타이어 변형(이슈의 범위 밖). 차가 실제로 달리는 시뮬레이션(X-01), 배터리 전압과 모터 정격 전압의 맞춤(아래 "한계"), 스프링-댐퍼를 결합의 강성·감쇠로 거는 일(X-01b), 실제 차량의 치수.
+- 범위 밖: 연소, 노즐 유동, 타이어 변형(이슈의 범위 밖). 차가 실제로 달리는 시뮬레이션(X-01), 배터리 전압과 모터 정격 전압의 맞춤(아래 "한계"), 실제 차량의 치수.
 
 ## 설계
 
@@ -18,9 +18,10 @@
 | `battery` | `battery-pack-4s` | 배터리 | 없음(선언 질량) | 차대 윗면 `battery-seat`에 고정 |
 | `tank` | `tank`(반지름 0.035 m, 길이 0.1 m, 사용자 선언) | 탱크 | al6061-t6 | 차대 윗면 `tank-seat`에 고정 |
 | `thruster` | `thruster-vacco-48003040` | 추력기 | steel-a36 | 차대 윗면 `thruster-mount`에 고정, 노즐이 뒤(−x) |
-| `spring-l`, `spring-r` | `spring-damper-lee-lc032b08` | 스프링-댐퍼 | 없음(선언 질량) | 차대 앞면 `spring-*`에 고정(범퍼) |
+| `spring-l`, `spring-r` | `spring-damper-lee-lc032b08` | 스프링-댐퍼 | 없음(선언 질량) | 차대 앞면 `spring-*`에 **슬라이더**(범퍼) |
 
-- **결합 13개**: 힌지 4개(앞 액슬 둘, 뒤 구동 둘)와 고정 9개. 힌지의 축은 모두 `axis`를 적었고(B-04a, 배지 `사용자 선언`) 월드에서 +y다. 그래서 네 바퀴 모두 양의 각이 차를 앞(+x)으로 굴린다. 오른쪽 모터는 출력축이 −y를 향하므로 축을 `(0, 0, −1)`(축 스냅 좌표계)로 적어 같은 부호를 만든다(`test_drive_parts_every_wheel_turns_on_a_hinge_about_the_axle`).
+- **결합 13개**: 힌지 4개(앞 액슬 둘, 뒤 구동 둘), 슬라이더 2개(범퍼 스프링 둘), 고정 7개. 힌지·슬라이더의 축은 모두 `axis`를 적었고(B-04a, 배지 `사용자 선언`) 힌지 축은 월드에서 +y다. 그래서 네 바퀴 모두 양의 각이 차를 앞(+x)으로 굴린다. 오른쪽 모터는 출력축이 −y를 향하므로 축을 `(0, 0, −1)`(축 스냅 좌표계)로 적어 같은 부호를 만든다(`test_drive_parts_every_wheel_turns_on_a_hinge_about_the_axle`).
+- **축은 두 스냅 좌표계에서 한 직선이다**(X-01d `check_axes`, #553). 결합 축은 `a` 스냅 좌표계로 적고, 같은 벡터를 `b` 스냅 좌표계로 읽어도 월드의 같은 직선이어야 컴파일된다. 라이브러리 바퀴의 `hub` 스냅은 +z가 바퀴 축(부품 +y)이므로 차대의 `axle-fl`·`axle-fr` 스냅도 x축으로 −90° 돌려(+z → 월드 +y) 두고 축을 `(0, 0, 1)`로 적는다. 범퍼 스프링의 `spring-l`·`spring-r` 스냅은 스프링 인스턴스와 같이 y축으로 +90° 돌려(+z → 월드 +x) 두고 슬라이더 축을 `(0, 0, 1)`로 적는다. 스프링-댐퍼는 제 스냅에 걸린 슬라이더 하나에서만 강성·감쇠로 작동한다(X-01b `compile_drives`): 고정 결합이면 컴파일이 `spring_joint`로 거부한다.
 - **액추에이터 3개**: 모터 둘이 각자의 구동 힌지를 돌리고 `supply`가 `battery`(역할 `battery`), 추력기 하나가 `supply` `tank`(역할 `tank`). 스케줄은 두 모터 0~3 s 명령 1, 추력기 1~2 s 명령 1(시연용 선언값).
 - **자세**는 결합으로 푼다: 차대가 뿌리이고, 자식의 위치 = 부모 스냅의 월드 위치 − (자식 방향으로 돌린) 자식 스냅의 로컬 위치. 좌표를 두 번 적지 않는다. 바퀴 중심은 z = 0.05 m(지름 0.1 m)라서 타이어가 바닥에 닿는다.
 
@@ -60,13 +61,13 @@
 
 - **전압이 맞지 않는다.** 배터리 팩 공칭 14.4 V(추정)는 모터 정격 12 V(인용)보다 20 % 높다. 라이브러리에 12 V 공급원이 없다(셀 3.6 V, 4S 팩 14.4 V). 공급 모델(B-03d)은 에너지(J)만 세고 전압을 맞추지 않으므로 이 예시는 전압이 맞는다고 주장하지 않는다. 표는 두 값을 그대로 보여 준다.
 - **뒤 바퀴의 힌지는 축 토막에 있다**(위 "이 예시의 부품 둘"). 앞 바퀴는 차대에 바로 힌지로 걸린다.
-- **스프링-댐퍼는 범퍼로 고정 결합되어 있다.** 스프링이 두 몸체 사이에서 결합의 강성·감쇠로 작동하는 것은 X-01b의 몫이고, 여기서는 그 부품의 사양을 보이는 것까지다.
+- **스프링-댐퍼는 차대 앞면에 슬라이더로 걸린 범퍼다.** 스프링의 다른 끝(`end_b`)에는 아무것도 없으므로 슬라이더가 움직이는 것은 스프링 부품 자신의 (선언) 질량이다. 범퍼가 무엇에 부딪혀 눌리는 장면은 이 예시에 없다.
 - 치수, 자세, 탱크 크기, 스케줄은 이 예시의 `사용자 선언` 값이고 실제 차량의 값이 아니다.
 
 ## 다시 만들기
 
 ```bash
 uv run python packages/engine/tests/drive_car_sample.py   # 예시, glb, manifest 다시 쓰기 (결정적)
-uv run pytest packages/engine -q -k drive_parts
+uv run pytest packages/engine -q -k "drive_parts or example_projects"
 uv run python packages/core/scripts/validate_examples.py
 ```
