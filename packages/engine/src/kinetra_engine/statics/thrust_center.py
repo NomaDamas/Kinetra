@@ -4,11 +4,12 @@
 
 An L0 analytic number (`client-adapter.md`, "파생값(L0)"; `studio-plan.md` 정역학): no simulation, no verdict.
 
-**Which thrusters.** With a schedule (any thruster actuator has an entry with a command above 0) the result is for the
+**Which thrusters.** With a schedule (any thruster actuator has an entry, whatever its command) the result is for the
 moment `t` [s] and only the thrusters on then count: a thruster is on when one of its openings has `start <= t < end`
-(`Opening`, X-01c: touching entries are one opening), and its thrust is `command x thrust(t - on)` (`Thruster.thrust`, the
-part's curve, B-03c). A thruster whose tank is empty at `t` gives 0. The thrusters are never all added up in place of the
-ones on. Without a schedule every thruster counts at the highest point of its thrust curve (command 1), and the result says
+(`Opening`, X-01c: touching entries are one opening; a command-0 entry is off), and its thrust is `command x thrust(t - on)`
+(`Thruster.thrust`, the part's curve, B-03c). A thruster whose tank is empty at `t` gives 0. The thrusters are never all
+added up in place of the ones on: when none is on at `t` (or every entry commands 0) the resultant is 0. Only a design with
+no thruster entry at all counts every thruster at the highest point of its thrust curve (command 1), and the result says
 so (`basis = "max_thrust"`, `basis_note`).
 
 **Propellant and centre of mass (X-01c's rule).** What a tank holds is mass on the tank's body, spread evenly over the
@@ -121,7 +122,8 @@ def thrust_center(model: ThrustModel, t: float | None = None) -> ThrustCenter:
     """The resultant thrust of the thrusters on at `t` [s] of the schedule, its line and its torque about the centre of mass
     (module docstring). Without a thruster schedule, every thruster at its highest thrust and `t` is not read. Raises
     `ValueError` for a design with a schedule and no `t`, or a `t` that is negative or not finite."""
-    scheduled = any(th.openings for th in model.thrusters)
+    thruster_ids = {th.actuator for th in model.thrusters}
+    scheduled = any(e.actuator in thruster_ids for e in model.tree.design.schedule.entries)
     if scheduled:
         if t is None:
             raise ValueError("the design has a thruster schedule: give the time t [s] to compute the thrust at")

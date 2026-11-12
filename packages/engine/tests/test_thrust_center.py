@@ -139,6 +139,22 @@ def test_thrust_center_needs_a_time_when_there_is_a_schedule():
     assert thrust_center(model, 1.0).force == (0.0, 0.0, 0.0) and thrust_center(model, 1.0).couple_only
 
 
+def test_thrust_center_schedule_with_only_command_zero_is_zero_thrust_not_max():
+    """Thruster entries that all command 0 are a schedule (every thruster off), not "no schedule": the result is 0 thrust at
+    `t` on the schedule basis, never every thruster at max. Only a design with no thruster entry at all gets the max basis."""
+    jets = [("jet-a", "under-a"), ("jet-b", "under-b")]
+    off = compile_thrust(on_plate(jets, [thruster("a", "tank"), thruster("b")], [entry("ea", "a", 0.0, 10.0, 0.0), entry("eb", "b", 0.0, 10.0, 0.0)]))
+    r = thrust_center(off, 1.0)
+    assert r.basis == "schedule" and r.basis_note != MAX_THRUST_NOTE and r.propellant_note == PROPELLANT_DRAWN_NOTE
+    assert r.thrusters == () and r.force == (0.0, 0.0, 0.0) and r.torque == (0.0, 0.0, 0.0) and r.couple_only
+    assert r.propellant == {"tank": CAPACITY}  # nothing drawn
+    with pytest.raises(ValueError, match="give the time"):
+        thrust_center(off)
+    none = thrust_center(compile_thrust(on_plate(jets, [thruster("a", "tank"), thruster("b")], [])))
+    assert none.basis == "max_thrust" and none.basis_note == MAX_THRUST_NOTE
+    assert none.force == pytest.approx((0.0, 0.0, 2 * F), abs=1e-12)
+
+
 def test_thrust_center_empty_tank_gives_no_thrust():
     """Burning at command 1 empties the full tank at v_e x capacity / F + T_OPEN / 2 = 163.5 s (X-01c)."""
     model = compile_thrust(rocket([entry("e", "main", 0.0, 1000.0, 1.0)]))
