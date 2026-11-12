@@ -56,13 +56,13 @@ def touchdown_tick(vz0: float) -> int:
     return math.ceil(2.0 * vz0 / G / DT)
 
 
-def trajectory(vx: float, vz0: float, turns: float, break_tick: int | None = None, contacts: bool = True, last: int = LAST, reason: str = "completed"):
+def trajectory(vx: float, vz0: float, turns: float, break_tick: int | None = None, contacts: bool = True, last: int = LAST, reason: str = "completed", every: int = EVERY):
     """The run stream (`RunStarted`, frames, `RunEnded`) of the analytic jump described in the module docstring."""
     down = touchdown_tick(vz0)
     started = RunStarted.model_validate(
         {
             "type": "run_started", "run_id": "jump", "kind": "preview", "badge": "sim", "project_id": "jump", "revision": 0,
-            "definition_hash": "sha256:" + "0" * 64, "planet": "earth", "seed": 0, "timestep_s": DT, "frame_every_ticks": EVERY,
+            "definition_hash": "sha256:" + "0" * 64, "planet": "earth", "seed": 0, "timestep_s": DT, "frame_every_ticks": every,
             "bodies": [{"id": "car", "instances": ["car", "thruster-1"]}, {"id": "wheel-1", "instances": ["wheel-1"]}],
             "platform": PLATFORM,
         }
@@ -73,7 +73,7 @@ def trajectory(vx: float, vz0: float, turns: float, break_tick: int | None = Non
         events = [{"kind": "contact", "tick": t, "phase": p, "body": "wheel-1", "other": {"kind": "ground"}} for t, p in events]
     if break_tick is not None:
         events.append({"kind": "break", "tick": break_tick, "joint": "mount", "load": {"value": 2.0, "unit": "N"}, "threshold": {"value": 1.0, "unit": "N"}})
-    ticks = [*range(0, last + 1, EVERY), *([last] if last % EVERY else [])]
+    ticks = [*range(0, last + 1, every), *([last] if last % every else [])]
     frames, previous = [], -1
     for tick in ticks:
         t = min(tick, down) * DT
@@ -168,6 +168,30 @@ def test_goal_eval_says_undetermined_instead_of_guessing():
     # a failed condition still fails the goal of a stopped run
     result = evaluate_goal(goal, *trajectory(vx=1.5, vz0=4.0, turns=1.0, break_tick=100, last=300, reason="stopped"))
     assert (result.status, result.tick) == (Status.FAILED, 100)
+
+
+def test_goal_eval_time_limit_between_two_ticks_admits_only_the_earlier_tick():
+    # 0.815 s lies between tick 407 (0.814 s) and tick 408 (0.816 s), where the success trajectory lands
+    goal = Goal.model_validate({"conditions": [*GOAL["conditions"][:3], {"kind": "time_limit", "id": "tight", "seconds": 0.815}]})
+    result = evaluate_goal(goal, *trajectory(vx=1.5, vz0=4.0, turns=1.0))
+    c = by_id(result)
+    assert (c["lands-upright"].status, c["lands-upright"].tick) == (Status.MET, 408)
+    assert (c["tight"].status, c["tight"].tick) == (Status.FAILED, 407)
+    assert (result.status, result.tick) == (Status.FAILED, 407)
+    goal = Goal.model_validate({"conditions": [*GOAL["conditions"][:3], {"kind": "time_limit", "id": "loose", "seconds": 0.817}]})
+    assert by_id(evaluate_goal(goal, *trajectory(vx=1.5, vz0=4.0, turns=1.0)))["loose"].status is Status.MET  # 0.816 <= 0.817
+
+
+def test_goal_eval_landing_tilt_over_its_limit_fails_even_without_a_speed():
+    # frames every 400 ticks: the flight (ticks 1..408) holds one frame (400), too few for a speed
+    goal = Goal.model_validate({"conditions": [GOAL["conditions"][2]]})
+    landing = by_id(evaluate_goal(goal, *trajectory(vx=1.5, vz0=4.0, turns=0.75, every=400)))["lands-upright"]
+    # attitude at frame 400: 0.75 * 360 * 400 / 408 = 264.7 deg about y, so the up axis is 360 - 264.7 = 95.3 deg off > 10
+    assert (landing.status, landing.tick) == (Status.FAILED, 408)
+    assert landing.measured == {"tilt_deg": pytest.approx(360.0 - 270.0 * 400 / 408, abs=1e-9)}
+    # within its tilt limit (one turn: 360 * 8 / 408 = 7.06 deg short of upright <= 10), the speed decides: undetermined
+    landing = by_id(evaluate_goal(goal, *trajectory(vx=1.5, vz0=4.0, turns=1.0, every=400)))["lands-upright"]
+    assert landing.status is Status.UNDETERMINED and landing.measured["tilt_deg"] == pytest.approx(360.0 * 8 / 408, abs=1e-9)
 
 
 def test_goal_eval_refuses_bad_goals_and_unknown_instances():

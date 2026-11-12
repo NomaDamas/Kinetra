@@ -362,6 +362,8 @@ def _landing(c: LandingCondition, run: _Run) -> ConditionResult:
     tilt = math.degrees(_angle_between(_rotate(_q(attitude.orientation), up_body), (0.0, 0.0, 1.0)))
     v = _velocity(flight, tick, run.dt)
     if v is None:
+        if tilt > c.max_tilt_deg:  # decided by the attitude alone: a known failure is not undetermined
+            return _result(c, Status.FAILED, tick, run, {"tilt_deg": tilt}, "첫 착지에서 기울기가 한도를 넘었다(속도는 공중 프레임이 둘보다 적어 내지 못했다)")
         return _result(c, Status.UNDETERMINED, None, run, {"tilt_deg": tilt}, "착지 전 공중 구간의 프레임이 둘보다 적어 속도를 낼 수 없다")
     speed = math.sqrt(v[0] ** 2 + v[1] ** 2 + v[2] ** 2)
     measured = {"tilt_deg": tilt, "speed_m_s": speed, "vertical_speed_m_s": -v[2]}
@@ -381,11 +383,12 @@ def _no_break(c: NoBreakCondition, run: _Run) -> ConditionResult:
 
 
 def _time_limit(c: TimeLimitCondition, run: _Run, others: list[ConditionResult]) -> ConditionResult:
-    """Met when every achievement (`reach`, `rotation`, `landing`) is met by the limit tick. Failed as soon as one is
-    known not to be: met after the limit, failed, or (`reach`, `rotation`) still open while the frames reached the limit;
-    decided at the limit tick, or at the last tick of a run that ended before it. Else undetermined (a landing that
-    could not be evaluated, or a run that stopped before the limit)."""
-    limit_tick = math.ceil(c.seconds / run.dt - 1e-9)
+    """Met when every achievement (`reach`, `rotation`, `landing`) is met at a tick whose time (`tick * timestep_s`)
+    is at or before `seconds`; the limit tick is the last such tick, so a limit between two ticks admits only the earlier
+    one. Failed as soon as one is known not to be: met after the limit, failed, or (`reach`, `rotation`) still open while
+    the frames reached the limit; decided at the limit tick, or at the last tick of a run that ended before it. Else
+    undetermined (a landing that could not be evaluated, or a run that stopped before the limit)."""
+    limit_tick = math.floor(c.seconds / run.dt + 1e-9)
     achieved = [r for r in others if r.kind in _ACHIEVEMENTS]
     measured = {"limit_s": c.seconds}
     if all(r.status is Status.MET and r.tick <= limit_tick for r in achieved):
