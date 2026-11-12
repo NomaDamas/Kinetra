@@ -14,6 +14,8 @@ The scenes, values chosen by the test (`SRC`), not data:
   `v_a = J / 2.5 = +0.4 m/s` and `v_b = -J / 4 = -0.25 m/s`, total momentum 0 (hand calculation).
 - `stages`: on the Moon, a booster cube on the ground, the separator turned over (its `face_b` up), an upper cube and the
   library thruster on its roof, nozzle up. The upper stage leaves; its thruster fires on its own entry after the separation.
+- `library_stages`: only library parts: a booster thruster, the separator, and an upper tank carrying a side-mounted thruster.
+  Both separator joints pass the ordinary bidirectional snap validator, compile, and release at the scheduled tick (#567).
 """
 
 from __future__ import annotations
@@ -64,6 +66,7 @@ TO_X = {"x": 0.0, "y": S45, "z": 0.0, "w": S45}  # +90 degrees about y: local +z
 FLIP = {"x": 1.0, "y": 0.0, "z": 0.0, "w": 0.0}  # 180 degrees about x: local +z is world -z
 SEPARATOR = library_part("separator")
 THRUSTER = library_part("thruster-vacco-48003040")
+TANK = library_part("tank")
 J = 1.0  # N*s, declared
 M_SEP = 0.5  # kg, declared
 M_A, M_B = 2.0, 4.0  # kg: 0.2 x 0.1 x 0.1 m boxes at 1000 and 2000 kg/m^3
@@ -406,6 +409,56 @@ def stages(entries) -> Project:
             "world": {"planet": "moon"},
         }
     )
+
+
+def library_stages(entries) -> Project:
+    """Library-only booster thruster, separator, and upper tank with its own side-mounted thruster.
+
+    The booster nozzle rests on the ground and its mount meets `face_a`; the upper tank's bottom meets `face_b`.
+    The upper thruster points out from the tank's +x side, so its body does not overlap the tank. All poses and the
+    declared 1 N*s separation impulse are test values; the part dimensions and catalog materials come from the library.
+    """
+    thruster = json.loads(THRUSTER.model_dump_json())
+    tank_bottom = 0.01 + 0.5 * 0.2  # skirt plus half the default cylindrical body length [m]
+    tank_z = 2 * MZ + L + tank_bottom
+    return Project.model_validate(
+        {
+            "design": {
+                "materials": [json.loads(catalog_material("al6061-t6").model_dump_json()), json.loads(catalog_material("steel-a36").model_dump_json())],
+                "parts": [json.loads(SEPARATOR.model_dump_json()), thruster, json.loads(TANK.model_dump_json())],
+                "instances": [
+                    instance("booster-jet", thruster["id"], (0.0, 0.0, MZ), FLIP, material="steel-a36"),
+                    separator("sep", (0.0, 0.0, 2 * MZ + 0.5 * L), FLIP),
+                    instance("upper-tank", "tank", (0.0, 0.0, tank_z), material="al6061-t6"),
+                    instance("upper-jet", thruster["id"], (0.06 + MZ, 0.0, tank_z), TO_X, material="steel-a36"),
+                ],
+                "joints": [
+                    fixed("hold-booster", ("booster-jet", "mount"), ("sep", "face_a")),
+                    fixed("hold-upper", ("sep", "face_b"), ("upper-tank", "bottom")),
+                    fixed("mount-upper", ("upper-tank", "side-xp"), ("upper-jet", "mount")),
+                ],
+                "actuators": [
+                    {"id": "booster-main", "kind": "thruster", "instance": "booster-jet"},
+                    {"id": "upper-main", "kind": "thruster", "instance": "upper-jet", "supply": "upper-tank"},
+                ],
+                "schedule": {"entries": list(entries)},
+            },
+            "world": {"planet": "moon"},
+        }
+    )
+
+
+def test_separator_library_only_stage_compiles_and_separates():
+    """#567: the ordinary validator and compiler accept the library stage, then X-08 releases its actual `face_b` joint."""
+    project = library_stages([separate("stage", "sep", 0.01)])
+    compile_project(project)
+    preview, frames, _ = run(project, 0.03)
+    bodies = {"booster-jet", "upper-jet"}
+    assert {b.id for b in preview.started.bodies} == bodies
+    (event,) = separations(frames)
+    assert (event.separator, event.joint, event.tick) == ("sep", "hold-upper", 6)
+    assert all({p.body for p in frame.poses} == bodies for frame in frames)
+    assert position(frames[-1], "upper-jet")[2] > position(frames[0], "upper-jet")[2]
 
 
 def test_separation_the_side_that_left_fires_its_thruster_on_its_own_schedule():
