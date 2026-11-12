@@ -181,7 +181,7 @@ def test_mcp_run_and_verdict_calls_are_the_same_results_as_the_agent(tools, monk
 
     for name, arguments in (("request_run", {"duration_s": 0.01, "seed": 3}), ("request_verdict", {"seed": 3})):
         expected = agent.call(name, arguments).to_json()
-        result = call(server, name, arguments)
+        result = call(server, f"agent-equivalence-{name}", name, arguments)
         assert result["structuredContent"] == expected
         assert json.loads(result["content"][0]["text"]) == expected
         assert result["isError"] is (not expected["ok"])
