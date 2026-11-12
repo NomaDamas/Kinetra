@@ -32,6 +32,7 @@ other than the first and the last are not kept.
 from __future__ import annotations
 
 import json
+import math
 import uuid
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass
@@ -117,13 +118,16 @@ Judge = Callable[[VerdictRequest], Mapping[str, Any]]
 def freeze(value: Any) -> Any:
     """`value` (JSON data) made read-only all the way down: objects become `MappingProxyType`s of their frozen values, lists
     and tuples become tuples. Raises `TypeError` for anything that is not JSON data (a key that is not a string, a set, an
-    object), so what the judge gives is what `to_json` can show."""
+    object) and `ValueError` for a non-finite number (NaN, ±inf: JSON has none), so what the judge gives is what `to_json`
+    can show."""
     if isinstance(value, Mapping):
         if not all(isinstance(k, str) for k in value):
             raise TypeError("a verdict's object keys are strings")
         return MappingProxyType({k: freeze(v) for k, v in value.items()})
     if isinstance(value, (list, tuple)):
         return tuple(freeze(v) for v in value)
+    if isinstance(value, float) and not math.isfinite(value):
+        raise ValueError(f"a verdict holds JSON numbers, and {value!r} is not one")
     if value is None or isinstance(value, (str, int, float, bool)):
         return value
     raise TypeError(f"a verdict holds JSON data, not {type(value).__name__}")

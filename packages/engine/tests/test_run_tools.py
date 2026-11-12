@@ -4,7 +4,7 @@ write one, and a request changes no document.
 `uv run pytest packages/engine -q -k run_tools`
 
 The project is one library plate of the catalog's aluminium resting on the ground of the earth, placed by the edit tools
-(G-02a). The compiled model has no ground plane yet, so the plate falls; the run's `model_labels` say so. The judge below is a
+(G-02a); the compiled model has its ground (X-01e). The judge below is a
 test stand-in for J-01's (J-01d connects the real one): it returns what it was asked, never a probability, so no number here
 reads as a verdict.
 """
@@ -90,8 +90,8 @@ def test_run_tools_a_run_is_one_preview_of_the_document_as_it_is_and_never_a_ver
     *frames, direct_end = list(direct)
     assert direct_end.end.trajectory.hash == ended.end.trajectory.hash
     assert frames[-1].poses == last.poses and frames[0].poses == first.poses
-    assert last.poses[0].position.z < first.poses[0].position.z  # no ground plane yet: the plate falls
-    assert "미적용: 지면 없음. 몸체는 아무것에도 닿지 않고 떨어진다" in run.model_labels
+    assert run.model_labels == direct.started.model_labels
+    assert not any("지면 없음" in label for label in run.model_labels)  # the model has its ground (X-01e)
     out = result.to_json()
     assert out["is_verdict"] is False and out["label"] == RUN_LABEL == "1회 실행. 판정이 아닙니다"
     assert out["run"]["started"]["kind"] == "preview" and "verdict" not in out and RUN_LABEL in out["summary"]
@@ -257,6 +257,16 @@ def test_run_tools_without_a_judge_there_is_no_verdict_and_no_preview_in_its_pla
 def test_run_tools_a_judge_answer_that_is_not_json_data_is_not_a_verdict(bad):
     with pytest.raises(TypeError):
         rt.freeze(bad)
+
+
+@pytest.mark.parametrize("bad", [float("nan"), float("inf"), float("-inf")])
+def test_run_tools_a_judge_answer_with_a_non_finite_number_is_not_a_verdict(hub, bad):
+    with pytest.raises(ValueError, match="JSON numbers"):
+        rt.freeze({"a": [{"b": bad}]})
+    before = state(hub)
+    with pytest.raises(ValueError, match="JSON numbers"):  # the core's own judge broke its contract: no verdict comes out
+        RunTools(hub, "car", judge=lambda request: {"x": bad}).call("request_verdict", {})
+    assert state(hub) == before
 
 
 def test_run_tools_an_unknown_project_is_a_key_error(hub):
