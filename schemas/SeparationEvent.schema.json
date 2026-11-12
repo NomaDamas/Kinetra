@@ -1,0 +1,81 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Separator instance `separator` let go of joint `joint` on purpose (X-08): `reason` is `intended_separation` (\"의도한\n분리\"), never a break. Each side received the declared separation `impulse`, equal and opposite. `entry` is the schedule\nentry that asked for it, `null` for a manual request during the run. `tick` is the first tick whose state is apart.",
+  "properties": {
+    "kind": {
+      "const": "separation",
+      "title": "Kind",
+      "type": "string"
+    },
+    "tick": {
+      "maximum": 4294967295,
+      "minimum": 0,
+      "title": "Tick",
+      "type": "integer"
+    },
+    "reason": {
+      "const": "intended_separation",
+      "title": "Reason",
+      "type": "string"
+    },
+    "separator": {
+      "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+      "title": "Separator",
+      "type": "string"
+    },
+    "joint": {
+      "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+      "title": "Joint",
+      "type": "string"
+    },
+    "entry": {
+      "anyOf": [
+        {
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Entry"
+    },
+    "impulse": {
+      "$ref": "#/$defs/ImpulseNs"
+    }
+  },
+  "required": [
+    "kind",
+    "tick",
+    "reason",
+    "separator",
+    "joint",
+    "entry",
+    "impulse"
+  ],
+  "title": "SeparationEvent",
+  "type": "object",
+  "$defs": {
+    "ImpulseNs": {
+      "description": "An impulse in newton-seconds (`unit` is always `N*s`).",
+      "properties": {
+        "value": {
+          "minimum": 0,
+          "title": "Value",
+          "type": "number"
+        },
+        "unit": {
+          "const": "N*s",
+          "title": "Unit",
+          "type": "string"
+        }
+      },
+      "required": [
+        "value",
+        "unit"
+      ],
+      "title": "ImpulseNs",
+      "type": "object"
+    }
+  }
+}

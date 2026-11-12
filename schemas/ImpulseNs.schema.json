@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "An impulse in newton-seconds (`unit` is always `N*s`).",
+  "properties": {
+    "value": {
+      "minimum": 0,
+      "title": "Value",
+      "type": "number"
+    },
+    "unit": {
+      "const": "N*s",
+      "title": "Unit",
+      "type": "string"
+    }
+  },
+  "required": [
+    "value",
+    "unit"
+  ],
+  "title": "ImpulseNs",
+  "type": "object"
+}

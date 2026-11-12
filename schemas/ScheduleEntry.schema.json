@@ -1,0 +1,210 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "discriminator": {
+    "mapping": {
+      "actuate": "#/$defs/ActuateEntry",
+      "separate": "#/$defs/SeparateEntry"
+    },
+    "propertyName": "type"
+  },
+  "oneOf": [
+    {
+      "$ref": "#/$defs/ActuateEntry"
+    },
+    {
+      "$ref": "#/$defs/SeparateEntry"
+    }
+  ],
+  "$defs": {
+    "ActuateEntry": {
+      "additionalProperties": false,
+      "description": "Command `command` on `actuator` during `[start, end)` seconds of simulated time.\n\n`command` is the fraction of the actuator's full command, in [-1, 1] for a motor (sign is direction) and\n[0, 1] for a thruster. What full command means physically comes from the part (B-03b, B-03c, X-01b, X-01c).\nOne badge and source cover the entry. `id` names the entry inside the schedule (unique there): commands\nthat edit an entry name it by id, never by position, so a reordered or partly accepted batch cannot change\na different entry than the one meant.",
+      "properties": {
+        "badge": {
+          "$ref": "#/$defs/Badge"
+        },
+        "source": {
+          "$ref": "#/$defs/Source"
+        },
+        "type": {
+          "const": "actuate",
+          "title": "Type",
+          "type": "string"
+        },
+        "id": {
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "actuator": {
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+          "title": "Actuator",
+          "type": "string"
+        },
+        "start": {
+          "minimum": 0,
+          "title": "Start",
+          "type": "number"
+        },
+        "end": {
+          "minimum": 0,
+          "title": "End",
+          "type": "number"
+        },
+        "command": {
+          "maximum": 1,
+          "minimum": -1,
+          "title": "Command",
+          "type": "number"
+        }
+      },
+      "required": [
+        "badge",
+        "source",
+        "type",
+        "id",
+        "actuator",
+        "start",
+        "end",
+        "command"
+      ],
+      "title": "ActuateEntry",
+      "type": "object"
+    },
+    "Badge": {
+      "enum": [
+        "sim",
+        "cite",
+        "default",
+        "declared",
+        "estimate"
+      ],
+      "title": "Badge",
+      "type": "string"
+    },
+    "SeparateEntry": {
+      "additionalProperties": false,
+      "description": "Release separator instance `separator` at `at` seconds of simulated time (X-08, `docs/architecture/separation.md`).\n\nOne entry of the same time-axis schedule as `ActuateEntry` (no separate staging list); the `type` tag tells them apart.\n`separator` is the id of an instance of a `separator` part (B-15). A separation cannot be undone, so the schedule\nholds at most one per separator; that rule (and two at one time) is the compiler's (`separation_twice`,\n`separation_conflict`, X-01d), not this model's. One badge and source cover the entry.",
+      "properties": {
+        "badge": {
+          "$ref": "#/$defs/Badge"
+        },
+        "source": {
+          "$ref": "#/$defs/Source"
+        },
+        "type": {
+          "const": "separate",
+          "title": "Type",
+          "type": "string"
+        },
+        "id": {
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "separator": {
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+          "title": "Separator",
+          "type": "string"
+        },
+        "at": {
+          "minimum": 0,
+          "title": "At",
+          "type": "number"
+        }
+      },
+      "required": [
+        "badge",
+        "source",
+        "type",
+        "id",
+        "separator",
+        "at"
+      ],
+      "title": "SeparateEntry",
+      "type": "object"
+    },
+    "Source": {
+      "additionalProperties": false,
+      "description": "Where a value comes from.\n\n`ref` is what was cited, declared or run: a document, a datasheet, a run id, or the reason a default was chosen\n(for an estimate: the method and its inputs). `locator` is where inside it (table, page, section). `url` is a\nlink when there is one. `license` (SPDX expression over the repo allowlist, `spdx.py`) and `declared_by` / `declared_at` feed the badge popover\n(`ValueBadges`, 인용 and 사용자 선언); `Provenance` allows each only on its own badge.",
+      "properties": {
+        "ref": {
+          "maxLength": 500,
+          "minLength": 1,
+          "title": "Ref",
+          "type": "string"
+        },
+        "locator": {
+          "anyOf": [
+            {
+              "maxLength": 200,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Locator"
+        },
+        "url": {
+          "anyOf": [
+            {
+              "maxLength": 2000,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Url"
+        },
+        "license": {
+          "anyOf": [
+            {
+              "maxLength": 200,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "License"
+        },
+        "declared_by": {
+          "anyOf": [
+            {
+              "maxLength": 200,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Declared By"
+        },
+        "declared_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Declared At"
+        }
+      },
+      "required": [
+        "ref"
+      ],
+      "title": "Source",
+      "type": "object"
+    }
+  }
+}
