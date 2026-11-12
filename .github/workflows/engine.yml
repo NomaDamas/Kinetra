@@ -41,6 +41,10 @@ jobs:
         run: uv run pytest tools/design/tests -q
       - name: pytest tools/review (P0-06, offline with fake gh and curl)
         run: uv run pytest tools/review -q -rs
+      - name: pytest tools/eval (G-06, agent evaluation set, recorded model replies replayed offline)
+        run: uv run pytest tools/eval -q
+      - name: Agent evaluation table (G-06; fails on a fabricated number or a verdict claim on screen)
+        run: uv run python tools/eval/agent_eval.py --seed 0
       - name: Test counts (skipped is always printed)
         if: always()
         run: |

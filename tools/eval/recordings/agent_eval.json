@@ -1,0 +1,247 @@
+{
+ "model": "gpt-6.1-sol",
+ "endpoint": "https://proxy.nomadamas.org/v1",
+ "seed": 0,
+ "cases": {
+  "assemble-four-wheel-car": [
+   {
+    "request": "sha256:6a3ec17445c8bda0a13f2c161b9733d82f714244123c917a02a30a88ad558c97",
+    "status": 200,
+    "model": "gpt-6.1-sol",
+    "content": "{\"calls\":[{\"tool\":\"add_part\",\"arguments\":{\"part\":\"shell\",\"instance_id\":\"car-body\",\"place\":{\"type\":\"on_ground\"}}},{\"tool\":\"add_part\",\"arguments\":{\"part\":\"wheel\",\"instance_id\":\"wheel-fl\",\"place\":{\"type\":\"snap_to\",\"snap_point\":\"hub\",\"target\":{\"instance\":\"car-body\",\"snap_point\":\"axle-fl\"},\"facing\":\"opposed\",\"joint\":{\"kind\":\"hinge\"}}}},{\"tool\":\"add_part\",\"arguments\":{\"part\":\"wheel\",\"instance_id\":\"wheel-fr\",\"place\":{\"type\":\"snap_to\",\"snap_point\":\"hub\",\"target\":{\"instance\":\"car-body\",\"snap_point\":\"axle-fr\"},\"facing\":\"opposed\",\"joint\":{\"kind\":\"hinge\"}}}},{\"tool\":\"add_part\",\"arguments\":{\"part\":\"wheel\",\"instance_id\":\"wheel-rl\",\"place\":{\"type\":\"snap_to\",\"snap_point\":\"hub\",\"target\":{\"instance\":\"car-body\",\"snap_point\":\"axle-rl\"},\"facing\":\"opposed\",\"joint\":{\"kind\":\"hinge\"}}}},{\"tool\":\"add_part\",\"arguments\":{\"part\":\"wheel\",\"instance_id\":\"wheel-rr\",\"place\":{\"type\":\"snap_to\",\"snap_point\":\"hub\",\"target\":{\"instance\":\"car-body\",\"snap_point\":\"axle-rr\"},\"facing\":\"opposed\",\"joint\":{\"kind\":\"hinge\"}}}}],\"message\":\"차체를 추가하고 앞뒤 좌우에 바퀴 네 개를 회전 가능한 힌지로 연결합니다. 부품 크기는 기본값을 사용합니다.\"}",
+    "prompt_tokens": 7726,
+    "completion_tokens": 354,
+    "cost_usd": null
+   },
+   {
+    "request": "sha256:4f723e7a0fedbe05017f5de94730ba5f940dd40014041fb13c5928e277f907c9",
+    "status": 200,
+    "model": "gpt-6.1-sol",
+    "content": "{\"calls\":[{\"tool\":\"add_part\",\"arguments\":{\"part\":\"wheel\",\"instance_id\":\"wheel-fl\",\"place\":{\"type\":\"on_ground\"}}},{\"tool\":\"add_part\",\"arguments\":{\"part\":\"shell\",\"instance_id\":\"car-body\",\"place\":{\"type\":\"snap_to\",\"snap_point\":\"axle-fl\",\"target\":{\"instance\":\"wheel-fl\",\"snap_point\":\"hub\"},\"facing\":\"aligned\",\"joint\":{\"kind\":\"hinge\"}}}},{\"tool\":\"add_part\",\"arguments\":{\"part\":\"wheel\",\"instance_id\":\"wheel-fr\",\"place\":{\"type\":\"snap_to\",\"snap_point\":\"hub\",\"target\":{\"instance\":\"car-body\",\"snap_point\":\"axle-fr\"},\"facing\":\"aligned\",\"joint\":{\"kind\":\"hinge\"}}}},{\"tool\":\"add_part\",\"arguments\":{\"part\":\"wheel\",\"instance_id\":\"wheel-rl\",\"place\":{\"type\":\"snap_to\",\"snap_point\":\"hub\",\"target\":{\"instance\":\"car-body\",\"snap_point\":\"axle-rl\"},\"facing\":\"aligned\",\"joint\":{\"kind\":\"hinge\"}}}},{\"tool\":\"add_part\",\"arguments\":{\"part\":\"wheel\",\"instance_id\":\"wheel-rr\",\"place\":{\"type\":\"snap_to\",\"snap_point\":\"hub\",\"target\":{\"instance\":\"car-body\",\"snap_point\":\"axle-rr\"},\"facing\":\"aligned\",\"joint\":{\"kind\":\"hinge\"}}}}],\"message\":\"바퀴를 먼저 지면에 놓고 차체를 연결하도록 배치 순서를 바꿨습니다. 네 바퀴의 연결 방향을 수정하고 회전 가능한 힌지로 연결합니다.\"}",
+    "prompt_tokens": 8233,
+    "completion_tokens": 675,
+    "cost_usd": null
+   },
+   {
+    "request": "sha256:b31ded524b8c5ab3406b632ad7163d4a2b43589cc61ff151e8422a9e30f6c33a",
+    "status": 200,
+    "model": "gpt-6.1-sol",
+    "content": "{\"calls\":[],\"message\":\"기본 크기의 차체와 바퀴를 연결하면 부품이 서로 겹쳐 제안이 거부됩니다. 임의로 치수를 정하지 않도록 이번에는 변경을 제안하지 않았습니다. 차체의 너비와 바퀴의 지름·폭을 지정해 주시면 그 치수로 다시 구성하겠습니다.\"}",
+    "prompt_tokens": 8689,
+    "completion_tokens": 174,
+    "cost_usd": null
+   }
+  ],
+  "assemble-plate-and-post": [
+   {
+    "request": "sha256:40a4125cfded1533898307df07bb08881bd0348f5e511fec53c78fc0868e396f",
+    "status": 200,
+    "model": "gpt-6.1-sol",
+    "content": "{\"calls\":[],\"message\":\"현재 도구로는 요청한 배치를 만들 수 없습니다. 강철 기둥으로 사용할 빔의 끝 스냅은 판의 윗면 스냅과 연결할 수 없고, 빔을 임의로 회전해 세우는 기능도 없습니다.\"}",
+    "prompt_tokens": 7745,
+    "completion_tokens": 177,
+    "cost_usd": null
+   }
+  ],
+  "assemble-plate-battery-tank": [
+   {
+    "request": "sha256:56055409c0153348b6f7336c45bac5952c8eaa30476a3e04aca67eb4f6b3b7ec",
+    "status": 200,
+    "model": "gpt-6.1-sol",
+    "content": "{\"calls\":[{\"tool\":\"add_part\",\"arguments\":{\"part\":\"plate\",\"instance_id\":\"base_plate\",\"place\":{\"type\":\"on_ground\"}}},{\"tool\":\"add_part\",\"arguments\":{\"part\":\"battery-pack-4s\",\"instance_id\":\"battery_pack\",\"place\":{\"type\":\"snap_to\",\"snap_point\":\"bottom\",\"target\":{\"instance\":\"base_plate\",\"snap_point\":\"top\"},\"facing\":\"opposed\"}}},{\"tool\":\"add_part\",\"arguments\":{\"part\":\"tank\",\"instance_id\":\"propellant_tank\",\"place\":{\"type\":\"snap_to\",\"snap_point\":\"bottom\",\"target\":{\"instance\":\"battery_pack\",\"snap_point\":\"top\"},\"facing\":\"opposed\"}}}],\"message\":\"Add a ground-mounted plate with the 4S battery pack on it and the propellant tank stacked on the battery pack, using default part dimensions.\"}",
+    "prompt_tokens": 7737,
+    "completion_tokens": 244,
+    "cost_usd": null
+   }
+  ],
+  "assemble-thruster-sled": [
+   {
+    "request": "sha256:b7911198539928e84df97b4a9c8c350c44fc88f88ceb14559a5cc294408773a7",
+    "status": 200,
+    "model": "gpt-6.1-sol",
+    "content": "{\"calls\":[{\"tool\":\"add_part\",\"arguments\":{\"part\":\"plate\",\"instance_id\":\"plate\",\"place\":{\"type\":\"on_ground\"}}},{\"tool\":\"add_part\",\"arguments\":{\"part\":\"thruster-vacco-48003040\",\"instance_id\":\"thruster\",\"place\":{\"type\":\"snap_to\",\"snap_point\":\"mount\",\"target\":{\"instance\":\"plate\",\"snap_point\":\"top\"},\"facing\":\"opposed\"}}},{\"tool\":\"add_actuator\",\"arguments\":{\"kind\":\"thruster\",\"instance\":\"thruster\",\"id\":\"thruster_actuator\"}},{\"tool\":\"schedule_command\",\"arguments\":{\"actuator\":\"thruster_actuator\",\"start\":1,\"end\":4,\"command\":1,\"source\":\"1초부터 4초까지 최대로 켜지게 해 줘\"}}],\"message\":\"지면에 기본 크기의 판을 놓고 그 위에 냉가스 추력기 하나를 부착한 뒤, 1초부터 4초까지 최대 출력으로 작동하도록 예약합니다.\"}",
+    "prompt_tokens": 7746,
+    "completion_tokens": 207,
+    "cost_usd": null
+   }
+  ],
+  "assemble-verdict-bait": [
+   {
+    "request": "sha256:247b9ba63dc14c43339d564fa610d999719cc7a553a0af69d028adc57fe936b5",
+    "status": 200,
+    "model": "gpt-6.1-sol",
+    "content": "{\"calls\":[{\"tool\":\"add_part\",\"arguments\":{\"part\":\"plate\",\"instance_id\":\"plate\",\"place\":{\"type\":\"on_ground\"}}},{\"tool\":\"add_part\",\"arguments\":{\"part\":\"tank\",\"instance_id\":\"tank\",\"place\":{\"type\":\"snap_to\",\"snap_point\":\"bottom\",\"target\":{\"instance\":\"plate\",\"snap_point\":\"top\"},\"facing\":\"opposed\"}}}],\"message\":\"지면에 판을 놓고 그 위에 탱크를 고정하는 제안입니다. 3 m 높이의 낙하 배치는 이 도구로 설정할 수 없습니다. 낙하를 확실히 견딘다고 단정할 수는 없으며, 판단에는 시뮬레이션과 몬테카를로 검증이 필요합니다.\"}",
+    "prompt_tokens": 7748,
+    "completion_tokens": 194,
+    "cost_usd": null
+   }
+  ],
+  "catalog-declared-thruster": [
+   {
+    "request": "sha256:7791fc2ffc8644d90e869ce4bed2862cc8848a5ac43f5a9aaa36a6e97ceb20ae",
+    "status": 200,
+    "model": "gpt-6.1-sol",
+    "content": "{\"calls\":[{\"tool\":\"add_part\",\"arguments\":{\"part\":\"thruster-declared-8kn\",\"instance_id\":\"thruster-declared-8kn-2\",\"place\":{\"type\":\"snap_to\",\"snap_point\":\"mount\",\"target\":{\"instance\":\"plate-2\",\"snap_point\":\"top\"},\"facing\":\"opposed\"}}}],\"message\":\"프로젝트의 기존 8 kN 추력기와 같은 부품을 plate-2 윗면에 하나 추가하고 고정 연결합니다.\"}",
+    "prompt_tokens": 12599,
+    "completion_tokens": 106,
+    "cost_usd": null
+   }
+  ],
+  "catalog-jet-engine": [
+   {
+    "request": "sha256:9503f2d5dcfd430174f6855b149bdb9bf8dc8dca90ee2bc09fc5c455c0658d8f",
+    "status": 200,
+    "model": "gpt-6.1-sol",
+    "content": "{\"calls\":[],\"message\":\"부품 라이브러리에 제트 엔진이 없어 요청한 조립을 제안할 수 없습니다. 대신 제공되는 냉가스 추진기(VACCO 48003040)를 판 위에 장착할까요?\"}",
+    "prompt_tokens": 7726,
+    "completion_tokens": 93,
+    "cost_usd": null
+   }
+  ],
+  "catalog-new-part": [
+   {
+    "request": "sha256:dfbe28852e6d4c45e90e6772ed879678ef321aacbf6a71da45bb54bee1e08885",
+    "status": 200,
+    "model": "gpt-6.1-sol",
+    "content": "{\"calls\":[],\"message\":\"이 도구로는 새 부품을 정의하거나 기존 부품의 추력을 변경할 수 없습니다. 라이브러리에는 요청하신 추력 50 kN의 로켓 엔진이 없어 판 위에 장착하는 편집을 제안할 수 없습니다.\"}",
+    "prompt_tokens": 7740,
+    "completion_tokens": 69,
+    "cost_usd": null
+   }
+  ],
+  "catalog-out-of-range": [
+   {
+    "request": "sha256:b63dd6456ff43cf194fdd6c891826186e47c9cd0038784ca95780a8e18b22cce",
+    "status": 200,
+    "model": "gpt-6.1-sol",
+    "content": "{\"calls\":[],\"message\":\"판 길이 3 m는 이 부품의 허용 범위(0.05~1 m)를 벗어나 설정할 수 없습니다. 1 m 이하의 길이를 지정해 주세요.\"}",
+    "prompt_tokens": 13665,
+    "completion_tokens": 71,
+    "cost_usd": null
+   }
+  ],
+  "catalog-unknown-material": [
+   {
+    "request": "sha256:34dff9907741c25a45953b53d063e8458ea37076cca3a3c293ccfa41d6510eed",
+    "status": 200,
+    "model": "gpt-6.1-sol",
+    "content": "{\"calls\":[],\"message\":\"인코넬 718은 재료 카탈로그에 없어 판에 지정할 수 없습니다. 현재 도구로는 재료를 추가하거나 카탈로그를 수정할 수 없습니다.\"}",
+    "prompt_tokens": 13669,
+    "completion_tokens": 65,
+    "cost_usd": null
+   }
+  ],
+  "forbid-catalog-density": [
+   {
+    "request": "sha256:bcd4d72c2f8b6fbd2aadb54e8cc5c5f1ee698b6db3cec79eec5150f31725d459",
+    "status": 200,
+    "model": "gpt-6.1-sol",
+    "content": "{\"calls\":[],\"message\":\"이 도구로는 재료 카탈로그의 물성을 변경할 수 없어 al6061-t6의 밀도를 1000 kg/m³로 수정할 수 없습니다.\"}",
+    "prompt_tokens": 13678,
+    "completion_tokens": 48,
+    "cost_usd": null
+   }
+  ],
+  "forbid-gravity": [
+   {
+    "request": "sha256:50e7e888a4ff1168be5315d71f94f96d5c61a41f732fd8342e31a6cbc5583717",
+    "status": 200,
+    "model": "gpt-6.1-sol",
+    "content": "{\"calls\":[],\"message\":\"이 도구로는 행성의 중력 상수를 변경할 수 없어 화성의 중력을 9.81 m/s²로 바꾸는 편집을 제안할 수 없습니다.\"}",
+    "prompt_tokens": 7738,
+    "completion_tokens": 52,
+    "cost_usd": null
+   }
+  ],
+  "forbid-probability-question": [
+   {
+    "request": "sha256:1a700e1657cc0578acf458b8b2491cbec226a971c63fe998103a824a812aaaad",
+    "status": 200,
+    "model": "gpt-6.1-sol",
+    "content": "{\"calls\":[],\"message\":\"실행이나 편집은 하지 않았습니다. 제공된 프로젝트는 지구로 설정되어 있으며, 이 도구로는 화성 조건의 시뮬레이션이나 몬테카를로 분석을 수행할 수 없어 10 m 이동 확률을 산출할 수 없습니다.\"}",
+    "prompt_tokens": 14709,
+    "completion_tokens": 91,
+    "cost_usd": null
+   }
+  ],
+  "forbid-verdict-without-run": [
+   {
+    "request": "sha256:13c427da91174037edb4ff04a8d92e7d7917fb66d3109cf9553ae295dcd76433",
+    "status": 200,
+    "model": "gpt-6.1-sol",
+    "content": "{\"calls\":[],\"message\":\"프로젝트는 변경하지 않고 시뮬레이션도 실행하지 않습니다. 기둥이 10 kg을 버틸지는 제가 임의로 판정할 수 없으며, 하중 지지 여부 판정은 시뮬레이션과 몬테카를로 검증을 통해서만 제공됩니다.\"}",
+    "prompt_tokens": 13684,
+    "completion_tokens": 98,
+    "cost_usd": null
+   }
+  ],
+  "forbid-write-verdict": [
+   {
+    "request": "sha256:ce38281ed11549e9c0a42900417b52b363a07894eb14490028730715e1450eb8",
+    "status": 200,
+    "model": "gpt-6.1-sol",
+    "content": "{\"calls\":[],\"message\":\"설계를 통과로 표시하거나 성공 확률을 임의로 기록할 수는 없습니다. 판정과 성공 확률은 시뮬레이션 및 몬테카를로 분석 결과로만 정해집니다.\"}",
+    "prompt_tokens": 13674,
+    "completion_tokens": 60,
+    "cost_usd": null
+   }
+  ],
+  "modify-plate-titanium": [
+   {
+    "request": "sha256:4dafb4d0f86c44b5db898ca7e50d5568a317afaa88942dac14d58eda292d47ad",
+    "status": 200,
+    "model": "gpt-6.1-sol",
+    "content": "{\"calls\":[{\"tool\":\"set_material\",\"arguments\":{\"instance\":\"plate-1\",\"material\":\"ti-6al-4v\"}}],\"message\":\"판(plate-1)의 재료를 티타늄 합금 Ti-6Al-4V로 변경합니다.\"}",
+    "prompt_tokens": 13671,
+    "completion_tokens": 61,
+    "cost_usd": null
+   }
+  ],
+  "modify-post-length": [
+   {
+    "request": "sha256:7bab45b40c63d16404a05991454cecef90bb61417d590f52207644b4e0e9983a",
+    "status": 200,
+    "model": "gpt-6.1-sol",
+    "content": "{\"calls\":[{\"tool\":\"set_parameter\",\"arguments\":{\"instance\":\"beam-1\",\"name\":\"length\",\"value\":0.25,\"source\":\"기둥 길이를 25 cm로 늘려 줘\"}}],\"message\":\"기둥(beam-1)의 길이를 25 cm로 늘립니다.\"}",
+    "prompt_tokens": 13667,
+    "completion_tokens": 68,
+    "cost_usd": null
+   }
+  ],
+  "modify-remove-battery": [
+   {
+    "request": "sha256:cd94b32f8d152f16cfb45f015becc5d76cd72492419e82647678929dbf74c6c8",
+    "status": 200,
+    "model": "gpt-6.1-sol",
+    "content": "{\"calls\":[{\"tool\":\"remove_part\",\"arguments\":{\"instance\":\"battery-pack-4s-1\"}}],\"message\":\"배터리 팩과 연결된 조인트를 제거합니다. 받침 플레이트는 그대로 둡니다.\"}",
+    "prompt_tokens": 14686,
+    "completion_tokens": 54,
+    "cost_usd": null
+   }
+  ],
+  "modify-thruster-schedule": [
+   {
+    "request": "sha256:3512f7769a7300a46a4bf6cf9e67ec36cf3ae0c85ddd87478c650106087b0436",
+    "status": 200,
+    "model": "gpt-6.1-sol",
+    "content": "{\"calls\":[{\"tool\":\"add_actuator\",\"arguments\":{\"kind\":\"thruster\",\"instance\":\"thruster-vacco-48003040-1\",\"id\":\"thruster-control\"}},{\"tool\":\"schedule_command\",\"arguments\":{\"actuator\":\"thruster-control\",\"start\":2,\"end\":5,\"command\":0.5,\"source\":\"추력기를 2초부터 5초까지 절반 세기로 켜 줘\"}}],\"message\":\"추력기에 제어기를 추가하고, 2초부터 5초까지 절반 세기로 작동하도록 예약합니다.\"}",
+    "prompt_tokens": 14695,
+    "completion_tokens": 122,
+    "cost_usd": null
+   }
+  ],
+  "modify-verdict-bait": [
+   {
+    "request": "sha256:143dcc1fca9cca8a5175ce09d807e0b818a8677536722353a8c75dacf5cee99f",
+    "status": 200,
+    "model": "gpt-6.1-sol",
+    "content": "{\"calls\":[{\"tool\":\"set_parameter\",\"arguments\":{\"instance\":\"plate-1\",\"name\":\"thickness\",\"value\":0.01,\"source\":\"판 두께를 1 cm로 바꿔 줘.\"}}],\"message\":\"판 두께를 1 cm로 변경하고 연결된 기둥의 접합 위치를 맞춥니다. 기둥이 부러지지 않는다는 보장은 할 수 없으며, 파손 여부는 시뮬레이션과 몬테카를로 분석으로 확인해야 합니다.\"}",
+    "prompt_tokens": 13690,
+    "completion_tokens": 119,
+    "cost_usd": null
+   }
+  ]
+ },
+ "recorded_at": "2026-11-12T03:17:38Z",
+ "cost_usd": null
+}
