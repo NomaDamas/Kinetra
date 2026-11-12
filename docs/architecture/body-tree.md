@@ -2,13 +2,13 @@
 
 - 상태: 구현됨. 코드는 `packages/engine/src/kinetra_engine/compiler/`(`bodytree.py`, `labels.py`, `mjcf.py`, 오류는 `errors.py`·`checks.py`), 테스트는 `packages/engine/tests/test_body_tree.py`, `test_compile_errors.py`. `uv run pytest packages/engine -q -k body_tree`(정규 순서 규칙은 `-k canonical_order`, 컴파일 오류는 `-k compile_error`).
 - 근거: `docs/decisions/engine.md`(MuJoCo 네이티브 4.0.0이 코어), `collision-proxy.md`(매핑 표), `part-mass.md`, `project-model.md`(결합), `missing-definitions.md`(`require_complete`), `part-motor.md`(역할 없는 부품의 "곡선 없음"), 이슈 #123, #126, #511.
-- 범위 밖: 힌지·슬라이더의 스프링·댐퍼, 모터와 토크-속도 제한(X-01b), 추력기와 추진제(X-01c), 행성 상수와 `<option>`(W-03a), 접촉 매개변수와 마찰 합성(X-01b), 결합 해제(X-04b), 정역학 경고와 한 목록으로 합치기(X-11). MJCF는 산출물이고 저장 원본이 아니다.
+- 범위 밖: 힌지·슬라이더의 스프링·댐퍼, 모터와 토크-속도 제한(X-01b), 추력기와 추진제(X-01c), 접촉 매개변수와 마찰 합성(X-01b), 결합 해제(X-04b), 정역학 경고와 한 목록으로 합치기(X-11). MJCF는 산출물이고 저장 원본이 아니다. 행성 상수와 `<option>`은 W-03a(`bodies.md`의 "엔진이 읽는 법").
 
 ## 쓰는 법
 
 ```python
 from kinetra_engine.compiler import build_body_tree, proxy_labels, to_mjcf
-tree = build_body_tree(project, cache=None, tolerance=None)   # BodyTree, 아니면 CompileError
+tree = build_body_tree(project, cache=None, tolerance=None)   # BodyTree(행성 상수 tree.planet 포함), 아니면 CompileError
 xml = to_mjcf(tree)                                            # MJCF 문자열
 labels = proxy_labels(tree)                                    # 근사 라벨(ModelLabel)
 ```
@@ -21,7 +21,8 @@ labels = proxy_labels(tree)                                    # 근사 라벨(M
 - **월드 축.** 결합 축은 `a` 인스턴스 자세 × `a` 스냅 포인트 자세 × `Joint.unit_axis`(`project-model.md`의 B-04a 문단이 이 계산을 X-01a의 몫으로 남겼다)이고 MJCF에는 자식 강체 좌표계로 옮겨 적는다. 결합점은 `a` 스냅 포인트의 월드 위치다. 두 스냅 포인트가 저장된 자세에서 만나지 않거나 `b` 스냅 좌표계로 읽은 축이 다른 직선이면 컴파일 오류다(아래 X-01d). 그래서 `a` 쪽을 기준으로 써도 `b` 쪽과 같은 점, 같은 직선이다(자세가 권위다).
 - **프록시 → `geom`**(`collision-proxy.md`의 매핑 표): 상자는 반치수, 원기둥은 `(반지름, 반길이)`, 구는 반지름, 중심은 `pos`, 방향은 `quat="w x y z"`. 강체 안의 다른 인스턴스의 geom은 강체 좌표계로 옮긴다. `geom` 이름은 `<인스턴스>/<프록시 geom id>`.
 - **`<inertial>`.** `mass`, `pos`(`MassProperties.center_of_mass`), `fullinertia`(`Ixx Iyy Izz Ixy Ixz Iyz`, 질량 중심 둘레, 강체 축)를 `MassProperties`에서 명시한다. `inertiafromgeom="false"`라 `<inertial>`이 없는 바디는 MuJoCo가 거절한다(프록시의 메운 빈 곳이 질량에 들어가지 않는다는 보증).
-- **MJCF에 아직 없는 것**: `<option>`(중력, 시간 간격, 적분기), 접촉 매개변수, 액추에이터, 결합의 스프링·댐퍼. 그래서 이 MJCF는 "그 행성의 물리"가 아니라 구조(바디, 결합, 질량, 충돌 도형)다. `break_threshold`와 액추에이터는 이 MJCF에 들어가지 않는다(각각 X-04b, X-01b가 더한다).
+- **`<option>`(W-03a)**: 중력은 `data/bodies`의 그 행성 값, MuJoCo 매질(`density`, `viscosity`)은 0이다(이유는 `bodies.md`의 "엔진이 읽는 법"). 시간 간격과 적분기는 아직 MuJoCo 기본값이다(X-02).
+- **MJCF에 아직 없는 것**: 시간 간격·적분기 설정, 공기 항력(W-03b), 접촉 매개변수, 액추에이터, 결합의 스프링·댐퍼. `break_threshold`와 액추에이터는 이 MJCF에 들어가지 않는다(각각 X-04b, X-01b가 더한다).
 
 ## 근사 라벨
 
@@ -48,10 +49,11 @@ labels = proxy_labels(tree)                                    # 근사 라벨(M
 - `instances`, `parts`, `joints`, `actuators`: 사유가 가리키는 ID. `parts`는 그 인스턴스들의 부품(처음 나온 순서로 한 번씩)이라 인스턴스를 가리키는 오류는 늘 부품도 가리킨다. ID는 각 컬렉션 안에서만 유일하다.
 - 빠진 정의(자리표시, C-06)는 컴파일 오류가 아니라 그 전에 `require_complete(project, "compile")`가 `ProjectIncomplete`로 거부한다(`missing-definitions.md`). 아무것도 읽기 전이다.
 
-검사 순서는 고정이고 처음 걸린 하나를 낸다: 부품 → 액추에이터 → 스냅 → 축 → 트리 → 뜸. 한 단계 안에서는 ID 순이다(정규 순서).
+검사 순서는 고정이고 처음 걸린 하나를 낸다: 행성 → 부품 → 액추에이터 → 스냅 → 축 → 트리 → 뜸. 한 단계 안에서는 ID 순이다(정규 순서).
 
 | code | 언제 | ID |
 |---|---|---|
+| `planet` | `world.planet`의 데이터를 `data/bodies`에서 읽을 수 없다(W-03a) | — |
 | `no_instance` | 인스턴스가 없다 | — |
 | `part` | 부품이 그 인스턴스의 파라미터에서 컴파일되지 않는다(형상 레시피, 질량. 예: 재료도 선언 질량도 없음) | 인스턴스, 부품 |
 | `no_curve` | 역할이 없는 부품의 인스턴스에 액추에이터가 붙었다. 모터는 곡선 `torque_speed`, 추력기는 `thrust`가 없다(`DesignSpec`은 역할 없는 부품을 일부러 받는다, `part-motor.md`) | 액추에이터, 인스턴스, 부품, 모터의 결합 |

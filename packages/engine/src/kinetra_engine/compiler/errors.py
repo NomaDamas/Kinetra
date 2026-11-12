@@ -7,6 +7,7 @@ a project with a placeholder is refused before anything is read, by `require_com
 
 | code | when |
 |---|---|
+| `planet` | `world.planet` has no readable data in `data/bodies` (W-03a) |
 | `no_instance` | the design has no instance |
 | `part` | a part cannot be compiled at an instance's parameters (shape recipe, mass) |
 | `no_curve` | an actuator sits on an instance whose part has no role, so it has no curve to drive by |
@@ -25,6 +26,7 @@ from enum import StrEnum
 
 
 class CompileErrorCode(StrEnum):
+    PLANET = "planet"
     NO_INSTANCE = "no_instance"
     PART = "part"
     NO_CURVE = "no_curve"

@@ -5,12 +5,9 @@ import { join } from "node:path";
 import { test } from "node:test";
 import { SKELETON, problems } from "../skeleton.ts";
 import { passes, validateDir } from "../validate.ts";
-import type { SkeletonResult } from "../skeleton.ts";
+import type { SkeletonManifest, SkeletonResult } from "../skeleton.ts";
 
-const manifest = JSON.parse(readFileSync(join(SKELETON, "manifest.json"), "utf8")) as {
-  instances: { id: string; mass_kg: number; pose: { position: { x: number; y: number; z: number } } }[];
-  total_kg: number;
-};
+const manifest = JSON.parse(readFileSync(join(SKELETON, "manifest.json"), "utf8")) as SkeletonManifest;
 const masses = manifest.instances.map((i) => i.mass_kg);
 
 /** What a correct page reports for the committed manifest (positions are the pose turned into three.js's Y up). */
@@ -33,7 +30,7 @@ function good(): SkeletonResult {
 }
 
 test("a correct page report has no problems", () => {
-  assert.deepEqual(problems(good(), 50000, masses, manifest.total_kg), []);
+  assert.deepEqual(problems(good(), 50000, manifest), []);
 });
 
 test("the committed manifest total is the sum of the part masses written in it", () => {
@@ -43,15 +40,30 @@ test("the committed manifest total is the sum of the part masses written in it",
 
 test("wrong sum, wrong caption, misplaced part, buried part, cut-off view and empty canvas are each a problem", () => {
   const r = good();
-  assert.match(problems({ ...r, page_sum_kg: r.page_sum_kg + 0.01 }, 50000, masses, manifest.total_kg).join(), /differs from the engine total/);
-  assert.match(problems({ ...r, caption_total_text: "9.0000000 kg" }, 50000, masses, manifest.total_kg).join(), /caption total/);
-  assert.match(problems({ ...r, caption_rows: 3 }, 50000, masses, manifest.total_kg).join(), /caption has 3/);
+  assert.match(problems({ ...r, page_sum_kg: r.page_sum_kg + 0.01 }, 50000, manifest).join(), /differs from the engine total/);
+  assert.match(problems({ ...r, caption_total_text: "9.0000000 kg" }, 50000, manifest).join(), /caption total/);
+  assert.match(problems({ ...r, caption_rows: 3 }, 50000, manifest).join(), /caption has 3/);
   const moved = { ...r, instances: r.instances.map((i, k) => (k === 2 ? { ...i, world_position_yup: [9, 9, 9] } : i)) };
-  assert.match(problems(moved, 50000, masses, manifest.total_kg).join(), /not at pose/);
-  assert.match(problems({ ...r, scene_box_min_yup: [0, -0.1, 0] }, 50000, masses, manifest.total_kg).join(), /below the ground/);
-  assert.match(problems({ ...r, scene_box_min_yup: [0, 0.2, 0] }, 50000, masses, manifest.total_kg).join(), /does not rest on the ground/);
-  assert.match(problems({ ...r, max_ndc: 1.2 }, 50000, masses, manifest.total_kg).join(), /cut off/);
-  assert.match(problems(r, 100, masses, manifest.total_kg).join(), /pixels drawn/);
+  assert.match(problems(moved, 50000, manifest).join(), /not at the manifest pose/);
+  assert.match(problems({ ...r, scene_box_min_yup: [0, -0.1, 0] }, 50000, manifest).join(), /below the ground/);
+  assert.match(problems({ ...r, scene_box_min_yup: [0, 0.2, 0] }, 50000, manifest).join(), /does not rest on the ground/);
+  assert.match(problems({ ...r, max_ndc: 1.2 }, 50000, manifest).join(), /cut off/);
+  assert.match(problems(r, 100, manifest).join(), /pixels drawn/);
+});
+
+test("the placement is judged against the manifest pose by id, not the pose the page says it read", () => {
+  const r = good();
+  // the page claims another pose and draws the part there: consistent with itself, wrong against the engine's manifest
+  const lied = { ...r, instances: r.instances.map((i, k) => (k === 1 ? { ...i, pose_project: [5, 6, 7], world_position_yup: [5, 7, -6] } : i)) };
+  const found = problems(lied, 50000, manifest).join();
+  assert.match(found, /the page read pose 5,6,7/);
+  assert.match(found, /not at the manifest pose/);
+  // the right poses in another order are fine: matching is by id
+  assert.deepEqual(problems({ ...r, instances: [...r.instances].reverse() }, 50000, manifest), []);
+  assert.match(problems({ ...r, instances: r.instances.slice(1) }, 50000, manifest).join(), /not drawn: keel-beam/);
+  const extra = { ...r.instances[0]!, id: "ghost" };
+  assert.match(problems({ ...r, instances: [...r.instances, extra] }, 50000, manifest).join(), /does not have: ghost/);
+  assert.match(problems({ ...r, instances: [...r.instances, r.instances[0]!] }, 50000, manifest).join(), /more than once: keel-beam/);
 });
 
 test("the glb of every skeleton instance passes the Khronos validator with no errors and no warnings", async () => {
