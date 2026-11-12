@@ -876,10 +876,10 @@ def test_hash_a_timestamp_that_overflows_utc_is_a_canonical_error_not_an_overflo
 
     def walk(node):
         if isinstance(node, dict):
-            if "declared_at" in node:
-                node["declared_at"] = stamp
+            source = node.get("source")
+            if node.get("badge") == "declared" and isinstance(source, dict) and "declared_at" in source:
+                source["declared_at"] = stamp
                 walk_stamp.append(1)
-                return
             for v in node.values():
                 walk(v)
         elif isinstance(node, list):
