@@ -23,8 +23,13 @@ in the frame of the body it belongs to (the child): the point is the world posit
 `R(a instance) R(a snap point) axis` turned into the child's frame.
 
 Not here: the springs, dampers, motors and actuator limits of a joint (X-01b), thrusters and propellant (X-01c), what a joint's
-`break_threshold` does (X-04b), planet constants (W-03a), contact parameters (X-01b), the error format of a part (X-01d). A joint
-that carries a `break_threshold` or an actuator is compiled without it (the MJCF has neither yet).
+`break_threshold` does (X-04b), planet constants (W-03a), contact parameters (X-01b). A joint that carries a
+`break_threshold` or an actuator is compiled without it (the MJCF has neither yet).
+
+**Errors (X-01d).** A project with a missing definition is refused first (`require_complete`, `ProjectIncomplete`). Every
+other refusal is a `CompileError` with a code and the instance, part, joint and actuator ids (`errors.py`); the checks per
+part and joint that building does not make are in `checks.py`, run in this order: parts, actuators, snaps, axes, the tree,
+floating.
 """
 
 from __future__ import annotations
@@ -34,6 +39,7 @@ from collections.abc import Mapping
 from dataclasses import dataclass, field
 
 from kinetra_core import (
+    BlockedOperation,
     CollisionProxy,
     DesignSpec,
     Instance,
@@ -44,27 +50,20 @@ from kinetra_core import (
     Project,
     Quantity,
     canonical_order,
+    check_placement,
+    require_complete,
 )
 from kinetra_core.geometry import Quaternion
 
 from ..parts import PartCache, ShapeError, collision_proxy, mass_properties
+from .checks import check_actuators, check_axes, check_floating, check_snaps
+from .errors import CompileError, CompileErrorCode
 
 Vec = tuple[float, float, float]
 Mat = tuple[Vec, Vec, Vec]
 Quat = tuple[float, float, float, float]  # w, x, y, z
 
 IDENTITY_QUAT: Quat = (1.0, 0.0, 0.0, 0.0)
-
-
-class CompileError(ValueError):
-    """The project cannot be turned into a body tree. `instances`, `joints` and `parts` are the ids the reason is about
-    (each is only unique inside its own collection)."""
-
-    def __init__(self, message: str, *, instances: tuple[str, ...] = (), joints: tuple[str, ...] = (), parts: tuple[str, ...] = ()):
-        super().__init__(message)
-        self.instances = instances
-        self.joints = joints
-        self.parts = parts
 
 
 # --- small linear algebra, tuples only (the order of every sum is the code's, so the bits are reproducible) -------------
@@ -245,7 +244,9 @@ def _compile_instance(
             return cache.mass_properties(part, material, values), cache.collision_proxy(part, values, tolerance)  # type: ignore[arg-type]
         return mass_properties(part, material, values), collision_proxy(part, values, tolerance)  # type: ignore[arg-type]
     except ShapeError as e:
-        raise CompileError(f"instance {inst.id!r} (part {part.id!r}): {e}", instances=(inst.id,), parts=(part.id,)) from e
+        raise CompileError(
+            f"instance {inst.id!r} (part {part.id!r}): {e}", code=CompileErrorCode.PART, instances=(inst.id,), parts=(part.id,)
+        ) from e
 
 
 class _Groups:
@@ -274,18 +275,29 @@ def build_body_tree(project: Project, cache: PartCache | None = None, tolerance:
     """The body tree of `project` (see the module docstring). `cache` serves `mass_properties` and `collision_proxy`;
     `tolerance` is the proxy decomposition tolerance (`collision_proxy`, default `DEFAULT_TOLERANCE`).
 
-    Raises `CompileError` for a design with no instance, a part that cannot be compiled, a loop of fixed joints, a joint
-    inside one rigid body, a loop among the bodies, or an assembly that is not one piece."""
-    design = canonical_order(project).design  # the one reading order: ids, not the file's order
+    Raises `ProjectIncomplete` for a missing definition and `CompileError` (`errors.py`) for a design with no instance, a
+    part that cannot be compiled, an actuator without a curve, joined snap points that do not meet, a joint axis the two
+    snap frames disagree on, a loop of fixed joints, a joint inside one rigid body, a loop among the bodies, an assembly
+    that is not one piece, or one that floats."""
+    require_complete(project, BlockedOperation.COMPILE)
+    ordered_project = canonical_order(project)  # the one reading order: ids, not the file's order
+    design = ordered_project.design
     if not design.instances:
-        raise CompileError("the design has no instance: nothing to compile")
+        raise CompileError("the design has no instance: nothing to compile", code=CompileErrorCode.NO_INSTANCE)
     parts = {p.id: p for p in design.parts}
     materials = {m.id: m for m in design.materials}
     by_id = {i.id: i for i in design.instances}
 
+    def parts_of(*instances: str) -> tuple[str, ...]:
+        return tuple(dict.fromkeys(by_id[i].part for i in instances))
+
     compiled: dict[str, tuple[MassProperties, CollisionProxy]] = {
         inst.id: _compile_instance(design, inst, parts, materials, cache, tolerance) for inst in design.instances
     }
+    check_actuators(design)
+    findings = check_placement(ordered_project)
+    check_snaps(design, findings)
+    check_axes(design)
 
     # rigid bodies: instances welded by fixed joints
     groups = _Groups(list(by_id))
@@ -294,7 +306,9 @@ def build_body_tree(project: Project, cache: PartCache | None = None, tolerance:
             raise CompileError(
                 f"fixed joint {joint.id!r} closes a loop of fixed joints between instances {joint.a.instance!r} and {joint.b.instance!r}: "
                 "they are already one rigid body",
+                code=CompileErrorCode.FIXED_LOOP,
                 instances=(joint.a.instance, joint.b.instance),
+                parts=parts_of(joint.a.instance, joint.b.instance),
                 joints=(joint.id,),
             )
     members: dict[str, list[str]] = {}
@@ -313,13 +327,17 @@ def build_body_tree(project: Project, cache: PartCache | None = None, tolerance:
             raise CompileError(
                 f"{joint.kind.value} joint {joint.id!r} joins instances {joint.a.instance!r} and {joint.b.instance!r}, "
                 f"which fixed joints already weld into one rigid body {ga!r}: it could not move",
+                code=CompileErrorCode.WELDED_JOINT,
                 instances=(joint.a.instance, joint.b.instance),
+                parts=parts_of(joint.a.instance, joint.b.instance),
                 joints=(joint.id,),
             )
         if not tree_groups.union(ga, gb):
             raise CompileError(
                 f"joint {joint.id!r} closes a loop between bodies {ga!r} and {gb!r}: the joints must form a tree",
+                code=CompileErrorCode.LOOP,
                 instances=(joint.a.instance, joint.b.instance),
+                parts=parts_of(joint.a.instance, joint.b.instance),
                 joints=(joint.id,),
             )
         adjacency[ga].append((gb, joint, False))
@@ -332,8 +350,11 @@ def build_body_tree(project: Project, cache: PartCache | None = None, tolerance:
         raise CompileError(
             f"the assembly is not one piece: {len(pieces)} groups of bodies have no joint between them "
             f"(for example {first[0]!r} and {rest[0]!r})",
+            code=CompileErrorCode.NOT_ONE_PIECE,
             instances=(first[0], rest[0]),
+            parts=parts_of(first[0], rest[0]),
         )
+    check_floating(design, findings)
 
     root = min(g for g in members if g not in targets)  # never a joint's b side: exists, a tree has no directed cycle
 
