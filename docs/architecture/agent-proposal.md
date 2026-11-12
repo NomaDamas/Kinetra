@@ -1,0 +1,25 @@
+# 에이전트 변경안과 재시도 (G-03a)
+
+- 상태: 구현됨. 코드는 `packages/engine/src/kinetra_engine/agent/proposal.py`, 테스트는 `packages/engine/tests/test_proposal.py`(`uv run pytest packages/engine -q -k proposal`).
+- 근거: `docs/plan/studio-plan.md` 4.4절("제안 → 미리보기 → 수락. 변경안은 명령 묶음이다", "검증기 … 에이전트가 정해진 횟수 안에서 다시 시도한다"), `docs/architecture/agent-edit-tools.md`(G-02a), G-01 게이트웨이(`kinetra_engine/gateway`), 이슈 #148.
+- 범위 밖: 자동 수락. 고스트와 수치 변화(G-03b), 수락·부분 수락·거절(G-03c), 권한 가드(G-04), 평가 세트(G-06), 에이전트 바 UI(G-07).
+
+## 규칙
+
+- **출력은 적용 전 명령 묶음이다.** `Proposer(gateway).propose(project_id, project, request)`는 모델에게 편집 도구 호출의 순서 있는 목록을 받는다. 호출마다 앞 호출들이 남긴 프로젝트에서 `EditTools.run`(G-02a)으로 `Command`를 만들고, 모든 호출의 편집을 순서대로 펼쳐 평평한 `CommandBatch` 하나로 묶은 뒤 입력 프로젝트에 `validate_command`(C-02c)를 한 번 더 건다(모두 아니면 전무). 결과 `Proposal`은 그 묶음(`command`), 호출별 요약(`calls`), 묶음이 만들 프로젝트(`project`, 미리보기)다. `propose`는 입력 프로젝트의 순수 함수다: 아무것도 `Hub.publish`하지 않고 문서·이력·개정 번호는 그대로다. 문서에 넣는 것(`Publish`에 `proposal.command`)은 수락(G-03c)의 몫이다.
+- **카탈로그 밖 표시는 변경안에 실린다(G-04).** 호출마다 `EditTools.run`이 낸 `out_of_catalog`(그 호출이 새로 들인 카탈로그 밖 발견, `카탈로그 밖 · 사용자 선언` 같은 문구)가 `ProposedCall.out_of_catalog`와 `to_json()`의 호출 항목에 그대로 남는다. 변경안 단계에서는 확인을 묻지 않는다(적용하지 않으므로). 수락(G-03c)이 이 문구를 보이고 `HubEditTools.call`처럼 사용자 확인을 받아야 한다.
+- **거부되면 사유를 돌려주고 정해진 횟수 안에서 다시 시도한다.** 요청한 JSON 객체가 아닌 답, 도구가 거부한 호출(스키마, 없는 id), 검증기가 거부한 묶음(겹침, 뜸, 무효 스냅 …)은 거부된 시도다. 사유는 검증기의 `Reason`(코드, 문장, 타입이 있는 참조) 그대로이고 문장 앞에 `calls[n] (도구): `가 붙는다(묶음 전체 검사는 `batch: `). 모델의 답과 사유(JSON, 남은 시도 수 포함)가 대화에 붙어 다시 요청되고, 모델은 변경안 전체를 다시 보낸다. 거부된 호출 앞의 호출도 남기지 않는다(변경안은 통째다).
+- **재시도 초과는 실패 보고다.** `max_attempts`(기본 `DEFAULT_MAX_ATTEMPTS = 3`: 첫 답과 재시도 두 번) 번의 답이 모두 거부되면 `status = "retries_exhausted"`, `proposal = None`, `reasons`는 마지막 시도의 사유, `attempts`는 모든 시도(답 원문, 사유, 거부된 호출 번호)다. `to_json()`이 화면에 보낼 모양(상태, 시도 수, 마지막 사유, 시도별 거부)을 낸다.
+- **거절도 답이다.** 호출이 없고 `message`가 있는 답(도구로 할 수 없거나 해서는 안 되는 요청)은 `declined`이고 다시 묻지 않는다. 호출도 이유도 없는 답은 거부된 시도다. `ProposalResult.message`는 이 모듈의 문장(왜 멈췄는가)이고 모델의 말은 `explanation`이다.
+- **모델의 말은 설명이지 판정이 아니다(V1).** 답의 `message`는 `Explanation`이 된다. 보장은 구조로 한다: 클라이언트가 받는 모든 설명(`to_json()`)에는 내용과 상관없이 `{"by": "agent", "is_verdict": false, "label": "에이전트 설명이며 판정이 아닙니다. 판정은 실행 뒤 시뮬로만 나옵니다", "text": …}`가 붙는다(`EXPLANATION_LABEL`, 변경안·거절 모두, 거르개 결과와 무관). 그 위에 낱말 거르개가 최선을 다해 판정처럼 읽히는 문장을 보이기 전에 뺀다: 숫자 `%`·퍼센트·확률·probability·chance·odds, 판정·verdict, 보장·guarantee, "성공합니다·통과합니다·버팁니다"·"will work/succeed/pass/hold" 같은 단정, 숫자와 함께 쓴 성공·통과·실패·succeed·pass·fail, 숫자 없는 능력·성공 주장("오를 수 있습니다", "견딜 수 있", 충분·튼튼·안정적·문제없, "can/will/able to climb·hold·survive …", "strong enough", "enough to"). 뺀 문장은 `removed`(G-06 평가용으로만 남긴다)이고 그 자리에 고정 문구 `VERDICT_NOTICE` "판정은 실행 뒤 시뮬로만 나옵니다"와 뺀 건수(`notice`, `verdict_like_removed`)를 띄운다. 낱말 목록은 완전할 수 없으므로(예: "모래밭도 거뜬합니다"는 지나간다) 라벨은 거르개에 기대지 않는다. 거르개는 무해한 문장도 뺄 수 있고(예: 숫자가 든 "성공 조건" 문장) 빠진 문장을 되살리지 않는다. 판정을 *바꾸는* 시도의 거부(명령 경로)는 G-04, 실패 설명의 수치 대조는 G-05의 몫이다.
+- **너무 깊은 답은 모양이 틀린 답이다.** `json.loads` 전에 답 텍스트를 반복문으로 훑어 문자열 밖의 `[`/`{` 중첩이 `MAX_REPLY_DEPTH = 64`를 넘으면 `invalid_command`("nested too deeply")로 거부된 시도가 되어 재시도한다. 플랫폼의 재귀·스택 한계와 상관없이 같은 답이 나온다. 64는 출처 없는 설계 선택이다(유효한 답의 가장 깊은 곳은 답 → calls → 호출 → arguments → place → target의 6단). 그래도 `RecursionError`가 나면 같은 사유로 거부한다(대비책).
+- **돈이 루프를 멈춘다.** 시도 하나가 `Gateway.chat` 한 번이고 프로젝트 예산에 잡힌다(G-01). `BudgetExceeded`는 `budget_exceeded`, 다른 게이트웨이 오류는 `gateway_error`(게이트웨이가 이미 가린 문장)로 끝나고 그때까지의 시도를 돌려준다. 장부 쓰기 실패(`LedgerWriteError`)에 답이 실려 있으면 돈이 이미 나갔으므로 그 답은 검사하고, 다음 시도는 닫힌 게이트웨이가 거부한다.
+- **모델이 보는 것.** 시스템 메시지에 규칙, 도구 명세(`specs()`, OpenAI 함수 도구 객체 그대로), 라이브러리 부품(id, 이름, 역할, 스냅 포인트, 파라미터의 SI 기본값·범위), 카탈로그 재료 id가 들어가고, 사용자 메시지에 프로젝트 JSON과 요청이 들어간다. 프롬프트는 도구가 이미 강제하는 것(위치는 스냅 포인트, 호출의 숫자는 사용자 선언이고 `source`에 사용자의 말, 판정 선언 금지, 행성 상수·카탈로그 변경 불가)을 말할 뿐이다. 지키는 것은 스키마와 검증기다.
+- **답의 모양.** `{"calls": [{"tool": ..., "arguments": {...}}], "message": "..."}` 하나(`extra="forbid"`, `message` 최대 2000자). 앞뒤를 감싼 마크다운 코드 울타리 하나는 벗긴다. 그 밖의 것은 `invalid_command`로 거부한다.
+
+## 한계 (숨기지 않는다)
+
+- `Gateway.chat`은 채팅 텍스트만 보낸다(`tools` 필드도 `tool_calls` 응답도 없다). 그래서 도구 명세를 시스템 메시지에 싣고 답을 JSON 텍스트로 받는다. 공급자의 네이티브 도구 호출 강제(JSON 모드 등)는 쓰지 않으므로, 모양이 틀린 답은 거부된 시도로 재시도 횟수를 쓴다.
+- `DEFAULT_MAX_ATTEMPTS = 3`은 출처 없는 설계 선택이다(시도마다 게이트웨이 호출 한 번). 호출자가 `max_attempts`로 바꾼다.
+- 대화는 시도마다 길어진다(앞의 답과 사유가 남는다). 토큰 한도는 `max_tokens`와 게이트웨이 예산으로만 제한한다.
+- 검증기의 한계는 그대로다: 형상 레시피가 없는 부품은 겹침·뜸 검사에서 빠진다(`project-model.md` 검증기).

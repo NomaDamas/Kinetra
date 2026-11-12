@@ -44,9 +44,9 @@ Rules (the issue's DoD; read by G-03a proposals, G-04 guard, G-08 MCP server):
   instance that is already a placeholder (a project opened with a missing definition) is refused with that same reason and names
   the missing part; it makes up no mass, shape or snap point. Nor does a tool re-link placeholders by adding a library part or catalog
   material under the id they use: that choice is the user's (`add_part_def`, `relink_instance`). `remove_part` is the one tool that works on a placeholder.
-- Same conventions as the gateway (G-01): tool specs are the OpenAI function-tool objects `Gateway.chat` sends as `tools`
-  (`specs()`), a call is a tool name and the arguments as the JSON text of the model's `tool_calls`, and no text returned here
-  contains anything from the environment (the tools never read it).
+- Same conventions as the gateway (G-01): tool specs are OpenAI function-tool objects (`specs()`; `Gateway.chat` has no `tools`
+  field, so G-03a's `proposal.py` puts them in the system message), a call is a tool name and its JSON arguments, and no text
+  returned here contains anything from the environment (the tools never read it).
 
 Limits (not hidden): `connect` and `set_parameter` move what they must so the joined snap points meet, but a part that is joined
 on two sides (a closed loop of joints) cannot be moved: the validator refuses with `invalid_snap` and the call fails as a whole. A
@@ -315,7 +315,7 @@ TOOL_NAMES = tuple(_TOOLS)
 
 
 def specs() -> list[dict]:
-    """The tools as OpenAI function-tool objects (what `Gateway.chat` sends as `tools`)."""
+    """The tools as OpenAI function-tool objects (G-03a's `Proposer` puts them in the system message)."""
     return [
         {"type": "function", "function": {"name": name, "description": text, "parameters": model.model_json_schema()}}
         for name, (model, text) in _TOOLS.items()
