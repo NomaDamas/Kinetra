@@ -1170,6 +1170,23 @@ export interface RunFailed {
 export type RunKind = "preview" | "verdict_sample";
 
 /**
+ * Compile the subscribed document as it is now and run it once (X-02a; a preview, never a verdict: F6, C7).
+ *
+ * `id` names the request and becomes the stream's `run_id`. `duration_s` [s] is the simulated time to run; the run
+ * ends at the first tick at or after it. `seed` is recorded in `run_started` (the preview run draws nothing from it
+ * yet). `speed` paces the core against the wall clock: the core sends the frame of simulated time `t` no earlier than
+ * `t / speed` seconds after the run started (`1` real time, `0` as fast as the core and the connection allow). The
+ * pace never changes the trajectory (`client-adapter.md` 4.1).
+ */
+export interface RunRequest {
+  type: "run";
+  id: string;
+  duration_s: number;
+  seed?: number;
+  speed?: number;
+}
+
+/**
  * A run begins. `revision` and `definition_hash` name the document the run was compiled from, `bodies` is the
  * fixed body list in the order of the binary pose block, `platform` the platform tag the trajectory hash at the end
  * belongs to. `frame_every_ticks` is how many ticks lie between two frames.
@@ -1420,7 +1437,7 @@ export interface YieldStrength {
   unit: "Pa";
 }
 
-export type ClientMessage = Hello | Subscribe | Publish | Request;
+export type ClientMessage = Hello | Subscribe | Publish | Request | RunRequest;
 
 export type Command = AddPartDef | ReplacePartDef | RemovePartDef | AddMaterialDef | ReplaceMaterialDef | RemoveMaterialDef | AddInstance | RemoveInstance | MoveInstance | SetParameter | ClearParameter | SetInstanceMaterial | RelinkInstance | AddJoint | ReplaceJoint | RemoveJoint | AddActuator | RemoveActuator | AddControlEntry | RemoveControlEntry | ReplaceControlEntry | AddAssumption | SetAssumption | RemoveAssumption | SelectPlanet | CommandBatch;
 
