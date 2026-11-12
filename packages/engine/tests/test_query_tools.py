@@ -242,7 +242,9 @@ def test_query_tools_rollout_summary_is_the_run_stream():
     assert body["lowest_at_tick"] == ticks[[p.position.z for p in poses].index(body["lowest_z_m"])]
     assert body["highest_at_tick"] == ticks[[p.position.z for p in poses].index(body["highest_z_m"])]
     assert body["horizontal_distance_m"] == math.hypot(last.x - first.x, last.y - first.y)
-    assert data["events"] == {} and data["breaks"] == [] and data["conditions_met"] == []
+    # the tower stands on the ground from the saved pose: one ground contact `begin` at tick 0 (#562), nothing else
+    assert data["events"] == {"contact": 1} and data["contacts_begun"] == 1
+    assert data["breaks"] == [] and data["conditions_met"] == []
 
 
 def test_query_tools_a_failed_rollout_has_no_trajectory_evidence():
