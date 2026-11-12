@@ -28,15 +28,28 @@ from .mc import (
     sample_assumptions,
     wilson_ci,
 )
+from .necessary import (
+    INFEASIBLE,
+    CheckStatus,
+    NecessaryCheck,
+    NecessaryScreen,
+    motor_efficiency_bound,
+    motor_peak_power,
+    necessary_screen,
+)
 
 __all__ = [
+    "INFEASIBLE",
     "Box",
+    "CheckStatus",
     "Condition",
     "ConditionResult",
     "ENGINE_APPLIED",
     "Goal",
     "GoalResult",
     "LandingCondition",
+    "NecessaryCheck",
+    "NecessaryScreen",
     "NoBreakCondition",
     "Point",
     "ReachCondition",
@@ -54,4 +67,7 @@ __all__ = [
     "run_verdict",
     "sample_assumptions",
     "wilson_ci",
+    "motor_efficiency_bound",
+    "motor_peak_power",
+    "necessary_screen",
 ]
