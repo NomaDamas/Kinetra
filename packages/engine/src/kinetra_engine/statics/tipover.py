@@ -48,7 +48,7 @@ from ..compiler.bodytree import BodyGeom, BodyTree, Quat, Vec, mv, qmul, rot, va
 
 RIM_SEGMENTS = 64
 """Evenly spaced points per cylinder rim. A numerical choice (not a physical value): the inscribed 64-gon of a disk loses at
-most r (1 - cos(pi / 64)) ~ 0.0012 r of margin, and the result states the bound."""
+most r (1 - cos(pi / 64)) ~ 0.0012 r of margin; the stated bound adds the merge `tolerance` (module docstring)."""
 
 ASSUMPTIONS = (
     "가정: 모든 결합은 저장된 자세(좌표 0)에 고정되고 설계 전체가 한 강체다",
