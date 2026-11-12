@@ -219,7 +219,9 @@ def _cross(o: Point2, a: Point2, b: Point2) -> float:
 
 
 def _hull(points: list[SupportPoint], tol: float) -> list[SupportPoint]:
-    """Convex hull, counter-clockwise, without repeated (closer than `tol`) or collinear vertices (monotone chain)."""
+    """Convex hull, counter-clockwise (monotone chain). Points closer than `tol` to a kept point are merged (the region loses
+    at most `tol`); a vertex is dropped only when it is exactly not a left turn, so a fine arc keeps every vertex. A hull no
+    wider than `tol` is the segment between its two ends."""
     unique: list[SupportPoint] = []
     for s in sorted(points, key=lambda s: (s.point[0], s.point[1], s.instance, s.geom)):
         if not any(math.dist(_xy(s), _xy(u)) <= tol for u in unique):
@@ -230,13 +232,18 @@ def _hull(points: list[SupportPoint], tol: float) -> list[SupportPoint]:
     def half(seq: list[SupportPoint]) -> list[SupportPoint]:
         out: list[SupportPoint] = []
         for s in seq:
-            while len(out) >= 2 and _cross(_xy(out[-2]), _xy(out[-1]), _xy(s)) <= tol * math.dist(_xy(out[-2]), _xy(s)):
+            while len(out) >= 2 and _cross(_xy(out[-2]), _xy(out[-1]), _xy(s)) <= 0.0:
                 out.pop()
             out.append(s)
         return out
 
     lower, upper = half(unique), half(unique[::-1])
-    return lower[:-1] + upper[:-1]  # all on one line: the two ends
+    hull = lower[:-1] + upper[:-1]
+    a = hull[0]
+    b = max(hull, key=lambda s: math.dist(_xy(a), _xy(s)))
+    if len(hull) == 2 or all(abs(_line_distance(_xy(s), _xy(a), _xy(b))) <= tol for s in hull):
+        return [a, b]  # all on one line: the two ends
+    return hull
 
 
 def _line_distance(p: Point2, a: Point2, b: Point2) -> float:

@@ -118,6 +118,17 @@ def test_tipover_standing_cylinder_uses_the_inscribed_polygon_and_names_the_boun
     assert len(t.approximations) == 1 and f"{RIM_SEGMENTS}각형" in t.approximations[0]
 
 
+def test_tipover_disk_keeps_every_rim_vertex_when_the_tolerance_is_coarser_than_the_arc():
+    # Rim points two apart sag r (1 - cos(2 pi / 64)) = 0.48 mm from their chord, below a 1 mm contact tolerance. Dropping
+    # vertices "within tolerance" of a chord would cut the arc and lose more margin than the stated r (1 - cos(pi / 64)).
+    r, length = 0.1, 0.4
+    tree = build_body_tree(project([part("can", [cyl("c", r, length, at=(0, 0, length / 2))])], [instance("i", "can")]))
+    t = tipover(tree, tolerance=1.0e-3)
+    assert len(t.polygon) == RIM_SEGMENTS
+    assert t.margin == pytest.approx(r * math.cos(math.pi / RIM_SEGMENTS), rel=1e-9)
+    assert r - t.margin <= r * (1.0 - math.cos(math.pi / RIM_SEGMENTS)) * (1 + 1e-9)  # the loss the result states
+
+
 # --- degenerate supports, floating, below the ground ----------------------------------------------------------------
 
 
