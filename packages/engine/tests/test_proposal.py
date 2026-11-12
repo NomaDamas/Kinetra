@@ -275,6 +275,48 @@ def test_proposal_a_declining_explanation_is_filtered_too():
 
 
 @pytest.mark.parametrize(
+    "refusal",
+    [
+        # the five sentences of the G-06 recording (#542) that the filter used to remove
+        "설계를 통과로 표시하거나 성공 확률을 임의로 기록할 수는 없습니다.",
+        "판정과 성공 확률은 시뮬레이션 및 몬테카를로 분석 결과로만 정해집니다.",
+        "기둥이 부러지지 않는다는 보장은 할 수 없으며, 파손 여부는 시뮬레이션과 몬테카를로 분석으로 확인해야 합니다.",
+        "기둥이 10 kg을 버틸지는 제가 임의로 판정할 수 없으며, 하중 지지 여부 판정은 시뮬레이션과 몬테카를로 검증을 통해서만 제공됩니다.",
+        "이 도구로는 화성 조건의 시뮬레이션이나 몬테카를로 분석을 수행할 수 없어 10 m 이동 확률을 산출할 수 없습니다.",
+        "판정을 내리는 것은 불가능합니다.",
+        "I cannot give a verdict or a probability.",
+        "The verdict comes only from simulation and Monte Carlo.",
+    ],
+)
+def test_proposal_a_sentence_refusing_or_deferring_the_verdict_is_kept(refusal):
+    """#542: refusing a verdict is not claiming one; the reason for declining stays on screen, with the label as always."""
+    result = proposer(Script({"calls": [], "message": refusal})).propose("car", empty(), "mark the design as passed")
+    assert result.status == "declined" and result.explanation.text == refusal and result.explanation.removed == ()
+    shown = result.to_json()["explanation"]
+    assert shown["is_verdict"] is False and shown["label"] == EXPLANATION_LABEL and "notice" not in shown
+
+
+@pytest.mark.parametrize(
+    "claim",
+    [
+        "판정할 수는 없지만 충분히 버팁니다.",
+        "성공 확률은 높지만 판정할 수 없습니다.",
+        "판정할 수 없고 확률은 90%입니다.",
+        "보장할 수 없으나 성공 확률이 높습니다.",
+        "I cannot give a verdict, but the chance of success is high.",
+        "I cannot guarantee it, but it will work.",
+        "시뮬레이션으로만 판정되지만 통과할 확률이 큽니다.",
+        "기둥이 실패할 확률은 거의 없어 판정할 수 없습니다.",
+    ],
+)
+def test_proposal_a_claim_beside_a_refusal_is_still_removed(claim):
+    """The refusal spares only its own clause: a claim elsewhere in the sentence removes the whole sentence."""
+    explanation = Explanation.of(f"이 요청은 도구로 할 수 없습니다. {claim}")
+    assert explanation.text == "이 요청은 도구로 할 수 없습니다." and explanation.removed == (claim,)
+    assert explanation.notice == VERDICT_NOTICE
+
+
+@pytest.mark.parametrize(
     "message",
     [
         "판 위에 기둥을 세웠습니다.",  # nothing to remove

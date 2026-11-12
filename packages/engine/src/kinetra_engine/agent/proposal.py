@@ -69,20 +69,48 @@ EXPLANATION_LABEL = "에이전트 설명이며 판정이 아닙니다. 판정은
 VERDICT_NOTICE = "판정은 실행 뒤 시뮬로만 나옵니다"
 """Shown in place of the sentences of the model's explanation that read like a verdict."""
 
-_VERDICT_WORDS = re.compile(
-    r"\d\s*%|퍼센트|percent|확률|probab|likel(?:y|ihood)|\bchances?\b|\bodds\b|판정|verdict|보장|guarantee"
-    r"|(?:성공|통과|작동)(?:합니다|할 것|한다|해요|할 겁니다|됩니다)|버팁니다|견딥니다|버틸 것|견딜 것"
+_CLAIM_WORDS = re.compile(
+    r"\d\s*%|퍼센트|percent|likel(?:y|ihood)"
+    r"|(?:성공|통과|작동)(?:합니다|할 것|한다|해요|할 겁니다|됩니다)|버팁니다|견딥니다|버틸 것|견딜 것|보장합니다"
+    # a probability given a value or a size, even beside a refusal ("확률은 높지만", "probability is 0.9")
+    r"|(?:확률|probability|chances?|odds)\s*(?:[이은는도가]|is|are|of)?\s*(?:높|낮|크|큽|커|클|작|적|희박|거의|\d|high|low|good|slim|about|around)"
+    r"|(?:high|low|good|slim)\s+(?:probability|chances?|odds)"
     # capability and success claims about the design, without numbers
     r"|(?:오를|올라갈|견딜|버틸|날|뛸|착지할|달릴|넘을|건널|지탱할|해낼|성공할|통과할|작동할|움직일|굴러갈|들어 올릴|이길|살아남을)\s*수\s*있"
-    r"|충분|튼튼|견고|안정적|문제\s?없|잘 됩니다|될 것|될 겁니다|견뎌|버텨|가능합니다|가능할 것"
+    r"|충분|튼튼|견고|안정적|문제\s?없|잘 됩니다|될 것|될 겁니다|견뎌|버텨|(?<!불)가능합니다|(?<!불)가능할 것"
     r"|\b(?:can|could|will|would|should|is able to|are able to|able to)\s+(?:definitely |surely |certainly |easily )?"
     r"(?:climb|hold|survive|carry|lift|fly|jump|land|work|succeed|pass|withstand|support|handle|reach|drive|roll|stay|stand|balance|make it|win)\b"
     r"|\b(?:strong|sturdy|stable|light|fast|powerful|safe|stiff|rigid)\s+enough\b|\benough to\b|\bsufficient(?:ly)?\b"
     r"|\bwithout (?:any )?problems?\b|\bno problem\b",
     re.IGNORECASE,
 )
+"""Verdict claims: a sentence with one of these is removed, whatever else it says."""
+_TOPIC_WORDS = re.compile(r"확률|probab|\bchances?\b|\bodds\b|판정|verdict|보장|guarantee", re.IGNORECASE)
+"""Words of a verdict: removed unless their clause refuses to give one (`_REFUSAL`) or defers it to simulation (`_DEFERRAL`)."""
+_REFUSAL = re.compile(
+    r"(?:판정|보장|산출|계산|추정|예측|기록|표시|약속|단정|확인|제공|선언|평가|부여|결정|답변|말씀)(?:을|를|은|는|이|가|도)?\s*"
+    r"(?:(?:할|해\s?드릴|하여 드릴|내릴|드릴)\s*수\s*(?:는|가|도)?\s*없|(?:하|내리)지\s*(?:않|못)|(?:(?:하|내리|드리)는 것은\s*)?불가능)"
+    r"|(?:말할|말씀드릴|알|내릴|매길|정할)\s*수\s*(?:는|가|도)?\s*없"
+    r"|\b(?:cannot|can't|can not|could not|couldn't|won't|will not|do not|don't|am not able to|unable to|not able to|not allowed to)\s+"
+    r"(?:\w+\s+){0,2}?(?:guarantee|give|provide|state|say|promise|predict|estimate|compute|calculate|record|mark|issue|declare|decide|determine|judge|assign|tell|claim)\b",
+    re.IGNORECASE,
+)
+_DEFERRAL = re.compile(r"(?=.*(?:시뮬|몬테\s?카를로|simulation|monte carlo))(?=.*(?:로만|으로만|만으로|통해서만|에서만|뒤에만|후에만|\bonly\b))", re.IGNORECASE)
+_CLAUSE_END = re.compile(r"[,;:]|지만|그러나|하지만|다만|는데|고\s|\b(?:but|however|although|though|while|yet)\b", re.IGNORECASE)
 _OUTCOME_WORDS = re.compile(r"성공|통과|실패|succe|\bpass|\bfail", re.IGNORECASE)
 _SENTENCE_END = re.compile(r"(?<=[.!?。])\s+|\n+")
+
+
+def _verdict_like(sentence: str) -> bool:
+    """A claim anywhere, an outcome word with a number, or a verdict word in a clause that neither refuses nor defers the verdict.
+    Splitting into more clauses only removes more: each clause with a verdict word must refuse or defer on its own."""
+    if _CLAIM_WORDS.search(sentence) or (_OUTCOME_WORDS.search(sentence) and re.search(r"\d", sentence)):
+        return True
+    return any(
+        _TOPIC_WORDS.search(clause) and not (_REFUSAL.search(clause) or _DEFERRAL.match(clause)) for clause in _CLAUSE_END.split(sentence)
+    )
+
+
 
 MAX_REPLY_DEPTH = 64
 """Deepest `[`/`{` nesting a reply may have. A design choice (no source): the deepest valid reply is 6 levels
@@ -164,7 +192,7 @@ class Explanation:
         for sentence in (s.strip() for s in _SENTENCE_END.split(message)):
             if not sentence:
                 continue
-            verdict_like = _VERDICT_WORDS.search(sentence) or (_OUTCOME_WORDS.search(sentence) and re.search(r"\d", sentence))
+            verdict_like = _verdict_like(sentence)
             (removed if verdict_like else kept).append(sentence)
         return cls(" ".join(kept), tuple(removed))
 
