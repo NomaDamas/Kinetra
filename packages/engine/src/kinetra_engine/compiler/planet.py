@@ -12,7 +12,7 @@ One g per planet is the model (W-06 labels it in the assumption table).
 
 **Atmosphere density** is carried here as the planet's `Quantity`, and the MJCF sets MuJoCo's own medium to zero
 (`density="0" viscosity="0"`). MuJoCo's medium is one global number for every body and its inertia-box drag is a fixed
-model nobody labels (`docs/research/fluids/mujoco-water.md` 3.1 and 7.1). Drag is W-03b's: a force per body from this
+model nobody labels (`docs/research/fluids/mujoco-water.md` 3.1 and 7.1). Drag is `drag.py`'s (W-03b): a force per body from this
 density, labelled "근사: 집중 항력". Writing the density into `<option>` as well would add a second, unlabelled drag.
 
 **Ground friction** is the planet's `ground_friction` `Assumption` (nominal and distribution), unchanged. `to_mjcf` gives the ground
