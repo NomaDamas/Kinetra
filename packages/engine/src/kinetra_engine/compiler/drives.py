@@ -13,25 +13,36 @@ pose (MJCF `springref` 0, the model's reference pose). A spring-damper instance 
 no spring-damper has neither.
 
 **Motors (B-03b).** A motor actuator (`DesignSpec.actuators`, kind `motor`) on an instance whose part has role `motor` drives
-its `hinge` joint. Its MJCF element is `<motor joint gear="1">` and `ctrl` is the joint torque [N*m], limited to the stall
-torque; `DriveRuntime` writes it every step from the command and the joint speed. A motor on a slider (the curve is N*m
-against rad/s) is a `CompileError` `motor_joint`; one on a part with no role (no curve) `build_body_tree` already refused
-(`no_curve`, X-01d).
+its `hinge` joint. A motor on a slider (the curve is N*m against rad/s) is a `CompileError` `motor_joint`; one on a part with
+no role (no curve) `build_body_tree` already refused (`no_curve`, X-01d).
 
-What a command means (`motor_torque`): the curve is the torque limit at command 1, the part's rated voltage. A command `u` in
-[-1, 1] is the fraction of that voltage with its sign (a PWM duty): a DC motor at a fraction `a = |u|` of its voltage has the
-same torque-speed line scaled by `a` on both axes, so the torque is `u * T(s / a)`, where `T` is the curve and `s` the joint
-speed in the commanded direction. For the linear curve of a DC motor that is exactly `T0 (u - omega / omega0)`. The no-load
-speed at command `u` is `a * omega0`. Beyond it the torque is 0 (the curve ends at 0; the model has no braking quadrant, as
-`parts.curves` says); driven backwards (`s < 0`) it is the stall torque, the curve's first point (no extrapolation past it);
-command 0 is no torque (the motor coasts).
+What a command means (`MotorDrive.torque`): the curve is the torque at command 1, the part's rated voltage. A command `u` in
+[-1, 1] is the fraction of that voltage with its sign (a PWM duty, `a = |u|`). A DC motor's torque is linear in voltage and
+speed, `tau = u T0 - (T0 / omega0) omega` (stall torque `T0`, no-load speed `omega0`, the curve's two ends): at a fraction
+`a` of the voltage the line is scaled by `a` on both axes, and the `-(T0 / omega0) omega` part is the back-EMF, the same at
+every command. Inside the curve's range (`0 <= s <= a omega0`, `s` the joint speed in the commanded direction) the torque is
+the curve, `u T(s / a)`; outside it the curve says nothing and the torque is that line: beyond the no-load speed it brakes,
+driven backwards it exceeds the stall torque, and at command 0 (0 V, terminals shorted) it brakes as `-(T0 / omega0) omega`.
+For the library's linear curves the curve and the line are one.
+
+**Why the back-EMF is joint damping (#546).** The back-EMF is a viscous damping `T0 / omega0` [N*m*s/rad] on the joint, so the
+MJCF gives the hinge `damping="T0/omega0"` (summed over the motors on it) and MuJoCo's Euler integrator applies it implicitly
+(it integrates joint damping implicitly, `(M + h D) qacc = f`): a light body on the motor (a free root whose inertia about the
+axis is tiny) settles at the no-load speed and does not overshoot it, whatever the time step. The actuator is
+`<motor joint gear="1">` and `ctrl` is the rest, `tau + (T0 / omega0) omega` (`MotorDrive.ctrl`), which for a linear curve is
+the constant `u T0`: nothing velocity-dependent is left explicit. Written as an explicit torque from the step's starting
+speed instead, one step of stall torque on 3e-5 kg*m^2 gives ~137 rad/s on a 20.9 rad/s motor (#546). A `<general>`
+actuator with a velocity bias would need the `implicitfast` integrator for the same effect, changing the integration of every
+model; joint damping needs no change.
 
 **Supply draw (B-03d).** A motor with `supply` draws electrical energy from that battery instance. The current of a DC motor is
-linear in its torque, and the datasheet gives the two ends: `I = I0 + (Is - I0) |tau| / T0` (specs `no_load_current`,
-`stall_current` [A] and the curve's stall torque `T0`), so a metered motor's part must carry both current specs (else `CompileError` `no_current`). At command
-`u` the battery gives `P = |u| V I` [W] (V the rated voltage, the PWM average), every step `P dt` from the one `Supply` per
-battery instance. When it gives less (`Draw.satisfied < 1`) the torque that step is scaled by `satisfied`, and an empty
-battery drives nothing. Motors that share a battery draw in actuator id order. Nothing is given back (no regeneration).
+linear in its torque, and the datasheet gives the two ends: `I = I0 + (Is - I0) tau_d / T0`, `tau_d` the torque in the
+commanded direction, not below 0 (specs `no_load_current`, `stall_current` [A] and the curve's stall torque `T0`), so a
+metered motor's part must carry both current specs (else `CompileError` `no_current`). At command `u` the battery gives
+`P = |u| V I` [W] (V the rated voltage, the PWM average), every step `P dt` from the one `Supply` per battery instance. When it
+gives less (`Draw.satisfied < 1`) the driving part (`ctrl`) that step is scaled by `satisfied`; the back-EMF damping stays (an
+empty battery is 0 V). Motors that share a battery draw in actuator id order. Nothing is given back (no regeneration:
+braking draws no current from the battery and puts none in).
 
 Not here: thrusters and tanks (X-01c), the planet's gravity and `<option>` (W-03a), contact parameters and friction
 composition, a torsion spring on a hinge, the motor's rotor inertia and the battery's voltage sag (the torque curve is the
@@ -85,27 +96,37 @@ class MotorDrive:
     no_load_current: float | None
     stall_current: float | None
 
+    @property
+    def back_emf_damping(self) -> float:
+        """`T0 / omega0` [N*m*s/rad]: the slope of the DC motor's line, the hinge `damping` this motor adds to the MJCF."""
+        return self.stall_torque / self.no_load_speed
+
     def torque(self, command: float, speed: float) -> float:
-        """Joint torque [N*m] at `command` in [-1, 1] and joint speed `speed` [rad/s] (see the module docstring)."""
+        """Joint torque [N*m] at `command` in [-1, 1] and joint speed `speed` [rad/s]: the curve inside its range, the DC motor's
+        line `u T0 - (T0 / omega0) speed` outside it (see the module docstring)."""
         if not (math.isfinite(command) and -1.0 <= command <= 1.0):
             raise ValueError(f"motor {self.actuator!r}: a command is in [-1, 1], got {command}")
         if not math.isfinite(speed):
             raise ValueError(f"motor {self.actuator!r}: the joint speed must be finite, got {speed}")
-        if command == 0.0:
-            return 0.0
+        line = command * self.stall_torque - self.back_emf_damping * speed
         a = abs(command)
         s = math.copysign(1.0, command) * speed  # speed in the commanded direction
-        if s <= 0.0:
-            full = self.stall_torque
-        else:
-            full = motor_torque_limit(self.part, s / a)  # 0 at and beyond the no-load speed
-        return command * full
+        if a == 0.0 or not 0.0 <= s < a * self.no_load_speed:
+            return line
+        return command * motor_torque_limit(self.part, s / a)
+
+    def ctrl(self, command: float, speed: float) -> float:
+        """What the MJCF `<motor>` applies [N*m]: the torque less the back-EMF the hinge's damping applies, `tau + (T0/omega0) speed`.
+        For a linear curve that is `u T0`, whatever the speed."""
+        return self.torque(command, speed) + self.back_emf_damping * speed
 
     def electrical_power(self, command: float, torque: float) -> float:
-        """Power [W] the motor takes from its battery at `command` while giving `torque` [N*m]: `|u| V (I0 + (Is - I0) |tau| / T0)`."""
+        """Power [W] the motor takes from its battery at `command` while giving `torque` [N*m]: `|u| V (I0 + (Is - I0) tau_d / T0)`,
+        `tau_d` the torque in the commanded direction, at least 0 (braking takes only the no-load current, gives nothing back)."""
         if self.no_load_current is None or self.stall_current is None:
             raise ValueError(f"motor {self.actuator!r} is not metered")
-        current = self.no_load_current + (self.stall_current - self.no_load_current) * abs(torque) / self.stall_torque
+        driving = max(0.0, math.copysign(1.0, command) * torque)
+        current = self.no_load_current + (self.stall_current - self.no_load_current) * driving / self.stall_torque
         return abs(command) * self.rated_voltage * current
 
 
@@ -120,6 +141,10 @@ class Drives:
 
     def spring(self, joint_id: str) -> JointSpring | None:
         return next((s for s in self.springs if s.joint == joint_id), None)
+
+    def back_emf_damping(self, joint_id: str) -> float:
+        """The hinge damping [N*m*s/rad] the motors on `joint_id` add (0 when none drives it)."""
+        return math.fsum(m.back_emf_damping for m in self.motors if m.joint == joint_id)
 
 
 def _spec(part: PartDef, name: str) -> float | None:
@@ -221,14 +246,15 @@ class DriveRuntime:
         """Energy [J] each metered motor has taken so far."""
 
     def apply(self, data, commands: Mapping[str, float], dt: float) -> None:
-        """Set each motor's torque for the next step of `dt` seconds from its command (absent: 0) and its joint speed now, and
-        draw that step's energy from its battery."""
+        """Set each motor's `ctrl` for the next step of `dt` seconds from its command (absent: 0) and its joint speed now (the
+        back-EMF is the hinge's damping, applied by MuJoCo), and draw that step's energy from its battery."""
         for m, act, dof in self._rows:
             u = commands.get(m.actuator, 0.0)
-            tau = m.torque(u, float(data.qvel[dof]))
+            speed = float(data.qvel[dof])
+            ctrl = m.ctrl(u, speed)
             if m.supply is not None:
-                draw = self.supplies[m.supply].draw_rate(m.electrical_power(u, tau), dt)
+                draw = self.supplies[m.supply].draw_rate(m.electrical_power(u, m.torque(u, speed)), dt)
                 self.supplies[m.supply] = draw.supply
                 self.energy[m.actuator] += draw.delivered
-                tau *= draw.satisfied
-            data.ctrl[act] = tau
+                ctrl *= draw.satisfied
+            data.ctrl[act] = ctrl

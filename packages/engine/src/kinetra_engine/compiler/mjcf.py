@@ -25,8 +25,9 @@ is on `tree.planet` for the drag of W-03b, `planet.py` says why it is not MuJoCo
 contact parameters are not set here (X-02), so MuJoCo's own defaults stand until those leaves set them.
 
 With `drives` (`compile_drives`, X-01b) a slider that carries a spring-damper gets `stiffness` and `damping` (the spring's force is 0
-at coordinate 0, `springref` 0) and each motor actuator is a `<motor joint gear="1">` whose `ctrl` is the joint torque in N*m,
-`ctrlrange` +- its stall torque; `DriveRuntime` writes `ctrl` every step (`drives.py`).
+at coordinate 0, `springref` 0); a hinge a motor drives gets the motor's back-EMF as `damping` (`T0/omega0`, #546) and each motor
+actuator is a `<motor joint gear="1" ctrllimited="false">` whose `ctrl` [N*m] `DriveRuntime` writes every step (`drives.py`;
+MuJoCo does not clamp it, a clamp would change the torque the curve gives).
 """
 
 from __future__ import annotations
@@ -67,7 +68,10 @@ def _body(tree: BodyTree, b: Body, depth: int, drives: Drives | None) -> list[st
         kind = "hinge" if j.kind is JointKind.HINGE else "slide"
         rng = "" if j.range is None else f" limited=\"true\" range={quoteattr(_n(j.range))}"
         spring = None if drives is None else drives.spring(j.id)
+        emf = 0.0 if drives is None else drives.back_emf_damping(j.id)
         sd = "" if spring is None else f" stiffness={quoteattr(_n([spring.stiffness]))} damping={quoteattr(_n([spring.damping]))}"
+        if emf:
+            sd = f" damping={quoteattr(_n([emf]))}"  # motors drive hinges, springs sit on sliders: never both
         lines.append(f"{pad}  <joint {_attr('name', j.id)} type={quoteattr(kind)} pos={quoteattr(_n(j.pos))} axis={quoteattr(_n(j.axis))}{rng}{sd}/>")
     lines.extend(_geom(g, pad + "  ") for g in b.geoms)
     for child in tree.bodies:
@@ -90,10 +94,7 @@ def to_mjcf(tree: BodyTree, name: str = "kinetra", drives: Drives | None = None)
     if drives is not None and drives.motors:
         lines.append("  <actuator>")
         for m in drives.motors:
-            lines.append(
-                f"    <motor {_attr('name', m.actuator)} {_attr('joint', m.joint)} gear=\"1\" ctrllimited=\"true\" "
-                f"ctrlrange={quoteattr(_n([-m.stall_torque, m.stall_torque]))}/>"
-            )
+            lines.append(f"    <motor {_attr('name', m.actuator)} {_attr('joint', m.joint)} gear=\"1\" ctrllimited=\"false\"/>")
         lines.append("  </actuator>")
     lines.extend(["</mujoco>", ""])
     return "\n".join(lines)
